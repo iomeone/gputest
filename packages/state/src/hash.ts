@@ -140,7 +140,7 @@ const integerArrayToMurmur53 = (list: number[] | TypedArray, seed: number = 0) =
 
   for (let i = 0; i < n; ++i) {
     const d = list[i];
-    let d1 = add(rot(d, 16), b);
+    let d1 = add(rot(d, 16), add(a, b));
     let d2 = add(d, a);
 
     d1 = mul(d1, C1);
@@ -185,7 +185,7 @@ const stringToMurmur53 = (s: string, seed: number = 0) => {
 
   for (let i = 0; i < n; ++i) {
     const d = s.charCodeAt(i);
-    let d1 = add(rot(d, 16), b);
+    let d1 = add(rot(d, 16), add(a, b));
     let d2 = add(d, a);
 
     d1 = mul(d1, C1);
