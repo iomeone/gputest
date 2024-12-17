@@ -15,6 +15,8 @@ type ScratchSourceOptions = {
   readWrite?: boolean,
   /** Initial allocation size */
   reserve?: number,
+  /** Declarative allocation size */
+  length?: number,
   /** Resizable binding */
   volatile?: boolean,
 };
@@ -28,11 +30,12 @@ export const useScratchSource = (
     reserve = 16,
     flags = GPUBufferUsage.STORAGE,
     volatile = false,
+    length,
   } = options;
 
   const device = useDeviceContext();
 
-  return useMemo(() => {
+  const scratchSource = useMemo(() => {
     const f = (format && (format in UNIFORM_ARRAY_DIMS)) ? format as UniformType : 'f32';
     let alloc = 0;
 
@@ -62,8 +65,12 @@ export const useScratchSource = (
       volatile: +volatile,
     } as StorageSource;
 
-    allocate(reserve);
+    allocate(length ?? reserve);
 
     return [source, allocate] as [StorageSource, (x: number) => void];
-  }, [device, format, readWrite, flags, volatile]);
+  }, [device, format, readWrite, flags, volatile, reserve]);
+
+  if (length != null) allocate(length);
+
+  return scratchSource;
 };
