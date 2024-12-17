@@ -1,4 +1,4 @@
-import type { ArrowFunction } from '@use-gpu/live';
+import type { ArrowFunction, LC } from '@use-gpu/live';
 import type { StorageSource, Lazy, VectorLike } from '@use-gpu/core';
 import type { ParsedBundle } from '@use-gpu/shader';
 
@@ -34,7 +34,7 @@ const DEFAULT_DEFINES = {
   '@group(VOLATILE)': '@group(1)',
 };
 
-export const Dispatch = (props: DispatchProps) => {
+export const Dispatch: LC<DispatchProps> = (props: DispatchProps) => {
   // Return a lambda back to parent(s)
   return yeet(dispatch(props));
 };

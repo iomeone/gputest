@@ -1,4 +1,4 @@
-import type { ArrowFunction, Ref } from '@use-gpu/live';
+import type { ArrowFunction, LC, Ref } from '@use-gpu/live';
 import type { DataBounds, StorageSource, RenderPassMode, Lazy, UniformAttribute, UseGPURenderContext, VolatileAllocation } from '@use-gpu/core';
 import type { ParsedBundle } from '@use-gpu/shader';
 import type { Update } from '@use-gpu/state';
@@ -63,7 +63,7 @@ const PASS_DEFINES = {
   '@group(VOLATILE)': '@group(3)',
 };
 
-export const DrawCall = (props: DrawCallProps) => {
+export const DrawCall: LC<DrawCallProps> = (props: DrawCallProps) => {
   // Return a lambda back to parent(s)
   return yeet(drawCall(props));
 };

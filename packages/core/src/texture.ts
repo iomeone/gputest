@@ -53,12 +53,13 @@ export const makeTargetTexture = (
   device: GPUDevice,
   width: number,
   height: number,
+  depth: number,
   format: GPUTextureFormat,
   sampleCount: number = 1,
   mipLevelCount: number = 1,
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC;
-  return makeTexture(device, width, height, 1, format, usage, sampleCount, mipLevelCount);
+  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount);
 }
 
 export const makeStorageTexture = (

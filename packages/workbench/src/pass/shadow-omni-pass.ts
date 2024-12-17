@@ -7,6 +7,7 @@ import { mat4 } from 'gl-matrix';
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
   makeDepthStencilAttachments, makeFrustumPlanes, makeGlobalUniforms, makeTexture, uploadBuffer,
+  getCubeFaceLabel, getCubeFaceMatrix,
   VIEW_UNIFORMS,
 } from '@use-gpu/core';
 
@@ -43,47 +44,6 @@ const τ = Math.PI * 2;
 
 const label = '<ShadowOmniPass>';
 const LABEL = { label };
-
-const VIEW_LABELS = ['Right', 'Left', 'Top', 'Bottom', 'Front', 'Back'];
-
-const VIEW_MATRICES = [
-  mat4.fromValues(
-    0, 0,-1, 0,
-    0, 1, 0, 0,
-   -1, 0, 0, 0,
-    0, 0, 0, 1,
-  ),  // R
-  mat4.fromValues(
-    0, 0, 1, 0,
-    0, 1, 0, 0,
-    1, 0, 0, 0,
-    0, 0, 0, 1,
-  ),  // L
-  mat4.fromValues(
-   -1, 0, 0, 0,
-    0, 0,-1, 0,
-    0, 1, 0, 0,
-    0, 0, 0, 1,
-  ),  // T
-  mat4.fromValues(
-    1, 0, 0, 0,
-    0, 0, 1, 0,
-    0, 1, 0, 0,
-    0, 0, 0, 1,
-  ),  // Bm
-  mat4.fromValues(
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0,-1, 0,
-    0, 0, 0, 1,
-  ),  // F
-  mat4.fromValues(
-   -1, 0, 0, 0,
-    0, 1, 0, 0,
-    0, 0, 1, 0,
-    0, 0, 0, 1,
-  ),  // Bk
-];
 
 /** Shadow render pass.
 
@@ -158,7 +118,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     const attachments = makeDepthStencilAttachments(texture, SHADOW_FORMAT, 6);
 
     const descriptors = attachments.map((depthStencilAttachment, i) => ({
-      label: `<ShadowOmniPass> ${VIEW_LABELS[i]}`,
+      label: `<ShadowOmniPass> ${getCubeFaceLabel(i)}`,
       colorAttachments: [],
       depthStencilAttachment,
     }));
@@ -215,7 +175,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
 
     for (let i = 0; i < 6; ++i) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      mat4.multiply(viewMatrix.current, VIEW_MATRICES[i], into!);
+      mat4.multiply(viewMatrix.current, getCubeFaceMatrix(i), into!);
       projectionViewMatrix.current = mat4.multiply(mat4.create(), projectionMatrix.current, viewMatrix.current);
       projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
 

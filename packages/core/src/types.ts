@@ -19,6 +19,8 @@ export type Side = 'front' | 'back' | 'both';
 export type Blending = 'none' | 'alpha' | 'premultiply' | 'add' | 'subtract' | 'multiply';
 export type ColorSpace = 'linear' | 'srgb' | 'p3' | 'native' | 'picking' | 'auto';
 
+export type ViewType = '2d' | 'cube';
+
 // JS utility types
 
 export type ArrowFunction = (...args: any[]) => any;
@@ -66,20 +68,28 @@ export type UseGPURenderContext = {
   colorSpace: ColorSpace,
   colorInput: ColorSpace,
   colorStates: GPUColorTargetState[],
-  colorAttachments: GPURenderPassColorAttachment[],
+  colorAttachments?: GPURenderPassColorAttachment[],
+
   depthTexture?: GPUTexture,
   depthStencilState?: GPUDepthStencilState,
   depthStencilAttachment?: GPURenderPassDepthStencilAttachment,
 
-  swap?: (view?: GPUTextureView) => void,
+  viewType?: ViewType,
+  viewColorAttachments?: GPURenderPassColorAttachment[][],
+  viewDepthStencilAttachment?: GPURenderPassDepthStencilAttachment[],
+
+  swap?: () => void,
   depth?: TextureSource,
   source?: TextureTarget,
   sources?: TextureTarget[],
 };
 
-export type OffscreenTarget = UseGPURenderContext & {
+export type OffscreenRenderContext = UseGPURenderContext & {
   source: TextureTarget,
 };
+
+/* @hidden */
+export type OffscreenTarget = OffscreenRenderContext; // deprecated
 
 // Simple backing-agnostic mesh geometry
 export type CPUAttributes = Record<string, TypedArray>;

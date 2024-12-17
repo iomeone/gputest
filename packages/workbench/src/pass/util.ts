@@ -7,20 +7,33 @@ import { mat4, vec3 } from 'gl-matrix';
 
 export const getRenderPassDescriptor = (
   renderContext: UseGPURenderContext,
-  {overlay, merge, stencil, label}: {
+  {overlay, merge, stencil, label, view}: {
     overlay?: boolean,
     merge?: boolean,
     stencil?: boolean,
     label?: string,
+    view?: number,
   }
 ) => {
-  let {colorAttachments, depthStencilAttachment} = renderContext;
+  let {
+    colorAttachments,
+    depthStencilAttachment,
+    viewColorAttachments,
+    viewDepthStencilAttachments,
+  } = renderContext;
 
   if (stencil) {
     colorAttachments = [];
   }
   else if (overlay) {
-    colorAttachments = colorAttachments.map((a: GPURenderPassColorAttachment) => proxy(a, {loadOp: 'load'}));
+    colorAttachments = colorAttachments?.map(
+      (a: GPURenderPassColorAttachment) => proxy(a, {loadOp: 'load'})
+    );
+    viewColorAttachments = viewColorAttachments?.map(
+      (as: GPURenderPassColorAttachment[]) => as.map(
+        (a: GPURenderPassColorAttachment) => proxy(a, {loadOp: 'load'})
+      )
+    );
   }
 
   if ((merge || stencil) && depthStencilAttachment) {
@@ -31,12 +44,15 @@ export const getRenderPassDescriptor = (
     if (stencilLoadOp) override.stencilLoadOp = stencil ? 'clear' : 'load';
 
     depthStencilAttachment = proxy(depthStencilAttachment, override);
+    viewDepthStencilAttachments = viewDepthStencilAttachments
+      ? viewDepthStencilAttachments.map(depthStencilAttachment => proxy(depthStencilAttachment, override))
+      : undefined;
   }
 
   const renderPassDescriptor: GPURenderPassDescriptor = {
     label,
-    colorAttachments,
-    depthStencilAttachment: depthStencilAttachment ?? undefined,
+    colorAttachments: (view != null ? viewColorAttachments?.[view] : null) ?? colorAttachments,
+    depthStencilAttachment: (view != null ? viewDepthStencilAttachments?.[view] : null) ?? depthStencilAttachment,
   };
 
   return renderPassDescriptor;

@@ -1,5 +1,5 @@
 import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { TypedArray, TextureSource, OffscreenTarget } from '@use-gpu/core';
+import type { TypedArray, TextureSource, OffscreenRenderContext } from '@use-gpu/core';
 
 import {
   PICKING_FORMAT,
@@ -19,7 +19,7 @@ import {
   makeColorState,
   makeColorAttachment,
   makeReadbackTexture,
-  makeDepthTexture,
+  makeTargetTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
   makeTextureReadbackBuffer,
@@ -70,7 +70,7 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
 
     const [pickingBuffer, bytesPerRow, itemsPerRow, itemDims] = makeTextureReadbackBuffer(device, width, height, pickingFormat);
     const pickingTexture = makeReadbackTexture(device, width, height, pickingFormat);
-    const depthTexture = makeDepthTexture(device, width, height, depthStencilFormat);
+    const depthTexture = makeTargetTexture(device, width, height, 1, depthStencilFormat);
 
     pickingTexture.label = '<PickingTarget> Readback';
     depthTexture.label = '<PickingTarget> DepthTexture';
@@ -163,7 +163,7 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
         swap,
         source,
         depth,
-      } as OffscreenTarget,
+      } as OffscreenRenderContext,
       captureTexture,
       sampleTexture,
     };

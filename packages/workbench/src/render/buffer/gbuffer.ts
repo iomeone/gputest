@@ -38,6 +38,7 @@ export const GBuffer: LC = memo(() => {
     device,
     width,
     height,
+    1,
     format,
     1,
   )), [device, width, height, formats]);

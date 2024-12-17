@@ -17,17 +17,17 @@ export const makeColorAttachment = (
   storeOp,
 } as unknown as GPURenderPassColorAttachment);
 
-export const makeColorAttachmentWithFormat = (
+export const makeColorAttachmentsCube = (
   texture: GPUTexture | null,
   resolve: GPUTexture | null,
   format: GPUTextureFormat,
   clearValue: GPUColor = [0, 0, 0, 0],
   loadOp: GPULoadOp = 'clear',
   storeOp: GPUStoreOp = 'store',
-): GPURenderPassColorAttachment => ({
-  view: texture ? texture.createView({ format }) : null,
-  resolveTarget: resolve ? resolve.createView() : undefined,
+): GPURenderPassColorAttachment => seq(6).map(i => ({
+  view: texture ? texture.createView({ baseArrayLayer: resolve ? 0 : i, arrayLayerCount: 1 }) : null,
+  resolveTarget: resolve ? resolve.createView({ baseArrayLayer: i, arrayLayerCount: 1 }) : undefined,
   clearValue,
   loadOp,
   storeOp,
-} as unknown as GPURenderPassColorAttachment);
+} as unknown as GPURenderPassColorAttachment));

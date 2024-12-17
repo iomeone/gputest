@@ -2,17 +2,16 @@ import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/liv
 import type { OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
-import { TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
 import { useInspectable } from '../hooks/useInspectable';
-import { getRenderFunc } from '../hooks/useRenderProp';
 
 import {
   makeColorState,
-  makeColorAttachment,
+  makeColorAttachmentsCube,
   makeTargetTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
@@ -22,7 +21,7 @@ import {
 
 const NO_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 
-export type RenderTargetProps = {
+export type RenderCubeTargetProps = {
   width?: number,
   height?: number,
   history?: number,
@@ -34,19 +33,20 @@ export type RenderTargetProps = {
   colorInput?: ColorSpace,
   samples?: number,
   resolution?: number,
-  absolute?: boolean,
   variant?: string,
+  absolute?: boolean,
+  label?: string,
 
   render?: (rttContext: OffscreenRenderContext) => LiveElement,
   children?: LiveElement | ((rttContext: OffscreenRenderContext) => LiveElement),
   then?: (target: TextureTarget) => LiveElement,
 };
 
-/** Off-screen render target.
+/** Off-screen cube render target.
 
 Place `@{<Pass>}` directly inside, or leave empty to use yielded target with `@{<RenderToTexture>}`.
 */
-export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTargetProps) => {
+export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: PropsWithChildren<RenderCubeTargetProps>) => {
   const device = useContext(DeviceContext);
   const renderContext = useContext(RenderContext);
 
@@ -54,8 +54,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
   const {
     resolution = 1,
-    width = Math.floor(renderContext.width * resolution),
-    height = Math.floor(renderContext.height * resolution),
+    size = Math.floor(renderContext.width * resolution),
     samples = renderContext.samples,
     format = PRESENTATION_FORMAT,
     history = 0,
@@ -66,31 +65,32 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     colorInput = COLOR_SPACE,
     variant = 'textureSample',
     absolute = false,
+    label,
     children,
     then,
   } = props;
 
-  const [renderTexture, resolveTexture, bufferTextures, bufferViews, counter] = useMemo(
+  const [renderTexture, resolveTexture, bufferTextures, bufferViews, bufferLayers, counter] = useMemo(
     () => {
       const counter = { current: 0 };
-      if (!format) return [null, null, null, null, counter];
+      if (!format) return [null, null, null, null, null, counter];
 
-      const render =
+      const render = 
         makeTargetTexture(
           device,
           width,
           height,
-          1,
+          samples > 1 ? 1 : 6,
           format,
           samples,
-        );
+        ) : null;
 
       const resolve = samples > 1 ?
         makeTargetTexture(
           device,
           width,
           height,
-          1,
+          6,
           format,
         ) : null;
 
@@ -99,28 +99,48 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
           device,
           width,
           height,
-          1,
+          6,
           format,
         )
       ) : null;
       if (buffers) buffers.push(resolve ?? render);
 
-      const views = buffers ? buffers.map(b => b.createView()) : undefined;
+      const views = buffers ? buffers.map(b => b.createView({
+        dimension: 'cube',
+      })) : undefined;
 
-      return [render, resolve, buffers, views, counter];
+      const layers = buffers ? buffers.map(b => seq(6).map(i =>
+        b.createView({
+          baseArrayLayer: i,
+          arrayLayerCount: 1,
+        })
+      )) : undefined;
+
+      if (label != null) {
+        render.label = label;
+        if (resolve) resolve.label = label;
+
+        if (buffers) for (const b of buffers) b.label = label;
+        if (views) for (const v of views) v.label = label;
+        if (layers) for (const ls of layers) for (const l of ls) l.label = label;
+      }
+
+      return [render, resolve, buffers, views, layers, counter];
     },
     [device, width, height, format, samples, history]
   );
 
-  const targetTexture = resolveTexture ?? renderTexture;
+  const targetTexture = resolveTexture;
 
-  const colorStates      = useOne(() => format ? [makeColorState(format, BLEND_PREMULTIPLY)] : [], format);
-  const colorAttachments = useMemo(() =>
-    renderTexture || resolveTexture
-      ? [makeColorAttachment(renderTexture, resolveTexture, backgroundColor)]
-      : undefined,
+  const colorStates      = useOne(() => [
+    format ? makeColorState(format, format.match(/unorm|float/) ? BLEND_PREMULTIPLY : undefined) : [],
+  ], format);
+
+  const viewColorAttachments = useMemo(() =>
+    renderTexture || resolveTexture ? makeColorAttachmentsCube(renderTexture, resolveTexture, backgroundColor).map(c => [c]) : undefined,
     [renderTexture, resolveTexture, backgroundColor]
   );
+
   const depthStencilState = useOne(() => depthStencil
     ? makeDepthStencilState(depthStencil)
     : undefined,
@@ -128,28 +148,27 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
   const [
     depthTexture,
-    depthStencilAttachment,
+    viewDepthStencilAttachments,
   ] = useMemo(() => {
       if (!depthStencil) return [];
 
-      const texture = makeTargetTexture(device, width, height, 1, depthStencil, samples);
-      const attachment = makeDepthStencilAttachment(texture, depthStencil);
-      return [texture, attachment];
+      const texture = makeTargetTexture(device, width, height, 6, depthStencil, samples);
+      const attachments = makeDepthStencilAttachments(texture, depthStencil, 6);
+      return [texture, attachments];
     },
     [device, width, height, depthStencil, samples]
   );
 
   const [source, sources, depth] = useMemo(() => {
-    const view = targetTexture.createView();
+    const view = targetTexture.createView({ dimension: 'cube' });
     const size = [width, height] as [number, number];
     const volatile = history ? history + 1 : 0;
 
     //const type = TEXTURE_SAMPLE_TYPES[format];
-    const layout = `texture_2d<f32>`;
+    const layout = `texture_cube<f32>`;
 
     const swap = () => {
-      if (!format || !history) return;
-
+      if (!history) return;
       const {current: index} = counter;
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const n = bufferViews!.length;
@@ -158,9 +177,13 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       const texture = bufferTextures![index];
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const view = bufferViews![index];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const layers = bufferLayers![index];
 
-      if (resolveTexture) colorAttachments[0].resolveTarget = view;
-      else colorAttachments[0].view = view;
+      for (let i = 0; i < 6; ++i) {
+        if (resolveTexture) colorAttachments[i].resolveTarget = layers[i];
+        else colorAttachments[i].view = layers[i];
+      }
 
       source.texture = texture;
       source.view = view;
@@ -176,7 +199,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       counter.current = (index + 1) % n;
     };
 
-    const makeSource = () => ({
+    const makeSource = (layout?: string) => ({
       texture: targetTexture,
       view,
       sampler,
@@ -204,12 +227,14 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
     const depth = depthStencil ? {
       texture: depthTexture,
-      sampler: {},
+      sampler,
       layout: samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d',
       format: depthStencil,
+      variant,
+      absolute,
       size,
       version: 0,
-    } as TextureSource : undefined;
+    } as TextureSource : null;
 
     return [source, sources, depth];
   }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil]);
@@ -222,14 +247,17 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     colorSpace,
     colorInput,
     colorStates,
-    colorAttachments,
+    colorAttachments: viewColorAttachments?.[0],
     depthTexture,
     depthStencilState,
-    depthStencilAttachment,
+    depthStencilAttachment: viewDepthStencilAttachments?.[0],
+    viewType: 'cube',
+    viewColorAttachments,
+    viewDepthStencilAttachments,
     swap: source.swap,
     source,
     depth,
-  }), [renderContext, width, height, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source, sources]);
+  }), [renderContext, width, height, colorStates, depthStencilState, viewColorAttachments, viewDepthStencilAttachments, source, sources, depth]);
 
   const inspectable = useMemo(() => [
     ...(source ? [source] : []),

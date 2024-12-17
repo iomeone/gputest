@@ -1,4 +1,4 @@
-import type { OffscreenTarget } from '@use-gpu/core';
+import type { OffscreenRenderContext } from '@use-gpu/core';
 import type { ShaderSource } from '@use-gpu/shader';
 import { makeContext, useOne, useContext, useNoContext } from '@use-gpu/live';
 import { useShader, useNoShader } from '../hooks/useShader';
@@ -6,7 +6,7 @@ import { useShader, useNoShader } from '../hooks/useShader';
 import { getPickingID } from '@use-gpu/wgsl/render/pick.wgsl';
 
 export type PickingContextProps = {
-  renderContext: OffscreenTarget,
+  renderContext: OffscreenRenderContext,
   captureTexture: () => void,
   sampleTexture: (x: number, y: number) => number[],
 };

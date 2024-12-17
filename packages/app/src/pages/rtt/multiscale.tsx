@@ -1,5 +1,5 @@
 import type { LC } from '@use-gpu/live';
-import type { DataTexture, TextureSource, OffscreenTarget } from '@use-gpu/core';
+import type { DataTexture, TextureSource, OffscreenRenderContext } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
 
 import React, { Gather, useRef } from '@use-gpu/live';
@@ -283,11 +283,11 @@ export const RTTMultiscalePage: LC = () => {
         blurTarget4,
       ]: [
         TextureSource,
-        OffscreenTarget,
-        OffscreenTarget,
-        OffscreenTarget,
-        OffscreenTarget,
-        OffscreenTarget,
+        OffscreenRenderContext,
+        OffscreenRenderContext,
+        OffscreenRenderContext,
+        OffscreenRenderContext,
+        OffscreenRenderContext,
       ]) => (
         <Loop live>
           <Cursor cursor="pointer" />

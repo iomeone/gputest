@@ -7,7 +7,6 @@ import {
   makeColorState,
   makeColorAttachment,
   makeTargetTexture,
-  makeDepthTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLY,
@@ -73,6 +72,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
           device,
           width,
           height,
+          1,
           format,
           samples,
         )
@@ -95,7 +95,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
   ] = useMemo(() => {
     const {current: count} = countRef;
 
-    const texture = makeDepthTexture(device, width, height, depthStencil, samples);
+    const texture = makeTargetTexture(device, width, height, 1, depthStencil, samples);
     texture.label = `<Canvas> DepthTarget ${count.texture}`;
 
     const attachment = makeDepthStencilAttachment(texture, depthStencil);
@@ -116,15 +116,15 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
     version: 0,
   } as TextureSource), [depthTexture, depthStencil, samples, width, height]);
 
-  const swap = useCallback((view?: GPUTextureView) => {
+  const swap = useCallback(() => {
     const {current: count} = countRef;
     count.swap = incrementVersion(count.swap);
     depth.version = incrementVersion(depth.version);
 
-    const v = view ?? gpuContext
+    const v = gpuContext
       .getCurrentTexture()
       .createView();
-    if (!view) v.label = `<Canvas> Swap View ${count.texture} / ${count.swap}`;
+    v.label = `<Canvas> Swap View ${count.texture} / ${count.swap}`;
 
     if (samples > 1) colorAttachments[0].resolveTarget = v;
     else colorAttachments[0].view = v;

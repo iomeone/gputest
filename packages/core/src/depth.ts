@@ -1,14 +1,4 @@
-import { makeTargetTexture } from './texture';
 import { seq } from './tuple';
-
-export const makeDepthTexture = (
-  device: GPUDevice,
-  width: number,
-  height: number,
-  format: GPUTextureFormat,
-  samples: number = 1,
-): GPUTexture =>
-  makeTargetTexture(device, width, height, format, samples);
 
 export const makeDepthStencilState = (format: GPUTextureFormat): GPUDepthStencilState => ({
   depthWriteEnabled: true,

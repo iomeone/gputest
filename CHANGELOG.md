@@ -1,3 +1,9 @@
+0.13.0
+- `@use-gpu/wgsl-loader`: Pass `minify` option to rollup plug-in.
+- `@use-gpu/workbench`: Fix JSX type of <Dispatch> and <DrawCall> for React 18
+- `@use-gpu/workbench`: Allow `format`-less <RenderTarget>
+- `@use-gpu/workbench`: Add `<RenderCubeTarget>`
+
 0.12.0
 - `@use-gpu/*`: add `ts-vite` example
 - `@use-gpu/*`: use `swc` to build .js
