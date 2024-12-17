@@ -8,6 +8,7 @@ export const glsl = (userOptions = {}) => {
           include: [
               '**/*.glsl'
           ],
+          minify; true,
       },
       userOptions
   );
@@ -20,7 +21,7 @@ export const glsl = (userOptions = {}) => {
     transform(source: string, id: string) {
       if (!filter(id)) return;
 
-      const code = transpileGLSL(source, id, { esModule: true, minify: true }).output;
+      const code = transpileGLSL(source, id, { ...options, esModule: true }).output;
       return { code, map: { mappings: '' }};
     }
   };

@@ -8,6 +8,7 @@ export const wgsl = (userOptions = {}) => {
           include: [
               '**/*.wgsl'
           ],
+          minify; true,
       },
       userOptions
   );
@@ -20,7 +21,7 @@ export const wgsl = (userOptions = {}) => {
     transform(source: string, id: string) {
       if (!filter(id)) return;
 
-      const code = transpileWGSL(source, id, { esModule: true, minify: true }).output;
+      const code = transpileWGSL(source, id, { ...options, esModule: true }).output;
       return { code, map: { mappings: '' }};
     }
   };
