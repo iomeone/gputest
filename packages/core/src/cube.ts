@@ -1,3 +1,5 @@
+import { mat4 } from 'gl-matrix';
+
 const VIEW_LABELS = ['Right (+X)', 'Left (-X)', 'Top (+Y)', 'Bottom (-Y)', 'Front (+Z)', 'Back (-Z)'];
 
 const VIEW_MATRICES = [
