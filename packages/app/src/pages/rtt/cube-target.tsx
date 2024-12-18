@@ -7,9 +7,9 @@ import {
   Pass,
   OrbitCamera, OrbitControls,
   Pick, Cursor, LinearRGB,
-  Environment, PBRMaterial,
-  GeometryData,
-  RenderCubeTarget,
+  Environment, DirectionalLight,
+  GeometryData, PBRMaterial,
+  RenderCubeTarget, RenderToTexture,
   makeSphereGeometry,
   makeBoxGeometry,
 } from '@use-gpu/workbench';
@@ -78,7 +78,7 @@ export const RTTCubeTargetPage: LC = () => {
         />
       )}
     />
-  </>);  
+  </>);
 }
 
 type RTTCubeViewProps = {
@@ -88,7 +88,7 @@ type RTTCubeViewProps = {
 };
 
 const RTTCubeView: LC = (props: RTTCubeViewProps) => {
-  const {sphereMesh, boxMesh} = props;
+  const {sphereMesh, boxMesh, renderCubeTarget} = props;
 
   const getRandomColor = (i: number) => randomColors[i % randomColors.length];
   const getRandomOffset = (i: number) => randomOffsets[i % randomOffsets.length];
@@ -96,14 +96,16 @@ const RTTCubeView: LC = (props: RTTCubeViewProps) => {
 
   const scene = useMemo(() => (
     <Environment preset='pisa'>
+      <DirectionalLight position={[1, 3, 2]} color={[1, 1, 1]} intensity={.25} />
+
       <Scene>
-        <PBRMaterial>
+        <PBRMaterial roughness={0.35}>
 
           <Instances
             mesh={sphereMesh}
             shaded
           >{
-            (Instance) => seq(32).map(i => 
+            (Instance) => seq(32).map(i =>
               <Instance
                 key={`${i}`}
                 position={getRandomOffset(i)}
@@ -116,7 +118,7 @@ const RTTCubeView: LC = (props: RTTCubeViewProps) => {
             mesh={boxMesh}
             shaded
           >{
-            (Instance) => seq(32).map(i => 
+            (Instance) => seq(32).map(i =>
               <Instance
                 key={`${i}`}
                 position={getRandomOffset(i + 32)}
@@ -128,18 +130,22 @@ const RTTCubeView: LC = (props: RTTCubeViewProps) => {
 
         </PBRMaterial>
       </Scene>
-    </Environment> 
+    </Environment>
   ), [sphereMesh, boxMesh]);
-  
+
   return (
     <LinearRGB>
       <Cursor cursor='move' />
       <Camera>
-      
-        <Pass>
-        
+
+        <RenderToTexture target={renderCubeTarget}>
+          <Pass lights>
+            {scene}
+          </Pass>
+        </RenderToTexture>
+
+        <Pass lights>
           {scene}
-     
         </Pass>
       </Camera>
     </LinearRGB>
