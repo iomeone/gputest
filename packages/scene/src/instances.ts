@@ -10,6 +10,7 @@ import {
   UseInstance,
   IndexedTransform,
   useMatrixContext,
+  getRenderFunc,
 } from '@use-gpu/workbench';
 
 import { ColorTrait, ObjectTrait } from './traits';
@@ -42,8 +43,9 @@ export const Instances: LiveComponent<InstancesProps> = (props: InstancesProps) 
     shaded,
     side,
     format = 'u16',
-    render,
   } = props;
+
+  const render = getRenderFunc(props);
 
   const Resume = useCallback((sources: Record<string, StorageSource>) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -29,6 +29,7 @@ import { PlotImplicitSurfacePage } from './pages/plot/implicit-surface';
 import { PlotQuaternionHyperspherePage } from './pages/plot/quaternion-hypersphere';
 import { ShaderDrostePage } from './pages/shader/droste';
 import { PresentSlidesPage } from './pages/present/slides';
+import { RTTCubeTargetPage } from './pages/rtt/cube-target';
 import { RTTLinearRGBPage } from './pages/rtt/linear-rgb';
 import { RTTFeedbackPage } from './pages/rtt/feedback';
 import { RTTMultiscalePage } from './pages/rtt/multiscale';
@@ -63,6 +64,7 @@ export const makePages = () => [
   {path: "/plot/implicit-surface",       title: "Plot - Implicit Surface",           element: <PlotImplicitSurfacePage />},
   {path: "/plot/quaternion-hypersphere", title: "Plot - Quaternion Hypersphere",    element: <PlotQuaternionHyperspherePage />},
   {path: "/shader/droste",               title: "Shader - Droste grids",             element: <ShaderDrostePage />},
+  {path: "/rtt/cube-target",             title: "RTT - Cube Target",                 element: <RTTCubeTargetPage />},
   {path: "/rtt/linear-rgb",              title: "RTT - Linear RGB",                  element: <RTTLinearRGBPage />},
   {path: "/rtt/feedback",                title: "RTT - Feedback",                    element: <RTTFeedbackPage />},
   {path: "/rtt/multiscale",              title: "RTT - Multiscale R-D",              element: <RTTMultiscalePage />},

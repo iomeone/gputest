@@ -11,7 +11,7 @@ import { useInspectable } from '../hooks/useInspectable';
 
 import {
   makeColorState,
-  makeColorAttachmentsCube,
+  makeColorAttachments,
   makeTargetTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
@@ -23,7 +23,6 @@ const NO_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 
 export type RenderCubeTargetProps = {
   width?: number,
-  height?: number,
   history?: number,
   sampler?: Partial<GPUSamplerDescriptor>,
   format?: GPUTextureFormat | null,
@@ -54,7 +53,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
 
   const {
     resolution = 1,
-    size = Math.floor(renderContext.width * resolution),
+    width = Math.floor(renderContext.width * resolution),
     samples = renderContext.samples,
     format = PRESENTATION_FORMAT,
     history = 0,
@@ -70,6 +69,8 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
     then,
   } = props;
 
+  const height = width;
+
   const [renderTexture, resolveTexture, bufferTextures, bufferViews, bufferLayers, counter] = useMemo(
     () => {
       const counter = { current: 0 };
@@ -83,7 +84,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
           samples > 1 ? 1 : 6,
           format,
           samples,
-        ) : null;
+        );
 
       const resolve = samples > 1 ?
         makeTargetTexture(
@@ -137,7 +138,9 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
   ], format);
 
   const viewColorAttachments = useMemo(() =>
-    renderTexture || resolveTexture ? makeColorAttachmentsCube(renderTexture, resolveTexture, backgroundColor).map(c => [c]) : undefined,
+    renderTexture || resolveTexture
+      ? makeColorAttachments(renderTexture, resolveTexture, 6, backgroundColor).map(c => [c])
+      : undefined,
     [renderTexture, resolveTexture, backgroundColor]
   );
 
@@ -148,12 +151,12 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
 
   const [
     depthTexture,
-    viewDepthStencilAttachments,
+    depthStencilAttachment,
   ] = useMemo(() => {
       if (!depthStencil) return [];
 
-      const texture = makeTargetTexture(device, width, height, 6, depthStencil, samples);
-      const attachments = makeDepthStencilAttachments(texture, depthStencil, 6);
+      const texture = makeTargetTexture(device, width, height, 1, depthStencil, samples);
+      const attachments = makeDepthStencilAttachment(texture, depthStencil);
       return [texture, attachments];
     },
     [device, width, height, depthStencil, samples]
@@ -199,7 +202,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
       counter.current = (index + 1) % n;
     };
 
-    const makeSource = (layout?: string) => ({
+    const makeSource = () => ({
       texture: targetTexture,
       view,
       sampler,
@@ -250,14 +253,13 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
     colorAttachments: viewColorAttachments?.[0],
     depthTexture,
     depthStencilState,
-    depthStencilAttachment: viewDepthStencilAttachments?.[0],
+    depthStencilAttachment,
     viewType: 'cube',
     viewColorAttachments,
-    viewDepthStencilAttachments,
     swap: source.swap,
     source,
     depth,
-  }), [renderContext, width, height, colorStates, depthStencilState, viewColorAttachments, viewDepthStencilAttachments, source, sources, depth]);
+  }), [renderContext, width, height, colorStates, depthStencilState, depthStencilAttachment, viewColorAttachments, source, sources, depth]);
 
   const inspectable = useMemo(() => [
     ...(source ? [source] : []),

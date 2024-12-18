@@ -193,6 +193,12 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
 
       passEncoder.end();
 
+      const command = commandEncoder.finish();
+      device.queue.submit([command]);
+    }
+
+    {
+      const commandEncoder = device.createCommandEncoder(LABEL);
       blit(commandEncoder);
 
       const command = commandEncoder.finish();

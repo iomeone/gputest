@@ -19,5 +19,6 @@ export * from './linear-rgb';
 export * from './pass';
 export * from './picking-target';
 export * from './render-target';
+export * from './render-cube-target';
 export * from './render-to-texture';
 export * from './wireframe';

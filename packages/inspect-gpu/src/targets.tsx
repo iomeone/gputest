@@ -22,7 +22,7 @@ const HEIGHT = SIZE + 24 * 2 + 16;
 const IMAGE_FIT = {fit: 'contain', align: 'center', repeat: 'none'};
 
 const NO_OPS: any[] = [];
-const toArray = <T,>(x?: T | T[]): T[] => Array.isArray(x) ? x : x ? [x] : NO_OPS;
+const toArray = <T,>(x?: T | T[]): T[] => Array.isArray(x) ? x.filter(x => x != null) : x ? [x] : NO_OPS;
 
 const backgroundColor = [0, 0, 0, 0.1];
 
@@ -31,6 +31,72 @@ const arrayShader = wgsl`
   @link fn getTexture(uv: vec2<i32>, index: u32, level: u32) -> vec4<f32>;
 
   fn main(uv: vec2<i32>, level: u32) -> vec4<f32> { return getTexture(uv, getIndex(), level); }
+`;
+
+const colorCubeShader = wgsl`
+  @link fn decodeOctahedral(o: vec2<f32>) -> vec3<f32>;
+  @link fn getTexture(uv: vec3<f32>) -> vec4<f32>;
+
+  fn main(uv: vec2<f32>) -> vec4<f32> {
+    var uvw: vec3<f32> = decodeOctahedral(uv * 2.0 - 1.0);
+
+    let a = abs(uvw);
+    var b: vec2<f32>;
+
+    var tint = vec3<f32>(0.0, 0.0, 0.0);
+    if (a.x > a.y) {
+      if (a.x > a.z) {
+        b = uvw.yz / a.x;
+        if (uvw.x > 0.0) {
+          tint.r += 1.0;
+        }
+        else {
+          tint.r += 1.0;
+          tint.g += 0.5;
+        }
+      }
+      else {
+        b = uvw.xy / a.z;
+        if (uvw.z > 0.0) {
+          tint.b += 1.0;
+          tint.g += 0.25;
+        }
+        else {
+          tint.b += 1.0;
+          tint.r += 0.5;
+          tint.g += 0.25;
+        }
+      }
+    }
+    else {
+      if (a.y > a.z) {
+        b = uvw.xz / a.y;
+        if (uvw.y > 0.0) {
+          tint.g += 1.0;
+        }
+        else {
+          tint.g += 1.0;
+          tint.b += 0.5;
+        }
+      }
+      else {
+        b = uvw.xy / a.z;
+        if (uvw.z > 0.0) {
+          tint.b += 1.0;
+          tint.g += 0.25;
+        }
+        else {
+          tint.b += 1.0;
+          tint.r += 0.5;
+          tint.g += 0.25;
+        }
+      }
+    }
+    let border = clamp(50.0 * (max(abs(b.x), abs(b.y)) - 0.9), 0.0, 1.0);
+
+    let t = getTexture(uvw);
+    return mix(t, vec4<f32>(tint, 1.0), border * 0.5);
+  }
 `;
 
 const depthCubeShader = wgsl`
@@ -326,6 +392,15 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
             adoptMeta(texture, t);
             out.push(makeView(texture));
           }
+        }
+      }
+      else if (layout.match(/cube/)) {
+        {
+          let texture = {...t, sampler: {}, variant: 'textureSample'} as any;
+          texture = getShader(colorCubeShader, [decodeOctahedral, texture]);
+          texture = getLambdaSource(texture, t);
+          adoptMeta(texture, t);
+          out.push(makeView(texture));
         }
       }
       else {
