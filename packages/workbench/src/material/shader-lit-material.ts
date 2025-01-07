@@ -54,8 +54,10 @@ export type ShaderLitMaterialProps = {
 
   /** Material lighting shader, for lighting model. e.g. `applyPBRMaterial`.
 
-  fn getLight(surface: SurfaceFragment) -> vec4<f32> */
+  fn getLight(surface: SurfaceFragment) -> vec4<f32>
+  */
   apply?: ShaderModule,
+
   render?: (material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement,
   children?: LiveElement | ((material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement),
 };

@@ -19,6 +19,7 @@ export type ShaderFlatMaterialProps = {
   fn getFragment(color: vec4<f32>, uv: vec4<f32>, st: vec4<f32>) -> vec4<f32>
    */
   fragment: ShaderModule,
+
   render?: (material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement,
   children?: LiveElement | ((material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement),
 };
