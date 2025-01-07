@@ -52,11 +52,11 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
   const device = useDeviceContext();
   const renderContext = useRenderContext();
-  const {width, height, depthTexture} = renderContext;
+  const {width, height, depth} = renderContext;
   const {bind: bindGlobal, cull, uniforms} = useViewContext();
   const {bind: makeBindPass, buffers: {gbuffer: [gbuffer]}} = usePassContext();
 
-  if (!depthTexture) throw new Error("Deferred renderer requires a depth buffer");
+  if (!depth) throw new Error("Deferred renderer requires a depth buffer");
 
   const opaques      = toArray(calls['opaque']      as Renderable[]);
   const transparents = toArray(calls['transparent'] as Renderable[]);
@@ -116,7 +116,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
     }
 
     commandEncoder.copyTextureToTexture(
-      {texture: depthTexture},
+      {texture: depth.texture},
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       {texture: gbuffer.sources![4].texture},
       [width, height, 1]

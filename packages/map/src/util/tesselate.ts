@@ -141,7 +141,7 @@ export const cutRingWith = (
       }
     }
   }
-  
+
   if (last) out[0] = [last, ...ring.slice(pos), ...(out[0] ?? [])];
   if (out[0] && !getRingArea(out[0])) out.shift();
   else if (out.length === 0 && ring.length) {
@@ -229,7 +229,7 @@ export const clipTileEdges = (polygons: XY[][][], minX: number, minY: number, ma
         if (x <= minX || y <= minY || x >= maxX || y >= maxY) cuts.push(i);
         ++i;
       }
-      
+
       if (!cuts.length) rings.push(ring);
       else {
         if (cuts[0] > 1) lines.push(ring.slice(0, cuts[0] + 1));

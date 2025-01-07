@@ -665,7 +665,7 @@ const makeDouble = <T>(make: () => T): DoubleState<T> => {
     back: make(),
     flip: false,
   };
-  
+
   const front: [T, T] = [ref.front, ref.back];
   const back: [T, T] = [ref.back, ref.front];
 

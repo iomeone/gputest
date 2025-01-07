@@ -221,11 +221,16 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     samples,
     colorSpace,
     colorInput,
+
     colorStates,
-    colorAttachments,
-    depthTexture,
     depthStencilState,
-    depthStencilAttachment,
+    
+    viewType: '2d',
+    viewAttachments: [{
+      colorAttachments,
+      depthStencilAttachment,
+    }],
+
     swap: source.swap,
     source,
     depth,

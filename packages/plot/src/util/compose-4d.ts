@@ -51,7 +51,7 @@ const makeComposeTransform4D = () => {
         }
       }
     }
-    
+
 
     if (rightQuaternion != null) {
       quatToMatrixR(m, rightQuaternion);

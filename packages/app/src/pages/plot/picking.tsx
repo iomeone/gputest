@@ -76,7 +76,7 @@ export const PlotPickingPage: LC = () => {
 
         <Plot>
           <Grid axes="zx" width={3} color="#ffffff40" range={[[-5, 5], [-5, 5]]} origin={[0, -3, 0]} />
-          
+
           <Pick
             onMouseOver={(mouse, index) => console.log('Round shape #' + index, mouse)}
           >{

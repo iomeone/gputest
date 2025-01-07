@@ -140,11 +140,15 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
     gpuContext,
     colorSpace,
     colorInput,
+
     colorStates,
-    colorAttachments,
-    depthTexture,
     depthStencilState,
-    depthStencilAttachment,
+
+    viewType: '2d',
+    viewAttachments: [{
+      colorAttachments,
+      depthStencilAttachment,
+    }],
 
     swap,
     depth,
@@ -160,7 +164,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
     colorInput,
     colorStates,
     colorAttachments,
-    depthTexture,
+
     depthStencilState,
     depthStencilAttachment,
 

@@ -172,7 +172,7 @@ export const updateAggregateArray = (
 
 export const updateAggregateInstances = (() => {
   const slices: number[] = [];
-  
+
   return (
     aggregate: ArrayAggregate,
     items: AggregateItem[],

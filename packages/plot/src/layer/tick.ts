@@ -79,7 +79,7 @@ export const Tick: LiveComponent<TickProps> = (props) => {
     render: (sources: Record<string, ShaderSource>) => {
       const {positions, tangents} = sources;
       const count = useCallback(() => (positions as any)?.length, [positions]);
-      
+
       const getPosition = useSource(GET_POSITION, positions);
       const getSize = useSource(GET_SIZE, count);
       const resolvedTangents = useMemo(

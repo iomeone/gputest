@@ -19,7 +19,7 @@ export const GBuffer: LC = memo(() => {
   const {width, height, samples} = renderContext;
   if (samples > 1) throw new Error("GBuffer cannot be multisampled");
 
-  const {depthStencilState} = renderContext;
+  const {depthStencilState, viewAttachments} = renderContext;
   if (!depthStencilState) throw new Error("GBuffer render target must have depth");
 
   const {format} = depthStencilState;
@@ -64,7 +64,10 @@ export const GBuffer: LC = memo(() => {
   const context = useMemo(() => ({
     ...renderContext,
     colorStates,
-    colorAttachments,
+    viewAttachments: [{
+      ...viewAttachments[0],
+      colorAttachments,
+    }],
     sources,
   }), [renderContext, colorStates, colorAttachments, sources]);
 

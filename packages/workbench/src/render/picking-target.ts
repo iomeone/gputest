@@ -154,12 +154,17 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
     const context = {
       renderContext: {
         ...renderContext,
+
         width,
         height,
         samples,
         colorStates,
-        colorAttachments,
-        depthStencilAttachment,
+        
+        viewAttachments: [{
+          colorAttachments,
+          depthStencilAttachment,
+        }],
+
         swap,
         source,
         depth,

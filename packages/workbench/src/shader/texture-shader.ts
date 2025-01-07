@@ -29,6 +29,7 @@ const NO_SOURCE = { length: 0, size: [0] };
 /** Texture shader for custom UV sampling of a 2D input texture.
 
 Provides:
+
 - `@optional @link fn getTextureSize() -> vec2<f32>`
 - `@optional @link fn getTexture(uv: vec2<f32>) -> vec4<f32>`
 

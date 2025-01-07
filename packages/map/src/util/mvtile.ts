@@ -194,7 +194,7 @@ export const getMVTShapes = (
       if (rings.length) {
         const positions = rings.map((path: XY[]) => path.map(([x, y]: XY) => transform(x, y)));
         shapes.ring.positions.push(...positions);
-        
+
         const n = positions.length;
         for (let i = 0; i < n; ++i) {
           shapes.ring.color.push(style.face.stroke);
@@ -334,7 +334,7 @@ const aggregateMVTShape = (
 
     let b = 0;
     let o = 0;
-    
+
     if (slice) {
       for (let i = 0; i < itemCount; ++i) {
         const from = (shape as any)[prop][i];
@@ -393,7 +393,7 @@ const decorateMVTSegments = (
   number,
   number,
   number,
-] => {  
+] => {
   if (!segments) {
     const emitters = schemaToEmitters(schema, attributes);
     const emitted = emitAttributes(schema, emitters, 1, count, 0);
@@ -417,7 +417,7 @@ const decorateMVTSegments = (
   const mergedSchema = {...schema, ...segmentSchema};
   const emitters = schemaToEmitters(mergedSchema, {...attributes, ...rest});
   const emitted = emitAttributes(schema, emitters, 1, total, indexed);
-  
+
   return [mergedSchema, emitted, total, indexed, sparse];
 };
 

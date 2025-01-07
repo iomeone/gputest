@@ -27,6 +27,7 @@ const NO_SOURCES: ShaderSource[] = [];
 /** Render texture to the current render target, with an optional shader applied.
 
 Provides:
+
 - `@optional @link getTargetSize() -> vec2<f32>`
 - `@optional @link getTextureSize() -> vec2<f32>`
 - `@optional @link getTexture(uv: vec2<f32>) -> vec4<f32>`

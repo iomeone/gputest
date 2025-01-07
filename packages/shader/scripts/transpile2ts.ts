@@ -42,7 +42,7 @@ const showUsage = () => {
     const name = '--' + opt.name;
     const alias = opt.alias ? '-' + opt.alias : null;
     const value = opt.defaultValue != null ? JSON.stringify(opt.defaultValue) : typeName(opt.type);
-    
+
     const row = [name, alias, value, opt.description];
     rows.push(row);
   };
@@ -59,7 +59,7 @@ const showUsage = () => {
   const widths = rows.reduce((a, b) => a.map((_, i) => Math.max(a[i], b[i]?.length || 0)), header.map(_ => _.length));
 
   const printRow = (row: (string | null)[]) => console.log(row.map((r, i) => padTo(r, widths[i] + 2)).join(''));
-  
+
   console.log('shader2ts');
   printRow(header);
   printRow(['-', '-', '-', '-']);
@@ -140,7 +140,7 @@ for (const pattern of globs) {
     const jsFile = `${shaderFile}.${options.types ? 'ts' : 'js'}`;
     const dtsFile = `${shaderFile}.d.ts`;
     const mapFile = `${jsFile}.map`;
-    
+
     if (options.sourceMap && magicString != null) {
       output += `//# sourceMappingURL=${path.basename(mapFile)}\n`;
     }

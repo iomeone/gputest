@@ -133,7 +133,7 @@ export const allocateSchema = (
   }
 
   if (hasSingle && hasPlural && !hasSegments) throw new Error(`Cannot mix array and non-array data without 'segment' handler`);
-  
+
   const archetype = schemaToArchetype(schema, attributes);
   if (attributes.instances) throw new Error(`Reserved attribute name 'instances'.`);
 
@@ -409,7 +409,7 @@ export const toGPUAggregate = (
   aggregate: CPUAggregate,
 ): GPUAggregate => {
   const {aggregateBuffers, refBuffers, bySelfs, byRefs, byInstances, byVertices, byIndices} = aggregate;
-  
+
   const buildOne = (aggregate: ArrayAggregate) => {
     const {array, format, length} = aggregate;
     const buffer = makeStorageBuffer(device, array.byteLength);
@@ -437,7 +437,7 @@ export const toGPUAggregate = (
     };
     return {...aggregate, buffer, source};
   };
-  
+
   const ab = {...aggregateBuffers};
   const sources: Record<string, StorageSource> = {};
 

@@ -29,6 +29,7 @@ const NO_SOURCES: StorageSource[] = [];
 /** Runs a compute kernel on the current compute context.
 
 Provides:
+
 - `@link fn getSize() -> vec2<u32> {};`
 
 Unnamed arguments linked in the order of: args, sources, source, targets, history.

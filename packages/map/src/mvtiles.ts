@@ -74,7 +74,7 @@ export const MVTiles: LiveComponent<MVTilesProps> = (props: MVTilesProps) => {
   const styles = useMVTStyleContext();
   // eslint-disable-next-line prefer-const
   let [[minX, maxX], [minY, maxY]] = useRangeContext();
-  
+
   const worker = useResource((dispose) => {
     const worker = makeDispatch<TileWorker>(
       () => new Worker(new URL('./worker/worker.js', import.meta.url)),
@@ -107,7 +107,7 @@ export const MVTiles: LiveComponent<MVTilesProps> = (props: MVTilesProps) => {
   const out: LiveElement[] = [];
 
   seen.clear();
-  
+
   if (1/minIX === 0 || 1/maxIX === 0) throw new Error("Map tile range is zero");
 
   const tesselate = 5 - zoom;

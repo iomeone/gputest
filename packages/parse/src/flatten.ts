@@ -189,7 +189,7 @@ export const toMultiMultiVectorArray = <T extends TypedArrayConstructor>(
   (
     toMultiVectorArray(xs as VectorLikes[], dims, w, ctor) ??
     maybeMultiMultiVectorArray(xs, dims, w, ctor)
-  ) as T | null 
+  ) as T | null
 );
 
 // Get 1 chunk length

@@ -67,21 +67,22 @@ export type UseGPURenderContext = {
   gpuContext: GPUCanvasContext,
   colorSpace: ColorSpace,
   colorInput: ColorSpace,
-  colorStates: GPUColorTargetState[],
-  colorAttachments?: GPURenderPassColorAttachment[],
 
-  depthTexture?: GPUTexture,
+  colorStates: GPUColorTargetState[],
   depthStencilState?: GPUDepthStencilState,
-  depthStencilAttachment?: GPURenderPassDepthStencilAttachment,
 
   viewType?: ViewType,
-  viewColorAttachments?: GPURenderPassColorAttachment[][],
-  viewDepthStencilAttachment?: GPURenderPassDepthStencilAttachment[],
+  viewAttachments?: RenderViewAttachment[],
 
   swap?: () => void,
   depth?: TextureSource,
   source?: TextureTarget,
   sources?: TextureTarget[],
+};
+
+export type RenderViewAttachment = {
+  colorAttachments?: GPURenderPassColorAttachment[],
+  depthStencilAttachment?: GPURenderPassDepthStencilAttachment,
 };
 
 export type OffscreenRenderContext = UseGPURenderContext & {

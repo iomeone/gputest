@@ -14,10 +14,12 @@ import {
   makeColorAttachments,
   makeTargetTexture,
   makeDepthStencilState,
-  makeDepthStencilAttachment,
+  makeDepthStencilAttachments,
   BLEND_PREMULTIPLY,
   seq,
 } from '@use-gpu/core';
+
+import zip from 'lodash/zip.js';
 
 const NO_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 
@@ -151,16 +153,30 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
 
   const [
     depthTexture,
-    depthStencilAttachment,
+    viewDepthStencilAttachments,
   ] = useMemo(() => {
       if (!depthStencil) return [];
 
-      const texture = makeTargetTexture(device, width, height, 1, depthStencil, samples);
-      const attachments = makeDepthStencilAttachment(texture, depthStencil);
+      const layers = samples > 1 ? 1 : 6;
+      const texture = makeTargetTexture(device, width, height, layers, depthStencil, samples);
+
+      const [attachment] = makeDepthStencilAttachments(texture, depthStencil, 1);
+      const attachments = samples > 1
+        ? [attachment, attachment, attachment, attachment, attachment, attachment]
+        : makeDepthStencilAttachments(texture, depthStencil, layers);
+
       return [texture, attachments];
     },
     [device, width, height, depthStencil, samples]
   );
+
+  const viewAttachments = useMemo(() => {
+    const pairs = zip(viewColorAttachments ?? [], viewDepthStencilAttachments ?? []);
+    return pairs.map(([c, d]) => ({
+      colorAttachments: c,
+      depthStencilAttachment: d,
+    }));
+  }, [viewColorAttachments, viewDepthStencilAttachments]);
 
   const [source, sources, depth] = useMemo(() => {
     const view = targetTexture.createView({ dimension: 'cube' });
@@ -249,17 +265,17 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
     samples,
     colorSpace,
     colorInput,
+
     colorStates,
-    colorAttachments: viewColorAttachments?.[0],
-    depthTexture,
     depthStencilState,
-    depthStencilAttachment,
+
     viewType: 'cube',
-    viewColorAttachments,
+    viewAttachments,
+
     swap: source.swap,
     source,
     depth,
-  }), [renderContext, width, height, colorStates, depthStencilState, depthStencilAttachment, viewColorAttachments, source, sources, depth]);
+  }), [renderContext, width, height, colorStates, depthStencilState, viewAttachments, source, sources, depth]);
 
   const inspectable = useMemo(() => [
     ...(source ? [source] : []),

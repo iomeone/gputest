@@ -7,7 +7,7 @@ import { mat4, vec3 } from 'gl-matrix';
 
 export const getRenderPassDescriptor = (
   renderContext: UseGPURenderContext,
-  {overlay, merge, stencil, label, view}: {
+  {overlay, merge, stencil, label, view = 0}: {
     overlay?: boolean,
     merge?: boolean,
     stencil?: boolean,
@@ -16,46 +16,35 @@ export const getRenderPassDescriptor = (
   }
 ) => {
   let {
-    colorAttachments,
-    depthStencilAttachment,
-    viewColorAttachments,
-    viewDepthStencilAttachments,
+    viewAttachments,
   } = renderContext;
 
+  const descriptor: GPURenderPassDescriptor = {
+    label,
+    colorAttachments: viewAttachments?.[view]?.colorAttachments,
+    depthStencilAttachment: viewAttachments?.[view]?.depthStencilAttachment,
+  };
+
   if (stencil) {
-    colorAttachments = [];
+    descriptor.colorAttachments = [];
   }
   else if (overlay) {
-    colorAttachments = colorAttachments?.map(
+    descriptor.colorAttachments = descriptor.colorAttachments?.map(
       (a: GPURenderPassColorAttachment) => proxy(a, {loadOp: 'load'})
-    );
-    viewColorAttachments = viewColorAttachments?.map(
-      (as: GPURenderPassColorAttachment[]) => as.map(
-        (a: GPURenderPassColorAttachment) => proxy(a, {loadOp: 'load'})
-      )
     );
   }
 
-  if ((merge || stencil) && depthStencilAttachment) {
-    const {depthLoadOp, stencilLoadOp} = depthStencilAttachment;
+  if ((merge || stencil) && descriptor.depthStencilAttachment) {
+    const {depthLoadOp, stencilLoadOp} = descriptor.depthStencilAttachment;
     const override: Record<string, any> = {};
 
     if (depthLoadOp) override.depthLoadOp = merge || stencil ? 'load' : 'clear';
     if (stencilLoadOp) override.stencilLoadOp = stencil ? 'clear' : 'load';
 
-    depthStencilAttachment = proxy(depthStencilAttachment, override);
-    viewDepthStencilAttachments = viewDepthStencilAttachments
-      ? viewDepthStencilAttachments.map(depthStencilAttachment => proxy(depthStencilAttachment, override))
-      : undefined;
+    descriptor.depthStencilAttachment = proxy(descriptor.depthStencilAttachment, override);
   }
 
-  const renderPassDescriptor: GPURenderPassDescriptor = {
-    label,
-    colorAttachments: (view != null ? viewColorAttachments?.[view] : null) ?? colorAttachments,
-    depthStencilAttachment: (view != null ? viewDepthStencilAttachments?.[view] : null) ?? depthStencilAttachment,
-  };
-
-  return renderPassDescriptor;
+  return descriptor;
 }
 
 export const getDrawOrder = (cull: Culler, calls: Renderable[], sign: number = 1) => {

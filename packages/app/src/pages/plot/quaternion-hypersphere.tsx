@@ -108,12 +108,12 @@ export const PlotQuaternionHyperspherePage: LC = () => {
                 >{(angle: number) => (
                   <Transform4D leftQuaternion={angleToQuat(angle + options.spin)}>
                     <Hypersphere showX={options.showX} showY={options.showY} showZ={options.showZ} full={options.full} />
-                  </Transform4D>                
+                  </Transform4D>
                 )}</Animate>
               ) : (
                 <Transform4D leftQuaternion={angleToQuat(options.spin)}>
                   <Hypersphere showX={options.showX} showY={options.showY} showZ={options.showZ} full={options.full} />
-                </Transform4D>                
+                </Transform4D>
               )}
             </Stereographic4D>
           </Plot>
