@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`bind bind produces a bound bundle 1`] = `1068535831258123`;
+exports[`bind bind produces a bound bundle 1`] = `3402808970634535`;
 
 exports[`bind binds an external 1`] = `
 "const TEST = true;
@@ -73,7 +73,7 @@ struct _VT_Type {
 };
 @group(0) @binding(1) var<uniform> _VT_Uniform: _VT_Type;
 
-//// @link @access [getColor getSize] [bxd8ff4sa3] _VT_1_
+//// @link @access [getColor getSize] [e0vly3qd7p] _VT_1_
 
 fn _VT_1_getColor(a: i32) -> vec4<f32> {
   return _VT_Uniform._VT_1_getColor;
@@ -98,8 +98,8 @@ fn _VT_1_getSize(a: i32) -> vec2<f32> {
 exports[`bind makes deterministic links for data bindings 1`] = `
 {
   "base": undefined,
-  "code": "@access [getColor getSize] [bxd8ff4sa3]",
-  "name": "_VT_gcmr8a",
+  "code": "@access [getColor getSize] [e0vly3qd7p]",
+  "name": "_VT_j6r9my",
   "storages": [
     {
       "storage": {

@@ -81,7 +81,7 @@ layout (set = VIRTUAL_BINDGROUP, binding = 1) uniform _VT_Type {
   vec4 _VT_1_getColor;
 } _VT_Uniform;
 
-//// @link @access [getColor getSize] [m2t6xjush0] _VT_1_
+//// @link @access [getColor getSize] [karl83c2if] _VT_1_
 
 vec4 _VT_1_getColor(int) {
   return _VT_Uniform._VT_1_getColor;
@@ -111,8 +111,8 @@ vec2 _VT_1_getSize(int index) {
 exports[`bind makes deterministic links for data bindings 1`] = `
 {
   "base": undefined,
-  "code": "@access [getColor getSize] [m2t6xjush0]",
-  "name": "_VT_2znyn7",
+  "code": "@access [getColor getSize] [karl83c2if]",
+  "name": "_VT_tqj78z",
   "storages": [
     {
       "storage": {
