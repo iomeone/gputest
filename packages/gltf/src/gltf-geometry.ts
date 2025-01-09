@@ -14,17 +14,19 @@ export const useGLTFGeometry = (
 
   transform?: mat4,
 ) => {
-  const {data: {arrays, formats: fmts}, materials} = gltf;
-  const {
-    attributes: {POSITION, NORMAL, TANGENT, TEXCOORD_0},
-    indices,
-    material,
-  } = primitive;
+  const {materials} = gltf;
+  const {material} = primitive;
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const side = materials?.[material!]?.doubleSided ? 'both' : 'front';
 
   const geometry = useMemo(() => {
+    const {data: {arrays, formats: fmts}} = gltf;
+    const {
+      attributes: {POSITION, NORMAL, TANGENT, TEXCOORD_0},
+      indices,
+    } = primitive;
+
     const attributes: Record<string, TypedArray> = {};
     const formats: Record<string, UniformType> = {};
 
@@ -83,7 +85,7 @@ export const useGLTFGeometry = (
       unwelded,
       side,
     };
-  }, [gltf, primitive]);
+  }, [gltf, primitive, side]);
 
   const transformed = useMemo(() => {
     if (!transform) return geometry;
@@ -98,7 +100,7 @@ export const useGLTFGeometry = (
       attributes: {positions: ps, normals: ns, tangents: ts},
       formats: {positions: 'vec4<f32>', normals: 'vec4<f32>', tangents: 'vec4<f32>'}
     });
-  }, [geometry]);
+  }, [geometry, transform]);
 
   return transformed;
 };

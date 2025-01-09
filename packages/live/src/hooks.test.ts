@@ -108,6 +108,7 @@ it('holds memoized value (hook)', () => {
 
   const F: NumberReturner = (): number => {
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const foo = useMemo(() => Math.random(), [dep]);
 
     return foo;
@@ -163,6 +164,7 @@ it('holds memoized callback (hook)', () => {
   const F: FunctionReturner = (): () => number => {
 
     const x = Math.random();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const foo = useCallback(() => x, [dep]);
 
     return foo;

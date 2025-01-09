@@ -14,14 +14,14 @@ export const getRenderPassDescriptor = (
     label?: string,
     view?: number,
   }
-) => {
+): GPURenderPassDescriptor => {
   let {
     viewAttachments,
   } = renderContext;
 
-  const descriptor: GPURenderPassDescriptor = {
+  const descriptor = {
     label,
-    colorAttachments: viewAttachments?.[view]?.colorAttachments,
+    colorAttachments: viewAttachments?.[view]?.colorAttachments ?? [],
     depthStencilAttachment: viewAttachments?.[view]?.depthStencilAttachment,
   };
 
@@ -91,9 +91,3 @@ export const drawToPass = (
   const order = getDrawOrder(cull, calls, sign);
   for (const i of order) calls[i].draw(passEncoder, countGeometry, uniforms, flip);
 };
-
-const REVERSE_Z = mat4.create();
-mat4.translate(REVERSE_Z, REVERSE_Z, vec3.fromValues(0, 0, 1));
-mat4.scale(REVERSE_Z, REVERSE_Z, vec3.fromValues(1, 1, -1));
-
-export const reverseZ = (a: mat4, b: mat4) => mat4.multiply(a, REVERSE_Z, b);

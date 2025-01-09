@@ -137,7 +137,7 @@ export const makeUseTransition = (
     if (ease === 'cosine') offset = cosineEase(offset);
 
     return offset;
-  }, [timer, target]);
+  }, [timer, target, enter, exit, request]);
 };
 
 // Linear sampler with non-linear interruption boost to continue the existing motion.

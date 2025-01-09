@@ -1,7 +1,6 @@
 import type { XY } from './types';
 import {
   cubicBezier,
-  cubicBezierInverse,
   cubicBezierInverse01NR,
   cubicBezierInverse01,
   bezierEase,
@@ -11,8 +10,6 @@ import {
   catmullRomWeightedDual,
 } from './ease';
 import { vec2 } from 'gl-matrix';
-
-import { Benchmark } from 'benchmark';
 
 describe('ease', () => {
 

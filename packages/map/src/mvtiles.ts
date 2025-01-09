@@ -89,7 +89,7 @@ export const MVTiles: LiveComponent<MVTilesProps> = (props: MVTilesProps) => {
 
   const cache = useOne(() => new LRU<number, LiveElement[]>({ max: 200 }), styles);
   const loaded = useOne(() => new Map<number, number>(), styles);
-  const tiles = useMemo(() => ({cache, loaded, flipY, styles, forceUpdate}), [flipY, styles]);
+  const tiles = useMemo(() => ({cache, loaded, flipY, styles, forceUpdate}), [cache, loaded, flipY, styles, forceUpdate]);
   const seen = useOne(() => new Set<number>());
 
   const dx = Math.abs(maxX - minX) / 2;
@@ -149,13 +149,15 @@ export const MVTiles: LiveComponent<MVTilesProps> = (props: MVTilesProps) => {
 };
 
 const MVTile: LiveComponent<MVTileProps> = memo((props: MVTileProps) => {
-  const {tiles: {cache, loaded, flipY, styles, forceUpdate}, key, hide, tesselate, worker} = props;
+  const {tiles, tiles: {cache}, key, hide, tesselate, worker} = props;
   const {getMVT} = useTileContext();
 
-  const [x, y, zoom] = parseKey(key);
-  const upKey = getUpKey(x, y, zoom);
-
   const run = useCallback(async () => {
+    const {cache, loaded, flipY, styles, forceUpdate} = tiles;
+
+    const [x, y, zoom] = parseKey(key);
+    const upKey = getUpKey(x, y, zoom);
+
     const cached = cache.get(key);
     if (cached) return cached;
 
@@ -229,7 +231,7 @@ const MVTile: LiveComponent<MVTileProps> = memo((props: MVTileProps) => {
     catch (e) {
       console.error('Tile', {zoom, x, y}, e);
     }
-  }, [key, styles, flipY]);
+  }, [key, tiles, getMVT, tesselate, worker]);
 
   let e: LiveElement[] | undefined;
   let [elements] = useAwait(run, [key, worker]);

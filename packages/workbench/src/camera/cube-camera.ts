@@ -10,37 +10,27 @@ import { FrameContext } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
-import { vec2, mat4 } from 'gl-matrix';
+import { vec2, vec3, mat4 } from 'gl-matrix';
 
-const DEFAULT_ORBIT_CAMERA = {
-  phi: 0,
-  theta: 0,
-  radius: 5,
-
-  focus: 5,
-  dolly: 1,
-
-  fov: Math.PI / 3,
+const DEFAULT_CUBE_CAMERA = {
   near: 0.001,
   far: 1000,
+  focus: 1,
 };
 
-export type OrbitCameraProps = PropsWithChildren<{
-  phi?: number,
-  theta?: number,
-  radius?: number,
-  target?: VectorLike,
+const τ = Math.PI * 2;
 
-  fov?: number,
+export type CubeCameraProps = PropsWithChildren<{
+  position?: VectorLike,
+
   near?: number,
   far?: number,
-  dolly?: number,
 
   focus?: number,
   scale?: number | null,
 }>;
 
-export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
+export const CubeCamera: LiveComponent<CubeCameraProps> = (props) => {
   const {
     width,
     height,
@@ -50,34 +40,32 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
   const layout = useContext(LayoutContext);
 
   const {
-    phi    = DEFAULT_ORBIT_CAMERA.phi,
-    theta  = DEFAULT_ORBIT_CAMERA.theta,
-    radius = DEFAULT_ORBIT_CAMERA.radius,
-    fov    = DEFAULT_ORBIT_CAMERA.fov,
-    near   = DEFAULT_ORBIT_CAMERA.near,
-    far    = DEFAULT_ORBIT_CAMERA.far,
-    dolly  = DEFAULT_ORBIT_CAMERA.dolly,
-    focus  = DEFAULT_ORBIT_CAMERA.focus,
+    near   = DEFAULT_CUBE_CAMERA.near,
+    far    = DEFAULT_CUBE_CAMERA.far,
+    focus  = DEFAULT_CUBE_CAMERA.focus,
     scale  = null,
     children,
   } = props;
 
-  const target = useProp(props.target, parsePosition);
+  const position = useProp(props.position, parsePosition);
 
   const uniforms = useOne(makeViewUniforms);
 
+  const fov = τ / 4;
   const unit = scale != null ? height / pixelRatio / scale : 1;
+
+  const m = useOne(mat4.create);
 
   updateViewUniforms(
     uniforms,
-    makeProjectionMatrix(width, height, fov, near, far, radius, dolly),
-    makeOrbitMatrix(radius, phi, theta, target, dolly),
+    makeProjectionMatrix(width, height, fov, near, far),
+    mat4.fromTranslation(m, position as vec3),
   );
   
   uniforms.viewNearFar.current = vec2.fromValues(near, far);
   uniforms.viewResolution.current = vec2.fromValues(1 / width, 1 / height);
   uniforms.viewSize.current = vec2.fromValues(width, height);
-  uniforms.viewWorldDepth.current = vec2.fromValues(focus * Math.tan(fov / 2), 1);
+  uniforms.viewWorldDepth.current = vec2.fromValues(focus, 1);
   uniforms.viewPixelRatio.current = pixelRatio * unit;
 
   const frame = useOne(() => ({current: 0}));

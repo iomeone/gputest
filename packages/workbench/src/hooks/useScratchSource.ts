@@ -70,6 +70,7 @@ export const useScratchSource = (
     return [source, allocate] as [StorageSource, (x: number) => void];
   }, [device, format, readWrite, flags, volatile, reserve]);
 
+  const [, allocate] = scratchSource;
   if (length != null) allocate(length);
 
   return scratchSource;

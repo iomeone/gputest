@@ -1,13 +1,16 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import React, { Gather, useMemo } from '@use-gpu/live';
+import type { GPUGeometry, OffscreenRenderContext } from '@use-gpu/core';
+import type { Keyframe } from '@use-gpu/workbench';
 
+import React, { Gather, useMemo } from '@use-gpu/live';
 import { seq } from '@use-gpu/core';
 
 import {
   Pass,
-  OrbitCamera, OrbitControls,
+  CubeCamera, OrbitCamera, OrbitControls,
   Pick, Cursor, LinearRGB,
-  Environment, DirectionalLight,
+  Animate,
+  PrefilteredEnvMap, Environment, DirectionalLight,
   GeometryData, PBRMaterial,
   RenderCubeTarget, RenderToTexture,
   makeSphereGeometry,
@@ -15,7 +18,7 @@ import {
 } from '@use-gpu/workbench';
 
 import {
-  Scene, Node, Instances,
+  Scene, Node, Mesh, Instances, InstanceProps,
 } from '@use-gpu/scene';
 
 import { InfoBox } from '../../ui/info-box';
@@ -23,7 +26,7 @@ import { InfoBox } from '../../ui/info-box';
 const τ = Math.PI * 2;
 
 const sphereGeometry = makeSphereGeometry({ width: 2, uvw: true, detail: [32, 64] });
-const boxGeometry = makeBoxGeometry({ width: 2 });
+const boxGeometry = makeBoxGeometry({ width: 2, uvw: true });
 
 const randomColors = seq(16).map(i => {
   const r = 0.5 + Math.random() * 0.5;
@@ -36,8 +39,8 @@ const randomOffsets = seq(64).map(i => {
   const th = Math.random() * τ;
   const c = Math.cos(th);
   const s = Math.sin(th);
-  const r = 5 + Math.random() * 5;
-  const y = Math.random() * 5;
+  const r = 5 + Math.random() * 4 + (i > 32 ? 5 : 0);
+  const y = Math.random() * 10 - 5;
 
   return [c * r, y, s * r];
 });
@@ -51,16 +54,21 @@ const randomRotations = seq(64).map(i => {
   return [x/l, y/l, z/l, w/l];
 });
 
+const ROTATION_KEYFRAMES = [
+  [ 0, [0,   0, 0]],
+  [ 6, [0, 360, 0]],
+] as Keyframe[];
+
 export const RTTCubeTargetPage: LC = () => {
 
   return (<>
-    <InfoBox>Render to a &lt;RenderCubeTarget&gt;</InfoBox>
+    <InfoBox>Render to a cube map with &lt;RenderCubeTarget&gt; and use it as an environment map for a &lt;PBRMaterial&gt;</InfoBox>
 
     <Gather
       children={[
         <GeometryData {...sphereGeometry} />,
         <GeometryData {...boxGeometry} />,
-        <RenderCubeTarget />
+        <RenderCubeTarget width={256} />
       ]}
       then={([
         sphereMesh,
@@ -87,7 +95,7 @@ type RTTCubeViewProps = {
   renderCubeTarget: OffscreenRenderContext,
 };
 
-const RTTCubeView: LC = (props: RTTCubeViewProps) => {
+const RTTCubeView: LC<RTTCubeViewProps> = (props: RTTCubeViewProps) => {
   const {sphereMesh, boxMesh, renderCubeTarget} = props;
 
   const getRandomColor = (i: number) => randomColors[i % randomColors.length];
@@ -101,24 +109,28 @@ const RTTCubeView: LC = (props: RTTCubeViewProps) => {
       <Scene>
         <PBRMaterial roughness={0.35}>
 
-          <Instances
-            mesh={sphereMesh}
-            shaded
-          >{
-            (Instance) => seq(32).map(i =>
-              <Instance
-                key={`${i}`}
-                position={getRandomOffset(i)}
-                color={getRandomColor(i)}
-              />
-            )
-          }</Instances>
+          <Animate prop="rotation" keyframes={ROTATION_KEYFRAMES} loop ease="cosine">
+            <Node>
+              <Instances
+                mesh={sphereMesh}
+                shaded
+              >{
+                (Instance: LC<InstanceProps>) => seq(32).map(i =>
+                  <Instance
+                    key={`${i}`}
+                    position={getRandomOffset(i)}
+                    color={getRandomColor(i)}
+                  />
+                )
+              }</Instances>
+            </Node>
+          </Animate>
 
           <Instances
             mesh={boxMesh}
             shaded
           >{
-            (Instance) => seq(32).map(i =>
+            (Instance: LC<InstanceProps>) => seq(32).map(i =>
               <Instance
                 key={`${i}`}
                 position={getRandomOffset(i + 32)}
@@ -136,27 +148,41 @@ const RTTCubeView: LC = (props: RTTCubeViewProps) => {
   return (
     <LinearRGB>
       <Cursor cursor='move' />
-      <Camera>
 
         <RenderToTexture target={renderCubeTarget}>
-          <Pass lights>
-            {scene}
-          </Pass>
+          <CubeCamera position={[0, 0, 0]}>
+            <Pass lights>
+              {scene}
+            </Pass>
+          </CubeCamera>
         </RenderToTexture>
 
-        <Pass lights>
-          {scene}
-        </Pass>
-      </Camera>
+        <Camera>
+          <Pass lights>
+            {scene}
+            
+            <PrefilteredEnvMap live texture={renderCubeTarget.source}>{
+              (cubeMap) =>
+                <Environment map={cubeMap}>
+                  <PBRMaterial roughness={0.25} metalness={1}>
+                    <Node scale={3}>
+                      <Mesh mesh={sphereMesh} shaded />
+                    </Node>
+                  </PBRMaterial>
+                </Environment>
+            }</PrefilteredEnvMap>
+
+          </Pass>
+        </Camera>
     </LinearRGB>
   );
 };
 
 const Camera = ({children}: PropsWithChildren<object>) => (
   <OrbitControls
-    radius={15}
+    radius={20}
     bearing={0.5}
-    pitch={0.3}
+    pitch={0.6}
     render={(radius: number, phi: number, theta: number) =>
       <OrbitCamera
         radius={radius}

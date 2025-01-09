@@ -47,7 +47,7 @@ export type RenderCubeTargetProps = {
 
 Place `@{<Pass>}` directly inside, or leave empty to use yielded target with `@{<RenderToTexture>}`.
 */
-export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: PropsWithChildren<RenderCubeTargetProps>) => {
+export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: RenderCubeTargetProps) => {
   const device = useContext(DeviceContext);
   const renderContext = useContext(RenderContext);
 
@@ -173,76 +173,81 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
   const viewAttachments = useMemo(() => {
     const pairs = zip(viewColorAttachments ?? [], viewDepthStencilAttachments ?? []);
     return pairs.map(([c, d]) => ({
-      colorAttachments: c,
+      colorAttachments: c ?? [],
       depthStencilAttachment: d,
     }));
   }, [viewColorAttachments, viewDepthStencilAttachments]);
 
   const [source, sources, depth] = useMemo(() => {
-    const view = targetTexture.createView({ dimension: 'cube' });
+
     const size = [width, height] as [number, number];
-    const volatile = history ? history + 1 : 0;
+    let source: TextureTarget | undefined;
+    let sources: TextureTarget[] | undefined;
+    
+    if (format && targetTexture) {
+      const view = targetTexture.createView({ dimension: 'cube' });
+      const volatile = history ? history + 1 : 0;
 
-    //const type = TEXTURE_SAMPLE_TYPES[format];
-    const layout = `texture_cube<f32>`;
+      //const type = TEXTURE_SAMPLE_TYPES[format];
+      const layout = `texture_cube<f32>`;
 
-    const swap = () => {
-      if (!history) return;
-      const {current: index} = counter;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const n = bufferViews!.length;
+      const swap = () => {
+        if (!format || !history || !source || !sources) return;
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const texture = bufferTextures![index];
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const view = bufferViews![index];
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const layers = bufferLayers![index];
-
-      for (let i = 0; i < 6; ++i) {
-        if (resolveTexture) colorAttachments[i].resolveTarget = layers[i];
-        else colorAttachments[i].view = layers[i];
-      }
-
-      source.texture = texture;
-      source.view = view;
-
-      for (let i = 0; i < history; i++) {
-        const j = (index + n - i - 1) % n;
+        const {current: index} = counter;
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        sources![i].texture = bufferTextures![j];
+        const n = bufferViews!.length;
+
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        sources![i].view = bufferViews![j];
-      }
+        const texture = bufferTextures![index];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const view = bufferViews![index];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const layers = bufferLayers![index];
 
-      counter.current = (index + 1) % n;
-    };
+        for (let i = 0; i < 6; ++i) {
+          const att = viewAttachments[i].colorAttachments[0];
+          if (resolveTexture) att.resolveTarget = layers[i];
+          else att.view = layers[i];
+        }
 
-    const makeSource = () => ({
-      texture: targetTexture,
-      view,
-      sampler,
-      layout,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      format: format!,
-      variant,
-      absolute,
-      colorSpace,
-      size,
-      volatile,
-      version: 0,
-      swap: null as any,
-    }) as TextureTarget;
+        source.texture = texture;
+        source.view = view;
 
-    const sources = format && history ? seq(history).map(makeSource) : undefined;
+        for (let i = 0; i < history; i++) {
+          const j = (index + n - i - 1) % n;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          sources[i].texture = bufferTextures![j];
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          sources[i].view = bufferViews![j];
+        }
 
-    const source = format ? makeSource() : undefined;
-    if (source) {
+        counter.current = (index + 1) % n;
+      };
+
+      const makeSource = () => ({
+        texture: targetTexture,
+        view,
+        sampler,
+        layout,
+        format,
+        variant,
+        absolute,
+        colorSpace,
+        size,
+        volatile,
+        version: 0,
+        swap: null as any,
+      }) as TextureTarget;
+
+      sources = history ? seq(history).map(makeSource) : undefined;
+
+      source = makeSource();
       source.history = sources;
       source.swap = swap;
-    }
 
-    swap();
+      swap();
+    }
 
     const depth = depthStencil ? {
       texture: depthTexture,
@@ -272,10 +277,10 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
     viewType: 'cube',
     viewAttachments,
 
-    swap: source.swap,
+    swap: source?.swap,
     source,
     depth,
-  }), [renderContext, width, height, colorStates, depthStencilState, viewAttachments, source, sources, depth]);
+  } as OffscreenRenderContext), [renderContext, width, height, colorStates, depthStencilState, viewAttachments, source, sources, depth]);
 
   const inspectable = useMemo(() => [
     ...(source ? [source] : []),
@@ -295,6 +300,6 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Pr
   const content = render ? render(rttContext) : children;
   const view = provide(RenderContext, rttContext, content);
 
-  if (then) return fence(view, () => then(source));
+  if (then && source) return fence(view, () => then(source));
   return view;
 }

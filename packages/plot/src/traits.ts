@@ -324,7 +324,7 @@ const applyOpacity = <T extends VectorLike>(colors?: T, opacity: number = 1): T 
 export const DataTrait = (keys: string[], canonical: string = 'positions') => {
   const match = new Set(keys);
   return (
-    props: {},
+    props: object,
     parsed: {
       formats?: Record<string, string>,
       sources?: Record<string, any>,
@@ -371,6 +371,8 @@ export const DataTrait = (keys: string[], canonical: string = 'positions') => {
       }
 
       return [d ? data : undefined, f ? formats : undefined, s ? sources : undefined];
+      // `parsed` is static
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataContext, props]);
 
     if (data) for (const k in data) (parsed as any)[k] = data[k];
@@ -522,7 +524,7 @@ export const LineSegmentsTrait = combine(
   SegmentsTrait,
   LoopsTrait,
   (
-    props: {},
+    props: object,
     parsed: {
       chunks?: VectorLike,
       groups?: VectorLike | null,
@@ -550,7 +552,7 @@ export const ArrowSegmentsTrait = combine(
   LoopsTrait,
   DirectedsTrait,
   (
-    props: {},
+    props: object,
     parsed: {
       chunks?: VectorLike,
       groups?: VectorLike | null,

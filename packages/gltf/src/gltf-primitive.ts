@@ -55,26 +55,28 @@ export const GLTFPrimitive: LC<GLTFPrimitiveProps> = (props) => {
 
   // Generate mikkTSpace tangents
   if (TANGENT != null && (faces.positions && faces.normals && faces.uvs && !faces.tangents)) {
-    let ps = arrays[POSITION];
-    let ns = arrays[NORMAL];
-    let ts = arrays[TEXCOORD_0];
+    const ps = arrays[POSITION];
+    const ns = arrays[NORMAL];
+    const ts = arrays[TEXCOORD_0];
 
     const tangents = useMemo(() => {
+      let _ps = ps, _ns = ns, _ts = ts;
+
       if (indices != null) {
         // Unweld mesh
         const inds = arrays[indices];
         if (inds) {
-          ps = toUnweldedArray(ps as any, inds, 3);
-          ns = toUnweldedArray(ns as any, inds, 3);
-          ts = toUnweldedArray(ts as any, inds, 2);
+          _ps = toUnweldedArray(ps as any, inds, 3);
+          _ns = toUnweldedArray(ns as any, inds, 3);
+          _ts = toUnweldedArray(ts as any, inds, 2);
         }
       }
 
-      const out = generateTangents(ps as any, ns as any, ts as any);
+      const out = generateTangents(_ps as any, _ns as any, _ts as any);
       const n = out.length;
       for (let i = 0; i < n; i += 4) out[i + 3] *= -1;
       return out;
-    }, [ps, ns, ts]);
+    }, [ps, ns, ts, arrays, indices]);
 
     faces.tangents = useRawSource(tangents, 'vec4<f32>');
   }

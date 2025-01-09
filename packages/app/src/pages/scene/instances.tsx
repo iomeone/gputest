@@ -94,7 +94,7 @@ export const SceneInstancesPage: LC = (props) => {
                       </Animate>
 
                       <Node rotation={[90, 90, 0]} scale={[0.7, 0.7, 0.7]}>
-                        <Animate prop="rotation" keyframes={ROTATION_KEYFRAMES} loop ease="cosine">
+                        <Animate prop="rotation" keyframes={ROTATION_KEYFRAMES} loop ease="cosine" speed={-1}>
                           <Node>
                             {seq(20).map(i => (
                               <Animate prop="position" keyframes={POSITION_KEYFRAMES} loop delay={-i * 2} ease="linear">

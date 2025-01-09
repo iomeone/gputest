@@ -1,8 +1,9 @@
 0.13.0
+- `@use-gpu/scene`: Fix instancing inheritance
 - `@use-gpu/wgsl-loader`: Pass `minify` option to rollup plug-in.
 - `@use-gpu/workbench`: Fix JSX type of <Dispatch> and <DrawCall> for React 18
 - `@use-gpu/workbench`: Allow `format`-less <RenderTarget>
-- `@use-gpu/workbench`: Add `<RenderCubeTarget>`
+- `@use-gpu/workbench`: Add `<RenderCubeTarget>`, `<ColorCubePass>` and `<CubeCamera>` with example
 
 0.12.0
 - `@use-gpu/*`: add `ts-vite` example

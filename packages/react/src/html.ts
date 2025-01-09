@@ -45,7 +45,6 @@ export const HTML: LC<HTMLProps> = ({
 
   // Apply/unapply styles
   if (style) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useResource((dispose) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       for (const k in style!) (div.style as any)[k] = style[k];
@@ -56,7 +55,6 @@ export const HTML: LC<HTMLProps> = ({
     }, [div, style]);
   }
   else {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useNoResource();
   }
 

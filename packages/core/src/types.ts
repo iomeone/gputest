@@ -19,7 +19,7 @@ export type Side = 'front' | 'back' | 'both';
 export type Blending = 'none' | 'alpha' | 'premultiply' | 'add' | 'subtract' | 'multiply';
 export type ColorSpace = 'linear' | 'srgb' | 'p3' | 'native' | 'picking' | 'auto';
 
-export type ViewType = '2d' | 'cube';
+export type RenderViewType = '2d' | 'cube';
 
 // JS utility types
 
@@ -71,8 +71,8 @@ export type UseGPURenderContext = {
   colorStates: GPUColorTargetState[],
   depthStencilState?: GPUDepthStencilState,
 
-  viewType?: ViewType,
-  viewAttachments?: RenderViewAttachment[],
+  viewType: RenderViewType,
+  viewAttachments: RenderViewAttachment[],
 
   swap?: () => void,
   depth?: TextureSource,
@@ -81,7 +81,7 @@ export type UseGPURenderContext = {
 };
 
 export type RenderViewAttachment = {
-  colorAttachments?: GPURenderPassColorAttachment[],
+  colorAttachments: GPURenderPassColorAttachment[],
   depthStencilAttachment?: GPURenderPassDepthStencilAttachment,
 };
 
@@ -316,12 +316,13 @@ export type ExternalTexture = {
 
 // Projection pipeline
 export type ViewUniforms = {
-  projectionMatrix: { current: mat4 },
-  projectionViewMatrix: { current: mat4 },
   projectionViewFrustum: { current: vec4[] },
-  inverseViewMatrix: { current: mat4 },
-  inverseProjectionViewMatrix: { current: mat4 },
+  projectionViewMatrix: { current: mat4 },
+  projectionMatrix: { current: mat4 },
   viewMatrix: { current: mat4 },
+  inverseProjectionViewMatrix: { current: mat4 },
+  inverseProjectionMatrix: { current: mat4 },
+  inverseViewMatrix: { current: mat4 },
   viewPosition: { current: vec4 },
   viewNearFar: { current: vec2 },
   viewResolution: { current: vec2 },

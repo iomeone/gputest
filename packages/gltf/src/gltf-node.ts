@@ -37,7 +37,7 @@ export const GLTFNode: LC<GLTFNodeProps> = (props: GLTFNodeProps) => {
     composeTransform(transform, translation, rotation, scale, matrix);
     if (parent) mat4.multiply(transform, parent, transform);
     return transform;
-  }, [matrix, translation, rotation, scale]);
+  }, [matrix, translation, rotation, scale, parent]);
 
   const self = mesh != null ? (
     use(GLTFMesh, {gltf, mesh, transform})

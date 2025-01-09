@@ -9,7 +9,7 @@ import { useShader } from '../../hooks/useShader';
 import { getDeferredLightVertex } from '@use-gpu/wgsl/instance/vertex/deferred-light.wgsl';
 import { getDeferredEmissiveFragment } from '@use-gpu/wgsl/instance/fragment/deferred-emissive.wgsl';
 
-import { FULLSCREEN_PIPELINE, FULLSCREEN_DEFS, useLightDraw } from './light';
+import { FULLSCREEN_PIPELINE, FULLSCREEN_DEFS, useLightDraw } from './light-render';
 
 export type EmissiveLightRenderProps = {
   gbuffer: TextureSource[],

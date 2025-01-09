@@ -18,9 +18,9 @@ import { usePassContext } from '../../providers/pass-provider';
 import { AMBIENT_LIGHT, DIRECTIONAL_LIGHT, DOME_LIGHT, POINT_LIGHT } from '../../light/types';
 import { SHADOW_PAGE } from './light-data';
 
-import { EmissiveLightRender } from './emissive';
-import { FullScreenLightRender } from './full-screen';
-import { PointLightRender } from './point';
+import { EmissiveLightRender } from './emissive-light-render';
+import { FullScreenLightRender } from './full-screen-light-render';
+import { PointLightRender } from './point-light-render';
 
 import { getLight } from '@use-gpu/wgsl/use/light.wgsl';
 import { sampleShadow } from '@use-gpu/wgsl/use/shadow.wgsl';

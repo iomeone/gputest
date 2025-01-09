@@ -454,7 +454,9 @@ const useMap = <A, B>(
   deps: any[] = NO_DEPS,
 ): (B | null)[] => {
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const values = useMemo(() => args?.map(() => null as B | null), deps);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const keys = useMemo(() => args?.map(() => null as B | null), deps);
 
   if (!values || !keys || !args) return NO_DEPS;

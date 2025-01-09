@@ -1,3 +1,4 @@
+export * from './cube-camera';
 export * from './flat-camera';
 export * from './orbit-camera';
 export * from './fps-controls';

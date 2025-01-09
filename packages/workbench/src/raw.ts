@@ -1,4 +1,4 @@
-import type { LiveFunction, ArrowFunction, PropsWithChildren } from '@use-gpu/live';
+import type { LiveFunction, ArrowFunction } from '@use-gpu/live';
 import { imperative } from '@use-gpu/live';
 
 export type LiveReturner = (f: ArrowFunction | {children?: ArrowFunction}) => any;

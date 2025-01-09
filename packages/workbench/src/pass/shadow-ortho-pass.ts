@@ -2,11 +2,11 @@ import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { ViewUniforms } from '@use-gpu/core';
 import type { Renderable } from '../pass';
 import type { BoundLight } from '../light/types';
-import { mat4 } from 'gl-matrix';
+import { mat4, vec4 } from 'gl-matrix';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
-  makeFrustumPlanes, makeGlobalUniforms, uploadBuffer,
+  makeFrustumPlanes, makeGlobalUniforms, makeViewUniforms, uploadBuffer, updateViewUniforms,
   VIEW_UNIFORMS,
 } from '@use-gpu/core';
 
@@ -62,20 +62,9 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
 
   const {bindGroup, buffer, pipe} = binding;
 
-  const uniforms: ViewUniforms = useOne(() => ({
-    projectionMatrix: { current: mat4.fromValues(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) },
-    projectionViewMatrix: { current: mat4.create() },
-    projectionViewFrustum: { current: null as any },
-    inverseViewMatrix: { current: mat4.create() },
-    inverseProjectionViewMatrix: { current: mat4.create() },
-    viewMatrix: { current: mat4.create() },
-    viewPosition: { current: [0, 0, 0, 1] },
-    viewNearFar: { current: null as any },
-    viewResolution: { current: null as any },
-    viewSize: { current: null as any },
-    viewWorldDepth: { current: [1, 1] },
-    viewPixelRatio: { current: 1 },
-  }));
+  const projectionMatrix = useOne(() => mat4.fromValues(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1));
+
+  const uniforms: ViewUniforms = useOne(makeViewUniforms);
 
   const {viewPosition, projectionViewFrustum} = uniforms;
   const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
@@ -108,13 +97,10 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    uniforms.viewMatrix.current = into!;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    uniforms.viewPosition.current = [-normal![0], -normal![1], -normal![2], 0];
+    const position = vec4.fromValues(-normal![0], -normal![1], -normal![2], 0);
 
-    const {projectionViewMatrix, projectionViewFrustum, projectionMatrix, viewMatrix} = uniforms;
-    projectionViewMatrix.current = mat4.multiply(mat4.create(), projectionMatrix.current, viewMatrix.current);
-    projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    updateViewUniforms(uniforms, projectionMatrix, into!, position);
 
     pipe.fill(uniforms);
     uploadBuffer(device, buffer, pipe.data);

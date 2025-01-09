@@ -3,7 +3,7 @@ import type { LC, RefObject, PropsWithChildren } from '@use-gpu/live';
 import React, { useRef } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 
-import { PanControls, Pass, LinearRGB, FullScreen, QueueReconciler } from '@use-gpu/workbench';
+import { PanControls, Cursor, Pass, LinearRGB, FullScreen, QueueReconciler } from '@use-gpu/workbench';
 
 import { InfoBox } from '../../ui/info-box';
 import { DrosteControls } from '../../ui/droste-controls';
@@ -339,6 +339,7 @@ export const ShaderDrostePage: LC = () => {
   return (<>
     <InfoBox>Render Escher-like conformal grids using a custom, fully zoomable &lt;FullScreen&gt; shader</InfoBox>
     <LinearRGB tonemap="aces">
+      <Cursor cursor="move" />
       <DrosteControls container={inner}>{
         ({func, grid, turn, invert, separation, symmetry, shiftX, shiftY}) =>
           <PanShaderView ref={viewRef} key={`f${func}`}>

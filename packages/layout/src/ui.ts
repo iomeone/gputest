@@ -83,6 +83,7 @@ const Layer: LiveFunction<any> = (
 
     return use(SDFRectangles, props);
     // Exclude flags and contexts because they are factored into the archetype
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count, sources, contours]);
 };
 

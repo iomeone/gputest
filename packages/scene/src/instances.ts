@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { GPUGeometry, StorageSource } from '@use-gpu/core';
 
-import { use, useCallback, useOne, tagFunction } from '@use-gpu/live';
+import { use, useCallback, useOne, useVersion, tagFunction } from '@use-gpu/live';
 import { makeUseTrait, combine, TraitProps } from '@use-gpu/traits/live';
 
 import {
@@ -21,13 +21,15 @@ import { mat3, mat4 } from 'gl-matrix';
 const Traits = combine(ColorTrait, ObjectTrait);
 const useTraits = makeUseTrait(Traits);
 
-export type InstancesProps = PropsWithChildren<{
+export type InstancesProps = {
   mesh: GPUGeometry,
   shaded?: boolean,
   side?: 'front' | 'back' | 'both',
   format?: 'u16' | 'u32',
+
   render?: (Instance: LiveComponent<InstanceProps>) => LiveElement,
-}>;
+  children?: LiveElement | ((Instance: LiveComponent<InstanceProps>) => LiveElement),
+};
 
 export type InstanceProps = TraitProps<typeof Traits>;
 
@@ -55,7 +57,7 @@ export const Instances: LiveComponent<InstancesProps> = (props: InstancesProps) 
       ...sources,
       children: use(FaceLayer, {...rest, instance, mesh, shaded, side}),
     });
-  }, [mesh]);
+  }, [mesh, shaded, side]);
 
   return use(InstanceData, {
     format,
@@ -81,6 +83,7 @@ const makeInstancer = (
     composed: mat4.create(),
   }));
 
+  const v = useVersion(props) + useVersion(parent);
   useOne(() => {
     const {matrix, normalMatrix, composed} = ref;
 
@@ -99,7 +102,7 @@ const makeInstancer = (
     mat3.normalFromMat4(normalMatrix, matrix);
 
     updateInstance({matrix, normalMatrix, color});
-  }, props);
+  }, v);
 
   return null;
 }, 'Instance');

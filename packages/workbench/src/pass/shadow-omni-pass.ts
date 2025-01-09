@@ -1,13 +1,13 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { TextureSource, ViewUniforms } from '@use-gpu/core';
+import type { TextureSource } from '@use-gpu/core';
 import type { Renderable } from '../pass';
 import type { BoundLight } from '../light/types';
 import { mat4 } from 'gl-matrix';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
-  makeDepthStencilAttachments, makeFrustumPlanes, makeGlobalUniforms, makeTexture, uploadBuffer,
-  getCubeFaceLabel, getCubeFaceMatrix,
+  makeDepthStencilAttachments, makeGlobalUniforms, makeViewUniforms, makeTexture, uploadBuffer,
+  getCubeFaceLabel, getCubeFaceMatrix, reverseZ, updateViewUniforms,
   VIEW_UNIFORMS,
 } from '@use-gpu/core';
 
@@ -21,7 +21,7 @@ import { useShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
 import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
-import { drawToPass, reverseZ } from './util';
+import { drawToPass } from './util';
 
 import { getCubeToOmniSample } from '@use-gpu/wgsl/render/sample/cube-to-omni.wgsl';
 
@@ -40,10 +40,10 @@ export type ShadowOmniPassProps = PropsWithChildren<{
 
 const NO_OPS: any[] = [];
 const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
-const τ = Math.PI * 2;
 
 const label = '<ShadowOmniPass>';
 const LABEL = { label };
+const τ = Math.PI * 2;
 
 /** Shadow render pass.
 
@@ -69,21 +69,8 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
 
   const {bindGroup, buffer, pipe} = binding;
 
-  const uniforms: ViewUniforms = useOne(() => ({
-    projectionMatrix: { current: mat4.fromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) },
-    projectionViewMatrix: { current: mat4.create() },
-    projectionViewFrustum: { current: null as any },
-    inverseViewMatrix: { current: mat4.create() },
-    inverseProjectionViewMatrix: { current: mat4.create() },
-    viewMatrix: { current: mat4.create() },
-    viewPosition: { current: null as any },
-    viewNearFar: { current: null as any },
-    viewResolution: { current: null as any },
-    viewSize: { current: null as any },
-    viewWorldDepth: { current: [1, 1] },
-    viewPixelRatio: { current: 1 },
-  }));
-
+  const uniforms = useOne(makeViewUniforms);
+  
   const {viewPosition, projectionViewFrustum} = uniforms;
   const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
 
@@ -136,10 +123,10 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     return [source, descriptors];
   }, [device, size]);
 
-  const projectionMatrix = useOne(() => {
+  const [projectionMatrix, viewMatrix] = useOne(() => {
     const m = mat4.perspectiveZO(mat4.create(), τ/4, 1, near, far);
     reverseZ(m, m);
-    return m;
+    return [m, mat4.create()];
   }, depth);
 
   uniforms.projectionMatrix.current = projectionMatrix;
@@ -158,29 +145,12 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     let vs = 0;
     let ts = 0;
 
-    const {position, into} = map;
-
+    const {into} = map;
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    uniforms.viewPosition.current = position!;
-
-    const {
-      projectionViewMatrix,
-      projectionViewFrustum,
-      projectionMatrix,
-      viewMatrix,
-      inverseViewMatrix,
-      inverseProjectionViewMatrix,
-    } = uniforms;
 
     for (let i = 0; i < 6; ++i) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      mat4.multiply(viewMatrix.current, getCubeFaceMatrix(i), into!);
-      projectionViewMatrix.current = mat4.multiply(mat4.create(), projectionMatrix.current, viewMatrix.current);
-      projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
-
-      mat4.invert(inverseViewMatrix.current, viewMatrix.current);
-      mat4.invert(inverseProjectionViewMatrix.current, projectionViewMatrix.current);
+      mat4.multiply(viewMatrix, getCubeFaceMatrix(i), into!);
+      updateViewUniforms(uniforms, projectionMatrix, viewMatrix);
 
       pipe.fill(uniforms);
       uploadBuffer(device, buffer, pipe.data);

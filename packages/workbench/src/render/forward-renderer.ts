@@ -1,11 +1,12 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
+import type { RenderViewType, UseGPURenderContext } from '@use-gpu/core';
 import type { LightEnv, RenderComponents } from '../pass/types';
 
 import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import { extractBindings } from '@use-gpu/shader/wgsl';
 
 import { PassReconciler } from '../reconcilers/index';
+import { useRenderContext } from '../providers/render-provider';
 
 import { DebugRender } from './forward/debug';
 import { ShadedRender } from './forward/shaded';
@@ -15,6 +16,7 @@ import { PickingRender } from './forward/picking';
 import { UIRender } from './forward/ui';
 
 import { ColorPass } from '../pass/color-pass';
+import { ColorCubePass } from '../pass/color-cube-pass';
 
 import { Renderer } from './renderer';
 import { LightMaterial } from './light/light-material';
@@ -24,9 +26,10 @@ import shadowBinding from '@use-gpu/wgsl/use/shadow.wgsl';
 
 const {quote} = PassReconciler;
 
-const DEFAULT_PASSES = [
-  use(ColorPass, {}),
-];
+const DEFAULT_PASSES: Record<RenderViewType, LiveElement[]> = {
+  '2d': [use(ColorPass, {})],
+  'cube': [use(ColorCubePass, {})],
+};
 
 const NO_BUFFERS: Record<string, UseGPURenderContext[]> = {};
 
@@ -63,7 +66,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     lights = false,
     overlay = false,
     merge = false,
-    passes = DEFAULT_PASSES,
+    passes: propPasses,
     buffers = NO_BUFFERS,
     context,
     children,
@@ -86,6 +89,10 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     const fragment = [lights && lightBinding, shadows && shadowBinding];
     return extractBindings([vertex, fragment], 'PASS');
   }, [lights, shadows]);
+
+  const {viewType} = useRenderContext();
+  const passes = propPasses ?? DEFAULT_PASSES[viewType];
+  if (!passes) debugger;
 
   return Renderer({ buffers, context, children: view, components, passes, entries, overlay, merge });
 }, 'ForwardRenderer');

@@ -1,5 +1,5 @@
 import type { LiveComponent } from '@use-gpu/live';
-import type { LightKindProps } from './light';
+import type { LightKindProps } from './light-render';
 
 import { use, yeet, useCallback, useMemo, useOne, useRef } from '@use-gpu/live';
 import { alignSizeTo, uploadBuffer } from '@use-gpu/core';
@@ -24,7 +24,7 @@ import {
   FULLSCREEN_PIPELINE, FULLSCREEN_DEFS,
   FULLSCREEN_STENCIL_PIPELINE, GEOMETRY_STENCIL_PIPELINE, STENCIL_PIPELINE,
   LightDraw,
-} from './light';
+} from './light-render';
 
 export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKindProps) => {
   const {

@@ -39,7 +39,9 @@ export const Node: LiveComponent<NodeProps> = (props: NodeProps) => {
     if (parent) mat4.multiply(matrix, parent, matrix);
 
     return matrix;
-  }, [p, s, q, r, m]);
+    // Composed and swapMatrix are static
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p, s, q, r, m, parent]);
 
   return provide(MatrixContext, combined, children);
 };

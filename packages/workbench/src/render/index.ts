@@ -12,7 +12,7 @@ export * from './forward/shaded';
 export * from './forward/shadow';
 export * from './forward/solid';
 export * from './forward/ui';
-export * from './light/light';
+export * from './light/light-render';
 export * from './light/light-data';
 export * from './light/light-material';
 export * from './linear-rgb';

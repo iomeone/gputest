@@ -8,7 +8,7 @@ export const wgsl = (userOptions = {}) => {
           include: [
               '**/*.wgsl'
           ],
-          minify; true,
+          minify: true,
       },
       userOptions
   );

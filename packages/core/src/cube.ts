@@ -16,9 +16,9 @@ const VIEW_MATRICES = [
     0, 0, 0, 1,
   ),  // L
   mat4.fromValues(
-   -1, 0, 0, 0,
+    1, 0, 0, 0,
     0, 0,-1, 0,
-    0, 1, 0, 0,
+    0,-1, 0, 0,
     0, 0, 0, 1,
   ),  // T
   mat4.fromValues(

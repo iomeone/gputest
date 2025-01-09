@@ -385,6 +385,8 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
         DEBUG_STEPS,
         MIP_LEVELS: mips,
         SDF_LEVEL: sdf ? mips - 1 : -1,
+        // `sdf` is not static
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }), [DEBUG_STEPS, mips, sdf]);
 
       // Get bounding box / ray transform
@@ -403,11 +405,14 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
         return [m, i, r, n];
       }, parent);
 
-      const local3 = vec3.create();
-      const origin3 = vec3.create();
+      const local3 = useOne(vec3.create);
+      const origin3 = useOne(vec3.create);
+
+      // `shape` is not static
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const size = useCallback(() => shape[0].size, [shape]);
 
       // Determine if camera near plane is inside (lazy)
-      const size = useCallback(() => shape[0].size, [shape]);
       const inside = useCallback((uniforms: Record<string, Ref<any>>) => {
         const {size} = shape[0];
         const sx = size[0] / 2;
@@ -428,7 +433,7 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
 
         const inside = Math.abs(local3[0]) < sx && Math.abs(local3[1]) < sy && Math.abs(local3[2]) < sz;
         return inside;
-      }, [matrix, inverse])
+      }, [inverse, local3])
 
       // Transform view position into voxel space to use as starting point inside (lazy)
       const origin = useCallback((uniforms: Record<string, Ref<any>>) => {
@@ -446,7 +451,7 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
         origin3[2] += sz;
 
         return origin3;
-      }, [inverse]);
+      }, [inverse, origin3]);
 
       const boundPosition = useShader(vertexShader, [positions, size]);
       const getPosition = useLambdaSource(boundPosition, positions);

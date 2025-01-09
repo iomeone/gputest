@@ -1,8 +1,8 @@
 import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { ViewUniforms, Rectangle } from '@use-gpu/core';
+import type { Rectangle } from '@use-gpu/core';
 
 import { use, provide, deprecated, useContext, useOne, useMemo, incrementVersion } from '@use-gpu/live';
-import { VIEW_UNIFORMS, makeOrthogonalMatrix, makeFrustumPlanes } from '@use-gpu/core';
+import { VIEW_UNIFORMS, makeOrthogonalMatrix, makeFrustumPlanes, makeViewUniforms, updateViewUniforms } from '@use-gpu/core';
 import { LayoutContext } from '../providers/layout-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { RenderContext } from '../providers/render-provider';
@@ -76,20 +76,7 @@ export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
     return [layout, matrix, ratio];
   }, [scale, width, height, pixelRatio]);
 
-  const uniforms = useOne(() => ({
-    projectionMatrix: { current: null as any },
-    projectionViewMatrix: { current: null as any },
-    projectionViewFrustum: { current: null as any },
-    inverseViewMatrix: { current: mat4.create() },
-    inverseProjectionViewMatrix: { current: mat4.create() },
-    viewMatrix: { current: mat4.create() },
-    viewPosition: { current: null as any },
-    viewNearFar: { current: null as any },
-    viewResolution: { current: null as any },
-    viewSize: { current: null as any },
-    viewWorldDepth: { current: null as any },
-    viewPixelRatio: { current: null as any },
-  })) as ViewUniforms;
+  const uniforms = useOne(makeViewUniforms);
 
   const panned = useMemo(() => {
     if (!x && !y && (zoom == 1)) return matrix;
@@ -104,26 +91,13 @@ export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
 
   const viewHeight = Math.abs(layout[3] - layout[1]);
 
-  uniforms.projectionMatrix.current = panned;
-  uniforms.viewPosition.current = vec4.fromValues(0, 0, 1, 0);
+  updateViewUniforms(uniforms, panned, undefined, vec4.fromValues(0, 0, 1, 0));
+
   uniforms.viewNearFar.current = vec2.fromValues(near, far);
   uniforms.viewResolution.current = vec2.fromValues(1 / width, 1 / height);
   uniforms.viewSize.current = vec2.fromValues(width, height);
   uniforms.viewWorldDepth.current = vec2.fromValues(focus * viewHeight / 2.0, viewHeight / (far - near) / 2.0);
   uniforms.viewPixelRatio.current = ratio;
-
-  const {
-    inverseProjectionViewMatrix,
-    inverseViewMatrix,
-    projectionMatrix,
-    projectionViewMatrix,
-    projectionViewFrustum,
-    viewMatrix,
-  } = uniforms;
-  projectionViewMatrix.current = mat4.multiply(mat4.create(), projectionMatrix.current, viewMatrix.current);
-  projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
-  mat4.invert(inverseProjectionViewMatrix.current, projectionViewMatrix.current);
-  mat4.invert(inverseViewMatrix.current, viewMatrix.current);
 
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);

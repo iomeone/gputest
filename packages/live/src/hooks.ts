@@ -657,6 +657,7 @@ export const useLog = (values: Record<string, any>) => {
 export const useDouble = <T>(
   make: () => T,
   dependencies: any[] = NO_DEPS
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 ): DoubleState<T> => useMemo(() => makeDouble(make), dependencies);
 
 const makeDouble = <T>(make: () => T): DoubleState<T> => {

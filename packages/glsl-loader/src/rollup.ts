@@ -8,7 +8,7 @@ export const glsl = (userOptions = {}) => {
           include: [
               '**/*.glsl'
           ],
-          minify; true,
+          minify: true,
       },
       userOptions
   );

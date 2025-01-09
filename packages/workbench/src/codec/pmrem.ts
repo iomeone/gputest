@@ -15,6 +15,7 @@ import { useRawSource } from '../hooks/useRawSource';
 import { useScratchSource } from '../hooks/useScratchSource';
 import { useInspectable } from '../hooks/useInspectable';
 import { getRenderFunc } from '../hooks/useRenderProp';
+import { PassReconciler } from '../reconcilers/index';
 
 import { pmremInit } from '@use-gpu/wgsl/pmrem/pmrem-init.wgsl';
 import { pmremCopy } from '@use-gpu/wgsl/pmrem/pmrem-copy.wgsl';
@@ -45,6 +46,8 @@ export type PrefilteredEnvMapProps = {
   seamFix?: boolean,
   debugGrid?: boolean,
   debugAtlas?: boolean,
+
+  live?: boolean,
 
   render?: (cubeMap: ShaderSource | null, textureMap: TextureSource | null) => LiveElement,
   children?: (cubeMap: ShaderSource | null, textureMap: TextureSource | null) => LiveElement,
@@ -81,6 +84,7 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
     size = 1024,
     gain = 1,
     texture,
+    live = false,
     seamFix = true,
     debugGrid = false,
     debugAtlas = false,
@@ -91,6 +95,7 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
   useNoHooks();
 
   const inspect = useInspectable();
+  const {quote} = PassReconciler;
 
   // Calculate parameters and atlas mappings
   const {atlas, mappings, mips, sigmas, dsigmas, sizes, radii} = useMemo(() => {
@@ -319,7 +324,9 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
 
       return useMemo(() => [
         debugAtlas ? use(DebugAtlas, {atlas}) : null,
-        use(Queue, {nested: true, children: use(Compute, {children: dispatches}) }),
+        live
+          ? quote(dispatches)
+          : use(Queue, {nested: true, children: use(Compute, {children: dispatches}) }),
         render ? render(boundCubeMap, target) : yeet(boundCubeMap),
       ], [debugAtlas, debugGrid, seamFix, atlas, dispatches, render, target, boundCubeMap]);
     })

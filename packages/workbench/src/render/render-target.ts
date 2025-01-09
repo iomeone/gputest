@@ -2,7 +2,6 @@ import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/liv
 import type { OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
-import { TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
@@ -118,7 +117,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
   const colorAttachments = useMemo(() =>
     renderTexture || resolveTexture
       ? [makeColorAttachment(renderTexture, resolveTexture, backgroundColor)]
-      : undefined,
+      : [],
     [renderTexture, resolveTexture, backgroundColor]
   );
   const depthStencilState = useOne(() => depthStencil
@@ -140,67 +139,70 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
   );
 
   const [source, sources, depth] = useMemo(() => {
-    const view = targetTexture.createView();
+
     const size = [width, height] as [number, number];
-    const volatile = history ? history + 1 : 0;
+    let source: TextureTarget | undefined;
+    let sources: TextureTarget[] | undefined;
+    
+    if (format && targetTexture) {
+      const view = targetTexture.createView();
+      const volatile = history ? history + 1 : 0;
 
-    //const type = TEXTURE_SAMPLE_TYPES[format];
-    const layout = `texture_2d<f32>`;
+      //const type = TEXTURE_SAMPLE_TYPES[format];
+      const layout = `texture_2d<f32>`;
 
-    const swap = () => {
-      if (!format || !history) return;
+      const swap = () => {
+        if (!format || !history || !source || !sources) return;
 
-      const {current: index} = counter;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const n = bufferViews!.length;
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const texture = bufferTextures![index];
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const view = bufferViews![index];
-
-      if (resolveTexture) colorAttachments[0].resolveTarget = view;
-      else colorAttachments[0].view = view;
-
-      source.texture = texture;
-      source.view = view;
-
-      for (let i = 0; i < history; i++) {
-        const j = (index + n - i - 1) % n;
+        const {current: index} = counter;
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        sources![i].texture = bufferTextures![j];
+        const n = bufferViews!.length;
+
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        sources![i].view = bufferViews![j];
-      }
+        const texture = bufferTextures![index];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const view = bufferViews![index];
 
-      counter.current = (index + 1) % n;
-    };
+        if (resolveTexture) colorAttachments[0].resolveTarget = view;
+        else colorAttachments[0].view = view;
 
-    const makeSource = () => ({
-      texture: targetTexture,
-      view,
-      sampler,
-      layout,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      format: format!,
-      variant,
-      absolute,
-      colorSpace,
-      size,
-      volatile,
-      version: 0,
-      swap: null as any,
-    }) as TextureTarget;
+        source.texture = texture;
+        source.view = view;
 
-    const sources = format && history ? seq(history).map(makeSource) : undefined;
+        for (let i = 0; i < history; i++) {
+          const j = (index + n - i - 1) % n;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          sources[i].texture = bufferTextures![j];
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          sources[i].view = bufferViews![j];
+        }
 
-    const source = format ? makeSource() : undefined;
-    if (source) {
+        counter.current = (index + 1) % n;
+      };
+
+      const makeSource = () => ({
+        texture: targetTexture,
+        view,
+        sampler,
+        layout,
+        format,
+        variant,
+        absolute,
+        colorSpace,
+        size,
+        volatile,
+        version: 0,
+        swap: null as any,
+      }) as TextureTarget;
+
+      sources = history ? seq(history).map(makeSource) : undefined;
+
+      source = makeSource();
       source.history = sources;
       source.swap = swap;
-    }
 
-    swap();
+      swap();
+    }
 
     const depth = depthStencil ? {
       texture: depthTexture,
@@ -231,10 +233,10 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       depthStencilAttachment,
     }],
 
-    swap: source.swap,
+    swap: source?.swap,
     source,
     depth,
-  }), [renderContext, width, height, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source, sources]);
+  } as OffscreenRenderContext), [renderContext, width, height, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source, sources]);
 
   const inspectable = useMemo(() => [
     ...(source ? [source] : []),
@@ -254,6 +256,6 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
   const content = render ? render(rttContext) : children;
   const view = provide(RenderContext, rttContext, content);
 
-  if (then) return fence(view, () => then(source));
+  if (then && source) return fence(view, () => then(source));
   return view;
 }

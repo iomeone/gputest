@@ -21,6 +21,8 @@ export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProp
 
   const context = {
     ...renderContext,
+    width: 0,
+    height: 0,
     pixelRatio: 1,
     samples: 1,
     colorSpace: 'native',
