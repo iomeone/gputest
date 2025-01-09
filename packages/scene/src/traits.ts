@@ -3,6 +3,7 @@ import { useMemo } from '@use-gpu/live';
 import { optional, trait, makeUseTrait } from '@use-gpu/traits/live';
 import {
   parseBoolean,
+  parseInteger,
   parsePosition,
   parseRotation,
   parseQuaternion,
@@ -11,6 +12,10 @@ import {
   parseColorOpacity,
 } from '@use-gpu/parse';
 import { vec4 } from 'gl-matrix';
+
+export const LookupTrait = trait({
+  lookup:     optional(parseInteger),
+});
 
 export const ObjectTrait = trait({
   position:   optional(parsePosition),
@@ -41,3 +46,4 @@ export const ColorTrait = (
 
 export const useColorTrait = makeUseTrait(ColorTrait);
 export const useObjectTrait = makeUseTrait(ObjectTrait);
+export const useLookupTrait = makeUseTrait(LookupTrait);
