@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement } from '@use-gpu/live';
 import type { StorageSource, TypedArray, UniformType } from '@use-gpu/core';
 
-import { memo, yeet, useOne, useResource } from '@use-gpu/live';
+import { memo, yeet, useOne, useRef, useResource } from '@use-gpu/live';
 import { getUniformArraySize, getUniformArrayType } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
@@ -19,7 +19,7 @@ export type ReadbackProps = {
   onDispatch?: () => void,
 };
 
-export const Readback: LiveComponent<ReadbackProps> = memo((props: ReadbackProps) => {
+export const Readback: LC<ReadbackProps> = memo((props: ReadbackProps) => {
   const {
     source,
     then,
@@ -44,6 +44,8 @@ export const Readback: LiveComponent<ReadbackProps> = memo((props: ReadbackProps
 
   let cancelled = false;
   useResource((dispose) => dispose(() => cancelled = true));
+
+  const lastRender = useRef<LiveElement>(null);
 
   return yeet({
     post: () => {
@@ -74,7 +76,7 @@ export const Readback: LiveComponent<ReadbackProps> = memo((props: ReadbackProps
     },
     readback: async () => {
       if (cancelled) return null;
-      if (!dispatched) return;
+      if (!dispatched) return lastRender.current;
 
       const i = requested;
       if (i >= 0) {
@@ -93,7 +95,7 @@ export const Readback: LiveComponent<ReadbackProps> = memo((props: ReadbackProps
         buffer.unmap();
         mapped[i] = false;
 
-        return then ? then(data) : null;
+        return then ? (lastRender.current = then(data)) : null;
       }
     }
   });
