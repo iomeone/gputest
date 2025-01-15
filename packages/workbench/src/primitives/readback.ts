@@ -97,6 +97,8 @@ export const Readback: LC<ReadbackProps> = memo((props: ReadbackProps) => {
 
         return then ? (lastRender.current = then(data)) : null;
       }
+
+      return lastRender.current;
     }
   });
 }, 'Readback');
