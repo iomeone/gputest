@@ -82,7 +82,7 @@ export const Plot3DPage: LC = () => {
           <Transform scale={4}>
             <Tensor
               format='vec3<f32>'
-              length={500}
+              length={1000}
               live
               time
               items={2}

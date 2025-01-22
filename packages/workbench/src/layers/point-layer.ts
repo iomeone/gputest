@@ -6,7 +6,7 @@ import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { RawQuads } from '../primitives/raw-quads';
 
-import { use, memo, useMemo } from '@use-gpu/live';
+import { use, memo, useMemo, useOne } from '@use-gpu/live';
 import { castTo } from '@use-gpu/shader/wgsl';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useShader } from '../hooks/useShader';
@@ -27,6 +27,7 @@ const MASK_SHADER = {
 
 export type PointLayerFlags = {
   shape?: PointShape,
+  smooth?: boolean,
   hollow?: boolean,
   outline?: number,
 } & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
@@ -73,6 +74,7 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
     zBiases,
 
     count,
+    smooth = true,
     hollow = false,
     outline = 0,
     shape = 'circle',
@@ -97,7 +99,9 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
 
   const sdf = (MASK_SHADER as any)[shape] ?? MASK_SHADER.circle;
   const mask = hollow ? getOutlinedMask : getFilledMask;
-  const boundMask = useShader(mask, [sdf, o]);
+
+  const defs = useOne(() => ({POINT_SMOOTH: smooth}), smooth);
+  const boundMask = useShader(mask, [sdf, o], defs);
 
   return use(RawQuads, {
     position,
@@ -117,7 +121,7 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
     masks: boundMask,
 
     ...rest,
-    alphaToCoverage: rest.alphaToCoverage ?? true,
+    alphaToCoverage: rest.alphaToCoverage ?? smooth,
 
     count,
     mode,
