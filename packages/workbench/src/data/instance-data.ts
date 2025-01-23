@@ -100,7 +100,7 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
 
   // Produce instance sources
   const Resume = () => {
-    const size = Math.max(reserve, ids.max());
+    const size = Math.max(reserve, ids.max() + 1);
     const alloc = useBufferedSize(size);
 
     const prevBufferRef = useRef(null as StructAggregateBuffer | null);
@@ -155,17 +155,23 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
     }
 
     // Upload changed ranges
-    const {buffer, raw, layout} = aggregateBuffer;
-    const {length: stride} = layout;
-    if (needsRefresh) {
-      uploadBufferRange(device, buffer, raw, 0, size * stride);
-      versionRef.current = incrementVersion(versionRef.current);
-    }
-    else if (ranges.length) {
-      for (const [from, to] of ranges) {
-        uploadBufferRange(device, buffer, raw, from * stride, (to - from) * stride);
+    try {
+      const {buffer, raw, layout} = aggregateBuffer;
+      const {length: stride} = layout;
+      if (needsRefresh) {
+        versionRef.current = incrementVersion(versionRef.current);
+        uploadBufferRange(device, buffer, raw, 0, size * stride);
       }
-      versionRef.current = incrementVersion(versionRef.current);
+      else if (ranges.length) {
+        versionRef.current = incrementVersion(versionRef.current);
+        for (const [from, to] of ranges) {
+            uploadBufferRange(device, buffer, raw, from * stride, (to - from) * stride);
+        }
+      }
+    }
+    catch (e) {
+      console.error(e);
+      debugger;
     }
     queue.instances.length = queue.datas.length = 0;
 
