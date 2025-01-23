@@ -1,4 +1,4 @@
-import React, { type LC, type PropsWithChildren, hot, useFiber } from '@use-gpu/live';
+import React, { type LC, type PropsWithChildren, hot } from '@use-gpu/live';
 
 import { HTML } from '@use-gpu/react';
 import type { TextureSource } from '@use-gpu/core';
@@ -30,11 +30,8 @@ export const App: LC = hot(() => {
   const root = document.querySelector('#use-gpu')!;
   const inner = document.querySelector('#use-gpu .canvas')!;
 
-  // This is for the UseInspect inspector only
-  const fiber = useFiber();
-
   return (
-    <UseInspect fiber={fiber} provider={DebugProvider} extensions={[inspectGPU]}>
+    <UseInspect provider={DebugProvider} extensions={[inspectGPU]}>
 
       {/* WebGPU Canvas with a font */}
       <WebGPU

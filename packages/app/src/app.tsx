@@ -1,6 +1,6 @@
 import type { LC } from '@use-gpu/live';
 
-import React, { hot, into, useFiber, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import React, { hot, into, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
 import { AutoCanvas, FPSCounter, WebGPU } from '@use-gpu/webgpu';
 import { DebugProvider, FontLoader, Router, Routes, useKeyboard } from '@use-gpu/workbench';
@@ -97,7 +97,6 @@ export const App: LC = hot(() => {
     }
   ]);
 
-  const fiber = useFiber();
   const inspect = useInspector();
 
   const view = useMemo(() => (
@@ -119,7 +118,6 @@ export const App: LC = hot(() => {
 
   return (
     <UseInspect
-      fiber={fiber}
       container={root}
       active={inspect}
       provider={DebugProvider}
