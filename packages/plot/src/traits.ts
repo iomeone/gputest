@@ -153,6 +153,7 @@ export const MarkerTrait = trait(
   {
     shape: optional(parsePointShape),
     hollow: optional(parseBoolean),
+    hard: optional(parseBoolean),
     outline: optional(parseNumber),
   },
 );
