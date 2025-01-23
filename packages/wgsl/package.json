@@ -65,6 +65,7 @@
     "./instance/index/anchor.wgsl": "./src/instance/index/anchor.wgsl.ts",
     "./instance/index/face.wgsl": "./src/instance/index/face.wgsl.ts",
     "./instance/index/interleave.wgsl": "./src/instance/index/interleave.wgsl.ts",
+    "./instance/index/lookup.wgsl": "./src/instance/index/lookup.wgsl.ts",
     "./instance/index/repeat.wgsl": "./src/instance/index/repeat.wgsl.ts",
     "./instance/surface/material.wgsl": "./src/instance/surface/material.wgsl.ts",
     "./instance/surface/normal-map.wgsl": "./src/instance/surface/normal-map.wgsl.ts",

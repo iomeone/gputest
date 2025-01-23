@@ -8,6 +8,7 @@ type CompactSchema = {
   // ArchetypeSchema
   format: string,
   ref?: boolean,
+  js?: boolean,
   index?: boolean,
   unwelded?: boolean,
 };
@@ -115,6 +116,7 @@ export const LABEL_SCHEMA = {
     positions: {format: 'vec4<f32>', single: 'position'},
     sizes:     {format: 'f32', single: 'size'},
     depths:    {format: 'f32', single: 'depth'},
+    labels:    {format: 'string<u16>', single: 'label', js: true},
   }),
 };
 

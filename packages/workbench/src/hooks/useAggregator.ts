@@ -56,6 +56,8 @@ export const makeAggregator = (
   const refSources  = byRefs && getInstancedAggregate(byRefs, instances?.source);
   const itemSources = byInstances && getInstancedAggregate(byInstances, instances?.source);
 
+  const jsValues = aggregate.byJss?.values;
+
   const sources = {
     ...combineInstances(refSources, itemSources),
     ...(byVertices ? getStructAggregate(byVertices) : undefined),
@@ -73,6 +75,7 @@ export const makeAggregator = (
     updateAggregateFromSchema(schema, aggregate, items, count, indexed, instanced, offsets);
     uploadAggregateFromSchema(device, schema, aggregate);
 
-    return {count: indexed, sources, uploadRefs};
+    const values = jsValues && {...jsValues};
+    return {count: indexed, sources, values, uploadRefs};
   };
 };

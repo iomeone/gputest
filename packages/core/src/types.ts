@@ -345,6 +345,14 @@ export type Tuples<N extends number, T = number> = {
   iterate: (f: (...args: T[]) => void, start?: number, end?: number) => void;
 };
 
+export type JSArray<T = any> = {
+  array: T[],
+  format: UniformType,
+  dims: number,
+  depth: number,
+  length: number,
+};
+
 export type FieldArray = {
   array: TypedArray,
   format: UniformType | UniformNamedType,
@@ -369,7 +377,6 @@ export type TensorArray = {
 export type Ragged = (number[] | TypedArray)[];
 
 export type VectorEmitter = (to: TypedArray, count: number, toIndex?: number, stride?: number) => void;
-export type VectorRefEmitter = (from: Lazy<number | number[] | TypedArray>, to: TypedArray, count: number, toIndex?: number, stride?: number) => void;
 
 export type Writer = {
   emit: Emit,
@@ -419,6 +426,8 @@ export type DataField = {
   spread?: string,
   /** Don't aggregate */
   separate?: boolean,
+  /** Don't upload to GPU */
+  js?: boolean,
 };
 
 export type ArchetypeSchema = Record<string, ArchetypeField>;
@@ -437,9 +446,11 @@ export type ArchetypeField = {
   ref?: boolean,
   /** Don't aggregate */
   separate?: boolean,
+  /** Don't upload to GPU */
+  js?: boolean,
 };
 
-export type AggregateValue = number | number[] | TypedArray | VectorEmitter | VectorRefEmitter;
+export type AggregateValue = number | number[] | TypedArray | VectorEmitter;
 
 export type AggregateItem = {
   archetype: number,
@@ -469,6 +480,7 @@ export type CPUAggregate = {
   aggregateBuffers: Record<string, ArrayAggregate>,
   refBuffers: Record<string, Lazy<any>[]>,
 
+  byJss?: { keys: [string, string][] },
   bySelfs?: { keys: [string, string][] },
   byInstances?: StructAggregate,
   byVertices?: StructAggregate,
@@ -480,6 +492,7 @@ export type GPUAggregate = {
   aggregateBuffers: Record<string, ArrayAggregateBuffer | ArrayAggregate>,
   refBuffers: Record<string, Lazy<any>[]>,
 
+  byJss?: { keys: [string, string][], values: Record<string, any[]> },
   bySelfs?: { keys: [string, string][], sources: Record<string, StorageSource> },
   byInstances?: StructAggregateBuffer,
   byVertices?: StructAggregateBuffer,
@@ -624,4 +637,4 @@ type RawUniformType =
   | "vec3to4<f32>"
 ;
 
-export type UniformType = RawUniformType | `array<${RawUniformType}>` | `array<array<${RawUniformType}>>` | `array<array<array<${RawUniformType}>>>`;
+export type UniformType = RawUniformType | `array<${RawUniformType}>` | `array<array<${RawUniformType}>>` | `array<array<array<${RawUniformType}>>>` | `string<u16>` | `array<string<u16>>`;

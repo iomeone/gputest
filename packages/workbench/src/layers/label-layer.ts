@@ -29,7 +29,7 @@ export type LabelLayerProps = RawLabelsFlags & {
   expands?: ShaderSource,
 
   label?: string,
-  labels?: string[],
+  labels?: string[] | Uint16Array,
 
   family?: string,
   weight?: string | number,
@@ -39,8 +39,8 @@ export type LabelLayerProps = RawLabelsFlags & {
   instances?: ShaderSource,
   transform?: TransformContextProps,
 
-  flip?: [number, number],
   sdfRadius?: number,
+  flip?: boolean,
 
   detail?: number,
   count?: Lazy<number>,
@@ -75,7 +75,6 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
     instances,
     transform,
 
-    flip,
     sdfRadius,
 
     detail,
@@ -139,7 +138,6 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
             expand,
             expands,
 
-            flip,
             mode,
 
             ...rest,

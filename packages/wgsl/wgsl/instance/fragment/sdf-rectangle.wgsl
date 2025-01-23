@@ -77,7 +77,7 @@ use '@use-gpu/wgsl/use/color'::{ premultiply };
     sdf.outer += bleed;
     sdf.inner += bleed;
   }
-
+  
   // Clipping this late because sooner than this causes issues in edge pixels
   if (uv.x < clipUV.x || uv.y < clipUV.y || uv.x > clipUV.z || uv.y > clipUV.w) { discard; }
 

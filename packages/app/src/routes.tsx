@@ -2,6 +2,7 @@ import React from '@use-gpu/live';
 
 import { GeometryGLTFPage } from './pages/geometry/gltf';
 import { GeometryLinesPage } from './pages/geometry/lines';
+import { GeometryLabelsPage } from './pages/geometry/labels';
 import { GeometryBinaryPage } from './pages/geometry/binary';
 import { GeometryVoxelPage } from './pages/geometry/voxel';
 import { DebugAtlasPage } from './pages/debug/atlas';
@@ -45,6 +46,7 @@ export const makePages = () => [
   {path: "/plot/3d",                     title: "Plot - 3D",                         element: <Plot3DPage />},
   {path: "/plot/picking",                title: "Plot - GPU Picking",                element: <PlotPickingPage />},
   {path: "/geometry/lines",              title: "Geometry - 3D Lines and Arrows",    element: <GeometryLinesPage />},
+  {path: "/geometry/labels",             title: "Geometry - 3D Points and Labels",   element: <GeometryLabelsPage />},
   {path: "/geometry/gltf",               title: "Geometry - GLTF",                   element: <GeometryGLTFPage />},
   {path: "/geometry/voxel",              title: "Geometry - Voxels",                 element: <GeometryVoxelPage />},
   {path: "/geometry/binary",             title: "Geometry - Byte Histogram",         element: <GeometryBinaryPage />},
@@ -62,7 +64,7 @@ export const makePages = () => [
   {path: "/plot/spherical",              title: "Plot - Spherical",                  element: <PlotSphericalPage />},
   {path: "/plot/stereographic",          title: "Plot - Stereographic",              element: <PlotStereographicPage />},
   {path: "/plot/implicit-surface",       title: "Plot - Implicit Surface",           element: <PlotImplicitSurfacePage />},
-  {path: "/plot/quaternion-hypersphere", title: "Plot - Quaternion Hypersphere",    element: <PlotQuaternionHyperspherePage />},
+  {path: "/plot/quaternion-hypersphere", title: "Plot - Quaternion Hypersphere",     element: <PlotQuaternionHyperspherePage />},
   {path: "/shader/droste",               title: "Shader - Droste grids",             element: <ShaderDrostePage />},
   {path: "/rtt/cube-target",             title: "RTT - Cube Target",                 element: <RTTCubeTargetPage />},
   {path: "/rtt/linear-rgb",              title: "RTT - Linear RGB",                  element: <RTTLinearRGBPage />},

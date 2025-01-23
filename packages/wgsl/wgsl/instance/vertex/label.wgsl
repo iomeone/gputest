@@ -1,6 +1,6 @@
 use '@use-gpu/wgsl/use/types'::{ UIVertex };
 use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
-use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale };
+use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale, applyZBias };
 
 @optional @link fn getIndex(i: u32) -> u32 { return 0u; };
 @optional @link fn getRectangle(i: u32) -> vec4<f32> { return vec4<f32>(-1.0, -1.0, 1.0, 1.0); };
@@ -15,6 +15,7 @@ use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveSc
 @optional @link fn getOffset(i: u32) -> f32 { return 0.0; };
 @optional @link fn getSize(i: u32) -> f32 { return 16.0; };
 @optional @link fn getDepth(i: u32) -> f32 { return 0.0; };
+@optional @link fn getZBias(i: u32) -> f32 { return 0.0; };
 @optional @link fn getColor(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.5, 1.0); };
 @optional @link fn getExpand(i: u32) -> f32 { return 0.0; };
 @optional @link fn getFlip(i: u32) -> vec2<f32> { return vec2<f32>(1.0, 1.0); };
@@ -29,7 +30,8 @@ use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveSc
   var uv4 = getUV(instanceIndex);
   var st4 = getUV(instanceIndex);
 
-  var flip = getFlip(index);
+  // Clip/view space Y is up in WebGPU, so always flip Y by default.
+  var flip = getFlip(index) * vec2<f32>(1, -1);
 
   var position = getPosition(index);
   var placement = getPlacement(index) * flip;
@@ -37,6 +39,7 @@ use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveSc
   var offset = getOffset(index);
   var size = getSize(index);
   var depth = getDepth(index);
+  var zBias = getZBias(index);
   var color = getColor(index);
   var expand = getExpand(index);
 
@@ -81,6 +84,10 @@ use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveSc
 
   // Attach to position
   center = vec4<f32>(center.xy + 2.0 * xy * getViewResolution() * center.w, center.zw);
+
+  if (zBias != 0.0) {
+    center = applyZBias(center, size * zBias);
+  }
 
   let sdfUV = uv;
   let textureUV = uv;

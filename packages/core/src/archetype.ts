@@ -32,8 +32,12 @@ import {
 import { makeStorageBuffer } from './buffer';
 import {
   makeCPUArray,
+  makeJSArray,
   makeSpreadEmitter,
   makeUnweldEmitter,
+  makeSpreadJSEmitter,
+  makeUnweldJSEmitter,
+  makeCopyJSEmitter,
 } from './data';
 import {
   getUniformAlign,
@@ -116,14 +120,15 @@ export const allocateSchema = (
   let hasPlural = false;
 
   for (const k in schema) if (!predicate || predicate(k)) {
-    const {format, prop = k, index, unwelded, spread} = schema[k] as DataField;
+    const {format, prop = k, index, unwelded, spread, js} = schema[k] as DataField;
     if (spread != null && predicate?.(spread)) continue;
 
     const f = format as any;
 
     const isArray = isUniformArrayType(f);
     const alloc = isArray ? (index || unwelded) ? allocIndices : allocVertices : allocInstances;
-    const {array, dims, depth} = makeCPUArray(f, alloc);
+
+    const {array, dims, depth} = js ? (makeJSArray(f) as any) : makeCPUArray(f, alloc);
 
     if (isArray) hasPlural = true;
     else hasSingle = true;
@@ -147,10 +152,12 @@ export const schemaToAttributes = (
 ): Record<string, any> => {
   const attributes: Record<string, any> = {};
   for (const key in schema) {
-    const {ref, unwelded} = schema[key];
+    const {ref, js, unwelded} = schema[key];
     if (ref) continue;
 
+    if (js) throw new Error("Can't make attributes from schema with JS members. Use schemaToEmitters.");
     if (unwelded) throw new Error("Can't make attributes from composite schema. Use schemaToEmitters.");
+
     if (props[key] != null) {
       attributes[key] = props[key];
     }
@@ -161,48 +168,43 @@ export const schemaToAttributes = (
 /** Extract emitters from props/refs using schema */
 export const schemaToEmitters = (
   schema: ArchetypeSchema,
-  props: Record<string, number | TypedArray | undefined>,
-  refs?: Record<string, RefObject<any>>,
+  props: Record<string, number | TypedArray | any[] | undefined>,
 ): Record<string, TypedArray | VectorEmitter> => {
   const attributes: Record<string, any> = {};
   const {unwelds, slices} = props;
   for (const key in schema) {
-    const {format, unwelded, index, ref, spread} = schema[key];
-
-    if (ref) {
-      if (!refs) continue;
-
-      // Single ref
-      const value = refs[key];
-      if (value != null) {
-        attributes[key] = value;
-      }
-      continue;
-    }
+    const {format, unwelded, index, ref, js, spread} = schema[key];
+    if (ref) continue;
 
     const values = props[key];
     if (values != null) {
       const dims = getUniformDims(format as any);
       const isArray = isUniformArrayType(format as any);
 
+      const needsUnweld = !(unwelded || index) && unwelds;
+
       if (isArray) {
-        if (!(unwelded || index) && unwelds) {
-          // Unweld welded attribute
-          attributes[key] = makeUnweldEmitter(values, unwelds as VectorLike, toCPUDims(dims), toGPUDims(dims));
+        // Unweld welded attribute
+        if (needsUnweld) {
+          if (js) attributes[key] = makeUnweldJSEmitter(values as any[], unwelds as VectorLike);
+          attributes[key] = makeUnweldEmitter(values as TypedArray, unwelds as VectorLike, toCPUDims(dims), toGPUDims(dims));
         }
+        // Direct attribute
         else {
-          // Direct attribute
-          attributes[key] = values;
+          if (js) attributes[key] = makeCopyJSEmitter(values as any[]);
+          attributes[key] = values as TypedArray | number;
         }
       }
       else {
         // Single per slice
         if (spread && (values as any).length > dims) {
-          attributes[spread] = makeSpreadEmitter(values, slices as VectorLike, toCPUDims(dims), toGPUDims(dims));
+          if (js) attributes[spread] = makeSpreadJSEmitter(values as any[], slices as VectorLike);
+          else attributes[spread] = makeSpreadEmitter(values as TypedArray, slices as VectorLike, toCPUDims(dims), toGPUDims(dims));
         }
         // Single per item
         else {
-          attributes[key] = values;
+          if (js) attributes[key] = makeCopyJSEmitter([values] as any[]);
+          attributes[key] = values as TypedArray | number;
         }
       }
     }
@@ -282,6 +284,7 @@ export const schemaToAggregate = (
   allocVertices: number = 0,
   allocIndices: number = 0,
 ): CPUAggregate => {
+  const byJs: string[] = [];
   const byRef: string[] = [];
   const byUnwelded: string[] = [];
   const bySelf: [string, number][] = [];
@@ -294,11 +297,12 @@ export const schemaToAggregate = (
   const refBuffers: Record<string, any> = {};
 
   for (const key in schema) {
-    const {format, unwelded, index, ref, separate} = schema[key];
+    const {format, unwelded, index, ref, separate, js} = schema[key];
 
     const hasValues = attributes[key] != null;
     const hasRef = ref && refs && refs[key] != null;
-
+    const hasJs = !!js;
+    
     if (hasValues || hasRef) {
       const isArray = isUniformArrayType(format);
 
@@ -310,7 +314,7 @@ export const schemaToAggregate = (
       );
 
       // Separate emulated types like u8/u16
-      const isEmulated = getUniformAlign(format as any) === 0;
+      const isEmulated = !js && getUniformAlign(format as any) === 0;
       const isSeparate = separate || isEmulated;
 
       if (hasRef) {
@@ -323,6 +327,8 @@ export const schemaToAggregate = (
       }
       else {
         const list = (
+          // JS-only data
+          hasJs ? byJs :
           // Uniform with lazy ref
           hasRef ? byRef :
           // Uniform per item
@@ -337,6 +343,14 @@ export const schemaToAggregate = (
         list.push(key);
       }
     }
+  }
+
+  const byJss: { keys: [string, string][] } | undefined = byJs.length ? { keys: [] } : undefined;
+  for (const k of byJs) {
+    const n = schema[k].name ?? k;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    byJss!.keys.push([k, n]);
+    aggregateBuffers[n] = { array: [], dims: 1, base: 0, stride: 1 };
   }
 
   const bySelfs: { keys: [string, string][] } = { keys: [] };
@@ -383,7 +397,7 @@ export const schemaToAggregate = (
   else byVertex.push(...byUnwelded);
 
   // If only per instance indices, simplify to per vertex
-  if (byInstance.length && !byRef.length && !byVertex.length && !byIndex.length && !bySelf.length) {
+  if (byInstance.length && !byRef.length && !byJs.length && !byVertex.length && !byIndex.length && !bySelf.length) {
     byVertex = byInstance;
     byInstance = [];
   }
@@ -398,7 +412,7 @@ export const schemaToAggregate = (
     aggregateBuffers.instances = makeArrayAggregate('u32', allocIndices);
   }
 
-  const aggregate = {aggregateBuffers, refBuffers, bySelfs, byRefs, byInstances, byVertices, byIndices};
+  const aggregate = {aggregateBuffers, refBuffers, byJss, bySelfs, byRefs, byInstances, byVertices, byIndices};
 
   return aggregate;
 };
@@ -408,7 +422,7 @@ export const toGPUAggregate = (
   device: GPUDevice,
   aggregate: CPUAggregate,
 ): GPUAggregate => {
-  const {aggregateBuffers, refBuffers, bySelfs, byRefs, byInstances, byVertices, byIndices} = aggregate;
+  const {aggregateBuffers, refBuffers, byJss, bySelfs, byRefs, byInstances, byVertices, byIndices} = aggregate;
 
   const buildOne = (aggregate: ArrayAggregate) => {
     const {array, format, length} = aggregate;
@@ -440,6 +454,7 @@ export const toGPUAggregate = (
 
   const ab = {...aggregateBuffers};
   const sources: Record<string, StorageSource> = {};
+  const values: Record<string, any[]> = {};
 
   if (bySelfs) for (const [, n] of bySelfs.keys) {
     const abn = buildOne(ab[n]);
@@ -450,11 +465,17 @@ export const toGPUAggregate = (
     ab.instances = buildOne(ab.instances);
   }
 
-  const bs = {keys: [], ...bySelfs, sources};
+  if (byJss) for (const [, n] of byJss.keys) {
+    values[n] = []; // back half of front/back
+  }
+
+  const bs = bySelfs && {...bySelfs, sources};
+  const bj = byJss && {...byJss, values};
 
   return {
     aggregateBuffers: ab,
     refBuffers,
+    byJss: bj,
     bySelfs: bs,
     byRefs: buildGroup(byRefs),
     byInstances: buildGroup(byInstances),
@@ -473,7 +494,7 @@ export const updateAggregateFromSchema = (
   instanced: number = items.length,
   indexOffsets: number[] = NO_OFFSETS,
 ) => {
-  const {aggregateBuffers, refBuffers, byRefs, byInstances, byVertices, byIndices, bySelfs} = aggregate;
+  const {aggregateBuffers, refBuffers, byJss, byRefs, byInstances, byVertices, byIndices, bySelfs} = aggregate;
 
   if (byInstances) for (const k of byInstances.keys) {
     const name = schema[k].name ?? k;
@@ -497,6 +518,22 @@ export const updateAggregateFromSchema = (
     const name = n ?? k;
     const o = index ? indexOffsets : undefined;
     updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o);
+  }
+
+  if (byJss) for (const [k] of byJss.keys) {
+    const {name: n, index, unwelded} = schema[k];
+    const name = n ?? k;
+    const o = index ? indexOffsets : undefined;
+
+    (aggregateBuffers[name].array as any).length = 0;
+    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o);
+
+    if ('values' in byJss) {
+      const front = aggregateBuffers[name].array;
+      const back = byJss.values[name];
+      aggregateBuffers[name].array = back as any;
+      byJss.values[name] = front as any;
+    }
   }
 
   for (const k in refBuffers) {

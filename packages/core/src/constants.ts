@@ -297,6 +297,9 @@ export const UNIFORM_ATTRIBUTE_ALIGNS = arrayify(arrayify(arrayify(shorthands({
   "vec3to4<u32>": 0,
   "vec3to4<i32>": 0,
   "vec3to4<f32>": 0,
+
+  // JS string wrapper type (not used on GPU)
+  "string<u16>": 0,
 })))) as Record<UniformType, number>;
 
 export const UNIFORM_ARRAY_DIMS = arrayify(arrayify(arrayify(shorthands({

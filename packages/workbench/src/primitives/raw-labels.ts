@@ -13,15 +13,17 @@ import { TransformContextProps } from '../providers/transform-provider';
 
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
-import { useShader } from '../hooks/useShader';
+import { useShader, useNoShader } from '../hooks/useShader';
 import { useSource } from '../hooks/useSource';
 import { useDataLength } from '../hooks/useDataBinding';
 
 import { getLabelVertex } from '@use-gpu/wgsl/instance/vertex/label.wgsl';
 import { getSDFRectangleFragment } from '@use-gpu/wgsl/instance/fragment/sdf-rectangle.wgsl';
+import { getInstanceLookupIndex } from '@use-gpu/wgsl/instance/index/lookup.wgsl';
 
 const DEFINES = {DEBUG_SDF: false};
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
+const INDICES: UniformAttribute = { format: 'u32', name: 'getIndex' };
 
 export type RawLabelsFlags = {
   flip?: [number, number],
@@ -42,6 +44,7 @@ export type RawLabelsProps = {
   offset?: number,
   size?: number,
   depth?: number,
+  zBias?: number,
   color?: VectorLike,
   expand?: number,
 
@@ -56,6 +59,7 @@ export type RawLabelsProps = {
   offsets?: ShaderSource,
   sizes?: ShaderSource,
   depths?: ShaderSource,
+  zBiases?: ShaderSource,
   colors?: ShaderSource,
   expands?: ShaderSource,
 
@@ -85,7 +89,7 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
   const vertexCount = 4;
   const instanceCount = useDataLength(count, props.indices);
 
-  const i = useShaderRef(props.index, props.indices);
+  const i = useSource(INDICES, useShaderRef(props.index, props.indices));
   const r = useShaderRef(props.rectangle, props.rectangles);
   const u = useShaderRef(props.uv, props.uvs);
   const s = useShaderRef(props.st, props.sts);
@@ -95,12 +99,13 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
   const p = useSource(POSITIONS, useShaderRef(props.position, props.positions));
   const c = useShaderRef(props.placement, props.placements);
   const o = useShaderRef(props.offset, props.offsets);
-  const z = useShaderRef(props.size, props.sizes);
+  const w = useShaderRef(props.size, props.sizes);
   const d = useShaderRef(props.depth, props.depths);
+  const z = useShaderRef(props.zBias, props.zBiases);
   const f = useShaderRef(props.color, props.colors);
   const e = useShaderRef(props.expand, props.expands);
 
-  const q  = useShaderRef(props.flip);
+  const q = useShaderRef(props.flip);
 
   const {positions, bounds: getBounds} = useApplyTransform(p, transform);
 
@@ -115,8 +120,9 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
     useNoCallback();
   }
 
-  const boundVertex = useShader(getLabelVertex, [i, r, u, s, l, a, positions, c, o, z, d, f, e, q]);
-  const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount);  
+  const ind = i ? useShader(getInstanceLookupIndex, [i]) : (useNoShader(), null);
+  const boundVertex = useShader(getLabelVertex, [i, r, u, s, l, a, positions, c, o, w, d, z, f, e, q]);
+  const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount, ind);
   const getPicking = usePickingShader(props);
 
   const t = props.texture;

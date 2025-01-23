@@ -90,12 +90,12 @@ const Aggregate: LiveFunction<any> = (
   const {schema, component} = layerAggregator;
   const {quote} = QueueReconciler;
 
-  const {count, sources, uploadRefs} = useAggregator(item.schema ?? schema, items);
+  const {count, sources, values, uploadRefs} = useAggregator(item.schema ?? schema, items);
 
   return useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {matrices, normalMatrices, ...rest} = sources as Record<string, any>;
-    const props = {count, ...rest, ...extra, ...flags};
+    const props = {count, ...rest, ...extra, ...flags, ...values};
 
     DEBUG && console.log(component.name, {props, items, sources});
 
@@ -105,7 +105,7 @@ const Aggregate: LiveFunction<any> = (
     const upload = useOne(() => uploadRefs ? quote(yeet(uploadRefs)) : null, uploadRefs);
     return upload ? [upload, layer] : layer;
     // Exclude flags and contexts because they are factored into the archetype
-  }, [count, sources, extra, uploadRefs]);
+  }, [count, sources, values, extra, uploadRefs]);
 };
 
 const provideContext = (

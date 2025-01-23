@@ -42,7 +42,7 @@ export const useInstancedVertex = (
 
     return [boundInstance, totalCount, INSTANCES];
 
-  }, [instance, instances, elementCount, instanceSize]);
+  }, [getVertex, instance, instances, elementCount, instanceSize]);
 }
 
 export const useNoInstancedVertex = () => {

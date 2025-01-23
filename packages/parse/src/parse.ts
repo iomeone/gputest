@@ -45,9 +45,9 @@ export const makeParseObject = <T extends object>() => (value?: T): T => {
 export const makeParseArray = <T>(
   defaults: T[],
   parse: (v: any) => T
-) => (vecs?: ArrayLike[]): T[] => {
+) => (vecs?: ArrayLike): T[] => {
   if (vecs != null) {
-    const vs = vecs.map(parse);
+    const vs: T[] = [...vecs].map(parse);
     const l = vs.length;
     const n = defaults.length;
     if (l < n) for (let i = l; i < n; ++i) vs.push(defaults[i]);
@@ -226,7 +226,7 @@ export const clampNumber = (
 ///////////////////////////
 
 export const parseObject = <T>(value?: T) => typeof value === 'object' && value != null ? value : {};
-export const parseString = (s?: string) => s ?? '';
+export const parseString = (s?: string) => s ? '' + s : '';
 export const parseNumberLike = (value?: number | TypedArray) => +(Array.isArray(value) ? value[0] : value) || 0;
 export const parseNumber = (value?: number) => parseNumberLike(value);
 export const parseInteger = (value?: number) => Math.round(parseNumberLike(value));

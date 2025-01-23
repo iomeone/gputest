@@ -53,13 +53,14 @@ const INSTANCE_SCHEMA_ID = {
 
 export const Instances: LiveComponent<InstancesProps> = (props: InstancesProps) => {
   const {
+    id,
+
     mesh,
     shaded,
     side,
-    schema = INSTANCE_SCHEMA,
+    schema = id ? INSTANCE_SCHEMA_ID : INSTANCE_SCHEMA,
     format = 'u16',
 
-    id,
     mode,
     depthTest,
     depthWrite,
@@ -95,7 +96,7 @@ export const Instances: LiveComponent<InstancesProps> = (props: InstancesProps) 
 
   return use(InstanceData, {
     format,
-    schema: id ? INSTANCE_SCHEMA_ID : INSTANCE_SCHEMA,
+    schema,
     render: (useInstance: UseInstance) => {
       const Instance = useOne(() => makeInstancer(useInstance), useInstance);
       return render ? render(Instance as any) : null;

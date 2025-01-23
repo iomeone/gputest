@@ -1,4 +1,4 @@
-import type { Emitter, Writer, Emit, TypedArray, FieldArray, TensorArray, VectorLike, UniformType } from './types';
+import type { Emitter, Writer, Emit, TypedArray, FieldArray, JSArray, TensorArray, VectorLike, UniformType } from './types';
 
 import { getUniformArrayType, getUniformArrayDepth, getUniformDims, getUniformAlign, toCPUDims, toGPUDims } from './uniform';
 import { isTypedArray } from './buffer';
@@ -13,6 +13,11 @@ export const alignSizeTo = (n: number, align: number) => Math.ceil(n / align) * 
 
 export const makeRawArray = (byteSize: number) => new ArrayBuffer(byteSize);
 
+export const makeJSArray = (type: UniformType): JSArray => {
+  const depth = getUniformArrayDepth(type);
+  return {array: [], dims: 1, length: 0, depth, format: type};
+};
+
 export const makeCPUArray = (type: UniformType, length: number): FieldArray => {
   const ctor  = getUniformArrayType(type);
   const dims  = getUniformDims(type);
@@ -21,7 +26,7 @@ export const makeCPUArray = (type: UniformType, length: number): FieldArray => {
   const n = length * toCPUDims(dims);
 
   const array = new ctor(n);
-  return {format: type, array, dims, depth, length};
+  return {array, dims, length, depth, format: type};
 };
 
 export const makeGPUArray = (type: UniformType, length: number): FieldArray => {
@@ -33,7 +38,7 @@ export const makeGPUArray = (type: UniformType, length: number): FieldArray => {
   const n = alignSizeTo(length * toGPUDims(dims), align || 4);
 
   const array = new ctor(n);
-  return {format: type, array, dims, depth, length};
+  return {array, dims, length, depth, format: type};
 };
 
 export const makeTensorArray = (type: UniformType, size: number | number[]): TensorArray => {
@@ -765,4 +770,74 @@ export const emitMultiArray = <T>(
   }
 
   return emitted();
+}
+
+export const unweldJSArray = <T = any>(
+  from: T[],
+  to: T[],
+  indices: VectorLike,
+  fromIndex: number = 0,
+  toIndex: number = 0,
+  count: number = indices.length,
+) => {
+  let f = fromIndex;
+  let t = toIndex;
+  for (let i = 0; i < count; ++i) {
+    to[t] = from[f + indices[i]];
+    f++;
+    t++;
+  }
+  return t - toIndex;
+}
+
+export const spreadJSArray = <T = any>(
+  from: T[],
+  to: T[],
+  slices: VectorLike,
+  fromIndex: number = 0,
+  toIndex: number = 0,
+) => {
+  const n = slices.length;
+  let f = fromIndex;
+  let t = toIndex;
+  for (let i = 0; i < n; ++i) {
+    const l = slices[i];
+    for (let j = 0; j < l; ++j) to[t++] = from[f];
+    f++;
+  }
+  return t - toIndex;
+}
+
+export const makeUnweldJSEmitter = <T = any>(
+  from: T[],
+  indices: VectorLike,
+  fromIndex: number = 0,
+) => (
+  to: T[],
+  toIndex: number = 0,
+  count?: number,
+) => unweldJSArray(from, to, indices, fromIndex, toIndex, count);
+
+export const makeSpreadJSEmitter = <T = any>(
+  from: T[],
+  slices: VectorLike,
+  fromIndex: number = 0,
+) => (
+  to: T[],
+  toIndex: number = 0,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  count: number = 0,
+) => spreadJSArray(from, to, slices, fromIndex, toIndex);
+
+export const makeCopyJSEmitter = <T = any>(
+  from: T[],
+  fromIndex: number = 0,
+) => (
+  to: T[],
+  toIndex: number = 0,
+  count: number = from.length,
+) => {
+  let f = fromIndex;
+  let t = toIndex;
+  for (let i = 0; i < count; ++i) to[t++] = from[f++];
 }
