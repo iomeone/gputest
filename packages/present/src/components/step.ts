@@ -4,7 +4,7 @@ import type { ParsedEffect, } from '../types';
 
 import { unquote, fence, yeet, use, useMemo, useOne, useFiber } from '@use-gpu/live';
 import { useLayoutContext } from '@use-gpu/workbench';
-import { Transform } from '@use-gpu/layout';
+import { TransformUI } from '@use-gpu/layout';
 
 import { merge } from '../lib/slides';
 import { usePresentTransition } from '../hooks';
@@ -36,7 +36,7 @@ export const Step: LC<StepProps> = (props: StepProps) => {
     })),
     () => {
       useUpdateTransition();
-      return useMemo(() => use(Transform, {mask, transform, children}), [mask, transform, children]);
+      return useMemo(() => use(TransformUI, {mask, transform, children}), [mask, transform, children]);
     },
   );
 };

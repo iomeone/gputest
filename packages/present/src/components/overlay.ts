@@ -5,7 +5,7 @@ import type { ParsedEffect, SlideInfo } from '../types';
 
 import { unquote, gather, yeet, use, useFiber, useMemo, useOne } from '@use-gpu/live';
 import { useLayoutContext } from '@use-gpu/workbench';
-import { Transform } from '@use-gpu/layout';
+import { TransformUI } from '@use-gpu/layout';
 
 import { PresentReconciler } from '../reconcilers';
 import { merge, resolveSlides } from '../lib/slides';
@@ -32,7 +32,7 @@ export const Overlay: LC<OverlayProps> = (props: OverlayProps) => {
   const layout = useLayoutContext();
   const {useUpdateTransition, ...transform} = usePresentTransition(id, layout, enterEffect, exitEffect);
 
-  const view = useMemo(() => use(Transform, {...transform, children}), [transform, children]);
+  const view = useMemo(() => use(TransformUI, {...transform, children}), [transform, children]);
 
   return (
     unquote(
