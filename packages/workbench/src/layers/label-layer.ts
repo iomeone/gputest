@@ -17,6 +17,7 @@ export type LabelLayerProps = RawLabelsFlags & {
   offset?: number,
   size?: number,
   depth?: number,
+  zBias?: number,
   color?: number[] | TypedArray,
   expand?: number,
 
@@ -25,6 +26,7 @@ export type LabelLayerProps = RawLabelsFlags & {
   offsets?: ShaderSource,
   sizes?: ShaderSource,
   depths?: ShaderSource,
+  zBiases?: ShaderSource,
   colors?: ShaderSource,
   expands?: ShaderSource,
 
