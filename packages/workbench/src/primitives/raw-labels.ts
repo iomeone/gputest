@@ -120,7 +120,7 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
     useNoCallback();
   }
 
-  const ind = i ? useShader(getInstanceLookupIndex, [i]) : (useNoShader(), null);
+  const ind = i ? useShader(getInstanceLookupIndex, [i]) : (useNoShader(), undefined);
   const boundVertex = useShader(getLabelVertex, [i, r, u, s, l, a, positions, c, o, w, d, z, f, e, q]);
   const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount, ind);
   const getPicking = usePickingShader(props);
