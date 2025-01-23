@@ -9,7 +9,7 @@ import { AddInProvider, defaultPanels } from './providers/add-in-provider';
 import { AppearanceProvider } from './providers/appearance-provider';
 
 export type UseInspectProps = PropsWithChildren<{
-  fiber: LiveFiber<any>,
+  fiber?: LiveFiber<any>,
   active?: boolean,
   sub?: string,
   provider?: LiveComponent<any>,
