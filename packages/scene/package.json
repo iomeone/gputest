@@ -1,15 +1,15 @@
 {
   "name": "@use-gpu/scene",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
   "license": "MIT",
   "dependencies": {
-    "@use-gpu/workbench": "^0.12.0",
-    "@use-gpu/core": "^0.12.0",
-    "@use-gpu/live": "^0.12.0",
-    "@use-gpu/shader": "^0.12.0"
+    "@use-gpu/workbench": "^0.13.0",
+    "@use-gpu/core": "^0.13.0",
+    "@use-gpu/live": "^0.13.0",
+    "@use-gpu/shader": "^0.13.0"
   },
   "scripts": {
     "build": "NPM_PACKAGE=scene ../../scripts/build-mjs-cjs.sh",

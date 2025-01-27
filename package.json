@@ -1,6 +1,6 @@
 {
   "name": "use.gpu",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "main": "index.js",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
