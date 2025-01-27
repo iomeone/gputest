@@ -1,12 +1,15 @@
 0.13.0
+- `@use-gpu/app`: Add solar system example.
 - `@use-gpu/plot`: Support aggregation of label texts with spread.
 - `@use-gpu/layout`: Rename `<Transform>` to `<TransformUI>`
 - `@use-gpu/scene`: Support pickable `<Instances>` with per instance `lookup`
 - `@use-gpu/wgsl-loader`: Pass `minify` option to rollup plug-in.
+- `@use-gpu/workbench`: Add `<RenderCubeTarget>`, `<ColorCubePass>` and `<CubeCamera>` with example
 - `@use-gpu/workbench`: Fix JSX type of <Dispatch> and <DrawCall> for React 18
 - `@use-gpu/workbench`: Allow `format`-less <RenderTarget>
-- `@use-gpu/workbench`: Add `<RenderCubeTarget>`, `<ColorCubePass>` and `<CubeCamera>` with example
 - `@use-gpu/workbench`: Add zBias to `<LabelLayer>`
+- `@use-gpu/workbench`: Allow adjusting `speed` of `<Animate>` without resetting.
+- `@use-gpu/workbench`: Add `<ValueShader>` which acts like a lazy `map(…)`.
 
 0.12.0
 - `@use-gpu/*`: add `ts-vite` example

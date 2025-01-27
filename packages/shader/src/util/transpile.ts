@@ -124,7 +124,7 @@ exports.default = __default;
     magicString: null,
   };
 
-  const getSymbols = table.visibles.map(getSymbol).join("");
+  const getSymbols = table.visibles?.map(getSymbol).join("") ?? '';
 
   if (sourceMap) {
     // Generate combined source + map

@@ -1,13 +1,15 @@
 import React from '@use-gpu/live';
 
+import { DataSolarSystemPage } from './pages/data/solar-system/solar-system';
+import { DebugAtlasPage } from './pages/debug/atlas';
+import { DebugAxesPage } from './pages/debug/axes';
+import { DebugWireframePage } from './pages/debug/wireframe';
+import { FPSControlsPage } from './pages/controls/fps';
 import { GeometryGLTFPage } from './pages/geometry/gltf';
 import { GeometryLinesPage } from './pages/geometry/lines';
 import { GeometryLabelsPage } from './pages/geometry/labels';
 import { GeometryBinaryPage } from './pages/geometry/binary';
 import { GeometryVoxelPage } from './pages/geometry/voxel';
-import { DebugAtlasPage } from './pages/debug/atlas';
-import { DebugAxesPage } from './pages/debug/axes';
-import { DebugWireframePage } from './pages/debug/wireframe';
 import { LayoutDisplayPage } from './pages/layout/display';
 import { LayoutGlyphPage } from './pages/layout/glyph';
 import { LayoutAlignPage } from './pages/layout/align';
@@ -15,10 +17,6 @@ import { MaterialEnvMapPage } from './pages/material/envmap';
 import { MapWebMercatorPage } from './pages/map/webmercator';
 import { MeshRawPage } from './pages/mesh/raw';
 import { MeshInterleavedPage } from './pages/mesh/interleaved';
-import { SceneBasicPage } from './pages/scene/basic';
-import { SceneInstancesPage } from './pages/scene/instances';
-import { SceneShadowPage } from './pages/scene/shadow';
-import { SceneDeferredPage } from './pages/scene/deferred';
 import { Plot2DPage } from './pages/plot/2d';
 import { Plot3DPage } from './pages/plot/3d';
 import { PlotPickingPage } from './pages/plot/picking';
@@ -28,7 +26,6 @@ import { PlotSphericalPage } from './pages/plot/spherical';
 import { PlotStereographicPage } from './pages/plot/stereographic';
 import { PlotImplicitSurfacePage } from './pages/plot/implicit-surface';
 import { PlotQuaternionHyperspherePage } from './pages/plot/quaternion-hypersphere';
-import { ShaderDrostePage } from './pages/shader/droste';
 import { PresentSlidesPage } from './pages/present/slides';
 import { RTTCubeTargetPage } from './pages/rtt/cube-target';
 import { RTTLinearRGBPage } from './pages/rtt/linear-rgb';
@@ -36,7 +33,11 @@ import { RTTFeedbackPage } from './pages/rtt/feedback';
 import { RTTMultiscalePage } from './pages/rtt/multiscale';
 import { RTTCFDComputePage } from './pages/rtt/cfd-compute';
 import { RTTCFDTexturePage } from './pages/rtt/cfd-texture';
-import { FPSControlsPage } from './pages/controls/fps';
+import { SceneBasicPage } from './pages/scene/basic';
+import { SceneInstancesPage } from './pages/scene/instances';
+import { SceneShadowPage } from './pages/scene/shadow';
+import { SceneDeferredPage } from './pages/scene/deferred';
+import { ShaderDrostePage } from './pages/shader/droste';
 
 import { HomePage } from './pages/home';
 import { EmptyPage } from './pages/empty';
@@ -45,6 +46,7 @@ export const makePages = () => [
   {path: "/plot/2d",                     title: "Plot - 2D",                         element: <Plot2DPage />},
   {path: "/plot/3d",                     title: "Plot - 3D",                         element: <Plot3DPage />},
   {path: "/plot/picking",                title: "Plot - GPU Picking",                element: <PlotPickingPage />},
+  {path: "/data/solar",                  title: "Data - Solar System",               element: <DataSolarSystemPage />},
   {path: "/geometry/lines",              title: "Geometry - 3D Lines and Arrows",    element: <GeometryLinesPage />},
   {path: "/geometry/labels",             title: "Geometry - 3D Points and Labels",   element: <GeometryLabelsPage />},
   {path: "/geometry/gltf",               title: "Geometry - GLTF",                   element: <GeometryGLTFPage />},

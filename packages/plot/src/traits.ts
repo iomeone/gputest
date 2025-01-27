@@ -346,7 +346,7 @@ export const DataTrait = (keys: string[], canonical: string = 'positions') => {
 
       for (const k in dataContext) if (match.has(k)) {
         const {array, format, size, ragged} = dataContext[k];
-        if (!(props as any)[k]) {
+        if (!(k in props)) {
           data[k] = array;
           formats[k] = format;
           d++;

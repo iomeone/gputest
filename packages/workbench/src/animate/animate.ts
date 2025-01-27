@@ -1,4 +1,4 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement } from '@use-gpu/live';
 import type { TypedArray, VectorLike, VectorLikes } from '@use-gpu/core';
 import type { Keyframe } from './types';
 
@@ -38,7 +38,7 @@ export type AnimateProps<T extends number | VectorLike | VectorLikes> = {
 type NestedNumberArray = any[];
 type Numberish = number | TypedArray | NestedNumberArray;
 
-export const Animate: LiveComponent<AnimateProps<Numberish>> = <T extends Numberish>(props: AnimateProps<T>) => {
+export const Animate: LC<AnimateProps<Numberish>> = <T extends Numberish>(props: AnimateProps<T>) => {
   const {
     loop = false,
     mirror = false,
@@ -65,7 +65,8 @@ export const Animate: LiveComponent<AnimateProps<Numberish>> = <T extends Number
   if (!script) return null;
 
   const startedRef = useOne(() => ({current: -1}), script);
-  const pausedRef = useOne(() => ({current: 0}), script);
+  const timeRef = useOne(() => ({current: 0}), script);
+
   const length = useMemo(() => {
     if (duration) return duration;
     const tracks = Array.from(Object.values(script));
@@ -79,28 +80,25 @@ export const Animate: LiveComponent<AnimateProps<Numberish>> = <T extends Number
   const scalars = zipObject(Object.keys(script).filter(k => typeof script[k][0][1] === 'number'));
 
   const Run = useCallback(() => {
-    const {elapsed} = useTimeContext();
+    const {elapsed, delta, start} = useTimeContext();
 
-    let {current: started} = startedRef;
-    if (started < 0 || started > elapsed) started = startedRef.current = elapsed;
-    if (paused && !pausedRef.current) pausedRef.current = elapsed;
-    
-    if (!paused) {
-      // Deduct pause time from elapsed on resume
-      if (pausedRef.current) {
-        startedRef.current += elapsed - pausedRef.current;
-        pausedRef.current = 0;
-      }
+    // Reset internal clock if external loop was interrupted
+    if (start !== startedRef.current) {
+      startedRef.current = start;
+      timeRef.current = elapsed;
     }
-    
-    const time = Math.max(0, (elapsed - started) / 1000 - delay) * speed;
+    else if (!paused) {
+      timeRef.current += delta * speed;
+    }
+
+    const time = Math.max(0, timeRef.current / 1000 - delay);
     const [t, max] = getLoopedTime(time, length, rest, loop ? repeat : 0, mirror);
 
     const values = swapValues();
     for (const k in values) evaluateKeyframe(values, k, script[k], t, ease);
 
-    // Run if not paused, not on first frame, or not past end
-    if (!paused || pausedRef.current === elapsed && time < max) useAnimationFrame();
+    // Run if not paused or not past end
+    if (!paused && time < max) useAnimationFrame();
     else useNoAnimationFrame();
 
     if (render) return tracks ? render(values) : (prop ? render(values[prop]) : null);

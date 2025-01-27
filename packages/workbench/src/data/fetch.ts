@@ -18,7 +18,7 @@ export type FetchProps<T> = {
   fallback?: T,
   slow?: number,
 
-  then?: (t: any) => T,
+  then?: (t: any) => T | Promise<T>,
 
   render?: (t: T) => LiveElement,
   children?: (t: T) => LiveElement,
@@ -53,7 +53,7 @@ export const Fetch: LiveComponent<FetchProps<any>> = (props: FetchProps<any>) =>
 
   const [resolved, fetchError, isLoading] = useAwait(run, [run]);
   const [mapped, mapError] = resolved !== undefined && then
-    ? useAwait(() => then(resolved), [resolved])
+    ? useAwait(async () => then(resolved), [resolved])
     : (useNoAwait(), [resolved]);
   const error = fetchError || mapError;
   useOne(() => error && console.warn(error), error);

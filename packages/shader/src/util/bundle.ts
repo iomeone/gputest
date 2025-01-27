@@ -121,7 +121,7 @@ export const makeBundleToAttributes = (
     const {module: {table: {externals}}} = bundle;
 
     const out: UniformAttribute[] = [];
-    for (const d of externals) if (d.func ?? d.variable ?? d.constant) {
+    if (externals) for (const d of externals) if (d.func ?? d.variable ?? d.constant) {
       const attr = toAttribute(bundle, d);
       if (!bundle.links?.[attr.name]) out.push(attr);
     }
@@ -147,7 +147,7 @@ export const makeBundleToAttribute = (
     const entry = name ?? getBundleEntry(bundle);
 
     // Externals must be looked up by name
-    if (name != null) for (const d of externals) {
+    if (name != null) if (externals) for (const d of externals) {
       if (
         d.func?.name === entry ||
         d.variable?.name === entry ||
@@ -159,7 +159,7 @@ export const makeBundleToAttribute = (
     }
 
     // Exports are looked up by entry point
-    for (const d of exports) {
+    if (exports) for (const d of exports) {
       if (
         d.func?.name === entry ||
         d.variable?.name === entry ||
