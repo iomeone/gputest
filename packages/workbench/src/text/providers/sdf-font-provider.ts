@@ -215,6 +215,7 @@ export const useSDFGlyphData = (
   size: number = 48,
   wrap: number = 0,
   snap: boolean = false,
+  monochrome: boolean = false,
 ) => {
   const context = useSDFFontContext();
   const {id} = useFiber();
@@ -274,7 +275,7 @@ export const useSDFGlyphData = (
         lastIndex = index;
       }
 
-      emitGlyphSpans(context, currentLayout, index, font, spans, glyphs, breaks, start, end, size, gap, lead, snap, emit);
+      emitGlyphSpans(context, currentLayout, index, font, spans, glyphs, breaks, start, end, size, gap, lead, snap, monochrome, emit);
       currentLayout[1] += lineHeight;
     });
 
@@ -309,6 +310,7 @@ export const emitGlyphSpans = (
   gap: number,
   lead: number,
   snap: boolean,
+  monochrome: boolean,
 
   emit: (
     l1: number,
@@ -339,7 +341,7 @@ export const emitGlyphSpans = (
       const {image, layoutBounds, outlineBounds, rgba, scale: glyphScale} = glyph;
       const [,, lr] = layoutBounds;
 
-      const r = rgba ? -1 : 1;
+      const r = rgba && !monochrome ? -1 : 1;
       const s = scale * glyphScale;
       const k = kerning / 65536.0 * scale;
       x += k;

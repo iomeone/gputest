@@ -18,6 +18,7 @@ export type GlyphsProps = {
   detail?: number,
   expand?: number,
   snap?: boolean,
+  monochrome?: boolean,
 
   font: number[],
   spans: Tuples<3>,
@@ -41,6 +42,7 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     size = 16,
     detail = size,
     snap = false,
+    monochrome = false,
 
     font,
     spans,
@@ -90,7 +92,7 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
           const {image, layoutBounds, outlineBounds, rgba, scale: glyphScale} = glyph;
           const [,,lr,] = layoutBounds;
 
-          const r = rgba ? -1 : 1;
+          const r = rgba && !monochrome ? -1 : 1;
           const s = scale * glyphScale;
           const k = kerning / 65536.0 * scale;
           x += k;

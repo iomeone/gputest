@@ -43,6 +43,7 @@ export type LabelLayerProps = RawLabelsFlags & {
 
   sdfRadius?: number,
   flip?: boolean,
+  monochrome?: boolean,
 
   detail?: number,
   count?: Lazy<number>,
@@ -78,8 +79,9 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
     transform,
 
     sdfRadius,
-
+    monochrome,
     detail,
+
     // eslint-disable-next-line  @typescript-eslint/no-unused-vars    
     count,
     mode = 'opaque',
@@ -100,6 +102,7 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
           style,
           strings,
           size: detail,
+          monochrome,
         }),
       then:
         (

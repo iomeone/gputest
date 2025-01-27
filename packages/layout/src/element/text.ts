@@ -26,6 +26,7 @@ export type TextProps = {
   size?: number,
   detail?: number,
   snap?: boolean,
+  monochrome?: boolean,
 
   inline?: Baseline,
   text?: string,
@@ -84,6 +85,7 @@ const InnerSpan: LiveComponent<SpanProps> = (props: SpanProps) => {
     lineHeight,
     detail,
     inline,
+    monochrome = false,
     expand = 0,
     size = 16,
     snap = false,
@@ -125,6 +127,7 @@ const InnerSpan: LiveComponent<SpanProps> = (props: SpanProps) => {
         lines,
         snap,
         expand,
+        monochrome,
 
         origin,
         clip,

@@ -1,6 +1,6 @@
 import type { ShaderModule } from '@use-gpu/shader';
 
-import { makeContext, useContext } from '@use-gpu/live';
+import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { DEFAULT_LIGHT_CONTEXT } from '../providers/light-provider';
@@ -33,3 +33,4 @@ export type MaterialContextProps = Record<string, Record<string, ShaderModule | 
 export const MaterialContext = makeContext<MaterialContextProps>(DEFAULT_MATERIAL_CONTEXT, 'MaterialContext');
 
 export const useMaterialContext = () => useContext(MaterialContext);
+export const useNoMaterialContext = () => useNoContext(MaterialContext);
