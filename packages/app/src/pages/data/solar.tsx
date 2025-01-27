@@ -81,7 +81,7 @@ const makeBSCGetters = (data: BSC[]) => ({
   colors: (i: number) => {
     // Use BV + VMag as RG color and adapt in a shader.
     const {bv, vmag} = data[i];
-    return [bv || 0, vmag, vmag === 2.02, 1];
+    return [bv || 0, vmag, 0, 1];
   },
 });
 
