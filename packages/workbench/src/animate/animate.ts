@@ -98,7 +98,7 @@ export const Animate: LC<AnimateProps<Numberish>> = <T extends Numberish>(props:
     for (const k in values) evaluateKeyframe(values, k, script[k], t, ease);
 
     // Run if not paused or not past end
-    if (!paused && t < max) useAnimationFrame();
+    if (!paused && time < max) useAnimationFrame();
     else useNoAnimationFrame();
 
     if (render) return tracks ? render(values) : (prop ? render(values[prop]) : null);
