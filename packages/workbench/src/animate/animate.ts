@@ -98,7 +98,7 @@ export const Animate: LC<AnimateProps<Numberish>> = <T extends Numberish>(props:
     for (const k in values) evaluateKeyframe(values, k, script[k], t, ease);
 
     // Run if not paused or not past end
-    if (!paused && time < max) useAnimationFrame();
+    if (!paused && t < max) useAnimationFrame();
     else useNoAnimationFrame();
 
     if (render) return tracks ? render(values) : (prop ? render(values[prop]) : null);
@@ -193,7 +193,7 @@ const getActiveKeyframe = <T extends number | VectorLike | VectorLikes>(keyframe
 };
 
 const getLoopedTime = (time: number, duration: number, rest: number, repeat: number, mirror: boolean) => {
-  const max = duration * (repeat + 1);
+  const max = (duration + rest) * repeat + duration;
   let t = Math.min(max, time);
 
   const dp = duration + rest;

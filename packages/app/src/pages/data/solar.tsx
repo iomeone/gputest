@@ -208,7 +208,7 @@ const Stars: LC = () => {
           // Use a shader to recolor BV + visual magnitude into RGB.
           <ValueShader shader={bv2rgb} source={sources.colors}>{
             (colors: ShaderSource) => (
-              <PointLayer {...sources} colors={colors} size={1.5} />
+              <PointLayer {...sources} colors={colors} size={2} />
             )
           }</ValueShader>
         }
