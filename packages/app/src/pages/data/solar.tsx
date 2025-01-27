@@ -20,12 +20,11 @@ import {
 import { vec3 } from 'gl-matrix';
 import { seq } from '@use-gpu/core';
 
-import { getBodies, getPeriod, getDayNumber, emitOrbitPosition } from './solar-model';
+import { getBodies, getPeriod, getDayNumber, emitOrbitPosition } from './solar-system/solar-model';
+import { bv2rgb } from './solar-system/bv2rgb.wgsl';
 
-import { InfoBox } from '../../../ui/info-box';
-import { SolarSystemControls, SolarSystemOptions } from '../../../ui/solar-system-controls';
-
-import { bv2rgb } from './bv2rgb.wgsl';
+import { InfoBox } from '../../ui/info-box';
+import { SolarSystemControls, SolarSystemOptions } from '../../ui/solar-system-controls';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const base = isDevelopment ? '/' : '/demo/';

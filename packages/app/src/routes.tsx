@@ -1,6 +1,6 @@
 import React from '@use-gpu/live';
 
-import { DataSolarSystemPage } from './pages/data/solar-system/solar-system';
+import { DataSolarSystemPage } from './pages/data/solar';
 import { DebugAtlasPage } from './pages/debug/atlas';
 import { DebugAxesPage } from './pages/debug/axes';
 import { DebugWireframePage } from './pages/debug/wireframe';
