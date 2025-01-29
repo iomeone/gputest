@@ -25,6 +25,4 @@ export const Compute: LC<ComputeProps> = memo((props: ComputeProps) => {
   return (
     multiGather(children, Resume)
   );
-
-  return multiGather(children, Resume);
 }, 'Compute');

@@ -133,7 +133,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
     [device, width, height, format, samples, history]
   );
 
-  const targetTexture = resolveTexture;
+  const targetTexture = resolveTexture ?? renderTexture;
 
   const colorStates      = useOne(() => [
     format ? makeColorState(format, format.match(/unorm|float/) ? BLEND_PREMULTIPLY : undefined) : [],
