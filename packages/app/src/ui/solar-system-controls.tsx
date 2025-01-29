@@ -30,15 +30,15 @@ const STOPS = [
   {label: 'hour', value: 60 * 60},
   {label: 'day', value: 60 * 60 * 24},
   {label: 'week', value: 60 * 60 * 24 * 7},
-  {label: 'month', value: 60 * 60 * 24 * 7 * 31},
-  {label: 'year', value: 60 * 60 * 24 * 7 * 365},
+  {label: 'month', value: 60 * 60 * 24 * 31},
+  {label: 'year', value: 60 * 60 * 24 * 365},
 ];
 
-const LOG_RANGE = Math.log10(60 * 60 * 24 * 7 * 365 / 60 + 1);
+const LOG_RANGE = Math.log10(60 * 60 * 24 * 365 / 60 / 60 * 10 + 1);
 
 const toSignedLog = (x: number) => {
   const s = Math.sign(x);
-  const v = Math.abs(x) / 60;
+  const v = Math.abs(x) / 60 / 60;
   return s * Math.log10(v) / LOG_RANGE;
 };
 
@@ -47,7 +47,7 @@ const fromSignedLog = (x: number) => {
 
   const s = Math.sign(x);
   const v = Math.abs(x);
-  return s * Math.pow(10, v) * 60;
+  return s * Math.pow(10, v) * 60 * 60;
 };
 
 export const SolarSystemControls: LC<SolarSystemControlsProps> = (props: SolarSystemControlsProps) => {
