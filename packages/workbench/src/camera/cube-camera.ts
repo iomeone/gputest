@@ -56,10 +56,15 @@ export const CubeCamera: LiveComponent<CubeCameraProps> = (props) => {
 
   const m = useOne(mat4.create);
 
+  const viewMatrix = mat4.fromTranslation(m, position as vec3);
+  m[12] = -m[12];
+  m[13] = -m[13];
+  m[14] = -m[14];
+
   updateViewUniforms(
     uniforms,
     makeProjectionMatrix(width, height, fov, near, far),
-    mat4.fromTranslation(m, position as vec3),
+    viewMatrix,
   );
   
   uniforms.viewNearFar.current = vec2.fromValues(near, far);
