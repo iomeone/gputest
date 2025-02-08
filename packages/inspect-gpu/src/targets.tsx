@@ -104,7 +104,7 @@ const depthCubeShader = wgsl`
   @link fn getTexture(uv: vec3<f32>) -> vec4<f32>;
 
   fn main(uv: vec2<f32>) -> vec4<f32> {
-    var uvw: vec3<f32> = decodeOctahedral(uv * 2.0 - 1.0);
+    var uvw: vec3<f32> = decodeOctahedral((uv * 2.0 - 1.0) * vec2<f32>(1.0, -1.0));
 
     let t = getTexture(uvw);
 
