@@ -127,7 +127,7 @@ export const GeometryVoxelPage: LC = () => {
               </Scene>
             </Environment>
 
-            <Animate ease="linear" keyframes={ANIMATED_LIGHT} prop="position" render={(position) =>
+            <Animate loop ease="linear" keyframes={ANIMATED_LIGHT} prop="position" render={(position) =>
               <PointLight position={position} color={WHITE} intensity={40*40} shadowMap={SHADOW_MAP_POINT} debug />
             } />
             {STATIC_LIGHTS.map(([position, color, intensity]) =>
