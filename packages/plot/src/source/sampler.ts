@@ -333,4 +333,5 @@ export const Sampler: LiveComponent<SamplerProps<unknown & (string | string[])>>
   origin: sameShallow(),
 }), 'Sampler');
 
+/** @hidden */
 export const Sampled = deprecated(Sampler, 'Sampled');
