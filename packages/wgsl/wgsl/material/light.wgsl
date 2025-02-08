@@ -25,7 +25,7 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
 ) -> vec3<f32> {
   var L: vec3<f32>;
 
-  var intensity: f32 = light.intensity * 3.1415;
+  var intensity: f32 = light.intensity * 3.141592;
   var radiance: vec3<f32>;
 
   let kind = light.kind;
