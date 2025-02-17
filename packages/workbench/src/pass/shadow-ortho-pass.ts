@@ -70,8 +70,6 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
   const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
 
   const {
-    into,
-    normal,
     shadow,
     shadowMap,
     shadowUV,
@@ -93,6 +91,11 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
   const draw = quote(yeet(() => {
     let vs = 0;
     let ts = 0;
+
+    const {
+      into,
+      normal,
+    } = map;
 
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
