@@ -47,17 +47,21 @@ export const makeAggregator = (
   const [item] = initialItems;
   const {attributes, refs} = item;
 
+  // Prepare CPU + GPU side aggregate buffers
   const cpuAggregate = schemaToAggregate(schema, attributes, refs, allocInstances, allocVertices, allocIndices);
   const aggregate = toGPUAggregate(device, cpuAggregate);
 
-  const {aggregateBuffers, byRefs, byInstances, byVertices, byIndices, bySelfs} = aggregate;
+  const {aggregateBuffers, byRefs, byInstances, byVertices, byIndices, bySelfs, byJss} = aggregate;
   const instances = aggregateBuffers.instances as ArrayAggregateBuffer;
 
+  // CPU-side JS attributes (not uploaded)
+  const jsValues = byJss?.values;
+
+  // Get instanced attribute sources
   const refSources  = byRefs && getInstancedAggregate(byRefs, instances?.source);
   const itemSources = byInstances && getInstancedAggregate(byInstances, instances?.source);
 
-  const jsValues = aggregate.byJss?.values;
-
+  // Get all attribute sources
   const sources = {
     ...combineInstances(refSources, itemSources),
     ...(byVertices ? getStructAggregate(byVertices) : undefined),
@@ -65,6 +69,7 @@ export const makeAggregator = (
     ...bySelfs?.sources,
   };
 
+  // Callback to update just-in-time attribute refs
   const uploadRefs = byRefs ? () => {
     uploadAggregateFromSchemaRefs(device, schema, aggregate);
   } : null;
