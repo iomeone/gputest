@@ -19,7 +19,7 @@ import { InfoBox } from '../../ui/info-box';
 // Point data fields
 
 const pointSchema = {
-  // Use data[n].path as position
+  // Use data[n].position as position
   positions: {format: 'vec3<f32>', prop: 'position'},
   // Use data[n].color as color
   colors: {format: 'vec4<f32>', prop: 'color'},
