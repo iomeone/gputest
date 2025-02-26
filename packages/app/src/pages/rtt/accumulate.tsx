@@ -74,6 +74,7 @@ export const RTTAccumulatePage: LC = () => {
             <Loop>
 
               <AccumulateRender
+                limit={256}
                 target={feedbackTarget}
                 render={(frame: Lazy<number>) => {
                   const shader = useShader(accumShader, [frame]);
