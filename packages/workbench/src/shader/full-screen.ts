@@ -1,6 +1,7 @@
 import type { LiveComponent } from '@use-gpu/live';
 import type { TextureSource, Lazy } from '@use-gpu/core';
 import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { use, useMemo } from '@use-gpu/live';
 import { bundleToAttributes } from '@use-gpu/shader/wgsl';
@@ -20,7 +21,7 @@ export type FullScreenProps = {
 
   initial?: boolean,
   history?: boolean | number,
-};
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'blend'>;
 
 const NO_SOURCES: ShaderSource[] = [];
 
@@ -43,6 +44,10 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
     args = NO_SOURCES,
     initial,
     history,
+
+    mode,
+    alphaToCoverage,
+    blend,
   } = props;
 
   const target = useRenderContext();
@@ -79,6 +84,10 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
     return use(RawFullScreen, {
       texture: t,
       initial,
+
+      mode,
+      alphaToCoverage,
+      blend,
     });
-  }, [shader, texture, target, initial, history, args, source, sources]);
+  }, [shader, texture, target, initial, history, args, source, sources, mode, alphaToCoverage, blend]);
 }

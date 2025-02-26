@@ -1,3 +1,4 @@
+export * from './accumulate-render';
 export * from './buffer/gbuffer';
 export * from './buffer/picking-buffer';
 export * from './buffer/shadow-buffer';

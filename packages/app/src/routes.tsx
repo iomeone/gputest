@@ -30,6 +30,7 @@ import { PresentSlidesPage } from './pages/present/slides';
 import { RTTCubeTargetPage } from './pages/rtt/cube-target';
 import { RTTLinearRGBPage } from './pages/rtt/linear-rgb';
 import { RTTFeedbackPage } from './pages/rtt/feedback';
+import { RTTAccumulatePage } from './pages/rtt/accumulate';
 import { RTTMultiscalePage } from './pages/rtt/multiscale';
 import { RTTCFDComputePage } from './pages/rtt/cfd-compute';
 import { RTTCFDTexturePage } from './pages/rtt/cfd-texture';
@@ -65,6 +66,7 @@ export const makePages = () => [
   {path: "/rtt/cube-target",             title: "RTT - Cube Target",                 element: <RTTCubeTargetPage />},
   {path: "/rtt/linear-rgb",              title: "RTT - Linear RGB",                  element: <RTTLinearRGBPage />},
   {path: "/rtt/feedback",                title: "RTT - Feedback",                    element: <RTTFeedbackPage />},
+  {path: "/rtt/accumulate",              title: "RTT - Accumulate",                  element: <RTTAccumulatePage />},
   {path: "/rtt/multiscale",              title: "RTT - Multiscale R-D",              element: <RTTMultiscalePage />},
   {path: "/rtt/cfd-compute",             title: "RTT - Fluid Dynamics (Compute I)",  element: <RTTCFDComputePage />},
   {path: "/rtt/cfd-texture",             title: "RTT - Fluid Dynamics (Compute II)", element: <RTTCFDTexturePage />},

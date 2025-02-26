@@ -29,6 +29,9 @@ export const makeShaderBinding = <T extends ShaderModule>(
   source?: StorageSource | TextureSource | LambdaSource<T> | T | any,
 ): DataBinding<T> => {
   if (source != null) {
+    if (source.gpuContext) {
+      throw new Error("Passing OffscreenTarget directly to shader. Pass `target.source` instead.");
+    }
     if (source.shader) {
       const lambda = source as LambdaSource<T>;
       return {uniform, lambda};

@@ -14,6 +14,7 @@ const DEBUG = false;
 
 export type LoopProps = PropsWithChildren<{
   live?: boolean,
+  decimate?: number,
 }>;
 
 export type LoopRef = {
@@ -30,6 +31,9 @@ export type LoopRef = {
     queued: boolean,
     request: number | null,
   },
+  callback: {
+    render?: (time)
+  }
   loop: {
     request?: (fiber?: LiveFiber<any>) => TimeContextProps,
   },
@@ -41,7 +45,7 @@ export type LoopRef = {
 
 /** Provides `useAnimationFrame` and clock to allow for controlled looping and animation. */
 export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
-  const {live, children} = props;
+  const {live, decimate = 1, children} = props;
   const parent = useContext(LoopContext);
 
   const ref: LoopRef = useOne(() => ({
@@ -57,6 +61,10 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       pending: false,
       queued: false,
       request: null,
+    },
+    dispatch: {
+      fibers: [],
+      render: (timestamp?: number) => {},
     },
     loop: {
       buffered: true,
@@ -75,11 +83,14 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
     ref.version.frame = incrementVersion(ref.version.frame);
   });
 
+  const renderAnimationFrame = useCallback((timestamp?: number) => ref.dispatch.render(timestamp));
+
   // Request animation frame wrapper
   // for looped component re-rendering.
   const render = useResource((dispose) => {
-    const {time, loop} = ref;
-    const fibers: LiveFiber<any>[] = [];
+    const {time, loop, dispatch} = ref;
+    const {fibers} = dispatch;
+    DEBUG && console.log('Reinitialize loop');
 
     let mounted = true;
     dispose(() => mounted = false);
@@ -91,7 +102,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       );
 
       // Enqueue animated fiber for next frame
-      if (!ref.version.pending) ref.version.request = requestAnimationFrame(render);
+      if (!ref.version.pending) ref.version.request = requestAnimationFrame(renderAnimationFrame);
       if (fiber && fibers.indexOf(fiber) < 0) fibers.push(fiber);
       ref.version.pending = true;
 
@@ -108,16 +119,25 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
     };
 
     const render = (timestamp?: number) => {
-      DEBUG && console.log('Dispatch loop', +new Date() - START);
-      requestImmediateRender();
-
       ref.version.pending = false;
       ref.version.request = null;
+
+      DEBUG && console.log('-- Dispatch loop', +new Date() - START);
+
+      const skipFrame = decimate > 1 && (ref.version.frame % decimate) !== 0;
+      requestImmediateRender();
 
       // Abort on unmount
       if (!mounted) {
         DEBUG && console.log('Unmounted');
         return;
+      }
+
+      // Skip
+      if (skipFrame) {
+        DEBUG && console.log('-- Skip frame');
+        parent?.request();
+        return request();
       }
 
       // Loop continuously if live
@@ -127,7 +147,10 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       if (timestamp != null) {
 
         // Check for variable frame rate shenanigans
-        if (timestamp - time.timestamp < 3) return request();
+        if (timestamp - time.timestamp < 3) {
+          DEBUG && console.warn('Unreasonable frame interval detected < 3ms');
+          return request();
+        }
 
         if (time.timestamp === -Infinity) time.start = timestamp;
         else time.delta = timestamp - time.timestamp;
@@ -137,7 +160,11 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       }
 
       // Schedule enqueued fibers from last frame
-      for (const fiber of fibers) fiber.host?.schedule(fiber);
+      DEBUG && console.log('ping fibers', fibers.length)
+      for (const fiber of fibers) if (fiber.bound) {
+        fiber.host?.schedule(fiber);
+        if (fiber.version != null) fiber.version = incrementVersion(fiber.version);
+      }
       fibers.length = 0;
 
       // Render detached children
@@ -149,6 +176,8 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
     };
 
     loop.request = request;
+    dispatch.render = render;
+
     return render;
   }, [live]);
 
@@ -228,6 +257,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
               // To avoid flashes, respond to outside updates immediately,
               // as they are usually a resize event.
               if (ref.version.request) cancelAnimationFrame(ref.version.request);
+              DEBUG && console.log('Sync render');
               render();
             })
           ),
