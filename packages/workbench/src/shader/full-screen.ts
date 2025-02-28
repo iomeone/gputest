@@ -20,6 +20,8 @@ export type FullScreenProps = {
   args?: Lazy<any>[],
 
   initial?: boolean,
+  version?: number,
+
   history?: boolean | number,
 } & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'blend'>;
 
@@ -43,6 +45,7 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
     sources = NO_SOURCES,
     args = NO_SOURCES,
     initial,
+    version = 0,
     history,
 
     mode,
@@ -84,6 +87,7 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
     return use(RawFullScreen, {
       texture: t,
       initial,
+      version,
 
       mode,
       alphaToCoverage,

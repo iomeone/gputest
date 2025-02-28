@@ -19,6 +19,7 @@ export type AccumulateRenderProps = {
   continued?: boolean,
   frames?: number,
   limit?: number,
+  version?: number,
 
   render?: RenderProp,
   children?: RenderProp,
@@ -32,6 +33,7 @@ export const AccumulateRender: LC<AccumulateRenderProps> = memo((props: Accumula
     target,
     continued = false,
     frames = 1,
+    version = 0,
     limit,
 
     then,
@@ -58,7 +60,7 @@ export const AccumulateRender: LC<AccumulateRenderProps> = memo((props: Accumula
 
             useMemo(() => {
               if (!continued) frameRef.current = 0;
-            }, [continued, ...fs]);
+            }, [continued, version, ...fs]);
 
             return useMemo(() => {
               const run = () => {

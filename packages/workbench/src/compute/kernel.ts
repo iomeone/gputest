@@ -19,6 +19,7 @@ export type KernelProps = {
   sources?: ShaderSource[],
   args?: Lazy<any>[],
   initial?: boolean,
+  version?: number,
   history?: boolean | number,
   size?: Lazy<number[] | VectorLike>,
   swap?: boolean,
@@ -42,6 +43,7 @@ export const Kernel: LiveComponent<KernelProps> = (props) => {
     args = NO_SOURCES,
     size,
     initial,
+    version = 0,
     history,
     swap = true,
   } = props;
@@ -75,13 +77,7 @@ export const Kernel: LiveComponent<KernelProps> = (props) => {
     return [kernel, dataSize, workgroupSize];
   }, [shader, targets, source, sources, argRefs, history]);
 
-  const firstRef = useRef(true);
-  initial ? useMemo(() => { firstRef.current = true; }, targets) : useNoMemo();
-
-  const shouldDispatch = initial ? () => {
-    if (!firstRef.current) return false;
-    firstRef.current = false;
-  } : undefined;
+  const shouldDispatch = initial ? useInitialDispatch([version]) : useNoInitialDispatch();
 
   const onDispatch = () => {
     if (swap) for (const t of targets) if (t.swap) t.swap();

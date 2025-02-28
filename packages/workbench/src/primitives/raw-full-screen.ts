@@ -10,6 +10,7 @@ import { getBundleKey } from '@use-gpu/shader/wgsl';
 import { useShader } from '../hooks/useShader';
 import { usePickingShader } from '../providers/picking-provider';
 import { useRenderContext, useNoRenderContext } from '../providers/render-provider';
+import { useInitialRender, useNoInitialRender } from '../hooks/useInitialDispatch';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
@@ -19,7 +20,9 @@ import { getTextureColor } from '@use-gpu/wgsl/mask/textured.wgsl';
 export type RawFullScreenProps = {
   texture?: TextureSource | LambdaSource | ShaderModule,
   filter?: ShaderModule,
+
   initial?: boolean,
+  version?: number,
 
   pipeline?: DeepPartial<GPURenderPipelineDescriptor>,
   id?: number,
@@ -31,7 +34,9 @@ export const RawFullScreen: LiveComponent<RawFullScreenProps> = memo((props: Raw
     alphaToCoverage,
     blend,
     id = 0,
+
     initial = false,
+    version = 0,
   } = props;
 
   const vertexCount = 3;
@@ -45,14 +50,7 @@ export const RawFullScreen: LiveComponent<RawFullScreenProps> = memo((props: Raw
   const links = useOne(() => ({getVertex, getFragment, getPicking}),
     getBundleKey(getVertex) + getBundleKey(getFragment) + (getPicking ? getBundleKey(getPicking) : 0));
 
-  const renderContext = initial ? useRenderContext() : useNoRenderContext();
-  const firstRef = useRef(true);
-  initial ? useOne(() => { firstRef.current = true; }, renderContext) : useNoOne();
-
-  const shouldDispatch = initial ? () => {
-    if (!firstRef.current) return false;
-    firstRef.current = false;
-  } : undefined;
+  const shouldDispatch = initial ? useInitialRender([version]) : useNoInitialRender();
 
   const [pipeline, defines] = usePipelineOptions({
     mode,
