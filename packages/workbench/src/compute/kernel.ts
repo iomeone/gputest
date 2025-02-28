@@ -8,6 +8,7 @@ import { bundleToAttribute, getBundleEntry } from '@use-gpu/shader/wgsl';
 import { getShader } from '../hooks/useShader';
 import { getDerivedSource } from '../hooks/useDerivedSource';
 import { useShaderRefs } from '../hooks/useShaderRef';
+import { useInitialDispatch, useNoInitialDispatch } from '../hooks/useInitialDispatch';
 
 import { useComputeContext } from '../providers/compute-provider';
 
