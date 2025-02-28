@@ -73,8 +73,8 @@ export const ShaderLitMaterial: LC<ShaderLitMaterialProps> = (props: ShaderLitMa
     children,
   } = props;
 
-  const {useMaterial} = useLightContext();
-  const applyLights = useMaterial(apply);
+  const {useApplyMaterial} = useLightContext();
+  const applyLights = useApplyMaterial(apply);
   const applyEnvironment = environment;
 
   const getLight = getLitFragment;

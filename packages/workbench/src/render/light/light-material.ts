@@ -36,7 +36,7 @@ export const LightMaterial: LC<LightMaterialProps> = (props: LightMaterialProps)
       useLight: UseLight,
     ) => {
       const context = useMemo(() => {
-        const bindMaterial = (applyMaterial: ShaderModule) => {
+        const bindApplyMaterial = (applyMaterial: ShaderModule) => {
 
           const applyDirectionalShadow = shadows ? bindBundle(applyDirectionalShadowWGSL, {sampleShadow}) : null;
           const applyPointShadow = shadows ? bindBundle(applyPointShadowWGSL, {sampleShadow}) : null;
@@ -50,10 +50,10 @@ export const LightMaterial: LC<LightMaterialProps> = (props: LightMaterialProps)
           return bindBundle(applyLightsWGSL, {applyLight, getLightCount, getLight});
         };
 
-        const useMaterial = (applyMaterial: ShaderModule) =>
-          useMemo(() => bindMaterial(applyMaterial), [bindMaterial, applyMaterial]);
+        const useApplyMaterial = (applyMaterial: ShaderModule) =>
+          useMemo(() => bindApplyMaterial(applyMaterial), [bindApplyMaterial, applyMaterial]);
 
-        return {useLight, useMaterial};
+        return {useLight, useApplyMaterial};
       }, [useLight, shadows]);
 
       return (

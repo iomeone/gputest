@@ -24,7 +24,7 @@ export const DEFAULT_MATERIAL_CONTEXT = {
   shaded: {
     getSurface,
     getLight: getLitFragment,
-    applyLights: DEFAULT_LIGHT_CONTEXT.bindMaterial(applyPBRMaterial),
+    applyLights: DEFAULT_LIGHT_CONTEXT.bindApplyMaterial(applyPBRMaterial),
   },
 };
 

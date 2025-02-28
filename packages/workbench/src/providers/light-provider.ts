@@ -9,8 +9,8 @@ import { applyLights as applyLightsWGSL } from '@use-gpu/wgsl/material/lights-de
 
 export type LightContextProps = {
   useLight: (l: Light) => void,
-  bindMaterial: (s: ShaderModule) => ShaderModule,
-  useMaterial: (s: ShaderModule) => ShaderModule,
+  bindApplyMaterial: (s: ShaderModule) => ShaderModule,
+  useApplyMaterial: (s: ShaderModule) => ShaderModule,
 };
 
 export const DEFAULT_LIGHT_CONTEXT = {
@@ -18,13 +18,13 @@ export const DEFAULT_LIGHT_CONTEXT = {
     console.warn('Light used in a pass without lights enabled.');
   },
 
-  bindMaterial: (applyMaterial: ShaderModule) => {
+  bindApplyMaterial: (applyMaterial: ShaderModule) => {
     const applyLight = bindBundle(applyLightWGSL, {applyMaterial});
     return bindBundle(applyLightsWGSL, {applyLight});
   },
 
-  useMaterial: (applyMaterial: ShaderModule) =>
-    useOne(() => DEFAULT_LIGHT_CONTEXT.bindMaterial(applyMaterial), applyMaterial),
+  useApplyMaterial: (applyMaterial: ShaderModule) =>
+    useOne(() => DEFAULT_LIGHT_CONTEXT.bindApplyMaterial(applyMaterial), applyMaterial),
 };
 
 export const LightContext = makeContext<LightContextProps>(DEFAULT_LIGHT_CONTEXT, 'LightContext');
