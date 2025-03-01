@@ -48,11 +48,12 @@ export type RawQuadsProps = {
   transform?: TransformContextProps,
 
   count?: Lazy<number>,
-} & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
+} & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps) => {
   const {
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -114,6 +115,7 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
     stripIndexFormat: 'uint16',
     side: 'both',
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,

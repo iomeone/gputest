@@ -31,7 +31,7 @@ const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' }
 export type RawArrowsFlags = {
   flat?: boolean,
   detail?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 export type RawArrowsProps = {
   anchor?: VectorLike,
@@ -64,6 +64,7 @@ export type RawArrowsProps = {
 export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsProps) => {
   const {
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -129,6 +130,7 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
     side: 'both',
     scissor,
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,

@@ -23,7 +23,7 @@ export type FullScreenProps = {
   version?: number,
 
   history?: boolean | number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 const NO_SOURCES: ShaderSource[] = [];
 
@@ -50,6 +50,7 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
 
     mode,
     alphaToCoverage,
+    alphaToDiscard,
     blend,
   } = props;
 
@@ -91,6 +92,7 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
 
       mode,
       alphaToCoverage,
+      alphaToDiscard,
       blend,
     });
   }, [shader, texture, target, initial, history, args, source, sources, mode, alphaToCoverage, blend]);

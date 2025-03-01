@@ -40,7 +40,7 @@ const INDIRECT_SOURCE   = hasWebGPU ? { readWrite: true, flags: GPUBufferUsage.S
 const INDIRECT_OFFSET_1 = { byteOffset: 16 };
 const READ_ONLY_SOURCE = { readWrite: false };
 
-export type DualContourLayerFlags = Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'alphaToCoverage' | 'blend'>
+export type DualContourLayerFlags = Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>
 
 export type DualContourLayerProps = {
   values: ShaderSource,
@@ -91,6 +91,7 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
     live = false,
 
     alphaToCoverage = true,
+    alphaToDiscard,
     side = 'both',
     mode = 'opaque',
     blend,

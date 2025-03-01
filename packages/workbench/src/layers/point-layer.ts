@@ -30,7 +30,7 @@ export type PointLayerFlags = {
   hard?: boolean,
   hollow?: boolean,
   outline?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export type PointLayerProps = {
   position?: VectorLike,

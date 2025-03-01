@@ -28,7 +28,7 @@ export type RawFacesFlags = {
   flat?: boolean,
   shaded?: boolean,
   fragDepth?: boolean,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>
+} & Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>
 
 export type RawFacesProps = {
   position?: VectorLike,
@@ -79,6 +79,7 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
     mode = 'opaque',
     side = 'front',
     alphaToCoverage,
+    alphaToDiscard,
     fragDepth = false,
     depthTest,
     depthWrite,
@@ -177,6 +178,7 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
     shadow,
     scissor,
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,

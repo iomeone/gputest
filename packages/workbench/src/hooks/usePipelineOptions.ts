@@ -14,6 +14,7 @@ export type PipelineOptions = {
   depthWrite: boolean,
   depthTest: boolean,
   alphaToCoverage: boolean,
+  alphaToDiscard: boolean,
   topology: GPUPrimitiveTopology,
   stripIndexFormat: any,
 };
@@ -51,6 +52,7 @@ export const usePipelineOptions = (
     depthTest = null,
     depthWrite = null,
     alphaToCoverage = false,
+    alphaToDiscard = true,
     blend = (
       (alphaToCoverage && samples === 1) ? 'premultiply' :
       (!alphaToCoverage && mode === 'transparent') ? 'premultiply' : 'none'
@@ -94,6 +96,7 @@ export const usePipelineOptions = (
 
   const defs = useMemo(() => ({
     HAS_ALPHA_TO_COVERAGE: alphaToCoverage && samples > 1,
+    HAS_ALPHA_TO_DISCARD: alphaToDiscard,
     HAS_SCISSOR: !!scissor,
     HAS_SHADOW: !!shadow,
   }), [alphaToCoverage, samples, !!scissor, !!shadow]);

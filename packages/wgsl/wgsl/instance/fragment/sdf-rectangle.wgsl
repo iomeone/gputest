@@ -66,7 +66,7 @@ use '@use-gpu/wgsl/use/color'::{ premultiply };
 
     // Get appropriate SDF
     if (mode == 0) {
-      if (fillColor.a <= 0.0) { discard; }
+      if (HAS_ALPHA_TO_DISCARD) { if (fillColor.a <= 0.0) { discard; } }
       sdf = getBoxSDF(shape.xy, uv, scale);
     }
     else if (mode == 1) { sdf = getBorderBoxSDF(shape.xy, border, uv, scale); }

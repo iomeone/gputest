@@ -112,7 +112,11 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
 
     const source = {
       texture,
-      sampler: {},
+      sampler: {
+        minFilter: 'nearest',
+        magFilter: 'nearest',
+        mipmapFilter: 'nearest',
+      },
       length: s*s*6,
       size: [s, s, 6],
       format: SHADOW_FORMAT,

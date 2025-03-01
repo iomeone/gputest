@@ -27,7 +27,7 @@ const INDICES: UniformAttribute = { format: 'u32', name: 'getIndex' };
 
 export type RawLabelsFlags = {
   flip?: [number, number],
-} & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
+} & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 export type RawLabelsProps = {
   index?: number,
@@ -76,6 +76,7 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
   const {
     mode = 'opaque',
     alphaToCoverage = true,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -140,6 +141,7 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
     stripIndexFormat: 'uint16',
     side: 'both',
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,

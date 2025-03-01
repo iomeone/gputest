@@ -51,13 +51,14 @@ export type SDFRectanglesProps = {
 
   count?: Lazy<number>,
   id?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export const SDFRectangles: LiveComponent<SDFRectanglesProps> = memo((props: SDFRectanglesProps) => {
   const {
     count = 1,
     mode = 'transparent',
     alphaToCoverage = false,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -101,6 +102,7 @@ export const SDFRectangles: LiveComponent<SDFRectanglesProps> = memo((props: SDF
     stripIndexFormat: 'uint16',
     side: 'both',
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,

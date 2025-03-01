@@ -26,12 +26,13 @@ export type RawFullScreenProps = {
 
   pipeline?: DeepPartial<GPURenderPipelineDescriptor>,
   id?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export const RawFullScreen: LiveComponent<RawFullScreenProps> = memo((props: RawFullScreenProps) => {
   const {
     mode = 'opaque',
     alphaToCoverage,
+    alphaToDiscard,
     blend,
     id = 0,
 
@@ -57,6 +58,7 @@ export const RawFullScreen: LiveComponent<RawFullScreenProps> = memo((props: Raw
     topology: 'triangle-list',
     side: 'both',
     alphaToCoverage,
+    alphaToDiscard,
     depthTest: false,
     depthWrite: false,
     blend,

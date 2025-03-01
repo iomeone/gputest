@@ -88,7 +88,7 @@ struct GBufferSampleWithDepth {
   outColor = surface.albedo;
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
-  if (outColor.a <= 0.0) { discard; }
+  if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
 
   if (outColor.a < 1.0) {
     let bits = vec2<u32>(fragCoord.xy) % 2;

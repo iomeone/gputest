@@ -25,7 +25,7 @@ const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' }
 
 export type RawLinesFlags = {
   join?: 'miter' | 'round' | 'bevel',
-} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 export type RawLinesProps = {
   position?: VectorLike,
@@ -74,6 +74,7 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
   const {
     mode = 'opaque',
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -148,6 +149,7 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
     side: 'both',
     scissor,
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,

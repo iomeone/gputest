@@ -35,7 +35,7 @@ export type SurfaceLayerProps = {
   size?: Lazy<[number, number] | [number, number, number] | [number, number, number, number]>,
   side?: 'front' | 'back' | 'both',
   id?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 const [SIZE_BINDING] = bundleToAttributes(getSurfaceIndex);
 

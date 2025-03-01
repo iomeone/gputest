@@ -6,53 +6,36 @@ import React, { Gather } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, Pass, OrbitCamera,
-  LinearRGB, FullScreen, RenderTarget, AccumulateRender,
-  useShader,
+  Loop, Pass, OrbitControls, OrbitCamera,
+  LinearRGB, FullScreen, RenderTarget, RenderToTexture, AccumulateRender,
+  useShader, useRawSource,
 } from '@use-gpu/workbench';
+
+import {
+  Plot, Point, Line,
+} from '@use-gpu/plot';
 
 import { InfoBox } from '../../ui/info-box';
 
-const accumShader = wgsl`
-  @link fn getFrameCount() -> u32 {};
-  @link fn getTargetSize() -> vec2<f32> {};
+import { accumulateShader } from './accumulate/accumulate.wgsl';
+import { compositeShader } from './accumulate/composite.wgsl';
 
-  fn xxhash32_3d(p: vec3<u32>) -> u32 {
-    let p2 = 2246822519u; let p3 = 3266489917u;
-    let p4 = 668265263u; let p5 = 374761393u;
-    var h32 =  p.z + p5 + p.x*p3;
-    h32 = p4 * ((h32 << 17) | (h32 >> (32 - 17)));
-    h32 += p.y * p3;
-    h32 = p4 * ((h32 << 17) | (h32 >> (32 - 17)));
-    h32 = p2 * (h32^(h32 >> 15));
-    h32 = p3 * (h32^(h32 >> 13));
-    return h32^(h32 >> 16);
-  }
+const quadData = new Float32Array([
+  -1e2, -1, -1e2, 1,
+  -1e2, -1,  1e2, 1,
+   1e2, -1,  1e2, 1,
+   1e2, -1, -1e2, 1,
+]);
 
-  @export fn main(uv: vec2<f32>) -> vec4<f32> {
-    let k = getFrameCount();
-
-    let ij = vec2<u32>(uv * getTargetSize());
-    let ijk = vec3<u32>(ij, k % 256);
-
-    let hash = xxhash32_3d(ijk);
-    let noise = f32(hash) / 0xFFFFFFFF;
-
-    return vec4<f32>(vec3<f32>(noise), 1.0);
-  }
-`;
-
-const compositeShader = wgsl`
-  @link fn getAccumulateTexture(uv: vec2<f32>) -> vec4<f32>;
-  @link fn getFrameCount() -> u32 {};
-
-  @export fn main(uv: vec2<f32>) -> vec4<f32> {
-    let sample = getAccumulateTexture(uv);
-    let norm = f32(getFrameCount());
-
-    return vec4<f32>(sample.xyz / norm, 1.0);
-  }
-`;
+const sphereData = new Float32Array([
+  10, 0, 0, 1,
+  10, 0, 0, 1,
+  -10, 0, 0, 1,
+  0, 10, 0, 1,
+  0, -10, 0, 1,
+  0, 0, 10, 1,
+  0, 0, -10, 1,
+]);
 
 export const RTTAccumulatePage: LC = () => {
   return (<>
@@ -69,31 +52,38 @@ export const RTTAccumulatePage: LC = () => {
       ]) => (
 
         <LinearRGB tonemap="aces">
-          <OrbitCamera scale={1080}>
-
-            <Loop>
+          <Camera>
+            <Loop decimate={60}>
 
               <AccumulateRender
                 limit={256}
                 target={feedbackTarget}
-                render={(frame: Lazy<number>) => {
-                  const shader = useShader(accumShader, [frame]);
-                  return (
-                    <Pass overlay>
-                      <FullScreen shader={shader} blend="add" />
-                    </Pass>
-                  );
-                }}
+                render={(frame: Lazy<number>) => <PathTrace frame={frame} />}
                 then={(frame: Lazy<number>, converged: Lazy<boolean>) => (
                   <Pass>
-                    <FullScreen shader={useShader(compositeShader, [feedbackTarget.source, frame])} />
+                    <FullScreen shader={useShader(compositeShader, [feedbackTarget.source, () => 1])} />
+
+                    <Plot>
+                      <Line
+                        positions={quadData}
+                        color={"#ffffff"}
+                        width={5}
+                        loop
+                      />
+                      <Point
+                        positions={sphereData}
+                        color={"#ffffff"}
+                        size={5}
+                        loop
+                      />
+                    </Plot>
                   </Pass>
                 )}
               />
 
             </Loop>
 
-          </OrbitCamera>
+          </Camera>
         </LinearRGB>
 
       )}
@@ -102,4 +92,45 @@ export const RTTAccumulatePage: LC = () => {
   </>);
 };
 
-//render={(frame: Lazy<number>) => [
+type PathTraceProps = {
+  frame: Lazy<number>
+};
+
+const PathTrace = (props: PathTraceProps) => {
+  const {frame} = props;
+
+  const quadSource = useRawSource(quadData, 'vec4<f32>');
+  const sphereSource = useRawSource(sphereData, 'vec4<f32>');
+
+  const shader = useShader(accumulateShader, [
+    frame,
+    () => quadSource.length,
+    quadSource,
+    () => sphereSource.length,
+    sphereSource,
+  ]);
+
+  return (
+    <Pass overlay>
+      <FullScreen shader={shader} blend="premultiply" alphaToDiscard={false} />
+    </Pass>
+  );
+};
+
+const Camera = ({children}: PropsWithChildren<object>) => (
+  <OrbitControls
+    radius={5}
+    bearing={0.5}
+    pitch={0.3}
+    render={(radius: number, phi: number, theta: number, target: vec3) =>
+      <OrbitCamera
+        radius={radius}
+        phi={phi}
+        theta={theta}
+        target={target}
+      >
+        {children}
+      </OrbitCamera>
+    }
+  />
+);

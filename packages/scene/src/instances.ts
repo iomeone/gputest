@@ -22,7 +22,7 @@ import { mat3, mat4, vec4 } from 'gl-matrix';
 const Traits = combine(ColorTrait, LookupTrait, ObjectTrait);
 const useTraits = makeUseTrait(Traits);
 
-export type InstancesFlags = Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
+export type InstancesFlags = Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export type InstancesProps = InstancesFlags & {
   mesh: GPUGeometry,
@@ -65,6 +65,7 @@ export const Instances: LiveComponent<InstancesProps> = (props: InstancesProps) 
     depthTest,
     depthWrite,
     alphaToCoverage,
+    alphaToDiscard,
     blend,
   } = props;
 
@@ -89,10 +90,11 @@ export const Instances: LiveComponent<InstancesProps> = (props: InstancesProps) 
         depthTest,
         depthWrite,
         alphaToCoverage,
+        alphaToDiscard,
         blend,
       }),
     });
-  }, [mesh, shaded, side, id, mode, depthTest, depthWrite, alphaToCoverage, blend]);
+  }, [mesh, shaded, side, id, mode, depthTest, depthWrite, alphaToCoverage, alphaToDiscard, blend]);
 
   return use(InstanceData, {
     format,

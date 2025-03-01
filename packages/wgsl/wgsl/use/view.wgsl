@@ -34,8 +34,16 @@ struct ViewUniforms {
   return viewUniforms.viewMatrix * position;
 }
 
+@export fn viewToWorld(position: vec4<f32>) -> vec4<f32> {
+  return viewUniforms.inverseViewMatrix * position;
+}
+
 @export fn viewToClip(position: vec4<f32>) -> vec4<f32> {
   return viewUniforms.projectionMatrix * position;
+}
+
+@export fn clipToView(position: vec4<f32>) -> vec4<f32> {
+  return viewUniforms.inverseProjectionMatrix * position;
 }
 
 @export fn worldToClip(position: vec4<f32>) -> vec4<f32> {
@@ -53,7 +61,7 @@ struct ViewUniforms {
   return z / w;
 }
 
-@export fn clipToWorld3D(position: vec4<f32>) -> vec4<f32> {
+@export fn clipToWorld3D(position: vec4<f32>) -> vec3<f32> {
   return to3D(clipToWorld(position));
 }
 

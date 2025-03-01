@@ -69,6 +69,7 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
       sampler: {
         minFilter: 'nearest',
         magFilter: 'nearest',
+        mipmapFilter: 'nearest',
         ...sampler,
       } as GPUSamplerDescriptor,
       mips,
