@@ -93,8 +93,12 @@ export const makeBindingLayoutEntry = (
     const texture = {binding, visibility, ...props};
 
     if (hasSampler) {
-      const type = (b.texture.comparison ? 'comparison' : 'filtering') as GPUSamplerBindingType;
+      const isDepth = textureType.match(/_depth(_|$)/);
+
+      const filter = isDepth ? 'non-filtering' : 'filtering' as GPUSamplerBindingType;
+      const type = (b.texture.comparison ? 'comparison' : filter) as GPUSamplerBindingType;
       const sampler = {binding: binding + 1, visibility, sampler: {type}};
+
       return [texture, sampler];
     }
     return texture;
