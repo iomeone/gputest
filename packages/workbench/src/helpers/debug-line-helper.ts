@@ -7,6 +7,7 @@ import { clearBuffer } from '@use-gpu/core';
 import { bindEntryPoint } from '@use-gpu/shader/wgsl';
 import { useDeviceContext } from '../providers/device-provider';
 import { getDerivedSource } from '../hooks/useDerivedSource';
+import { useRenderProp } from '../hooks/useRenderProp';
 import { useScratchSource } from '../hooks/useScratchSource';
 import { getShader } from '../hooks/useShader';
 import { useRawSource } from '../hooks/useRawSource';
@@ -25,7 +26,8 @@ export type DebugHelper = {
 
 export type DebugLineHelperProps = {
   count?: number,
-  render: (helper: DebugHelper) => LiveElement,
+  render?: (helper: DebugHelper) => LiveElement,
+  children?: (helper: DebugHelper) => LiveElement,
 };
 
 const hasWebGPU = typeof GPUBufferUsage !== 'undefined';
@@ -34,9 +36,8 @@ const READ_WRITE_SOURCE = hasWebGPU ? { readWrite: true, flags: GPUBufferUsage.S
 export const DebugLineHelper: LC<DebugLineHelperProps> = (props: DebugLineHelperProps) => {
   const {
     count = 1024,
-    render,
   } = props;
-
+  
   const atomicArray   = useOne(() => new Uint32Array(16));
   const atomicStorage = useRawSource(atomicArray, 'u32', READ_WRITE_SOURCE);
 
@@ -79,5 +80,5 @@ export const DebugLineHelper: LC<DebugLineHelperProps> = (props: DebugLineHelper
     return {target, attributes, shaders, swap};
   }, [device, atomicStorage, atomicArray, debugPositions, debugSegments]);
 
-  return render ? render(helper) : yeet(helper);
+  return useRenderProp(props, helper);
 };

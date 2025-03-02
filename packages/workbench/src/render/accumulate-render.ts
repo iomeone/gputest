@@ -1,6 +1,6 @@
 import type { LC, LiveElement } from '@use-gpu/live';
 import type { Lazy } from '@use-gpu/core';
-import { gather, unquote, use, memo, yeet, useHooks, useMemo, useRef } from '@use-gpu/live';
+import { gather, unquote, use, memo, yeet, useHooks, useMemo, useOne, useRef } from '@use-gpu/live';
 import { useRenderProp } from '../hooks/useRenderProp';
 import { useAnimationFrame } from '../providers/loop-provider';
 import { QueueReconciler } from '../reconcilers/index';
@@ -38,7 +38,7 @@ export const AccumulateRender: LC<AccumulateRenderProps> = memo((props: Accumula
 
     then,
   } = props;
-  
+
   const {source: {history}} = target;
   if (!history || !history.length) throw new Error("<AccumulateRender> target must have history > 0");
 
@@ -60,7 +60,11 @@ export const AccumulateRender: LC<AccumulateRenderProps> = memo((props: Accumula
 
             useMemo(() => {
               if (!continued) frameRef.current = 0;
-            }, [continued, version, ...fs]);
+            }, [continued, ...fs]);
+
+            useOne(() => {
+              frameRef.current = 0;
+            }, version);
 
             return useMemo(() => {
               const run = () => {

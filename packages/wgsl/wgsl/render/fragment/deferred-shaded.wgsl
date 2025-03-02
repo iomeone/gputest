@@ -42,12 +42,13 @@ fn main(
   outColor = surface.albedo;
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
-  if (outColor.a <= 0.0) { discard; }
-
-  if (outColor.a < 1.0) {
-    let bits = vec2<u32>(fragCoord.xy) % 2;
-    let level = (0.5 + f32(bits.x ^ ((bits.x ^ bits.y) << 1))) / 4.0;
-    if (outColor.a < level) { discard; }
+  if (HAS_ALPHA_TO_DISCARD) {
+    if (outColor.a <= 0.0) { discard; }
+    if (outColor.a < 1.0) {
+      let bits = vec2<u32>(fragCoord.xy) % 2;
+      let level = (0.5 + f32(bits.x ^ ((bits.x ^ bits.y) << 1))) / 4.0;
+      if (outColor.a < level) { discard; }
+    }
   }
 
   return GBufferSample(
@@ -88,12 +89,13 @@ struct GBufferSampleWithDepth {
   outColor = surface.albedo;
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
-  if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
-
-  if (outColor.a < 1.0) {
-    let bits = vec2<u32>(fragCoord.xy) % 2;
-    let level = (0.5 + f32(bits.x ^ ((bits.x ^ bits.y) << 1))) / 4.0;
-    if (outColor.a < level) { discard; }
+  if (HAS_ALPHA_TO_DISCARD) {
+    if (outColor.a <= 0.0) { discard; }
+    if (outColor.a < 1.0) {
+      let bits = vec2<u32>(fragCoord.xy) % 2;
+      let level = (0.5 + f32(bits.x ^ ((bits.x ^ bits.y) << 1))) / 4.0;
+      if (outColor.a < level) { discard; }
+    }
   }
 
   return GBufferSample(

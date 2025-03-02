@@ -17,6 +17,7 @@ export * from './light/light-render';
 export * from './light/light-data';
 export * from './light/light-material';
 export * from './linear-rgb';
+export * from './on';
 export * from './pass';
 export * from './picking-target';
 export * from './render-target';

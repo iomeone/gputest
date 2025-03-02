@@ -6,8 +6,6 @@ const ICON = (s: string) => <span className="m-icon">{s}</span>
 
 const STYLE = {
   position: 'absolute',
-  left: 0,
-  top: 0,
   padding: '10px',
   background: 'rgba(0, 0, 0, .75)',
 
@@ -15,15 +13,25 @@ const STYLE = {
 };
 
 type InfoBoxProps = {
+  left?: number | null,
+  right?: number | null,
+  top?: number | null,
+  bottom?: number | null,
+  
   children: any,
 };
 
-export const InfoBox = ({children}: InfoBoxProps) => {
+export const InfoBox = ({left, top, right, bottom, children}: InfoBoxProps) => {
+
+  const style = {...STYLE};
+  if (right != null) { style.right = right } else { style.left = left || 0 };
+  if (bottom != null) { style.bottom = bottom } else { style.top = top || 0 };
+
   const root = document.querySelector('#use-gpu .canvas')!;
   return (
     <HTML
       container={root}
-      style={STYLE}
+      style={style}
     >
       {children}
     </HTML>

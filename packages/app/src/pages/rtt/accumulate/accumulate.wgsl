@@ -1,13 +1,13 @@
 use '@use-gpu/wgsl/use/view'::{ getViewNearFar, getViewPosition, getViewResolution, getViewSize, clipToWorld3D };
 
-const SAMPLING_UNIFORM = 1;
-const SAMPLING_COSINE = 2;
-
-const BOUNCES = 1;
-const SAMPLING = 1;
+const BOUNCES = 2;
+const SAMPLING = 2;
 
 const MAX_SPHERES = 64;
 const MAX_QUAD_VERTS = 64;
+
+const SAMPLING_UNIFORM = 1;
+const SAMPLING_COSINE = 2;
 
 const PI = 3.141592;
 const ZERO = vec3<f32>(0.0);
@@ -15,10 +15,16 @@ const ZERO = vec3<f32>(0.0);
 @link fn getFrameCount() -> u32;
 
 @link fn getQuadCount() -> i32;
-@link fn getQuadVertex(i: i32) -> vec4<f32>;
+@link fn getQuadData(i: i32) -> vec4<f32>;
 
 @link fn getSphereCount() -> i32;
-@link fn getSphere(i: i32) -> vec4<f32>;
+@link fn getSphereData(i: i32) -> vec4<f32>;
+
+@optional @link fn getMouse() -> vec2<u32>;
+@optional @link fn getIsPicking() -> u32;
+
+@optional @link fn emitPoint(p: vec3<f32>, c: vec3<f32>);
+@optional @link fn emitLine(a: vec3<f32>, b: vec3<f32>, c: vec3<f32>);
 
 struct RayHit {
   position: vec3<f32>,
@@ -32,7 +38,7 @@ struct Surface {
   distance: f32,
 
   gloss: f32,
-  albedo: f32,
+  albedo: vec3<f32>,
 };
 
 ////////////////////////////////////////////////////////
@@ -50,6 +56,7 @@ fn yFlip(uv: vec2<f32>) -> vec2<f32> {
   let alpha = select(0.0, 1.0, k == 0);
 
   let xy = vec2<u32>(uv * getViewSize());
+  let isDebugPickingThis = getIsPicking() != 0 && all(xy == getMouse());
 
   let jitterX = noise3(vec3<u32>(xy, k * 2));
   let jitterY = noise3(vec3<u32>(xy, k * 2 + 1));
@@ -58,23 +65,21 @@ fn yFlip(uv: vec2<f32>) -> vec2<f32> {
   let resolution = getViewResolution();
   let eyePos = getViewPosition();
 
-  let clipPos = vec4<f32>((yFlip(uv) /*+ jitter * resolution*/) * 2.0 - 1.0, 0.0, 1.0);
+  let clipPos = vec4<f32>((yFlip(uv) + jitter * resolution) * 2.0 - 1.0, 0.0, 1.0);
   let targetPos = clipToWorld3D(clipPos);
 
-  let globalAlbedo = .75;
+  let globalAlbedo = .95;
 
   var color = vec3<f32>(0.0);
-  var radiance = 2.0;
+  var radiance = vec3<f32>(1.414);
 
   var ray = normalize(targetPos.xyz - eyePos.xyz);
   var origin = eyePos.xyz;
-  
-  var surface = raytrace(origin, ray);
+
+  var surface = raytrace(origin, ray, 0, isDebugPickingThis);
   if (surface.distance <= 0.0) {
     return vec4<f32>(skybox(ray), alpha);
   }
-  
-  //return indic(surface.distance);
 
   for (var i = 0; i < BOUNCES; i++) {
     var reflected: vec3<f32>;
@@ -84,7 +89,7 @@ fn yFlip(uv: vec2<f32>) -> vec2<f32> {
     // Energy constant is 1/π
     // ∫ c/π cos θ * dɷ
     // ~= 2c/N ∑ Li * cos θ
-    
+
     if (SAMPLING == SAMPLING_UNIFORM) {
       reflected = mix(bounceUniform(ray, surface.normal), bounceReflect(ray, surface.normal), surface.gloss);
       radiance *= 2.0 * dot(reflected, surface.normal) * surface.albedo * globalAlbedo;
@@ -95,14 +100,15 @@ fn yFlip(uv: vec2<f32>) -> vec2<f32> {
     // ∫ c/π cos θ * dɷ
     // ~= c/N ∑ Li
     else if (SAMPLING == SAMPLING_COSINE) {
-      reflected = mix(bounceCosine(ray, surface.normal), bounceReflect(ray, surface.normal), surface.gloss);
+      //reflected = mix(bounceCosine(ray, surface.normal), bounceReflect(ray, surface.normal), surface.gloss);
+      reflected = bounceCosine(ray, surface.normal);
       radiance *= surface.albedo * globalAlbedo;
     }
 
     ray = normalize(reflected);
     origin = surface.position;
 
-    surface = raytrace(origin, ray);
+    surface = raytrace(origin, ray, i + 1, isDebugPickingThis);
     if (surface.distance <= 0.0) {
       color += skybox(ray) * radiance;
       break;
@@ -129,6 +135,16 @@ fn skybox(ray: vec3<f32>) -> vec3<f32> {
 
 ////////////////////////////////////////////////////////
 
+fn orthoVector(normal: vec3<f32>) -> vec3<f32> {
+  let a = abs(normal);
+  let m = max(max(a.x, a.y), a.x);
+
+  let d = dot(a, vec3<f32>(1.0));
+  let w = vec3<f32>(select(-1.0, 1.0, d > 0.5), 1.0, 1.0);
+
+  return cross(normal.yzx * w, normal);
+}
+
 fn bounceUniform(ray: vec3<f32>, normal: vec3<f32>) -> vec3<f32> {
   let k = getFrameCount();
 
@@ -144,12 +160,13 @@ fn bounceCosine(ray: vec3<f32>, normal: vec3<f32>) -> vec3<f32> {
   let k = getFrameCount();
   let hemi = randomSphereCosine(ray, k);
 
-  let bx = cross(normal, vec3(.57735, .57735, .57735));
+  let bx = normalize(orthoVector(normal));
   let by = cross(normal, bx);
   let bz = normal;
+
   let basis = mat3x3(bx, by, bz);
 
-  return basis * hemi;
+  return basis * normalize(hemi);
 }
 
 fn randomSphere(seed: vec3<f32>, frame: u32) -> vec3<f32> {
@@ -170,14 +187,14 @@ fn randomSphere(seed: vec3<f32>, frame: u32) -> vec3<f32> {
 fn randomSphereCosine(seed: vec3<f32>, frame: u32) -> vec3<f32> {
   let t = vec2<f32>(
     rand2(seed.xy, frame),
-    rand2(seed.zy * 2.0, frame)
+    rand2(seed.yz * 2.0, frame)
   );
 
   let r = sqrt(t.x);
   let th = 6.2831 * t.y;
 
-  let x = cos(th);
-  let y = sin(th);
+  let x = cos(th) * r;
+  let y = sin(th) * r;
   let z = sqrt(1.0 - t.x);
 
   return vec3<f32>(x, y, z);
@@ -185,7 +202,7 @@ fn randomSphereCosine(seed: vec3<f32>, frame: u32) -> vec3<f32> {
 
 fn rand2(xy: vec2<f32>, frame: u32) -> f32 {
   let ij = bitcast<vec2<u32>>(xy);
-  return noise3(vec3<u32>(ij, frame)) * 2.0 - 1.0;
+  return noise3(vec3<u32>(ij, frame));
 }
 
 fn noise3(ijk: vec3<u32>) -> f32 {
@@ -211,6 +228,9 @@ fn xxhash32_3d(p: vec3<u32>) -> u32 {
 fn raytrace(
   origin: vec3<f32>,
   ray: vec3<f32>,
+  
+  bounce: i32,
+  isDebugPickingThis: bool,
 ) -> Surface {
   let nearFar = getViewNearFar();
   let far = nearFar.y;
@@ -218,21 +238,23 @@ fn raytrace(
   var pos: vec3<f32> = ZERO;
   var normal: vec3<f32> = ZERO;
   var distance = far;
-  
+
   var gloss: f32 = 0.0;
-  var albedo: f32 = 0.0;
-  
+  var albedo: vec3<f32> = vec3<f32>(0.0);
+
   let numQuads = getQuadCount();
   let numSpheres = getSphereCount();
-  
-  for (var i = 0; i < MAX_SPHERES; i++) {
+
+  for (var i = 0; i < MAX_SPHERES; i += 2) {
     if (i >= numSpheres) {
       break;
     }
 
-    let s = getSphere(i);
+    let s = getSphereData(i);
     let p = s.xyz;
     let r = s.w;
+
+    let color = getSphereData(i + 1).xyz;
 
     let rayHit = intersectSphere(origin, ray, p, r);
     if (rayHit.distance >= 0 && rayHit.distance < distance) {
@@ -240,21 +262,22 @@ fn raytrace(
       normal = rayHit.normal;
       distance = rayHit.distance;
 
-      gloss = sin(f32(i) * 4.511) * .5 + .5;
-      gloss = gloss * gloss * .5;
-      albedo = 1.0;
+      gloss = 0.0;//sin(f32(i) * 77.51891671) * .5 + .5;
+      albedo = color;
     }
   }
 
-  for (var i = 0; i < MAX_QUAD_VERTS; i += 4) {
+  for (var i = 0; i < MAX_QUAD_VERTS; i += 5) {
     if (i >= numQuads) {
       break;
     }
 
-    let a = getQuadVertex(i).xyz;
-    let b = getQuadVertex(i + 1).xyz;
-    let c = getQuadVertex(i + 2).xyz;
-    let d = getQuadVertex(i + 3).xyz;
+    let a = getQuadData(i).xyz;
+    let b = getQuadData(i + 1).xyz;
+    let c = getQuadData(i + 2).xyz;
+    let d = getQuadData(i + 3).xyz;
+
+    let color = getQuadData(i + 4).xyz;
 
     let rayHit = intersectQuad(origin, ray, a, b, c, d);
     if (rayHit.distance >= 0 && rayHit.distance < distance) {
@@ -263,12 +286,26 @@ fn raytrace(
       distance = rayHit.distance;
 
       gloss = .01;
-      albedo = select(0.75, 1.0, pos.y > 0.001);
+      albedo = color;
     }
   }
 
+  if (HAS_DEBUG_PICKING && isDebugPickingThis) {
+    let a = origin;
+    let b = origin + select(1.0, distance, distance < far) * ray;
+
+    var IN = vec3<f32>(0.5, 1.2, 1.0);
+    let OUT = vec3<f32>(.2);
+    for (var i = 0; i < bounce; i++) { IN = IN.yzx; }
+
+    let c = mix(IN, OUT, distance / far);
+
+    emitPoint(b, c);
+    emitLine(a, b, c);
+  }
+
   if (distance >= far) {
-    return Surface(ZERO, ZERO, -1.0, 0.0, 0.0);
+    return Surface(ZERO, ZERO, -1.0, 0.0, vec3<f32>(0.0));
   }
 
   return Surface(pos, normal, distance, gloss, albedo);
@@ -290,10 +327,10 @@ fn intersectQuad(
   let normal = normalize(cross(ab, bc));
 
   let divisor = dot(normal, ray);
-  if (divisor > -.001) { return RayHit(ZERO, ZERO, -1.0); }
+  if (divisor > -0.0001) { return RayHit(ZERO, ZERO, -1.0); }
 
   let distance = dot(a - origin, normal) / divisor;
-  if (distance < 0.00001) { return RayHit(ZERO, ZERO, -1.0); }
+  if (distance < 0.0001) { return RayHit(ZERO, ZERO, -1.0); }
 
   let pos = distance * ray + origin;
   if (dot(normal, cross(ab, pos - a)) < 0.0) { return RayHit(ZERO, ZERO, -1.0); }
