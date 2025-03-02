@@ -1,6 +1,7 @@
 import eslint from "@eslint/js";
 import tseslint from 'typescript-eslint';
 import rhooks from 'eslint-plugin-react-hooks';
+import unused from 'eslint-plugin-unused-imports';
 
 export default tseslint.config({
   extends: [
@@ -9,13 +10,15 @@ export default tseslint.config({
     {
       plugins: {
         "react-hooks": rhooks,
+        "unused": unused,
       },
       rules: rhooks.configs.recommended.rules,
     },
   ],
-  files: ['packages/**/src/*.ts', 'packages/**/src/*.tsx'],
+  files: ['packages/**/*.ts', 'packages/**/*.tsx'],
   ignores: [
-    "*.wgsl.ts"
+    "packages/**/*.wgsl.ts",
+    "packages/**/*.wasm.d.ts",
   ],
   rules: {
     "@typescript-eslint/ban-ts-comment": "off",

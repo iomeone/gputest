@@ -31,16 +31,15 @@ export type LoopRef = {
     queued: boolean,
     request: number | null,
   },
-  callback: {
-    render?: (time)
+  dispatch: {
+    fibers: LiveFiber<any>[],
+    render?: (timestamp?: number) => void,
+    renderChildren?: () => void,
   }
   loop: {
     request?: (fiber?: LiveFiber<any>) => TimeContextProps,
   },
   children?: LiveNode,
-
-  run?: () => void,
-  dispatch?: () => void,
 };
 
 /** Provides `useAnimationFrame` and clock to allow for controlled looping and animation. */
@@ -85,7 +84,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
   }, []);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const renderAnimationFrame = useCallback((timestamp?: number) => ref.dispatch.render(timestamp), []);
+  const renderAnimationFrame = useCallback((timestamp?: number) => ref.dispatch.render?.(timestamp), []);
 
   // Request animation frame wrapper
   // for looped component re-rendering.
@@ -170,8 +169,8 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       fibers.length = 0;
 
       // Render detached children
-      const {run} = ref;
-      if (run) run();
+      const {renderChildren} = ref.dispatch;
+      if (renderChildren) renderChildren();
 
       // Check if animation stopped
       queueMicrotask(resetIfIdle);
@@ -255,8 +254,8 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       quote(
         gather(
           unquote(
-            detach(use(Run), (run: Task) => {
-              ref.run = run;
+            detach(use(Run), (renderChildren: Task) => {
+              ref.dispatch.renderChildren = renderChildren;
               // To avoid flashes, respond to outside updates immediately,
               // as they are usually a resize event.
               if (ref.version.request) cancelAnimationFrame(ref.version.request);

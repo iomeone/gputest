@@ -1,4 +1,4 @@
-import type { LC, ArrowFunction } from '@use-gpu/live';
+import type { LC, LiveElement, ArrowFunction } from '@use-gpu/live';
 import type { ComputeToPass, CommandToBuffer } from '../pass/types';
 
 import { yeet, useMemo } from '@use-gpu/live';

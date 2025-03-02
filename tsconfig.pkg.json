@@ -18,7 +18,7 @@
     "baseUrl": "./",
     "paths": {},
     "rootDirs": [],
-    "types": ["@webgpu/types", "jest"],
+    "types": ["node", "@webgpu/types", "jest"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

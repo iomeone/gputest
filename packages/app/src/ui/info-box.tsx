@@ -20,7 +20,7 @@ type InfoBoxProps = {
 
 export const InfoBox = ({left, top, right, bottom, children}: InfoBoxProps) => {
 
-  const style = {...STYLE};
+  const style: Record<string, any> = {...STYLE};
   if (right != null) { style.right = right } else { style.left = left || 0 };
   if (bottom != null) { style.bottom = bottom } else { style.top = top || 0 };
 

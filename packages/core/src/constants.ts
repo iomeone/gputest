@@ -818,7 +818,7 @@ export const TEXTURE_SHADER_TYPES = {
 } as Record<GPUTextureFormat, string>;
 
 // @ts-ignore
-export const VERTEX_ATTRIBUTE_SIZES = VERTEX_SIZES as {[GPUVertexFormat]: number};
+export const VERTEX_ATTRIBUTE_SIZES = VERTEX_SIZES as {[v in GPUVertexFormat]: number};
 
 // Standard blends
 export const BLEND_NONE = undefined;

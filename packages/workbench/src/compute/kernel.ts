@@ -79,7 +79,7 @@ export const Kernel: LiveComponent<KernelProps> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shader, targets, source, sources, size, history, args.length]);
 
-  const shouldDispatch = initial ? useInitialDispatch([version]) : useNoInitialDispatch();
+  const shouldDispatch = initial ? useInitialDispatch([version]) : (useNoInitialDispatch(), undefined);
 
   const onDispatch = () => {
     if (swap) for (const t of targets) if (t.swap) t.swap();

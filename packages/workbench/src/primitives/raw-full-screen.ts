@@ -50,7 +50,7 @@ export const RawFullScreen: LiveComponent<RawFullScreenProps> = memo((props: Raw
   const links = useOne(() => ({getVertex, getFragment, getPicking}),
     getBundleKey(getVertex) + getBundleKey(getFragment) + (getPicking ? getBundleKey(getPicking) : 0));
 
-  const shouldDispatch = initial ? useInitialRender([version]) : useNoInitialRender();
+  const shouldDispatch = initial ? useInitialRender([version]) : (useNoInitialRender(), undefined);
 
   const [pipeline, defines] = usePipelineOptions({
     mode,

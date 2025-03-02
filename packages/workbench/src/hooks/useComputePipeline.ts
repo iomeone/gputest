@@ -49,7 +49,7 @@ export const useComputePipeline = (
           code: shader.code,
         },
       };
-      if (SHADER_LOG != null) SHADER_LOG.set(key, log);
+      //if (SHADER_LOG != null) SHADER_LOG.set(key, log);
     }
 
     // Make new pipeline
@@ -97,14 +97,14 @@ export const useComputePipelineAsync = (
       return cached;
     }
 
-    if (SHADER_LOG != null) {
-      SHADER_LOG.set(key, {
-        compute: {
-          hash: shader.hash,
-          code: shader.code,
-        },
-      });
-    }
+    //if (SHADER_LOG != null) {
+    //  SHADER_LOG.set(key, {
+    //    compute: {
+    //      hash: shader.hash,
+    //      code: shader.code,
+    //    },
+    //  });
+    //}
 
     // Mark current pipeline as stale (if any)
     const resolve = (pipeline: GPUComputePipeline) => {

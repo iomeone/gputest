@@ -1,8 +1,9 @@
-import type { LC, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
 import type { Lazy, OffscreenTarget } from '@use-gpu/core';
 
 import React, { Gather, useVersion } from '@use-gpu/live';
 import { seq } from '@use-gpu/core';
+import { vec3 } from 'gl-matrix';
 
 import {
   Loop, Pass, OrbitControls, OrbitCamera, Cursor,
@@ -61,6 +62,7 @@ export const RTTAccumulatePage: LC = () => {
         debugHelper,
       ]: [
         OffscreenTarget,
+        DebugHelper,
       ]) => (
 
         <LinearRGB tonemap="aces">

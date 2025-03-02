@@ -15,7 +15,7 @@ const makePipelineCache = (options: Record<string, any> = {}) => new LRU<string,
   ...options,
 });
 
-const SHADER_LOG: LRU<string, any> | null = null;
+//const SHADER_LOG: LRU<string, any> | null = null;
 
 const CACHE = new WeakMap<any, LRU<string, any>>();
 const PENDING = new WeakMap<any, Map<string, any>>();
@@ -64,7 +64,7 @@ export const useRenderPipeline = (
           code: shader[1].code,
         } : null,
       };
-      if (SHADER_LOG) SHADER_LOG.set(key, log);
+      //if (SHADER_LOG) SHADER_LOG.set(key, log);
     }
 
     // Make new pipeline
@@ -127,21 +127,21 @@ export const useRenderPipelineAsync = (
       return cached;
     }
 
-    if (SHADER_LOG) {
-      SHADER_LOG.set(key, {
-        colorStates,
-        depthStencilState,
-        props,
-        vertex: {
-          hash: shader[0].hash,
-          code: shader[0].code,
-        },
-        fragment: shader[1] ? {
-          hash: shader[1].hash,
-          code: shader[1].code,
-        } : null,
-      });
-    }
+    //if (SHADER_LOG) {
+    //  SHADER_LOG.set(key, {
+    //    colorStates,
+    //    depthStencilState,
+    //    props,
+    //    vertex: {
+    //      hash: shader[0].hash,
+    //      code: shader[0].code,
+    //    },
+    //    fragment: shader[1] ? {
+    //      hash: shader[1].hash,
+    //      code: shader[1].code,
+    //    } : null,
+    //  });
+    //}
 
     // Mark current pipeline as stale (if any)
     const resolve = (pipeline: GPURenderPipeline) => {
@@ -200,8 +200,10 @@ export const useNoRenderPipelineAsync = () => {
   useNoMemo();
 };
 
+/*
 export const setShaderLog = (n: number) => SHADER_LOG = new LRU<string, any>({ max: n });
 export const getShaderLog = () => {
   if (!SHADER_LOG) return [] as any;
   return SHADER_LOG.values();
 };
+*/
