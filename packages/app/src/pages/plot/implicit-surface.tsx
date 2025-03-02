@@ -113,12 +113,21 @@ const prefilteredEnvMap = ([texture]: TextureSource[]) => <PrefilteredEnvMap tex
 
 export const PlotImplicitSurfacePage: LC = () => {
 
-  const colorizeShader = wgsl`
+  const colorizeValuesShader = wgsl`
     @link fn getData(i: u32) -> f32 {};
 
     fn main(i: u32) -> vec4<f32> {
       let sample = getData(i);
       return vec4<f32>(max(0.0, sample), max(0.0, sample * .2) + max(0.0, -sample * .3), max(0.0, -sample), 1.0);
+    }
+  `;
+
+  const colorizeNormalsShader = wgsl`
+    @link fn getData(i: u32) -> vec4<f32> {};
+
+    fn main(i: u32) -> vec4<f32> {
+      let sample = getData(i);
+      return vec4<f32>(max(sample.xyz * .5 + .5, vec3<f32>(0.0)), 1.0);
     }
   `;
 
@@ -189,14 +198,14 @@ export const PlotImplicitSurfacePage: LC = () => {
                             children={<>
                               <Sampler
                                 axes='xyz'
-                                format='vec3<f32>'
+                                format='vec4<f32>'
                                 size={VOLUME_SIZE}
                                 padding={1}
                                 expr={EXPR_POSITION}
                               />
                               <Sampler
                                 axes='xyz'
-                                format='vec3<f32>'
+                                format='vec4<f32>'
                                 size={VOLUME_SIZE}
                                 padding={1}
                                 expr={EXPR_NORMAL}
@@ -228,13 +237,13 @@ export const PlotImplicitSurfacePage: LC = () => {
                                 </PBRMaterial>
                                 {inspect ? (
                                   <DataShader
-                                    shader={colorizeShader}
-                                    data={values}
+                                    shader={mode === 'normal' ? colorizeNormalsShader : colorizeValuesShader}
+                                    data={mode === 'normal' ? normals : values}
                                   >{
                                     (colorizedValues: LambdaSource) => (
                                       <Point
                                         positions={positions}
-                                        colors={mode === 'normal' ? normals : colorizedValues}
+                                        colors={colorizedValues}
                                         size={3}
                                         depth={1}
                                       />

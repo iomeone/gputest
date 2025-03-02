@@ -56,7 +56,7 @@ export const SurfaceControls: LC<SurfaceControlsProps> = (props: SurfaceControls
         {hasInspect ? (<>
           <div>
             <label><input type="checkbox" checked={inspect} onChange={(e) => setInspect(e.target.checked)} /> Show Field:</label>
-            <select style={{marginLeft: 20}} onChange={(e) => setMode(e.target.value)}>
+            <select style={{marginLeft: 20}} value={mode} onChange={(e) => setMode(e.target.value)}>
               <option value="value">Values</option>
               <option value="normal">Normals</option>
             </select>
