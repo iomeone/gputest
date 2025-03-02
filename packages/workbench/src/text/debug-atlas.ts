@@ -61,7 +61,7 @@ export const DebugAtlas: LiveComponent<Partial<DebugAtlasProps> | undefined> = m
     size,
     compact,
     dpi,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // eslint-disable-next-line
   }), [atlas, source, w, h, atlas!.version, size, compact, dpi, sdfFont]);
 
   const [left, top] = useLayoutContext();

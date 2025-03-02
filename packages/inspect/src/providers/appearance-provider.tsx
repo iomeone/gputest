@@ -1,10 +1,6 @@
 import type { InspectAppearance } from '../components/types';
 import React, { useMemo, createContext, useContext, PropsWithChildren } from 'react';
 
-import { Props } from '../components/panels/props';
-import { Call } from '../components/panels/call';
-import { Layout } from '../components/panels/layout';
-
 const APPEARANCE: InspectAppearance = {
   close: true,
   toolbar: true,

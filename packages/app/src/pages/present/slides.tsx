@@ -1,13 +1,11 @@
-import type { LC, LiveElement, PropsWithChildren, PropsWithMarkup } from '@use-gpu/live';
+import type { LC, PropsWithChildren, PropsWithMarkup } from '@use-gpu/live';
 import type { ColorLike } from '@use-gpu/core';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
   Pass, FlatCamera,
   PanControls,
-  Cursor,
-  Animate,
   LinearRGB,
 } from '@use-gpu/workbench';
 import {
@@ -16,11 +14,8 @@ import {
 import {
   UI, Layout, Absolute, Flex, Block, Inline, Text,
 } from '@use-gpu/layout';
-import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';
-
-let t = 0;
 
 type TextProps = {
   fill?: ColorLike,

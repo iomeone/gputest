@@ -13,7 +13,7 @@ export default tseslint.config({
       rules: rhooks.configs.recommended.rules,
     },
   ],
-  files: ['packages/**/src/*.ts'],
+  files: ['packages/**/src/*.ts', 'packages/**/src/*.tsx'],
   ignores: [
     "*.wgsl.ts"
   ],
@@ -29,7 +29,8 @@ export default tseslint.config({
     "@typescript-eslint/no-unsafe-function-type": "off",
 
     "@typescript-eslint/no-non-null-assertion": "error",
-    
+    "@typescript-eslint/no-unused-vars": "error",
+
     "react-hooks/rules-of-hooks": "off",
   }
 });

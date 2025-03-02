@@ -62,7 +62,7 @@ export const useFaceSegmentsConcaveSource = (
   positions: TypedArray,
   dims: number,
 ) => {
-  const {count, indexed, indices} = useMemo(() => getFaceSegmentsConcave({chunks, groups, positions, dims}));
+  const {count, indexed, indices} = useMemo(() => getFaceSegmentsConcave({chunks, groups, positions, dims}), [chunks, groups, positions, dims]);
 
   // Bind as shader storage
   const i = useRawSource(indices, 'u32');

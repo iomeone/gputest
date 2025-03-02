@@ -26,7 +26,7 @@ const getNotoEmojiURL = (name: string) => `${base}fonts/emoji/emoji_u${name}.png
 // Toggle inspector with ctrl/cmd-I.
 // Trigger re-render with ctrl/cmd-J.
 const useInspector = () => {
-  const [version, setVersion] = useState<number>(0);
+  const [, setVersion] = useState<number>(0);
   const [inspect, setInspect] = useState<boolean>(true);
 
   useResource((dispose) => {
@@ -51,7 +51,9 @@ export const FPSToggle = () => {
 
 export const App: LC = hot(() => {
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const root = document.querySelector('#use-gpu')!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const inner = document.querySelector('#use-gpu .canvas')!;
 
   const router = useOne(() => (
@@ -89,6 +91,7 @@ export const App: LC = hot(() => {
         fetch: (index: number) => {
           // name = "XXXX_XXXX_XXXX" where X = codepoint in hex
           const seq = NOTO_SEQUENCES[index];
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const codepoints = [...seq].map(s => s.codePointAt(0)!);
           const name = codepoints.map(i => i.toString(16)).join('_');
           return getNotoEmojiURL(name);
@@ -114,7 +117,7 @@ export const App: LC = hot(() => {
         <FPSToggle />
       </AutoCanvas>
     </WebGPU>
-  ), [root, fonts, router]);
+  ), [fonts, router, inner]);
 
   return (
     <UseInspect

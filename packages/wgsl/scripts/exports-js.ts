@@ -1,6 +1,5 @@
 import path from 'path';
 import fs from 'fs';
-import glob from 'glob';
 
 const EXPORTS_JSON = './src/exports.json';
 const PACKAGE_JSON = '../../build/packages/wgsl/package.json';

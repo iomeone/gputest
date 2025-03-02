@@ -49,6 +49,7 @@ export const Fetch: LiveComponent<FetchProps<any>> = (props: FetchProps<any>) =>
 
     const go = (url ?? request) ? (slow ? () => delay(f(), slow) : f) : async () => null;
     return go;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, request, JSON.stringify(options), type, then, version]);
 
   const [resolved, fetchError, isLoading] = useAwait(run, [run]);

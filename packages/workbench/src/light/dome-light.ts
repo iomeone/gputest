@@ -47,7 +47,7 @@ export const DomeLight = memo((props: DomeLightProps) => {
       opts: horizon,
       intensity,
     };
-  }, [direction, zenith, horizon, intensity, parent]);
+  }, [direction, zenith, horizon, intensity, bleed, parent]);
 
   const {useLight} = useLightContext();
   useLight(light);

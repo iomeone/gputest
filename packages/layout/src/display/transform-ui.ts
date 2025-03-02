@@ -64,6 +64,7 @@ export const TransformUI: LiveComponent<TransformUIProps> = memo((props: Transfo
         fit: memoFit(fit),
         prefit: memoFit(fit),
       };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     })), [items, mask, transform]);
   });
 }, 'Transform');

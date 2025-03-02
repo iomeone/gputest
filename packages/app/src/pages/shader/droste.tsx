@@ -333,6 +333,7 @@ fn rottan_c(v: vec2<f32>, shift: f32, turn: i32) -> vec2<f32> {
 
 export const ShaderDrostePage: LC = () => {
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const inner = document.querySelector('#use-gpu .canvas')!;
   const viewRef = useRef<[number, number, number]>([0, 0, 1]);
 

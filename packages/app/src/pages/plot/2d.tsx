@@ -1,23 +1,17 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
   Pass, PanControls, FlatCamera,
   Cursor, Animate, LinearRGB,
 } from '@use-gpu/workbench';
 import {
-  Plot, Cartesian, Axis, Grid, Point, Line, Arrow, Face, Transform, Polygon, Label,
+  Plot, Cartesian, Axis, Point, Line, Arrow, Face, Transform, Polygon, Label,
 } from '@use-gpu/plot';
-import { UI, Layout, Absolute, Inline, Text } from '@use-gpu/layout';
-import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';
-
-let t = 0;
-
-const BACKGROUND = [0, 0, 0.09, 1];
 
 const KEYFRAMES = [
   [ 0, 0],

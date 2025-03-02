@@ -1,30 +1,20 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Emit, Time } from '@use-gpu/core';
-import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
   Pass,
   OrbitControls, OrbitCamera,
-  Cursor, Animate,
+  Cursor,
 } from '@use-gpu/workbench';
 import {
-  Plot, Cartesian, Axis, Grid, Point, Line, Tensor, Transform,
+  Plot, Point, Line, Tensor, Transform,
 } from '@use-gpu/plot';
 import { vec3 } from 'gl-matrix';
 import { seq } from '@use-gpu/core';
 
 import { InfoBox } from '../../ui/info-box';
-
-let t = 0;
-
-const BACKGROUND = [0, 0, 0.09, 1];
-
-const KEYFRAMES = [
-  [ 0, 0],
-  [10, 360],
-] as Keyframe[];
 
 // Generate a line voxel grid
 
@@ -42,19 +32,20 @@ const vecSteps = [
 const PATHS = 20;
 const STEPS = 30;
 
-const paths: number[][][] = seq(PATHS).map((i) => seq(STEPS).reduce((arr, i) => {
-  let last = arr[arr.length - 1] ?? vec3.create();
-  let dir = Math.floor(Math.random() * 6);
+const paths: number[][][] = seq(PATHS).map(() => seq(STEPS).reduce((arr) => {
+  const last = arr[arr.length - 1] ?? vec3.create();
+  const dir = Math.floor(Math.random() * 6);
 
-  let next = vec3.clone(vecSteps[dir]);
+  const next = vec3.clone(vecSteps[dir]);
   vec3.add(next, next, last as any);
   arr.push([next[0], next[1], next[2]]);
+
   return arr;
 }, [] as number[][]));
 
 // Random color and width
-const color = seq(20).map(_ => [Math.sqrt(Math.random()), Math.random()*.75, Math.sqrt(Math.random()*.25)]);
-const width = seq(20).map(_ => Math.random() * 20 + 5);
+const color = seq(20).map(() => [Math.sqrt(Math.random()), Math.random()*.75, Math.sqrt(Math.random()*.25)]);
+const width = seq(20).map(() => Math.random() * 20 + 5);
 
 // Avoid z-fighting
 const zBias = width.map(w => w / 100);

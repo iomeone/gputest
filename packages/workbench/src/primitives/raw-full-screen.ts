@@ -4,12 +4,11 @@ import type { ShaderModule } from '@use-gpu/shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useOne, useNoOne, useRef } from '@use-gpu/live';
+import { memo, useOne  } from '@use-gpu/live';
 import { getBundleKey } from '@use-gpu/shader/wgsl';
 
 import { useShader } from '../hooks/useShader';
 import { usePickingShader } from '../providers/picking-provider';
-import { useRenderContext, useNoRenderContext } from '../providers/render-provider';
 import { useInitialRender, useNoInitialRender } from '../hooks/useInitialDispatch';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';

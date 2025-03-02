@@ -89,6 +89,7 @@ export const Absolute: LiveComponent<AbsoluteProps> = memo((props: AbsoluteProps
         fit: memoFit(fit),
         prefit: memoFit(fit),
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props, els, hovered, zIndex]);
   };
 

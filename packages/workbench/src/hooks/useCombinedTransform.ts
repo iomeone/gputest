@@ -27,6 +27,7 @@ export const useCombinedTransform = (
     if (!transform) return parent;
 
     let key;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     if ('transform' in transform) ({key, transform, differential, bounds} = transform);
 
     const t = transform as ShaderModule;
@@ -77,7 +78,7 @@ export const useCombinedMatrixTransform = (
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const chained = chainTransform(props, prev)!;
     return {...chained, nonlinear: prev, matrix: refs};
-  }, [props, parent]);
+  }, [props, parent, refs]);
 
   return [context, combined];
 };

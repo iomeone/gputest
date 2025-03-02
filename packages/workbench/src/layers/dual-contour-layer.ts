@@ -201,7 +201,7 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
     else allocateNormals(d);
 
     return [sx - 1, sy - 1, sz - 1];
-  }, [size]);
+  }, [size, allocateEdges, allocateCells, allocateMarks, allocateIndices, allocateVertices, allocateNormals, method]);
 
   const device = useDeviceContext();
   const generationRef = useOne(() => ({current: 1}));
@@ -230,18 +230,19 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
     generationRef.current = incrementVersion(generationRef.current);
 
     uploadBuffer(device, indirectStorage.buffer, indirectDraw.buffer);
-  }, [device, indirectDraw, indirectStorage]);
+  }, [device, indirectDraw, indirectStorage, generationRef]);
 
   const links = useMemo(() => {
     return shaded
-    ? {
-      getVertex,
-      ...material,
-    } : {
-      getVertex,
-      getFragment: getPassThruColor,
-    }
-  }, [getVertex, material]);
+      ? {
+        getVertex,
+        ...material,
+      }
+      : {
+        getVertex,
+        getFragment: getPassThruColor,
+      }
+  }, [getVertex, material, shaded]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,
@@ -250,6 +251,7 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
     shadow,
     scissor,
     alphaToCoverage,
+    alphaToDiscard,
     depthTest: true,
     depthWrite: true,
     blend,

@@ -66,6 +66,7 @@ export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
   mouseRef.current = mouse;
 
   const countRef = useOne(() => ({current: 0}));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useMemo(() => countRef.current++, [x, y]);
 
   const handlersRef = useOne(() => ({
@@ -88,6 +89,7 @@ export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
       if (hovered || captured) {
         if (onMouseMove) onMouseMove(mouse, index);
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [x, y]);
   }
   else {
@@ -151,6 +153,7 @@ export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
 
   const value = useMemo(
     () => ({id, index, hovered, pressed, presses, clicks, x: px, y: py, moveX: dx, moveY: dy}),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [id, index, hovered, pressed, count, px, py, dx, dy]
   );
 

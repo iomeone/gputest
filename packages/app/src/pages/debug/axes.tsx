@@ -1,8 +1,7 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { GPUGeometry, TextureSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
+import React, { Gather, useOne } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 import { vec3 } from 'gl-matrix';
 
@@ -19,7 +18,7 @@ import {
 } from '@use-gpu/workbench';
 
 import {
-  Scene, Node, Mesh,
+  Scene, Mesh,
 } from '@use-gpu/scene';
 
 import { InfoBox } from '../../ui/info-box';
@@ -36,7 +35,7 @@ const cubeMaterial = wgsl`
 }
 `;
 
-export const DebugAxesPage: LC = (props) => {
+export const DebugAxesPage: LC = () => {
   const geometry = useOne(() => makeSphereGeometry({ width: 2, uvw: true }));
 
   return (<>

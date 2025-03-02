@@ -8,8 +8,6 @@ import { RenderToTexture } from '../render/render-to-texture';
 
 const {reconcile, quote, signal} = QueueReconciler;
 
-const DEBUG = true;
-
 type RenderProp = (frame: Lazy<number>) => LiveElement;
 type ThenProp = (frame: Lazy<number>, converged: Lazy<boolean>) => LiveElement;
 
@@ -60,6 +58,7 @@ export const AccumulateRender: LC<AccumulateRenderProps> = memo((props: Accumula
 
             useMemo(() => {
               if (!continued) frameRef.current = 0;
+              // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [continued, ...fs]);
 
             useOne(() => {
@@ -81,6 +80,7 @@ export const AccumulateRender: LC<AccumulateRenderProps> = memo((props: Accumula
                 signal(), // Extra signal so that yeet(ts) can be memoized and doesn't invalidate the next queue
                 quote(yeet(run)),
               ];
+              // eslint-disable-next-line react-hooks/exhaustive-deps
             }, fs);
           }
         )

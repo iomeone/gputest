@@ -8,7 +8,6 @@ import { bundleToAttribute, bundleToAttributes, chainTo } from '@use-gpu/shader/
 import { useShaderRefs } from '../hooks/useShaderRef';
 import { useLambdaSource } from '../hooks/useLambdaSource';
 import { useRawTensorSource, useNoRawTensorSource } from '../hooks/useRawSource';
-import { getDerivedSource } from '../hooks/useDerivedSource';
 import { getSource } from '../hooks/useSource';
 import { getShader } from '../hooks/useShader';
 import { useRenderProp } from '../hooks/useRenderProp';
@@ -47,19 +46,15 @@ export const ValueShader: LiveComponent<ValueShaderProps> = (props) => {
   const source = data ? useRawTensorSource(data) : (useNoRawTensorSource(), props.source);
 
   const getData = useMemo(() => {
-    const s = (source ? [source] : NO_SOURCES).map(s => ((s as any)?.buffer)
-      ? getDerivedSource(s as any, {readWrite: false}) : s);
-
     const bindings = bundleToAttributes(shader);
 
     const allArgs = [...argRefs, ...sources];
-    const values = bindings.map(b => {
-      return allArgs.shift();
-    });
+    const values = bindings.map(() => allArgs.shift());
 
     const def = bundleToAttribute(shader);
     return chainTo(getSource(def, source), getShader(shader, values));
-  }, [shader, args.length, source, sources]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shader, source, sources, args.length]);
 
   const output = useLambdaSource(getData, source ?? NO_SOURCE);
 

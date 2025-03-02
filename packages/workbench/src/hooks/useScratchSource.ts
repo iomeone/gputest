@@ -68,6 +68,7 @@ export const useScratchSource = (
     allocate(length ?? reserve);
 
     return [source, allocate] as [StorageSource, (x: number) => void];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device, format, readWrite, flags, volatile, reserve]);
 
   const [, allocate] = scratchSource;

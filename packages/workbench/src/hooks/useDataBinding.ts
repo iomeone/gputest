@@ -39,7 +39,7 @@ export const useDataSize = (
       Math.max(0, (s[2] || 1) + offset[2]),
       Math.max(0, (s[3] || 1) + offset[3]),
     ];
-  }, [size, source]);
+  }, [size, source, offset]);
 
 export const useDataLength = (
   length?: Lazy<number> | null,

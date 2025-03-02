@@ -2,7 +2,7 @@ import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import type { Rectangle } from '@use-gpu/core';
 
 import { use, provide, deprecated, useContext, useOne, useMemo, incrementVersion } from '@use-gpu/live';
-import { VIEW_UNIFORMS, makeOrthogonalMatrix, makeFrustumPlanes, makeViewUniforms, updateViewUniforms } from '@use-gpu/core';
+import { VIEW_UNIFORMS, makeOrthogonalMatrix, makeViewUniforms, updateViewUniforms } from '@use-gpu/core';
 import { LayoutContext } from '../providers/layout-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { RenderContext } from '../providers/render-provider';
@@ -74,7 +74,7 @@ export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
     const layout = [left, top, right, bottom] as Rectangle;
     const matrix = makeOrthogonalMatrix(left, right, bottom, top, near, far);
     return [layout, matrix, ratio];
-  }, [scale, width, height, pixelRatio]);
+  }, [scale, width, height, far, near, relative, pixelRatio]);
 
   const uniforms = useOne(makeViewUniforms);
 

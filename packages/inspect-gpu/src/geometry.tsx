@@ -1,6 +1,6 @@
 import type { LiveFiber } from '@use-gpu/live';
 
-import React, { ReactNode, useState } from 'react';
+import React, { useState } from 'react';
 import { InspectObject } from '@use-gpu/inspect';
 
 type GeometryProps = {

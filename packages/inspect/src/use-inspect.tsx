@@ -1,5 +1,5 @@
-import type { LiveFiber, LiveComponent, LiveElement, LC, PropsWithChildren } from '@use-gpu/live';
-import type { InspectExtension, InspectAppearance, InspectAddIns, OptionState } from './components/types';
+import type { LiveFiber, LC, PropsWithChildren } from '@use-gpu/live';
+import type { InspectExtension, InspectAppearance, OptionState } from './components/types';
 import { fragment, use, useFiber, useMemo, useOne, useState } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
 
@@ -12,7 +12,7 @@ export type UseInspectProps = PropsWithChildren<{
   fiber?: LiveFiber<any>,
   active?: boolean,
   sub?: string,
-  provider?: LiveComponent<any>,
+  provider?: LC<any>,
   container?: Element,
   appearance?: Partial<InspectAppearance>,
   extensions?: InspectExtension[],
@@ -31,7 +31,7 @@ const STYLE = {
 
 const NO_EXT: any[] = [];
 
-export const UseInspect: LiveComponent<UseInspectProps> = ({
+export const UseInspect: LC<UseInspectProps> = ({
   fiber,
   sub,
   container,
@@ -69,7 +69,7 @@ export const UseInspect: LiveComponent<UseInspectProps> = ({
     }
 
     return out;
-  }, [extensions]);
+  }, [extensions, fiber]);
 
   return fragment([
     provider ? use(provider, {debug, children}) : children,

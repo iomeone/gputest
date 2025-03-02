@@ -1,4 +1,4 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import { useOne, useResource, useState } from '@use-gpu/live';
 import { getRenderFunc } from '@use-gpu/workbench';
 

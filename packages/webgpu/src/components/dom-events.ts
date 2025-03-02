@@ -85,6 +85,7 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: DOMEventsPr
     hasLock: document.pointerLockElement === element,
     beginLock: () => element.requestPointerLock(),
     endLock: () => document.exitPointerLock(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [element, document.pointerLockElement]);
 
   useResource((dispose) => {
@@ -255,7 +256,7 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: DOMEventsPr
       const {button, buttons, clientX, clientY} = e;
       if (e.target) try {
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
-        // eslint-disable-next-line no-empty
+        // eslint-disable-next-line
       } catch (e) {}
 
       onButtons(buttons, button);

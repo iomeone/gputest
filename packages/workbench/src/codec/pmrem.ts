@@ -299,7 +299,8 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
         out.push(...makeDiffuseDispatch(diffuseInput, mips + levels));
 
         return out;
-      }, [sigmas, sizes, radii, mappings, texture, target, scratch]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [sigmas, sizes, radii, mappings, texture, target, scratch, diffuseInput, diffuseSHBuffer, scratchIn, scratchOut, targetIn, textureDump]);
 
       const mappingData = useOne(() => new Uint16Array(mappings.flatMap(m => m)), mappings);
       const varianceData = useOne(() => new Float32Array(sigmas), sigmas);
@@ -328,6 +329,7 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
           ? quote(dispatches)
           : use(Queue, {nested: true, children: use(Compute, {children: dispatches}) }),
         render ? render(boundCubeMap, target) : yeet(boundCubeMap),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       ], [debugAtlas, debugGrid, seamFix, atlas, dispatches, render, target, boundCubeMap]);
     })
   );

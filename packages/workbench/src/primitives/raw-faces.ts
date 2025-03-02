@@ -160,16 +160,17 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
 
   const links = useMemo(() => {
     return shaded
-    ? {
-      getVertex,
-      getPicking,
-      ...material,
-    } : {
-      getVertex,
-      getPicking,
-      ...material,
-    }
-  }, [getVertex, getPicking, material]);
+      ? {
+        getVertex,
+        getPicking,
+        ...material,
+      }
+      : {
+        getVertex,
+        getPicking,
+        ...material,
+      }
+  }, [getVertex, getPicking, material, shaded]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,
@@ -198,7 +199,7 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
     UNWELDED_TANGENTS: !!unwelded?.tangents,
     UNWELDED_UVS: !!unwelded?.uvs,
     UNWELDED_LOOKUPS: !!unwelded?.lookups,
-  }), [defs, flat, fragDepth, instanceDefs, hasSegments, unwelded]);
+  }), [defs, flat, fragDepth, instanceDefs, hasIndices, hasSegments, unwelded]);
 
   return (
     useDraw({

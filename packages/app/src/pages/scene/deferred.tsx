@@ -1,13 +1,12 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { DataSchema, TextureSource, GPUGeometry, UniformType } from '@use-gpu/core';
+import type { DataSchema, TextureSource, GPUGeometry } from '@use-gpu/core';
 import type { ShaderSource } from '@use-gpu/shader';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
+import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
-import { seq } from '@use-gpu/core';
 
 import {
-  Loop, Pass, FlatCamera, Animate, LinearRGB,
+  Pass, LinearRGB,
   GeometryData, PBRMaterial, ImageTexture,
   OrbitCamera, OrbitControls, Environment,
   Cursor,
@@ -66,7 +65,7 @@ const lightData = [
   },
 ];
 
-export const SceneDeferredPage: LC = (props) => {
+export const SceneDeferredPage: LC = () => {
 
   return (<>
     <InfoBox>&lt;DirectionalLight&gt; and &lt;PointLight&gt; with shadow map (deferred renderer)</InfoBox>

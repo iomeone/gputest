@@ -1,10 +1,8 @@
 import type { LiveFiber } from '@use-gpu/live';
-import type { Action } from '../types';
-import { formatNode, formatValue } from '@use-gpu/live';
 
 import { Hook } from '@use-gpu/live';
 import React, { useState } from 'react';
-import { SplitRow, Label, Spacer } from '../layout';
+import { Spacer } from '../layout';
 import { InspectObject } from '../inspect-object';
 import chunk from 'lodash/chunk.js';
 
@@ -18,9 +16,9 @@ export const Call: React.FC<CallProps> = ({fiber}) => {
   // @ts-ignore
   const {id, depth, runs, path, order, keys, type, state, context, yeeted, quotes, quote, unquote, mount, mounts, next, ...rest} = fiber;
 
-  let props = {id, runs, depth, path, keys, '[internals]': rest} as any;
-  let env = {context, yeeted, quotes, unquote, quote: (quote as any)?.displayName} as any;
-  let rendered = {type, mount, mounts, next, order} as any;
+  const props = {id, runs, depth, path, keys, '[internals]': rest} as any;
+  const env = {context, yeeted, quotes, unquote, quote: (quote as any)?.displayName} as any;
+  const rendered = {type, mount, mounts, next, order} as any;
 
   if (!mount) delete rendered.mount;
   if (!mounts) delete rendered.mounts;
@@ -34,8 +32,8 @@ export const Call: React.FC<CallProps> = ({fiber}) => {
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const toggleExpanded = (id: string) => setExpanded((state) => ({
-    ...expanded,
-    [id]: !expanded[id],
+    ...state,
+    [id]: !state[id],
   }));
 
   const hooks = chunk(state, STATE_SLOTS);

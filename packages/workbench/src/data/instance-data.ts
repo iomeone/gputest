@@ -96,7 +96,7 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
     };
 
     return useInstance;
-  }, [device, uniforms]);
+  }, [ids, queue, InstanceCapture]);
 
   // Produce instance sources
   const Resume = () => {
@@ -123,6 +123,7 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
       const sources = getInstancedAggregate(aggregateBuffer, indexBuffer?.source);
 
       return [aggregateBuffer, indexBuffer, fields, sources];
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [device, uniforms, alloc]);
 
     const needsRefresh = prevBufferRef.current !== aggregateBuffer;
@@ -171,7 +172,6 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
     }
     catch (e) {
       console.error(e);
-      debugger;
     }
     queue.instances.length = queue.datas.length = 0;
 

@@ -4,7 +4,7 @@ import type { ShaderSource } from '@use-gpu/shader';
 import type { FontMetrics, GlyphMetrics } from '@use-gpu/glyph';
 import type { Alignment } from '../types';
 
-import { fence, provide, memo, yeet, useContext, useNoContext, useFiber, useMemo, makeContext, incrementVersion } from '@use-gpu/live';
+import { fence, provide, memo, yeet, useContext, useNoContext, useFiberId, useMemo, useOne, makeContext, incrementVersion } from '@use-gpu/live';
 import { glyphToSDF, rgbaToSDF, padRectangle } from '@use-gpu/glyph';
 import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '@use-gpu/core';
 import { scrambleBits53, mixBits53 } from '@use-gpu/state';
@@ -100,9 +100,10 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
     source.texture.label = 'Font Atlas';
 
     return [glyphs, atlas, source, biasable, biasedSource];
-  }, [width, height, radius, pad, subpixel, solidify, preprocess, postprocess]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [device, width, height, radius, pad, subpixel, solidify, preprocess, postprocess]);
 
-  const bounds = useMemo(() => makeBoundsTracker());
+  const bounds = useOne(makeBoundsTracker);
 
   // Provide context to map glyphs on-demand
   const context = useMemo(() => {
@@ -186,6 +187,7 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
       getGlyph,
       getTexture,
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rustText, atlas, source]);
 
   return rustText ? (
@@ -218,7 +220,7 @@ export const useSDFGlyphData = (
   monochrome: boolean = false,
 ) => {
   const context = useSDFFontContext();
-  const {id} = useFiber();
+  const id = useFiberId();
 
   return useMemo(() => {
     // Final buffers
@@ -290,7 +292,7 @@ export const useSDFGlyphData = (
       uvs,
       sdf: [radius, scale, size, 0] as [number, number, number, number],
     };
-  }, [context, layout, spans, glyphs, breaks, height, align, size, wrap, snap]);
+  }, [context, layout, font, spans, glyphs, breaks, height, align, size, wrap, snap, id, monochrome]);
 }
 
 export const emitGlyphSpans = (

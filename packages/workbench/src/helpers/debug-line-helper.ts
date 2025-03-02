@@ -2,7 +2,7 @@ import type { LC, LiveElement } from '@use-gpu/live';
 import type { StorageSource } from '@use-gpu/core';
 import type { ShaderSource } from '@use-gpu/shader';
 
-import { yeet, useMemo, useOne } from '@use-gpu/live';
+import { useMemo, useOne } from '@use-gpu/live';
 import { clearBuffer } from '@use-gpu/core';
 import { bindEntryPoint } from '@use-gpu/shader/wgsl';
 import { useDeviceContext } from '../providers/device-provider';
@@ -78,7 +78,7 @@ export const DebugLineHelper: LC<DebugLineHelperProps> = (props: DebugLineHelper
     const shaders = {emitPoint, emitLine};
 
     return {target, attributes, shaders, swap};
-  }, [device, atomicStorage, atomicArray, debugPositions, debugSegments]);
+  }, [device, atomicStorage, debugPositions, debugColors, debugSegments]);
 
   return useRenderProp(props, helper);
 };

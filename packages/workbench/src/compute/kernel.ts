@@ -2,7 +2,7 @@ import type { LiveComponent } from '@use-gpu/live';
 import type { StorageSource, Lazy, VectorLike } from '@use-gpu/core';
 import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { yeet, useMemo, useNoMemo, useRef } from '@use-gpu/live';
+import { yeet, useMemo } from '@use-gpu/live';
 import { resolve } from '@use-gpu/core';
 import { bundleToAttribute, getBundleEntry } from '@use-gpu/shader/wgsl';
 import { getShader } from '../hooks/useShader';
@@ -76,7 +76,8 @@ export const Kernel: LiveComponent<KernelProps> = (props) => {
 
     const kernel = getShader(shader, values);
     return [kernel, dataSize, workgroupSize];
-  }, [shader, targets, source, sources, argRefs, history]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shader, targets, source, sources, size, history, args.length]);
 
   const shouldDispatch = initial ? useInitialDispatch([version]) : useNoInitialDispatch();
 

@@ -26,6 +26,7 @@ export const Stage: LC<StageProps> = memo((props: StageProps) => {
   const content = render ? render() : children;
   if (!content) return null;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const context = useMemo(() => targets ?? (target ? [target] : NO_TARGETS), [target, ...(targets ?? NO_TARGETS)]);
 
   return provide(ComputeContext, context, content);

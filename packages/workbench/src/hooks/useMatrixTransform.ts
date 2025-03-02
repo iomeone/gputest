@@ -120,7 +120,8 @@ export const useMatrixBounds = (
 
     // Bounds checking is ephemeral so return same object every time
     return bounds;
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return getBounds;
 }

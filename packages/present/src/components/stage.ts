@@ -101,7 +101,7 @@ export const Stage: LC<StageProps> = memo((props: StageProps) => {
         floats.map(({id, ops}) => (
           keyed(UILayers, id, {items: ops})
         ))
-      ], [enteringLayer, exitingLayer, effect, floats]);
+      ], [enteringLayer, exitingLayer, enteringIndex, exitingIndex, effect, floats]);
 
       return stage;
     }

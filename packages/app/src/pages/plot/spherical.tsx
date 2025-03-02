@@ -1,17 +1,17 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass,
+  Pass,
   OrbitCamera, OrbitControls,
   Cursor,
   Animate,
   LinearRGB,
 } from '@use-gpu/workbench';
 import {
-  Plot, Spherical, Axis, Grid, Label, Line, Sampler, Scale, Surface, Tick, Transpose,
+  Plot, Spherical, Axis, Grid, Label, Line, Sampler, Scale, Tick,
 } from '@use-gpu/plot';
 
 import { InfoBox } from '../../ui/info-box';

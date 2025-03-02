@@ -64,7 +64,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
     },
     dispatch: {
       fibers: [],
-      render: (timestamp?: number) => {},
+      render: () => {},
     },
     loop: {
       buffered: true,
@@ -81,9 +81,11 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
   // Bump the frame version to tell the dispatcher an animation frame is in progress
   const requestImmediateRender = useCallback(() => {
     ref.version.frame = incrementVersion(ref.version.frame);
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const renderAnimationFrame = useCallback((timestamp?: number) => ref.dispatch.render(timestamp));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const renderAnimationFrame = useCallback((timestamp?: number) => ref.dispatch.render(timestamp), []);
 
   // Request animation frame wrapper
   // for looped component re-rendering.
@@ -184,6 +186,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
   useRenderContext();
   usePerFrame();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const Run = useCallback(tagFunction(() => {
     const {time, children} = ref;
 
@@ -197,7 +200,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
     ];
 
     return view;
-  }, 'Run'));
+  }, 'Run'), []);
 
   // Intercept unscheduled renders
   // and ensure steady rendering

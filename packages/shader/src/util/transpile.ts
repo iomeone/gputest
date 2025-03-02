@@ -163,8 +163,10 @@ export const compressValue = (
   for (const k in dictionary) dictionaryMap.set(dictionary[k], k);
 
   const get = (symbol: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (dictionaryMap.has(symbol)) return dictionaryMap.get(symbol)!;
     if (symbol.length < 3 || symbol.indexOf(' ') >= 0) return stringify(symbol);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (symbolMap.has(symbol)) return symbolMap.get(symbol)!;
 
     const i = symbols.length;
@@ -173,7 +175,7 @@ export const compressValue = (
     return i;
   };
 
-  const encode = (arg: string, raw: boolean = false) => {
+  const encode = (arg: string) => {
     const i = get(arg);
     if (typeof i === 'string') return i;
     return `${ns}(${i})`;
@@ -216,8 +218,8 @@ export const compressString = (
   symbols: string[],
   ns: string,
 ) => {
-  let dks = Object.keys(dictionary);
-  let dvs = Object.values(dictionary);
+  const dks = Object.keys(dictionary);
+  const dvs = Object.values(dictionary);
 
   let ss: (string | number)[] = [s];
   symbols = symbols.slice();
@@ -226,6 +228,7 @@ export const compressString = (
   const exprs = s.matchAll(/\b[A-Za-z_][A-Za-z0-9_]+(<[^>]+>)?\b/g);
   for (const [e] of exprs) histo.set(e, (histo.get(e) || 0) + 1);
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const keys = [...histo.keys()].filter(k => k.length > 5 && histo.get(k)! > 2);
   symbols.push(...keys);
 

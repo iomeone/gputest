@@ -78,7 +78,6 @@ const TRANSPILE = TRANSPILERS[lang];
 const OUTPUT = options.output;
 const INPUT = options.input ?? [];
 const BASE = options.basePath;
-const ROOT = options.importRoot;
 
 const globs = [];
 
@@ -122,11 +121,13 @@ for (const pattern of globs) {
   for (const src of files) {
     const keys = src.split('/');
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const id = keys.pop()!.replace(/\.(wgsl|glsl)$/, '');
     const tokens = [...keys.slice(base), id];
     const name = tokens.join('/');
 
     const code = fs.readFileSync(src).toString();
+    // eslint-disable-next-line prefer-const
     let {output, typeDef, magicString} = TRANSPILE(code, name, {
       esModule: !options.cjs,
       minify: options.minify,

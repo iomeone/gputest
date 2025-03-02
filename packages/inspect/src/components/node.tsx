@@ -1,10 +1,8 @@
 import type { LiveFiber } from '@use-gpu/live';
-import type { Action } from './types';
 
-import { formatValue, formatNodeName, YEET, QUOTE, SIGNAL } from '@use-gpu/live';
-import { styled, keyframes } from "@stitches/react";
+import { formatNodeName, YEET, QUOTE, SIGNAL } from '@use-gpu/live';
 
-import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { usePingTracker } from '../providers/ping-provider';
 import { Muted } from './layout';
 import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput } from './svg';
@@ -23,7 +21,6 @@ type NodeProps = {
   parents?: boolean,
   depth?: number,
   ooo?: boolean,
-  terminator?: boolean,
   runCount?: boolean,
   absolute?: boolean,
   onClick?: (e: any) => void,
@@ -45,7 +42,6 @@ export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
   parents,
   depth,
   ooo,
-  terminator,
   runCount,
   absolute,
   onClick,
@@ -53,7 +49,7 @@ export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
   onMouseEnter,
   onMouseLeave,
 }, ref) => {
-  const {id, by, f, type, args, __inspect} = fiber;
+  const {id, by, f, type, __inspect} = fiber;
 
   const quote = type === QUOTE || type === SIGNAL;
   const yeet = type === YEET;

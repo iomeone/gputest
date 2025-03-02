@@ -78,7 +78,7 @@ export const Tensor: LiveComponent<TensorProps<unknown & (string | string[])>> =
     () => split
       ? seq(items).map(() => makeTensorArray(f, alloc))
       : [makeTensorArray(f, items * alloc)],
-    [f, alloc, items]
+    [f, alloc, items, split]
   );
   const arrays = useOne(() => tensors.map(({array}) => array), tensors);
 
@@ -135,7 +135,7 @@ export const Tensor: LiveComponent<TensorProps<unknown & (string | string[])>> =
     () => split
       ? ({...dataContext, ...value})
       : ({...dataContext, [as as string]: value}),
-    [dataContext, value, as]) : useNoMemo();
+    [dataContext, value, as, split]) : useNoMemo();
 
   return render ? render(value as any) : children ? provide(DataContext, context, children) : yeet(value);
 }, shouldEqual({

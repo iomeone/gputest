@@ -83,6 +83,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
       useMemo(() => quote([
         yeet({ env: { light }}),
         use(LightRender, {...light, shadows}),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       ]), [light, shadows]),
   });
 

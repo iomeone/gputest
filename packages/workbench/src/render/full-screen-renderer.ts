@@ -40,7 +40,8 @@ export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: Full
   } = props;
 
   const useVariants = useCallback((virtual: VirtualDraw, hovered: boolean) =>
-    useMemo(() => hovered ? [DebugRender] : COMPONENTS.modes[virtual.mode], [virtual, hovered])
+    useMemo(() => hovered ? [DebugRender] : COMPONENTS.modes[virtual.mode], [virtual, hovered]),
+    []
   );
 
   // Pass aggregrated calls to pass runners
@@ -59,6 +60,7 @@ export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: Full
         use(ColorPass, props),
         calls.post || calls.readback ? use(ReadbackPass, props) : null,
       ];
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [calls, overlay, merge]);
 
   return (

@@ -1,10 +1,8 @@
 import React from 'react';
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { ShaderSource } from '@use-gpu/shader';
 
 import { use, fragment, useState } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
-import { useRouterContext } from '@use-gpu/workbench';
 
 import { ENVIRONMENTS } from './envmap-controls';
 

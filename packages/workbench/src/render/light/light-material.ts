@@ -51,9 +51,11 @@ export const LightMaterial: LC<LightMaterialProps> = (props: LightMaterialProps)
         };
 
         const useApplyMaterial = (applyMaterial: ShaderModule) =>
+          // eslint-disable-next-line react-hooks/exhaustive-deps
           useMemo(() => bindApplyMaterial(applyMaterial), [bindApplyMaterial, applyMaterial]);
 
         return {useLight, useApplyMaterial};
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [useLight, shadows]);
 
       return (

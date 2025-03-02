@@ -82,12 +82,12 @@ export const dispatch = (props: DispatchProps) => {
   const force = !!volatiles.length;
   const storage = useMemo(() =>
     makeBoundUniforms(device, pipeline, uniforms, bindings, 0, force),
-    [device, pipeline, uniforms, bindings]);
+    [device, pipeline, uniforms, bindings, force]);
 
   // Volatile storage
   const volatile = useMemo(() =>
     makeVolatileUniforms(device, pipeline, volatiles, 1),
-    [device, pipeline, uniforms, volatiles]
+    [device, pipeline, volatiles]
   );
 
   const inspected = inspect({

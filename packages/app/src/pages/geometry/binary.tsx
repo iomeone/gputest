@@ -1,27 +1,24 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { DataSchema, GPUAttributes, LambdaSource, StorageSource } from '@use-gpu/core';
+import type { DataSchema, GPUAttributes, LambdaSource } from '@use-gpu/core';
 
-import React, { Gather, yeet, use, useOne, useMemo } from '@use-gpu/live';
+import React, { Gather, useOne, useMemo } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
-import { clamp } from '@use-gpu/core';
 
 import {
   Pass, Data, DataShader,
   OrbitCamera, OrbitControls,
-  Pick, Cursor,
+  Cursor,
   PointLayer,
   LinearRGB,
 } from '@use-gpu/workbench';
 import {
-  Plot, Cartesian, Grid,
+  Cartesian, Grid,
 } from '@use-gpu/plot';
 
 import { BinaryControls } from '../../ui/binary-controls';
 import { InfoBox } from '../../ui/info-box';
 
 import { vec3 } from 'gl-matrix';
-
-let t = 0;
 
 const RANGE = [[0, 256], [0, 256], [0, 256]];
 const GRID = { divide: 16, base: 2, end: true };
@@ -45,19 +42,18 @@ const arrayBufferToXYZ = (buffer: ArrayBuffer) => {
     const z = data[i + 2];
     const k = (z << 16) | (y << 8) | x;
 
-    const v = histo[k] = histo[k] + 1;
+    histo[k] = histo[k] + 1;
   }
 
   // Make data points for non-empty bins
   const h = histo.length;
-
 
   let min = Infinity;
   let max = 0;
 
   // Determine average of 32 highest bins
   let best = 0;
-  const accum = Array.from({ length: 32 }).map(_ => 0);
+  const accum = Array.from({ length: 32 }).map(() => 0);
   for (let k = 0; k < h; ++k) if (histo[k]) {
     const v = histo[k];
     min = Math.min(min, v);

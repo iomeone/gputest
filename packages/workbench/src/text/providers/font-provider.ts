@@ -65,7 +65,8 @@ export const useFontText = (
     );
 
     return {spans, glyphs, breaks};
-  }, [packed, size, rustText, version]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stack, packed, size, rustText, forceUpdate, version]);
 }
 
 // Get font metrics

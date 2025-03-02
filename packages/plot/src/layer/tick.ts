@@ -101,7 +101,8 @@ export const Tick: LiveComponent<TickProps> = (props) => {
         ...sources,
         ...extra,
         ...flags,
-      }), [color, tangent, width, depth, z, id, lookup, base, sources, extra, props]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }), [color, tangent, width, depth, z, id, lookup, base, sources, extra, props, resolvedTangents]);
     }
   });
 };

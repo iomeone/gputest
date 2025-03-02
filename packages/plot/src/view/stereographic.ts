@@ -99,7 +99,7 @@ export const Stereographic: LiveComponent<StereographicProps> = (props: Stereogr
     }
 
     return [matrix, swizzle, epsilon];
-  }, [g, a, p, r, q, s, bend]);
+  }, [g, a, p, r, q, s, bend, composed, m, on, swapMatrix]);
 
   const t = useShaderRef(matrix);
 

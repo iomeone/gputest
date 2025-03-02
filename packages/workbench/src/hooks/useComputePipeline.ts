@@ -13,7 +13,7 @@ const makePipelineCache = (options: Record<string, any> = {}) => new LRU<string,
   ...options,
 });
 
-let SHADER_LOG: LRU<string, any> | null = null;
+const SHADER_LOG: LRU<string, any> | null = null;
 
 const CACHE = new WeakMap<any, LRU<string, any>>();
 const PENDING = new WeakMap<any, Map<string, any>>();
@@ -62,6 +62,7 @@ export const useComputePipeline = (
     DEBUG && console.log('compute pipeline cache miss', key);
 
     return pipeline;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device, shader.hash]);
 };
 
@@ -144,7 +145,8 @@ export const useComputePipelineAsync = (
     pending!.set(key, promise);
 
     return null;
-  }, [device, shader]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [device, shader.hash]);
 
   DEBUG && console.log('async pipeline got', (immediate ?? resolved), 'stale =', staleRef.current, shader.hash, shader.hash);
   return [immediate ?? resolved, !!staleRef.current];

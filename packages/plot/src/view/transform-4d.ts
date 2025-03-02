@@ -1,4 +1,4 @@
-import type { LiveComponent, PropsWithChildren, DeferredCall } from '@use-gpu/live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import type { TraitProps } from '@use-gpu/traits';
 
 import { combine, makeUseTrait } from '@use-gpu/traits/live';
@@ -58,7 +58,7 @@ export const Transform4D: LiveComponent<Transform4DProps> = (props: Transform4DP
     }
 
     return [matrix, base];
-  }, [a, p, lq, rq, s, m]);
+  }, [a, p, lq, rq, s, m, composed, swapBase, swapMatrix]);
 
   const matrixRef = useShaderRef(matrix);
   const baseRef = useShaderRef(base);
@@ -67,7 +67,7 @@ export const Transform4D: LiveComponent<Transform4DProps> = (props: Transform4DP
     const transform = getShader(getCartesian4DPosition, [matrixRef, baseRef]);
     const key = getBundleKey(transform);
     return {key, transform};
-  }, []);
+  }, [matrixRef, baseRef]);
 
   const context = useCombinedTransform(transform);
 

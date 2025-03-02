@@ -3,7 +3,7 @@ import type { Ref } from '@use-gpu/live';
 import type { Culler, Renderable } from './types';
 
 import { resolve, proxy } from '@use-gpu/core';
-import { mat4, vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 
 export const getRenderPassDescriptor = (
   renderContext: UseGPURenderContext,
@@ -15,9 +15,7 @@ export const getRenderPassDescriptor = (
     view?: number,
   }
 ): GPURenderPassDescriptor => {
-  let {
-    viewAttachments,
-  } = renderContext;
+  const {viewAttachments} = renderContext;
 
   const descriptor = {
     label,

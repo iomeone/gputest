@@ -2,9 +2,6 @@ import React, { useCallback } from 'react';
 import type { Cursor } from '@use-gpu/state';
 import type { ExpandState } from './types';
 
-import { useCursor, useUpdateState } from '@use-gpu/state/react';
-
-
 type ExpandableProps = {
   id: string | number,
   initialValue: boolean,
@@ -13,9 +10,7 @@ type ExpandableProps = {
 }
 
 export const Expandable: React.FC<ExpandableProps> = ({id, initialValue, expandedCursor, children}) => {
-  let [expand, updateExpand] = expandedCursor[id]();
-
-  if (expand === undefined) expand = initialValue;
+  const [expand = initialValue, updateExpand] = expandedCursor[id]();
 
   const onClick = useCallback((e: any) => {
     updateExpand(expand === false);

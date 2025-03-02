@@ -38,6 +38,7 @@ export const CompositeGeometryData: LiveComponent<CompositeGeometryDataProps> = 
       }))
     ) as any,
     // Diff archetypes by value
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     archetypes
   );
 
@@ -47,7 +48,7 @@ export const CompositeGeometryData: LiveComponent<CompositeGeometryDataProps> = 
       (items: CPUGeometry[]): Record<string, TypedArray>[] =>
         items.map(i => i.attributes)
     ) as any,
-    [data, schemas]
+    [partitions]
   );
 
   return gather(archetypes.map((archetype: string) => {

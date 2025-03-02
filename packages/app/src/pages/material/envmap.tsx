@@ -2,47 +2,33 @@ import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { GPUGeometry, TextureSource } from '@use-gpu/core';
 import type { ShaderSource } from '@use-gpu/shader';
 
-import React, { Gather, memo, useContext, useOne } from '@use-gpu/live';
+import React, { Gather, useContext, useOne } from '@use-gpu/live';
 import { seq } from '@use-gpu/core';
-import { bindBundle, wgsl } from '@use-gpu/shader/wgsl';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass, FlatCamera, LinearRGB, Environment,
+  Pass, FlatCamera, LinearRGB, Environment,
   GeometryData, PBRMaterial, PrefilteredEnvMap,
   OrbitCamera, OrbitControls, PanControls,
   Cursor, Suspense,
   KeyboardContext,
   makeSphereGeometry,
-  useShader, useShaderRef,
 } from '@use-gpu/workbench';
 
 import {
   Scene, Node, Mesh,
 } from '@use-gpu/scene';
 import {
-  Cartesian, Grid, Embedded,
-} from '@use-gpu/plot';
-import {
-  UI, Layout, Absolute, Block, Embed,
+  UI, Layout, Absolute, Block,
 } from '@use-gpu/layout';
 
 import { InfoBox } from '../../ui/info-box';
 
 import { EnvMapControls } from '../../ui/envmap-controls';
 
-const π = Math.PI;
-const τ = π * 2;
-
 const IMAGE_FIT = {fit: 'scale'};
 
-const keyframes = [
-  [0, 0],
-  [5, 1.0],
-  [10, 0],
-] as any[];
-
-export const MaterialEnvMapPage: LC = (props) => {
+export const MaterialEnvMapPage: LC = () => {
   const geometry = useOne(() => makeSphereGeometry({ width: 2, uvw: true, detail: [32, 64] }));
 
   const { useKeyboard } = useContext(KeyboardContext);

@@ -1,24 +1,17 @@
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { Emit, Time, Lazy, OffscreenTarget } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { Lazy, OffscreenTarget } from '@use-gpu/core';
 
 import React, { Gather, useVersion } from '@use-gpu/live';
 import { seq } from '@use-gpu/core';
-import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
   Loop, Pass, OrbitControls, OrbitCamera, Cursor,
-  LinearRGB, FullScreen, RenderTarget, RenderToTexture, AccumulateRender,
+  LinearRGB, FullScreen, RenderTarget, AccumulateRender,
   DebugLineHelper, DebugHelper, On, PointLayer, LineLayer,
   
-  Compute, Readback,
   useMouse, useKeyboard,
   usePerFrame, useShader, useShaderRef, useRawSource, useViewContext,
 } from '@use-gpu/workbench';
-
-import {
-  Plot, Point, Line,
-} from '@use-gpu/plot';
 
 import { InfoBox } from '../../ui/info-box';
 
@@ -40,7 +33,7 @@ const quadData = new Float32Array([
 ]);
 
 const sphereData = new Float32Array(
-  seq(32).flatMap((i) => [
+  seq(32).flatMap(() => [
     randS() * 10,
     GROUND + rand() * 5,
     randS() * 10,
@@ -79,7 +72,7 @@ export const RTTAccumulatePage: LC = () => {
                 limit={1024}
                 target={feedbackTarget}
                 render={(frame: Lazy<number>) => <PathTrace frame={frame} debugHelper={debugHelper} />}
-                then={(frame: Lazy<number>, converged: Lazy<boolean>) => (
+                then={(frame: Lazy<number>) => (
                   <Pass>
                     <FullScreen shader={useShader(compositeShader, [feedbackTarget.source, frame])} />
                     
@@ -173,7 +166,7 @@ const PathTrace = (props: PathTraceProps) => {
     debugHelper.shaders.emitLine,
   ], {HAS_DEBUG_PICKING: true});
 
-  var frameCount = 0;
+  let frameCount = 0;
 
   return (
     <Pass overlay>

@@ -194,12 +194,12 @@ export const drawCall = (props: DrawCallProps) => {
   const force = !!volatiles.length;
   const storage = useMemo(() =>
     makeBoundUniforms(device, pipeline, uniforms, bindings, base, force),
-    [device, pipeline, uniforms, bindings, base]);
+    [device, pipeline, uniforms, bindings, base, force]);
 
   // Volatile storage
   const volatile = useMemo(() =>
     makeVolatileUniforms(device, pipeline, volatiles, base + 1),
-    [device, pipeline, uniforms, volatiles, base]
+    [device, pipeline, volatiles, base]
   );
 
   const inspected = inspect({

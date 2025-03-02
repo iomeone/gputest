@@ -92,7 +92,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
 
   const {viewType} = useRenderContext();
   const passes = propPasses ?? DEFAULT_PASSES[viewType];
-  if (!passes) debugger;
+  if (!passes) throw new Error(`No sub-passes in <ForwardRenderer> for viewType ${viewType}`);
 
   return Renderer({ buffers, context, children: view, components, passes, entries, overlay, merge });
 }, 'ForwardRenderer');

@@ -127,6 +127,7 @@ export const Block: LiveComponent<BlockProps> = memo((props: BlockProps) => {
         fit: memoFit(fit),
         prefit: memoFit(fit),
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props, els, hovered, zIndex]);
   };
 

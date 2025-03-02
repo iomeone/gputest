@@ -27,7 +27,7 @@ export const GeometryData: LiveComponent<GeometryDataProps> = (props: GeometryDa
       index: k === 'indices',
       unwelded: !!unwelded?.[k],
     })),
-    [attributes, formats],
+    [attributes, formats, unwelded],
   );
 
   return (

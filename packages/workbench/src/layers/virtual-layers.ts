@@ -88,11 +88,12 @@ const Aggregate: LiveFunction<any> = (
   const [item] = items;
   const {flags, sources: extra} = item;
   const {schema, component} = layerAggregator;
-  const {quote} = QueueReconciler;
 
   const {count, sources, values, uploadRefs} = useAggregator(item.schema ?? schema, items);
 
   return useMemo(() => {
+    const {quote} = QueueReconciler;
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {matrices, normalMatrices, ...rest} = sources as Record<string, any>;
     const props = {count, ...rest, ...extra, ...flags, ...values};
@@ -105,7 +106,7 @@ const Aggregate: LiveFunction<any> = (
     const upload = useOne(() => uploadRefs ? quote(yeet(uploadRefs)) : null, uploadRefs);
     return upload ? [upload, layer] : layer;
     // Exclude flags and contexts because they are factored into the archetype
-  }, [count, sources, values, extra, uploadRefs]);
+  }, [count, sources, values, extra, uploadRefs, component, flags, items, item]);
 };
 
 const provideContext = (

@@ -74,7 +74,7 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
       intensity,
       shadow,
     };
-  }, [position, color, intensity, shadow, parent]);
+  }, [into, position, color, intensity, cutoff, shadow, parent]);
 
   const {useLight} = useLightContext();
   useLight(light);

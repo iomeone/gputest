@@ -84,8 +84,8 @@ export const usePipelineOptions = (
 
     return {primitive, multisample, fragment, depthStencil};
   }, [
-    mode,
     topology,
+    stripIndexFormat,
     side,
     depthTest,
     depthWrite,
@@ -99,7 +99,8 @@ export const usePipelineOptions = (
     HAS_ALPHA_TO_DISCARD: alphaToDiscard,
     HAS_SCISSOR: !!scissor,
     HAS_SHADOW: !!shadow,
-  }), [alphaToCoverage, samples, !!scissor, !!shadow]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [alphaToCoverage, alphaToDiscard, samples, !!scissor, !!shadow]);
 
   return [pipeline, defs];
 };

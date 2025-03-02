@@ -87,7 +87,7 @@ export const StructData: LC<StructDataProps> = (props: StructDataProps) => {
     } as any as StorageSource;
 
     return [source, array];
-  }, [device, layout, l]);
+  }, [device, layout, l, format, type]);
 
   // Prepare to fill layout
   const filler = useMemo(() => makeLayoutFiller(layout, array), [layout, array]);

@@ -24,7 +24,7 @@ type SVGProps = {
   size?: string | number,
 };
 
-export const SVGNextDown = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGNextDown = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -54,7 +54,7 @@ export const SVGNextDown = ({color = '#fff', title = undefined, size = 16}: SVGP
   </div>
 );
 
-export const SVGChevronDown = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGChevronDown = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -65,7 +65,7 @@ export const SVGChevronDown = ({color = '#fff', title = undefined, size = 16}: S
   </div>
 );
 
-export const SVGChevronLeft = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGChevronLeft = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -76,7 +76,7 @@ export const SVGChevronLeft = ({color = '#fff', title = undefined, size = 16}: S
   </div>
 );
 
-export const SVGChevronRight = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGChevronRight = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -87,7 +87,7 @@ export const SVGChevronRight = ({color = '#fff', title = undefined, size = 16}: 
   </div>
 );
 
-export const SVGNextOpen = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGNextOpen = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -99,7 +99,7 @@ export const SVGNextOpen = ({color = '#fff', title = undefined, size = 16}: SVGP
   </div>
 );
 
-export const SVGNextClosed = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGNextClosed = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -115,7 +115,7 @@ export const SVGNextClosed = ({color = '#fff', title = undefined, size = 16}: SV
   </div>
 );
 
-export const SVGAtom = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGAtom = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -145,7 +145,7 @@ export const SVGAtom = ({color = '#fff', title = undefined, size = 16}: SVGProps
   </div>
 );
 
-export const SVGInspect = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGInspect = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -161,7 +161,7 @@ export const SVGInspect = ({color = '#fff', title = undefined, size = 16}: SVGPr
   </div>
 );
 
-export const SVGClose = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGClose = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -175,7 +175,7 @@ export const SVGClose = ({color = '#fff', title = undefined, size = 16}: SVGProp
   </div>
 );
 
-export const SVGYeet = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGYeet = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -192,7 +192,7 @@ export const SVGYeet = ({color = '#fff', title = undefined, size = 16}: SVGProps
   </div>
 );
 
-export const SVGQuote = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGQuote = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -211,7 +211,7 @@ export const SVGQuote = ({color = '#fff', title = undefined, size = 16}: SVGProp
   </div>
 );
 
-export const SVGDashboard = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGDashboard = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -225,7 +225,7 @@ export const SVGDashboard = ({color = '#fff', title = undefined, size = 16}: SVG
   </div>
 );
 
-export const SVGBuiltinElement = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGBuiltinElement = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -243,7 +243,7 @@ export const SVGBuiltinElement = ({color = '#fff', title = undefined, size = 16}
   </div>
 );
 
-export const SVGHighlightElement = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGHighlightElement = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -276,7 +276,7 @@ export const SVGHighlightElement = ({color = '#fff', title = undefined, size = 1
   </div>
 );
 
-export const SVGPickElement = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGPickElement = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -296,7 +296,7 @@ export const SVGPickElement = ({color = '#fff', title = undefined, size = 16}: S
   </div>
 );
 
-export const SVGRunCount = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGRunCount = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -314,7 +314,7 @@ export const SVGRunCount = ({color = '#fff', title = undefined, size = 16}: SVGP
   </div>
 );
 
-export const SVGLayoutSide = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGLayoutSide = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -333,7 +333,7 @@ export const SVGLayoutSide = ({color = '#fff', title = undefined, size = 16}: SV
   </div>
 );
 
-export const SVGLayoutFull = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGLayoutFull = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -349,7 +349,7 @@ export const SVGLayoutFull = ({color = '#fff', title = undefined, size = 16}: SV
   </div>
 );
 
-export const SVGViewOutput = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGViewOutput = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}

@@ -1,5 +1,5 @@
 import type { LC } from '@use-gpu/live';
-import React, { Gather, Yeet } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
   LinearRGB, Pass, PanControls, FlatCamera, DebugAtlas, DebugProvider,

@@ -1,14 +1,13 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { DataField, GPUAttributes } from '@use-gpu/core';
+import type { GPUAttributes } from '@use-gpu/core';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
   Pass,
   Cursor, LinearRGB,
-  Data, getLineSegments, getArrowSegments,
-  OrbitCamera, OrbitControls,
+  Data, OrbitCamera, OrbitControls,
   PointLayer, LabelLayer,
 } from '@use-gpu/workbench';
 

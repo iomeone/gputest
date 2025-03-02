@@ -3,7 +3,6 @@ import type { LC, LiveElement } from '@use-gpu/live';
 
 import { use, fragment, useCallback, useResource, useState } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
-import { useRouterContext } from '@use-gpu/workbench';
 
 const STYLE: CSSProperties = {
   position: 'absolute',
@@ -149,7 +148,7 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
     });
   }, []);
 
-  useResource(async (dispose) => {
+  useResource(async () => {
     if (customFile) return;
 
     const file = FILES.find(({id}) => fileId == id);

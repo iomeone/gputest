@@ -94,10 +94,11 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
         };
 
     const useVariants = (virtual: VirtualDraw, hovered: boolean) =>
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       useMemo(() => getVariants(virtual, hovered), [getVariants, virtual, hovered]);
 
     return useVariants;
-  }, [device, buffers, components]);
+  }, [buffers, components]);
 
   // Pass aggregrated calls to pass runners
   const Resume = (
@@ -124,6 +125,7 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
         calls.post || calls.readback ? use(ReadbackPass, props) : null,
         picking && calls.picking ? use(PickingPass, props) : null,
       ];
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [calls, buffers, passes, overlay, merge]);
 
   return (

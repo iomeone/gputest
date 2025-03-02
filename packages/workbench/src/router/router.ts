@@ -20,7 +20,7 @@ export const Router: LiveComponent<RouterProps> = memo(({
   children,
 }: RouterProps) => {
 
-  const src = useMemo(() => source ?? makeBrowserHistory(base, hash), [source ?? base, hash]);
+  const src = useMemo(() => source ?? makeBrowserHistory(base, hash), [source, base, hash]);
 
   const [state, setState] = useState<RouterState>({
     path: src.path(),

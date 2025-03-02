@@ -68,7 +68,7 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
     layout,
     defs,
     uniforms,
-  }), [bindGroup, cull, layout, defs, uniforms]);
+  }), [bind, cull, layout, defs, uniforms]);
 
   return [
     signal(),

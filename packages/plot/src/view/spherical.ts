@@ -29,14 +29,12 @@ const useTraits = makeUseTrait(Traits);
 
 export type SphericalProps = TraitProps<typeof Traits> & PropsWithChildren<{
   bend?: number,
-  helix?: number,
   on?: Swizzle,
 }>;
 
 export const Spherical: LiveComponent<SphericalProps> = (props: SphericalProps) => {
   const {
     bend = 1,
-    helix = 0,
     children,
   } = props;
 
@@ -141,7 +139,7 @@ export const Spherical: LiveComponent<SphericalProps> = (props: SphericalProps) 
     }
 
     return [focus, aspectX, aspectY, scaleY, matrix, swizzle, range, epsilon];
-  }, [g, a, p, r, q, s, bend, helix]);
+  }, [g, a, p, r, q, s, bend, composed, m, on, swapMatrix]);
 
   const t = useShaderRef(matrix);
 

@@ -104,7 +104,7 @@ export const RawData: LiveComponent<RawDataProps<unknown & boolean>> = <I extend
         version: 0,
         bounds: source.bounds,
       }))
-    ), [items, getData]);
+    ), [items, getData, source]);
   }
   else {
     useNoOne();

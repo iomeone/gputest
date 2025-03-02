@@ -87,9 +87,12 @@ export const Grid: LiveComponent<GridProps> = memo((props) => {
     const newValues = useMemo(() => {
       const f = (options.mode === 'log') ? logarithmic : linear;
       return new Float32Array(f(r[0], r[1], options));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [r[0], r[1], options]);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const values = useMemo(() => newValues, newValues as any);
+
     const data = useRawSource(values, 'f32');
     const n = values.length * (detail + 1);
 
@@ -137,6 +140,8 @@ export const Grid: LiveComponent<GridProps> = memo((props) => {
       shader: bound,
       length: n,
       size: [n],
+      // n set below
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [bound]);
 
     const l = n * (auto ? 2 : 1);
@@ -165,7 +170,8 @@ export const Grid: LiveComponent<GridProps> = memo((props) => {
         ...flags,
       }) : null,
     ])
-  ), [firstPositions, secondPositions, auto, props]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [firstPositions, secondPositions, auto, props, ...Object.values(flags)]);
 }, shouldEqual({
   first: sameShallow(),
   second: sameShallow(),

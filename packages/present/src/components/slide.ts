@@ -38,6 +38,7 @@ export const Slide: LC<SlideProps> = (props: SlideProps) => {
                   enter: {...effect, ...enter},
                   exit: {...effect, ...exit},
                 }),
+                // eslint-disable-next-line react-hooks/exhaustive-deps
                 [id, ops, effect, enter, exit]
               );
             }

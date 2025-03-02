@@ -174,6 +174,7 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
     };
 
     return context;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device, renderContext, colorStates, depthStencilState, resolution]);
 
   return [

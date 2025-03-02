@@ -266,6 +266,7 @@ export const Overflow: LiveComponent<OverflowProps> = memo((props: OverflowProps
         fit: memoFit(fitInto),
         prefit: memoFit(fitInto),
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props, els, version]);
   };
 

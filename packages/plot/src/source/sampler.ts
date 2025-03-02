@@ -103,7 +103,7 @@ export const Sampler: LiveComponent<SamplerProps<unknown & (string | string[])>>
     () => split
       ? seq(items).map(() => makeTensorArray(f, alloc))
       : [makeTensorArray(f, items * alloc)],
-    [f, alloc, items]
+    [f, alloc, items, split]
   );
   const arrays = useOne(() => tensors.map(({array}) => array), tensors);
   const {dims} = tensors[0];
@@ -283,7 +283,7 @@ export const Sampler: LiveComponent<SamplerProps<unknown & (string | string[])>>
 
     const emit = split ? makeNumberSplitter(arrays, dims) : makeNumberWriter(arrays[0], dims);
     return [sampled, emit];
-  }, [centered, range, size, border, arrays, dims]);
+  }, [centered, range, size, border, arrays, dims, expr, index, origin, split]);
 
   const refresh = () => {
     const [tensor] = tensors;
@@ -324,7 +324,7 @@ export const Sampler: LiveComponent<SamplerProps<unknown & (string | string[])>>
     () => split
       ? ({...dataContext, ...value})
       : ({...dataContext, [as as string]: value}),
-    [dataContext, value, as]) : useNoMemo();
+    [dataContext, value, as, split]) : useNoMemo();
 
   return render ? render(value as any) : children ? provide(DataContext, context, children) : yeet(value);
 }, shouldEqual({

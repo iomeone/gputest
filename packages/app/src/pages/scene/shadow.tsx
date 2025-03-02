@@ -1,17 +1,15 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, StorageSource, TextureSource, UniformType } from '@use-gpu/core';
+import type { GPUGeometry, TextureSource } from '@use-gpu/core';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
+import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
-import { seq } from '@use-gpu/core';
 
 import {
-  Loop, Pass, FlatCamera, Animate, LinearRGB,
+  Pass, LinearRGB,
   GeometryData, PBRMaterial, ImageTexture,
   OrbitCamera, OrbitControls, Environment,
   Cursor,
   DirectionalLight, PointLight, AmbientLight,
-  Data, PointLayer,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
 } from '@use-gpu/workbench';
 
@@ -60,7 +58,7 @@ const lightData = [
   },
 ];
 
-export const SceneShadowPage: LC = (props) => {
+export const SceneShadowPage: LC = () => {
 
   return (<>
     <InfoBox>&lt;DirectionalLight&gt; and &lt;PointLight&gt; with shadow map (forward renderer)</InfoBox>

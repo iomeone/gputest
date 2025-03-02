@@ -5,8 +5,6 @@ const randomColor = () => [Math.random(), Math.random(), Math.random(), 1];
 const circleX = (a: number, r: number) => Math.cos(a * Math.PI * 2) * r;
 const circleY = (a: number, r: number) => Math.sin(a * Math.PI * 2) * r;
 
-const N = 32;
-
 export const pointData = seq(32).map((i) => ({
   // path: [[x, y, z], ...]
   position: [circleX(i / 32, 1), circleY(i / 32, 1), 0],

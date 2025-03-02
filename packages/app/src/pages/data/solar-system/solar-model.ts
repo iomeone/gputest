@@ -23,7 +23,7 @@ const BODIES = [
   {
     label: 'Sun',
     color: parseColor('#ffb600'),
-    orbit: (d: number) => ({
+    orbit: () => ({
       N: 0,
       i: 0,
       w: 0,

@@ -86,24 +86,24 @@ export const RawMesh: LiveComponent<RawMeshProps> = memo((props: RawMeshProps) =
     return t;
   }, [device, texture]);
 
-  // Defines
-  const toColorSpace = useNativeColor(colorInput, colorSpace);
-  const defines = {
-    '@group(GLOBAL)': '@group(0)',
-    '@group(LIGHT)': '@group(0)',
-    '@binding(LIGHT)': '@binding(1)',
-    'PICKING_ID': id,
-    'UV_PICKING': false,
-  };
-
   // Shader
   const vertexShader   = isPicking ? instanceDrawMeshPick         : instanceDrawMesh;
   const fragmentShader = isPicking ? instanceFragmentPickGeometry : instanceFragmentMesh;
+
+  const toColorSpace = useNativeColor(colorInput, colorSpace);
 
   const inspect = useInspectable();
 
   // Rendering pipeline
   const pipeline = useMemo(() => {
+    const defines = {
+      '@group(GLOBAL)': '@group(0)',
+      '@group(LIGHT)': '@group(0)',
+      '@binding(LIGHT)': '@binding(1)',
+      'PICKING_ID': id,
+      'UV_PICKING': false,
+    };
+
     const vertexLinked = linkBundle(vertexShader, {toColorSpace}, defines);
     const fragmentLinked = linkBundle(fragmentShader, {toColorSpace}, defines);
 
@@ -139,7 +139,7 @@ export const RawMesh: LiveComponent<RawMeshProps> = memo((props: RawMeshProps) =
         fragment: {},
       }
     );
-  }, [device, colorStates, depthStencilState, samples, toColorSpace]);
+  }, [device, colorStates, depthStencilState, samples, toColorSpace, vertexShader, fragmentShader, inspect, mesh.attributes, id]);
 
   // Uniforms
   const [uniform, sampled] = useMemo(() => {
@@ -154,7 +154,7 @@ export const RawMesh: LiveComponent<RawMeshProps> = memo((props: RawMeshProps) =
     }
 
     return [uniform, sampled];
-  }, [device, viewDefs, isPicking, pipeline]);
+  }, [device, viewDefs, isPicking, pipeline, sourceTexture]);
 
   // Return a lambda back to parent(s)
   const draw = (passEncoder: GPURenderPassEncoder) => {

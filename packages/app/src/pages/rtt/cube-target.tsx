@@ -8,7 +8,7 @@ import { seq } from '@use-gpu/core';
 import {
   Pass,
   CubeCamera, OrbitCamera, OrbitControls,
-  Pick, Cursor, LinearRGB,
+  Cursor, LinearRGB,
   Animate,
   PrefilteredEnvMap, Environment, DirectionalLight,
   GeometryData, PBRMaterial,
@@ -28,7 +28,7 @@ const τ = Math.PI * 2;
 const sphereGeometry = makeSphereGeometry({ width: 2, uvw: true, detail: [32, 64] });
 const boxGeometry = makeBoxGeometry({ width: 2, uvw: true });
 
-const randomColors = seq(16).map(i => {
+const randomColors = seq(16).map(() => {
   const r = 0.5 + Math.random() * 0.5;
   const g = 0.25 + Math.random() * 0.5;
   const b = 0.15 + Math.random() * 0.5;
@@ -45,7 +45,7 @@ const randomOffsets = seq(64).map(i => {
   return [c * r, y, s * r];
 });
 
-const randomRotations = seq(64).map(i => {
+const randomRotations = seq(64).map(() => {
   const x = Math.random() * 2 - 1;
   const y = Math.random() * 2 - 1;
   const z = Math.random() * 2 - 1;

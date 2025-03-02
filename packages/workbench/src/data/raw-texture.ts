@@ -81,6 +81,7 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
       version: 0,
     };
     return source;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device, memoKey, sampler, absolute, mip]);
 
   // Refresh and upload data

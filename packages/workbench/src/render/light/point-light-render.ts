@@ -72,7 +72,7 @@ export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKind
 
   const getFragment = useShader(getDeferredLightFragment, [...gbuffer, getLight, applyLight]);
 
-  const stencilLinks = useMemo(() => ({getVertex: getInstanceVertex}), [getInstanceVertex, getFragment]);
+  const stencilLinks = useMemo(() => ({getVertex: getInstanceVertex}), [getInstanceVertex]);
   const outsideLinks = useMemo(() => ({getVertex: getOutsideVertex, getFragment}), [getOutsideVertex, getFragment]);
   const insideLinks  = useMemo(() => ({getVertex: getInsideVertex,  getFragment}), [getInsideVertex,  getFragment]);
 
@@ -113,7 +113,7 @@ export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKind
     uploadBuffer(device, getInstance.buffer, instances.buffer);
     uploadBuffer(device, getOutside.buffer, outsides.buffer);
     uploadBuffer(device, getInside.buffer, insides.buffer);
-  }, [lights, getInstance, getOutside, getInside, instances, outsides, insides]);
+  }, [device, cull, start, end, order, lights, getScale, getInstance, getOutside, getInside, instances, outsides, insides, viewUniforms]);
 
   return [
     yeet({'dispatch': onDispatch}),

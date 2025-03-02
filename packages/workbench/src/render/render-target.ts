@@ -1,4 +1,4 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
@@ -214,7 +214,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     } as TextureSource : undefined;
 
     return [source, sources, depth];
-  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil]);
+  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, bufferTextures, bufferViews, colorAttachments, colorSpace, counter, resolveTexture]);
 
   const rttContext = useMemo(() => ({
     ...renderContext,
@@ -234,9 +234,10 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     }],
 
     swap: source?.swap,
+    sources,
     source,
     depth,
-  } as OffscreenRenderContext), [renderContext, width, height, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source, sources]);
+  } as OffscreenRenderContext), [renderContext, width, height, depth, samples, colorInput, colorSpace, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source, sources]);
 
   const inspectable = useMemo(() => [
     ...(source ? [source] : []),

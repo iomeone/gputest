@@ -85,7 +85,8 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
 
     queue.push({id, data: light});
     changed.add(id);
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Produce light/shadow sources
   const Resume = () => {
@@ -180,6 +181,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
           let mapping;
           try {
             mapping = atlas.place(key, w, h);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (e) {
             atlas = makeAtlasPage();
             atlases.push(atlas);
@@ -237,6 +239,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
       } as TextureSource;
 
       return source;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [device, shadows, shadowKey]);
 
     let needsRefresh = prevDataRef.current !== data;

@@ -64,7 +64,8 @@ export const TextureShader: LiveComponent<TextureShaderProps> = (props) => {
     });
 
     return getShader(shader, values);
-  }, [shader, texture, args.length, source, sources]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shader, texture, source, sources, args.length]);
 
   const output = useLambdaSource(getTexture, texture ?? source ?? NO_SOURCE);
 

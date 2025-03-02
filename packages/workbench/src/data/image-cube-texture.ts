@@ -46,6 +46,7 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
   const suspense = useSuspenseContext();
   const fetch = useMemo(
     () => wrap(Suspense, urls.map((url: string) => keyed(ImageLoader, url, {url, format, colorSpace}))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [...urls, format, colorSpace]
   );
 
@@ -96,6 +97,7 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
       updateMipArrayTextureChain(device, source);
 
       return source;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [resources, sampler]);
 
     return useRenderProp(props, source);

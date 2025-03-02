@@ -47,8 +47,8 @@ const max = 12;
 const step = 1;
 
 export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
-  let {value, onChange} = props;
-  let clamped = clamp(value, min, max);
+  const {value, onChange} = props;
+  const clamped = clamp(value, min, max);
 
   const sliderRef = useRef<HTMLDivElement>();
   const thumbRef = useRef<HTMLDivElement>();
@@ -114,9 +114,7 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
     const {current: thumb} = thumbRef;
     if (!slider || !thumb) return;
 
-    const {width: sliderWidth} = slider.getBoundingClientRect();
     const {width: thumbWidth} = thumb.getBoundingClientRect();
-    const delta = sliderWidth;
 
     const pos = (clamped - min) / (max - min);
     thumb.style.left = Math.round(pos * 100) + '%';

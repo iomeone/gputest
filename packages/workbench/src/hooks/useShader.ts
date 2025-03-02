@@ -10,6 +10,7 @@ export const useShader = (
   values: any[],
   defines?: Record<string, any>,
 ) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => getShader(shader, values, defines), [shader, ...values, defines]);
 }
 

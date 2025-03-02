@@ -1,14 +1,14 @@
 import type { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live';
 import type { LambdaSource, TextureSource } from '@use-gpu/core';
 
-import { memo, use, wrap, provide, useFiber, useMemo, useOne, makeContext } from '@use-gpu/live';
+import { memo, use, wrap, provide, useFiber, useMemo, useOne } from '@use-gpu/live';
 import { LiveCanvas } from '@use-gpu/react';
 import { wgsl } from '@use-gpu/shader/wgsl';
 import { Pass, FlatCamera, FontLoader, Queue, DeviceContext, getShader, getLambdaSource, QueueReconciler } from '@use-gpu/workbench';
 import { AutoCanvas } from '@use-gpu/webgpu';
-import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '@use-gpu/layout';
+import { UI, Layout, Block, Inline, Text, Overflow, Absolute } from '@use-gpu/layout';
 
-import React, { Fragment } from 'react';
+import React from 'react';
 
 import { UseInspect } from '@use-gpu/inspect';
 import { inspectGPU } from './index';
@@ -230,7 +230,8 @@ export const renderTargets = (props: any) => <Targets {...props} />;
 
 export const Targets: React.FC<TargetsProps> = ({fiber}) => {
 
-  const {color, picking, depth} = fiber.__inspect?.output;
+  const output = fiber.__inspect?.output ?? ({} as any);
+  const {color, picking, depth} = output;
   const device = fiber.context.values.get(DeviceContext)?.current;
 
   return (
@@ -368,8 +369,8 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
             }
           }
           else if (layout.match(/array/)) {
-            const [,, depth] = size;
-            for (let i = 0; i < depth!; ++i) {
+            const [,, depth = 0] = size;
+            for (let i = 0; i < depth; ++i) {
               let texture = t as any;
               texture = getShader(arrayShader, [i, texture]);
               texture = getShader(depthShader, [() => size, texture]);
@@ -437,7 +438,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
 
   const pickingViews = useOne(() => {
     const out: LiveElement[] = [];
-    for (let t of toArray(picking)) {
+    for (const t of toArray(picking)) {
       const {size} = t;
 
       let texture = getShader(pickingShader, [() => size, t]) as any;

@@ -1,6 +1,5 @@
 import type { LC } from '@use-gpu/live';
 import type { DataTexture, TextureSource, OffscreenRenderContext } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
 
 import React, { Gather, useRef } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
@@ -29,6 +28,7 @@ import { InfoBox } from '../../ui/info-box';
 //
 
 const NOISE_SIZE = 1024;
+
 const LINEAR_SAMPLER: GPUSamplerDescriptor = {
   minFilter: 'linear',
   magFilter: 'linear',
@@ -39,7 +39,7 @@ const LINEAR_SAMPLER: GPUSamplerDescriptor = {
 const makeNoiseData = (size: number) => {
   const data = new Uint8Array(size * size * 4);
 
-  let n = size * size;
+  const n = size * size;
   for (let i = 0, j = 0; i < n; ++i) {
     data[j++] = Math.random() * 255;
     data[j++] = Math.random() * 255;
@@ -54,7 +54,7 @@ const makeNoiseData = (size: number) => {
   } as DataTexture;
 };
 
-const noiseData = makeNoiseData(1024);
+const noiseData = makeNoiseData(NOISE_SIZE);
 
 const initializeShader = wgsl`
   @link fn getTargetSize() -> vec2<f32>;

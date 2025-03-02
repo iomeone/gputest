@@ -6,7 +6,7 @@ import { mat4, vec4 } from 'gl-matrix';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
-  makeFrustumPlanes, makeGlobalUniforms, makeViewUniforms, uploadBuffer, updateViewUniforms,
+  makeGlobalUniforms, makeViewUniforms, uploadBuffer, updateViewUniforms,
   VIEW_UNIFORMS,
 } from '@use-gpu/core';
 

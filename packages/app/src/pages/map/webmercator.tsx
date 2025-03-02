@@ -1,39 +1,25 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Tracks } from '@use-gpu/workbench';
 
-import React, { use, useContext } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
-  Loop, Pass,
+  Pass,
   Cursor, OrbitCamera, OrbitControls,
   Animate,
   LinearRGB,
 } from '@use-gpu/workbench';
 import {
-  Plot, Spherical, Axis, Grid, Label, Line, Scale, Tick,
+  Plot, Axis, Grid, Scale, Tick,
 } from '@use-gpu/plot';
 import {
   WebMercator, MVTiles, MVTStyles, MapboxProvider, MapTileProvider,
 } from '@use-gpu/map';
 import { parseColor } from '@use-gpu/parse';
 
-import { PlotControls } from '../../ui/plot-controls';
 import { InfoBox } from '../../ui/info-box';
 
 import { vec3 } from 'gl-matrix';
-
-const π = Math.PI;
-const τ = π*2;
-const EPS = 1e-3;
-
-const numberFormatter = (x: number) => x.toFixed(2).replace(/\.0+$/, '');
-
-const thetaFormatter = (θ: number) => {
-  if (θ === 0) return '0';
-  const num = Math.abs(θ / π);
-  const denom = Math.abs(π / θ);
-  return `${θ < 0 ? '-' : ''}${num > 1 + EPS ? numberFormatter(num) : ''}π${denom > 1 + EPS ? '/' + numberFormatter(denom) : ''}`;
-};
 
 const USE_MAPBOX = false;
 

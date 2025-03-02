@@ -108,7 +108,7 @@ const Bar = (
   const shift = useMemo(() => isX
     ? () => [scrollRef[0] / sizeRef[2] * sizeRef[0], 0]
     : () => [0, scrollRef[1] / sizeRef[3] * sizeRef[1]],
-    [scrollRef, sizeRef]
+    [scrollRef, sizeRef, isX]
   );
 
   const thumbTransform = useShader(getScrolledPosition, [shift]);
@@ -177,5 +177,6 @@ const Bar = (
       });
     }
     return yeet(yeets);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...sizeRef, thumbTransform, overflow, isX, layout, origin, z, clip, mask, transform, inspect]);
 }

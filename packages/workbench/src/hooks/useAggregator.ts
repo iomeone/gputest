@@ -29,7 +29,9 @@ export const useAggregator = (
 
   const aggregate = useMemo(() => (
     makeAggregator(schema)(device, items, allocInstances, allocVertices, allocIndices)),
-    [archetype, allocInstances, allocVertices, allocIndices]
+    // `items` only used to initialize
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [device, schema, archetype, allocInstances, allocVertices, allocIndices]
   );
 
   return useOne(() => aggregate(items, count, indexed, instanced, offsets), items);

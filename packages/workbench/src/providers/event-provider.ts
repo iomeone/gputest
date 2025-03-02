@@ -218,7 +218,7 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
 
       return {mouse: ref.mouse as any, index, hovered, captured, pressed, presses, clicks, stop: stopMouse};
     },
-  }), [mouse, targetId, captureId]);
+  }), [mouse, targetId, captureId, pointerLock, stopMouse, targetIndex]);
 
   const wheelContext = useMemo(() => ({
     wheel,
@@ -235,14 +235,14 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
 
       return {wheel: ref.wheel as any, index, stop: stopWheel};
     },
-  }), [wheel, targetId, captureId]);
+  }), [wheel, targetId, captureId, stopWheel, targetIndex]);
 
   const keyboardContext = useMemo(() => ({
     keyboard,
     useKeyboard: (): KeyboardEventState => {
       return {keyboard: keyboard as any, stop: stopKeyboard};
     },
-  }), [keyboard, targetId, captureId]);
+  }), [keyboard, stopKeyboard]);
 
   return (
     provide(MouseContext, mouseContext,

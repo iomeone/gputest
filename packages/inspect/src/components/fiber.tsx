@@ -1,16 +1,16 @@
 import type { LiveFiber } from '@use-gpu/live';
 import type { Cursor } from '@use-gpu/state';
 import type { InspectState, InspectAPI } from './types'
-import { formatValue, isSubNode, YEET, DEBUG, RECONCILE } from '@use-gpu/live';
+import { isSubNode, DEBUG, RECONCILE } from '@use-gpu/live';
 
 import React, { memo, useMemo, useLayoutEffect, useRef, PropsWithChildren } from 'react';
 
 import { usePingTracker, usePingContext } from '../providers/ping-provider';
 import { Node } from './node';
 import { ReactNode } from './react-node';
-import { ExpandState, SelectState, HoverState, FocusState, Action } from './types';
+import { ExpandState } from './types';
 
-import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendColumns, TreeLegendGroup, TreeRowOmitted, TreeLegendItem, SplitColumn, SplitColumnFull, Muted, InlineButton } from './layout';
+import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendColumns, TreeLegendGroup, TreeRowOmitted, TreeLegendItem, Muted, InlineButton } from './layout';
 import { Expandable } from './expandable';
 
 import { IconItem, SVGChevronDown, SVGChevronLeft, SVGChevronRight, SVGNextOpen, SVGNextClosed, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput } from './svg';
@@ -229,7 +229,6 @@ export const FiberTree: React.FC<FiberTreeProps> = ({
 export const FiberNode: React.FC<FiberNodeProps> = memo(({
   state,
   api,
-  by,
   fiber,
   fibers,
   focusDepth = 0,
@@ -252,12 +251,14 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
     focusedCursor,
   } = state;
 
-  let {id, mount, mounts, next, order, host, yeeted, __inspect} = fiber;
+  // eslint-disable-next-line prefer-const
+  let {id, mount, mounts, next, order, yeeted, __inspect} = fiber;
   const [selectState] = selectedCursor();
   const [hoverState] = hoveredCursor();
   const [focusState] = focusedCursor();
 
   // Avoid jumpyness on hover
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const lockedWide = useMemo(() => (!mount && !mounts && !next), []);
   if (!skipDepth) {
     wide = wide || lockedWide;
@@ -342,7 +343,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   }
 
   // Render node itself
-  let nodeRender = (shouldRender || shouldAbsolute) ? (
+  const nodeRender = (shouldRender || shouldAbsolute) ? (
     <Node
       key={id}
       fiber={fiber}

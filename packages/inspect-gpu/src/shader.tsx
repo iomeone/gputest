@@ -1,6 +1,5 @@
 import type { LiveFiber } from '@use-gpu/live';
 
-import { formatNode, formatValue } from '@use-gpu/live';
 import { InspectObject } from '@use-gpu/inspect';
 import { styled as _styled } from '@stitches/react';
 
@@ -56,27 +55,6 @@ const StyledKey = styled('div', {
 
 const Grow = styled('div', {
   flexGrow: 1,
-});
-
-const StyledEditor = styled('div', {
-  display: 'flex',
-  padding: '10px 0',
-  width: '100%',
-});
-
-const StyledGutter = styled('div', {
-  padding: '0 5px',
-  borderRight: '1px solid var(--LiveInspect-borderThin)',
-  textAlign: 'right',
-  color: 'var(--LiveInspect-colorTextMuted)',
-  fontSize: '0.9em',
-});
-
-const StyledCode = styled('div', {
-  flexGrow: '1',
-  whiteSpace: 'pre',
-  padding: '0 10px',
-  overflow: 'auto',
 });
 
 type ShaderProps = {

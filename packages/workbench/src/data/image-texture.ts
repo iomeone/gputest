@@ -86,6 +86,7 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
       updateMipTextureChain(device, source);
 
       return source;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [resource, sampler]);
 
     return useRenderProp(props, source);

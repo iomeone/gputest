@@ -1,8 +1,5 @@
 import React from 'react';
-import { use } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
-
-const ICON = (s: string) => <span className="m-icon">{s}</span>
 
 const STYLE = {
   position: 'absolute',
@@ -27,7 +24,9 @@ export const InfoBox = ({left, top, right, bottom, children}: InfoBoxProps) => {
   if (right != null) { style.right = right } else { style.left = left || 0 };
   if (bottom != null) { style.bottom = bottom } else { style.top = top || 0 };
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const root = document.querySelector('#use-gpu .canvas')!;
+
   return (
     <HTML
       container={root}

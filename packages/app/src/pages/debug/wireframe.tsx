@@ -1,7 +1,7 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, DataField } from '@use-gpu/core';
+import type { GPUGeometry } from '@use-gpu/core';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -9,7 +9,7 @@ import {
   Cursor,
   GeometryData,
   OrbitCamera, OrbitControls,
-  FaceLayer, RawQuads,
+  RawQuads,
   makeBoxGeometry,
 } from '@use-gpu/workbench';
 

@@ -129,6 +129,7 @@ export const useLinkedShader = (
   for (const {storage, texture} of bindings) buffers.push(storage?.buffer ?? texture?.view ?? texture?.texture);
   useMemo(() => {
     ref.bindings = bindings;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, buffers);
 
   return {shader, ...ref, volatiles};

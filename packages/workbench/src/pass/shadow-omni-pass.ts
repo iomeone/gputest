@@ -83,7 +83,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
 
   const {
     depth, depth: [near, far],
-    size, size: [width, height],
+    size: [width, height],
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   } = shadow!;
 
@@ -125,7 +125,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     };
 
     return [source, descriptors];
-  }, [device, size]);
+  }, [device, width, height]);
 
   const [projectionMatrix, viewMatrix] = useOne(() => {
     const m = mat4.perspectiveZO(mat4.create(), τ/4, 1, near, far);
@@ -153,6 +153,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
     for (let i = 0; i < 6; ++i) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       mat4.multiply(viewMatrix, getCubeFaceMatrix(i), into!);
       updateViewUniforms(uniforms, projectionMatrix, viewMatrix);
 

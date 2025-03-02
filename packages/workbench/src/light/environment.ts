@@ -59,7 +59,7 @@ export const Environment: LC<EnvironmentProps> = (props: EnvironmentProps) => {
         applyEnvironment: $set(environment ? getShader(applyPBREnvironment, [environment, g]) : null as ShaderModule | null | undefined),
       },
     });
-  }, [environment, parent])
+  }, [environment, parent, g])
 
   return (
     provide(EnvironmentContext, environment,

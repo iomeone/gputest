@@ -65,7 +65,8 @@ export const DataShader: LiveComponent<DataShaderProps> = (props) => {
     });
 
     return getShader(shader, values);
-  }, [shader, args.length, source, sources]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shader, args.length, source, sources, args.length]);
 
   const output = useLambdaSource(getData, source ?? NO_SOURCE);
 

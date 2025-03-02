@@ -59,6 +59,7 @@ export const Surface: LiveComponent<SurfaceProps> = memo((props) => {
       ...sources,
       ...extra,
       ...flags,
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [color, z, id, lookup, sources, extra, props]),
   });
 }, shouldEqual({

@@ -14,7 +14,7 @@ import { InfoBox } from '../../ui/info-box';
 import { RawMesh } from './components/raw-mesh';
 import { makeMesh, makeTexture } from '../../meshes/cube';
 
-export const MeshRawPage: LC = (props) => {
+export const MeshRawPage: LC = () => {
   const mesh = makeMesh();
   const texture = makeTexture();
 

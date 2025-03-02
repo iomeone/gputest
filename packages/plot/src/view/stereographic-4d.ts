@@ -11,7 +11,6 @@ import {
 } from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
-import { recenterAxis } from '../util/axis';
 import { composeTransform } from '../util/compose';
 import { swizzleMatrix, toBasis, rotateBasis, invertBasis } from '../util/swizzle';
 import { mat4 } from 'gl-matrix';
@@ -94,7 +93,7 @@ export const Stereographic4D: LiveComponent<Stereographic4DProps> = (props: Ster
     }
 
     return [matrix, swizzle, epsilon];
-  }, [g, a, p, r, q, s, bend]);
+  }, [g, a, p, r, q, s, composed, m, on, swapMatrix]);
 
   const t = useShaderRef(matrix);
 

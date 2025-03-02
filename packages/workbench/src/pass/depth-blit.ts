@@ -59,7 +59,7 @@ export const useDepthBlit = (
     (blit as any)?.draw && (blit as any).draw(passEncoder, countGeometry);
 
     passEncoder.end();
-  }, [blit, uv, descriptor]);
+  }, [blit, uv, scale, descriptor]);
 
   return draw;
 };

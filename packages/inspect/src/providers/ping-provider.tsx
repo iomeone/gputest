@@ -1,7 +1,7 @@
 import type { LiveFiber, ArrowFunction } from '@use-gpu/live';
-import { formatNodeName, incrementVersion } from '@use-gpu/live';
+import { incrementVersion } from '@use-gpu/live';
 
-import React, { memo, createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 const PingContext = createContext<PingContextProps>({
@@ -47,7 +47,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
       unsubscribe: (fiber: LiveFiber<any> | null | undefined, f: ArrowFunction) => {
         if (!fiber) return all.delete(f);
 
-        let s = map.get(fiber.id);
+        const s = map.get(fiber.id);
         if (s) {
           s.delete(f);
           if (s.size === 0) map.delete(fiber.id);
@@ -57,6 +57,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
       fibers,
     };
     return [fibers, map, all, api];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, NO_DEPS);
 
   useLayoutEffect(() => {
@@ -64,30 +65,29 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
     let reset: Timer | null = null;
 
     //
-    let queue: PingEntry[] = [];
+    const queue: PingEntry[] = [];
     let hot: PingEntry[] = [];
     let version = 0;
 
-    let timeout = () => {
+    const timeout = () => {
       reset = null;
       flush();
     };
 
-    let flush = () => {
+    const flush = () => {
       timer = null;
 
       const q = queue.slice();
       queue.length = 0;
 
       const seen = new Set<number>();
-      const mounts = new Set<number>();
 
       ReactDOM.unstable_batchedUpdates(() => {
         // Ping each queued fiber's listeners
         for (const [id, v, active] of q) {
           seen.add(id);
 
-          const s = map.get(id)!;
+          const s = map.get(id);
           if (!s) continue;
 
           const fs = s.values();
@@ -95,7 +95,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
         }
         // Unping last fiber's listeners
         for (const [id, v] of hot) if (!seen.has(id)) {
-          const s = map.get(id)!;
+          const s = map.get(id);
           if (!s) continue;
 
           const fs = s.values();
@@ -130,6 +130,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
       if (fiber.host) fiber.host.__ping = () => {};
       if (timer) clearTimeout(timer);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, NO_DEPS);
 
    return (
@@ -157,13 +158,14 @@ export const usePingTracker = (fiber?: LiveFiber<any>) => {
 
     subscribe(fiber, ping);
     return () => unsubscribe(fiber, ping);
-  }, [fiber]);
+  }, [fiber, forceUpdate, subscribe, unsubscribe]);
 
   return [version, live];
 }
 
 export const useForceUpdate = (): [number, () => void] => {
   const [version, setVersion] = useState<number>(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const forceUpdate = useCallback(() => setVersion(incrementVersion), NO_DEPS);
   return [version, forceUpdate];
 };

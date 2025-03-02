@@ -1,4 +1,4 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
@@ -130,7 +130,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
 
       return [render, resolve, buffers, views, layers, counter];
     },
-    [device, width, height, format, samples, history]
+    [device, width, height, format, samples, history, label]
   );
 
   const targetTexture = resolveTexture ?? renderTexture;
@@ -261,7 +261,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
     } as TextureSource : null;
 
     return [source, sources, depth];
-  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil]);
+  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, bufferLayers, bufferTextures, bufferViews, colorSpace, counter, resolveTexture, viewAttachments]);
 
   const rttContext = useMemo(() => ({
     ...renderContext,
@@ -278,9 +278,11 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
     viewAttachments,
 
     swap: source?.swap,
+    sources,
     source,
     depth,
-  } as OffscreenRenderContext), [renderContext, width, height, colorStates, depthStencilState, viewAttachments, source, sources, depth]);
+  } as OffscreenRenderContext),
+  [renderContext, width, height, depth, samples, colorInput, colorSpace, colorStates, depthStencilState, viewAttachments, source, sources]);
 
   const inspectable = useMemo(() => [
     ...(source ? [source] : []),

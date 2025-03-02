@@ -39,7 +39,7 @@ export const AABBHelper: LC<AABBHelperProps> = memo((props: AABBHelperProps) => 
     if (into) mat4.invert(m, into as mat4);
     if (matrix) mat4.multiply(m, m, matrix as mat4);
     return m;
-  })
+  }, [matrix, into]);
 
   const [context] = useCombinedMatrixTransform(combined);
 

@@ -14,7 +14,6 @@ import {
 
 import { InfoBox } from '../../ui/info-box';
 
-const TRANSPARENT = [1, 1, 1, 0.1] as XYZW;
 const BACKGROUND = [0.0, 0.0, 0.09, 1.0] as XYZW;
 const FILL = [0.4, 0.7, 1, 0.5] as XYZW;
 

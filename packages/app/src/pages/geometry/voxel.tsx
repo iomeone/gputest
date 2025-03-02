@@ -1,17 +1,16 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Vox } from '@use-gpu/voxel';
 import type { GPUGeometry } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
 import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
   LinearRGB, Pass,
   OrbitCamera, OrbitControls,
   Cursor,
-  AmbientLight, DirectionalLight, PointLight, DomeLight,
+  AmbientLight, PointLight,
   PBRMaterial, GeometryData,
   Animate, DebugProvider, Environment,
   makePlaneGeometry,

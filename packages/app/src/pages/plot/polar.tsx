@@ -1,15 +1,14 @@
 import type { LC } from '@use-gpu/live';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
-  Loop, Pass, FlatCamera,
-  Cursor,
+  Pass, FlatCamera,
   Animate,
   LinearRGB,
 } from '@use-gpu/workbench';
 import {
-  Plot, Polar, Axis, Grid, Label, Line, Sampler, Scale, Surface, Tick, Transpose,
+  Plot, Polar, Axis, Grid, Label, Line, Sampler, Scale, Tick,
 } from '@use-gpu/plot';
 
 import { InfoBox } from '../../ui/info-box';

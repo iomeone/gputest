@@ -59,7 +59,8 @@ export const useRawSource = (
       source.length = array.length / Math.floor(UNIFORM_ARRAY_DIMS[format]);
       source.size = size ?? [source.length];
       source.version = incrementVersion(source.version);
-    }, [array, buffer, version, ...size ?? NO_SIZE]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [device, format, source, array, buffer, version, ...size ?? NO_SIZE]);
   }
 
   return source;

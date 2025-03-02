@@ -1,5 +1,5 @@
 import type { LiveComponent } from '@use-gpu/live';
-import { FC, PropsWithChildren } from 'react';
+import { FC } from 'react';
 
 import { use } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';

@@ -69,7 +69,7 @@ export const GBuffer: LC = memo(() => {
       colorAttachments,
     }],
     sources,
-  }), [renderContext, colorStates, colorAttachments, sources]);
+  }), [renderContext, colorStates, viewAttachments, colorAttachments, sources]);
 
   inspect({
     output: {

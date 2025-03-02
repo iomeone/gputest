@@ -95,7 +95,7 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
       signs: '--++',
       gain: 0.5,
     });
-  }, [s, getSize]);
+  }, [getSize]);
 
   const sdf = (MASK_SHADER as any)[shape] ?? MASK_SHADER.circle;
   const mask = hollow ? getOutlinedMask : getFilledMask;

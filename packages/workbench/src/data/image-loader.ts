@@ -118,7 +118,7 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
         }),
       };
     }
-  }, [url, format, colorSpace, premultiply]);
+  }, [format, colorSpace, premultiply]);
 
   return use(Fetch, {
     url,

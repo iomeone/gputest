@@ -1,10 +1,10 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 import { TensorArray } from '@use-gpu/core';
 
 import {
-  Loop, Pass,
+  Pass,
   OrbitCamera, OrbitControls,
   Cursor, Environment,
   Animate,
@@ -16,8 +16,6 @@ import {
 import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';
-
-let t = 0;
 
 const BACKGROUND = [0, 0, 0.09, 1];
 

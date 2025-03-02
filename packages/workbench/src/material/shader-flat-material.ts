@@ -43,7 +43,7 @@ export const ShaderFlatMaterial: LC<ShaderFlatMaterialProps> = (props: ShaderFla
       getSurface,
       getLight,
     },
-  }), [getSurface, getLight]);
+  }), [getFragment, getSurface, getLight]);
 
   const render = getRenderFunc(props);
   const view = render ? render(context) : children;

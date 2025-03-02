@@ -1,21 +1,20 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Emit, StorageSource, TextureSource, LambdaSource, TensorArray, Time } from '@use-gpu/core';
+import type { Emit, TextureSource, LambdaSource, TensorArray, Time } from '@use-gpu/core';
 import type { ShaderSource } from '@use-gpu/shader';
 
-import React, { Gather, Provide } from '@use-gpu/live';
+import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass, Cursor,
+  Pass, Cursor,
   OrbitCamera, OrbitControls,
   Animate, Keyframe,
   LinearRGB, DirectionalLight,
   DataShader,
   Environment, PBRMaterial, PrefilteredEnvMap,
-  useShaderRef,
 } from '@use-gpu/workbench';
 import {
-  Plot, Cartesian, Polar, Axis, Grid, Sampler, ImplicitSurface, Point,
+  Plot, Polar, Axis, Grid, Sampler, ImplicitSurface, Point,
 } from '@use-gpu/plot';
 import { wgsl } from '@use-gpu/shader/wgsl';
 import { SurfaceControls } from '../../ui/surface-controls';
@@ -23,7 +22,6 @@ import { SurfaceControls } from '../../ui/surface-controls';
 import { InfoBox } from '../../ui/info-box';
 
 const π = Math.PI;
-const τ = π * 2;
 
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
@@ -59,7 +57,6 @@ const EXPR_VALUE = (emit: Emit, x: number, y: number, z: number, time: Time) => 
 
 const EXPR_NORMAL = (emit: Emit, x: number, y: number, z: number, time: Time) => {
   const t = time.elapsed / 1000;
-  const e = 1e-3;
 
   const f = Math.cos(t * .5) * .5 + .5;
 

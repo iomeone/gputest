@@ -1,7 +1,7 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import React, { use } from '@use-gpu/live';
-import { seq, lerp } from '@use-gpu/core';
+import React from '@use-gpu/live';
+import { seq } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
 
 import { PickingOverlay } from '../../ui/picking-overlay';
@@ -22,10 +22,6 @@ const randomFloat = (min: number, max: number) => min + Math.random() * (max - m
 
 const circleX = (a: number, r: number) => Math.cos(a * Math.PI * 2) * r;
 const circleY = (a: number, r: number) => Math.sin(a * Math.PI * 2) * r;
-
-const N = 32;
-
-const GRID = { divide: 16, base: 2, end: true };
 
 const roundPolygons = seq(20).map(i => {
   const n = Math.max(3, randomInt(5, 16) - randomInt(0, 5));

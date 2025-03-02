@@ -1,25 +1,24 @@
 import type { LiveFiber } from '@use-gpu/live';
-import type { ExpandState, SelectState, HoverState, OptionState, FocusState, PingState, InspectAppearance, InspectState, InspectAPI } from './types';
+import type { ExpandState, SelectState, HoverState, OptionState, FocusState, InspectAPI } from './types';
 
-import { formatNode, formatValue, YEET } from '@use-gpu/live';
+import { YEET } from '@use-gpu/live';
 import { useUpdateState, useCursor } from '@use-gpu/state/react';
-import { Cursor, $apply } from '@use-gpu/state';
+import { $apply } from '@use-gpu/state';
 
-import React, { memo, useCallback, useLayoutEffect, useEffect, useMemo, useState, SetStateAction } from 'react';
+import React, { useCallback, useLayoutEffect, useEffect, useMemo, useState } from 'react';
 
 import { makeUseLocalState } from '../hooks/useLocalState';
 import { PingProvider, usePingContext } from '../providers/ping-provider';
 import { useAppearance } from '../providers/appearance-provider';
 
-import { Node } from './node';
 import { FiberTree, FiberNav } from './fiber';
 import { Options } from './options';
 import { Panels } from './panels';
 import { Resizer } from './resizer';
-import { IconItem, SVGInspect, SVGPickElement, SVGClose } from './svg';
+import { IconItem, SVGInspect, SVGClose } from './svg';
 import {
-  InspectContainer, InspectToggle, Button, SmallButton, TreeControls, TreeView, Spacer, Grow,
-  SplitRow, RowPanel, Panel, PanelFull, PanelAbsolute, PanelScrollable, Inset, InsetColumnFull,
+  InspectContainer, InspectToggle, Button, TreeControls, TreeView,
+  RowPanel, PanelAbsolute, PanelScrollable, InsetColumnFull,
 } from './layout';
 
 const getOptionsKey = (id: string, sub: string = 'root') => `liveInspect[${sub}][${id}]`;
@@ -37,16 +36,12 @@ const INITIAL_STATE = {
   splitBottom: 50,
 };
 
-type InspectFiber = Record<string, any>;
-type InspectMap = WeakMap<LiveFiber<any>, InspectFiber>;
-
 type InspectProps = {
   fiber: LiveFiber<any>,
   sub?: string,
   onInspect?: (b: boolean) => void,
 
   findFiber?: number,
-  appearance?: Partial<InspectAppearance>,
   initialState?: Partial<OptionState>,
   save?: boolean,
 }
@@ -59,7 +54,6 @@ export const Inspect: React.FC<InspectProps> = ({
   onInspect,
   findFiber,
   initialState,
-  appearance,
   save = true,
 }) => {
   const {close, toolbar, legend, resize, skip, select} = useAppearance();
@@ -88,7 +82,9 @@ export const Inspect: React.FC<InspectProps> = ({
     focusedCursor,
   }), [expandedCursor, selectedCursor, hoveredCursor, focusedCursor]);
 
+  // eslint-disable-next-line prefer-const
   let [selectedFiber, updateSelected] = selectedCursor();
+
   const [depthLimit] = optionCursor.depth();
   const [runCounts] = optionCursor.counts();
   const [fullSize] = optionCursor.fullSize();
@@ -97,15 +93,11 @@ export const Inspect: React.FC<InspectProps> = ({
   const [tab, updateTab] = optionCursor.tab();
   const [splitLeft, setSplitLeft] = optionCursor.splitLeft();
   const [splitBottom, setSplitBottom] = optionCursor.splitBottom();
-  const [inspect, updateInspect] = optionCursor.inspect();
+  const [, updateInspect] = optionCursor.inspect();
   const [{fiber: hoveredFiber}, updateHovered] = hoveredCursor();
   const [focusedId, updateFocused] = focusedCursor();
 
   if (!select) selectedCursor()[1] = updateSelected = NOP;
-
-  const setSelected = useCallback((fiber?: LiveFiber<any> | null) => {
-    updateSelected({ $set: fiber ?? null });
-  }, [updateSelected, select]);
 
   const [open, updateOpen] = optionCursor.open();
   const toggleOpen = () => updateOpen(!open);
@@ -114,7 +106,7 @@ export const Inspect: React.FC<InspectProps> = ({
       onInspect && onInspect(!s);
       return !s;
     }));
-  }, [onInspect]);
+  }, [onInspect, updateInspect]);
 
   useLayoutEffect(() => {
     const el = document.querySelector('#use-gpu .canvas');
@@ -183,7 +175,7 @@ export const Inspect: React.FC<InspectProps> = ({
     }
 
     return {selectFiber, focusFiber, hoverFiber, makeHandlers};
-  }, [updateSelected, updateFocused, updateHovered]);
+  }, [rootId, updateSelected, updateFocused, updateHovered]);
 
   const tree = (
     <InsetColumnFull>
@@ -289,12 +281,13 @@ const HostHighlight = (props: HostHighlightProps) => {
     };
 
     return () => { host.__highlight = () => {}; }
-  }, [host, fibers, api]);
+  }, [host, fibers, api, toggleInspect]);
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const find = fibers.get(findFiber!);
     if (find) api.selectFiber(find);
-  }, [findFiber, api]);
+  }, [fibers, findFiber, api]);
 
   return null;
 };

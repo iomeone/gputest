@@ -225,6 +225,7 @@ export const SDFRectangle: LiveComponent<SDFRectangleProps> = (props) => {
     }
 
     return yeet(render);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     image,
     texture,
@@ -238,7 +239,9 @@ export const SDFRectangle: LiveComponent<SDFRectangleProps> = (props) => {
     clip,
     mask,
     transform,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     ...layout,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     ...origin,
   ]);
 };

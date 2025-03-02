@@ -70,7 +70,7 @@ export const Cartesian: LiveComponent<CartesianProps> = (props: CartesianProps) 
     }
 
     return matrix;
-  }, [g, a, p, r, q, s, m]);
+  }, [g, a, p, r, q, s, m, composed, swapMatrix]);
 
   const [context, combined] = useCombinedMatrixTransform(matrix);
 

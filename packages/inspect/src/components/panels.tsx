@@ -1,7 +1,7 @@
 import type { LiveFiber } from '@use-gpu/live';
 import type { Update } from '@use-gpu/state';
-import type { InspectAddIns, InspectAPI } from './types';
-import React, { FC, useState } from 'react';
+import type { InspectAPI } from './types';
+import React, { FC } from 'react';
 import { styled as _styled } from '@stitches/react';
 
 import { Inset, InsetLeftRightBottom } from './layout';
@@ -62,11 +62,6 @@ export const Panels: FC<PanelsProps> = (props: PanelsProps) => {
   const currentTab = active.find((panel) => panel.id === tab) ?? active[0];
   if (!currentTab) return null;
 
-  const handleSelectFiber = (fiber: number | LiveFiber<any>) => {
-    const f = typeof fiber === 'number' ? fibers.get(fiber) : fiber;
-    api.selectFiber(f);
-  };
-
   const Wrap = fullSize ? InsetLeftRightBottom : Inset;
 
   return (
@@ -80,7 +75,7 @@ export const Panels: FC<PanelsProps> = (props: PanelsProps) => {
           ))}
         </StyledTabList>
       ) : null}
-      {fiber ? currentTab!.render(fiber, fibers, api) : null}
+      {fiber ? currentTab.render(fiber, fibers, api) : null}
     </Wrap>
   );
 };

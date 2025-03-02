@@ -95,5 +95,6 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
       alphaToDiscard,
       blend,
     });
-  }, [shader, texture, target, initial, history, args, source, sources, mode, alphaToCoverage, blend]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shader, texture, target, initial, history, source, sources, mode, alphaToCoverage, blend, args.length]);
 }

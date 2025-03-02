@@ -48,6 +48,7 @@ export const Overlay: LC<OverlayProps> = (props: OverlayProps) => {
                   id,
                   ops,
                 }),
+                // eslint-disable-next-line react-hooks/exhaustive-deps
                 [id, ops]
               );
             }

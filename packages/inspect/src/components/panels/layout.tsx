@@ -1,7 +1,7 @@
 import type { LiveFiber } from '@use-gpu/live';
 
 import React, { useState } from 'react';
-import { DOMMock, SplitRow, Label, Spacer } from '../layout';
+import { DOMMock, Spacer } from '../layout';
 
 import { InspectObject } from '../inspect-object';
 
@@ -15,7 +15,6 @@ export const Layout: React.FC<LayoutProps> = ({fiber}) => {
   if (!layout) return null;
 
   const {into, size, sizes, offsets, self} = layout;
-  let n = sizes.length;
 
   const SCALE = 1/2;
 

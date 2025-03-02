@@ -2,18 +2,17 @@ import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Emit } from '@use-gpu/core';
 import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { use, memo } from '@use-gpu/live';
+import React, { memo } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass,
+  Pass,
   OrbitCamera, OrbitControls,
-  Cursor,
-  Animate,
+  Cursor, Animate,
   LinearRGB,
 } from '@use-gpu/workbench';
 import {
-  Plot, Spherical, Stereographic4D, Transform4D, Tensor, Line,
+  Plot, Stereographic4D, Transform4D, Tensor, Line,
 } from '@use-gpu/plot';
 
 import { HypersphereControls, HypersphereOptions } from '../../ui/hypersphere-controls';
@@ -90,6 +89,7 @@ export const PlotQuaternionHyperspherePage: LC = () => {
   const view = (options: HypersphereOptions) => (<>
     <InfoBox>Visualizing a 4D hypersphere under stereographic projection, as 3 mutually perpendicular toruses.</InfoBox>
     <LinearRGB>
+      <Cursor cursor="move" />
       <Camera>
         <Pass>
           <Plot>

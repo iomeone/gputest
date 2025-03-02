@@ -15,6 +15,7 @@ import {
   ZIndexTrait,
 } from '../traits';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Traits = combine(
   FaceTrait,
   ROPTrait,

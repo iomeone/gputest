@@ -2,14 +2,14 @@ import type { LC } from '@use-gpu/live';
 import React, { useOne } from '@use-gpu/live';
 
 import {
-  FlatCamera, PickingContext,
+  PickingContext,
   useShader, useLambdaSource,
 } from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Inline, Text,
 } from '@use-gpu/layout';
 import { useContext } from '@use-gpu/live';
-import { wgsl, bindModule } from '@use-gpu/shader/wgsl';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 export const PickingOverlay: LC = () => {
 

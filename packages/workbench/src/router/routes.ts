@@ -94,7 +94,7 @@ export const Routes: LiveComponent<RoutesProps> = memo((props: RoutesProps) => {
     }
 
     return [{routes, base, params}, element];
-  }, [base, matchers, currentPath]);
+  }, [b, matchers, currentPath]);
 
   if (element) return provide(RouteContext, context, shouldMorph ? morph(element) : element);
   if (context.routes) return use(Routes, context);

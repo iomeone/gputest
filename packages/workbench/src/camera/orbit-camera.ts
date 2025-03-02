@@ -1,6 +1,5 @@
 import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import type { VectorLike } from '@use-gpu/core';
-import { ViewUniforms } from '@use-gpu/core';
 
 import { useProp } from '@use-gpu/traits/live';
 import { parsePosition } from '@use-gpu/parse';
@@ -10,7 +9,7 @@ import { FrameContext } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
-import { vec2, mat4 } from 'gl-matrix';
+import { vec2 } from 'gl-matrix';
 
 const DEFAULT_ORBIT_CAMERA = {
   phi: 0,

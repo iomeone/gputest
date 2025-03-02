@@ -60,7 +60,8 @@ export const LinearRGB: LiveComponent<LinearRGBProps> = (props: LinearRGBProps) 
         let filter = getShader(gainColor, [g], defs);
         if (tonemap === 'aces') filter = chainTo(filter, tonemapACES);
         return filter;
-      }, [defs, tonemap]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [defs, tonemap, g]);
 
       const view = useMemo(() => [
         use(RenderToTexture, {
@@ -76,6 +77,7 @@ export const LinearRGB: LiveComponent<LinearRGBProps> = (props: LinearRGBProps) 
               filter,
             }),
         }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       ], [target, filter, children]);
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

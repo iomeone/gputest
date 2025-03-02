@@ -14,5 +14,3 @@ export const FALLBACK_MESSAGE = (error: Error) => <>
     <p>See <a href="https://caniuse.com/webgpu">CanIUse.com</a> for more info.</p>
   </div>
 </>;
-
-const F = () => {};

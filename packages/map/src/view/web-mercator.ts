@@ -108,7 +108,7 @@ export const WebMercator: LiveComponent<WebMercatorProps> = (props: WebMercatorP
     }
 
     return [matrix, swizzle, origin, range, epsilon];
-  }, [long, lat, zoom, native, a, g, p, r, q, s, bend]);
+  }, [long, lat, zoom, native, a, g, p, r, q, s, composed, m, on, swapMatrix]);
 
   const rangeMemo = useOne(() => range, JSON.stringify(range));
   const scissorRange = useOne(() => [range[0], range[1], range[2], [0, 2]], rangeMemo);

@@ -1,6 +1,5 @@
 import path from 'path';
 import fs from 'fs';
-import glob from 'glob';
 
 const EXPORTS_JSON = './src/exports.json';
 const PACKAGE_JSON = './package.json';
@@ -26,4 +25,5 @@ try {
 
   const json = JSON.stringify(PKG, null, 2);
   fs.writeFileSync(PACKAGE_JSON, json);
+  // eslint-disable-next-line
 } catch (e) {}

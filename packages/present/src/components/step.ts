@@ -36,6 +36,7 @@ export const Step: LC<StepProps> = (props: StepProps) => {
     })),
     () => {
       useUpdateTransition();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       return useMemo(() => use(TransformUI, {mask, transform, children}), [mask, transform, children]);
     },
   );

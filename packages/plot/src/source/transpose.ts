@@ -34,9 +34,9 @@ export const Transpose: LiveComponent<TransposeProps> = (props) => {
   if (!data) return;
 
   const swizzle = useOne(() => parseAxes(axes), axes);
-  const {array, size, dims} = data;
 
   const value = useMemo(() => {
+    const {array, size, dims} = data;
     const order = toOrder(swizzle);
 
     const sizeIn = [...size];
@@ -65,7 +65,7 @@ export const Transpose: LiveComponent<TransposeProps> = (props) => {
       array: out,
       size: sizeOut,
     };
-  }, [size, swizzle, data]);
+  }, [swizzle, data]);
 
   const render = getRenderFunc(props);
 

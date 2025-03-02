@@ -1,8 +1,8 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, StorageSource, TextureSource } from '@use-gpu/core';
+import type { GPUGeometry, TextureSource } from '@use-gpu/core';
 import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
+import React, { Gather, useOne } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 import { seq } from '@use-gpu/core';
 
@@ -22,9 +22,6 @@ import {
 
 import { InfoBox } from '../../ui/info-box';
 
-const COLOR_ON = [1, 1, 1, 1];
-const COLOR_OFF = [0.5, 0.5, 0.5, 1.0];
-
 const POSITION_KEYFRAMES = [
   [ 0, [-3,  0, 0]],
   [10, [ 0, -3, 0]],
@@ -42,7 +39,7 @@ const ROTATION_KEYFRAMES = [
   [16, [360, 0, 0]],
 ] as Keyframe[];
 
-export const SceneInstancesPage: LC = (props) => {
+export const SceneInstancesPage: LC = () => {
   const geometry = useOne(() => makeBoxGeometry({ width: 2 }));
 
   const rotations = seq(20).map(() => [Math.random()*360, Math.random()*360, Math.random()*360]);

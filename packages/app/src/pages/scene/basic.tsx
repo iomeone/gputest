@@ -1,12 +1,12 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, StorageSource, TextureSource } from '@use-gpu/core';
+import type { GPUGeometry, TextureSource } from '@use-gpu/core';
 import type { Keyframe } from '@use-gpu/workbench';
 
 import React, { Gather, memo, useOne } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Pass, FlatCamera, Animate, LinearRGB,
+  Pass, Animate, LinearRGB,
   GeometryData, PBRMaterial, ImageTexture,
   OrbitCamera, OrbitControls,
   Pick, Cursor,
@@ -55,7 +55,7 @@ const PickableMesh = memo(({mesh, texture}: PickableMeshProps) => {
 }, 'PickableMesh');
 
 // This uses a typical scene-graph arrangement with an image texture
-export const SceneBasicPage: LC = (props) => {
+export const SceneBasicPage: LC = () => {
   const geometry = useOne(() => makeBoxGeometry({ width: 2 }));
 
   return (<>

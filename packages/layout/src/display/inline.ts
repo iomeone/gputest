@@ -131,6 +131,7 @@ export const Inline: LiveComponent<InlineProps> = memo((props: InlineProps) => {
         fit: memoFit(fit),
         prefit: memoFit(fit),
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props, els, hovered]);
   };
 

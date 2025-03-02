@@ -103,6 +103,7 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
 
   const keys = useMemo(
     () => Object.keys(schema).filter(k => virtual?.[k] ?? data?.[0][schema[k].prop ?? k] != null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [schema, propData, virtual]
   );
 
@@ -117,6 +118,7 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     const isIndexed = !!indexedKey;
 
     return [countKey ?? keys[0], indexedKey, isArray, isIndexed];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema, ...keys]);
 
   // Resolve segment flags
@@ -151,7 +153,8 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     }
 
     return [chunks, groups, vertexCount, indexedKey ? indexCount : vertexCount];
-  }, [isArray, segments, itemCount, countKey, indexedKey, data, virtual, skip, ...(tensor ?? NO_TENSOR)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isArray, segments, itemCount, countKey, indexedKey, schema, data, virtual, skip, ...(tensor ?? NO_TENSOR)]);
 
   const allocItems = useBufferedSize(itemCount);
   const allocVertices = useBufferedSize(vertexCount);
@@ -221,8 +224,11 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     }
 
     return slices;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    schema,
     fields,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     live ? NaN : virtual ? (version ?? NaN) : null, propData,
     itemCount, skip,
     countKey, indexedKey,
@@ -252,7 +258,7 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     const emitters = schemaToEmitters(mergedSchema, {...attributes, ...rest});
 
     return [mergedSchema, emitters, total, indexed];
-  }, [schema, fields, countKey, attributes, segments, chunks, groups, loops, starts, ends]);
+  }, [schema, fields, countKey, attributes, segments, chunks, groups, loops, starts, ends, isArray, vertexCount, indexCount]);
 
   // Make aggregate chunk
   const items = useMemo(() => [{
@@ -278,6 +284,7 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     const bounds = toDataBounds(getBoundingBox(array, toCPUDims(dims)));
 
     if ('positions' in sources && bounds != null) (sources.positions as any).bounds = bounds;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, items, sources, ...(tensor ?? NO_TENSOR)]);
 
   if (live) useAnimationFrame();

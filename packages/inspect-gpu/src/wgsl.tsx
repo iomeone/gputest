@@ -4,7 +4,7 @@ import { StyledCompactShader } from './shader';
 import { basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
 import { EditorView, ViewUpdate, keymap } from '@codemirror/view';
-import { defaultKeymap, indentWithTab } from '@codemirror/commands';
+import { defaultKeymap } from '@codemirror/commands';
 import { LRLanguage, LanguageSupport } from "@codemirror/language";
 import { createTheme } from '@uiw/codemirror-themes';
 
@@ -209,6 +209,9 @@ export const WGSL = (props: WGSLProps) => {
       view.destroy();
       viewRef.current = null;
     };
+
+    // Update [code] via other effect
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onChange, onCommit]);
 
   return <div ref={editorRef}></div>;

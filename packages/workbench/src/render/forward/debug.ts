@@ -78,7 +78,7 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
     const v = bindBundle(vertexShader, links, undefined);
     const f = fragmentShader;
     return [v, f, vertexCount, instanceCount, wireframeCommand, wireframeIndirect];
-  }, [device, vertexShader, fragmentShader, gV]);
+  }, [device, vertexShader, fragmentShader, gV, vC, iC, indirect, topology]);
 
   const defs = useOne(() => ({...defines, HAS_SCISSOR: !!defines.HAS_SCISSOR}), defines);
 

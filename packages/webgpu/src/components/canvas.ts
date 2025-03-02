@@ -104,6 +104,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
 
   const gpuContext = useMemo(
     () => makePresentationContext(device, canvas, format),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [device, canvas, format, width, height],
   );
 
@@ -128,7 +129,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
 
     if (samples > 1) colorAttachments[0].resolveTarget = v;
     else colorAttachments[0].view = v;
-  }, [gpuContext, samples, colorAttachments])
+  }, [gpuContext, depth, samples, colorAttachments])
 
   const renderContext = useOne(() => ({
     width,

@@ -1,6 +1,6 @@
 import type { LC, LiveElement } from '@use-gpu/live';
 
-import { extend, mutate, fence, useCallback, useDouble, useMemo, useOne } from '@use-gpu/live';
+import { extend, mutate, fence, useCallback, useDouble, useOne } from '@use-gpu/live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
@@ -53,7 +53,8 @@ export const Clock: LC<ClockProps> = (props: ClockProps) => {
     }
 
     return null;
-  }, [prop, swapValues, swapElements, speed, render, children]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prop, swapValues, swapElements, speed, paused, render, children]);
 
   // Fence so that only continuation runs repeatedly
   return fence(null, Run);

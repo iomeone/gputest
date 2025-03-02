@@ -1,5 +1,5 @@
 import type { LiveFiber } from '@use-gpu/live';
-import type { Action, InspectAPI } from '../types';
+import type { InspectAPI } from '../types';
 
 import { formatNode, formatNodeName, YEET } from '@use-gpu/live';
 import { InspectObject } from '../inspect-object';
@@ -37,7 +37,7 @@ export const Fiber = styled('div', {
 
 export const Props: React.FC<PropsProps> = ({fiber, fibers, api}) => {
   // @ts-ignore
-  const {id, f, arg, args, yeeted} = fiber;
+  const {f, arg, args, yeeted} = fiber;
   const name = formatNodeName(fiber);
   let props = {} as Record<string, any>;
 
@@ -86,11 +86,11 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers, api}) => {
     }
     else {
       if (args.length === 1 && typeof args[0] === 'object') props = args[0];
-      else for (let k in args) props[k] = args[k];
+      else for (const k in args) props[k] = args[k];
     }
   }
 
-  let yt = (yeeted?.value ?? yeeted?.reduced) != null ? (<>
+  const yt = (yeeted?.value ?? yeeted?.reduced) != null ? (<>
     <div><b>Yeeted</b></div>
     {yeeted?.value != null ? (
       <div><InspectObject
@@ -110,7 +110,7 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers, api}) => {
     ) : null}
   </>) : null;
 
-  let showProps = f !== YEET;
+  const showProps = f !== YEET;
 
   const getQuote = () => {
     const {quote} = fiber;
@@ -139,8 +139,9 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers, api}) => {
     return null;
   };
 
-  let [quote, setQuote] = useState(getQuote);
-  let [history, setHistory] = useState(getHistory);
+  const [quote, setQuote] = useState(getQuote);
+  const [history, setHistory] = useState(getHistory);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
     const h = getHistory();
     const q = getQuote();

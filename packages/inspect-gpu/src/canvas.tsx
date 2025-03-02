@@ -1,7 +1,6 @@
 import type { LiveFiber } from '@use-gpu/live';
 
-import React, { ReactNode, useState } from 'react';
-import { InspectObject } from '@use-gpu/inspect';
+import React from 'react';
 import { saveAs } from 'file-saver';
 
 import { styled as _styled } from '@stitches/react';
@@ -49,7 +48,7 @@ export const Canvas: React.FC<CanvasProps> = ({fiber}) => {
     }
 
     setTimeout(() => {
-      const png = canvas.element.toBlob((blob: Blob) => {
+      canvas.element.toBlob((blob: Blob) => {
         saveAs(blob, 'canvas.png');
       });
     }, 100);

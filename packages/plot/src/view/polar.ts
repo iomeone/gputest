@@ -129,7 +129,7 @@ export const Polar: LiveComponent<PolarProps> = (props: PolarProps) => {
     }
 
     return [focus, aspect, matrix, swizzle, range, epsilon];
-  }, [g, a, p, r, q, s, bend, helix, on]);
+  }, [g, a, p, r, q, s, bend, on, composed, m, swapMatrix]);
 
   const t = useShaderRef(matrix);
 

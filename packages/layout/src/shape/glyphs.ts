@@ -162,5 +162,6 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
       transform,
       zIndex,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props, sdfFont, zIndex]);
 };

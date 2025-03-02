@@ -6,12 +6,13 @@ export const useInitialDispatch = (
 ) => {
 
   const firstRef = useRef(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useMemo(() => { firstRef.current = true; }, deps);
 
   const shouldDispatch = useCallback(() => {
     if (!firstRef.current) return false;
     firstRef.current = false;
-  });
+  }, []);
 
   return shouldDispatch;
 };

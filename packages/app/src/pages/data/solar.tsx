@@ -1,9 +1,8 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Emit, GPUAttributes } from '@use-gpu/core';
 import type { ShaderSource } from '@use-gpu/shader';
-import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { use } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
   Pass, LinearRGB,
@@ -18,7 +17,6 @@ import {
   UI, Layout, Absolute, Flex, Inline, Text,
 } from '@use-gpu/layout';
 import { vec3 } from 'gl-matrix';
-import { seq } from '@use-gpu/core';
 
 import { getBodies, getPeriod, getDayNumber, emitOrbitPosition } from './solar-system/solar-model';
 import { bv2rgb } from './solar-system/bv2rgb.wgsl';

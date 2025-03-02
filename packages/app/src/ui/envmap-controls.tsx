@@ -4,7 +4,7 @@ import type { TextureSource } from '@use-gpu/core';
 
 import { use, fragment, useState } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
-import { ImageTexture, ImageCubeTexture, PanoramaMap, useRouterContext } from '@use-gpu/workbench';
+import { ImageTexture, ImageCubeTexture, PanoramaMap } from '@use-gpu/workbench';
 
 const STYLE = {
   position: 'absolute',

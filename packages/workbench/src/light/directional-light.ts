@@ -113,7 +113,7 @@ export const DirectionalLight: LC<DirectionalLightProps> = memo((props: Directio
       intensity,
       shadow,
     };
-  }, [position, normal, color, intensity, shadow, parent]);
+  }, [into, position, normal, color, intensity, shadow, parent]);
 
   const {useLight} = useLightContext();
   useLight(light);

@@ -58,7 +58,7 @@ export const ComputeBuffer: LiveComponent<ComputeBufferProps> = (props: ComputeB
       const counter = { current: 0 };
       return [buffer, buffers, counter];
     },
-    [device, width, height, depth, format, history]
+    [device, format, label, length, history]
   );
 
   const targetBuffer = buffer;
@@ -109,7 +109,7 @@ export const ComputeBuffer: LiveComponent<ComputeBufferProps> = (props: ComputeB
     swap();
 
     return source;
-  }, [targetBuffer, width, height, depth, format, history]);
+  }, [targetBuffer, width, height, depth, format, history, buffers, counter, length]);
 
   if (!(render ?? children)) return yeet(source);
 

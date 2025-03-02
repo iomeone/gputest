@@ -1,4 +1,4 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { TensorArray } from '@use-gpu/core';
 import type { TraitProps } from '@use-gpu/traits';
 
@@ -49,7 +49,9 @@ export const Scale: LiveComponent<ScaleProps> = memo((props: ScaleProps) => {
   const values = useMemo(() => {
     const f = (props.mode === 'log') ? logarithmic : linear;
     return toTensorArray('f32', new Float32Array(f(r[0], r[1], domainOptions)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [r[0], r[1], props]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const version = useMemo(() => [], [...values.array]);
 
   // Generate positions aligned with origin
@@ -60,11 +62,14 @@ export const Scale: LiveComponent<ScaleProps> = memo((props: ScaleProps) => {
     fillNumberArray(origin, array, 4, 4, 0, 0, n);
     for (let i = 0; i < n; ++i) array[i * 4 + axis] = vs[i];
     return toTensorArray('vec4<f32>', array);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [version, origin]);
 
   const render = getRenderFunc(props);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const tensors = useMemo(() => ({positions, values}), [positions, version]);
+
   const dataContext = useDataContext();
   const context = !render && children ? useMemo(() => ({
     ...dataContext,

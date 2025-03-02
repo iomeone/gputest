@@ -82,7 +82,8 @@ export const Axis: LiveComponent<AxisProps> = memo((props) => {
 
       ...flags,
     })
-  ), [start, end, positions, segments, anchors, trims, n, props]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [start, end, positions, segments, anchors, trims, n, props, ...Object.values(flags)]);
 }, shouldEqual({
   origin: sameShallow(),
   range: sameShallow(sameShallow()),

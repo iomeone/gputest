@@ -110,7 +110,8 @@ export const Animate: LC<AnimateProps<Numberish>> = <T extends Numberish>(props:
     }
 
     return null;
-  }, [script, swapValues, swapElements, delay, rest, length, speed, loop, mirror, repeat, ease, render, children]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [script, swapValues, swapElements, delay, rest, length, speed, loop, mirror, repeat, ease, paused, render, children]);
 
   // Fence so that only continuation runs repeatedly
   return fence(null, Run);

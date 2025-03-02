@@ -1,18 +1,17 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Rectangle, Emit, DataTexture } from '@use-gpu/core';
+import type { Emit, DataTexture } from '@use-gpu/core';
 import type { Image } from '@use-gpu/glyph';
 
 import React, { Morph } from '@use-gpu/live';
-import { memo, fragment } from '@use-gpu/live';
-import { makeRawTexture } from '@use-gpu/core';
-import { padRGBA, glyphToRGBA, glyphToSDF, rgbaToSDF, rgbaToGlyph, sdfToGradient, makeSDFStage, paintSubpixelOffsets } from '@use-gpu/glyph';
+import { memo } from '@use-gpu/live';
+import { glyphToRGBA, glyphToSDF, sdfToGradient, makeSDFStage, paintSubpixelOffsets } from '@use-gpu/glyph';
 import { GlyphControls } from '../../ui/glyph-controls';
 import { vec3 } from 'gl-matrix';
 
 import {
   LinearRGB, Pass, FlatCamera, RawTexture,
   OrbitCamera, OrbitControls, PanControls,
-  useDeviceContext, useFontContext, LayoutContext, DebugProvider,
+  useFontContext, DebugProvider,
 } from '@use-gpu/workbench';
 import {
   UI, Layout, Block, Inline, Text, Flex, Embed, Element,
@@ -109,23 +108,11 @@ type DebugImage = {
   height: number,
 };
 
-const roundUp2 = (v: number) => {
-  v--;
-  v |= v >> 1;
-  v |= v >> 2;
-  v |= v >> 4;
-  v |= v >> 8;
-  v |= v >> 16;
-  v++;
-  return v;
-};
-
 const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: GlyphViewProps) => {
-  const device = useDeviceContext();
   const rustText = useFontContext();
 
   glyph = glyph ?? '@';
-  const [glyphId, loaded] = rustText.findGlyph(0, glyph);
+  const [glyphId] = rustText.findGlyph(0, glyph);
   const glyphMetrics = rustText.measureGlyph(0, glyphId ?? 5, DETAIL * 1.5);
 
   const {width, height, image} = glyphMetrics;
@@ -205,7 +192,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
     height: paddedHeight,
   };
 
-  const gridEmitter = ({xs, ys, width, height}: DebugImage) =>
+  const gridEmitter = ({xs, ys}: DebugImage) =>
     (emit: Emit, x: number, y: number, i: number, j: number) => {
       const index = i + j * paddedWidth;
       const dx = xs[index];
@@ -213,7 +200,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
       if (dx || dy) emit(x, y, 0, 1);
     };
 
-  const pointEmitter = ({xs, ys, width, height}: DebugImage) =>
+  const pointEmitter = ({xs, ys}: DebugImage) =>
     (emit: Emit, x: number, y: number, i: number, j: number) => {
       const index = i + j * paddedWidth;
       const dx = xs[index];
@@ -221,7 +208,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
       emit(x + dx, y + dy, 0, 1);
     };
 
-  const shiftedPointEmitter = ({xs, ys, width, height}: DebugImage) =>
+  const shiftedPointEmitter = ({xs, ys}: DebugImage) =>
     (emit: Emit, x: number, y: number, i: number, j: number) => {
       const index = i + j * paddedWidth;
       const dx = xs[index];
@@ -231,7 +218,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
       }
     };
 
-  const arrowEmitter = ({xs, ys, width, height}: DebugImage) =>
+  const arrowEmitter = ({xs, ys}: DebugImage) =>
     (emit: Emit, x: number, y: number, i: number, j: number) => {
       const index = i + j * paddedWidth;
       const dx = xs[index];

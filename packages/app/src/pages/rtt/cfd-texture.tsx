@@ -1,13 +1,13 @@
 import type { LC } from '@use-gpu/live';
-import type { Emit, TextureTarget } from '@use-gpu/core';
+import type { TextureTarget } from '@use-gpu/core';
 
-import React, { Gather, use, useMemo } from '@use-gpu/live';
+import React, { Gather } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, FlatCamera, Pass, OrbitCamera, RawData, PointLayer, Pick,
+  Loop, FlatCamera, Pass, Pick,
   TextureBuffer, Compute, Stage, Iterate, Kernel, Suspense, RawFullScreen,
-  useShader, useLambdaSource, useShaderRefs,
+  useShader, useLambdaSource,
 } from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Element, Inline, Text,

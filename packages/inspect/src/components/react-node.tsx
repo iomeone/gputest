@@ -11,7 +11,7 @@ export const ReactNode: React.FC<ReactNodeProps> = ({
   reactNode,
   root,
 }) => {
-  const {type, elementType} = reactNode;
+  const {elementType} = reactNode;
 
   let name: string | null = null;
   if (typeof elementType === 'string') name = '<' + elementType + '>';
@@ -44,7 +44,7 @@ export const ReactNode: React.FC<ReactNodeProps> = ({
     };
 
     return {onMouseEnter, onMouseLeave};
-  }, []);
+  }, [reactNode]);
 
   const className = hovered ? 'hovered' : null;
 

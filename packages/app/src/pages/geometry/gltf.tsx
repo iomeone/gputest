@@ -2,14 +2,14 @@ import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { TextureSource } from '@use-gpu/core';
 import type { GLTF } from '@use-gpu/gltf';
 
-import React, { use, Gather } from '@use-gpu/live';
+import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  LinearRGB, Pass, Fetch,
+  LinearRGB, Pass,
   OrbitCamera, OrbitControls,
-  Cursor, PointLayer, LineLayer,
-  ImageCubeTexture, PrefilteredEnvMap, Environment,
+  Cursor,
+  PrefilteredEnvMap, Environment,
   DirectionalLight, PointLight, DomeLight,
   Animate, Suspense,
 } from '@use-gpu/workbench';

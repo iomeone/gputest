@@ -4,8 +4,6 @@ import type { LightEnv, Renderable } from '../pass';
 import { keyed, memo, useMemo } from '@use-gpu/live';
 import { makeDepthStencilAttachments } from '@use-gpu/core';
 
-import { useDeviceContext } from '../providers/device-provider';
-
 import { useInspectable } from '../hooks/useInspectable'
 
 import { SHADOW_FORMAT } from '../render/light/light-data';
@@ -27,9 +25,6 @@ const SHADOW_TYPES = {
   omni: ShadowOmniPass,
 } as Record<string, LiveComponent<any>>;
 
-const label = '<ShadowPass>';
-const LABEL = { label };
-
 /** Shadow render pass.
 
 Draws all shadow calls to multiple shadow maps.
@@ -41,7 +36,6 @@ export const ShadowPass: LC<ShadowPassProps> = memo((props: ShadowPassProps) => 
   } = props;
 
   const inspect = useInspectable();
-  const device = useDeviceContext();
 
   const {shadows, texture} = light;
 
@@ -58,7 +52,7 @@ export const ShadowPass: LC<ShadowPassProps> = memo((props: ShadowPassProps) => 
     }));
 
     return descriptors;
-  }, [device, texture]);
+  }, [texture]);
 
   inspect({
     output: {

@@ -1,11 +1,11 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, LambdaSource, TextureSource, UniformType } from '@use-gpu/core';
+import type { LambdaSource, TextureSource } from '@use-gpu/core';
 
 import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Pass, FlatCamera, InterleavedData, PBRMaterial, RawTexture,
+  Pass, InterleavedData, PBRMaterial, RawTexture,
   OrbitCamera, OrbitControls,
   Pick, PickState, Cursor, FaceLayer,
   PointLight,
@@ -19,7 +19,7 @@ const COLOR_ON = [1, 1, 1, 1];
 const COLOR_OFF = [0.5, 0.5, 0.5, 1.0];
 
 // This is a reimplementation of app/components/mesh using standard use.gpu components
-export const MeshInterleavedPage: LC = (props) => {
+export const MeshInterleavedPage: LC = () => {
   const dataTexture = makeTexture();
 
   return (<>

@@ -82,7 +82,7 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureB
 
       return [buffer, buffers, views, counter];
     },
-    [device, width, height, format, samples, history]
+    [device, width, height, format, samples, label, history]
   );
 
   const targetTexture = bufferTexture;
@@ -145,7 +145,7 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureB
     swap();
 
     return source;
-  }, [targetTexture, width, height, format, history, sampler]);
+  }, [targetTexture, width, height, format, history, sampler, bufferTextures, bufferViews, colorSpace, counter, filterable]);
 
   if (!(render ?? children)) return yeet(source);
 
