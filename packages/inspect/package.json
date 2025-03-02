@@ -1,6 +1,6 @@
 {
   "name": "@use-gpu/inspect",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
@@ -16,10 +16,10 @@
   },
   "dependencies": {
     "@stitches/react": "^1.2.8",
-    "@use-gpu/core": "^0.13.0",
-    "@use-gpu/live": "^0.13.0",
-    "@use-gpu/react": "^0.13.0",
-    "@use-gpu/state": "^0.13.0",
+    "@use-gpu/core": "^0.13.1",
+    "@use-gpu/live": "^0.13.1",
+    "@use-gpu/react": "^0.13.1",
+    "@use-gpu/state": "^0.13.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

@@ -1,12 +1,12 @@
 {
   "name": "@use-gpu/wgsl-loader",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
   "license": "MIT",
   "dependencies": {
-    "@use-gpu/shader": "^0.13.0",
+    "@use-gpu/shader": "^0.13.1",
     "schema-utils": "^3.1.1"
   },
   "exports": {
