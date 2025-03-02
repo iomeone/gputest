@@ -1,3 +1,8 @@
+0.13.1
+- `@use-gpu/app`: Add path tracing + debug picking example.
+- `@use-gpu/workbench`: Add `<AccumulateRender>` wrapper.
+- `@use-gpu/workbench`: Add `<On>` helper for quick dispatch/render callbacks.
+
 0.13.0
 - `@use-gpu/app`: Add solar system example.
 - `@use-gpu/plot`: Support aggregation of label texts with spread.
