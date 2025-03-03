@@ -32,7 +32,7 @@ export const useRawSource = (
   const device = useDeviceContext();
 
   const alloc = useBufferedSize(array.byteLength);
-  const buffer = useOne(() => makeDataBuffer(device, alloc, flags), alloc);
+  const buffer = useMemo(() => makeDataBuffer(device, alloc, flags), [alloc, format, flags]);
 
   const memoKey = useVersion(buffer) + useVersion(readWrite);
   const source = useOne(() => ({
