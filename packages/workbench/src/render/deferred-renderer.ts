@@ -66,9 +66,11 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   const {
     overlay = false,
     merge = false,
-    passes = DEFAULT_PASSES,
+
     buffers = NO_BUFFERS,
     context,
+    passes = DEFAULT_PASSES,
+
     children,
   } = props;
 

@@ -1,5 +1,6 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { UseGPURenderContext } from '@use-gpu/core';
+import type { RenderComponents } from '../pass/types';
 
 import { use, multiGather, memo, useMemo } from '@use-gpu/live';
 
@@ -19,6 +20,8 @@ export type PassProps = PropsWithChildren<{
   picking?: boolean,
   overlay?: boolean,
   merge?: boolean,
+
+  components?: RenderComponents,
 }>;
 
 const NO_BUFFERS: any = {};
@@ -32,6 +35,8 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
 
     overlay = false,
     merge = false,
+    
+    components,
 
     children,
   } = props;
@@ -44,7 +49,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     });
   }
   if (mode === 'forward') {
-    if (!shadows && !picking) return use(ForwardRenderer, {buffers: NO_BUFFERS, lights, overlay, merge, children});
+    if (!shadows && !picking) return use(ForwardRenderer, {buffers: NO_BUFFERS, components, lights, overlay, merge, children});
 
     const buffers = useMemo(() => [
       shadows ? use(ShadowBuffer, {}) : null,
@@ -56,7 +61,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     );
   }
   if (mode === 'deferred') {
-    if (!shadows && !picking) return use(DeferredRenderer, {buffers: NO_BUFFERS, overlay, merge, children})
+    if (!shadows && !picking) return use(DeferredRenderer, {buffers: NO_BUFFERS, components, overlay, merge, children})
 
     const buffers = useMemo(() => [
       use(GBuffer),
@@ -65,7 +70,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     ], [shadows, picking]);
 
     return multiGather(buffers, (buffers: Record<string, UseGPURenderContext[]>) =>
-      use(DeferredRenderer, {buffers, overlay, merge, children})
+      use(DeferredRenderer, {buffers, components, overlay, merge, children})
     );
   }
 

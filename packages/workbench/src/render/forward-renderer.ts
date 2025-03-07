@@ -66,9 +66,11 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     lights = false,
     overlay = false,
     merge = false,
-    passes: propPasses,
+
     buffers = NO_BUFFERS,
     context,
+    passes: propPasses,
+
     children,
   } = props;
 
