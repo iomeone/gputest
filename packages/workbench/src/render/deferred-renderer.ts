@@ -21,13 +21,9 @@ import { DeferredShadedRender } from './deferred/shaded';
 import { DeferredSolidRender } from './deferred/solid';
 import { DeferredUIRender } from './deferred/ui';
 
-
 import { Renderer } from './renderer';
 import { LightRender } from './light/light-render';
 import { LightMaterial } from './light/light-material';
-
-import lightBinding from '@use-gpu/wgsl/use/light.wgsl';
-import shadowBinding from '@use-gpu/wgsl/use/shadow.wgsl';
 
 const {quote} = PassReconciler;
 

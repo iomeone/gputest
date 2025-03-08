@@ -3,10 +3,8 @@ import type { UseGPURenderContext } from '@use-gpu/core';
 import type { AggregatedCalls, PassBindGroup, RenderComponents, VirtualDraw } from '../pass/types';
 
 import { use, memo, unquote, provide, multiGather, extend, useMemo } from '@use-gpu/live';
-import { makeBindGroupLayout, makeBindGroup, makeDataBindingsEntries } from '@use-gpu/core';
 
 import { PassContext, VariantContext } from '../providers/pass-provider';
-import { useDeviceContext } from '../providers/device-provider';
 import { PassReconciler } from '../reconcilers/index';
 
 import { ComputePass } from '../pass/compute-pass';
@@ -18,7 +16,6 @@ import { ShadowPass } from '../pass/shadow-pass';
 const {reconcile, quote} = PassReconciler;
 
 export type RendererProps = PropsWithChildren<{
-  entries?: GPUBindGroupLayoutEntry[],
   overlay?: boolean,
   merge?: boolean,
 
@@ -30,11 +27,9 @@ export type RendererProps = PropsWithChildren<{
 }>;
 
 const HOVERED_VARIANT = 'debug';
-const NO_ENTRIES: any[] = [];
 
 export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   const {
-    entries = NO_ENTRIES,
     overlay = false,
     merge = false,
 
@@ -46,12 +41,8 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
     children,
   } = props;
 
-  const device = useDeviceContext();
-
   // Pass on shared render context(s) for renderables
-  const passContext = useMemo(() => {
-    return {buffers, bindGroups};
-  }, [device, buffers, bindGroups]);
+  const passContext = useMemo(() => ({buffers, bindGroups}), [buffers, bindGroups]);
 
   // Provide draw call variants for sub-passes
   const useVariants = useMemo(() => {

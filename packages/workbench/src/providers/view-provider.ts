@@ -1,5 +1,5 @@
 import type { LiveComponent, PropsWithChildren, Ref } from '@use-gpu/live';
-import type { ViewUniforms, UniformAttribute } from '@use-gpu/core';
+import type { ViewUniforms } from '@use-gpu/core';
 import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
 import { provide, makeContext, useContext, useNoContext, useMemo } from '@use-gpu/live';

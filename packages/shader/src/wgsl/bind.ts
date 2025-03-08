@@ -1,6 +1,5 @@
 import { ShaderModule, ShaderDefine, LambdaSource, StorageSource, TextureSource, DataBinding } from './types';
 
-import { toModule } from '../util/bundle';
 import { makeBindingAccessors, makeUniformBlock } from './gen';
 import { makeResolveBindings, getBindingArgument } from '../util/bind';
 import { VIRTUAL_BINDGROUP } from './constants';
@@ -38,10 +37,3 @@ export const sourceToModule = <T>(
 }
 
 export const resolveBindings = makeResolveBindings(makeUniformBlock, getVirtualBindGroup);
-
-const BINDING_SAMPLE_TYPES = {
-  f: 'float',
-  u: 'uint',
-  i: 'sint',
-} as Record<string, GPUTextureSampleType>;
-

@@ -2,7 +2,7 @@ import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { RenderViewType, UseGPURenderContext } from '@use-gpu/core';
 import type { LightEnv, PassFlags, RenderComponents } from '../pass/types';
 
-import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { use, yeet, memo, useOne } from '@use-gpu/live';
 
 import { PassReconciler } from '../reconcilers/index';
 import { useRenderContext } from '../providers/render-provider';
@@ -21,9 +21,6 @@ import { ColorCubePass } from '../pass/color-cube-pass';
 
 import { Renderer } from './renderer';
 import { LightMaterial } from './light/light-material';
-
-import lightBinding from '@use-gpu/wgsl/use/light.wgsl';
-import shadowBinding from '@use-gpu/wgsl/use/shadow.wgsl';
 
 const {quote} = PassReconciler;
 
