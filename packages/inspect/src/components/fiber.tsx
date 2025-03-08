@@ -70,12 +70,14 @@ type TreeExpandProps = PropsWithChildren<{
 const getRenderDepth = (fibers: Map<number, LiveFiber<any>>, fiber: LiveFiber<any>) => {
   let renderDepth = 0;
   let {by} = fiber;
+
   while (by) {
     const source = fibers.get(by);
-    if (source && source.next?.id !== fiber.id) renderDepth++;
+    if (source?.next?.id !== fiber.id) renderDepth++;
     else return null;
     by = source?.by;
   }
+
   return renderDepth;
 };
 
@@ -299,6 +301,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
     !skipDepth &&
     (renderDepth < depthLimit)
   );
+
   const shouldRender = !isBuiltin && isVisible;
   const shouldTerminate = fiber.f?.isLiveReconcile && !builtin && isVisible;
   const shouldAbsolute = !shouldRender && (parents || depends || precedes || quoted || unquoted);
