@@ -1,6 +1,6 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { UseGPURenderContext } from '@use-gpu/core';
-import type { AggregatedCalls, RenderComponents, VirtualDraw } from '../pass/types';
+import type { AggregatedCalls, PassBindGroup, RenderComponents, VirtualDraw } from '../pass/types';
 
 import { use, memo, unquote, provide, multiGather, extend, useMemo } from '@use-gpu/live';
 import { makeBindGroupLayout, makeBindGroup, makeDataBindingsEntries } from '@use-gpu/core';
@@ -19,29 +19,30 @@ const {reconcile, quote} = PassReconciler;
 
 export type RendererProps = PropsWithChildren<{
   entries?: GPUBindGroupLayoutEntry[],
-  context?: Record<string, any>,
   overlay?: boolean,
   merge?: boolean,
 
   buffers: Record<string, UseGPURenderContext[]>,
+  bindGroups: Record<string, PassBindGroup>,
+
   passes: LiveElement[],
   components: RenderComponents,
 }>;
 
 const HOVERED_VARIANT = 'debug';
 const NO_ENTRIES: any[] = [];
-const NO_CONTEXT: Record<string, any> = {};
 
 export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   const {
     entries = NO_ENTRIES,
-    context: renderContext = NO_CONTEXT,
     overlay = false,
     merge = false,
 
     buffers,
+    bindGroups,
     passes,
     components,
+
     children,
   } = props;
 
@@ -50,6 +51,7 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   // Pass on shared render context(s) for renderables
   const passContext = useMemo(() => {
 
+    //////////// TODO: remove
     // Prepare shared bind group for forward/deferred lighting
     const hasEntries = !!entries.length;
     const layout = hasEntries ? makeBindGroupLayout(device, entries) : null;
@@ -61,9 +63,11 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
         passEncoder.setBindGroup(1, bindGroup);
       };
     } : () => () => {};
+    //
+    ////////
 
-    return {buffers, layout, bind, context: renderContext};
-  }, [device, buffers, entries, renderContext]);
+    return {buffers, bindGroups, layout, bind};
+  }, [device, buffers, bindGroups, entries]);
 
   // Provide draw call variants for sub-passes
   const useVariants = useMemo(() => {

@@ -1,4 +1,5 @@
-struct ViewUniforms {
+@export struct ViewUniforms {
+  projectionViewFrustum: array<vec4<f32>,6>,
   projectionViewMatrix: mat4x4<f32>,
   projectionMatrix: mat4x4<f32>,
   viewMatrix: mat4x4<f32>,
@@ -13,7 +14,7 @@ struct ViewUniforms {
   viewPixelRatio: f32,
 };
 
-@export @group(GLOBAL) @binding(0) var<uniform> viewUniforms: ViewUniforms;
+@export @group(PASS) @binding(0) var<uniform> viewUniforms: ViewUniforms;
 
 @export fn getViewPosition() -> vec4<f32> { return viewUniforms.viewPosition; }
 @export fn getViewResolution() -> vec2<f32> { return viewUniforms.viewResolution; }

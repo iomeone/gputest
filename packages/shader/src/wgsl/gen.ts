@@ -54,27 +54,28 @@ export const makeBindingAccessors = (
 
   // Extract uniforms by type
   const lambdas = bindings.filter(({lambda}) => lambda != null);
+  const uniforms = bindings.filter(({uniform}) => uniform != null);
   const storages = bindings.filter(({storage}) => storage != null);
   const textures = bindings.filter(({texture}) => texture != null);
   const constants = bindings.filter(({constant}) => constant != null);
 
   // Virtual module symbols
-  const virtuals = [...constants, ...storages, ...textures];
-  const symbols = virtuals.map(({uniform}) => uniform.name);
-  const types = virtuals.map(({uniform}) => uniform.format);
-  const exports = virtuals.map(({uniform}) => ({
+  const virtuals = [...constants, ...uniforms, ...storages, ...textures];
+  const symbols = virtuals.map(({attribute}) => attribute.name);
+  const types = virtuals.map(({attribute}) => attribute.format);
+  const exports = virtuals.map(({attribute}) => ({
     func: {
-      name: uniform.name,
-      type: {name: uniform.format},
-      parameters: uniform.args ?? INT_PARAMS,
+      name: attribute.name,
+      type: {name: attribute.format},
+      parameters: attribute.args ?? INT_PARAMS,
     },
     flags: RF.Exported,
   })) as any[];
 
   // Inject import for storage struct types
   const libs: Record<string, ShaderModule> = {};
-  const modules = storages.map(({uniform, storage}) => {
-    const {type: typeOut} = uniform;
+  const modules = [...uniforms, ...storages].map(({attribute, storage}) => {
+    const {type: typeOut} = attribute;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const {type: typeIn} = storage!;
 
@@ -120,12 +121,17 @@ export const makeBindingAccessors = (
     const bindingSet = getBindingArgument(rename.get(VIRTUAL_BINDGROUP));
     const volatileSet = getBindingArgument(rename.get(VOLATILE_BINDGROUP));
 
-    for (const {uniform: {name, format: type, args}} of constants) {
+    for (const {attribute: {name, format: type, args}} of constants) {
       if (typeof type !== 'string') throw new Error(`Cannot make uniform for struct type`);
       program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args as any));
     }
+    
+    // TODO: uniform data bindings
+    for (const u of uniforms) {
+      throw new Error(`Uniform dynamic bindings unimplemented - '${u.attribute.name}'`);
+    }
 
-    for (const {uniform: {name, format: formatOut, type: typeOut, args}, storage} of storages) {
+    for (const {attribute: {name, format: formatOut, type: typeOut, args}, storage} of storages) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const {volatile, format: formatIn, type: typeIn, readWrite} = storage!;
       const set = volatile ? volatileSet : bindingSet;
@@ -186,20 +192,20 @@ export const makeBindingAccessors = (
       program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name, readWrite, args));
     }
 
-    for (const {uniform: {name, format: formatOut, args}, texture} of textures) {
+    for (const {attribute: {name, format: formatOut, args}, texture} of textures) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const {volatile, layout, variant, absolute, sampler, comparison, format: formatIn, aspect} = texture!;
+      const {volatile, layout, variant, absolute, sampler, filter, format: formatIn, aspect} = texture!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
       if (sampler && args !== null) volatile ? volatileBase++ : bindingBase++;
-      program.push(makeTextureAccessor(namespace, set, base, formatOut as string, formatIn, name, layout, variant, aspect, absolute, !!sampler, !!comparison, args));
+      program.push(makeTextureAccessor(namespace, set, base, formatOut as string, formatIn, name, layout, variant, aspect, absolute, !!sampler, filter, args));
     }
 
     return program.join('\n');
   }
 
   const virtual = loadVirtualModule({
-    uniforms: constants,
+    constants,
     storages,
     textures,
     render,
@@ -215,15 +221,15 @@ export const makeBindingAccessors = (
   } : virtual;
 
   const links: Record<string, ShaderModule> = {};
-  for (const {uniform} of constants) links[uniform.name] = bundle;
-  for (const {uniform} of storages)  links[uniform.name] = bundle;
-  for (const {uniform} of textures)  links[uniform.name] = bundle;
-  for (const {uniform, lambda} of lambdas)   {
+  for (const {attribute} of constants) links[attribute.name] = bundle;
+  for (const {attribute} of storages)  links[attribute.name] = bundle;
+  for (const {attribute} of textures)  links[attribute.name] = bundle;
+  for (const {attribute, lambda} of lambdas)   {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const needsCast = !checkLambdaType(uniform, lambda!);
-    links[uniform.name] = needsCast
+    const needsCast = !checkLambdaType(attribute, lambda!);
+    links[attribute.name] = needsCast
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ? castTo(lambda!.shader, uniform.format as string)
+      ? castTo(lambda!.shader, attribute.format as string)
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       : lambda!.shader;
   }
@@ -232,10 +238,10 @@ export const makeBindingAccessors = (
 };
 
 export const checkLambdaType = (
-  uniform: UniformAttribute,
+  attribute: UniformAttribute,
   lambda: LambdaSource,
 ) => {
-  const {name, format: from} = uniform;
+  const {name, format: from} = attribute;
 
   const bundle = toBundle(lambda.shader);
   const {format: to} = bundleToAttribute(bundle);
@@ -248,7 +254,7 @@ export const checkLambdaType = (
   if (f === t) return true;
   if (t === 'auto') return true;
   if (t == null) {
-    console.warn(`Unable to determine lambda format for uniform ${uniform.name} -> bundle ${getBundleEntry(bundle)}`)
+    console.warn(`Unable to determine lambda format for attribute ${attribute.name} -> bundle ${getBundleEntry(bundle)}`)
     return true;
   }
 
@@ -284,7 +290,7 @@ export const makeUniformBlock = (
   binding: number | string = 0,
 ): string => {
   // Uniform Buffer Object struct members
-  const members = constants.map(({uniform: {name, format}}) => `${name}: ${format}`);
+  const members = constants.map(({attribute: {name, format}}) => `${name}: ${format}`);
   return members.length ? makeUniformBlockLayout(PREFIX_VIRTUAL, set, binding, members) : '';
 }
 
@@ -355,7 +361,7 @@ export const makeTextureAccessor = (
   aspect: string = 'all',
   absolute: boolean = false,
   sampler: boolean = true,
-  comparison: boolean = false,
+  filter: 'filtering' | 'non-filtering' | 'comparison' = 'filtering',
   args: string[] | null = UV_ARG,
 ) => {
   if (args === null) {
@@ -376,7 +382,7 @@ export const makeTextureAccessor = (
 
   return (
 `@group(${set}) @binding(${binding}) var ${ns}${name}Texture: ${layout};
-${sampler ? `@group(${set}) @binding(${binding + 1}) var ${ns}${name}Sampler: ${comparison ? 'sampler_comparison' : 'sampler'};\n` : ''}
+${sampler ? `@group(${set}) @binding(${binding + 1}) var ${ns}${name}Sampler: ${filter === 'comparison' ? 'sampler_comparison' : 'sampler'};\n` : ''}
 fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} {
   ${absolute ?
     `let relUV = ${arg(0)} / ${dimsCast}(textureDimensions(${ns}${name}Texture));\n  ` : ``

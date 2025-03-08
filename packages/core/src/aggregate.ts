@@ -53,11 +53,11 @@ export const makeArrayAggregate = (
 
 /** CPU-only array-of-struct GPU aggregate */
 export const makeStructAggregate = (
-  uniforms: UniformAttribute[],
+  attributes: UniformAttribute[],
   length: number,
   keys?: string[],
 ): StructAggregate => {
-  const layout = makeUniformLayout(uniforms);
+  const layout = makeUniformLayout(attributes);
 
   const {length: bytes} = layout;
   const raw = makeRawArray(bytes * length);
@@ -90,12 +90,12 @@ export const makeArrayAggregateBuffer = (
 /** CPU+GPU storage for array-of-struct GPU aggregate */
 export const makeStructAggregateBuffer = (
   device: GPUDevice,
-  uniforms: UniformAttribute[],
+  attributes: UniformAttribute[],
   length: number,
   keys?: string[],
 ): StructAggregateBuffer => {
 
-  const aggregate = makeStructAggregate(uniforms, length, keys);
+  const aggregate = makeStructAggregate(attributes, length, keys);
 
   const buffer = makeStorageBuffer(device, aggregate.raw.byteLength);
   const source: StorageSource = {

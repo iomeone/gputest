@@ -1,6 +1,6 @@
 import type {
   UniformAttribute, UniformAttributeValue,
-  ShaderModule, StorageSource, DataBinding, TextureSource, LambdaSource,
+  ShaderModule, UniformSource, StorageSource, DataBinding, TextureSource, LambdaSource, SamplerSource,
 } from './types';
 import { checkStorageType } from './storage';
 
@@ -8,13 +8,13 @@ import { checkStorageType } from './storage';
  * Parse a set of shader sources for use with a given set of uniforms/attributes.
  */
 export const makeShaderBindings = <T extends ShaderModule>(
-  uniforms: (UniformAttribute | UniformAttributeValue)[],
+  attributes: (UniformAttribute | UniformAttributeValue)[],
   sources: (StorageSource | TextureSource | LambdaSource<T> | any)[],
 ): DataBinding<T>[] => {
-  const n = uniforms.length;
+  const n = attributes.length;
   const out = [] as DataBinding<T>[];
   for (let i = 0; i < n; ++i) {
-    const u = uniforms[i];
+    const u = attributes[i];
     const s = sources[i];
     out.push(makeShaderBinding<T>(u, s));
   }
@@ -25,8 +25,8 @@ export const makeShaderBindings = <T extends ShaderModule>(
  * Parse a source for use with a given uniform/attribute.
  */
 export const makeShaderBinding = <T extends ShaderModule>(
-  uniform: UniformAttribute | UniformAttributeValue,
-  source?: StorageSource | TextureSource | LambdaSource<T> | T | any,
+  attribute: UniformAttribute | UniformAttributeValue,
+  source?: UniformSource | SamplerSource | StorageSource | TextureSource | LambdaSource<T> | T | any,
 ): DataBinding<T> => {
   if (source != null) {
     if (source.gpuContext) {
@@ -34,32 +34,38 @@ export const makeShaderBinding = <T extends ShaderModule>(
     }
     if (source.shader) {
       const lambda = source as LambdaSource<T>;
-      return {uniform, lambda};
+      return {attribute, lambda};
     }
     if (source.module || source.table) {
       const lambda = {shader: source} as LambdaSource<T>;
-      return {uniform, lambda};
+      return {attribute, lambda};
     }
     if (source.buffer && (source.buffer instanceof GPUBuffer)) {
+      const uniform = source as UniformSource;
       const storage = source as StorageSource;
-      checkStorageType(uniform, storage);
-      return {uniform, storage};
+      checkStorageType(attribute, storage);
+      if (source.addressSpace === 'uniform') return {attribute, uniform};
+      return {attribute, storage};
     }
     if (source.texture || source.view) {
       const texture = source as TextureSource;
-      return {uniform, texture};
+      return {attribute, texture};
+    }
+    if (source.sampler) {
+      const sampler = source as SamplerSource;
+      return {attribute, sampler};
     }
   }
-  return {uniform, constant: source ?? (uniform as any).value};
+  return {attribute, constant: source ?? (attribute as any).value};
 }
 
 /**
  * Make a binding for a wrapped value (a ref) for use with a given uniform/attribute.
  */
 export const makeRefBinding = <T extends ShaderModule>(
-  uniform: UniformAttribute | UniformAttributeValue,
+  attribute: UniformAttribute | UniformAttributeValue,
   value?: {current: T} | T,
-): DataBinding<T> => ({uniform, constant: value ?? (uniform as any).value});
+): DataBinding<T> => ({attribute, constant: value ?? (attribute as any).value});
 
 export const isShaderBinding = <T extends ShaderModule>(
   source?: StorageSource | TextureSource | LambdaSource<T> | T | any,
@@ -74,3 +80,9 @@ export const isShaderBinding = <T extends ShaderModule>(
   }
   return false;
 }
+
+export const decodeBufferUsageFlags = (flags: number = 0) => {
+  const out = [];
+  for (const k in GPUBufferUsage) if (flags & (GPUBufferUsage as any)[k]) out.push(k);
+  return out.join(' | ');
+};

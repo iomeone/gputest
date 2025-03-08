@@ -45,7 +45,7 @@ export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
   const schema = useOne(() => normalizeSchema(propSchema), propSchema);
   const typedArray = useOne(() => Array.isArray(data) ? new Float32Array(data) : data ?? new Float32Array(256), data);
 
-  const uniforms = useMemo(
+  const attributes = useMemo(
     () => {
       const out = [];
       for (const k in schema) {
@@ -64,24 +64,24 @@ export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
   const [packedLayout, dataCount, dataStride, bytesPerElement] = useMemo(() => {
 
     const {byteLength, BYTES_PER_ELEMENT} = typedArray;
-    const layout = makePackedLayout(uniforms);
+    const layout = makePackedLayout(attributes);
 
     const dataCount = byteLength / layout.length;
     const dataStride = layout.length / BYTES_PER_ELEMENT;
     const bytesPerElement = BYTES_PER_ELEMENT;
 
     return [layout, dataCount, dataStride, bytesPerElement];
-  }, [typedArray, uniforms]);
+  }, [typedArray, attributes]);
 
   const bufferLength = useBufferedSize(dataCount);
 
   // Make aggregate buffer
   const [aggregateBuffer, fields] = useMemo(() => {
-    const aggregateBuffer = makeStructAggregateBuffer(device, uniforms, bufferLength);
+    const aggregateBuffer = makeStructAggregateBuffer(device, attributes, bufferLength);
     const fields = makeStructAggregateFields(aggregateBuffer);
 
     return [aggregateBuffer, fields];
-  }, [device, uniforms, bufferLength]);
+  }, [device, attributes, bufferLength]);
 
   // Refresh and upload data
   const refresh = () => {
@@ -118,7 +118,7 @@ export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
   }
 
   const {source} = aggregateBuffer;
-  const sources = useStructSources(uniforms, source, 'interleavedData');
+  const sources = useStructSources(attributes, source, 'interleavedData');
 
   const trigger = useOne(() => signal(), source.version);
 

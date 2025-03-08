@@ -6,15 +6,17 @@ import { patch } from '@use-gpu/state';
 import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
+import { getShaderLabel } from '../../pass/util';
 
 import { usePassContext } from '../../providers/pass-provider';
-import { useViewContext } from '../../providers/view-provider';
 
 import instanceDrawVirtualPicking from '@use-gpu/wgsl/render/vertex/virtual-pick.wgsl';
 import instanceFragmentPicking from '@use-gpu/wgsl/render/fragment/pick.wgsl';
 
 export type PickingRenderProps = VirtualDraw;
 
+const LABEL = 'PickingRender';
+ 
 export const PickingRender: LiveComponent<PickingRenderProps> = (props: PickingRenderProps) => {
   const {
     links: {
@@ -26,9 +28,10 @@ export const PickingRender: LiveComponent<PickingRenderProps> = (props: PickingR
     ...rest
   } = props;
 
-  const {buffers: {picking: [renderContext]}} = usePassContext();
-
-  const {layout: globalLayout} = useViewContext();
+  const {
+    buffers: {picking: [renderContext]},
+    bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
+  } = usePassContext();
 
   const vertexShader = instanceDrawVirtualPicking;
   const fragmentShader = instanceFragmentPicking;
@@ -59,7 +62,9 @@ export const PickingRender: LiveComponent<PickingRenderProps> = (props: PickingR
     pipeline,
     renderContext,
     globalLayout,
+    pipelineKey,
     mode: 'picking',
+    label: getShaderLabel([getVertex, getPicking], LABEL),
   };
 
   return yeet(drawCall(call));

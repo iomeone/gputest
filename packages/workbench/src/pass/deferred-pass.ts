@@ -1,7 +1,7 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { LightEnv, Renderable } from './types';
 
-import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { yeet, memo, useMemo } from '@use-gpu/live';
 
 import { useRenderContext } from '../providers/render-provider';
 import { useDeviceContext } from '../providers/device-provider';
@@ -11,6 +11,7 @@ import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
 
+import { useApplyPass } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
@@ -45,7 +46,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
     overlay = false,
     merge = false,
     calls,
-    env: {light},
+    env,
   } = props;
 
   const inspect = useInspectable();
@@ -53,8 +54,14 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
   const device = useDeviceContext();
   const renderContext = useRenderContext();
   const {width, height, depth} = renderContext;
-  const {bind: bindGlobal, cull, uniforms} = useViewContext();
-  const {bind: makeBindPass, buffers: {gbuffer: [gbuffer]}} = usePassContext();
+
+  const {cull, uniforms} = useViewContext();
+  const {
+    buffers: {gbuffer: [gbuffer]},
+  } = usePassContext();
+
+  const {bindPass: bindViewPass} = useApplyPass(env, 'view');
+  const {bindPass: bindColorPass} = useApplyPass(env, 'color');
 
   if (!depth) throw new Error("Deferred renderer requires a depth buffer");
 
@@ -64,17 +71,6 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
   const stencils     = toArray(calls['stencil']     as Renderable[]);
   const lights       = toArray(calls['light']       as Renderable[]);
-
-  const bindPass = useOne(() => {
-    if (!light || !makeBindPass) return () => {};
-    const args = [];
-    if (light) {
-      const {storage, texture} = light;
-      if (storage) args.push({storage});
-      if (texture) args.push({texture});
-    }
-    return makeBindPass(args);
-  }, light);
 
   const deferredPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(gbuffer, {
@@ -110,7 +106,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
     {
       const passEncoder = commandEncoder.beginRenderPass(deferredPassDescriptor);
-      bindGlobal(passEncoder);
+      bindViewPass?.(passEncoder);
       drawToPass(cull, opaques, passEncoder, countGeometry, uniforms);
       passEncoder.end();
     }
@@ -124,8 +120,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
     if (stencils.length) {
       const passEncoder = commandEncoder.beginRenderPass(stencilPassDescriptor);
-      bindGlobal(passEncoder);
-      bindPass(passEncoder);
+      bindColorPass?.(passEncoder);
 
       drawToPass(cull, stencils, passEncoder, countGeometry, uniforms);
       passEncoder.end();
@@ -133,8 +128,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
     {
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-      bindGlobal(passEncoder);
-      bindPass(passEncoder);
+      bindColorPass?.(passEncoder);
 
       drawToPass(cull, lights, passEncoder, countGeometry, uniforms);
       drawToPass(cull, transparents, passEncoder, countGeometry, uniforms, -1);

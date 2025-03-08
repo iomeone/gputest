@@ -337,7 +337,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
       if (layout.match(/depth/) || format.match(/depth/)) {
         t = {
           ...t,
-          comparison: false,
+          filter: 'non-filtering',
           sampler: null,
           aspect: 'depth-only',
           variant: 'textureLoad',

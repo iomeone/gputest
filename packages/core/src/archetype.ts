@@ -376,13 +376,13 @@ export const schemaToAggregate = (
       // Sort by descending alignment
       keys.sort((a, b) => getUniformAlign(schema[b].format as any) - getUniformAlign(schema[a].format as any));
 
-      const uniforms = keys.map(k => ({
+      const attributes = keys.map(k => ({
         format: getUniformElementType(schema[k].format) as UniformType,
         name: schema[k].name ?? k,
       }));
 
       // Make multi-aggregate
-      const aggregateBuffer = makeStructAggregate(uniforms, alloc, keys);
+      const aggregateBuffer = makeStructAggregate(attributes, alloc, keys);
       const fields = makeStructAggregateFields(aggregateBuffer);
       for (const name in fields) aggregateBuffers[name] = fields[name];
 

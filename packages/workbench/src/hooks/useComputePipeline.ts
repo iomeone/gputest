@@ -13,7 +13,7 @@ const makePipelineCache = (options: Record<string, any> = {}) => new LRU<string,
   ...options,
 });
 
-const SHADER_LOG: LRU<string, any> | null = null;
+//const SHADER_LOG: LRU<string, any> | null = null;
 
 const CACHE = new WeakMap<any, LRU<string, any>>();
 const PENDING = new WeakMap<any, Map<string, any>>();
@@ -22,6 +22,7 @@ export const useComputePipeline = (
   device: GPUDevice,
   shader: ComputeShader,
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const memoKey = device;
 
@@ -33,8 +34,8 @@ export const useComputePipeline = (
       CACHE.set(memoKey, cache = makePipelineCache());
     }
 
-    // Cache by shader structural hash
-    const key = shader.hash.toString();
+    // Cache by shader structural hash + layout state
+    const key = shader.hash.toString() +'/'+ +!!layout;
 
     const cached = cache.get(key);
     if (cached) {
@@ -42,21 +43,24 @@ export const useComputePipeline = (
       return cached;
     }
 
-    {
+    /*
+    if (SHADER_LOG != null) {
       const log = {
         compute: {
           hash: shader.hash,
           code: shader.code,
         },
       };
-      //if (SHADER_LOG != null) SHADER_LOG.set(key, log);
+      SHADER_LOG.set(key, log);
     }
+    */
 
     // Make new pipeline
     const pipeline = makeComputePipeline(
       device,
       shader,
       layout,
+      label,
     );
     cache.set(key, pipeline);
     DEBUG && console.log('compute pipeline cache miss', key);
@@ -70,6 +74,7 @@ export const useComputePipelineAsync = (
   device: GPUDevice,
   shader: ComputeShader,
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const [resolved, setResolved] = useState<GPUComputePipeline | null>(null);
   const staleRef = useOne(() => ({current: null as string | null}));
@@ -130,6 +135,7 @@ export const useComputePipelineAsync = (
       device,
       shader,
       layout,
+      label,
     );
     promise.then((pipeline: GPUComputePipeline) => {
       DEBUG && console.log('async compute pipeline resolved', key);

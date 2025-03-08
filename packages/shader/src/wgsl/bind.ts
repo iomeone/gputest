@@ -14,7 +14,7 @@ const getVirtualBindGroup = (
 export const bindingToModule = (
   binding: DataBinding,
 ): ShaderModule => {
-  const {uniform: {name}, lambda} = binding;
+  const {attribute: {name}, lambda} = binding;
   const links = makeBindingAccessors([binding]);
   const module = links[name];
   return {...module, entry: !lambda ? name : undefined };
@@ -47,7 +47,7 @@ const BINDING_SAMPLE_TYPES = {
 
 type MaybeModule = ShaderModule | false | null | undefined;
 
-export const extractBindings = (stages: MaybeModule[][], pass: string) => {
+export const extractBindings = (stages: MaybeModule[][], pass: string): GPUBindGroupLayoutEntry[] => {
 
   const key = `group(${pass})`;
   const n = stages.length;

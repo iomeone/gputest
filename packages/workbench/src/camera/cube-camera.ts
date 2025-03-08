@@ -4,12 +4,12 @@ import type { VectorLike } from '@use-gpu/core';
 import { useProp } from '@use-gpu/traits/live';
 import { parsePosition } from '@use-gpu/parse';
 import { provide, use, useContext, useOne, incrementVersion } from '@use-gpu/live';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeViewUniforms, updateViewUniforms } from '@use-gpu/core';
+import { makeProjectionMatrix, makeViewUniforms, updateViewProjection, updateViewSize } from '@use-gpu/core';
 import { FrameContext } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
-import { vec2, vec3, mat4 } from 'gl-matrix';
+import { vec3, mat4 } from 'gl-matrix';
 
 const DEFAULT_CUBE_CAMERA = {
   near: 0.001,
@@ -60,24 +60,21 @@ export const CubeCamera: LiveComponent<CubeCameraProps> = (props) => {
   m[13] = -m[13];
   m[14] = -m[14];
 
-  updateViewUniforms(
+  updateViewProjection(
     uniforms,
     makeProjectionMatrix(width, height, fov, near, far),
     viewMatrix,
+    undefined,
+    near, far,
   );
-  
-  uniforms.viewNearFar.current = vec2.fromValues(near, far);
-  uniforms.viewResolution.current = vec2.fromValues(1 / width, 1 / height);
-  uniforms.viewSize.current = vec2.fromValues(width, height);
-  uniforms.viewWorldDepth.current = vec2.fromValues(focus, 1);
-  uniforms.viewPixelRatio.current = pixelRatio * unit;
+
+  updateViewSize(uniforms, width, height, pixelRatio * unit, focus, 1);
 
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);
 
   return provide(FrameContext, frame.current,
     use(ViewProvider, {
-      defs: VIEW_UNIFORMS,
       uniforms,
       children: provide(LayoutContext, layout, children),
     })

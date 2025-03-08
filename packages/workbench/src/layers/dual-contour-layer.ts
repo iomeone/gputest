@@ -270,12 +270,14 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
         group: [4, 4, 4],
         shouldDispatch,
         onDispatch: dispatchEdgePass,
+        label: 'dispatchEdgePass',
       }),
       use(Dispatch, {
         group: [1],
         shader: boundFit,
         indirect: indirectReadout2,
         shouldDispatch,
+        label: 'indirectReadout',
       }),
     ])
   ), [boundScan, edgePassSize, shouldDispatch, dispatchEdgePass, boundFit, indirectReadout2]);
@@ -292,6 +294,8 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
       pipeline,
       renderer: shaded ? 'shaded' : 'solid',
       mode,
+      
+      label: 'DualContourLayer',
     }),
     /*
     use(Readback, { source: edgeStorage, then: (data) => {

@@ -15,6 +15,7 @@ import {
 import { useLinkedShader } from '../hooks/useLinkedShader';
 import { useComputePipelineAsync } from '../hooks/useComputePipeline';
 import { useInspectable } from '../hooks/useInspectable'
+import { usePipelineLayout } from '../hooks/usePipelineLayout';
 
 export type DispatchProps = {
   size?: Lazy<number[] | VectorLike>,
@@ -24,6 +25,7 @@ export type DispatchProps = {
   indirect?: StorageSource,
   shouldDispatch?: () => boolean | number | null | undefined,
   onDispatch?: () => void,
+  label?: string,
 };
 
 const NO_SIZE = [1];
@@ -49,6 +51,7 @@ export const dispatch = (props: DispatchProps) => {
     defines: propDefines,
     shouldDispatch,
     onDispatch,
+    label,
   } = props;
 
   const inspect = useInspectable();
@@ -68,13 +71,17 @@ export const dispatch = (props: DispatchProps) => {
     bindings,
     constants,
     volatiles,
+    entries,
   } = useLinkedShader(
     [computeShader],
     defines,
   );
 
-  // Rendering pipeline
-  const [pipeline, isStale] = useComputePipelineAsync(device, module);
+  // Pipeline layout with global bind group and optional pass-specific bind group
+  const layout = usePipelineLayout(device, entries, undefined, undefined, label);
+
+  // Compute pipeline
+  const [pipeline, isStale] = useComputePipelineAsync(device, module, layout, label);
   if (!pipeline) return suspense ? SUSPEND : NO_CALL;
   if (isStale) return SUSPEND;
 

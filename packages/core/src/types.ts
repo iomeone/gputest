@@ -21,6 +21,8 @@ export type ColorSpace = 'linear' | 'srgb' | 'p3' | 'native' | 'picking' | 'auto
 
 export type RenderViewType = '2d' | 'cube';
 
+export type FilteringType = 'filtering' | 'non-filtering' | 'comparison';
+
 // JS utility types
 
 export type ArrowFunction = (...args: any[]) => any;
@@ -140,6 +142,7 @@ export type UniformAttribute = {
   type?: ShaderStructType,
   args?: UniformFormat[] | null,
   attr?: UniformShaderAttribute[],
+  qual?: string,
 };
 
 export type UniformShaderAttribute = string;
@@ -158,14 +161,6 @@ export type UniformLayout = {
   offsets: number[],
 };
 
-export type InterleavedLayout = {
-  length: number,
-
-  uniforms: UniformAttribute[],
-  offsets: number[],
-  groups: number[],
-};
-
 // Uniform bindings
 export type UniformPipe = {
   layout: UniformLayout,
@@ -182,11 +177,6 @@ export type UniformAllocation = {
 export type GlobalAllocation = {
   pipe: UniformPipe,
   buffer: GPUBuffer,
-  layout: GPUBindGroupLayout,
-  bindGroup: GPUBindGroup,
-};
-
-export type SharedAllocation = {
   layout: GPUBindGroupLayout,
   bindGroup: GPUBindGroup,
 };
@@ -227,12 +217,17 @@ export type ShaderStageDescriptor = {
   entryPoint: string,
 };
 
-// Shader bindings
+// Shader data bindings
 export type DataBinding<T = any, S extends ShaderModule = any> = {
-  uniform: UniformAttribute,
+  attribute: UniformAttribute,
+
+  uniform?: UniformSource,
   storage?: StorageSource,
   texture?: TextureSource,
+  sampler?: SamplerSource,
+
   lambda?: LambdaSource<S>,
+
   constant?: Lazy<T>,
 };
 
@@ -242,23 +237,6 @@ export type DataBounds = {
   radius: number,
   min: VectorLike,
   max: VectorLike,
-};
-
-export type StorageSource<T extends ShaderModule = any> = {
-  buffer: GPUBuffer,
-  format: UniformFormat,
-  type?: T,
-
-  length: number,
-  size: VectorLike,
-  version: number,
-
-  bounds?: DataBounds,
-  volatile?: number,
-  readWrite?: boolean,
-  byteOffset?: number,
-  byteLength?: number,
-  colorSpace?: ColorSpace,
 };
 
 export type LambdaSource<T extends ShaderModule = any> = {
@@ -283,10 +261,52 @@ export type TextureSource = {
   mips?: number,
   variant?: string,
   absolute?: boolean,
-  comparison?: boolean,
   volatile?: number,
+  filter?: FilteringType,
   colorSpace?: ColorSpace,
   aspect?: GPUTextureAspect,
+};
+
+export type StorageSource<T extends ShaderModule = any> = {
+  buffer: GPUBuffer,
+  format: UniformFormat,
+  type?: T,
+
+  length: number,
+  size: VectorLike,
+  version: number,
+
+  bounds?: DataBounds,
+  volatile?: number,
+  readWrite?: boolean,
+  byteOffset?: number,
+  byteLength?: number,
+  colorSpace?: ColorSpace,
+
+  addressSpace?: 'storage',
+};
+
+export type UniformSource<T extends ShaderModule = any> = {
+  buffer: GPUBuffer,
+  format: UniformFormat,
+  type?: T,
+
+  length: number,
+  size: VectorLike,
+  version: number,
+
+  bounds?: DataBounds,
+  volatile?: number,
+  byteOffset?: number,
+  byteLength?: number,
+  colorSpace?: ColorSpace,
+
+  addressSpace: 'uniform',
+};
+
+export type SamplerSource = {
+  sampler: GPUSampler | GPUSamplerDescriptor | null,
+  filter?: FilteringType,
 };
 
 export type StorageTarget = StorageSource & {
@@ -312,6 +332,29 @@ export type ExternalTexture = {
   size: VectorLike,
   colorSpace?: ColorSpace,
   layout?: string,
+};
+
+// Shader binding placeholders
+export type RawBinding<T extends ShaderModule = any> = {
+  attribute: UniformAttribute,
+
+  uniform?: StoragePlaceholder<T>,
+  storage?: StoragePlaceholder<T>,
+  texture?: TexturePlaceholder,
+  sampler?: SamplerSource,
+};
+
+export type StoragePlaceholder<T extends ShaderModule = any> = {
+  format: UniformFormat,
+  type?: T,
+  readWrite?: boolean,
+};
+
+export type TexturePlaceholder = {
+  sampler: GPUSampler | GPUSamplerDescriptor | null,
+  layout: string,
+  variant?: string,
+  filter?: FilteringType,
 };
 
 // Projection pipeline

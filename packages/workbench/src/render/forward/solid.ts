@@ -4,11 +4,11 @@ import type { VirtualDraw } from '../../pass/types';
 import { yeet, useMemo } from '@use-gpu/live';
 import { bindBundle } from '@use-gpu/shader/wgsl';
 
-import { drawCall } from '../../queue/draw-call';
 import { getNativeColor } from '../../hooks/useNativeColor';
+import { drawCall } from '../../queue/draw-call';
+import { getShaderLabel } from '../../pass/util';
 
 import { useRenderContext } from '../../providers/render-provider';
-import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
 import instanceDrawVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
@@ -17,6 +17,8 @@ import instanceFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
 import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
 export type SolidRenderProps = VirtualDraw;
+
+const LABEL = 'SolidRender';
 
 export const SolidRender: LiveComponent<SolidRenderProps> = (props: SolidRenderProps) => {
   const {
@@ -31,8 +33,7 @@ export const SolidRender: LiveComponent<SolidRenderProps> = (props: SolidRenderP
   const renderContext = useRenderContext();
   const {colorInput, colorSpace} = renderContext;
 
-  const {layout: globalLayout} = useViewContext();
-  const {layout: passLayout} = usePassContext();
+  const {bindGroups: {color: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
   const vertexShader = instanceDrawVirtualSolid;
   const fragmentShader = instanceFragmentSolid;
@@ -58,7 +59,8 @@ export const SolidRender: LiveComponent<SolidRenderProps> = (props: SolidRenderP
     defines,
     renderContext,
     globalLayout,
-    passLayout,
+    pipelineKey,
+    label: getShaderLabel([getVertex, getFragment], LABEL),
   };
 
   return yeet(drawCall(call));

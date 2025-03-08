@@ -1,17 +1,41 @@
-import type { DataBounds, Lazy, RenderPassMode, StorageSource, TextureSource } from '@use-gpu/core';
+import type { DataBounds, Lazy, RenderPassMode, StorageSource, TextureSource, UniformAttribute } from '@use-gpu/core';
 import type { LiveComponent, ArrowFunction, Ref } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 import type { Update } from '@use-gpu/state';
 import type { BoundLight } from '../light/types';
 import { vec3 } from 'gl-matrix';
+
+export type PassFlags = {
+  lights?: boolean,
+  shadows?: boolean,
+  picking?: boolean,
+  overlay?: boolean,
+  merge?: boolean,
+};
+
+export type PassBindGroup = {
+  key: number,
+  layout: GPUBindGroupLayout,
+  attributes: UniformAttribute[],
+  select: (env: PassEnv) => Partial<Record<string, ShaderSource>>,
+};
+
+export type PassApplyBindGroup = (passEncoder: GPURenderPassEncoder) => void;
+
+export type PassEnv = {
+  light?: LightEnv,
+};
 
 export type LightEnv = {
   lights: Map<number, BoundLight>,
   shadows: Map<number, BoundLight>,
   order: number[],
   subranges: Map<number, [number, number]>,
-  storage: StorageSource,
-  texture: TextureSource | null,
+
+  sources: {
+    lightData: StorageSource,
+    shadowMap: TextureSource | null,
+  },
 };
 
 export type Culler = (center: vec3, radius: number) => number | boolean;
@@ -64,6 +88,7 @@ export type VirtualDraw = {
   defines: Record<string, any>,
   mode: RenderPassMode | string,
   renderer: string,
+  label?: string,
 
   vertexCount?: Lazy<number>,
   instanceCount?: Lazy<number>,

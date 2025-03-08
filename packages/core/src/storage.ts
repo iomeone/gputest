@@ -1,77 +1,21 @@
-import type { SharedAllocation, StorageSource, UniformAttribute } from './types';
-import { makeBindGroupLayout } from './bindgroup';
+import type { StorageSource, UniformAttribute } from './types';
 import { toTypeString } from './uniform';
 
-export const makeSharedStorage = (
-  device: GPUDevice,
-  sources: StorageSource[],
-): SharedAllocation => {
-  const VISIBILITY_ALL = GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE;
-
-  const group = sources.map((_, binding) => ({binding, visibility: VISIBILITY_ALL, buffer: {type: 'read-only-storage' as GPUBufferBindingType}}));
-  const layout = makeBindGroupLayout(device, group);
-
-  const entries = makeStorageEntries(sources);
-  const bindGroup = device.createBindGroup({
-    layout,
-    entries,
-  });
-
-  return {layout, bindGroup};
-}
-
-export const makeStorageBinding = (
-  device: GPUDevice,
-  pipeline: GPURenderPipeline | GPUComputePipeline,
-  links: Record<string, StorageSource | null | undefined>,
-  set: number = 0,
-): GPUBindGroup => {
-  const sources = [] as StorageSource[];
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  for (const k in links) if (links[k]) sources.push(links[k]!);
-
-  const entries = makeStorageEntries(sources);
-  const bindGroup = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(set),
-    entries,
-  });
-  return bindGroup;
-}
-
-export const makeStorageEntries = (
-  sources: StorageSource[],
-  binding: number = 0
-): GPUBindGroupEntry[] => {
-  const entries = [] as GPUBindGroupEntry[];
-
-  for (const source of sources) {
-    const {buffer, byteOffset, byteLength} = source;
-    entries.push({binding, resource: {
-      buffer,
-      offset: byteOffset,
-      size:   byteLength,
-    }});
-    binding++;
-  }
-
-  return entries;
-};
-
 export const checkStorageTypes = (
-  uniforms: UniformAttribute[],
+  attributes: UniformAttribute[],
   links: Record<string, StorageSource | null | undefined>,
 ) => {
-  for (const u of uniforms) {
+  for (const u of attributes) {
     const link = links[u.name];
     checkStorageType(u, link)
   }
 }
 
 export const checkStorageType = (
-  uniform: UniformAttribute,
+  attribute: UniformAttribute,
   link: StorageSource | null | undefined,
 ) => {
-  const {name, format: from} = uniform;
+  const {name, format: from} = attribute;
   const to = link?.format;
 
   if (Array.isArray(from) || Array.isArray(to)) return;

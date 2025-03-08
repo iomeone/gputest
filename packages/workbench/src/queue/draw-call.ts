@@ -7,7 +7,6 @@ import { yeet, useMemo, useNoMemo, useOne, useNoOne, SUSPEND } from '@use-gpu/li
 import { patch, $apply } from '@use-gpu/state';
 import {
   makeMultiUniforms, makeBoundUniforms, makeVolatileUniforms,
-  VIEW_UNIFORMS,
   uploadBuffer,
   resolve,
 } from '@use-gpu/core';
@@ -17,8 +16,8 @@ import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
 
 import { useLinkedShader } from '../hooks/useLinkedShader';
-import { usePipelineLayout, useNoPipelineLayout } from '../hooks/usePipelineLayout';
-import { useRenderPipelineAsync, useNoRenderPipelineAsync } from '../hooks/useRenderPipeline';
+import { usePipelineLayout } from '../hooks/usePipelineLayout';
+import { RenderShader, useRenderPipelineAsync, useNoRenderPipelineAsync } from '../hooks/useRenderPipeline';
 import { useInspectable } from '../hooks/useInspectable'
 
 export type DrawCallProps = {
@@ -36,11 +35,12 @@ export type DrawCallProps = {
   fragment?: ParsedBundle | null,
 
   globalLayout?: GPUBindGroupLayout,
-  passLayout?: GPUBindGroupLayout,
-
   globalBinding?: (pipeline: GPURenderPipeline) => VolatileAllocation,
   globalDefs?: UniformAttribute[][],
   globalUniforms?: Record<string, Ref<any>>,
+
+  pipelineKey?: string | number,
+  customLayouts?: GPUBindGroupLayout[],
 
   renderContext: UseGPURenderContext,
 
@@ -48,19 +48,21 @@ export type DrawCallProps = {
   onDispatch?: (uniforms: Record<string, Ref<any>>) => void,
 
   defines?: Record<string, any>,
+  label?: string,
 };
 
 const GLOBAL_DEFINES = {
-  '@group(GLOBAL)': '@group(0)',
+  '@group(PASS)': '@group(0)',
   '@group(VIRTUAL)': '@group(1)',
   '@group(VOLATILE)': '@group(2)',
+  '@group(CUSTOM)': '@group(3)',
 };
 
-const PASS_DEFINES = {
-  '@group(GLOBAL)': '@group(0)',
-  '@group(PASS)': '@group(1)',
-  '@group(VIRTUAL)': '@group(2)',
-  '@group(VOLATILE)': '@group(3)',
+const LOCAL_DEFINES = {
+  '@group(VIRTUAL)': '@group(0)',
+  '@group(VOLATILE)': '@group(1)',
+  '@group(CUSTOM)': '@group(2)',
+  '@group(LOCAL)': '@group(3)',
 };
 
 export const DrawCall: LC<DrawCallProps> = (props: DrawCallProps) => {
@@ -83,11 +85,12 @@ export const drawCall = (props: DrawCallProps) => {
     fragment: fragmentShader,
 
     globalLayout,
-    passLayout,
-
     globalBinding,
     globalDefs,
     globalUniforms,
+    
+    pipelineKey,
+    customLayouts,
 
     renderContext,
 
@@ -97,6 +100,8 @@ export const drawCall = (props: DrawCallProps) => {
     pipeline: propPipeline,
     defines: propDefines,
     mode = 'opaque',
+    
+    label,
   } = props;
 
   const inspect = useInspectable();
@@ -108,10 +113,12 @@ export const drawCall = (props: DrawCallProps) => {
   // Render shader
   const topology = (propPipeline as any)?.primitive?.topology ?? 'triangle-list';
 
+  // Defines
+  const hasGlobals = !!(globalLayout ?? globalBinding ?? globalDefs);
   const defines = useMemo(() => (propDefines ? {
-    ...(passLayout ? PASS_DEFINES : GLOBAL_DEFINES),
+    ...(hasGlobals ? GLOBAL_DEFINES : LOCAL_DEFINES),
     ...propDefines,
-  } : (passLayout ? PASS_DEFINES : GLOBAL_DEFINES)), [propDefines, passLayout]);
+  } : (hasGlobals ? GLOBAL_DEFINES : LOCAL_DEFINES)), [propDefines, hasGlobals]);
 
   // Shaders
   const {
@@ -124,21 +131,22 @@ export const drawCall = (props: DrawCallProps) => {
   } = useLinkedShader(
     [vertexShader, fragmentShader],
     defines,
+    label,
   );
 
   // Pipeline layout with global bind group and optional pass-specific bind group
-  const layout = globalLayout
-  ? usePipelineLayout(device, entries, globalLayout, passLayout)
-  : useNoPipelineLayout();
+  const layout = usePipelineLayout(device, entries, globalLayout, customLayouts, label);
 
   // Rendering pipeline
   // eslint-disable-next-line prefer-const
   let [pipeline, isStale] = useRenderPipelineAsync(
     device,
     renderContext,
-    shader as any,
+    shader as RenderShader,
+    layout,
     propPipeline,
-    layout as any,
+    pipelineKey,
+    label,
   );
 
   // Flip pipeline winding order for mirrored passes (e.g. cubemap or reflection)
@@ -156,9 +164,11 @@ export const drawCall = (props: DrawCallProps) => {
     const [pipeline, isStaleFlipped] = useRenderPipelineAsync(
       device,
       renderContext,
-      shader as any,
+      shader as RenderShader,
+      layout,
       propPipelineFlipped,
-      layout as any,
+      pipelineKey,
+      label,
     );
     pipelineFlipped = pipeline;
     isStale = isStale || isStaleFlipped;
@@ -181,13 +191,15 @@ export const drawCall = (props: DrawCallProps) => {
     return SUSPEND;
   }
 
-  const base = 1 + +!!passLayout;
+  // @Group(n)
+  const base = +!!hasGlobals;
 
   // Uniforms
   const uniform = useMemo(() => {
     if (globalLayout) return null;
     if (globalBinding) return globalBinding(pipeline);
-    return makeMultiUniforms(device, pipeline, globalDefs ?? [VIEW_UNIFORMS], 0);
+    if (globalDefs) return makeMultiUniforms(device, pipeline, globalDefs, 0);
+    return null;
   }, [device, pipeline, globalLayout, globalBinding, globalDefs]);
 
   // Bound storage

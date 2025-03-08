@@ -8,7 +8,6 @@ import { drawCall } from '../../queue/draw-call';
 import { getNativeColor } from '../../hooks/useNativeColor';
 
 import { useRenderContext } from '../../providers/render-provider';
-import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
 import instanceDrawVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
@@ -34,8 +33,10 @@ export const DeferredShadedRender: LiveComponent<DeferredShadedRenderProps> = (p
   const renderContext = useRenderContext();
   const {colorInput, colorSpace} = renderContext;
 
-  const {layout: globalLayout} = useViewContext();
-  const {buffers: {gbuffer: [gbuffer]}} = usePassContext();
+  const {
+    buffers: {gbuffer: [gbuffer]},
+    bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
+  } = usePassContext();
 
   const vertexShader = instanceDrawVirtualShaded;
   const fragmentShader = defines?.HAS_DEPTH ? instanceFragmentShadedDepth : instanceFragmentShaded;
@@ -63,6 +64,7 @@ export const DeferredShadedRender: LiveComponent<DeferredShadedRenderProps> = (p
     defines: defs,
     renderContext: gbuffer,
     globalLayout,
+    pipelineKey,
   };
 
   return yeet(drawCall(call));

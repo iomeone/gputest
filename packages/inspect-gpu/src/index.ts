@@ -16,6 +16,12 @@ export const inspectGPU: InspectExtension = (): InspectAddIns => ({
       render: (fiber: LiveFiber<any>) => renderCanvas({fiber}),
     },
     {
+      id: 'pass',
+      label: 'Pass',
+      enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.pass,
+      render: (fiber: LiveFiber<any>) => renderShader({fiber, type: 'compute'}),
+    },
+    {
       id: 'compute',
       label: 'Compute',
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.compute,

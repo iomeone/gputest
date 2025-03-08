@@ -2,7 +2,7 @@ import { Tree } from '@lezer/common';
 import { ParsedModule, ShaderDefine } from './types';
 
 import { makeLoadModule, makeLoadModuleWithCache } from '../util/shader';
-import { makeBundleToAttribute, makeBundleToAttributes } from '../util/bundle';
+import { makeBundleToAttribute, makeBundleToAttributes, makeBundleToBindings } from '../util/bundle';
 import { makeTranspile } from '../util/transpile';
 
 import { makeASTParser, compressAST, decompressAST } from './ast';
@@ -46,6 +46,9 @@ export const bundleToAttribute = makeBundleToAttribute(toTypeSymbol, toTypeArgs)
 
 /** Convert a bundle to a definition for all its attributes. */
 export const bundleToAttributes = makeBundleToAttributes(toTypeSymbol, toTypeArgs);
+
+/** Convert a bundle to a definition for all its bindings. */
+export const bundleToBindings = makeBundleToBindings(toTypeSymbol, toTypeArgs);
 
 // Simple whitespace removal
 const minifyCode = (code: string) => {

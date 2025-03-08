@@ -9,6 +9,7 @@ import {
 
   bundleToAttribute,
   bundleToAttributes,
+  bundleToBindings,
 
   wgsl, f32, i32, u32,
   symbolDictionary,
@@ -67,6 +68,7 @@ import {
   getBundleHash,
   getBundleKey,
   getBundleLabel,
+  getBundleName,
 } from '../util/bundle';
 
 import {
@@ -88,6 +90,7 @@ export {
 
   bundleToAttribute,
   bundleToAttributes,
+  bundleToBindings,
 
   wgsl, f32, i32, u32,
   symbolDictionary,
@@ -146,6 +149,7 @@ export {
   getBundleHash,
   getBundleKey,
   getBundleLabel,
+  getBundleName,
 } from '../util/bundle';
 
 export {
@@ -160,6 +164,7 @@ export const WGSLLinker = {
   bindEntryPoint,
   bundleToAttribute,
   bundleToAttributes,
+  bundleToBindings,
   wgsl, f32, i32, u32,
 
   defineConstants,
@@ -195,6 +200,7 @@ export const WGSLLinker = {
   getBundleHash,
   getBundleKey,
   getBundleLabel,
+  getBundleName,
 
   decompressString,
   symbolDictionary,

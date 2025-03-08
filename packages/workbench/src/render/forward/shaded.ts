@@ -4,11 +4,11 @@ import type { VirtualDraw } from '../../pass/types';
 import { yeet, useMemo } from '@use-gpu/live';
 import { bindBundle } from '@use-gpu/shader/wgsl';
 
-import { drawCall } from '../../queue/draw-call';
 import { getNativeColor } from '../../hooks/useNativeColor';
+import { drawCall } from '../../queue/draw-call';
+import { getShaderLabel } from '../../pass/util';
 
 import { useRenderContext } from '../../providers/render-provider';
-import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
 import instanceDrawVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
@@ -20,6 +20,8 @@ import {
 import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
 export type ShadedRenderProps = VirtualDraw;
+
+const LABEL = 'ShadedRender';
 
 export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRenderProps) => {
   const {
@@ -37,8 +39,7 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
   const renderContext = useRenderContext();
   const {colorInput, colorSpace} = renderContext;
 
-  const {layout: globalLayout} = useViewContext();
-  const {layout: passLayout} = usePassContext();
+  const {bindGroups: {color: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
   const vertexShader = instanceDrawVirtualShaded;
   const fragmentShader = defines?.HAS_DEPTH ? instanceFragmentShadedDepth : instanceFragmentShaded;
@@ -65,7 +66,8 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
     defines,
     renderContext,
     globalLayout,
-    passLayout,
+    pipelineKey,
+    label: getShaderLabel([getVertex, getSurface, getLight], LABEL),
   };
 
   return yeet(drawCall(call));

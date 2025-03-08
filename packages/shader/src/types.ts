@@ -73,6 +73,7 @@ export type ParsedModule<T extends SymbolTableT = any> = {
 
 export type VirtualTable<T extends SymbolTableT = any> = {
   render: VirtualRender,
+  constants?: DataBinding<T>[],
   uniforms?: DataBinding<T>[],
   storages?: DataBinding<T>[],
   textures?: DataBinding<T>[],
@@ -91,7 +92,8 @@ export type BundleSummary = {
 };
 
 export type DataBinding<T extends SymbolTableT = any> = {
-  uniform: UniformAttribute,
+  attribute: UniformAttribute,
+  uniform?: UniformSource,
   storage?: StorageSource,
   texture?: TextureSource,
   lambda?: LambdaSource<ShaderModule<T>>,
@@ -139,7 +141,27 @@ export type StorageSource = {
   byteOffset?: number,
   byteLength?: number,
   colorSpace?: ColorSpace,
+
+  addressSpace?: 'storage',
 };
+
+export type UniformSource = {
+  buffer: GPUBuffer,
+  format: UniformFormat,
+  type?: ShaderModule,
+  length: number,
+  size: number[] | TypedArray,
+  version: number,
+
+  volatile?: number,
+  byteOffset?: number,
+  byteLength?: number,
+  colorSpace?: ColorSpace,
+
+  addressSpace: 'uniform',
+};
+
+export type FilteringType = 'filtering' | 'non-filtering' | 'comparison';
 
 export type LambdaSource<T = any> = {
   shader: T,
@@ -148,6 +170,11 @@ export type LambdaSource<T = any> = {
   version: number,
 
   colorSpace?: ColorSpace,
+};
+
+export type SamplerSource = {
+  sampler: GPUSampler | GPUSamplerDescriptor | null,
+  filter?: FilteringType,
 };
 
 export type TextureSource = {
@@ -162,13 +189,13 @@ export type TextureSource = {
   mips?: number,
   variant?: string,
   absolute?: boolean,
-  comparison?: boolean,
+  filter?: FilteringType,
   volatile?: number,
   colorSpace?: ColorSpace,
   aspect?: GPUTextureAspect,
 };
 
-export type ShaderSource = StorageSource | LambdaSource<ShaderModule> | TextureSource | ShaderModule;
+export type ShaderSource = UniformSource | StorageSource | LambdaSource<ShaderModule> | TextureSource | SamplerSource | ShaderModule;
 
 export type UniformFormat = any | UniformAttribute[];
 
@@ -179,6 +206,7 @@ export type UniformAttribute = {
   args?: any[] | null,
   members?: UniformAttribute[],
   attr?: UniformShaderAttribute[],
+  qual?: string,
 };
 
 export type UniformShaderAttribute = string;

@@ -19,18 +19,23 @@ export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProp
 
   const renderContext = useRenderContext();
 
+  // Placeholder render context, used for depth-only render pass and depth-copies
   const context = {
-    ...renderContext,
+    device: renderContext.device,
+    gpuContext: renderContext.gpuContext,
+
+    // Sized dynamically in shadow atlas
     width: 0,
     height: 0,
+
     pixelRatio: 1,
     samples: 1,
     colorSpace: 'native',
     colorInput: 'native',
     colorStates: [],
-    colorAttachments: [],
     depthStencilState: makeDepthStencilState(format),
-    swap: () => {},
+    viewType: '2d',
+    viewAttachments: [],
   };
 
   return yeet({ shadow: context });

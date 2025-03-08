@@ -32,9 +32,10 @@ export const makeRenderPipeline = (
   samples: number,
   descriptor: Update<GPURenderPipelineDescriptor> = {},
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const pipelineDescriptor: GPURenderPipelineDescriptor = patch({
-    label: [vertexShader.entryPoint, fragmentShader?.entryPoint].filter(s => s != null).join('/'),
+    label: [label, vertexShader.entryPoint, fragmentShader?.entryPoint].filter(s => s != null).join('/'),
     layout: layout ?? 'auto',
     depthStencil: depthStencilState,
     multisample: { count: samples },
@@ -59,9 +60,10 @@ export const makeRenderPipelineAsync = (
   samples: number,
   descriptor: Update<GPURenderPipelineDescriptor> = {},
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const pipelineDescriptor: GPURenderPipelineDescriptor = patch({
-    label: [vertexShader.entryPoint, fragmentShader?.entryPoint].filter(s => s != null).join('/'),
+    label: [label, vertexShader.entryPoint, fragmentShader?.entryPoint].filter(s => s != null).join('/'),
     layout: layout ?? 'auto',
     depthStencil: depthStencilState,
     multisample: { count: samples },
@@ -81,9 +83,10 @@ export const makeComputePipeline = (
   device: GPUDevice,
   shader: ShaderModuleDescriptor,
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const pipelineDescriptor: GPUComputePipelineDescriptor = {
-    label: shader.entryPoint,
+    label: [label, shader.entryPoint].filter(s => s != null).join('/'),
     layout: layout ?? 'auto',
     compute: makeShaderStage(device, shader),
   };
@@ -95,9 +98,10 @@ export const makeComputePipelineAsync = (
   device: GPUDevice,
   shader: ShaderModuleDescriptor,
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const pipelineDescriptor: GPUComputePipelineDescriptor = {
-    label: shader.entryPoint,
+    label: [label, shader.entryPoint].filter(s => s != null).join('/'),
     layout: layout ?? 'auto',
     compute: makeShaderStage(device, shader),
   };
@@ -108,9 +112,11 @@ export const makeComputePipelineAsync = (
 export const makePipelineLayout = (
   device: GPUDevice,
   bindGroupLayouts: GPUBindGroupLayout[],
+  label?: string,
 ) => {
   return device.createPipelineLayout({
     bindGroupLayouts,
+    label,
   });
 }
 

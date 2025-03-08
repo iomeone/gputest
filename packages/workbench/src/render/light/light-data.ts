@@ -1,5 +1,5 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { StorageSource, TextureSource, UniformAttribute } from '@use-gpu/core';
+import type { Atlas, StorageSource, TextureSource, UniformAttribute } from '@use-gpu/core';
 import type { Light, BoundLight } from '../../light/types';
 import type { LightEnv } from '../../pass/types';
 
@@ -168,7 +168,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
     const texture = useMemo(() => {
       if (!shadows) return null;
 
-      const atlases = [makeAtlasPage()];
+      const atlases: Atlas[] = [makeAtlasPage()];
       let [atlas] = atlases;
 
       for (const key of maps.keys()) {
@@ -183,42 +183,28 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
             mapping = atlas.place(key, w, h);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (e) {
-            atlas = makeAtlasPage();
-            atlases.push(atlas);
-
+            atlases.push(atlas = makeAtlasPage());
             mapping = atlas.place(key, w, h);
           }
           const page = atlases.length - 1;
 
           const nf = 1 / (near - far);
           light.shadowMap = page;
-          light.shadowUV = (vec4.fromValues as any)(...mapping.map(x => x / SHADOW_PAGE));
+          light.shadowUV = (vec4.fromValues as any)(...mapping.map((x: number) => x / SHADOW_PAGE));
           light.shadowDepth = vec2.fromValues(far * nf + 1, -far * near * nf);
           light.shadowBias = bias;
           light.shadowBlur = blur;
         }
       }
 
-      const pages = atlases.length;
+      const pages = atlases.length || 1;
 
-      const texture = pages ? (
+      const texture = (
         makeTexture(
           device,
           SHADOW_PAGE,
           SHADOW_PAGE,
           pages,
-          SHADOW_FORMAT,
-          GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
-          1,
-          1,
-          '2d',
-        )
-      ) : (
-        makeTexture(
-          device,
-          1,
-          1,
-          1,
           SHADOW_FORMAT,
           GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
           1,
@@ -234,7 +220,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
         format: SHADOW_FORMAT,
         length: SHADOW_PAGE * SHADOW_PAGE * pages,
         size: [SHADOW_PAGE, SHADOW_PAGE, pages],
-        comparison: true,
+        filter: 'comparison',
         version: 0,
       } as TextureSource;
 
@@ -325,11 +311,14 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
     const env = useMemo(() => ({
       lights,
       shadows: maps,
-      storage,
-      texture,
 
       order,
       subranges,
+
+      sources: {
+        lightData: storage,
+        shadowMap: texture,
+      },
     }), [storage, texture, order, subranges]);
 
     return [

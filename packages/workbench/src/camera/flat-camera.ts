@@ -2,12 +2,12 @@ import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import type { Rectangle } from '@use-gpu/core';
 
 import { use, provide, deprecated, useContext, useOne, useMemo, incrementVersion } from '@use-gpu/live';
-import { VIEW_UNIFORMS, makeOrthogonalMatrix, makeViewUniforms, updateViewUniforms } from '@use-gpu/core';
+import { makeOrthogonalMatrix, makeViewUniforms, updateViewProjection, updateViewSize } from '@use-gpu/core';
 import { LayoutContext } from '../providers/layout-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
-import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 
 const DEFAULT_FLAT_CAMERA = {
   near: -100,
@@ -91,20 +91,14 @@ export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
 
   const viewHeight = Math.abs(layout[3] - layout[1]);
 
-  updateViewUniforms(uniforms, panned, undefined, vec4.fromValues(0, 0, 1, 0));
-
-  uniforms.viewNearFar.current = vec2.fromValues(near, far);
-  uniforms.viewResolution.current = vec2.fromValues(1 / width, 1 / height);
-  uniforms.viewSize.current = vec2.fromValues(width, height);
-  uniforms.viewWorldDepth.current = vec2.fromValues(focus * viewHeight / 2.0, viewHeight / (far - near) / 2.0);
-  uniforms.viewPixelRatio.current = ratio;
+  updateViewProjection(uniforms, panned, undefined, undefined, near, far);
+  updateViewSize(uniforms, width, height, ratio, focus * viewHeight / 2.0, viewHeight / (far - near) / 2.0);
 
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);
 
   return provide(FrameContext, frame.current,
     use(ViewProvider, {
-      defs: VIEW_UNIFORMS,
       uniforms,
       children: provide(LayoutContext, layout, children),
     })

@@ -52,7 +52,7 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
   const versionRef = useRef(0);
 
   const schema = useOne(() => normalizeSchema(propSchema), propSchema);
-  const uniforms = useMemo(
+  const attributes = useMemo(
     () => {
       const out = [];
       for (const k in schema) {
@@ -107,7 +107,7 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
 
     // Make/resize data buffers + index buffer
     const [aggregateBuffer, indexBuffer, fields, sources] = useMemo(() => {
-      const aggregateBuffer = makeStructAggregateBuffer(device, uniforms, alloc);
+      const aggregateBuffer = makeStructAggregateBuffer(device, attributes, alloc);
       const {current: prevBuffer} = prevBufferRef;
 
       if (prevBuffer) {
@@ -124,7 +124,7 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
 
       return [aggregateBuffer, indexBuffer, fields, sources];
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [device, uniforms, alloc]);
+    }, [device, attributes, alloc]);
 
     const needsRefresh = prevBufferRef.current !== aggregateBuffer;
     prevBufferRef.current = aggregateBuffer;

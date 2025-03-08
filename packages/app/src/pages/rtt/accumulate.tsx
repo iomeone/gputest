@@ -129,8 +129,7 @@ const AccumulateView = (props: AccumulateViewProps) => {
 
 const useViewVersion = () => {
   usePerFrame();
-  const {uniforms} = useViewContext();
-  const {viewMatrix: {current: viewMatrix}} = uniforms;
+  const {uniforms: {viewMatrix: {current: viewMatrix}}} = useViewContext();
   const version = useVersion(viewMatrix);
 
   return version;

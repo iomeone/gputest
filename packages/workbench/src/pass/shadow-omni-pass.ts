@@ -6,30 +6,30 @@ import { mat4 } from 'gl-matrix';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
-  makeDepthStencilAttachments, makeGlobalUniforms, makeViewUniforms, makeTexture, uploadBuffer,
-  getCubeFaceLabel, getCubeFaceMatrix, reverseZ, updateViewUniforms,
-  VIEW_UNIFORMS,
+  makeDepthStencilAttachments, makeTexture, uploadBuffer,
+  getCubeFaceLabel, getCubeFaceMatrix, reverseZ, updateViewProjection, updateViewSize,
 } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
-import { useFrustumCuller } from '../hooks/useFrustumCuller';
 import { useInspectable } from '../hooks/useInspectable';
 import { useShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
 import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
+
+import { useDynamicViewBinding, useApplyPassBindGroup } from './bindings';
+import { useDepthBlit } from './depth-blit';
 import { drawToPass } from './util';
 
 import { getCubeToOmniSample } from '@use-gpu/wgsl/render/sample/cube-to-omni.wgsl';
 
-import { useDepthBlit } from './depth-blit';
-
 const {quote} = QueueReconciler;
 
 export type ShadowOmniPassProps = PropsWithChildren<{
+  env: Record<string, any>,
   calls: {
     shadow?: Renderable[],
   },
@@ -51,6 +51,7 @@ Draws all shadow calls to an omnidirectional shadow map.
 */
 export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPassProps) => {
   const {
+    env,
     calls,
     map,
     descriptors: shadowMapDescriptors,
@@ -59,20 +60,16 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
   const inspect = useInspectable();
 
   const device = useDeviceContext();
-  const {buffers: {shadow: [renderContext]}} = usePassContext();
+  const {
+    buffers: {shadow: [renderContext]},
+    bindGroups: {view: viewBindGroup},
+  } = usePassContext();
 
   const shadows = toArray(calls['shadow'] as Renderable[]);
 
-  const binding = useMemo(() =>
-    makeGlobalUniforms(device, [VIEW_UNIFORMS]),
-    [device]);
-
-  const {bindGroup, buffer, pipe} = binding;
-
-  const uniforms = useOne(makeViewUniforms);
-  
-  const {viewPosition, projectionViewFrustum} = uniforms;
-  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
+  // Bind to dynamic view
+  const {cull, binding, pipe, source, uniforms} = useDynamicViewBinding(viewBindGroup);
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, binding);
 
   const {
     shadow,
@@ -133,10 +130,8 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     return [m, mat4.create()];
   }, depth);
 
-  uniforms.projectionMatrix.current = projectionMatrix;
-  uniforms.viewNearFar.current = [ near, far ];
-  uniforms.viewResolution.current = [ 1 / width, 1 / height ];
-  uniforms.viewSize.current = [ width, height ];
+  updateViewProjection(uniforms, undefined, undefined, undefined, near, far);
+  updateViewSize(uniforms, width, height);
 
   const border = Math.max(1, Math.min(4, shadowBlur || 1));
   const scaleRef = useShaderRef([width / (width - border * 2), height / (height - border * 2)]);
@@ -153,16 +148,19 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
     for (let i = 0; i < 6; ++i) {
+      // Update view
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       mat4.multiply(viewMatrix, getCubeFaceMatrix(i), into!);
-      updateViewUniforms(uniforms, projectionMatrix, viewMatrix);
+      updateViewProjection(uniforms, projectionMatrix, viewMatrix);
 
       pipe.fill(uniforms);
-      uploadBuffer(device, buffer, pipe.data);
+      uploadBuffer(device, source.buffer, pipe.data);
 
+      // Render pass
       const commandEncoder = device.createCommandEncoder(LABEL);
       const passEncoder = commandEncoder.beginRenderPass(cubeDescriptors[i]);
-      passEncoder.setBindGroup(0, bindGroup);
+
+      bindPass?.(passEncoder);
 
       drawToPass(cull, shadows, passEncoder, countGeometry, uniforms, 1, true);
 
@@ -188,6 +186,10 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
         vertices: vs,
         triangles: ts,
       },
+      pass: {
+        uniforms,
+      },
+      bindings: dataBindings,
     });
 
     return null;

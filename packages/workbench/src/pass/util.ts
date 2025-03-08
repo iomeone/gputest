@@ -1,9 +1,17 @@
 import type { UseGPURenderContext } from '@use-gpu/core';
 import type { Ref } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
 import type { Culler, Renderable } from './types';
+
+import { getBundleName } from '@use-gpu/shader/wgsl';
 
 import { resolve, proxy } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
+
+export const getShaderLabel = (bundles: (ShaderModule | null | undefined)[], prefix: string | null | undefined) => {
+  const parts = bundles.map(b => b && getBundleName(b));
+  return [prefix, ...parts].filter(s => s != null).join('::');
+};
 
 export const getRenderPassDescriptor = (
   renderContext: UseGPURenderContext,

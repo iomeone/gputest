@@ -4,12 +4,11 @@ import type { VectorLike } from '@use-gpu/core';
 import { useProp } from '@use-gpu/traits/live';
 import { parsePosition } from '@use-gpu/parse';
 import { provide, use, useContext, useOne, incrementVersion } from '@use-gpu/live';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeViewUniforms, updateViewUniforms } from '@use-gpu/core';
+import { makeProjectionMatrix, makeOrbitMatrix, makeViewUniforms, updateViewProjection, updateViewSize } from '@use-gpu/core';
 import { FrameContext } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
-import { vec2 } from 'gl-matrix';
 
 const DEFAULT_ORBIT_CAMERA = {
   phi: 0,
@@ -67,24 +66,21 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
 
   const unit = scale != null ? height / pixelRatio / scale : 1;
 
-  updateViewUniforms(
+  updateViewProjection(
     uniforms,
     makeProjectionMatrix(width, height, fov, near, far, radius, dolly),
     makeOrbitMatrix(radius, phi, theta, target, dolly),
+    undefined,
+    near, far,
   );
-  
-  uniforms.viewNearFar.current = vec2.fromValues(near, far);
-  uniforms.viewResolution.current = vec2.fromValues(1 / width, 1 / height);
-  uniforms.viewSize.current = vec2.fromValues(width, height);
-  uniforms.viewWorldDepth.current = vec2.fromValues(focus * Math.tan(fov / 2), 1);
-  uniforms.viewPixelRatio.current = pixelRatio * unit;
+
+  updateViewSize(uniforms, width, height, pixelRatio * unit, focus * Math.tan(fov / 2), 1);
 
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);
 
   return provide(FrameContext, frame.current,
     use(ViewProvider, {
-      defs: VIEW_UNIFORMS,
       uniforms,
       children: provide(LayoutContext, layout, children),
     })

@@ -1,6 +1,6 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { UseGPURenderContext } from '@use-gpu/core';
-import type { LightEnv, RenderComponents } from '../pass/types';
+import type { LightEnv, PassFlags, RenderComponents } from '../pass/types';
 
 import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import { extractBindings } from '@use-gpu/shader/wgsl';
@@ -14,11 +14,14 @@ import { ShadowRender } from './forward/shadow';
 import { SolidRender } from './forward/solid';
 import { UIRender } from './forward/ui';
 
+import { useStandardBindGroups } from '../pass/bindings';
+
 import { DeferredPass } from '../pass/deferred-pass';
 
 import { DeferredShadedRender } from './deferred/shaded';
 import { DeferredSolidRender } from './deferred/solid';
 import { DeferredUIRender } from './deferred/ui';
+
 
 import { Renderer } from './renderer';
 import { LightRender } from './light/light-render';
@@ -34,13 +37,13 @@ const DEFAULT_PASSES = [
 ];
 
 const NO_BUFFERS: Record<string, UseGPURenderContext[]> = {};
+const NO_FLAGS: DeferredRendererFlags = {};
+
+export type DeferredRendererFlags = Pick<PassFlags, 'shadows' | 'merge' | 'overlay'>;
 
 export type DeferredRendererProps = PropsWithChildren<{
-  overlay?: boolean,
-  merge?: boolean,
-
   buffers?: Record<string, UseGPURenderContext[]>,
-  context?: Record<string, any>,
+  flags?: DeferredRendererFlags,
   passes?: LiveElement[],
   components?: RenderComponents,
 }>;
@@ -64,17 +67,19 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
 
 export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: DeferredRendererProps) => {
   const {
-    overlay = false,
-    merge = false,
-
     buffers = NO_BUFFERS,
-    context,
+    flags = NO_FLAGS,
     passes = DEFAULT_PASSES,
 
     children,
   } = props;
 
-  const shadows = !!buffers.shadow;
+  const {
+    overlay = false,
+    merge = false,
+    shadows = !!buffers.shadow,
+  } = flags;
+
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
 
   // Provide forward-lit material + emit deferred light draw calls
@@ -89,12 +94,18 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
       ]), [light, shadows]),
   });
 
+  ///////// TODO: remove
   // Prepare bind group layout for lighting/shadows
   const entries = useMemo(() => {
     const vertex   = [lightBinding];
     const fragment = [lightBinding, shadows && shadowBinding];
     return extractBindings([vertex, fragment], 'PASS');
   }, [shadows]);
+  //
+  ////////
 
-  return Renderer({ buffers, context, children: view, components, passes, entries, overlay, merge });
+  // Pass bindings
+  const bindGroups = useStandardBindGroups(flags);
+
+  return Renderer({ buffers, bindGroups, children: view, components, passes, entries, overlay, merge });
 }, 'DeferredRenderer');

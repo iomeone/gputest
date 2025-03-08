@@ -80,8 +80,8 @@ describe("bind", () => {
     ];
 
     const toSnapshot = (link: any) => {
-      const { name, code, table, virtual: { uniforms, storages, textures, base }} = link;
-      return { name, code, table, uniforms, storages, textures, base };
+      const { name, code, table, virtual: { constants, storages, textures, base }} = link;
+      return { name, code, table, constants, storages, textures, base };
     }
 
     const links1 = bindingsToLinks(dataBindings);

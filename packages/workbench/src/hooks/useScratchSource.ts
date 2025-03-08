@@ -1,10 +1,10 @@
 import type { StorageSource, UniformType } from '@use-gpu/core';
 
-import { useMemo, incrementVersion } from '@use-gpu/live';
+import { useMemo, useNoMemo, incrementVersion } from '@use-gpu/live';
 import { makeDataBuffer, getUniformArraySize, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
 
 import { adjustSize } from './useBufferedSize';
-import { useDeviceContext } from '../providers/device-provider';
+import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';
 
 const NO_OPTIONS: ScratchSourceOptions = {};
 
@@ -75,4 +75,9 @@ export const useScratchSource = (
   if (length != null) allocate(length);
 
   return scratchSource;
+};
+
+export const useNoScratchSource = () => {
+  useNoDeviceContext();
+  useNoMemo();
 };

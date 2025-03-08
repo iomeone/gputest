@@ -4,33 +4,55 @@ import React from '@use-gpu/live';
 import {
   Pass, FlatCamera,
   OrbitCamera, OrbitControls,
-  Pick, Cursor, LinearRGB,
+  Cursor, LinearRGB,
+  InterleavedData, FaceLayer,
+  AmbientLight, DirectionalLight,
+  PBRMaterial,
 } from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Text
 } from '@use-gpu/layout';
-import { RawMesh } from '../mesh/components/raw-mesh';
-import { makeMesh, makeTexture } from '../../meshes/cube';
+
+import { meshVertexArray, meshSchema } from '../../meshes/cube';
 
 import { InfoBox } from '../../ui/info-box';
 
+const lightData = [
+  {
+    position: [-10, 20, 15, 1],
+    color: [1, 1, 1, 1],
+  },
+  {
+    position: [-15, 20, -5, 1],
+    color: [0.8, 0.4, 0.8, 1],
+  },
+];
+
 export const RTTLinearRGBPage: LC = () => {
-  const mesh = makeMesh();
-  const texture = makeTexture();
 
   return (<>
     <InfoBox>Use Linear RGB for gamma-correct and HDR rendering</InfoBox>
     <LinearRGB>
       <Cursor cursor='move' />
       <Camera>
-        <Pass picking>
-          <Pick
-            render={({id, hovered, presses}) => [
-              <RawMesh texture={texture} mesh={mesh} blink={presses.left} />,
-              <RawMesh id={id} texture={texture} mesh={mesh} mode={'picking'} />,
-              hovered ? <Cursor cursor='pointer' /> : null,
-            ]}
-          />
+        <Pass picking lights>
+          <AmbientLight intensity={0.2} />
+          <DirectionalLight position={lightData[0].position} intensity={0.75} color={lightData[0].color} />
+          <DirectionalLight position={lightData[1].position} intensity={0.25} color={lightData[1].color} />
+
+          <InterleavedData
+            schema={meshSchema}
+            data={meshVertexArray}
+          >
+            {(props) => (
+              <PBRMaterial roughness={0.5}>
+                <FaceLayer
+                  {...props}
+                  shaded
+                />
+              </PBRMaterial>
+            )}
+          </InterleavedData>
         </Pass>
       </Camera>
       <FlatCamera>

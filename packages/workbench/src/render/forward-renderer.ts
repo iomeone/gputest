@@ -1,6 +1,6 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { RenderViewType, UseGPURenderContext } from '@use-gpu/core';
-import type { LightEnv, RenderComponents } from '../pass/types';
+import type { LightEnv, PassFlags, RenderComponents } from '../pass/types';
 
 import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import { extractBindings } from '@use-gpu/shader/wgsl';
@@ -14,6 +14,8 @@ import { ShadowRender } from './forward/shadow';
 import { SolidRender } from './forward/solid';
 import { PickingRender } from './forward/picking';
 import { UIRender } from './forward/ui';
+
+import { useStandardBindGroups } from '../pass/bindings';
 
 import { ColorPass } from '../pass/color-pass';
 import { ColorCubePass } from '../pass/color-cube-pass';
@@ -32,14 +34,13 @@ const DEFAULT_PASSES: Record<RenderViewType, LiveElement[]> = {
 };
 
 const NO_BUFFERS: Record<string, UseGPURenderContext[]> = {};
+const NO_FLAGS: ForwardRendererFlags = {};
+
+export type ForwardRendererFlags = Pick<PassFlags, 'lights' | 'shadows' | 'merge' | 'overlay'>;
 
 export type ForwardRendererProps = PropsWithChildren<{
-  lights?: boolean,
-  overlay?: boolean,
-  merge?: boolean,
-
   buffers?: Record<string, UseGPURenderContext[]>,
-  context?: Record<string, any>,
+  flags?: ForwardRendererFlags,
   passes?: LiveElement[],
   components?: RenderComponents,
 }>;
@@ -63,18 +64,20 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
 
 export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRendererProps) => {
   const {
-    lights = false,
-    overlay = false,
-    merge = false,
-
     buffers = NO_BUFFERS,
-    context,
+    flags = NO_FLAGS,
     passes: propPasses,
 
     children,
   } = props;
 
-  const shadows = !!buffers.shadow;
+  const {
+    lights = false,
+    overlay = false,
+    merge = false,
+    shadows = !!buffers.shadow,
+  } = flags;
+
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
 
   // Provide forward-lit material
@@ -85,16 +88,23 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
       useOne(() => quote(yeet({ env: { light }})), light),
   }) : children;
 
+  ///////// TODO: remove
   // Prepare bind group layout for lighting/shadows
   const entries = useMemo(() => {
     const vertex   = [lights && lightBinding];
     const fragment = [lights && lightBinding, shadows && shadowBinding];
     return extractBindings([vertex, fragment], 'PASS');
   }, [lights, shadows]);
+  //
+  ///////////////
 
+  // Adapt to view type (2d or cube)
   const {viewType} = useRenderContext();
   const passes = propPasses ?? DEFAULT_PASSES[viewType];
   if (!passes) throw new Error(`No sub-passes in <ForwardRenderer> for viewType ${viewType}`);
 
-  return Renderer({ buffers, context, children: view, components, passes, entries, overlay, merge });
+  // Pass bindings
+  const bindGroups = useStandardBindGroups(flags);
+
+  return Renderer({ buffers, bindGroups, children: view, components, passes, entries, overlay, merge });
 }, 'ForwardRenderer');

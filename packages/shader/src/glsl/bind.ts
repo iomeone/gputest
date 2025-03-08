@@ -11,7 +11,7 @@ const getVirtualBindGroup = () => VIRTUAL_BINDGROUP;
 export const bindingToModule = (
   binding: DataBinding,
 ): ShaderModule => {
-  const {uniform: {name}} = binding;
+  const {attribute: {name}} = binding;
   const links = makeBindingAccessors([binding], VIRTUAL_BINDGROUP, VOLATILE_BINDGROUP);
   const module = links[name];
   return {...module, entry: name};

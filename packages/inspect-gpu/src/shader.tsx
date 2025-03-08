@@ -1,5 +1,6 @@
 import type { LiveFiber } from '@use-gpu/live';
 
+import { Ref } from '@use-gpu/live';
 import { InspectObject } from '@use-gpu/inspect';
 import { styled as _styled } from '@stitches/react';
 
@@ -71,18 +72,25 @@ export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
   const bindings = fiber.__inspect?.bindings;
   const volatiles = fiber.__inspect?.volatiles;
   const indirect = fiber.__inspect?.indirect;
-
+  const pass = fiber.__inspect?.pass?.uniforms;
+  
   const [state, setState] = useState<Record<string, boolean>>({});
   const toggleState = (id: string) => setState((state) => ({
     ...state,
     [id]: !state[id],
   }));
 
-  const toObject = (us: any[]) => {
+  const resolveRefs = (values: Record<string, Ref<any>>) => {
+    const out: Record<string, any> = {};
+    for (const k in values) out[k] = values[k].current;
+    return out;
+  };
+
+  const resolveDataBindings = (us: any[]) => {
     const out: Record<string, any> = {};
     for (let u of us) {
       u = {...u};
-      let n = u.uniform.name;
+      let n = u.attribute.name;
       if (n in out) {
         let i = 2;
         for (; i < 100; ++i) if (!(n + i in out)) break;
@@ -98,40 +106,47 @@ export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
     return out;
   }
 
-  const {hash} = shader;
+  const hash = shader?.hash;
   const handleCommit = useCallback((code: string) => {
+    if (hash == null) return;
     fiber.__inspect?.updateShader?.(hash, code);
   }, [fiber, hash]);
 
   const isMac = navigator.platform.match(/^Mac/);
   const cmd = isMac ? '⌘' : 'Ctrl';
-
+  
   return (<div style={{maxHeight: '80vh'}}>
-    {uniforms?.length || bindings?.length || volatiles?.length || indirect ? (<>
+    {uniforms?.length || bindings?.length || volatiles?.length || indirect || pass ? (<>
       {indirect ? <>
         <div><b>Indirect Dispatch</b></div>
         <InspectObject object={{source: indirect}} state={state} toggleState={toggleState} path={'i'} />
       </> : null}
+      {pass ? <>
+        <div><b>Globals</b></div>
+        <InspectObject object={resolveRefs(pass)} state={state} toggleState={toggleState} path={'i'} />
+      </> : null}
       {uniforms?.length ? <>
         <div><b>Constants</b></div>
-        <InspectObject object={toObject(uniforms)} state={state} toggleState={toggleState} path={'u'} />
+        <InspectObject object={resolveDataBindings(uniforms)} state={state} toggleState={toggleState} path={'u'} />
       </> : null}
       {bindings?.length ? <>
         <div><b>Bindings</b></div>
-        <InspectObject object={toObject(bindings)} state={state} toggleState={toggleState} path={'b'} />
+        <InspectObject object={resolveDataBindings(bindings)} state={state} toggleState={toggleState} path={'b'} />
       </> : null}
       {volatiles?.length ? <>
         <div><b>Volatiles</b></div>
-        <InspectObject object={toObject(volatiles)} state={state} toggleState={toggleState} path={'v'} />
+        <InspectObject object={resolveDataBindings(volatiles)} state={state} toggleState={toggleState} path={'v'} />
       </> : null}
       <Spacer />
     </>) : null}
-    <StyledHeader>
-      <Grow><b>Shader</b> (<code>{shader.hash}</code>)</Grow>
-      <StyledHint><span>Hot Reload</span><StyledKey>{cmd}</StyledKey>+<StyledKey>S</StyledKey></StyledHint>
-    </StyledHeader>
-    <StyledShader><Selectable>
-      <WGSL code={shader.code} onCommit={handleCommit} />
-    </Selectable></StyledShader>
+    {shader != null ? (<>
+      <StyledHeader>
+        <Grow><b>Shader</b> (<code>{shader.hash}</code>)</Grow>
+        <StyledHint><span>Hot Reload</span><StyledKey>{cmd}</StyledKey>+<StyledKey>S</StyledKey></StyledHint>
+      </StyledHeader>
+      <StyledShader><Selectable>
+        <WGSL code={shader.code} onCommit={handleCommit} />
+      </Selectable></StyledShader>
+    </>) : null}
   </div>);
 }

@@ -18,6 +18,7 @@ export const useDataBinding = (
   const binding = useOne(() => {
     if ('format' in source) return {name: 'getValue', format: source.format, args: ['u32']};
     if ('shader' in source) return bundleToAttribute(source.shader);
+    if ('sampler' in source) return {name: 'getSampler', format: 'sampler'};
     return bundleToAttribute(source);
   }, source);
 

@@ -7,17 +7,19 @@ import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { DrawCall, drawCall } from '../../queue/draw-call';
 import { Dispatch } from '../../queue/dispatch';
+import { getShaderLabel } from '../../pass/util';
 import { getWireframe, getWireframeIndirect } from '../wireframe';
 
 import { useDeviceContext } from '../../providers/device-provider';
 import { useRenderContext } from '../../providers/render-provider';
-import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
 import instanceDrawVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
 import instanceFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
 
 export type DebugRenderProps = VirtualDraw;
+
+const LABEL = 'DebugRender';
 
 export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderProps) => {
   const {
@@ -41,8 +43,7 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
   const device = useDeviceContext();
   const renderContext = useRenderContext();
 
-  const {layout: globalLayout} = useViewContext();
-  const {layout: passLayout} = usePassContext();
+  const {bindGroups: {color: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
   const vertexShader = instanceDrawVirtualSolid;
   const fragmentShader = instanceFragmentSolid;
@@ -94,8 +95,9 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
     pipeline,
     renderContext,
     globalLayout,
-    passLayout,
+    pipelineKey,
     mode: 'debug',
+    label: getShaderLabel([gV], LABEL),
   };
 
   // Count indirect vertices/instances for wireframe

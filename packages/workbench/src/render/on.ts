@@ -20,7 +20,6 @@ export const On: LC<OnProps> = (props: OnProps) => {
   const {dispatch, pre, compute, post, readback, render} = props;
 
   return useMemo(() => {
-    
     const out: LiveElement[] = [];
     if (render) out.push(quote(yeet({ dispatch: render })));
 
@@ -30,6 +29,6 @@ export const On: LC<OnProps> = (props: OnProps) => {
     if (post) out.push(yeet({post}));
     if (readback) out.push(yeet({readback}));
 
-    return out;
+    return out.length > 1 ? out : out[0];
   }, [dispatch, pre, compute, post, readback, render]);
 };

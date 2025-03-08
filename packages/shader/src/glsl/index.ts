@@ -9,6 +9,7 @@ import {
 
   bundleToAttribute,
   bundleToAttributes,
+  bundleToBindings,
 
   glsl, float, int, uint,
   symbolDictionary,
@@ -64,6 +65,7 @@ import {
   getBundleHash,
   getBundleKey,
   getBundleLabel,
+  getBundleName,
 } from '../util/bundle';
 
 import {
@@ -85,6 +87,7 @@ export {
 
   bundleToAttribute,
   bundleToAttributes,
+  bundleToBindings,
 
   glsl, float, int, uint,
   symbolDictionary,
@@ -140,6 +143,7 @@ export {
   getBundleHash,
   getBundleKey,
   getBundleLabel,
+  getBundleName,
 } from '../util/bundle';
 
 export {
@@ -154,6 +158,7 @@ export const GLSLLinker = {
   bindEntryPoint,
   bundleToAttribute,
   bundleToAttributes,
+  bundleToBindings,
   glsl, float, int, uint,
 
   defineConstants,
@@ -189,6 +194,7 @@ export const GLSLLinker = {
   getBundleHash,
   getBundleKey,
   getBundleLabel,
+  getBundleName,
 
   decompressString,
   symbolDictionary,

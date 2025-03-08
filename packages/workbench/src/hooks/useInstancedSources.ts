@@ -15,16 +15,16 @@ const INDEX = {
 const NO_SIZE = {size: [0], length: 0};
 
 export const useInstancedSources = (
-  uniforms: UniformAttribute[],
+  attributes: UniformAttribute[],
   index: UniformAttribute,
   values: Record<string, LambdaSource | ShaderModule>,
   indices?: StorageSource | null,
 ) => (
-  useMemo(() => getInstancedSources(uniforms, index, values, indices), [uniforms, index, values, indices])
+  useMemo(() => getInstancedSources(attributes, index, values, indices), [attributes, index, values, indices])
 );
 
 export const getInstancedSources = (
-  uniforms: UniformAttribute[],
+  attributes: UniformAttribute[],
   index: UniformAttribute,
   values: Record<string, LambdaSource | ShaderModule>,
   indices?: StorageSource | null,
@@ -32,13 +32,13 @@ export const getInstancedSources = (
   Record<string, LambdaSource>,
   ShaderModule,
 ] => {
-  const boundValues = uniforms.map((uniform) => getSource(uniform, values[uniform.name]));
+  const boundValues = attributes.map((attr) => getSource(attr, values[attr.name]));
   const boundIndices = indices ? getSource(index, indices) : null;
 
   const instances = instanceWith(boundValues, boundIndices);
 
   const sources: Record<string, LambdaSource> = {};
-  for (const {name} of uniforms) {
+  for (const {name} of attributes) {
     sources[name] = getLambdaSource(bindEntryPoint(instances, name), indices ?? NO_SIZE);
   };
 

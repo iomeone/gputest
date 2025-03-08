@@ -7,6 +7,7 @@ import {
   DataBinding as DataBindingT,
   ImportRef,
   RefFlags,
+  UniformAttribute,
 } from '../types';
 
 export {
@@ -141,4 +142,6 @@ export type StructMemberRef = AttributesRef & {
 export type StructRef = AttributesRef & {
   name: string,
   members: StructMemberRef[],
+
+  format?: UniformAttribute[],
 };

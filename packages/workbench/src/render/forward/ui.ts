@@ -4,17 +4,19 @@ import type { VirtualDraw } from '../../pass/types';
 import { yeet, useMemo } from '@use-gpu/live';
 import { bindBundle } from '@use-gpu/shader/wgsl';
 
-import { drawCall } from '../../queue/draw-call';
 import { getNativeColor } from '../../hooks/useNativeColor';
+import { drawCall } from '../../queue/draw-call';
+import { getShaderLabel } from '../../pass/util';
 
 import { useRenderContext } from '../../providers/render-provider';
-import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
 import instanceDrawVirtualUI from '@use-gpu/wgsl/render/vertex/virtual-ui.wgsl';
 import instanceFragmentUI from '@use-gpu/wgsl/render/fragment/ui.wgsl';
 
 export type UIRenderProps = VirtualDraw;
+
+const LABEL = 'UIRender';
 
 export const UIRender: LiveComponent<UIRenderProps> = (props: UIRenderProps) => {
   const {
@@ -28,8 +30,7 @@ export const UIRender: LiveComponent<UIRenderProps> = (props: UIRenderProps) => 
   const renderContext = useRenderContext();
   const {colorInput, colorSpace} = renderContext;
 
-  const {layout: globalLayout} = useViewContext();
-  const {layout: passLayout} = usePassContext();
+  const {bindGroups: {view: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
   const vertexShader = instanceDrawVirtualUI;
   const fragmentShader = instanceFragmentUI;
@@ -53,7 +54,8 @@ export const UIRender: LiveComponent<UIRenderProps> = (props: UIRenderProps) => 
     fragment: f,
     renderContext,
     globalLayout,
-    passLayout,
+    pipelineKey,
+    label: getShaderLabel([getVertex, getFragment], LABEL),
   };
 
   return yeet(drawCall(call));

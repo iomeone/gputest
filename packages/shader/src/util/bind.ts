@@ -110,7 +110,7 @@ export const mergeBindings = <T extends SymbolTableT>(into: Set<ParsedModule<T>>
 
   // Gather virtual tables of modules with bindings
   const v = c.module?.virtual ?? c.virtual;
-  if (v && (v.uniforms || v.storages || v.textures)) {
+  if (v && (v.constants || v.storages || v.textures)) {
     into.add(c.module ?? c);
   }
 };
@@ -182,7 +182,9 @@ export const makeResolveBindings = (
         visibles.add(key);
 
         if (m.virtual) {
-          const {storages, textures} = m.virtual;
+          const {uniforms, storages, textures} = m.virtual;
+          
+          if (uniforms) for (const b of uniforms) addVisibility(b, visibility);
           if (storages) for (const b of storages) addVisibility(b, visibility);
           if (textures) for (const b of textures) addVisibility(b, visibility);
         }
@@ -195,22 +197,23 @@ export const makeResolveBindings = (
       DEBUG && console.log('virtual', m.code, m.hash, m.key);
 
       if (m.virtual) {
-        const {uniforms, storages, textures} = m.virtual;
+        const {constants, uniforms, storages, textures} = m.virtual;
         allVirtuals.set(key, m.virtual);
 
         // Mutate virtual modules as they are ephemeral
-        const namespace = uniforms?.length ? `${PREFIX_VIRTUAL}${++index}_` : undefined;
+        const namespace = constants?.length ? `${PREFIX_VIRTUAL}${++index}_` : undefined;
         if (!lazy) {
-          if (uniforms?.length) m.virtual.namespace = namespace;
+          if (constants?.length) m.virtual.namespace = namespace;
           m.virtual.bindingBase = bindingBase;
           m.virtual.volatileBase = volatileBase;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (uniforms) for (const u of uniforms) allUniforms.push(namespaceBinding(namespace!, u));
-        if (storages) for (const b of storages) addBinding(b, 1, visibility);
+        if (constants) for (const c of constants) allUniforms.push(namespaceBinding(namespace!, c));
+        if (uniforms)  for (const b of uniforms)  addBinding(b, 1, visibility);
+        if (storages)  for (const b of storages)  addBinding(b, 1, visibility);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (textures) for (const b of textures) addBinding(b, 1 + +!!(b.texture!.sampler && (b.uniform!.args !== null)), visibility);
+        if (textures)  for (const b of textures)  addBinding(b, 1 + +!!(b.texture!.sampler && (b.attribute!.args !== null)), visibility);
       }
     };
     stage++;
@@ -267,10 +270,10 @@ export const makeResolveBindings = (
 });
 
 export const namespaceBinding = (namespace: string, binding: DataBinding) => {
-  const {uniform} = binding;
-  const {name} = uniform;
+  const {attribute} = binding;
+  const {name} = attribute;
   const imp = namespace + name;
-  return {...binding, uniform: {...uniform, name: imp}};
+  return {...binding, attribute: {...attribute, name: imp}};
 };
 
 const VIRTUAL = 'VIRTUAL';

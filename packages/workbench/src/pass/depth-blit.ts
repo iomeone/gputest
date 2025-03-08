@@ -42,6 +42,7 @@ export const useDepthBlit = (
     renderContext,
     mode: null,
     pipeline: PIPELINE,
+    label: 'useDepthBlit',
   }) as any;
 
   const draw = useCallback((commandEncoder: GPUCommandEncoder) => {

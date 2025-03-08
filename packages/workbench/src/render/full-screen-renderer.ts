@@ -6,6 +6,9 @@ import { use, provide, unquote, multiGather, memo, useCallback, useMemo } from '
 import { PassContext, VariantContext } from '../providers/pass-provider';
 import { PassReconciler } from '../reconcilers/index';
 
+import { useMinimalBindGroups } from '../pass/bindings';
+import { PassFlags } from '../pass/types';
+
 import { DebugRender } from './forward/debug';
 import { SolidRender } from './forward/solid';
 
@@ -16,10 +19,16 @@ import { ReadbackPass } from '../pass/readback-pass';
 
 const {reconcile, quote} = PassReconciler;
 
+export type FullScreenRendererFlags = Pick<PassFlags, 'merge' | 'overlay'>;
+
 export type FullScreenRendererProps = PropsWithChildren<{
-  overlay?: boolean,
-  merge?: boolean,
+  flags: FullScreenRendererFlags,
 }>;
+
+const NO_FLAGS: FullScreenRendererFlags = {
+  merge: false,
+  overlay: false,
+};
 
 const NO_ENV: Record<string, any> = {};
 
@@ -34,10 +43,14 @@ const COMPONENTS = {
 
 export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: FullScreenRendererProps) => {
   const {
-    overlay = false,
-    merge = false,
+    flags = NO_FLAGS,
     children,
   } = props;
+
+  const {
+    overlay = false,
+    merge = false,
+  } = flags;
 
   const useVariants = useCallback((virtual: VirtualDraw, hovered: boolean) =>
     useMemo(() => hovered ? [DebugRender] : COMPONENTS.modes[virtual.mode], [virtual, hovered]),
@@ -63,10 +76,13 @@ export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: Full
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [calls, overlay, merge]);
 
+  // Pass bindings
+  const bindGroups = useMinimalBindGroups();
+
   return (
     reconcile(
       quote(
-        provide(PassContext, NO_ENV,
+        provide(PassContext, {bindGroups},
           multiGather(
             unquote(
               provide(VariantContext, useVariants, children)

@@ -1,57 +1,6 @@
-import type { UniformAttribute, ViewUniforms } from './types';
+import type { ViewUniforms } from './types';
 
 import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
-
-export const VIEW_UNIFORMS: UniformAttribute[] = [
-  {
-    name: 'projectionViewMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'projectionMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'viewMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'inverseProjectionViewMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'inverseProjectionMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'inverseViewMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'viewPosition',
-    format: 'vec4<f32>'
-  },
-  {
-    name: 'viewNearFar',
-    format: 'vec2<f32>'
-  },
-  {
-    name: 'viewResolution',
-    format: 'vec2<f32>',
-  },
-  {
-    name: 'viewSize',
-    format: 'vec2<f32>',
-  },
-  {
-    name: 'viewWorldDepth',
-    format: 'vec2<f32>',
-  },
-  {
-    name: 'viewPixelRatio',
-    format: 'f32',
-  },
-];
 
 export const makeViewUniforms = (): ViewUniforms => ({
   projectionViewFrustum: { current: [vec4.create(), vec4.create(), vec4.create(), vec4.create(), vec4.create(), vec4.create()] },
@@ -72,9 +21,35 @@ export const makeViewUniforms = (): ViewUniforms => ({
   viewPixelRatio: { current: 1 },
 });
 
-export const updateViewUniforms = (uniforms: ViewUniforms, projection?: mat4, view?: mat4, position?: vec4) => {
+export const updateViewSize = (
+  uniforms: ViewUniforms,
+  width: number,
+  height: number,
+
+  dpi?: number,
+  worldScale?: number,
+  zbiasScale?: number,
+) => {
+  const {
+    viewSize,
+    viewResolution,
+    viewPixelRatio,
+    viewWorldDepth,
+  } = uniforms;
+
+  if (width != null && height != null) {
+    viewSize.current = vec2.fromValues(width, height);
+    viewResolution.current = vec2.fromValues(1 / width, 1 / height);
+  }
+
+  viewPixelRatio.current = dpi ?? 1;
+  viewWorldDepth.current = vec2.fromValues(worldScale ?? 1, zbiasScale ?? 1);
+};
+
+export const updateViewProjection = (uniforms: ViewUniforms, projection?: mat4, view?: mat4, position?: vec4, near?: number, far?: number) => {
   const {
     viewMatrix,
+    viewNearFar,
     viewPosition,
     projectionMatrix,
     projectionViewMatrix,
@@ -83,7 +58,7 @@ export const updateViewUniforms = (uniforms: ViewUniforms, projection?: mat4, vi
     inverseProjectionMatrix,
     inverseProjectionViewMatrix,
   } = uniforms;
-  
+
   if (projection) projectionMatrix.current = projection;
   if (view) viewMatrix.current = view;
 
@@ -101,6 +76,10 @@ export const updateViewUniforms = (uniforms: ViewUniforms, projection?: mat4, vi
     viewPosition.current[2] = 0;
     viewPosition.current[3] = 1;
     vec3.transformMat4(viewPosition.current as vec3, viewPosition.current as vec3, inverseViewMatrix.current);
+  }
+
+  if (near != null && far != null) {
+    viewNearFar.current = vec2.fromValues(near, far);
   }
 };
 

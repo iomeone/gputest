@@ -32,12 +32,13 @@ Draws all shadow calls to multiple shadow maps.
 export const ShadowPass: LC<ShadowPassProps> = memo((props: ShadowPassProps) => {
   const {
     calls,
+    env,
     env: {light},
   } = props;
 
   const inspect = useInspectable();
 
-  const {shadows, texture} = light;
+  const {shadows, sources: {shadowMap: texture}} = light;
 
   const descriptors = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -66,7 +67,7 @@ export const ShadowPass: LC<ShadowPassProps> = memo((props: ShadowPassProps) => 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const Component = SHADOW_TYPES[map.shadow!.type];
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    if (Component) out.push(keyed(Component, map.id, {calls, map, descriptors, texture: texture!}));
+    if (Component) out.push(keyed(Component, map.id, {env, calls, map, descriptors, texture: texture!}));
   }
   return out;
 }, 'ShadowPass');

@@ -12,7 +12,6 @@ import { $delete } from '@use-gpu/state';
 import { drawCall } from '../../queue/draw-call';
 
 import { useRenderContext } from '../../providers/render-provider';
-import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
 import { AMBIENT_LIGHT, DIRECTIONAL_LIGHT, DOME_LIGHT, POINT_LIGHT } from '../../light/types';
@@ -217,8 +216,7 @@ export const useLightDraw = (
 ) => {
   const renderContext = useRenderContext();
 
-  const {layout: globalLayout} = useViewContext();
-  const {layout: passLayout} = usePassContext();
+  const {bindGroups: {color: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
   const vertexShader = instanceDrawVirtualLight;
   const fragmentShader = instanceFragmentLight;
@@ -239,7 +237,7 @@ export const useLightDraw = (
     renderContext,
 
     globalLayout,
-    passLayout,
+    pipelineKey,
     pipeline,
 
     mode,

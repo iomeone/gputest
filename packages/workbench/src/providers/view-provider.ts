@@ -1,74 +1,74 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, PropsWithChildren, Ref } from '@use-gpu/live';
 import type { ViewUniforms, UniformAttribute } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { provide, makeContext, useCallback, useContext, useNoContext, useMemo } from '@use-gpu/live';
-import { makeGlobalUniforms, uploadBuffer } from '@use-gpu/core';
+import { provide, makeContext, useContext, useNoContext, useMemo } from '@use-gpu/live';
+import { makeViewUniforms, uploadBuffer } from '@use-gpu/core';
+
+import { useUniformSource } from '../hooks/useUniformSource';
 import { useDeviceContext } from '../providers/device-provider';
 import { useFrustumCuller, useNoFrustumCuller } from '../hooks/useFrustumCuller';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { vec3 } from 'gl-matrix';
 
+import viewBinding, { ViewUniforms as ViewUniformsWGSL } from '@use-gpu/wgsl/use/view.wgsl';
+
 const {signal} = QueueReconciler;
 
 const DEFAULT_VIEW_CONTEXT = {
-  defs: [] as any,
-  uniforms: {} as any,
-  layout: null as any,
+  uniforms: makeViewUniforms(),
+  binding: viewBinding,
+  source: null,
   cull: () => true,
-  bind: (() => {}) as any,
 } as ViewContextProps;
 
 export const ViewContext = makeContext<ViewContextProps>(DEFAULT_VIEW_CONTEXT, 'ViewContext');
 
 export type ViewContextProps = {
-  defs: UniformAttribute[],
   uniforms: ViewUniforms,
-  layout?: GPUBindGroupLayout,
-  bind: (passEncoder: GPURenderPassEncoder) => void,
+  binding: ShaderModule,
+  source: ShaderSource | null,
   cull: (center: vec3 | number[], radius: number) => number | boolean,
 };
 
 export type ViewProviderProps = PropsWithChildren<{
-  defs: UniformAttribute[],
-  uniforms: ViewUniforms,
+  uniforms: Record<string, Ref<any>>,
+  binding?: ShaderModule,
+  type?: ShaderModule,
   cull?: boolean,
+
+  //// TODO: Remove
+  defs?: UniformAttribute[],
 }>;
 
 export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProviderProps) => {
   const {
-    defs,
     uniforms,
+    binding = viewBinding,
+    type = ViewUniformsWGSL,
     cull: cullProp,
+
     children,
   } = props;
-
+  
   const device = useDeviceContext();
-
-  const binding = useMemo(() =>
-    makeGlobalUniforms(device, [defs]),
-    [device, defs]);
-
-  const {bindGroup, layout, buffer, pipe} = binding;
-  pipe.fill(uniforms);
-  uploadBuffer(device, buffer, pipe.data);
-
-  const bind = useCallback((passEncoder: GPURenderPassEncoder) => {
-    passEncoder.setBindGroup(0, bindGroup);
-  }, [bindGroup]);
 
   const {projectionViewFrustum, viewPosition} = uniforms;
   const cull = !cullProp
     ? useFrustumCuller(viewPosition, projectionViewFrustum)
     : (useNoFrustumCuller(), cullProp);
 
+  const [source, viewPipe] = useUniformSource(type);
+  viewPipe.fill(uniforms);
+  uploadBuffer(device, source.buffer, viewPipe.data);
+
   const context = useMemo(() => ({
-    bind,
-    cull,
-    layout,
-    defs,
     uniforms,
-  }), [bind, cull, layout, defs, uniforms]);
+    binding,
+    source,
+    cull,
+  }), [uniforms, binding, source, cull]);
 
   return [
     signal(),

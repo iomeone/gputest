@@ -6,9 +6,9 @@ import { patch } from '@use-gpu/state';
 import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
+import { getShaderLabel } from '../../pass/util';
 
 import { usePassContext } from '../../providers/pass-provider';
-import { useViewContext } from '../../providers/view-provider';
 
 import {
   main as instanceDrawVirtualDepth,
@@ -20,6 +20,8 @@ import instanceFragmentDepthDepth from '@use-gpu/wgsl/render/fragment/depth-frag
 import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
 export type ShadowRenderProps = VirtualDraw;
+
+const LABEL = 'ShadowRender';
 
 export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRenderProps) => {
   const {
@@ -33,9 +35,10 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
     ...rest
   } = props;
 
-  const {buffers: {shadow: [renderContext]}} = usePassContext();
-
-  const {layout: globalLayout} = useViewContext();
+  const {
+    buffers: {shadow: [renderContext]},
+    bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
+  } = usePassContext();
 
   const vertexShader = defines?.HAS_DEPTH ? instanceDrawVirtualDepthDepth : instanceDrawVirtualDepth;
   const fragmentShader = defines?.HAS_DEPTH ? instanceFragmentDepthDepth : instanceFragmentDepth;
@@ -69,7 +72,9 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
     pipeline,
     renderContext,
     globalLayout,
+    pipelineKey,
     mode: 'shadow',
+    label: getShaderLabel([getVertex, getFragment, getDepth], LABEL),
   };
 
   return yeet(drawCall(call));

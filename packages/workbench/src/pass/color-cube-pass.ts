@@ -3,7 +3,7 @@ import type { LightEnv, Renderable } from './types';
 import { mat4 } from 'gl-matrix';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
-import { makeGlobalUniforms, getCubeFaceMatrix, makeViewUniforms, reverseZ, seq, updateViewUniforms, uploadBuffer, VIEW_UNIFORMS } from '@use-gpu/core';
+import { getCubeFaceMatrix, reverseZ, seq, updateViewProjection, updateViewSize, uploadBuffer } from '@use-gpu/core';
 
 import { useRenderContext } from '../providers/render-provider';
 import { useDeviceContext } from '../providers/device-provider';
@@ -11,9 +11,9 @@ import { useViewContext } from '../providers/view-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
-import { useFrustumCuller } from '../hooks/useFrustumCuller';
 import { useInspectable } from '../hooks/useInspectable'
 
+import { useDynamicViewBinding, useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
@@ -47,7 +47,7 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
     overlay = false,
     merge = false,
     calls,
-    env: {light},
+    env,
   } = props;
 
   const inspect = useInspectable();
@@ -55,22 +55,16 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
   const device = useDeviceContext();
   const renderContext = useRenderContext();
   const {uniforms: viewUniforms} = useViewContext();
-  const {bind: makeBindPass} = usePassContext();
+
+  const {bindGroups: {color: viewBindGroup}} = usePassContext();
 
   const opaques      = toArray(calls['opaque']      as Renderable[]);
   const transparents = toArray(calls['transparent'] as Renderable[]);
   const debugs       = toArray(calls['debug']       as Renderable[]);
 
-  // Global view bound dynamically to cube face
-  const binding = useMemo(() =>
-    makeGlobalUniforms(device, [VIEW_UNIFORMS]),
-    [device]);
-  const {bindGroup, buffer, pipe} = binding;
-
-  const uniforms = useOne(makeViewUniforms);
-
-  const {viewPosition, projectionViewFrustum} = uniforms;
-  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
+  // Bind to dynamic view
+  const {cull, binding, pipe, source, uniforms} = useDynamicViewBinding(viewBindGroup);
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, binding);
 
   // Per face render passes
   const {width, height} = renderContext;
@@ -83,28 +77,15 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
 
   // Constant projection matrix
   const nearFar = viewUniforms.viewNearFar.current;
-  const [projectionMatrix, viewMatrix] = useOne(() => {
+  const [projectionMatrix, viewMatrix, near, far] = useOne(() => {
     const [near, far] = nearFar;
     const m = mat4.perspectiveZO(mat4.create(), τ/4, 1, near, far);
     reverseZ(m, m);
-    return [m, mat4.create()];
+    return [m, mat4.create(), near, far];
   }, nearFar);
 
-  uniforms.projectionMatrix.current = projectionMatrix;
-  uniforms.viewNearFar.current = viewUniforms.viewNearFar.current;
-  uniforms.viewResolution.current = [ 1 / width, 1 / height ];
-  uniforms.viewSize.current = [ width, height ];
-
-  const bindPass = useOne(() => {
-    if (!makeBindPass) return () => {};
-    const args = [];
-    if (light) {
-      const {storage, texture} = light;
-      if (storage) args.push({storage});
-      if (texture) args.push({texture});
-    }
-    return makeBindPass(args);
-  }, light);
+  updateViewProjection(uniforms, undefined, undefined, undefined, near, far);
+  updateViewSize(uniforms, width, height);
 
   return quote(yeet(() => {
     let vs = 0;
@@ -114,16 +95,14 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
 
     for (let i = 0; i < 6; ++i) {
       mat4.multiply(viewMatrix, getCubeFaceMatrix(i), viewUniforms.viewMatrix.current);
-
-      updateViewUniforms(uniforms, projectionMatrix, viewMatrix);
+      updateViewProjection(uniforms, projectionMatrix, viewMatrix);
 
       pipe.fill(uniforms);
-      uploadBuffer(device, buffer, pipe.data);
+      uploadBuffer(device, source.buffer, pipe.data);
 
       const commandEncoder = device.createCommandEncoder(LABEL);
       const passEncoder = commandEncoder.beginRenderPass(cubeDescriptors[i]);
-      passEncoder.setBindGroup(0, bindGroup);
-      bindPass(passEncoder);
+      bindPass?.(passEncoder);
 
       drawToPass(cull, opaques, passEncoder, countGeometry, uniforms, 1, true);
       drawToPass(cull, transparents, passEncoder, countGeometry, uniforms, -1, true);
@@ -144,6 +123,10 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
         vertices: vs,
         triangles: ts,
       },
+      pass: {
+        uniforms,
+      },
+      bindings: dataBindings,
     });
 
     return null;

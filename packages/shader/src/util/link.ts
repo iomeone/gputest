@@ -253,8 +253,8 @@ export const makeLinker = (
     if (name === VIRTUAL_BINDINGS) hasBoundBindings = true;
 
     if (virtual) {
-      const {uniforms, storages, textures} = virtual;
-      if ((uniforms || storages || textures) && (!hasBoundBindings)) {
+      const {constants, storages, textures} = virtual;
+      if ((constants || storages || textures) && (!hasBoundBindings)) {
         const id = code.replace('@virtual ', '');
         throw new Error(`Virtual module ${id} has unresolved data bindings`);
       }

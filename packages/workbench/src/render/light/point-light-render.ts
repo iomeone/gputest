@@ -1,7 +1,7 @@
 import type { LiveComponent } from '@use-gpu/live';
 import type { LightKindProps } from './light-render';
 
-import { use, yeet, useCallback, useMemo, useOne, useRef } from '@use-gpu/live';
+import { use, useCallback, useMemo, useOne, useRef } from '@use-gpu/live';
 import { alignSizeTo, uploadBuffer } from '@use-gpu/core';
 
 import { useBufferedSize } from '../../hooks/useBufferedSize';
@@ -25,6 +25,7 @@ import {
   FULLSCREEN_STENCIL_PIPELINE, GEOMETRY_STENCIL_PIPELINE, STENCIL_PIPELINE,
   LightDraw,
 } from './light-render';
+import { On } from '../on';
 
 export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKindProps) => {
   const {
@@ -116,7 +117,7 @@ export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKind
   }, [device, cull, start, end, order, lights, getScale, getInstance, getOutside, getInside, instances, outsides, insides, viewUniforms]);
 
   return [
-    yeet({'dispatch': onDispatch}),
+    use(On, {'dispatch': onDispatch}),
     stencil ? use(LightDraw, sphere.count, instanceCountRef, 0, stencilLinks, STENCIL_PIPELINE, 'stencil') : null,
     use(LightDraw,
       sphere.count, outsideCountRef, 0, outsideLinks,
