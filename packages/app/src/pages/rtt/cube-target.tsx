@@ -20,6 +20,7 @@ import {
 import {
   Scene, Node, Mesh, Instances, InstanceProps,
 } from '@use-gpu/scene';
+import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';
 
@@ -183,11 +184,12 @@ const Camera = ({children}: PropsWithChildren<object>) => (
     radius={20}
     bearing={0.5}
     pitch={0.6}
-    render={(radius: number, phi: number, theta: number) =>
+    render={(radius: number, phi: number, theta: number, target: vec3) =>
       <OrbitCamera
         radius={radius}
         phi={phi}
         theta={theta}
+        target={target}
       >
         {children}
       </OrbitCamera>
