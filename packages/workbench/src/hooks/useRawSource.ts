@@ -1,4 +1,4 @@
-import type { StorageSource, UniformType, TensorArray, TypedArray } from '@use-gpu/core';
+import type { StorageSource, UniformSource, UniformType, TensorArray, TypedArray } from '@use-gpu/core';
 
 import { useOne, useMemo, useVersion, useNoOne, useNoMemo, useNoVersion, incrementVersion } from '@use-gpu/live';
 import { makeDataBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
@@ -42,7 +42,9 @@ export const useRawSource = (
     size: [],
     version: 0,
     readWrite,
-  } as StorageSource), memoKey);
+
+    addressSpace: (flags & GPUBufferUsage.UNIFORM) ? 'uniform' : 'storage',
+  } as StorageSource | UniformSource), memoKey);
 
   if (live) {
     useNoMemo();

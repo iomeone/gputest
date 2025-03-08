@@ -59,6 +59,8 @@ export const makeBindingAccessors = (
   const textures = bindings.filter(({texture}) => texture != null);
   const constants = bindings.filter(({constant}) => constant != null);
 
+  const buffers = [...uniforms, ...storages];
+
   // Virtual module symbols
   const virtuals = [...constants, ...uniforms, ...storages, ...textures];
   const symbols = virtuals.map(({attribute}) => attribute.name);
@@ -74,10 +76,10 @@ export const makeBindingAccessors = (
 
   // Inject import for storage struct types
   const libs: Record<string, ShaderModule> = {};
-  const modules = [...uniforms, ...storages].map(({attribute, storage}) => {
+  const modules = buffers.map(({attribute, storage, uniform}) => {
     const {type: typeOut} = attribute;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const {type: typeIn} = storage!;
+    const {type: typeIn} = (storage ?? uniform)!;
 
     const type = typeOut ?? typeIn;
     if (type) {
@@ -125,15 +127,10 @@ export const makeBindingAccessors = (
       if (typeof type !== 'string') throw new Error(`Cannot make uniform for struct type`);
       program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args as any));
     }
-    
-    // TODO: uniform data bindings
-    for (const u of uniforms) {
-      throw new Error(`Uniform dynamic bindings unimplemented - '${u.attribute.name}'`);
-    }
 
-    for (const {attribute: {name, format: formatOut, type: typeOut, args}, storage} of storages) {
+    for (const {attribute: {name, format: formatOut, type: typeOut, args}, storage, uniform} of buffers) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const {volatile, format: formatIn, type: typeIn, readWrite} = storage!;
+      const {volatile, format: formatIn, type: typeIn, readWrite} = (storage ?? uniform)!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
 
@@ -145,7 +142,7 @@ export const makeBindingAccessors = (
         if (t === 'unknown') throw new Error(`Invalid type '${getBundleName(type)}'. Module has no entry point.`);
 
         if (format === 'array<T>') t = `array<${t}>`;
-        program.push(makeStorageAccessor(namespace, set, base, t, t, name, readWrite, args));
+        program.push(makeStorageAccessor(namespace, set, base, t, t, name, readWrite, !!uniform, args));
         continue;
       }
 
@@ -158,38 +155,38 @@ export const makeBindingAccessors = (
 
       if (is3to4(formatIn)) {
         const accessor = name + '3to4';
-        program.push(makeStorageAccessor(namespace, set, base, to4(formatIn), to4(formatIn), accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, to4(formatIn), to4(formatIn), accessor, readWrite, !!uniform));
         program.push(makeVec3to4Accessor(namespace, formatOut, to3(formatIn), name, accessor));
         continue;
       }
       else if (is8to32(formatIn)) {
         const accessor = name + '8to32';
-        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite, !!uniform));
         program.push(make8to32Accessor(namespace, formatOut, to32(formatIn), name, accessor));
         continue;
       }
       else if (is16to32(formatIn)) {
         const accessor = name + '16to32';
-        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite, !!uniform));
         program.push(make16to32Accessor(namespace, formatOut, to32(formatIn), name, accessor));
         continue;
       }
       else if (isVec8to32(formatIn)) {
         const accessor = name + 'Vec8to32';
         const wide = to32(formatIn).replace('i32', 'u32');
-        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite, !!uniform));
         program.push(makeVec8to32Accessor(namespace, formatOut, wide, name, accessor));
         continue;
       }
       else if (isVec16to32(formatIn)) {
         const accessor = name + 'Vec16to32';
         const wide = to32(formatIn).replace('i32', 'u32');
-        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite, !!uniform));
         program.push(makeVec16to32Accessor(namespace, formatOut, wide, name, accessor));
         continue;
       }
 
-      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name, readWrite, args));
+      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name, readWrite, !!uniform, args));
     }
 
     for (const {attribute: {name, format: formatOut, args}, texture} of textures) {
@@ -206,6 +203,7 @@ export const makeBindingAccessors = (
 
   const virtual = loadVirtualModule({
     constants,
+    uniforms,
     storages,
     textures,
     render,
@@ -222,6 +220,7 @@ export const makeBindingAccessors = (
 
   const links: Record<string, ShaderModule> = {};
   for (const {attribute} of constants) links[attribute.name] = bundle;
+  for (const {attribute} of uniforms)  links[attribute.name] = bundle;
   for (const {attribute} of storages)  links[attribute.name] = bundle;
   for (const {attribute} of textures)  links[attribute.name] = bundle;
   for (const {attribute, lambda} of lambdas)   {
@@ -329,9 +328,10 @@ export const makeStorageAccessor = (
   format: string,
   name: string,
   readWrite?: boolean,
+  uniform?: boolean,
   args: string[] | null = INT_ARG,
 ) => {
-  const access = readWrite ? 'storage, read_write' : 'storage';
+  const access = uniform ? 'uniform' : readWrite ? 'storage, read_write' : 'storage';
 
   if (args === null) {
     return `@group(${set}) @binding(${binding}) var<${access}> ${ns}${name}: ${type};\n`;

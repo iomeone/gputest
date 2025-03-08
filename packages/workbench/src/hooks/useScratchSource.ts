@@ -1,4 +1,4 @@
-import type { StorageSource, UniformType } from '@use-gpu/core';
+import type { StorageSource, UniformSource, UniformType } from '@use-gpu/core';
 
 import { useMemo, useNoMemo, incrementVersion } from '@use-gpu/live';
 import { makeDataBuffer, getUniformArraySize, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
@@ -63,11 +63,13 @@ export const useScratchSource = (
       version: 0,
       readWrite,
       volatile: +volatile,
-    } as StorageSource;
+
+      addressSpace: (flags & GPUBufferUsage.UNIFORM) ? 'uniform' : 'storage',
+    } as StorageSource | UniformSource;
 
     allocate(length ?? reserve);
 
-    return [source, allocate] as [StorageSource, (x: number) => void];
+    return [source, allocate] as [StorageSource | UniformSource, (x: number) => void];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device, format, readWrite, flags, volatile, reserve]);
 

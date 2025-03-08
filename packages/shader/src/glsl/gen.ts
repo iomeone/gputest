@@ -22,12 +22,15 @@ export const makeBindingAccessors = (
 
   // Extract uniforms
   const lambdas = bindings.filter(({lambda}) => lambda != null);
+  const uniforms = bindings.filter(({uniform}) => uniform != null);
   const storages = bindings.filter(({storage}) => storage != null);
   const textures = bindings.filter(({texture}) => texture != null);
   const constants = bindings.filter(({constant}) => constant != null);
 
+  const buffers = [...uniforms, ...storages];
+
   // Virtual module symbols
-  const virtuals = [...constants, ...storages, ...textures];
+  const virtuals = [...constants, ...uniform, ...storages, ...textures];
   const symbols = virtuals.map(({attribute}) => attribute.name);
   const types = virtuals.map(({attribute}) => attribute.format);
   const declarations = virtuals.map(({attribute}) => ({
@@ -68,9 +71,9 @@ export const makeBindingAccessors = (
       program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, formatOut, name, args));
     }
 
-    for (const {attribute: {name, format: formatOut}, storage} of storages) {
+    for (const {attribute: {name, format: formatOut}, storage, uniform} of buffers) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const {volatile, format: formatIn} = storage!;
+      const {volatile, format: formatIn} = (storage ?? uniform)!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
 
@@ -80,7 +83,7 @@ export const makeBindingAccessors = (
       }
 
       if (typeof formatOut !== 'string') throw new Error("GLSL struct types not implemented");
-      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name));
+      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name, !!uniform));
     }
 
     for (const {attribute: {name, format: formatOut}, texture} of textures) {
@@ -99,6 +102,7 @@ export const makeBindingAccessors = (
 
   const virtual = loadVirtualModule({
     constants,
+    uniforms,
     storages,
     textures,
     render,
@@ -109,6 +113,7 @@ export const makeBindingAccessors = (
 
   const links: Record<string, ShaderModule> = {};
   for (const binding of constants) links[binding.attribute.name] = virtual;
+  for (const binding of uniforms)  links[binding.attribute.name] = virtual;
   for (const binding of storages)  links[binding.attribute.name] = virtual;
   for (const binding of textures)  links[binding.attribute.name] = virtual;
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -157,10 +162,11 @@ export const makeStorageAccessor = (
   type: string,
   format: string,
   name: string,
+  uniform: boolean,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   args: string[] = INT_ARG,
 ) => (
-`layout (std430, set = ${set}, binding = ${binding}) readonly buffer ${ns}${name}Type {
+`layout (std430, set = ${set}, binding = ${binding}) readonly ${uniform ? 'uniform' : 'buffer'} ${ns}${name}Type {
   ${format} data[];
 } ${ns}${name}Storage;
 

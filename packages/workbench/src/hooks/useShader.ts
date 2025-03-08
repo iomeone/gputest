@@ -24,6 +24,7 @@ export const getShader = (
 
   const bindings = makeShaderBindings<ShaderModule>(attributes, values) as any;
   const links = bindingsToLinks(bindings);
+
   return bindBundle(shader, links, defines);
 }
 
