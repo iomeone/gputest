@@ -1,4 +1,4 @@
-import { ShaderModule, LambdaSource, UniformAttribute, DataBinding, ModuleRef, RefFlags as RF } from './types';
+import { ShaderModule, StorageSource, LambdaSource, UniformAttribute, DataBinding, ModuleRef, RefFlags as RF } from './types';
 
 import { formatMurmur53, toMurmur53, getObjectKey, mixBits, scrambleBits } from '../util/hash';
 import { getBundleHash, getBundleEntry, getBundleName, toBundle, toModule } from '../util/bundle';
@@ -129,8 +129,8 @@ export const makeBindingAccessors = (
     }
 
     for (const {attribute: {name, format: formatOut, type: typeOut, args}, storage, uniform} of buffers) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const {volatile, format: formatIn, type: typeIn, readWrite} = (storage ?? uniform)!;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion''
+      const {volatile, format: formatIn, type: typeIn, readWrite} = (storage ?? uniform)! as StorageSource;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
 
