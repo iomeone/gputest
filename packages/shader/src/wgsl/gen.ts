@@ -129,7 +129,7 @@ export const makeBindingAccessors = (
     }
 
     for (const {attribute: {name, format: formatOut, type: typeOut, args}, storage, uniform} of buffers) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion''
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const {volatile, format: formatIn, type: typeIn, readWrite} = (storage ?? uniform)! as StorageSource;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
