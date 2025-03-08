@@ -42,7 +42,7 @@ const StyledThumb = styled('div', {
   },
 });
 
-const min = 1;
+const min = 2;
 const max = 12;
 const step = 1;
 
