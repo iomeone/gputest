@@ -8,10 +8,6 @@ import { PassBindGroup } from '../pass/types';
 export type PassContextProps = {
   buffers: Record<string, UseGPURenderContext[]>,
   bindGroups: Record<string, PassBindGroup>,
-
-  ////// TODO: remove
-  layout?: GPUBindGroupLayout,
-  bind?: (...args: any[]) => (passEncoder: GPURenderPassEncoder) => void,
 };
 
 export type VariantContextProps = (virtual: VirtualDraw, hovered: boolean) => null | LiveComponent | LiveComponent[];

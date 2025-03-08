@@ -88,16 +88,6 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
       useOne(() => quote(yeet({ env: { light }})), light),
   }) : children;
 
-  ///////// TODO: remove
-  // Prepare bind group layout for lighting/shadows
-  const entries = useMemo(() => {
-    const vertex   = [lights && lightBinding];
-    const fragment = [lights && lightBinding, shadows && shadowBinding];
-    return extractBindings([vertex, fragment], 'PASS');
-  }, [lights, shadows]);
-  //
-  ///////////////
-
   // Adapt to view type (2d or cube)
   const {viewType} = useRenderContext();
   const passes = propPasses ?? DEFAULT_PASSES[viewType];
@@ -106,5 +96,5 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
   // Pass bindings
   const bindGroups = useStandardBindGroups(flags);
 
-  return Renderer({ buffers, bindGroups, children: view, components, passes, entries, overlay, merge });
+  return Renderer({ buffers, bindGroups, children: view, components, passes, overlay, merge });
 }, 'ForwardRenderer');

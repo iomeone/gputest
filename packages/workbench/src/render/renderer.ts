@@ -50,24 +50,8 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
 
   // Pass on shared render context(s) for renderables
   const passContext = useMemo(() => {
-
-    //////////// TODO: remove
-    // Prepare shared bind group for forward/deferred lighting
-    const hasEntries = !!entries.length;
-    const layout = hasEntries ? makeBindGroupLayout(device, entries) : null;
-    const bind = layout ? (args: any[]) => {
-      const entries = makeDataBindingsEntries(device, args);
-      const bindGroup = makeBindGroup(device, layout, entries);
-
-      return (passEncoder: GPURenderPassEncoder) => {
-        passEncoder.setBindGroup(1, bindGroup);
-      };
-    } : () => () => {};
-    //
-    ////////
-
-    return {buffers, bindGroups, layout, bind};
-  }, [device, buffers, bindGroups, entries]);
+    return {buffers, bindGroups};
+  }, [device, buffers, bindGroups]);
 
   // Provide draw call variants for sub-passes
   const useVariants = useMemo(() => {

@@ -94,18 +94,8 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
       ]), [light, shadows]),
   });
 
-  ///////// TODO: remove
-  // Prepare bind group layout for lighting/shadows
-  const entries = useMemo(() => {
-    const vertex   = [lightBinding];
-    const fragment = [lightBinding, shadows && shadowBinding];
-    return extractBindings([vertex, fragment], 'PASS');
-  }, [shadows]);
-  //
-  ////////
-
   // Pass bindings
   const bindGroups = useStandardBindGroups(flags);
 
-  return Renderer({ buffers, bindGroups, children: view, components, passes, entries, overlay, merge });
+  return Renderer({ buffers, bindGroups, children: view, components, passes, overlay, merge });
 }, 'DeferredRenderer');

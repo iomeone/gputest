@@ -37,9 +37,6 @@ export type ViewProviderProps = PropsWithChildren<{
   binding?: ShaderModule,
   type?: ShaderModule,
   cull?: boolean,
-
-  //// TODO: Remove
-  defs?: UniformAttribute[],
 }>;
 
 export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProviderProps) => {
