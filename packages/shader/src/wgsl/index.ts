@@ -22,7 +22,6 @@ import {
   bindingToModule,
   sourceToModule,
   resolveBindings,
-  extractBindings,
 } from './bind';
 
 import {
@@ -103,7 +102,6 @@ export {
   bindingToModule,
   sourceToModule,
   resolveBindings,
-  extractBindings,
 } from './bind';
 
 export {
@@ -179,7 +177,6 @@ export const WGSLLinker = {
   bindingToModule,
   sourceToModule,
   resolveBindings,
-  extractBindings,
 
   castTo,
   chainTo,

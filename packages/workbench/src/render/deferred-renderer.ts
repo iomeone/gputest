@@ -3,7 +3,6 @@ import type { UseGPURenderContext } from '@use-gpu/core';
 import type { LightEnv, PassFlags, RenderComponents } from '../pass/types';
 
 import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
-import { extractBindings } from '@use-gpu/shader/wgsl';
 
 import { PassReconciler } from '../reconcilers/index';
 
