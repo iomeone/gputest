@@ -33,7 +33,7 @@ export const getBindGroupLayout = (
   const rawBindings = attributes.map(makeRawBindingForAttribute);
 
   const names = attributes.map(a => a.name);
-  const label = [key, '::{', names.join(', '), '}'].join('');
+  const label = key + '::{' + names.join(', ') + '}';
   
   const entries = makeBindGroupLayoutEntries(rawBindings, visibilities);
   const layout = makeBindGroupLayout(device, entries, label);

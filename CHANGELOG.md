@@ -1,8 +1,8 @@
 0.14.0
 - `@use-gpu/core`: Improved support for `uniform` storage
+- `@use-gpu/inspect-gpu`: Inspect uniforms and bindings on sub-passes.
 - `@use-gpu/shader`: Improved support for static bindings and `uniform` storage
 - `@use-gpu/workbench`: Merge global and per-pass bind group to save a slot.
-- `@use-gpu/workbench`: 
 
 0.13.1
 - `@use-gpu/app`: Add path tracing + debug picking example.
