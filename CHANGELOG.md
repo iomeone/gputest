@@ -1,7 +1,8 @@
-0.14.0
+0.14.x
 - `@use-gpu/core`: Improved support for `uniform` storage
 - `@use-gpu/inspect-gpu`: Inspect uniforms and bindings on sub-passes.
 - `@use-gpu/shader`: Improved support for static bindings and `uniform` storage
+- `@use-gpu/shader`: Allow inferring primitive types via `@infer`
 - `@use-gpu/workbench`: Merge global and per-pass bind group to save a slot.
 
 0.13.1

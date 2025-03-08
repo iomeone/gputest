@@ -11,8 +11,8 @@ import { getShaderLabel } from '../../pass/util';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualUI from '@use-gpu/wgsl/render/vertex/virtual-ui.wgsl';
-import instanceFragmentUI from '@use-gpu/wgsl/render/fragment/ui.wgsl';
+import renderVirtualUI from '@use-gpu/wgsl/render/vertex/virtual-ui.wgsl';
+import renderFragmentUI from '@use-gpu/wgsl/render/fragment/ui.wgsl';
 
 export type UIRenderProps = VirtualDraw;
 
@@ -32,8 +32,8 @@ export const UIRender: LiveComponent<UIRenderProps> = (props: UIRenderProps) => 
 
   const {bindGroups: {view: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
-  const vertexShader = instanceDrawVirtualUI;
-  const fragmentShader = instanceFragmentUI;
+  const vertexShader = renderVirtualUI;
+  const fragmentShader = renderFragmentUI;
 
   // Binds links into shader
   const [v, f] = useMemo(() => {
@@ -42,8 +42,8 @@ export const UIRender: LiveComponent<UIRenderProps> = (props: UIRenderProps) => 
       getFragment,
       toColorSpace: getNativeColor(colorInput, colorSpace),
     };
-    const v = bindBundle(vertexShader, links, undefined);
-    const f = bindBundle(fragmentShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
+    const f = bindBundle(fragmentShader, links);
     return [v, f];
   }, [vertexShader, fragmentShader, getVertex, getFragment, colorInput, colorSpace]);
 

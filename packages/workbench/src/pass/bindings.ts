@@ -1,4 +1,4 @@
-import type { DataBinding, UniformAttribute } from '@use-gpu/core';
+import type { DataBinding, UniformAttribute, UseGPURenderContext } from '@use-gpu/core';
 import type { PassApplyBindGroup, PassBindGroup, PassEnv, PassFlags } from './types';
 import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
@@ -17,12 +17,13 @@ import { useViewContext } from '../providers/view-provider';
 import { ViewUniforms as ViewUniformsWGSL } from '@use-gpu/wgsl/use/view.wgsl';
 import lightBindingWGSL from '@use-gpu/wgsl/use/light.wgsl';
 import shadowBindingWGSL from '@use-gpu/wgsl/use/shadow.wgsl';
+import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
 
 export const useMinimalBindGroups = (): Record<string, PassBindGroup> => {
   const view = useViewContext();
 
   return useHooks(() => {
-    const bindGroup = useStandardBindGroup(view, {});
+    const bindGroup = useStandardBindGroup(view, {}, {});
     return {
       view: bindGroup,
       color: bindGroup,
@@ -31,29 +32,40 @@ export const useMinimalBindGroups = (): Record<string, PassBindGroup> => {
 };
 
 export const useStandardBindGroups = (
+  buffers: Record<string, UseGPURenderContext[]>,
   flags: PassFlags,
 ): Record<string, PassBindGroup> => {
   const viewContext = useViewContext();
 
-  const view = useStandardBindGroup(viewContext, {});
-  const color = useStandardBindGroup(viewContext, flags);
+  const view = useStandardBindGroup(viewContext, buffers, {});
+  const color = useStandardBindGroup(viewContext, buffers, flags);
 
   return useMemo(() => ({view, color}), [view, color]);
 };
 
 export const useStandardBindGroup = (
   view: {binding: ShaderModule, source: ShaderSource | null},
+  buffers: Record<string, UseGPURenderContext[]>,
   flags: PassFlags = {},
 ): PassBindGroup => {
   const device = useDeviceContext();
 
   const {binding: viewBindingWGSL, source: viewSource} = view;
-  const {lights, shadows} = flags;
+  const {lights, shadows, ssao} = flags;
 
-  const key = (+!!lights) + ((+!!shadows) << 1);
+  const key = (+!!lights) + ((+!!shadows) << 1) + ((+!!ssao) << 2);
 
-  const vertex   = [viewBindingWGSL, lights && lightBindingWGSL].filter(s => !!s) as ShaderModule[];
-  const fragment = [viewBindingWGSL, lights && lightBindingWGSL, shadows && shadowBindingWGSL].filter(s => !!s) as ShaderModule[];
+  const vertex   = [
+    viewBindingWGSL,
+    lights && lightBindingWGSL
+  ].filter(s => !!s) as ShaderModule[];
+
+  const fragment = [
+    viewBindingWGSL,
+    lights && lightBindingWGSL,
+    shadows && shadowBindingWGSL,
+    ssao && ssaoBindingWGSL,
+  ].filter(s => !!s) as ShaderModule[];
 
   const {attributes, layout} = getBindGroupLayout(device, [vertex, fragment], 'PASS');
 
@@ -73,6 +85,7 @@ export const useStandardBindGroup = (
         lightUniforms: lightData,
         shadowTexture: shadowMap ? {...shadowMap, sampler: null} : undefined,
         shadowSampler: shadowMap ? {sampler: shadowMap.sampler, filter: shadowMap.filter} : undefined,
+        ssaoTexture: ssao ? buffers.ssao[4].source : undefined,
       };
     },
   };
@@ -107,9 +120,10 @@ export const useApplyPassBindGroup = (
 
   const dataValues = useMemo(() => {
     const values = select(env);
-    for (const a of attributes) if (values[a.name] == null) throw new Error(`Missing pass binding value for '${a.name}'`);
+    for (const a of attributes) if (a && values[a.name] == null) throw new Error(`Missing pass binding value for '${a.name}'`);
 
-    const dataValues = attributes.map((a: UniformAttribute) => makeShaderBinding(a, values[a.name]));
+    const dataValues = attributes.map((a: UniformAttribute) => a && makeShaderBinding(a, values[a.name]));
+
     return dataValues;
   }, [attributes, select, env]);
   
@@ -122,7 +136,7 @@ export const useApplyPassBindGroup = (
     };
   }, [device, layout, dataValues, label]);
   
-  return {bindPass, dataBindings: dataValues};
+  return {bindPass, dataBindings: dataValues, layout};
 };
 
 export const useNoApplyPassBindGroup = () => {

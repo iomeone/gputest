@@ -15,7 +15,7 @@ import { useInspectable } from '../hooks/useInspectable'
 import { SHADOW_PAGE } from '../render/light/light-data';
 
 import { useDynamicViewBinding, useApplyPassBindGroup } from './bindings';
-import { useDepthBlit } from './depth-blit';
+import { useDepthCopy } from './depth-copy';
 import { drawToPass } from './util';
 
 const {quote} = QueueReconciler;
@@ -79,7 +79,7 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
   const projectionMatrix = useOne(() => mat4.fromValues(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1));
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const clearDepthBuffer = useDepthBlit(renderContext, descriptors[shadowMap!], shadowUV!, SHADOW_PAGE);
+  const clearDepthBuffer = useDepthCopy(renderContext, null, null, null, shadowUV!, SHADOW_PAGE);
 
   const draw = quote(yeet(() => {
     let vs = 0;
@@ -112,20 +112,27 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
     uploadBuffer(device, source.buffer, pipe.data);
 
     // Render pass
-    const commandEncoder = device.createCommandEncoder(LABEL);
-    clearDepthBuffer(commandEncoder);
+    const commandEncoder = device.createCommandEncoder();
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const passEncoder = commandEncoder.beginRenderPass(descriptors[shadowMap!]);
+    {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const passEncoder = commandEncoder.beginRenderPass(descriptors[shadowMap!]);
+      clearDepthBuffer(passEncoder);
+      passEncoder.end();
+    }
 
-    bindPass?.(passEncoder);
+    {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const passEncoder = commandEncoder.beginRenderPass(descriptors[shadowMap!]);
+      bindPass?.(passEncoder);
 
-    passEncoder.setViewport(x, y, w, h, 0, 1);
-    passEncoder.setScissorRect(x, y, w, h);
+      passEncoder.setViewport(x, y, w, h, 0, 1);
+      passEncoder.setScissorRect(x, y, w, h);
 
-    drawToPass(cull, shadows, passEncoder, countGeometry, uniforms);
+      drawToPass(cull, shadows, passEncoder, countGeometry, uniforms);
 
-    passEncoder.end();
+      passEncoder.end();
+    }
 
     const command = commandEncoder.finish();
     device.queue.submit([command]);
@@ -135,9 +142,7 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
         vertices: vs,
         triangles: ts,
       },
-      pass: {
-        uniforms,
-      },
+      pass: { uniforms },
       bindings: dataBindings,
     });
 

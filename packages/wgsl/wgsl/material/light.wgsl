@@ -31,7 +31,7 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
   let kind = light.kind;
   if (kind == 0) {
     // Ambient
-    return (surface.occlusion * light.intensity) * surface.albedo.rgb * light.color.rgb;
+    return (surface.occlusion.w * light.intensity) * surface.albedo.rgb * light.color.rgb;
   }
   else if (kind == 1) {
     // Directional

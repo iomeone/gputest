@@ -62,6 +62,13 @@
   return z / w;
 }
 
+@export fn viewToDepth(position: vec4<f32>) -> f32 {
+  let pm = viewUniforms.projectionMatrix;
+  let z = dot(vec4<f32>(pm[0][2], pm[1][2], pm[2][2], pm[3][2]), position);
+  let w = dot(vec4<f32>(pm[0][3], pm[1][3], pm[2][3], pm[3][3]), position);
+  return z / w;
+}
+
 @export fn clipToWorld3D(position: vec4<f32>) -> vec3<f32> {
   return to3D(clipToWorld(position));
 }
@@ -76,6 +83,15 @@
 
 @export fn screenToClip3D(position: vec2<f32>, z: f32) -> vec3<f32> {
   return vec3(position.xy * viewUniforms.viewResolution, z);
+}
+
+@export fn clipXYToUV(clip: vec2<f32>) -> vec2<f32> {
+  return vec2<f32>(clip.x, -clip.y) * .5 + .5;
+}
+
+@export fn clipUVToXY(uv: vec2<f32>) -> vec2<f32> {
+  let xy = uv * 2.0 - 1.0;
+  return vec2<f32>(xy.x, -xy.y);
 }
 
 @export fn clipLineIntoView(anchor: vec4<f32>, head: vec4<f32>) -> vec4<f32> {
@@ -104,14 +120,21 @@
 
 @export fn getWorldScale(w: f32, f: f32) -> f32 {
   let v = viewUniforms.viewResolution;
-  return getPerspectiveScale(w, f) * v.y * w;
+  return getScreenScale(w, f) * v.y * w;
 }
 
-@export fn getPerspectiveScale(w: f32, f: f32) -> f32 {
+@export fn getScreenScale(w: f32, f: f32) -> f32 {
   let m = viewUniforms.projectionMatrix;
   let worldScale = length(m[1]) * viewUniforms.viewWorldDepth.x;
   let clipScale = mix(1.0, worldScale / w, f);
   let pixelScale = clipScale * viewUniforms.viewPixelRatio;
+  return pixelScale;
+}
+
+@export fn getAbsoluteScale() -> f32 {
+  let m = viewUniforms.projectionMatrix;
+  let worldScale = length(m[1]);
+  let pixelScale = worldScale * viewUniforms.viewPixelRatio;
   return pixelScale;
 }
 

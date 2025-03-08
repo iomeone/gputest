@@ -265,6 +265,7 @@ fn traceVolumeSteps(
   normal: vec4<f32>,
   tangent: vec4<f32>,
   position: vec4<f32>,
+  coord: vec4<f32>,
 ) -> SurfaceFragment {
   let viewPosition = getViewPosition();
   let surfacePosition = position.xyz;
@@ -310,16 +311,17 @@ fn traceVolumeSteps(
   let n = getNormalMatrix();
   let worldPosition = m * vec4<f32>(hit.position - vec3<f32>(s) / 2.0, 1.0);
 
-  let occlusion = 1.0;
+  let worldNormal = vec4<f32>(n * hit.normal, 0.0);
+  let occlusion = vec4<f32>(worldNormal.xyz, 1.0);
   let depth = worldToDepth(worldPosition);
 
   return SurfaceFragment(
     worldPosition,
-    vec4<f32>(n * hit.normal, 0.0),
+    worldNormal,
+    occlusion,
     albedo,
     emissive,
     material,
-    occlusion,
     depth,
   );
 }

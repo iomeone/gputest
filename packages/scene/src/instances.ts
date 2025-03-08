@@ -35,7 +35,7 @@ export type InstancesProps = InstancesFlags & {
   id?: number,
 
   render?: (Instance: LiveComponent<InstanceProps>) => LiveElement,
-  children?: LiveElement | ((Instance: LiveComponent<InstanceProps>) => LiveElement),
+  children?: (Instance: LiveComponent<InstanceProps>) => LiveElement,
 };
 
 export type InstanceProps = TraitProps<typeof Traits>;
@@ -127,15 +127,14 @@ const makeInstancer = (
   useOne(() => {
     const {matrix, normalMatrix, composed} = ref;
 
-    if (m) {
-      mat4.copy(matrix, m);
-      if (p || r || q || s) {
-        composeTransform(composed, p, r, q, s);
-        mat4.multiply(matrix, matrix, composed);
-      }
+    if (p || r || q || s) {
+      composeTransform(matrix, p, r, q, s, m);
     }
-    else if (p || r || q || s) {
-      composeTransform(matrix, p, r, q, s);
+    else if (m) {
+      mat4.copy(matrix, m);
+    }
+    else {
+      mat4.identity(matrix);
     }
 
     if (parent) mat4.multiply(matrix, parent, matrix);

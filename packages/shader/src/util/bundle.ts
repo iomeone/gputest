@@ -87,11 +87,17 @@ export const makeDeclarationToAttribute = (
 }
 
 // Convert custom type names to their originating bundle (if foreign)
-const resolveTypeSymbol = (bundle: ParsedBundle, f: FormatLike<string>): FormatLike<ShaderModule> => {
+const resolveTypeSymbol = (
+  bundle: ParsedBundle,
+  f: FormatLike<string>,
+): FormatLike<ShaderModule> => {
   const {libs, module} = bundle;
+  const {table: {infers}} = module;
   const {format, type: typeName} = f;
 
-  if (typeName != null) {
+  if (infers && infers.includes(typeName)) return {format: 'auto'};
+
+  if (typeName != null && libs) {
     const {table: {modules}} = module;
 
     if (libs && modules) for (const {name: lib, imports} of modules) {

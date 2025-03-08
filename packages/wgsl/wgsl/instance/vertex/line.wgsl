@@ -1,5 +1,5 @@
 use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipLineIntoView, getPerspectiveScale, applyZBias3 };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipLineIntoView, getScreenScale, applyZBias3 };
 use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
 use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
 use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
@@ -195,7 +195,7 @@ fn trimAnchor(
   var center = to3D(center4);
 
   // Lerp between fixed size and full perspective
-  var pixelScale = getPerspectiveScale(center4.w, depth);
+  var pixelScale = getScreenScale(center4.w, depth);
   width = width * pixelScale;
 
   var arc = f32(joinIndex) / f32(LINE_JOIN_SIZE);

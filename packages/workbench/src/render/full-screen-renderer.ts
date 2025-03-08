@@ -30,6 +30,7 @@ const NO_FLAGS: FullScreenRendererFlags = {
   overlay: false,
 };
 
+//const NO_ENV: Record<string, any> = {buffers: {}};
 const NO_ENV: Record<string, any> = {};
 
 const COMPONENTS = {
@@ -41,7 +42,8 @@ const COMPONENTS = {
   renders: {},
 } as RenderComponents;
 
-export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: FullScreenRendererProps) => {
+/** Simplified full-screen-only renderer that has no rendering variants. */
+export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: PropsWithChildren<FullScreenRendererProps>) => {
   const {
     flags = NO_FLAGS,
     children,

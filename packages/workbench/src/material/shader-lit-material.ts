@@ -9,6 +9,7 @@ import { QueueReconciler } from '../reconcilers/index';
 
 import { getLitFragment } from '@use-gpu/wgsl/instance/fragment/lit.wgsl';
 import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
 const {signal} = QueueReconciler;
 
@@ -38,6 +39,7 @@ export type ShaderLitMaterialProps = {
     normal: vec4<f32>,
     tangent: vec4<f32>,
     position: vec4<f32>,
+    coord: vec4<f32>,
   ) -> SurfaceFragment
   */
   surface: ShaderModule,
@@ -69,7 +71,6 @@ export const ShaderLitMaterial: LC<ShaderLitMaterialProps> = (props: ShaderLitMa
     surface,
     environment,
     apply = applyPBRMaterial,
-    render,
     children,
   } = props;
 
@@ -96,6 +97,7 @@ export const ShaderLitMaterial: LC<ShaderLitMaterialProps> = (props: ShaderLitMa
     },
   }), [getSurface, getLight, getDepth, getFragment, applyLights, applyEnvironment]);
 
+  const render = getRenderFunc(props);
   const view = render ? render(context) : children;
   return render ?? children ? provide(MaterialContext, context, [signal(), view]) : yeet(context);
 };

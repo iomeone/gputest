@@ -97,7 +97,6 @@ export const Arrow: LiveComponent<ArrowProps> = memo((props) => {
 
   return quote(yeet(shapes));
 }, shouldEqual({
-  position: sameShallow(sameShallow()),
   color: sameShallow(),
 }), 'Arrow');
 

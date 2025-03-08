@@ -5,7 +5,7 @@ const KEYS = new WeakMap<object, number>();
 /** Get new unique key */
 export const makeKey = (): number => ++KEY;
 
-/** Get unique key for object */
+/** Get unique key for object/function */
 export const getObjectKey = (v: any) => {
   if (v && (typeof v === 'object' || typeof v === 'function')) {
     const c = KEYS.get(v);

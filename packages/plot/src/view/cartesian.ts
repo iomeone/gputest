@@ -60,12 +60,8 @@ export const Cartesian: LiveComponent<CartesianProps> = (props: CartesianProps) 
     }
 
     // Then apply transform (so these are always relative to the world basis, not the internal basis)
-    if (m) {
-      mat4.multiply(matrix, m, matrix);
-    }
-
-    if (p || r || q || s) {
-      composeTransform(composed, p, r, q, s);
+    if (p || r || q || s || m) {
+      composeTransform(composed, p, r, q, s, m);
       mat4.multiply(matrix, composed, matrix);
     }
 

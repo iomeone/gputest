@@ -8,7 +8,7 @@ import { QueueReconciler } from '../reconcilers/index';
 import { useShader } from '../hooks/useShader';
 import { getRenderFunc } from '../hooks/useRenderProp';
 
-import { getSolidSurface } from '@use-gpu/wgsl/instance/surface/solid.wgsl';
+import { getSolidSurface } from '@use-gpu/wgsl/instance/surface/solid-surface.wgsl';
 import { getSolidFragment } from '@use-gpu/wgsl/instance/fragment/solid.wgsl';
 
 const {signal} = QueueReconciler;

@@ -30,7 +30,7 @@ export const makeBindingAccessors = (
   const buffers = [...uniforms, ...storages];
 
   // Virtual module symbols
-  const virtuals = [...constants, ...uniform, ...storages, ...textures];
+  const virtuals = [...constants, ...uniforms, ...storages, ...textures];
   const symbols = virtuals.map(({attribute}) => attribute.name);
   const types = virtuals.map(({attribute}) => attribute.format);
   const declarations = virtuals.map(({attribute}) => ({

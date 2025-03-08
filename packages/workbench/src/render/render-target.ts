@@ -2,6 +2,7 @@ import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
+import { TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
@@ -33,8 +34,9 @@ export type RenderTargetProps = {
   colorInput?: ColorSpace,
   samples?: number,
   resolution?: number,
-  absolute?: boolean,
   variant?: string,
+  absolute?: boolean,
+  label?: string,
 
   render?: (rttContext: OffscreenRenderContext) => LiveElement,
   children?: LiveElement | ((rttContext: OffscreenRenderContext) => LiveElement),
@@ -65,6 +67,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     colorInput = COLOR_SPACE,
     variant = 'textureSample',
     absolute = false,
+    label,
     children,
     then,
   } = props;
@@ -106,6 +109,13 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
       const views = buffers ? buffers.map(b => b.createView()) : undefined;
 
+      if (label != null) {
+        render.label = label;
+        if (resolve) resolve.label = label;
+        if (buffers) for (const b of buffers) b.label = label;
+        if (views) for (const v of views) v.label = label;
+      }
+
       return [render, resolve, buffers, views, counter];
     },
     [device, width, height, format, samples, history]
@@ -113,7 +123,10 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
   const targetTexture = resolveTexture ?? renderTexture;
 
-  const colorStates      = useOne(() => format ? [makeColorState(format, BLEND_PREMULTIPLY)] : [], format);
+  const colorStates      = useOne(() => (
+    format ? [makeColorState(format, format.match(/unorm|float/) ? BLEND_PREMULTIPLY : undefined)] : []
+  ), format);
+
   const colorAttachments = useMemo(() =>
     renderTexture || resolveTexture
       ? [makeColorAttachment(renderTexture, resolveTexture, backgroundColor)]
@@ -148,8 +161,8 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       const view = targetTexture.createView();
       const volatile = history ? history + 1 : 0;
 
-      //const type = TEXTURE_SAMPLE_TYPES[format];
-      const layout = `texture_2d<f32>`;
+      const type = TEXTURE_SAMPLE_TYPES[format];
+      const layout = `texture_2d<${type}>`;
 
       const swap = () => {
         if (!format || !history || !source || !sources) return;
@@ -206,9 +219,11 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
     const depth = depthStencil ? {
       texture: depthTexture,
-      sampler: {},
+      sampler,
       layout: samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d',
       format: depthStencil,
+      variant,
+      absolute,
       size,
       version: 0,
     } as TextureSource : undefined;

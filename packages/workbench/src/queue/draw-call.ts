@@ -219,6 +219,7 @@ export const drawCall = (props: DrawCallProps) => {
       vertices: 0,
       instances: 0,
       triangles: 0,
+      pipeline: propPipeline,
     },
     indirect,
   });

@@ -10,10 +10,10 @@ import { getNativeColor } from '../../hooks/useNativeColor';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
+import renderVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
 import {
-  main as instanceFragmentShaded,
-  mainWithDepth as instanceFragmentShadedDepth,
+  main as renderFragmentShaded,
+  mainWithDepth as renderFragmentShadedDepth,
 } from '@use-gpu/wgsl/render/fragment/deferred-shaded.wgsl';
 
 import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
@@ -34,12 +34,12 @@ export const DeferredShadedRender: LiveComponent<DeferredShadedRenderProps> = (p
   const {colorInput, colorSpace} = renderContext;
 
   const {
-    buffers: {gbuffer: [gbuffer]},
+    buffers: {gBuffer: [gBuffer]},
     bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
   } = usePassContext();
 
-  const vertexShader = instanceDrawVirtualShaded;
-  const fragmentShader = defines?.HAS_DEPTH ? instanceFragmentShadedDepth : instanceFragmentShaded;
+  const vertexShader = renderVirtualShaded;
+  const fragmentShader = defines?.HAS_DEPTH ? renderFragmentShadedDepth : renderFragmentShaded;
 
   // Binds links into shader
   const [v, f] = useMemo(() => {
@@ -49,8 +49,8 @@ export const DeferredShadedRender: LiveComponent<DeferredShadedRenderProps> = (p
       getScissor: defines?.HAS_SCISSOR ? getScissorColor : null,
       toColorSpace: getNativeColor(colorInput, colorSpace),
     };
-    const v = bindBundle(vertexShader, links, undefined);
-    const f = bindBundle(fragmentShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
+    const f = bindBundle(fragmentShader, links);
     return [v, f];
   }, [vertexShader, fragmentShader, getVertex, getSurface, defines, colorInput, colorSpace]);
 
@@ -62,7 +62,7 @@ export const DeferredShadedRender: LiveComponent<DeferredShadedRenderProps> = (p
     vertex: v,
     fragment: f,
     defines: defs,
-    renderContext: gbuffer,
+    renderContext: gBuffer,
     globalLayout,
     pipelineKey,
   };

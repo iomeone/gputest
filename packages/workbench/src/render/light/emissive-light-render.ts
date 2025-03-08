@@ -12,18 +12,18 @@ import { getDeferredEmissiveFragment } from '@use-gpu/wgsl/instance/fragment/def
 import { FULLSCREEN_PIPELINE, FULLSCREEN_DEFS, useLightDraw } from './light-render';
 
 export type EmissiveLightRenderProps = {
-  gbuffer: TextureSource[],
+  gBuffer: TextureSource[],
   getLight: ShaderModule,
 };
 
 export const EmissiveLightRender: LiveComponent<EmissiveLightRenderProps> = (props: EmissiveLightRenderProps) => {
   const {
-    gbuffer,
+    gBuffer,
     getLight,
   } = props;
 
   const getVertex = useShader(getDeferredLightVertex, [getLight], FULLSCREEN_DEFS);
-  const getFragment = useShader(getDeferredEmissiveFragment, gbuffer);
+  const getFragment = useShader(getDeferredEmissiveFragment, gBuffer);
 
   const links = useMemo(() => ({getVertex, getFragment}), [getVertex, getFragment]);
 

@@ -492,12 +492,15 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const exported  = declarations.filter(d => d.flags & RF.Exported);
     const globalled = declarations.filter(d => d.flags & RF.Global);
     const bound     = declarations.filter(d => d.flags & RF.Binding);
+    const inferred  = declarations.filter(d => d.flags & RF.Infer);
 
     const symbols  = uniq(declarations.map(r => r.symbol));
     const visibles = uniq(exported.map(r => r.symbol));
     const globals  = uniq(globalled.map(r => r.symbol));
+    const infers   = uniq(inferred.map(r => r.symbol));
 
     const types = exported.filter(d => d.alias || d.struct).map(t => t.symbol);
+    const locals = declarations.filter(d => !d.flags && (d.struct || d.alias));
 
     const scope = new Set(symbols ?? []);
     for (const ref of declarations) {
@@ -522,8 +525,10 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       modules: orNone(modules),
       externals: orNone(externals),
       exports: orNone(exported),
+      locals: orNone(locals),
       bindings: orNone(bound),
       enables: orNone(enables),
+      infers: orNone(infers),
 
       declarations: orNone(declarations),
       linkable: externals.length ? linkable : undefined,

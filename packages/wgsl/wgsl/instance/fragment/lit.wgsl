@@ -24,11 +24,6 @@ use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
   let V: vec3<f32> = normalize(toView);
 
   let light = surface.emissive.xyz + applyLights(N, V, surface) + applyEnvironment(N, V, surface);
-
-  //return vec4<f32>(color.xyz, 1.0);
-  //return vec4<f32>(mix(color.xyz, N * .5 + .5, .5), 1.0);
-  //return vec4<f32>(N * .5 + .5, 1.0);
-
   let alpha = surface.albedo.a;
 
   if (HAS_ALPHA_TO_COVERAGE) {

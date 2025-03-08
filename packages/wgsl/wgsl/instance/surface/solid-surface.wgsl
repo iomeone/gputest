@@ -1,30 +1,30 @@
 use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
 
-@infer type T = T;
 @link fn getMaterial(
   color: vec4<f32>,
   mapUV: vec4<f32>,
   mapST: vec4<f32>,
-) -> @infer(T) T {}
+) -> vec4<f32> {}
 
-@export fn getMaterialSurface(
+@export fn getSolidSurface(
   color: vec4<f32>,
   uv: vec4<f32>,
   st: vec4<f32>,
   normal: vec4<f32>,
   tangent: vec4<f32>,
   position: vec4<f32>,
+  coord: vec4<f32>,
 ) -> SurfaceFragment {
 
-  let params = getMaterial(color, uv, st);
+  let albedo = getMaterial(color, uv, st);
 
   return SurfaceFragment(
     position,
     normal,
-    params.albedo,
-    params.emissive,
-    params.material,
-    params.occlusion,
+    vec4<f32>(normal.xyz, 1.0),
+    vec4<f32>(0.0, 0.0, 0.0, albedo.a),
+    vec4<f32>(albedo.rgb, 0.0),
+    vec4<f32>(0.0, 0.0, 0.0, 1.0),
     0.0,
   );
 }

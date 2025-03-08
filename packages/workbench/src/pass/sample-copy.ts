@@ -1,38 +1,45 @@
 import type { TypedArray, UseGPURenderContext } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
 
-import { useCallback, useOne } from '@use-gpu/live';
+import { useCallback, useMemo, useOne } from '@use-gpu/live';
 import { bindBundle } from '@use-gpu/shader/wgsl';
 
+import { Update, $delete } from '@use-gpu/state';
+
 import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen.wgsl';
-import instanceDrawVirtualDepth from '@use-gpu/wgsl/render/vertex/virtual-depth.wgsl';
-import instanceFragmentDepthCopy from '@use-gpu/wgsl/render/fragment/depth-copy.wgsl';
+import renderVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
+import renderFragmentSampleCopy from '@use-gpu/wgsl/render/fragment/sample-copy.wgsl';
 
 import { drawCall } from '../queue/draw-call';
 
 const countGeometry = () => {};
 const PIPELINE = {
   depthStencil: {
-    depthWriteEnabled: true,
-    depthCompare: 'always',
+    depthTest: false,
+    depthWriteEnabled: false,
   },
-} as Partial<GPURenderPipelineDescriptor>;
+  fragment: {
+    targets: {0: { blend: $delete() }},
+  },
+} as Update<GPURenderPipelineDescriptor>;
 
-export const useDepthBlit = (
+export const useSampleCopy = (
   renderContext: UseGPURenderContext,
-  descriptor: GPURenderPassDescriptor,
-  uv?: TypedArray | number[],
-  scale: number = 1,
 
   getSample: ShaderModule | null = null,
+
+  layout?: GPUBindGroupLayout | null,
+
+  uv?: TypedArray | number[],
+  scale: number = 1,
 ) => {
 
-  const [vertex, fragment] = useOne(() => {
-    const vertexShader = bindBundle(instanceDrawVirtualDepth, {getVertex: getFullScreenVertex});
-    const fragmentShader = bindBundle(instanceFragmentDepthCopy, {getDepth: getSample});
+  const [vertex, fragment] = useMemo(() => {
+    const vertexShader = bindBundle(renderVirtualSolid, {getVertex: getFullScreenVertex});
+    const fragmentShader = bindBundle(renderFragmentSampleCopy, {getSample});
 
     return [vertexShader, fragmentShader];
-  }, getSample);
+  }, [getSample]);
 
   const blit = drawCall({
     vertexCount: 3,
@@ -40,14 +47,13 @@ export const useDepthBlit = (
     vertex,
     fragment,
     renderContext,
+    globalLayout: layout,
     mode: null,
     pipeline: PIPELINE,
-    label: 'useDepthBlit',
+    label: 'useSampleCopy',
   }) as any;
 
-  const draw = useCallback((commandEncoder: GPUCommandEncoder) => {
-    const passEncoder = commandEncoder.beginRenderPass(descriptor);
-
+  const draw = useCallback((passEncoder: GPURenderPassEncoder) => {
     if (uv) {
       const x = uv[0] * scale;
       const y = uv[1] * scale;
@@ -58,9 +64,7 @@ export const useDepthBlit = (
     }
 
     (blit as any)?.draw && (blit as any).draw(passEncoder, countGeometry);
-
-    passEncoder.end();
-  }, [blit, uv, scale, descriptor]);
+  }, [blit, uv, scale]);
 
   return draw;
 };

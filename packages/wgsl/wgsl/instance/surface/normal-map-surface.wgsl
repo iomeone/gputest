@@ -7,6 +7,7 @@ use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
   normal: vec4<f32>,
   tangent: vec4<f32>,
   position: vec4<f32>,
+  coord: vec4<f32>,
 ) -> SurfaceFragment {};
 
 @optional @link fn getNormalMap(uv: vec2<f32>) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 1.0, 0.0); };
@@ -18,6 +19,7 @@ use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
   normal: vec4<f32>,
   tangent: vec4<f32>,
   position: vec4<f32>,
+  coord: vec4<f32>,
 ) -> SurfaceFragment {
 
   let tangentNormal = getNormalMap(uv.xy) * 2.0 - 1.0;
@@ -29,5 +31,5 @@ use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
     tangentNormal.z * normal.xyz
   );
 
-  return getSurface(color, uv, st, vec4<f32>(bumpNormal, 1.0), tangent, position);
+  return getSurface(color, uv, st, vec4<f32>(bumpNormal, 1.0), tangent, position, coord);
 }

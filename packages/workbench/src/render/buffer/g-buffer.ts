@@ -27,11 +27,13 @@ export const GBuffer: LC = memo(() => {
 
   // Set up GBuffer layout
   const formats = useMemo(() => [
-    'rgba8unorm',
-    'rgba16float',
-    'rgba8unorm',
-    hasFloat ? 'rg11b10ufloat' : 'rgb10a2unorm',
-    format,
+    'rgba8unorm',  // RGB + Occlusion
+    'rgba16float', // Normal (RG) + Bent Normal (RG)
+    'rgba8unorm',  // Material (RGBA) = (metalness, roughness, _, _)
+    hasFloat       // Emissive (RGB)
+      ? 'rg11b10ufloat'
+      : 'rgb10a2unorm',
+    format,        // Resolve
   ] as GPUTextureFormat[], [hasFloat, format]);
 
   const renderTextures = useMemo(() => formats.map(format => makeTargetTexture(
@@ -77,5 +79,5 @@ export const GBuffer: LC = memo(() => {
     },
   });
 
-  return yeet({ gbuffer: context });
+  return yeet({ gBuffer: context });
 }, 'GBuffer');

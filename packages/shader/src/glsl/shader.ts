@@ -44,7 +44,7 @@ export const defineEnables = (enabled: string[]) => enabled.map(e => `#extension
 /** Convert a bundle with a defined entry point to a definition for that attribute or type. */
 export const bundleToAttribute = makeBundleToAttribute(toTypeSymbol, toTypeArgs);
 
-/** Convert a bundle to a definition for all its attributes. */
+/** Convert a bundle to a definition for all its linkable attributes. */
 export const bundleToAttributes = makeBundleToAttributes(toTypeSymbol, toTypeArgs);
 
 /** Convert a bundle to a definition for all its bindings. */

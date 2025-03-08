@@ -2,7 +2,7 @@ import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { UseGPURenderContext } from '@use-gpu/core';
 import type { AggregatedCalls, PassBindGroup, RenderComponents, VirtualDraw } from '../pass/types';
 
-import { use, memo, unquote, provide, multiGather, extend, useMemo } from '@use-gpu/live';
+import { use, memo, unquote, provide, multiGather, extend, useMemo, useNoMemo } from '@use-gpu/live';
 
 import { PassContext, VariantContext } from '../providers/pass-provider';
 import { PassReconciler } from '../reconcilers/index';
@@ -11,7 +11,6 @@ import { ComputePass } from '../pass/compute-pass';
 import { DispatchPass } from '../pass/dispatch-pass';
 import { PickingPass } from '../pass/picking-pass';
 import { ReadbackPass } from '../pass/readback-pass';
-import { ShadowPass } from '../pass/shadow-pass';
 
 const {reconcile, quote} = PassReconciler;
 
@@ -24,12 +23,16 @@ export type RendererProps = PropsWithChildren<{
 
   passes: LiveElement[],
   components: RenderComponents,
+
+  variants?: (virtual: VirtualDraw, hovered: boolean) => LiveComponent | LiveComponent[] | null | undefined,
 }>;
 
 const HOVERED_VARIANT = 'debug';
+const NO_ENV: Record<string, any> = {};
 
 export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   const {
+    env: propEnv = NO_ENV,
     overlay = false,
     merge = false,
 
@@ -38,6 +41,7 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
     passes,
     components,
 
+    variants,
     children,
   } = props;
 
@@ -45,14 +49,14 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   const passContext = useMemo(() => ({buffers, bindGroups}), [buffers, bindGroups]);
 
   // Provide draw call variants for sub-passes
-  const useVariants = useMemo(() => {
-    const {shadow, picking} = buffers;
+  const useVariants = variants ? (useNoMemo(), variants) : useMemo(() => {
+    const {normal, shadow, picking} = buffers;
 
     const getRender = (mode: string, render: string | null = null) =>
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       components.modes[mode] ?? components.renders[render!]?.[mode];
 
-    const getVariants = (!shadow && !picking)
+    const getVariants = (!normal && !shadow && !picking)
        ? (virtual: VirtualDraw, hovered: boolean) =>
          hovered ? [getRender(HOVERED_VARIANT)] : getRender(virtual.mode, virtual.renderer)
 
@@ -60,13 +64,16 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
           const {mode, renderer, links, defines} = virtual;
 
           const variants = [];
+          if (normal && mode === 'opaque' && defines?.HAS_SHADOW) {
+            variants.push('normal');
+          }
           if (shadow && mode === 'opaque' && defines?.HAS_SHADOW) {
             variants.push('shadow');
           }
           if (picking && mode !== 'picking' && links?.getPicking) {
             variants.push('picking');
           }
-          if (variants.length === 0) return hovered ? [getRender(HOVERED_VARIANT)] : getRender(mode, renderer);
+          if (variants.length === 0) return hovered ? getRender(HOVERED_VARIANT) : getRender(mode, renderer);
 
           variants.push(hovered ? HOVERED_VARIANT : mode);
           return variants.map(mode => getRender(mode, renderer));
@@ -84,12 +91,12 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
     calls: AggregatedCalls,
   ) =>
     useMemo(() => {
-      const {shadow, picking} = buffers;
+      const {normal, motion, ssao, shadow, picking} = buffers;
 
       const env = (calls.env ?? []).reduce((env: Record<string, any>, data: Record<string, any>) => {
         for (const k in data) env[k] = data[k];
         return env;
-      }, {});
+      }, {...propEnv});
 
       const props: Record<string, any> = {calls, env};
 
@@ -99,13 +106,11 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
       return [
         calls.dispatch ? use(DispatchPass, props) : null,
         calls.pre || calls.compute ? use(ComputePass, props) : null,
-        shadow && calls.shadow ? use(ShadowPass, props) : null,
         ...passes.map(element => extend(element, props)),
         calls.post || calls.readback ? use(ReadbackPass, props) : null,
-        picking && calls.picking ? use(PickingPass, props) : null,
       ];
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [calls, buffers, passes, overlay, merge]);
+    }, [calls, buffers, passes, overlay, merge, propEnv]);
 
   return (
     reconcile(

@@ -16,20 +16,18 @@ import { UIRender } from './forward/ui';
 import { useStandardBindGroups } from '../pass/bindings';
 
 import { DeferredPass } from '../pass/deferred-pass';
+import { PickingPass } from '../pass/picking-pass';
+import { ShadowPass } from '../pass/shadow-pass';
 
-import { DeferredShadedRender } from './deferred/shaded';
-import { DeferredSolidRender } from './deferred/solid';
-import { DeferredUIRender } from './deferred/ui';
+import { DeferredShadedRender } from './deferred/deferred-shaded';
+import { DeferredSolidRender } from './deferred/deferred-solid';
+import { DeferredUIRender } from './deferred/deferred-ui';
 
 import { Renderer } from './renderer';
 import { LightRender } from './light/light-render';
 import { LightMaterial } from './light/light-material';
 
 const {quote} = PassReconciler;
-
-const DEFAULT_PASSES = [
-  use(DeferredPass, {}),
-];
 
 const NO_BUFFERS: Record<string, UseGPURenderContext[]> = {};
 const NO_FLAGS: DeferredRendererFlags = {};
@@ -60,11 +58,12 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
   }
 };
 
+/** Deferred-mode rendering with a G-Buffer. Lights are painted in afterwards using stencil volumes. */
 export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: DeferredRendererProps) => {
   const {
     buffers = NO_BUFFERS,
     flags = NO_FLAGS,
-    passes = DEFAULT_PASSES,
+    passes,
 
     children,
   } = props;
@@ -73,9 +72,16 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     overlay = false,
     merge = false,
     shadows = !!buffers.shadow,
+    picking = !!buffers.picking,
   } = flags;
 
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
+
+  const resolved = useOne(() => passes ?? [
+    shadows ? use(ShadowPass, props) : null,
+    use(DeferredPass, {}),
+    picking ? use(PickingPass, props) : null, 
+  ], props);
 
   // Provide forward-lit material + emit deferred light draw calls
   const view = use(LightMaterial, {
@@ -90,7 +96,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   });
 
   // Pass bindings
-  const bindGroups = useStandardBindGroups(flags);
+  const bindGroups = useStandardBindGroups(buffers, flags);
 
-  return Renderer({ buffers, bindGroups, children: view, components, passes, overlay, merge });
+  return Renderer({ buffers, bindGroups, children: view, components, passes: resolved, overlay, merge });
 }, 'DeferredRenderer');

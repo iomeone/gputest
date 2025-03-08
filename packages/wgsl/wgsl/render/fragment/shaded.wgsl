@@ -7,6 +7,7 @@
   normal: vec4<f32>,
   tangent: vec4<f32>,
   position: vec4<f32>,
+  coord: vec4<f32>,
 ) -> @infer(T) T {}
 
 @optional @link fn getLight(surface: T) -> vec4<f32> { return surface.albedo; }
@@ -15,6 +16,7 @@
 @fragment
 fn main(
   @builtin(front_facing) frontFacing: bool,
+  @builtin(position) fragCoord: vec4<f32>,
   @location(0) fragColor: vec4<f32>,
   @location(1) fragUV: vec4<f32>,
   @location(2) fragST: vec4<f32>,
@@ -29,7 +31,8 @@ fn main(
 
   var outColor = fragColor;
 
-  let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition);
+  let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition, fragCoord);
+  //outColor = vec4<f32>(vec3<f32>(surface.occlusion.a), 1.0);
   outColor = getLight(surface);
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
@@ -46,6 +49,7 @@ struct WithDepth {
 @fragment
 @export fn mainWithDepth(
   @builtin(front_facing) frontFacing: bool,
+  @builtin(position) fragCoord: vec4<f32>,
   @location(0) fragColor: vec4<f32>,
   @location(1) fragUV: vec4<f32>,
   @location(2) fragST: vec4<f32>,
@@ -60,7 +64,7 @@ struct WithDepth {
 
   var outColor = fragColor;
 
-  let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition);
+  let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition, fragCoord);
   outColor = getLight(surface);
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }

@@ -73,7 +73,6 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
     undefined,
     near, far,
   );
-
   updateViewSize(uniforms, width, height, pixelRatio * unit, focus * Math.tan(fov / 2), 1);
 
   const frame = useOne(() => ({current: 0}));

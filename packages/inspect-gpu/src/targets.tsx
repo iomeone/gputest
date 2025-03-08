@@ -24,7 +24,7 @@ const IMAGE_FIT = {fit: 'contain', align: 'center', repeat: 'none'};
 const NO_OPS: any[] = [];
 const toArray = <T,>(x?: T | T[]): T[] => Array.isArray(x) ? x.filter(x => x != null) : x ? [x] : NO_OPS;
 
-const backgroundColor = [0, 0, 0, 0.1];
+const backgroundColor = [0, 0, 0, 0];
 
 const arrayShader = wgsl`
   @link fn getIndex() -> u32;
@@ -211,6 +211,42 @@ const depthShader = wgsl`
   }
 `;
 
+const uint32Shader = wgsl`
+  @link fn getSize() -> vec2<f32>;
+  @link fn getU16(uv: vec2<i32>, level: i32) -> vec4<u32>;
+
+  fn main(uv: vec2<f32>) -> vec4<f32> {
+    let iuv = vec2<i32>(uv * getSize());
+    let uint = getU16(iuv, 0).xyz;
+
+    return vec4<f32>(vec3<f32>(uint) / 4294967295.0, 1.0);
+  }
+`;
+
+const uint16Shader = wgsl`
+  @link fn getSize() -> vec2<f32>;
+  @link fn getU16(uv: vec2<i32>, level: i32) -> vec4<u32>;
+
+  fn main(uv: vec2<f32>) -> vec4<f32> {
+    let iuv = vec2<i32>(uv * getSize());
+    let uint = getU16(iuv, 0).xyz;
+
+    return vec4<f32>(vec3<f32>(uint) / 65535.0, 1.0);
+  }
+`;
+
+const uint8Shader = wgsl`
+  @link fn getSize() -> vec2<f32>;
+  @link fn getU16(uv: vec2<i32>, level: i32) -> vec4<u32>;
+
+  fn main(uv: vec2<f32>) -> vec4<f32> {
+    let iuv = vec2<i32>(uv * getSize());
+    let uint = getU16(iuv, 0).xyz;
+
+    return vec4<f32>(vec3<f32>(uint) / 255.0, 1.0);
+  }
+`;
+
 type TargetsProps = {
   fiber: LiveFiber<any>,
 };
@@ -292,6 +328,8 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     const parts: string[] = [];
     if (t.layout) parts.push(t.layout);
     if (t.format) parts.push(t.format);
+    parts.push(`${w}×${h}`);
+
     const type = parts.join(' – ');
     const label = t.label ?? '';
 
@@ -302,7 +340,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
             border: 1,
             stroke: '#808080',
             width, height,
-            fill: [0, 0, 0, .5],
+            fill: [0, 0, 0, 1],
             texture,
             image: IMAGE_FIT,
           }),
@@ -411,7 +449,35 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
         else if (layout.match(/array/)) {
           console.warn("TODO: inspect 2d array texture");
         }
+        else if (format.match(/(8|16|32)uint/)) {
+          t = {
+            ...t,
+            sampler: null,
+            layout: 'texture_2d<u32>',
+            variant: 'textureLoad',
+          };
+
+          let texture = t as any;
+          const bits = +format.match(/[0-9]+/);
+          const shader = (
+            bits === 8 ? uint8Shader :
+            bits === 16 ? uint16Shader :
+            bits === 32 ? uint32Shader :
+            uint32Shader
+          );
+          texture = getShader(shader, [() => size, texture]);
+          texture = getLambdaSource(texture, t);
+          texture.format = t.format;
+          texture.layout = t.layout;
+          out.push(makeView(texture));
+        }
         else {
+          t = {
+            ...t,
+            sampler: {},
+            variant: 'textureSample',
+          };
+
           out.push(makeView(t));
         }
       }

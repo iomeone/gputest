@@ -1,6 +1,7 @@
 0.11.x
 - add struct types and instancing operators
 - add automatic vec# casts between lambdas
+- allow inferring primitive types via `@infer`
 
 0.9.x
 - Add `minify` option to WGSL/GLSL transpiler

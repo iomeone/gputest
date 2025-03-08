@@ -33,7 +33,7 @@ export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKind
     order,
     start,
     end,
-    gbuffer,
+    gBuffer,
     stencil,
 
     getLight,
@@ -71,7 +71,7 @@ export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKind
   const getOutsideVertex  = useShader(getDeferredLightVertex, [getLight, getOutside, getPosition, getIndex, getScale], GEOMETRY_DEFS);
   const getInsideVertex   = useShader(getDeferredLightVertex, [getLight, getInside,  getPosition, getIndex], FULLSCREEN_DEFS);
 
-  const getFragment = useShader(getDeferredLightFragment, [...gbuffer, getLight, applyLight]);
+  const getFragment = useShader(getDeferredLightFragment, [...gBuffer, getLight, applyLight]);
 
   const stencilLinks = useMemo(() => ({getVertex: getInstanceVertex}), [getInstanceVertex]);
   const outsideLinks = useMemo(() => ({getVertex: getOutsideVertex, getFragment}), [getOutsideVertex, getFragment]);

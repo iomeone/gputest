@@ -11,11 +11,11 @@ import { getShaderLabel } from '../../pass/util';
 import { usePassContext } from '../../providers/pass-provider';
 
 import {
-  main as instanceDrawVirtualDepth,
-  mainWithDepth as instanceDrawVirtualDepthDepth,
+  main as renderVirtualDepth,
+  mainWithDepth as renderVirtualDepthDepth,
 } from '@use-gpu/wgsl/render/vertex/virtual-depth.wgsl';
-import instanceFragmentDepth from '@use-gpu/wgsl/render/fragment/depth.wgsl';
-import instanceFragmentDepthDepth from '@use-gpu/wgsl/render/fragment/depth-frag.wgsl';
+import renderFragmentDepth from '@use-gpu/wgsl/render/fragment/depth.wgsl';
+import renderFragmentDepthDepth from '@use-gpu/wgsl/render/fragment/depth-frag.wgsl';
 
 import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
@@ -40,8 +40,8 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
     bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
   } = usePassContext();
 
-  const vertexShader = defines?.HAS_DEPTH ? instanceDrawVirtualDepthDepth : instanceDrawVirtualDepth;
-  const fragmentShader = defines?.HAS_DEPTH ? instanceFragmentDepthDepth : instanceFragmentDepth;
+  const vertexShader = defines?.HAS_DEPTH ? renderVirtualDepthDepth : renderVirtualDepth;
+  const fragmentShader = defines?.HAS_DEPTH ? renderFragmentDepthDepth : renderFragmentDepth;
 
   const pipeline = useOne(() => patch(propPipeline, {
     multisample: { count: 1, alphaToCoverageEnabled: false },
@@ -56,8 +56,8 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
       getDepth,
       getScissor: defines?.HAS_SCISSOR ? getScissorColor : null,
     };
-    const v = bindBundle(vertexShader, links, undefined);
-    const f = bindBundle(fragmentShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
+    const f = bindBundle(fragmentShader, links);
     return [v, f];
   }, [vertexShader, fragmentShader, getVertex, getFragment, getDepth, defines]);
 

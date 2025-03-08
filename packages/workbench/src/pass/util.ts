@@ -46,6 +46,7 @@ export const getRenderPassDescriptor = (
 
     if (depthLoadOp) override.depthLoadOp = merge || stencil ? 'load' : 'clear';
     if (stencilLoadOp) override.stencilLoadOp = stencil ? 'clear' : 'load';
+    if (stencil) override.depthWriteEnabled = false;
 
     descriptor.depthStencilAttachment = proxy(descriptor.depthStencilAttachment, override);
   }

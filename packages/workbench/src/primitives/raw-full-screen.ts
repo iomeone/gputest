@@ -4,7 +4,7 @@ import type { ShaderModule } from '@use-gpu/shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useOne  } from '@use-gpu/live';
+import { memo, useMemo, useOne } from '@use-gpu/live';
 import { getBundleKey } from '@use-gpu/shader/wgsl';
 
 import { useShader } from '../hooks/useShader';
@@ -47,8 +47,7 @@ export const RawFullScreen: LiveComponent<RawFullScreenProps> = memo((props: Raw
   const getVertex = getFullScreenVertex;
   const getPicking = usePickingShader({id});
   const getFragment = useShader(getTextureColor, [t]);
-  const links = useOne(() => ({getVertex, getFragment, getPicking}),
-    getBundleKey(getVertex) + getBundleKey(getFragment) + (getPicking ? getBundleKey(getPicking) : 0));
+  const links = useMemo(() => ({getVertex, getFragment, getPicking}), [getVertex, getFragment, getPicking]);
 
   const shouldDispatch = initial ? useInitialRender([version]) : (useNoInitialRender(), undefined);
 

@@ -38,8 +38,6 @@ const makeComposeTransform = () => {
 
     mat4.fromRotationTranslationScale(transform, q, p, s);
     if (matrix != null) mat4.multiply(transform, matrix as mat4, transform);
-
-    return transform;
   }
 }
 

@@ -11,13 +11,15 @@ import { getShaderLabel } from '../../pass/util';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
+import renderVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
 import {
-  main as instanceFragmentShaded,
-  mainWithDepth as instanceFragmentShadedDepth,
+  main as renderFragmentShaded,
+  mainWithDepth as renderFragmentShadedDepth,
 } from '@use-gpu/wgsl/render/fragment/shaded.wgsl';
 
 import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
+import { getSSAOSurface } from '@use-gpu/wgsl/instance/surface/ssao-surface.wgsl';
+import { sampleSSAO } from '@use-gpu/wgsl/use/ssao.wgsl';
 
 export type ShadedRenderProps = VirtualDraw;
 
@@ -39,22 +41,25 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
   const renderContext = useRenderContext();
   const {colorInput, colorSpace} = renderContext;
 
-  const {bindGroups: {color: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
+  const {
+    buffers: {ssao},
+    bindGroups: {color: {layout: globalLayout, key: pipelineKey}},
+  } = usePassContext();
 
-  const vertexShader = instanceDrawVirtualShaded;
-  const fragmentShader = defines?.HAS_DEPTH ? instanceFragmentShadedDepth : instanceFragmentShaded;
+  const vertexShader = renderVirtualShaded;
+  const fragmentShader = defines?.HAS_DEPTH ? renderFragmentShadedDepth : renderFragmentShaded;
 
   // Binds links into shader
   const [v, f] = useMemo(() => {
     const links = {
       getVertex,
-      getSurface,
+      getSurface: ssao ? bindBundle(getSSAOSurface, {getSurface, sampleSSAO}) : getSurface,
       getLight: getLight && bindBundle(getLight, {applyLights, applyEnvironment}),
       getScissor: defines?.HAS_SCISSOR ? getScissorColor : null,
       toColorSpace: getNativeColor(colorInput, colorSpace),
     };
-    const v = bindBundle(vertexShader, links, undefined);
-    const f = bindBundle(fragmentShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
+    const f = bindBundle(fragmentShader, links);
     return [v, f];
   }, [vertexShader, fragmentShader, getVertex, getSurface, getLight, applyLights, applyEnvironment, defines, colorInput, colorSpace]);
 

@@ -1,5 +1,6 @@
 import type { DataTexture, ExternalTexture, VectorLike, XY, XYZ, TextureSource } from './types';
-import { TEXTURE_FORMAT_SIZES } from './constants';
+import { TEXTURE_FORMAT_SIZES, TEXTURE_SAMPLE_TYPES } from './constants';
+import { toTypeString } from './uniform';
 
 const NO_OFFSET = [0, 0, 0] as XYZ;
 
@@ -270,3 +271,44 @@ export const makeTextureEntries = (
 
   return entries;
 };
+
+export const checkTextureTypes = (
+  attributes: UniformAttribute[],
+  links: Record<string, TextureSource | null | undefined>,
+) => {
+  for (const u of attributes) {
+    const link = links[u.name];
+    checkTextureType(u, link)
+  }
+}
+
+export const checkTextureType = (
+  attribute: UniformAttribute,
+  link: TextureSource | null | undefined,
+) => {
+  const {name, format: from} = attribute;
+
+  if (Array.isArray(from)) throw new Error(`Invalid texture attribute '${name}'.`);
+
+  const format = link?.format;
+  const to = TEXTURE_SAMPLE_TYPES[format];
+
+  const fromName = toTypeString(from);
+  const toName = toTypeString(to);
+
+  let f = fromName;
+  let t = toName;
+
+  if (link && t != null && f !== t) {
+    // Remove texture layout
+    f = f.replace(/^texture[_0-9a-z]+<(.*)>$/, '$1');
+
+    // Remove vec<..> to allow for automatic widening/narrowing
+    f = f.replace(/^vec[0-9]/, '').replace(/^<(.*)>$/g, '$1');
+    t = t.replace(/^vec[0-9]/, '').replace(/^<(.*)>$/g, '$1');
+
+    if (f !== t) {
+      console.warn(`Invalid format ${to} bound for ${from} "${name}" (${f} != ${t})`);
+    }
+  }
+}

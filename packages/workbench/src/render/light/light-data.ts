@@ -31,6 +31,8 @@ export const SHADOW_FORMAT = "depth32float";
 
 const LIGHT_ATTRIBUTE = bundleToAttribute(WGSLLight);
 const LIGHT_LAYOUT = makeUniformLayout(LIGHT_ATTRIBUTE.format as UniformAttribute[]);
+
+// Reserve space for count
 const LIGHT_BYTE_OFFSET = 16;
 
 const makeAtlasPage = () => makeAtlas(
@@ -278,7 +280,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
 
       filler.setData(index, lights.get(id));
     }
-    if (needsRefresh) ranges = [[0, size - 1]];
+    if (needsRefresh) ranges = [[0, size]];
 
     // Upload changed ranges
     if (ranges.length) {

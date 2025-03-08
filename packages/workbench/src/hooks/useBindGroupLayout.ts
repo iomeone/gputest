@@ -32,7 +32,7 @@ export const getBindGroupLayout = (
   const [attributes, visibilities] = mergeAttributeBindings(bindings, key);
   const rawBindings = attributes.map(makeRawBindingForAttribute);
 
-  const names = attributes.map(a => a.name);
+  const names = attributes.map(a => a?.name ?? '<null>');
   const label = key + '::{' + names.join(', ') + '}';
   
   const entries = makeBindGroupLayoutEntries(rawBindings, visibilities);

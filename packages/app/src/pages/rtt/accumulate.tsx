@@ -8,7 +8,7 @@ import { vec3 } from 'gl-matrix';
 import {
   Loop, Pass, OrbitControls, OrbitCamera, Cursor,
   LinearRGB, FullScreen, RenderTarget, AccumulateRender,
-  DebugLineHelper, DebugHelper, On, PointLayer, LineLayer,
+  PrintHelper, PrintLayer, ShaderPrinter, On,
   
   useMouse, useKeyboard,
   usePerFrame, useShader, useShaderRef, useRawSource, useViewContext,
@@ -55,14 +55,14 @@ export const RTTAccumulatePage: LC = () => {
     <Gather
       children={[
         <RenderTarget samples={1} history={1} format="rgba16float" />,
-        <DebugLineHelper count={4*1024} />,
+        <PrintHelper count={4*1024} />,
       ]}
       then={([
         feedbackTarget,
-        debugHelper,
+        printHelper,
       ]: [
         OffscreenTarget,
-        DebugHelper,
+        ShaderPrinter,
       ]) => (
 
         <LinearRGB tonemap="aces">
@@ -73,13 +73,11 @@ export const RTTAccumulatePage: LC = () => {
               <AccumulateView
                 limit={1024}
                 target={feedbackTarget}
-                render={(frame: Lazy<number>) => <PathTrace frame={frame} debugHelper={debugHelper} />}
+                render={(frame: Lazy<number>) => <PathTrace frame={frame} printHelper={printHelper} />}
                 then={(frame: Lazy<number>) => (
                   <Pass>
                     <FullScreen shader={useShader(compositeShader, [feedbackTarget.source, frame])} />
-                    
-                    <PointLayer {...debugHelper.attributes} size={5} />
-                    <LineLayer {...debugHelper.attributes} width={3} />
+                    <PrintLayer helper={printHelper} size={5} width={3} />
                   </Pass>
                 )}
               />
@@ -137,7 +135,7 @@ const useViewVersion = () => {
 
 type PathTraceProps = {
   frame: Lazy<number>,
-  debugHelper: DebugHelper,
+  printHelper: ShaderPrinter,
 };
 
 const PathTrace = (props: PathTraceProps) => {
@@ -163,8 +161,8 @@ const PathTrace = (props: PathTraceProps) => {
     // Mouse debug picking
     mouseRef,
     pickRef,
-    debugHelper.shaders.emitPoint,
-    debugHelper.shaders.emitLine,
+    printHelper.shaders.printPoint,
+    printHelper.shaders.printLine,
   ], {HAS_DEBUG_PICKING: true});
 
   let frameCount = 0;

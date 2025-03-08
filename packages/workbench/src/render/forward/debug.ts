@@ -14,8 +14,8 @@ import { useDeviceContext } from '../../providers/device-provider';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
-import instanceFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
+import renderVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
+import renderFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
 
 export type DebugRenderProps = VirtualDraw;
 
@@ -45,8 +45,8 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
 
   const {bindGroups: {color: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
-  const vertexShader = instanceDrawVirtualSolid;
-  const fragmentShader = instanceFragmentSolid;
+  const vertexShader = renderVirtualSolid;
+  const fragmentShader = renderFragmentSolid;
 
   const pipeline = useOne(() => patch(propPipeline, {primitive: {topology: 'triangle-strip'}}), propPipeline);
 
@@ -76,7 +76,7 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
     }
 
     const links = {getVertex};
-    const v = bindBundle(vertexShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
     const f = fragmentShader;
     return [v, f, vertexCount, instanceCount, wireframeCommand, wireframeIndirect];
   }, [device, vertexShader, fragmentShader, gV, vC, iC, indirect, topology]);

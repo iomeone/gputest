@@ -817,6 +817,62 @@ export const TEXTURE_SHADER_TYPES = {
   "depth32float": 'f32',
 } as Record<GPUTextureFormat, string>;
 
+export const TEXTURE_SAMPLE_TYPES = {
+  // 8-bit formats
+  "r8unorm": 'f32',
+  "r8snorm": 'f32',
+  "r8uint": 'u32',  // u8
+  "r8sint": 'i32',  // i8
+
+  // 16-bit formats
+  "r16uint": 'u32',        // u16
+  "r16sint": 'i32',        // i16
+  "r16float": 'f32',       // f16
+  "rg8unorm": 'f32',
+  "rg8snorm": 'f32',
+  "rg8uint": 'u32',  // u8
+  "rg8sint": 'i32',  // i8
+
+  // 32-bit formats
+  "r32uint": 'u32',
+  "r32sint": 'i32',
+  "r32float": 'f32',
+  "rg16uint": 'u32',        // u16
+  "rg16sint": 'i32',        // i16
+  "rg16float": 'f32',       // f32
+  "rgba8unorm": 'f32',
+  "rgba8unorm-srgb": 'f32',
+  "rgba8snorm": 'f32',
+  "rgba8uint": 'u32',       // u8
+  "rgba8sint": 'i32',       // i8
+  "bgra8unorm": 'f32',
+  "bgra8unorm-srgb": 'f32',
+  // Packed 32-bit formats
+  "rgb9e5ufloat": 'f32',
+  "rgb10a2unorm": 'f32',
+  "rg11b10ufloat": 'f32',
+
+  // 64-bit formats
+  "rg32uint": 'u32',
+  "rg32sint": 'i32',
+  "rg32float": 'f32',
+  "rgba16uint": 'u32',
+  "rgba16sint": 'i32',
+  "rgba16float": 'f32',
+
+  // 128-bit formats
+  "rgba32uint": 'u32',
+  "rgba32sint": 'i32',
+  "rgba32float": 'f32',
+
+  // Depth and stencil formats
+  "stencil8": 'u32',              // u8
+  "depth16unorm": 'f32',
+  "depth24plus": 'u32',
+  "depth24plus-stencil8": 'u32',
+  "depth32float": 'f32',
+} as Record<GPUTextureFormat, string>;
+
 // @ts-ignore
 export const VERTEX_ATTRIBUTE_SIZES = VERTEX_SIZES as {[v in GPUVertexFormat]: number};
 

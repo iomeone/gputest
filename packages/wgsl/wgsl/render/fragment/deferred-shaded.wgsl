@@ -1,4 +1,5 @@
 use '@use-gpu/wgsl/codec/octahedral'::{ encodeOctahedral };
+use '@use-gpu/wgsl/fragment/bayer'::{ bayer4x4f };
 
 struct GBufferSample {
   @location(0) albedo: vec4<f32>,
@@ -16,6 +17,7 @@ struct GBufferSample {
   normal: vec4<f32>,
   tangent: vec4<f32>,
   position: vec4<f32>,
+  coord: vec4<f32>,
 ) -> @infer(T) T {}
 
 @optional @link fn getScissor(color: vec4<f32>, scissor: vec4<f32>) -> vec4<f32> { return color; }
@@ -38,22 +40,21 @@ fn main(
 
   var outColor = fragColor;
 
-  let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition);
+  let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition, fragCoord);
   outColor = surface.albedo;
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
   if (HAS_ALPHA_TO_DISCARD) {
     if (outColor.a <= 0.0) { discard; }
     if (outColor.a < 1.0) {
-      let bits = vec2<u32>(fragCoord.xy) % 2;
-      let level = (0.5 + f32(bits.x ^ ((bits.x ^ bits.y) << 1))) / 4.0;
-      if (outColor.a < level) { discard; }
+      let xy = vec2<u32>(fragCoord.xy);
+      if (outColor.a < bayer4x4f(xy)) { discard; }
     }
   }
 
   return GBufferSample(
-    vec4<f32>(outColor.rgb, surface.occlusion),
-    vec4<f32>(encodeOctahedral(surface.normal.xyz), 0.0, 1.0),
+    vec4<f32>(outColor.rgb, surface.occlusion.a),
+    vec4<f32>(encodeOctahedral(surface.normal.xyz), encodeOctahedral(surface.occlusion.xyz)),
     surface.material,
     surface.emissive,
   );
@@ -85,23 +86,22 @@ struct GBufferSampleWithDepth {
 
   var outColor = fragColor;
 
-  let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition);
+  let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition, fragCoord);
   outColor = surface.albedo;
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
   if (HAS_ALPHA_TO_DISCARD) {
     if (outColor.a <= 0.0) { discard; }
     if (outColor.a < 1.0) {
-      let bits = vec2<u32>(fragCoord.xy) % 2;
-      let level = (0.5 + f32(bits.x ^ ((bits.x ^ bits.y) << 1))) / 4.0;
-      if (outColor.a < level) { discard; }
+      let xy = vec2<u32>(fragCoord.xy);
+      if (outColor.a < bayer4x4f(xy)) { discard; }
     }
   }
 
   return GBufferSample(
     surface.depth,
-    vec4<f32>(outColor.rgb, surface.occlusion),
-    vec4<f32>(encodeOctahedral(surface.normal.xyz), 0.0, 1.0),
+    vec4<f32>(outColor.rgb, surface.occlusion.w),
+    vec4<f32>(encodeOctahedral(surface.normal.xyz), encodeOctahedral(surface.occlusion.xyz)),
     surface.material,
     surface.emissive,
   );

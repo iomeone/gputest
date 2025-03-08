@@ -92,6 +92,7 @@ export const makeGlobalUniforms = (
     layout,
     entries,
   });
+  layout.label = label;
 
   return {pipe, buffer, layout, bindGroup};
 }
@@ -271,13 +272,14 @@ export const getTextureDimension = (layout: string): GPUTextureViewDimension | u
 
 export const makeDataBindingsEntries = <T>(
   device: GPUDevice,
-  bindings: DataBinding<T>[] | Omit<DataBinding<T>, 'attribute'>[],
+  bindings: (DataBinding<T> | Omit<DataBinding<T>, 'attribute'> | null)[],
   binding: number = 0,
 ): GPUBindGroupEntry[] => {
   const entries = [] as any[];
-
+  
   for (const b of bindings) {
-    if (b.uniform) {
+    if (!b) binding++;
+    else if (b.uniform) {
       const {uniform} = b;
       entries.push({binding, resource: {
         buffer: uniform.buffer,
@@ -327,6 +329,8 @@ export const makeDataBindingsEntries = <T>(
       entries.push({binding, resource: samplerResource});
       binding++;
     }
+    
+    if (b?.skip) { debugger; throw new Error("deprecated: skip"); }
   }
 
   return entries;

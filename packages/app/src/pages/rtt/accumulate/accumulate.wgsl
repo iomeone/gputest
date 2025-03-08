@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ getViewNearFar, getViewPosition, getViewResolution, getViewSize, clipToWorld3D };
+use '@use-gpu/wgsl/use/view'::{ getViewNearFar, getViewPosition, getViewResolution, getViewSize, clipToWorld3D, clipUVToXY };
 
 const BOUNCES = 2;
 const SAMPLING = 2;
@@ -23,8 +23,8 @@ const ZERO = vec3<f32>(0.0);
 @optional @link fn getMouse() -> vec2<u32>;
 @optional @link fn getIsPicking() -> u32;
 
-@optional @link fn emitPoint(p: vec3<f32>, c: vec3<f32>);
-@optional @link fn emitLine(a: vec3<f32>, b: vec3<f32>, c: vec3<f32>);
+@optional @link fn printPoint(p: vec3<f32>, c: vec3<f32>);
+@optional @link fn printLine(a: vec3<f32>, b: vec3<f32>, c: vec3<f32>);
 
 struct RayHit {
   position: vec3<f32>,
@@ -65,7 +65,7 @@ fn yFlip(uv: vec2<f32>) -> vec2<f32> {
   let resolution = getViewResolution();
   let eyePos = getViewPosition();
 
-  let clipPos = vec4<f32>((yFlip(uv) + jitter * resolution) * 2.0 - 1.0, 0.0, 1.0);
+  let clipPos = vec4<f32>(clipUVToXY(uv + jitter * resolution), 0.0, 1.0);
   let targetPos = clipToWorld3D(clipPos);
 
   let globalAlbedo = .95;
@@ -300,8 +300,8 @@ fn raytrace(
 
     let c = mix(IN, OUT, distance / far);
 
-    emitPoint(b, c);
-    emitLine(a, b, c);
+    printPoint(b, c);
+    printLine(a, b, c);
   }
 
   if (distance >= far) {

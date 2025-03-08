@@ -34,8 +34,9 @@ export const WebGPU: LC<WebGPUProps> = (props: WebGPUProps) => {
     };
 
     device.addEventListener('uncapturederror', handler);
-    dispose(() => device.addEventListener('uncapturederror', handler));
+    dispose(() => device.removeEventListener('uncapturederror', handler));
   }, [result]);
+
   return (
     result ? provide(DeviceContext, result.device, wrap(Queue, children)) :
     error ? (typeof fallback === 'function' ? fallback(error) : fallback) : null

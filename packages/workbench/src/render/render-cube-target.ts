@@ -2,6 +2,7 @@ import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
+import { TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
@@ -135,9 +136,9 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
 
   const targetTexture = resolveTexture ?? renderTexture;
 
-  const colorStates      = useOne(() => [
-    format ? makeColorState(format, format.match(/unorm|float/) ? BLEND_PREMULTIPLY : undefined) : [],
-  ], format);
+  const colorStates = useOne(() => (
+    format ? [makeColorState(format, format.match(/unorm|float/) ? BLEND_PREMULTIPLY : undefined)] : []
+  ), format);
 
   const viewColorAttachments = useMemo(() =>
     renderTexture || resolveTexture
@@ -188,8 +189,8 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
       const view = targetTexture.createView({ dimension: 'cube' });
       const volatile = history ? history + 1 : 0;
 
-      //const type = TEXTURE_SAMPLE_TYPES[format];
-      const layout = `texture_cube<f32>`;
+      const type = TEXTURE_SAMPLE_TYPES[format];
+      const layout = `texture_cube<${type}>`;
 
       const swap = () => {
         if (!format || !history || !source || !sources) return;

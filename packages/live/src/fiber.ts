@@ -355,7 +355,8 @@ export const updateFiber = <F extends ArrowFunction>(
   // Reconcile wrapped array fragment
   else if (fiberType === FRAGMENT || ((f as any) === DEBUG_BUILTIN)) {
     const calls = callArgs;
-    reconcileFiberCalls(fiber, calls);
+    if (Array.isArray(calls)) reconcileFiberCalls(fiber, calls);
+    else mountFiberCall(fiber, calls as DeferredCall<any>);
   }
   // Map reduce
   else if (fiberType === MAP_REDUCE) {

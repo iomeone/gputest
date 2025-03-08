@@ -9,19 +9,20 @@ import {
   makeDepthStencilAttachments, makeTexture, uploadBuffer,
   getCubeFaceLabel, getCubeFaceMatrix, reverseZ, updateViewProjection, updateViewSize,
 } from '@use-gpu/core';
+import { castTo } from '@use-gpu/shader/wgsl';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable';
-import { useShader } from '../hooks/useShader';
+import { useShader, getShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
 import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
 
 import { useDynamicViewBinding, useApplyPassBindGroup } from './bindings';
-import { useDepthBlit } from './depth-blit';
+import { useDepthCopy } from './depth-copy';
 import { drawToPass } from './util';
 
 import { getCubeToOmniSample } from '@use-gpu/wgsl/render/sample/cube-to-omni.wgsl';
@@ -136,9 +137,13 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
   const border = Math.max(1, Math.min(4, shadowBlur || 1));
   const scaleRef = useShaderRef([width / (width - border * 2), height / (height - border * 2)]);
 
-  const getSample = useShader(getCubeToOmniSample, [cubeSource, scaleRef]);
+  const getDepth = useMemo(() => {
+    const sample = getShader(getCubeToOmniSample, [cubeSource, scaleRef]);
+    return castTo(sample, 'f32');
+  }, [cubeSource]);
+
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const blit = useDepthBlit(renderContext, shadowMapDescriptors[shadowMap!], shadowUV!, SHADOW_PAGE, getSample);
+  const blit = useDepthCopy(renderContext, getDepth, null, null, shadowUV!, SHADOW_PAGE);
 
   return quote(yeet(() => {
     let vs = 0;
@@ -172,7 +177,9 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
 
     {
       const commandEncoder = device.createCommandEncoder(LABEL);
-      blit(commandEncoder);
+      const passEncoder = commandEncoder.beginRenderPass(shadowMapDescriptors[shadowMap!]);
+      blit(passEncoder);
+      passEncoder.end();
 
       const command = commandEncoder.finish();
       device.queue.submit([command]);
@@ -186,9 +193,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
         vertices: vs,
         triangles: ts,
       },
-      pass: {
-        uniforms,
-      },
+      pass: { uniforms },
       bindings: dataBindings,
     });
 

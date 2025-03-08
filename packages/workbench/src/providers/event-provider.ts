@@ -259,4 +259,8 @@ export const useKeyboard = (id: number | null = null) => useContext(KeyboardCont
 export const useMouse = (id: number | null = null) => useContext(MouseContext).useMouse(id);
 export const useWheel = (id: number | null = null) => useContext(WheelContext).useWheel(id);
 
+export const useNoKeyboard = () => useNoContext(KeyboardContext);
+export const useNoMouse = () => useNoContext(MouseContext);
+export const useNoWheel = () => useNoContext(WheelContext);
+
 export const useMouseLock = () => useContext(MouseContext);

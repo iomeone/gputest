@@ -1,3 +1,5 @@
+use '@use-gpu/wgsl/fragment/bayer'::{ bayer4x4f };
+
 @infer type T;
 
 @link fn getDepth(
@@ -26,9 +28,8 @@ fn main(
   if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
 
   if (outColor.a < 1.0) {
-    let bits = vec2<u32>(fragCoord.xy) % 2;
-    let level = (0.5 + f32(bits.x ^ ((bits.x ^ bits.y) << 1))) / 4.0;
-    if (outColor.a < level) { discard; }
+    let xy = vec2<u32>(fragCoord.xy);
+    if (outColor.a < bayer4x4f(xy)) { discard; }
   }
 
   return fragment.depth;

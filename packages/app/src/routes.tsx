@@ -34,10 +34,11 @@ import { RTTMultiscalePage } from './pages/rtt/multiscale';
 import { RTTCFDComputePage } from './pages/rtt/cfd-compute';
 import { RTTCFDTexturePage } from './pages/rtt/cfd-texture';
 import { SceneBasicPage } from './pages/scene/basic';
-import { SceneInstancesPage } from './pages/scene/instances';
-import { SceneShadowPage } from './pages/scene/shadow';
 import { SceneDeferredPage } from './pages/scene/deferred';
 import { ShaderDrostePage } from './pages/shader/droste';
+import { SceneInstancesPage } from './pages/scene/instances';
+import { SceneShadowPage } from './pages/scene/shadow';
+import { SceneSSAOPage } from './pages/scene/ssao';
 
 import { HomePage } from './pages/home';
 import { EmptyPage } from './pages/empty';
@@ -61,6 +62,7 @@ export const makePages = () => [
   {path: "/scene/instances",             title: "Scene - Instances",                 element: <SceneInstancesPage />},
   {path: "/scene/shadow",                title: "Scene - Shadow",                    element: <SceneShadowPage />},
   {path: "/scene/deferred",              title: "Scene - Deferred Renderer",         element: <SceneDeferredPage />},
+  {path: "/scene/ssao",                  title: "Scene - SSAO",                      element: <SceneSSAOPage />},
   {path: "/shader/droste",               title: "Shader - Droste grids",             element: <ShaderDrostePage />},
   {path: "/rtt/accumulate",              title: "RTT - Accumulate",                  element: <RTTAccumulatePage />},
   {path: "/rtt/cube-target",             title: "RTT - Cube Target",                 element: <RTTCubeTargetPage />},

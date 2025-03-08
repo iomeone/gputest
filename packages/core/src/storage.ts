@@ -25,18 +25,18 @@ export const checkStorageType = (
 
   let f = fromName;
   let t = toName;
-
+  
   if (link && t != null && f !== t) {
 
     // Remove array<atomic<..>>
-    f = f.replace(/array?/, '').replace(/^<|>$/g, '');
-    f = f.replace(/atomic?/, '').replace(/^<|>$/g, '');
-    t = t.replace(/array?/, '').replace(/^<|>$/g, '');
-    t = t.replace(/atomic?/, '').replace(/^<|>$/g, '');
+    f = f.replace(/^array?/, '').replace(/^<(.*)>$/g, '$1');
+    f = f.replace(/^atomic?/, '').replace(/^<(.*)>$/g, '$1');
+    t = t.replace(/^array?/, '').replace(/^<(.*)>$/g, '$1');
+    t = t.replace(/^atomic?/, '').replace(/^<(.*)>$/g, '$1');
 
     // Remove vec<..> to allow for automatic widening/narrowing
-    f = f.replace(/vec[0-9](to[0-9])?/, '').replace(/^<|>$/g, '');
-    t = t.replace(/vec[0-9](to[0-9])?/, '').replace(/^<|>$/g, '');
+    f = f.replace(/^vec[0-9](to[0-9])?/, '').replace(/^<(.*)>$/g, '$1');
+    t = t.replace(/^vec[0-9](to[0-9])?/, '').replace(/^<(.*)>$/g, '$1');
 
     // Shorthand
     if (f.match(/^uif$/)) f += '32';

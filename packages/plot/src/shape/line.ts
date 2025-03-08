@@ -88,6 +88,5 @@ export const InnerLine: LiveComponent<LineProps> = (props) => {
 };
 
 export const Line = memo(InnerLine, shouldEqual({
-  position: sameShallow(sameShallow()),
   color: sameShallow(),
 }), 'Line');

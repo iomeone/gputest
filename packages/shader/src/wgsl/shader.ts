@@ -45,13 +45,13 @@ export const defineEnables = (enabled: string[]) => enabled.length ? `enable ${e
 /** Convert a bundle with a defined entry point to a definition for that attribute or type. */
 export const bundleToAttribute = makeBundleToAttribute(toTypeSymbol, toTypeArgs);
 
-/** Convert a bundle to a definition for all its attributes. */
+/** Convert a bundle to a definition for all its linkable attributes. */
 export const bundleToAttributes = makeBundleToAttributes(toTypeSymbol, toTypeArgs);
 
 /** Convert a bundle to a definition for all its bindings. */
 export const bundleToBindings = makeBundleToBindings(toTypeSymbol, toTypeArgs);
 
-// Simple whitespace / comment removal
+// Simple whitespace / comment removal + local var shortening
 const minifyCode = (code: string) => {
   code = removeComments(code);
   code = renameLocals(code);

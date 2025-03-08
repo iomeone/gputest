@@ -10,8 +10,8 @@ import { getShaderLabel } from '../../pass/util';
 
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualPicking from '@use-gpu/wgsl/render/vertex/virtual-pick.wgsl';
-import instanceFragmentPicking from '@use-gpu/wgsl/render/fragment/pick.wgsl';
+import renderVirtualPicking from '@use-gpu/wgsl/render/vertex/virtual-pick.wgsl';
+import renderFragmentPicking from '@use-gpu/wgsl/render/fragment/pick.wgsl';
 
 export type PickingRenderProps = VirtualDraw;
 
@@ -33,8 +33,8 @@ export const PickingRender: LiveComponent<PickingRenderProps> = (props: PickingR
     bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
   } = usePassContext();
 
-  const vertexShader = instanceDrawVirtualPicking;
-  const fragmentShader = instanceFragmentPicking;
+  const vertexShader = renderVirtualPicking;
+  const fragmentShader = renderFragmentPicking;
 
   const pipeline = useOne(() => patch(propPipeline, {
     multisample: { count: 1, alphaToCoverageEnabled: false },
@@ -46,7 +46,7 @@ export const PickingRender: LiveComponent<PickingRenderProps> = (props: PickingR
       getVertex,
       getPicking,
     };
-    const v = bindBundle(vertexShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
     const f = bindBundle(fragmentShader, {}, (getPicking as any).defines);
     return [v, f];
   }, [vertexShader, fragmentShader, getVertex, getPicking]);

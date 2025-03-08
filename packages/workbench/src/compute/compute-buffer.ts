@@ -6,6 +6,7 @@ import { provide, fence, yeet, useContext, useMemo, incrementVersion } from '@us
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { ComputeContext } from '../providers/compute-provider';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
 export type ComputeBufferProps = PropsWithChildren<{
   width?: number,
@@ -17,6 +18,7 @@ export type ComputeBufferProps = PropsWithChildren<{
   label?: string,
 
   render?: (source: StorageTarget) => LiveElement,
+  children?: (source: StorageTarget) => LiveElement,
   then?: (source: StorageTarget) => LiveElement,
 }>;
 
@@ -33,7 +35,6 @@ export const ComputeBuffer: LiveComponent<ComputeBufferProps> = (props: ComputeB
     format = 'f32',
     history = 0,
     label,
-    render,
     children,
     then,
   } = props;
@@ -111,6 +112,7 @@ export const ComputeBuffer: LiveComponent<ComputeBufferProps> = (props: ComputeB
     return source;
   }, [targetBuffer, width, height, depth, format, history, buffers, counter, length]);
 
+  const render = getRenderFunc(props);
   if (!(render ?? children)) return yeet(source);
 
   const content = render ? render(source) : children;

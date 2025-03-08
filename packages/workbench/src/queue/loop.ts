@@ -1,5 +1,5 @@
 import type { LiveComponent, LiveElement, LiveNode, LiveFiber, Task, PropsWithChildren, ArrowFunction } from '@use-gpu/live';
-import { use, detach, provide, unquote, yeet, gather, useCallback, useContext, useOne, useResource, useState, tagFunction, incrementVersion } from '@use-gpu/live';
+import { use, detach, provide, unquote, yeet, gather, useCallback, useContext, useDouble, useOne, useResource, useState, tagFunction, incrementVersion } from '@use-gpu/live';
 
 import { useRenderContext } from '../providers/render-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
@@ -189,10 +189,12 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
   const Run = useCallback(tagFunction(() => {
     const {time, children} = ref;
 
+    const [signalSwap] = useDouble(signal);
     let view: LiveElement = useOne(() => provide(LoopContext, ref.loop, children), children);
 
     const t = {...time};
     view = [
+      signalSwap(),
       provide(FrameContext, ref.version.frame,
         provide(TimeContext, t, view)
       )

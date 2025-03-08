@@ -3,6 +3,7 @@ import type {
   ShaderModule, UniformSource, StorageSource, DataBinding, TextureSource, LambdaSource, SamplerSource,
 } from './types';
 import { checkStorageType } from './storage';
+import { checkTextureType } from './texture';
 
 /**
  * Parse a set of shader sources for use with a given set of uniforms/attributes.
@@ -49,6 +50,7 @@ export const makeShaderBinding = <T extends ShaderModule>(
     }
     if (source.texture || source.view) {
       const texture = source as TextureSource;
+      checkTextureType(attribute, texture);
       return {attribute, texture};
     }
     if (source.sampler) {

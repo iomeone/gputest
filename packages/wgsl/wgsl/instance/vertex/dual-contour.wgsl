@@ -1,6 +1,6 @@
 use '@use-gpu/wgsl/use/types'::{ ShadedVertex };
 use '@use-gpu/wgsl/use/array'::{ sizeToModulus3, packIndex3 };
-use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale, getViewScale, applyZBias };
+use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, applyZBias };
 use '@use-gpu/wgsl/geometry/quad'::{ getQuadIndex };
 use '@use-gpu/wgsl/geometry/normal'::{ getOrthoVector };
 
@@ -23,29 +23,6 @@ use '@use-gpu/wgsl/geometry/normal'::{ getOrthoVector };
 
 fn unpackEdgeId(id: u32) -> vec4<u32> {
   return (vec4<u32>(id) >> vec4<u32>(0u, 9u, 18u, 27u)) & vec4<u32>(0x1FFu);
-}
-
-fn inverseMat3x3(m: mat3x3<f32>) -> mat3x3<f32> {
-
-  let a00 = m[0][0];
-  let a01 = m[0][1];
-  let a02 = m[0][2];
-  let a10 = m[1][0];
-  let a11 = m[1][1];
-  let a12 = m[1][2];
-  let a20 = m[2][0];
-  let a21 = m[2][1];
-  let a22 = m[2][2];
-
-  let b01 = a22 * a11 - a12 * a21;
-  let b11 = -a22 * a10 + a12 * a20;
-  let b21 = a21 * a10 - a11 * a20;
-
-  let det = a00 * b01 + a01 * b11 + a02 * b21;
-
-  return mat3x3<f32>(vec3<f32>(b01, (-a22 * a01 + a02 * a21), (a12 * a01 - a02 * a11)) / det,
-                     vec3<f32>(b11, (a22 * a00 - a02 * a20), (-a12 * a00 + a02 * a10)) / det,
-                     vec3<f32>(b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det);
 }
 
 @export fn getDualContourVertex(vertexIndex: u32, instanceIndex: u32) -> ShadedVertex {

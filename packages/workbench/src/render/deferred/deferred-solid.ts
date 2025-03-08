@@ -10,8 +10,8 @@ import { getNativeColor } from '../../hooks/useNativeColor';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
-import instanceFragmentSolid from '@use-gpu/wgsl/render/fragment/deferred-solid.wgsl';
+import renderVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
+import renderFragmentSolid from '@use-gpu/wgsl/render/fragment/deferred-solid.wgsl';
 
 import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
@@ -35,8 +35,8 @@ export const DeferredSolidRender: LiveComponent<DeferredSolidRenderProps> = (pro
     bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
   } = usePassContext();
 
-  const vertexShader = instanceDrawVirtualSolid;
-  const fragmentShader = instanceFragmentSolid;
+  const vertexShader = renderVirtualSolid;
+  const fragmentShader = renderFragmentSolid;
 
   // Binds links into shader
   const [v, f] = useMemo(() => {
@@ -46,8 +46,8 @@ export const DeferredSolidRender: LiveComponent<DeferredSolidRenderProps> = (pro
       getScissor: defines?.HAS_SCISSOR ? getScissorColor : null,
       toColorSpace: getNativeColor(colorInput, colorSpace),
     };
-    const v = bindBundle(vertexShader, links, undefined);
-    const f = bindBundle(fragmentShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
+    const f = bindBundle(fragmentShader, links);
     return [v, f];
   }, [vertexShader, fragmentShader, getVertex, getFragment, defines, colorInput, colorSpace]);
 
@@ -59,7 +59,7 @@ export const DeferredSolidRender: LiveComponent<DeferredSolidRenderProps> = (pro
     vertex: v,
     fragment: f,
     defines: defs,
-    renderContext: gbuffer,
+    renderContext: gBuffer,
     globalLayout,
     pipelineKey,
   };

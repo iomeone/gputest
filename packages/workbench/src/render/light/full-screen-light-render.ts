@@ -14,14 +14,14 @@ export const FullScreenLightRender: LiveComponent<LightKindProps> = (props: Ligh
   const {
     start,
     end,
-    gbuffer,
+    gBuffer,
 
     getLight,
     applyLight,
   } = props;
 
   const getVertex = useShader(getDeferredLightVertex, [getLight], FULLSCREEN_DEFS);
-  const getFragment = useShader(getDeferredLightFragment, [...gbuffer, getLight, applyLight]);
+  const getFragment = useShader(getDeferredLightFragment, [...gBuffer, getLight, applyLight]);
 
   const links = useMemo(() => ({getVertex, getFragment}), [getVertex, getFragment]);
 

@@ -123,6 +123,8 @@ export const makeBindingAccessors = (
     const bindingSet = getBindingArgument(rename.get(VIRTUAL_BINDGROUP));
     const volatileSet = getBindingArgument(rename.get(VOLATILE_BINDGROUP));
 
+    const maybeRename = (s?: string | null) => s != null ? rename.get(s) ?? s : s;
+
     for (const {attribute: {name, format: type, args}} of constants) {
       if (typeof type !== 'string') throw new Error(`Cannot make uniform for struct type`);
       program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args as any));
@@ -138,7 +140,7 @@ export const makeBindingAccessors = (
       if (type) {
         const format = type === typeOut ? formatOut : formatIn;
         const entry = getBundleEntry(type);
-        let t = (entry ? rename.get(entry) : null) ?? entry ?? 'unknown';
+        let t = maybeRename(entry) ?? 'unknown';
         if (t === 'unknown') throw new Error(`Invalid type '${getBundleName(type)}'. Module has no entry point.`);
 
         if (format === 'array<T>') t = `array<${t}>`;
@@ -243,7 +245,8 @@ export const checkLambdaType = (
   const {name, format: from} = attribute;
 
   const bundle = toBundle(lambda.shader);
-  const {format: to} = bundleToAttribute(bundle);
+  const lambdaAttribute = bundleToAttribute(bundle);
+  const {format: to} = lambdaAttribute;
 
   if (Array.isArray(from) || Array.isArray(to)) return true;
 
@@ -251,7 +254,7 @@ export const checkLambdaType = (
   let t = to;
 
   if (f === t) return true;
-  if (t === 'auto') return true;
+  if (f === 'auto' || t === 'auto') return true;
   if (t == null) {
     console.warn(`Unable to determine lambda format for attribute ${attribute.name} -> bundle ${getBundleEntry(bundle)}`)
     return true;

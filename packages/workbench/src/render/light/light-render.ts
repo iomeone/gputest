@@ -24,8 +24,8 @@ import { PointLightRender } from './point-light-render';
 import { getLight } from '@use-gpu/wgsl/use/light.wgsl';
 import { sampleShadow } from '@use-gpu/wgsl/use/shadow.wgsl';
 
-import instanceDrawVirtualLight from '@use-gpu/wgsl/render/vertex/virtual-light.wgsl';
-import instanceFragmentLight from '@use-gpu/wgsl/render/fragment/deferred-light.wgsl';
+import renderVirtualLight from '@use-gpu/wgsl/render/vertex/virtual-light.wgsl';
+import renderFragmentLight from '@use-gpu/wgsl/render/fragment/deferred-light.wgsl';
 
 import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl';
 import { applyPBRMaterial as applyMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
@@ -39,7 +39,7 @@ export type LightRenderProps = {
 };
 
 export type LightKindProps = {
-  gbuffer: TextureSource[],
+  gBuffer: TextureSource[],
   stencil: boolean,
   shadows: boolean,
 
@@ -164,8 +164,8 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
     subranges,
   } = props;
 
-  const {buffers: {gbuffer: [gbuffer], shadow: [shadow]}} = usePassContext();
-  const {depthStencilState, sources} = gbuffer;
+  const {buffers: {gBuffer: [gBuffer], shadow: [shadow]}} = usePassContext();
+  const {depthStencilState, sources} = gBuffer;
 
   const shadows = !!shadow;
   const stencil = !!depthStencilState?.format.match(/stencil/);
@@ -185,14 +185,14 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const [start, end] = subranges.get(kind)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const props = {lights, order, start, end, stencil, gbuffer: sources!, getLight, applyLight};
+    const props = {lights, order, start, end, stencil, gBuffer: sources!, getLight, applyLight};
 
     const Component = LIGHT_RENDERERS[kind];
     return Component ? keyed(Component, kind, props) : null;
   });
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  out.push(keyed(EmissiveLightRender, -1, {gbuffer: sources!, getLight}));
+  out.push(keyed(EmissiveLightRender, -1, {gBuffer: sources!, getLight}));
 
   return out;
 }, 'LightRender');
@@ -218,12 +218,12 @@ export const useLightDraw = (
 
   const {bindGroups: {color: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
-  const vertexShader = instanceDrawVirtualLight;
-  const fragmentShader = instanceFragmentLight;
+  const vertexShader = renderVirtualLight;
+  const fragmentShader = renderFragmentLight;
 
   const [v, f] = useMemo(() => {
-    const v = bindBundle(vertexShader, links, undefined);
-    const f = links.getFragment ? bindBundle(fragmentShader, links, undefined) : null;
+    const v = bindBundle(vertexShader, links);
+    const f = links.getFragment ? bindBundle(fragmentShader, links) : null;
     return [v, f];
   }, [vertexShader, fragmentShader, links]);
 

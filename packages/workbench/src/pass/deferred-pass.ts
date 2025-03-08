@@ -39,7 +39,7 @@ const LABEL = { label };
 
 /** Deferred render pass.
 
-Draws all opaque calls to gbuffer, then stencils lights, then draws lights, then all transparent calls, then all debug wireframes.
+Draws all opaque calls to gBuffer, then stencils lights, then draws lights, then all transparent calls, then all debug wireframes.
 */
 export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProps) => {
   const {
@@ -57,11 +57,11 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
   const {cull, uniforms} = useViewContext();
   const {
-    buffers: {gbuffer: [gbuffer]},
+    buffers: {gBuffer: [gBuffer]},
   } = usePassContext();
 
   const {bindPass: bindViewPass} = useApplyPass(env, 'view');
-  const {bindPass: bindColorPass} = useApplyPass(env, 'color');
+  const {bindPass: bindColorPass, dataBindings} = useApplyPass(env, 'color');
 
   if (!depth) throw new Error("Deferred renderer requires a depth buffer");
 
@@ -73,25 +73,25 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
   const lights       = toArray(calls['light']       as Renderable[]);
 
   const deferredPassDescriptor = useMemo(() =>
-    getRenderPassDescriptor(gbuffer, {
+    getRenderPassDescriptor(gBuffer, {
+      label: '<DeferredPass> GBuffer',
       overlay: false,
       merge,
-      label: '<DeferredPass> GBuffer',
     }),
-    [gbuffer, merge]);
+    [gBuffer, merge]);
 
   const stencilPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(renderContext, {
+      label: '<DeferredPass> GBuffer',
       stencil: true,
-      label: '<DeferredPass> Stencil',
     }),
     [renderContext]);
 
   const renderPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(renderContext, {
+      label: '<DeferredPass> Color',
       overlay,
       merge: true,
-      label: '<DeferredPass> Color',
     }),
     [renderContext, overlay]);
 
@@ -114,7 +114,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
     commandEncoder.copyTextureToTexture(
       {texture: depth.texture},
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      {texture: gbuffer.sources![4].texture},
+      {texture: gBuffer.sources![4].texture},
       [width, height, 1]
     );
 
@@ -147,6 +147,8 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
         vertices: vs,
         triangles: ts,
       },
+      pass: { uniforms },
+      bindings: dataBindings,
     });
 
     return null;

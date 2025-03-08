@@ -1,3 +1,5 @@
+use '@use-gpu/wgsl/fragment/bayer'::{ bayer4x4f };
+
 @infer type T;
 
 @link fn getFragment(
@@ -10,7 +12,6 @@
 
 @fragment
 fn main(
-  @builtin(front_facing) frontFacing: bool,
   @builtin(position) fragCoord: vec4<f32>,
   @location(0) fragAlpha: f32,
   @location(1) fragUV: vec4<f32>,
@@ -25,8 +26,7 @@ fn main(
   if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
 
   if (outColor.a < 1.0) {
-    let bits = vec2<u32>(fragCoord.xy) % 2;
-    let level = (0.5 + f32(bits.x ^ ((bits.x ^ bits.y) << 1))) / 4.0;
-    if (outColor.a < level) { discard; }
+    let xy = vec2<u32>(fragCoord.xy);
+    if (outColor.a < bayer4x4f(xy)) { discard; }
   }
 }

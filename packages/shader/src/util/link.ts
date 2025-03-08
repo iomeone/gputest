@@ -41,6 +41,8 @@ export type RewriteUsingAST = (
   optionals?: Set<string> | null,
 ) => string;
 
+export type IsGlobalType = (s: string) => boolean;
+
 const NO_LIBS: Record<string, ShaderModule> = {};
 
 // Link a source module with static modules and dynamic links.
@@ -106,6 +108,7 @@ export const makeLinker = (
   defineConstants: DefineConstants,
   defineEnables: DefineEnables,
   rewriteUsingAST: RewriteUsingAST,
+  isGlobalType?: IsGlobalType,
 ) => (
   source: ShaderModule,
   libraries: Record<string, ShaderModule> = NO_LIBS,
@@ -236,7 +239,8 @@ export const makeLinker = (
         for (const {name, at} of inferred) {
           const resolved = at < 0 ? type : parameters[at];
 
-          let imp = ns + (resolved.type ?? resolved.name ?? resolved);
+          const symbol = (resolved.type ?? resolved.name ?? resolved);
+          let imp = !isGlobalType?.(symbol) ? ns + symbol : symbol;
           let i = imp;
           while ((i = infers.get(imp)) != null) { imp = i; }
 

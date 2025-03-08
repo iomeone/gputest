@@ -29,8 +29,8 @@ use '@use-gpu/wgsl/fragment/pbr'::{ PBRParams };
     emissive *= getEmissiveMap(mapUV.xy);
   }
 
-  if (HAS_OCCLUSION_MAP) {
-    occlusion *= getOcclusionMap(mapUV.xy).x;
+  else if (HAS_OCCLUSION_MAP) {
+    occlusion = getOcclusionMap(mapUV.xy).x;
   }
 
   var material = vec4<f32>(metalness, roughness, 1.0, 1.0);

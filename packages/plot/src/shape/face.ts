@@ -92,7 +92,6 @@ export const InnerFace: LiveComponent<FaceProps> = (props) => {
 };
 
 export const Face = memo(InnerFace, shouldEqual({
-  position: sameShallow(sameShallow()),
   color: sameShallow(),
 }), 'Face');
 

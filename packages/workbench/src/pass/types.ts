@@ -9,6 +9,8 @@ export type PassFlags = {
   lights?: boolean,
   shadows?: boolean,
   picking?: boolean,
+  ssao?: boolean,
+
   overlay?: boolean,
   merge?: boolean,
 };

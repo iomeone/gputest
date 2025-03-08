@@ -64,7 +64,7 @@ const parseTextureType = (format: string, variant: string | null) => {
  * Make bind group layout entries for the given data bindings and visibilities.
  */
 export const makeBindGroupLayoutEntries = (
-  bindings: (DataBinding | RawBinding)[],
+  bindings: (DataBinding | RawBinding | null | undefined)[],
   visibilities: GPUShaderStageFlags | Map<DataBinding | RawBinding, GPUShaderStageFlags> | GPUShaderStageFlags[],
   binding: number = 0,
 ): GPUBindGroupLayoutEntry[] => {
@@ -74,7 +74,8 @@ export const makeBindGroupLayoutEntries = (
     const v = typeof visibilities === 'number' ? visibilities : Array.isArray(visibilities) ? visibilities[i] : (visibilities.get(b) || 7);
     const l = makeBindGroupLayoutEntry(b, v, out.length + binding);
     if (Array.isArray(l)) out.push(...l);
-    else out.push(l);
+    else if (l) out.push(l);
+    else binding++;
     ++i;
   }
   return out;
@@ -84,10 +85,14 @@ export const makeBindGroupLayoutEntries = (
  * Make a bind group layout entry for a given data binding and visibility.
  */
 export const makeBindGroupLayoutEntry = (
-  b: DataBinding | RawBinding,
+  b: DataBinding | RawBinding | null | undefined,
   visibility: GPUShaderStageFlags,
   binding: number,
 ): GPUBindGroupLayoutEntry | GPUBindGroupLayoutEntry[] => {
+  if (!b) return null;
+
+  if (b.skip) { debugger; throw new Error("deprecated: skip"); }
+
   if (b.uniform != null) {
     const minBindingSize = getMinBindingSize(b.uniform.format, b.uniform.type ?? b.attribute.type);
     return {binding, visibility, buffer: {type: 'uniform', minBindingSize}};
@@ -170,9 +175,12 @@ export const getMinBindingSize = (
   if (type) {
     const module = (type.module ?? type) as any;
     const entry = type.entry ?? module.entry;
-    const {table: {exports}} = module;
+    const {table: {exports, locals}} = module;
 
-    const decl = exports?.find((d: any) => d.struct?.name === entry);
+    const decl = (
+      exports.find((d: any) => d.struct?.name === entry) ??
+      locals.find((d: any) => d.struct?.name === entry)
+    );
     if (!decl) {
       console.warn('getMinBindingSize = 0. Struct declaration not found. Does it have `@export`?', {format, type})
       return 0;
@@ -232,6 +240,8 @@ export const mergeAttributeBindings = (
 
   const allBindings: UniformAttribute[] = [];
   const allVisibilities: GPUShaderStageFlags[] = [];
+  
+  const ensureLength = <T>(list: T[], n: number, v: T) => { while (list.length < n) list.push(v); }
 
   let i = 0;
   for (const stage of stages) {
@@ -245,6 +255,9 @@ export const mergeAttributeBindings = (
       const location = attr?.find((k: string) => k.match(/^binding\(/));
       const index = parseInt(location?.split(/[()]/g)[1] ?? '', 10);
       if (Number.isNaN(index)) throw new Error(`Binding without location: '${attribute.name}' ${attr?.join(' ')}`);
+
+      ensureLength(allBindings, index);
+      ensureLength(allVisibilities, index);
 
       if (!allBindings[index]) allBindings[index] = attribute;
       else if (
@@ -265,8 +278,10 @@ export const mergeAttributeBindings = (
  * Create a raw placeholder binding for an attribute
  */
 export const makeRawBindingForAttribute = (
-  attribute: UniformAttribute,
-): RawBinding => {
+  attribute?: UniformAttribute | null,
+): RawBinding | null => {
+  if (!attribute) return null;
+
   const {type, format, qual} = attribute;
 
   const [layout] = Array.isArray(format) ? [''] : (format as string).split(/[<>,]/);
