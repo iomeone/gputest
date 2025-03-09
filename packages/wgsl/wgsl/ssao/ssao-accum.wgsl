@@ -52,7 +52,7 @@ fn depthWeight(a: f32, b: f32) -> f32 {
 
   let lastUV = uv - getMotion(uv).xy;
   let last = getLastAccum(lastUV);
-  //let lastDepth = getDepth(lastUV);
+  let lastDepth = getDepth(lastUV);
 
   let sample00 = getSample(uv00);
   let sample10 = getSample(uv10);
@@ -64,7 +64,7 @@ fn depthWeight(a: f32, b: f32) -> f32 {
   let outOfBoundsXY = (lastUV < vec2<f32>(0.0)) | (lastUV > vec2<f32>(1.0));
   let outOfBounds = outOfBoundsXY.x | outOfBoundsXY.y;
   
-  let blend = BLEND_ACCUM;//mix(BLEND_ACCUM, 1.0, depthWeight(depth00, lastDepth));
+  let blend = mix(BLEND_ACCUM, 1.0, depthWeight(depth00, lastDepth));
   let weight = select(blend, 1.0, outOfBounds);
 
   // Float [-1..1] encoding for normal, averaged around zero

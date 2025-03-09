@@ -1,8 +1,10 @@
 import type { UniformAttribute } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
+import type { PassBinding } from '../pass/types';
 
+import { seq } from '@use-gpu/core';
 import { useMemo } from '@use-gpu/live';
-import { makeBindGroupLayout, makeBindGroupLayoutEntries, makeRawBindingForAttribute, mergeAttributeBindings } from '@use-gpu/core';
+import { makeBindGroupLayout, makeBindGroupLayoutEntries, makeRawBindingForAttribute } from '@use-gpu/core';
 import { bundleToBindings } from '@use-gpu/shader/wgsl';
 
 import { useDeviceContext } from '../providers/device-provider';
@@ -13,30 +15,94 @@ export type BindGroupLayout = {
 };
 
 export const useBindGroupLayout = (
-  stages: (ShaderModule | null | undefined)[][],
+  bindings: (PassBinding | null | undefined)[],
   group: string,
+  key?: string,
 ): BindGroupLayout => {
   const device = useDeviceContext();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => getBindGroupLayout(device, stages, group), [device, group, ...stages]);
+  return useMemo(() => getBindGroupLayout(device, bindings, group, key), [device, group, bindings, key]);
 };
 
 export const getBindGroupLayout = (
   device: GPUDevice,
-  stages: (ShaderModule | null | undefined)[][],
+  maybeBindings: (Pick<PassBinding, 'module' | 'visibility'> | null | undefined)[],
   group: string,
+  key?: string,
 ): BindGroupLayout => {
-  const bindings = stages.map(stage => stage.filter(s => !!s).flatMap((b) => bundleToBindings(b as ShaderModule)));
 
-  const key = `group(${group})`;
-  const [attributes, visibilities] = mergeAttributeBindings(bindings, key);
-  const rawBindings = attributes.map(makeRawBindingForAttribute);
+  const bindings: PassBinding[] = maybeBindings.filter(s => !!s);
+  const bindingIndices: number[][] = [];
 
-  const names = attributes.map(a => a?.name ?? '<null>');
-  const label = key + '::{' + names.join(', ') + '}';
+  const match = `group(${group})`;
+
+  const allAttributes: UniformAttribute[] = [];
+  const allVisibilities: GPUShaderStageFlags[] = [];
+
+  for (const b of bindings) {
+    const attributes = bundleToBindings(b.module);
+    const visibility = (
+      b.visibility === 'vertex' ? GPUShaderStage.VERTEX :
+      b.visibility === 'fragment' ? GPUShaderStage.FRAGMENT :
+      GPUShaderStage.COMPUTE | GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT
+    );
+
+    const indices: number[] = [];
+    for (const attribute of attributes) {
+      const {attr} = attribute;
+      if (!attr.find((k: string) => k === match)) continue;
+
+      const location = attr?.find((k: string) => k.match(/^binding\(/));
+      const index = parseInt(location?.split(/[()]/g)[1] ?? '', 10);
+
+      ensureLength(allAttributes, index, null);
+      ensureLength(allVisibilities, index, null);
+      
+      allAttributes[index] = attribute;
+      allVisibilities[index] = visibility;
+      indices.push(index);
+    }
+
+    bindingIndices.push(indices);
+  }
   
-  const entries = makeBindGroupLayoutEntries(rawBindings, visibilities);
+  const rawBindings = allAttributes.map(makeRawBindingForAttribute);
+
+  const names = allAttributes.map(a => a?.name ?? '<null>');
+  const label = match + '::{' + names.join(', ') + '}';
+  
+  const entries = makeBindGroupLayoutEntries(rawBindings, allVisibilities);
   const layout = makeBindGroupLayout(device, entries, label);
 
-  return {attributes, layout};
+  return {
+    key,
+    attributes: allAttributes,
+    layout,
+    bind: combineBindGroupValues(bindings, bindingIndices),
+  };
+};
+
+const ensureLength = <T>(list: T[], n: number, v: T) => { while (list.length < n) list.push(v); }
+
+const combineBindGroupValues = (
+  bindings: PassBinding[],
+  bindingIndices: number[][],
+) => (buffers: BuffersEnv, env: PassEnv) => {
+  const values = [];
+
+  let i = 0;
+  for (const b of bindings) {
+    const is = bindingIndices[i];
+    const vs = b.bind?.(buffers, env) ?? [];
+
+    const n = is.length;
+    for (let j = 0; j < n; ++j) {
+      ensureLength(values, is[j], null);
+      values[is[j]] = vs[j];
+    }
+
+    ++i;
+  }
+
+  return values;
 };

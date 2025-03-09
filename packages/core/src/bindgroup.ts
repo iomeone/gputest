@@ -224,57 +224,6 @@ export const getMinBindingSize = (
 };
 
 /**
- * Merge static attributes in a @group(...) across one or more pipeline stages,
- * and return per-stage visibility.
- */
-export const mergeAttributeBindings = (
-  stages: UniformAttribute[][],
-  pass: string,
-): [
-  UniformAttribute[],
-  GPUShaderStageFlags[],
-] => {
-  
-  const key = pass;
-  const n = stages.length;
-
-  const allBindings: UniformAttribute[] = [];
-  const allVisibilities: GPUShaderStageFlags[] = [];
-  
-  const ensureLength = <T>(list: T[], n: number, v: T) => { while (list.length < n) list.push(v); }
-
-  let i = 0;
-  for (const stage of stages) {
-    const visibility = n === 2
-      ? (i ? GPUShaderStage.FRAGMENT : GPUShaderStage.VERTEX)
-      : GPUShaderStage.COMPUTE;
-
-    for (const attribute of stage) {
-      const {attr} = attribute;
-
-      const location = attr?.find((k: string) => k.match(/^binding\(/));
-      const index = parseInt(location?.split(/[()]/g)[1] ?? '', 10);
-      if (Number.isNaN(index)) throw new Error(`Binding without location: '${attribute.name}' ${attr?.join(' ')}`);
-
-      ensureLength(allBindings, index);
-      ensureLength(allVisibilities, index);
-
-      if (!allBindings[index]) allBindings[index] = attribute;
-      else if (
-        allBindings[index].name != attribute.name ||
-        allBindings[index].format != attribute.format ||
-        (allBindings[index].type as any)?.key != (attribute.type as any)?.key
-      ) throw new Error(`Conflicting static binding in '@${key}' for index '${index}':\n'${allBindings[index].name}' vs '${attribute.name}'`);
-
-      allVisibilities[index] = (allVisibilities[index] || 0) | visibility;
-    }
-    ++i;
-  }
-
-  return [allBindings, allVisibilities];
-};
-
-/**
  * Create a raw placeholder binding for an attribute
  */
 export const makeRawBindingForAttribute = (

@@ -40,7 +40,9 @@ export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
   );
 
   return gather(target, ([target]: TextureTarget[]) => {
-    return yeet({ motion: [target] });
+    return yeet({
+      motion: [target],
+    });
   });
 
 }, 'MotionBuffer');

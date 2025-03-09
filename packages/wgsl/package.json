@@ -180,6 +180,7 @@
     "./use/color.wgsl": "./src/use/color.wgsl.ts",
     "./use/gamma.wgsl": "./src/use/gamma.wgsl.ts",
     "./use/light.wgsl": "./src/use/light.wgsl.ts",
+    "./use/motion.wgsl": "./src/use/motion.wgsl.ts",
     "./use/shadow.wgsl": "./src/use/shadow.wgsl.ts",
     "./use/ssao.wgsl": "./src/use/ssao.wgsl.ts",
     "./use/types.wgsl": "./src/use/types.wgsl.ts",

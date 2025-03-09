@@ -6,6 +6,7 @@ import { provide, makeContext, useContext, useNoContext, useMemo } from '@use-gp
 import { makeViewUniforms, uploadBuffer } from '@use-gpu/core';
 
 import { useUniformSource } from '../hooks/useUniformSource';
+import { makeViewBinding } from '../pass/bindings';
 import { useDeviceContext } from '../providers/device-provider';
 import { useFrustumCuller, useNoFrustumCuller } from '../hooks/useFrustumCuller';
 import { QueueReconciler } from '../reconcilers/index';
@@ -18,8 +19,7 @@ const {signal} = QueueReconciler;
 
 const DEFAULT_VIEW_CONTEXT = {
   uniforms: makeViewUniforms(),
-  binding: viewBinding,
-  source: null,
+  binding: {module: viewBinding},
   cull: () => true,
 } as ViewContextProps;
 
@@ -62,8 +62,11 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
 
   const context = useMemo(() => ({
     uniforms,
-    binding,
-    source,
+    binding: {
+      module: binding,
+      type,
+      bind: () => [source],
+    },
     cull,
   }), [uniforms, binding, source, cull]);
 

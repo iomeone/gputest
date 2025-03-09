@@ -54,13 +54,13 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
   const inspect = useInspectable();
 
   const device = useDeviceContext();
-  const {buffers: {ssao}} = usePassContext();
+  const {buffers: {ssao}, bindGroups: {view: {layout: globalLayout}}} = usePassContext();
 
   const [normalContext, motionContext, sampleContext, accumContext, resolveContext] = ssao;
   const debugContext = useRenderContext();
 
   const {cull, uniforms} = useViewContext();
-  const {bindPass, dataBindings, layout} = useApplyPass(env, 'view');
+  const {bindPass, dataBindings} = useApplyPass(env, 'view');
 
   const normalPassDescriptor = useOne(() =>
     getRenderPassDescriptor(normalContext, {label: 'SSAOPass/NormalDepth'}),
@@ -102,7 +102,7 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
       descriptor: samplePassDescriptor,
 
       bindPass,
-      globalLayout: layout,
+      globalLayout,
     }),
     use(SSAODispatch, {
       ...ssaoOptions,
