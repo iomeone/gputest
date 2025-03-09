@@ -14,17 +14,19 @@ import { useDeviceContext, useNoDeviceContext } from '../providers/device-provid
 import { usePassContext } from '../providers/pass-provider';
 import { useViewContext } from '../providers/view-provider';
 
-import lightBindingWGSL, { LightUniforms as LightUniformsWGSL } from '@use-gpu/wgsl/use/light.wgsl';
+import { ViewUniforms as ViewUniformsWGSL } from '@use-gpu/wgsl/use/view.wgsl';
+import lightBindingWGSL from '@use-gpu/wgsl/use/light.wgsl';
 import shadowBindingWGSL from '@use-gpu/wgsl/use/shadow.wgsl';
 import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
-import motionBindingWGSL, { MotionUniforms as MotionUniformsWGSL } from '@use-gpu/wgsl/use/motion.wgsl';
+import motionBindingWGSL from '@use-gpu/wgsl/use/motion.wgsl';
+
+const NO_OBJECT = {} as Record<string, any>;
 
 export const lightBinding: PassBinding = {
   module: lightBindingWGSL,
-  type: LightUniformsWGSL,
   bind: (buffers: BuffersEnv, {light}: PassEnv) => {
-    const {lightData} = light?.sources ?? ({} as Record<string, any>);
-    return lightData ? [lightData] : [null];
+    const {lightData} = light?.sources ?? NO_OBJECT;
+    return [lightData];
   },
 };
 
@@ -32,25 +34,24 @@ export const shadowBinding: PassBinding = {
   module: shadowBindingWGSL,
   visibility: 'fragment',
   bind: (buffers: BuffersEnv, {light}: PassEnv) => {
-    const {lightData, shadowMap} = light?.sources ?? ({} as Record<string, any>);
+    const {shadowMap} = light?.sources ?? NO_OBJECT;
 
-    return shadowMap ? [
-      {...shadowMap, sampler: null},
-      {sampler: shadowMap.sampler, filter: shadowMap.filter},
-    ] : [null, null];
+    return [
+      shadowMap && {...shadowMap, sampler: null},
+      shadowMap && {sampler: shadowMap.sampler, filter: shadowMap.filter},
+    ];
   },
 };
 
 export const ssaoBinding: PassBinding = {
   module: ssaoBindingWGSL,
   visibility: 'fragment',
-  bind: (buffers: BuffersEnv) => buffers.ssao ? [buffers.ssao[4].source] : [null],
+  bind: (buffers: BuffersEnv) => [buffers.ssao?.[4]?.source],
 };
 
 export const motionBinding: PassBinding = {
   module: motionBindingWGSL,
-  type: MotionUniformsWGSL,
-  bind: (buffers: BuffersEnv) => buffers.motion ? [buffers.motion[0].source] : [null],
+  bind: (buffers: BuffersEnv, {motion}: PassEnv) => [motion?.source],
 };
 
 export const useMinimalBindGroups = (): Record<string, PassBindGroup> => {
@@ -103,7 +104,7 @@ export const useStandardBindGroup = (
     ssao && ssaoBinding,
   ];
 
-  const key = maybeBindings.reduce((a, b, i) => a | (b != null ? (1 << i) : 0), 0);
+  const key = maybeBindings.reduce((a, b, i) => a | (b ? (1 << i) : 0), 0);
 
   return getBindGroupLayout(device, maybeBindings, 'PASS', key);
 };
@@ -128,10 +129,10 @@ export const useApplyPass = (
 export const useApplyPassBindGroup = (
   buffers: BuffersEnv,
   env: PassEnv,
-  binding: Partial<PassBindGroup>,
+  passBindGroup: Partial<PassBindGroup>,
   label?: string,
 ): ApplyPass => {
-  const {attributes, layout, bind} = binding;
+  const {attributes, layout, bind} = passBindGroup;
   if (attributes == null || bind == null || layout == null) return (useNoApplyPassBindGroup(), {dataBindings: []});
 
   const device = useDeviceContext();
@@ -165,19 +166,18 @@ export const useNoApplyPassBindGroup = () => {
 };
 
 export const useDynamicViewBinding = (
-  viewBinding: PassBindGroup,
-  type: ShaderModule = ViewUniformsWGSL,
+  passBindGroup: PassBindGroup,
 ) => {
   const uniforms = useOne(makeViewUniforms);
 
   const {viewPosition, projectionViewFrustum} = uniforms;
   const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
 
-  const [source, pipe] = useUniformSource(type);
+  const [source, updateView] = useUniformSource(ViewUniformsWGSL);
   const binding = useMemo(() => ({
-    ...viewBinding,
-    select: (env: PassEnv) => ({...viewBinding.select(env), viewUniforms: source}),
-  }), [viewBinding, source]);
+    ...passBindGroup,
+    bind: (buffers, env) => [source, ...passBindGroup.bind(buffers, env).slice(1)],
+  }), [passBindGroup, source]);
 
-  return {binding, cull, pipe, source, uniforms};
+  return {binding, cull, uniforms, updateView};
 }

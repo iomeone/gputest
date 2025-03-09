@@ -6,7 +6,7 @@ import { mat4 } from 'gl-matrix';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
-  makeDepthStencilAttachments, makeTexture, uploadBuffer,
+  makeDepthStencilAttachments, makeTexture,
   getCubeFaceLabel, getCubeFaceMatrix, reverseZ, updateViewProjection, updateViewSize,
 } from '@use-gpu/core';
 import { castTo } from '@use-gpu/shader/wgsl';
@@ -70,7 +70,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
   const shadows = toArray(calls['shadow'] as Renderable[]);
 
   // Bind to dynamic view
-  const {cull, binding, pipe, source, uniforms} = useDynamicViewBinding(viewBindGroup);
+  const {cull, binding, uniforms, updateView} = useDynamicViewBinding(viewBindGroup);
   const {bindPass, dataBindings} = useApplyPassBindGroup(buffers, env, binding);
 
   const {
@@ -158,9 +158,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       mat4.multiply(viewMatrix, getCubeFaceMatrix(i), into!);
       updateViewProjection(uniforms, projectionMatrix, viewMatrix);
-
-      pipe.fill(uniforms);
-      uploadBuffer(device, source.buffer, pipe.data);
+      updateView(uniforms);
 
       // Render pass
       const commandEncoder = device.createCommandEncoder(LABEL);

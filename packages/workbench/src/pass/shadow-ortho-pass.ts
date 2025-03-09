@@ -4,7 +4,7 @@ import type { BoundLight } from '../light/types';
 import { mat4, vec4 } from 'gl-matrix';
 
 import { yeet, memo, useOne } from '@use-gpu/live';
-import { uploadBuffer, updateViewProjection, updateViewSize } from '@use-gpu/core';
+import { updateViewProjection, updateViewSize } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
@@ -59,7 +59,7 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
   const shadows = toArray(calls['shadow'] as Renderable[]);
 
   // Bind to dynamic view
-  const {cull, binding, pipe, source, uniforms} = useDynamicViewBinding(viewBindGroup);
+  const {cull, binding, uniforms, updateView} = useDynamicViewBinding(viewBindGroup);
   const {bindPass, dataBindings} = useApplyPassBindGroup(buffers, env, binding);
 
   const {
@@ -108,9 +108,7 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     updateViewProjection(uniforms, projectionMatrix, into!, position);
-
-    pipe.fill(uniforms);
-    uploadBuffer(device, source.buffer, pipe.data);
+    updateView(uniforms);
 
     // Render pass
     const commandEncoder = device.createCommandEncoder();

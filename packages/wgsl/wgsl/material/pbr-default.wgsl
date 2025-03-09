@@ -12,5 +12,5 @@ const metalness: f32 = 0.0;
   var emissive = vec4<f32>(0.0);
   var material = vec4<f32>(metalness, roughness, 0.0, 0.0);
 
-  return PBRParams(albedo, emissive, material, vec4<f32>(1.0));
+  return PBRParams(albedo, emissive, material, 1.0);
 }

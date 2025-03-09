@@ -1,7 +1,7 @@
 import type { UniformPipe, UniformSource } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
 
-import { makeUniformBuffer, makeUniformPipe } from '@use-gpu/core';
+import { makeUniformBuffer, makeUniformPipe, uploadBuffer } from '@use-gpu/core';
 import { useMemo } from '@use-gpu/live';
 import { bundleToAttribute } from '@use-gpu/shader/wgsl';
 
@@ -38,5 +38,10 @@ export const getUniformSource = (
     addressSpace: 'uniform',
   };
 
-  return [source, pipe];
+  const update = (values: Record<string, any>) => {
+    pipe.fill(values);
+    uploadBuffer(device, buffer, pipe.data);
+  };
+
+  return [source, update];
 };

@@ -35,7 +35,6 @@ export type LightEnv = {
 
 export type PassBinding = {
   module: ShaderModule,
-  type?: ShaderModule,
   visibility?: 'vertex' | 'fragment',
   bind?: (
     buffers: BuffersEnv,

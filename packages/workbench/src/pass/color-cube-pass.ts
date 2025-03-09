@@ -3,7 +3,7 @@ import type { LightEnv, Renderable } from './types';
 import { mat4 } from 'gl-matrix';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
-import { getCubeFaceMatrix, reverseZ, seq, updateViewProjection, updateViewSize, uploadBuffer } from '@use-gpu/core';
+import { getCubeFaceMatrix, reverseZ, seq, updateViewProjection, updateViewSize } from '@use-gpu/core';
 
 import { useRenderContext } from '../providers/render-provider';
 import { useDeviceContext } from '../providers/device-provider';
@@ -63,7 +63,7 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
   const debugs       = toArray(calls['debug']       as Renderable[]);
 
   // Bind to dynamic view
-  const {cull, binding, pipe, source, uniforms} = useDynamicViewBinding(viewBindGroup);
+  const {cull, binding, uniforms, updateView} = useDynamicViewBinding(viewBindGroup);
   const {bindPass, dataBindings} = useApplyPassBindGroup(buffers, env, binding);
 
   // Per face render passes
@@ -96,9 +96,7 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
     for (let i = 0; i < 6; ++i) {
       mat4.multiply(viewMatrix, getCubeFaceMatrix(i), viewUniforms.viewMatrix.current);
       updateViewProjection(uniforms, projectionMatrix, viewMatrix);
-
-      pipe.fill(uniforms);
-      uploadBuffer(device, source.buffer, pipe.data);
+      updateView(uniforms);
 
       const commandEncoder = device.createCommandEncoder(LABEL);
       const passEncoder = commandEncoder.beginRenderPass(cubeDescriptors[i]);

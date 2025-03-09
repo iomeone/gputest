@@ -6,7 +6,7 @@ import { use, wrap, yeet, provide, useMemo, useOne, useRef } from '@use-gpu/live
 import { clearBuffer, seq } from '@use-gpu/core';
 import { bindEntryPoint } from '@use-gpu/shader/wgsl';
 import { useDeviceContext } from '../providers/device-provider';
-import { ShaderPrinter, PrintContext, usePrintContext } from '../providers/print-provider';
+import { ShaderPrinter, PrintContext, usePrintContext, useNoPrintContext } from '../providers/print-provider';
 import { getDerivedSource } from '../hooks/useDerivedSource';
 import { useScratchSource } from '../hooks/useScratchSource';
 import { getShader } from '../hooks/useShader';

@@ -23,8 +23,8 @@ const ZERO = vec3<f32>(0.0);
 @optional @link fn getMouse() -> vec2<u32>;
 @optional @link fn getIsPicking() -> u32;
 
-@optional @link fn printPoint(p: vec3<f32>, c: vec3<f32>);
-@optional @link fn printLine(a: vec3<f32>, b: vec3<f32>, c: vec3<f32>);
+@optional @link fn printPoint(p: vec4<f32>, c: vec4<f32>);
+@optional @link fn printLine(a: vec4<f32>, b: vec4<f32>, c: vec4<f32>);
 
 struct RayHit {
   position: vec3<f32>,
@@ -300,8 +300,8 @@ fn raytrace(
 
     let c = mix(IN, OUT, distance / far);
 
-    printPoint(b, c);
-    printLine(a, b, c);
+    printPoint(vec4<f32>(b, 1.0), vec4<f32>(c, 1.0));
+    printLine(vec4<f32>(a, 1.0), vec4<f32>(b, 1.0), vec4<f32>(c, 1.0));
   }
 
   if (distance >= far) {

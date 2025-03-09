@@ -3,7 +3,7 @@ import type { ViewUniforms } from '@use-gpu/core';
 import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
 import { provide, makeContext, useContext, useNoContext, useMemo } from '@use-gpu/live';
-import { makeViewUniforms, uploadBuffer } from '@use-gpu/core';
+import { makeViewUniforms } from '@use-gpu/core';
 
 import { useUniformSource } from '../hooks/useUniformSource';
 import { makeViewBinding } from '../pass/bindings';
@@ -56,9 +56,8 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
     ? useFrustumCuller(viewPosition, projectionViewFrustum)
     : (useNoFrustumCuller(), cullProp);
 
-  const [source, viewPipe] = useUniformSource(type);
-  viewPipe.fill(uniforms);
-  uploadBuffer(device, source.buffer, viewPipe.data);
+  const [source, update] = useUniformSource(type);
+  update(uniforms);
 
   const context = useMemo(() => ({
     uniforms,

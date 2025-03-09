@@ -139,7 +139,7 @@ type PathTraceProps = {
 };
 
 const PathTrace = (props: PathTraceProps) => {
-  const {frame, debugHelper} = props;
+  const {frame, printHelper} = props;
   
   const {mouse} = useMouse();
   const {keyboard: {keys}} = useKeyboard();
