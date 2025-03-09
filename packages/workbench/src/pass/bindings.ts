@@ -146,7 +146,6 @@ export const useApplyPassBindGroup = (
     [attributes, bind, buffers, env]
   );
 
-  console.log({label, attributes, values})
   const bindPass = useMemo(() => {
     const entries = makeDataBindingsEntries(device, values);
     const bindGroup = makeBindGroup(device, layout, entries, `PassBindGroup/${label ?? 'Apply'}`);

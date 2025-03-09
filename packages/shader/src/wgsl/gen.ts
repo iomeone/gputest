@@ -248,7 +248,7 @@ export const makeBindingAccessors = (
 };
 
 export const resolveBindingValueType = (binding: DataBinding) => {
-  const {attribute: {format}} = binding;
+  const {attribute: {name, format}} = binding;
 
   if (format !== 'auto') return format;
 
@@ -262,7 +262,7 @@ export const resolveBindingValueType = (binding: DataBinding) => {
     return 'vec4<f32>';
   }
 
-  throw new Error(`Binding '${attribute.name}' with 'auto' format could not be inferred`);
+  throw new Error(`Binding '${name}' with 'auto' format could not be inferred`);
 };
 
 export const checkLambdaType = (
