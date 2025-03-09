@@ -13,7 +13,7 @@ import { ExpandState } from './types';
 import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendColumns, TreeLegendGroup, TreeRowOmitted, TreeLegendItem, Muted, InlineButton } from './layout';
 import { Expandable } from './expandable';
 
-import { IconItem, SVGChevronDown, SVGChevronLeft, SVGChevronRight, SVGNextOpen, SVGNextClosed, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput } from './svg';
+import { IconItem, SVGChevronDown, SVGChevronLeft, SVGChevronRight, SVGNextOpen, SVGNextClosed, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGShader } from './svg';
 
 type FiberTreeProps = {
   state: InspectState,
@@ -130,9 +130,7 @@ export const FiberLegend: React.FC = () => {
             />
             <span>Rendered By</span>
           </TreeLegendItem>
-        </TreeLegendGroup>
 
-        <TreeLegendGroup>
           <TreeLegendItem>
             <Node
               fiber={fiber}
@@ -164,6 +162,11 @@ export const FiberLegend: React.FC = () => {
             <IconItem gap={-5} top={-2}><SVGHighlightElement /></IconItem>
             <span>Highlight</span>
           </TreeLegendItem>
+
+          <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGAtom /></IconItem>
+            <span>React</span>
+          </TreeLegendItem>
         </TreeLegendGroup>
 
         <TreeLegendGroup>
@@ -173,13 +176,13 @@ export const FiberLegend: React.FC = () => {
           </TreeLegendItem>
 
           <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGDashboard /></IconItem>
-            <span>Layout</span>
+            <IconItem gap={-5} top={-2}><SVGShader /></IconItem>
+            <span>Shader</span>
           </TreeLegendItem>
 
           <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGAtom /></IconItem>
-            <span>React</span>
+            <IconItem gap={-5} top={-2}><SVGDashboard /></IconItem>
+            <span>Layout</span>
           </TreeLegendItem>
         </TreeLegendGroup>
       </TreeLegendColumns>

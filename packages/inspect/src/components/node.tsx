@@ -5,7 +5,7 @@ import { formatNodeName, YEET, QUOTE, SIGNAL } from '@use-gpu/live';
 import React, { useCallback } from 'react';
 import { usePingTracker } from '../providers/ping-provider';
 import { Muted } from './layout';
-import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput } from './svg';
+import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGShader } from './svg';
 
 type NodeProps = {
   fiber: LiveFiber<any>,
@@ -56,6 +56,7 @@ export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
   const react = !!__inspect?.react;
   const output = !!__inspect?.output;
   const layout = !!__inspect?.layout;
+  const shader = !!__inspect?.vertex || !!__inspect?.fragment || !!__inspect?.compute;
 
   const suffix1 = yeet ? <SVGYeet key="yeet" title="Yeet" /> : null;
   const suffix2 = react ? <SVGAtom key="atom" title="React" /> : null;
@@ -63,9 +64,10 @@ export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
   const suffix4 = layout ? <SVGDashboard key="dash" title="Layout" /> : null;
   const suffix5 = quote ? <SVGQuote key="quote" title="Quote" /> : null;
   const suffix6 = output ? <SVGViewOutput key="output" title="Output" /> : null;
-  const suffix7 = ooo ? '⚠️' : null;
+  const suffix7 = shader ? <SVGShader key="shader" title="Shader" /> : null;
+  const suffix8 = ooo ? '⚠️' : null;
 
-  const icons = [suffix1, suffix2, suffix3, suffix4, suffix5, suffix6, suffix7].filter(x => !!x);
+  const icons = [suffix1, suffix2, suffix3, suffix4, suffix5, suffix6, suffix7, suffix8].filter(x => !!x);
 
   const [version, pinged] = usePingTracker(fiber);
 

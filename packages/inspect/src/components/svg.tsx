@@ -364,3 +364,17 @@ export const SVGViewOutput = ({title = undefined, size = 16}: SVGProps) => (
     </svg>
   </div>
 );
+
+export const SVGShader = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+      height={size}
+    >
+    <g>
+      <path d="M5.085 5.26c-2.491 6.137-3.661 9.046-3.642 9.055.016.007 13.3-1.958 13.364-1.976.018-.005-8.103-10.602-8.204-10.706-.025-.027-.339.722-1.518 3.627m4.062 2.962c1.102 1.435 1.996 2.617 1.986 2.627-.017.017-6.526.992-6.54.98-.006-.006.967-2.423 2.022-5.023.27-.663.499-1.203.509-1.2.01.004.921 1.181 2.023 2.616" fillRule="evenodd"/>
+    </g>
+    </svg>
+  </div>
+);
