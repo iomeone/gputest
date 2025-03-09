@@ -3,7 +3,7 @@ import { ParsedBundle, ParsedModule, ShaderModule, ShaderDefine, DataBinding, Vi
 import { toMurmur53, scrambleBits53, mixBits53 } from '../util/hash';
 import { toBundle, getBundleName, getBundleHash, getBundleKey } from '../util/bundle';
 import { loadStaticModule } from '../util/shader';
-import { PREFIX_VIRTUAL, VIRTUAL_BINDINGS } from '../constants';
+import { VIRTUAL_BINDINGS } from '../constants';
 
 import { timed } from './timed';
 
@@ -201,7 +201,7 @@ export const makeResolveBindings = (
         allVirtuals.set(key, m.virtual);
 
         // Mutate virtual modules as they are ephemeral
-        const namespace = constants?.length ? `${PREFIX_VIRTUAL}${++index}_` : undefined;
+        const namespace = constants?.length ? toNamespace(++index) : undefined;
         if (!lazy) {
           if (constants?.length) m.virtual.namespace = namespace;
           m.virtual.bindingBase = bindingBase;
@@ -268,6 +268,8 @@ export const makeResolveBindings = (
     visibilities: allVisibilities,
   };
 });
+
+export const toNamespace = (i: number) => '_' + ('00' + (i + 1).toString(36)).slice(-2) + '_';
 
 export const namespaceBinding = (namespace: string, binding: DataBinding) => {
   const {attribute} = binding;

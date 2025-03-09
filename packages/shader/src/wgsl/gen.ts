@@ -35,7 +35,8 @@ const getTypeKey = (b: DataBinding) =>
   (+!!b.storage) * 2 +
   (+!!b.lambda) * 4 +
   (+!!b.texture) * 8 +
-  (+!!(b.storage?.volatile || b.texture?.volatile)) * 16;
+  (+!!b.uniform) * 16 +
+  (+!!(b.uniform?.volatile || b.storage?.volatile || b.texture?.volatile)) * 32;
 
 const getFormatKey = (b: DataBinding) =>
   b.texture ? toMurmur53(b.texture?.format) ^
@@ -43,10 +44,11 @@ const getFormatKey = (b: DataBinding) =>
               toMurmur53(b.texture?.variant) ^
               toMurmur53(b.texture?.absolute) :
   b.storage ? toMurmur53(b.storage?.format) :
+  b.uniform ? toMurmur53(b.uniform?.format) :
   0;
 
 const getBindingsKey = (bs: DataBinding[]) => scrambleBits(bs.reduce((a, b) => mixBits(a, getTypeKey(b) ^ getFormatKey(b)), 0)) >>> 0;
-const getValueKey = (b: DataBinding) => getObjectKey(b.constant ?? b.storage ?? b.texture);
+const getValueKey = (b: DataBinding) => getObjectKey(b.constant ?? b.uniform ?? b.storage ?? b.texture);
 
 export const makeBindingAccessors = (
   bindings: DataBinding[],
@@ -236,7 +238,7 @@ export const makeBindingAccessors = (
   for (const {attribute} of textures)  links[attribute.name] = bundle;
   for (const {attribute, lambda} of lambdas)   {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const needsCast = !checkLambdaType(attribute, lambda!);
+    const needsCast = needsCastLambdaType(attribute, lambda!);
     links[attribute.name] = needsCast
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       ? castTo(lambda!.shader, attribute.format as string)
@@ -265,7 +267,7 @@ export const resolveBindingValueType = (binding: DataBinding) => {
   throw new Error(`Binding '${name}' with 'auto' format could not be inferred`);
 };
 
-export const checkLambdaType = (
+export const needsCastLambdaType = (
   attribute: UniformAttribute,
   lambda: LambdaSource,
 ) => {
@@ -275,16 +277,16 @@ export const checkLambdaType = (
   const lambdaAttribute = bundleToAttribute(bundle);
   const {format: to} = lambdaAttribute;
 
-  if (Array.isArray(from) || Array.isArray(to)) return true;
+  if (Array.isArray(from) || Array.isArray(to)) return false;
 
   let f = from;
   let t = to;
 
-  if (f === t) return true;
-  if (f === 'auto' || t === 'auto') return true;
+  if (f === t) return false;
+  if (f === 'auto' || t === 'auto') return false;
   if (t == null) {
     console.warn(`Unable to determine lambda format for attribute ${attribute.name} -> bundle ${getBundleEntry(bundle)}`)
-    return true;
+    return false;
   }
 
   // Remove vec<..> to allow for automatic widening/narrowing
@@ -304,13 +306,15 @@ export const checkLambdaType = (
 
     if (fromScalar !== toScalar) {
       // uppercase = struct type, allow any
-      if (from.match(/[A-Z]/) && to) return true;
+      if (from.match(/[A-Z]/) && to) return false;
 
       throw new Error(`Invalid format ${to} bound for ${from} "${name}" (${fromScalar} != ${toScalar})`);
     }
+
+    return true;
   }
 
-  return false;
+  return true;
 };
 
 export const makeUniformBlock = (

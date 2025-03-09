@@ -286,31 +286,39 @@ export const checkTextureType = (
   attribute: UniformAttribute,
   link: TextureSource | null | undefined,
 ) => {
-  const {name, format: from} = attribute;
+  if (!link) return;
 
+  const {name, format: from} = attribute;
   if (Array.isArray(from)) throw new Error(`Invalid texture attribute '${name}'.`);
 
-  const format = link?.format;
-  const to = TEXTURE_SAMPLE_TYPES[format];
+  const format = link.format;
 
+  // e.g. `texture_2d<f32>`
+  // e.g. `texture_storage_2d<rgba16float, write>`
+  const [layout, type] = from.split(/[<>,]/);
+
+  // Storage texture has pixel format in type
+  if (type in TEXTURE_SAMPLE_TYPES && type === format) return;
+
+  // Depth texture has implicit pixel type
+  if (layout.match(/^texture_depth/) && format.match(/^depth/)) return;
+
+  // texture_xxx<type> or vec#<type>
   const fromName = toTypeString(from);
-  const toName = toTypeString(to);
+  const toName = TEXTURE_SAMPLE_TYPES[format];
 
   let f = fromName;
   let t = toName;
-
   if (f === 'auto') return;
 
-  if (link && t != null && f !== t) {
-    // Remove texture layout
-    f = f.replace(/^texture[_0-9a-z]+<(.*)>$/, '$1');
+  // Remove texture layout
+  f = f.replace(/^texture[_0-9a-z]+<([^,]+)(?:,[^,]+)*>$/, '$1');
 
-    // Remove vec<..> to allow for automatic widening/narrowing
-    f = f.replace(/^vec[0-9]/, '').replace(/^<(.*)>$/g, '$1');
-    t = t.replace(/^vec[0-9]/, '').replace(/^<(.*)>$/g, '$1');
+  // Remove vec<..> to allow for automatic widening/narrowing
+  f = f.replace(/^vec[0-9]/, '').replace(/^<(.*)>$/g, '$1');
+  t = t.replace(/^vec[0-9]/, '').replace(/^<(.*)>$/g, '$1');
 
-    if (f !== t) {
-      console.warn(`Invalid format ${to} bound for ${from} "${name}" (${f} != ${t})`);
-    }
-  }
+  if (f === t) return;
+
+  console.warn(`Invalid format '${format}' bound for ${from} "${name}" (${f} != ${t})`);
 }

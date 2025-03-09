@@ -2,7 +2,7 @@ import { Tree } from '@lezer/common';
 import { ShaderModule, ParsedBundle, ParsedModule, ParsedModuleCache, ShaderDefine, ImportRef, RefFlags as RF } from '../types';
 import { VIRTUAL_BINDINGS } from '../constants';
 
-import { bindBundle, bindModule } from './bind';
+import { bindBundle, bindModule, toNamespace } from './bind';
 import { toBundle, getBundleKey } from './bundle';
 import { resolveShakeOps } from './shake';
 import mapValues from 'lodash/mapValues.js';
@@ -226,11 +226,11 @@ export const makeLinker = (
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (fixed.has(imp)) imp = fixed.get(imp)!;
       if (!exists.has(imp)) {
-        console.warn(`Link ${name}:${resolved} does not exist`);
+        console.warn(`Link '${name}:${resolved}' does not exist`);
         // eslint-disable-next-line no-debugger
         debugger;
       }
-      else if (!visible.has(imp)) console.warn(`Link ${name}:${resolved} is private`);
+      else if (!visible.has(imp)) console.warn(`Link '${name}:${resolved}' is private`);
       rename.set(name, imp);
 
       if (inferred) {
@@ -248,7 +248,7 @@ export const makeLinker = (
           infers.set(scope + name, imp);
 
           if (imp === 'auto') {
-            console.warn(`Inferred 'auto' type instead of concrete type - ${module.name} ${name}\n${code}`);
+            console.warn(`Inferred 'auto' type instead of concrete type - ${module.name} '${name}'\n${code}`);
             // eslint-disable-next-line no-debugger
             debugger;
           }
@@ -266,7 +266,7 @@ export const makeLinker = (
       const {constants, storages, textures} = virtual;
       if ((constants || storages || textures) && (!hasBoundBindings)) {
         const id = code.replace('@virtual ', '');
-        throw new Error(`Virtual module ${id} has unresolved data bindings`);
+        throw new Error(`Virtual module '${id}' has unresolved data bindings`);
       }
 
       // Emit virtual module in target namespace,
@@ -468,7 +468,7 @@ export const reserveNamespace = (
   namespaces: Map<any, string>,
   force?: string,
 ): string => {
-  const namespace = force ?? '_' + ('00' + (namespaces.size + 1).toString(36)).slice(-2) + '_';
+  const namespace = force ?? toNamespace(namespaces.size);
   namespaces.set(key, namespace);
   return namespace;
 }

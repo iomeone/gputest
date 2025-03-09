@@ -191,8 +191,9 @@ export type VolatileAllocation = {
 
 export type VirtualAllocation = Partial<UniformAllocation>;
 
-export type UniformFiller = (items: any) => void;
-export type UniformDataSetter = (index: number, item: any) => void;
+export type UniformValues = Record<string, any>;
+export type UniformFiller = (items: UniformValues | UniformValues[]) => void;
+export type UniformDataSetter = (index: number, item: UniformValues) => void;
 export type UniformValueSetter = (index: number, field: number, value: any) => void;
 export type UniformByteSetter = (view: DataView, offset: number, data: any) => void;
 
