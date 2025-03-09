@@ -16,7 +16,7 @@ export const makeShaderModuleDescriptor = (
 export const makeShaderStage = (device: GPUDevice, descriptor: ShaderModuleDescriptor, extra: any = {}): ShaderStageDescriptor => {
   const {code, entryPoint, label} = descriptor;
 
-  const gpuDescriptor = {code} as GPUShaderModuleDescriptor;
+  const gpuDescriptor = {code, label} as GPUShaderModuleDescriptor;
   const module = device.createShaderModule(gpuDescriptor);
   if (label) module.label = label;
 

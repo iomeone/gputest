@@ -111,7 +111,7 @@ export const SceneSSAOPage: LC = (props) => {
           <LinearRGB tonemap="aces" gain={2}>
             <Cursor cursor='move' />
             <Camera>
-              <Loop live>
+              <Loop live decimate={60}>
               <PrintHelper count={4096}>
                 <Pass lights ssao={{radius: 2}}>
 

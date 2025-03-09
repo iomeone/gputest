@@ -65,11 +65,11 @@ export const makeBindingAccessors = (
   const virtuals = [...constants, ...uniforms, ...storages, ...textures];
   const symbols = virtuals.map(({attribute}) => attribute.name);
   const types = virtuals.map(({attribute}) => attribute.format);
-  const exports = virtuals.map(({attribute}) => ({
+  const exports = virtuals.map((binding) => ({
     func: {
-      name: attribute.name,
-      type: {name: attribute.format},
-      parameters: attribute.args ?? INT_PARAMS,
+      name: binding.attribute.name,
+      type: {name: resolveBindingValueType(binding)},
+      parameters: binding.attribute.args ?? INT_PARAMS,
     },
     flags: RF.Exported,
   })) as any[];
@@ -125,12 +125,16 @@ export const makeBindingAccessors = (
 
     const maybeRename = (s?: string | null) => s != null ? rename.get(s) ?? s : s;
 
-    for (const {attribute: {name, format: type, args}} of constants) {
+    for (const binding of constants) {
+      const {attribute: {name, format: type, args}} = binding;
+      
       if (typeof type !== 'string') throw new Error(`Cannot make uniform for struct type`);
       program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args as any));
     }
 
-    for (const {attribute: {name, format: formatOut, type: typeOut, args}, storage, uniform} of buffers) {
+    for (const binding of buffers) {
+      const {attribute: {name, format: formatOut, type: typeOut, args}, storage, uniform} = binding;
+
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const {volatile, format: formatIn, type: typeIn, readWrite} = (storage ?? uniform)! as StorageSource;
       const set = volatile ? volatileSet : bindingSet;
@@ -191,13 +195,18 @@ export const makeBindingAccessors = (
       program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name, readWrite, !!uniform, args));
     }
 
-    for (const {attribute: {name, format: formatOut, args}, texture} of textures) {
+    for (const binding of textures) {
+      const {attribute: {name, format: formatOut, args}, texture} = binding;
+      
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const {volatile, layout, variant, absolute, sampler, filter, format: formatIn, aspect} = texture!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
       if (sampler && args !== null) volatile ? volatileBase++ : bindingBase++;
-      program.push(makeTextureAccessor(namespace, set, base, formatOut as string, formatIn, name, layout, variant, aspect, absolute, !!sampler, filter, args));
+
+      const type = (formatOut === 'auto') ? resolveBindingValueType(binding) : formatOut as string;
+
+      program.push(makeTextureAccessor(namespace, set, base, type, formatIn, name, layout, variant, aspect, absolute, !!sampler, filter, args));
     }
 
     return program.join('\n');
@@ -236,6 +245,24 @@ export const makeBindingAccessors = (
   }
 
   return links;
+};
+
+export const resolveBindingValueType = (binding: DataBinding) => {
+  const {attribute: {format}} = binding;
+
+  if (format !== 'auto') return format;
+
+  const {uniform, storage, texture} = binding;
+  if (uniform) return uniform.format;
+  if (storage) return storage.format;
+  if (texture) {
+    if (texture.format.match(/depth/)) return 'f32';
+    if (texture.layout.match(/<u32>/)) return 'vec4<u32>';
+    if (texture.layout.match(/<i32>/)) return 'vec4<i32>';
+    return 'vec4<f32>';
+  }
+
+  throw new Error(`Binding '${attribute.name}' with 'auto' format could not be inferred`);
 };
 
 export const checkLambdaType = (

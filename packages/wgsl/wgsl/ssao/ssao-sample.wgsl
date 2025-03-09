@@ -196,7 +196,7 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
     
     printLine(
       viewToWorld(vec4<f32>(position, 1.0)),
-      viewToWorld(vec4<f32>(position + nproj, 1.0)),
+      viewToWorld(vec4<f32>(position + bentNormal, 1.0)),
       vec4<f32>(1.0, 1.2, 0.0, 1.0)
     );
 

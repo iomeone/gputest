@@ -1,5 +1,5 @@
 import type { LiveComponent, LiveElement, LiveNode, LiveFiber, Task, PropsWithChildren, ArrowFunction } from '@use-gpu/live';
-import { use, detach, provide, unquote, yeet, gather, useCallback, useContext, useDouble, useOne, useResource, useState, tagFunction, incrementVersion } from '@use-gpu/live';
+import { use, detach, provide, unquote, yeet, gather, useCallback, useContext, useDouble, useFiberId, useOne, useResource, useState, tagFunction, incrementVersion } from '@use-gpu/live';
 
 import { useRenderContext } from '../providers/render-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
@@ -86,20 +86,23 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const renderAnimationFrame = useCallback((timestamp?: number) => ref.dispatch.render?.(timestamp), []);
 
+  const fiberId = useFiberId();
+
   // Request animation frame wrapper
   // for looped component re-rendering.
   const render = useResource((dispose) => {
     const {time, loop, dispatch} = ref;
     const {fibers} = dispatch;
-    DEBUG && console.log('Reinitialize loop');
+    DEBUG && console.log('--- Reinitialize loop', '#' + fiberId);
 
     let mounted = true;
     dispose(() => mounted = false);
 
     const request = (fiber?: LiveFiber<any>) => {
-      DEBUG && !ref.version.pending && console.log(
-        'Request animation frame',
-        +new Date() - START
+      DEBUG && !ref.version.pending && console.warn(
+        '=> Request animation frame',
+        '#' + fiberId,
+        '@' + (+new Date() - START)
       );
 
       // Enqueue animated fiber for next frame
@@ -108,7 +111,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       ref.version.pending = true;
 
       // Ensure parent is also a sync animation frame
-      parent.request();
+      // parent.request();
 
       return ref.time;
     };
@@ -123,21 +126,20 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       ref.version.pending = false;
       ref.version.request = null;
 
-      DEBUG && console.log('-- Dispatch loop', +new Date() - START);
+      DEBUG && console.log('-- Dispatch loop', '#' + fiberId, '@', +new Date() - START);
 
       const skipFrame = decimate > 1 && (ref.version.frame % decimate) !== 0;
       requestImmediateRender();
 
       // Abort on unmount
       if (!mounted) {
-        DEBUG && console.log('Unmounted');
+        DEBUG && console.log('--- Unmounted');
         return;
       }
 
       // Skip
       if (skipFrame) {
-        DEBUG && console.log('-- Skip frame');
-        parent?.request();
+        DEBUG && console.log('-- Skip frame', ref.version.frame);
         return request();
       }
 
@@ -161,7 +163,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       }
 
       // Schedule enqueued fibers from last frame
-      DEBUG && console.log('ping fibers', fibers.length)
+      DEBUG && console.log('Animated fibers', fibers.length)
       for (const fiber of fibers) if (fiber.bound) {
         fiber.host?.schedule(fiber);
         if (fiber.version != null) fiber.version = incrementVersion(fiber.version);

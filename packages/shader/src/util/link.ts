@@ -246,6 +246,12 @@ export const makeLinker = (
 
           rename.set(name, imp);
           infers.set(scope + name, imp);
+
+          if (imp === 'auto') {
+            console.warn(`Inferred 'auto' type instead of concrete type - ${module.name} ${name}\n${code}`);
+            // eslint-disable-next-line no-debugger
+            debugger;
+          }
         }
       }
     }

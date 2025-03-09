@@ -58,7 +58,8 @@ fn depthWeight(a: f32, b: f32) -> f32 {
   let sample10 = getSample(uv10);
   let sample01 = getSample(uv01);
   let sample11 = getSample(uv11);
-  let sample = sample00;//(sample00 * w00 + sample10 * w10 + sample01 * w01 + sample11 * w11) / w;
+
+  let sample = getSample(uv);//(sample00 * w00 + sample10 * w10 + sample01 * w01 + sample11 * w11) / w;
 
   let outOfBoundsXY = (lastUV < vec2<f32>(0.0)) | (lastUV > vec2<f32>(1.0));
   let outOfBounds = outOfBoundsXY.x | outOfBoundsXY.y;

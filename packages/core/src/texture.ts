@@ -299,6 +299,8 @@ export const checkTextureType = (
   let f = fromName;
   let t = toName;
 
+  if (f === 'auto') return;
+
   if (link && t != null && f !== t) {
     // Remove texture layout
     f = f.replace(/^texture[_0-9a-z]+<(.*)>$/, '$1');
