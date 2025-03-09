@@ -222,10 +222,6 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
     */
   }
 
-  if (length(vec2<f32>(ij - pick)) < 3.0) {
-    return vec4<f32>(0.0, 0.0, 0.0, 1.0);
-  }
-
   // Unorm [0..1] encoding for normal
   let sample = vec4<f32>(worldBentNormal * .5 + .5, visibility);
   return sample;

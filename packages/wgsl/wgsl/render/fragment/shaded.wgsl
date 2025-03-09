@@ -32,7 +32,6 @@ fn main(
   var outColor = fragColor;
 
   let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition, fragCoord);
-  //outColor = vec4<f32>(vec3<f32>(surface.occlusion.a), 1.0);
   outColor = getLight(surface);
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
