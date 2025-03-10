@@ -51,7 +51,6 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
 
   const device = useDeviceContext();
   const {
-    buffers,
     buffers: {shadow: [renderContext]},
     bindGroups: {view: viewBindGroup},
   } = usePassContext();
@@ -60,7 +59,7 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
 
   // Bind to dynamic view
   const {cull, binding, uniforms, updateView} = useDynamicViewBinding(viewBindGroup);
-  const {bindPass, dataBindings} = useApplyPassBindGroup(buffers, env, binding);
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, binding);
 
   const {
     shadow,

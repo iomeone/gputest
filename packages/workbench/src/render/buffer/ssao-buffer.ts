@@ -10,6 +10,8 @@ import { TextureBuffer } from '../../compute/texture-buffer';
 import { useDeviceContext } from '../../providers/device-provider';
 import { useInspectable } from '../../hooks/useInspectable';
 
+import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
+
 export type SSAOBufferProps = {
   resolution?: number,
 };
@@ -111,8 +113,15 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
       },
     });
 
+    const ssaoBinding: PassBinding = {
+      module: ssaoBindingWGSL,
+      visibility: 'fragment',
+      bind: () => [resolveTarget.source],
+    };
+
     return yeet({
       buffers: { ssao: [normalTarget, motionTarget, sampleTarget, accumTarget, resolveTarget] },
+      bindings: { ssao: ssaoBinding },
     });
   });
 }, 'SSAOBuffer');

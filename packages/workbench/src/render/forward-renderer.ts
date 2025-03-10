@@ -80,7 +80,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     children,
   } = props;
 
-  const {buffers} = resources;
+  const {buffers, bindings} = resources;
 
   const {
     lights = false,
@@ -130,7 +130,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
   }) : children;
 
   // Pass bindings
-  const bindGroups = useStandardBindGroups(buffers, normalizedFlags);
+  const bindGroups = useStandardBindGroups(resources, normalizedFlags);
 
   return Renderer({ buffers, bindGroups, children: view, components, passes: resolved, overlay, merge });
 }, 'ForwardRenderer');

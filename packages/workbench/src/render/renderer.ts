@@ -28,11 +28,9 @@ export type RendererProps = PropsWithChildren<{
 }>;
 
 const HOVERED_VARIANT = 'debug';
-const NO_ENV: Record<string, any> = {};
 
 export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   const {
-    env: propEnv = NO_ENV,
     overlay = false,
     merge = false,
 
@@ -94,7 +92,7 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
       const env = (calls.env ?? []).reduce((env: Record<string, any>, data: Record<string, any>) => {
         for (const k in data) env[k] = data[k];
         return env;
-      }, {...propEnv});
+      }, {});
 
       const props: Record<string, any> = {calls, env};
 
@@ -108,7 +106,7 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
         calls.post || calls.readback ? use(ReadbackPass, props) : null,
       ];
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [calls, buffers, passes, overlay, merge, propEnv]);
+    }, [calls, buffers, passes, overlay, merge]);
 
   return (
     reconcile(

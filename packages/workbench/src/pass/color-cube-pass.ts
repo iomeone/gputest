@@ -56,7 +56,7 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
   const renderContext = useRenderContext();
   const {uniforms: viewUniforms} = useViewContext();
 
-  const {buffers, bindGroups: {color: viewBindGroup}} = usePassContext();
+  const {bindGroups: {color: viewBindGroup}} = usePassContext();
 
   const opaques      = toArray(calls['opaque']      as Renderable[]);
   const transparents = toArray(calls['transparent'] as Renderable[]);
@@ -64,7 +64,7 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
 
   // Bind to dynamic view
   const {cull, binding, uniforms, updateView} = useDynamicViewBinding(viewBindGroup);
-  const {bindPass, dataBindings} = useApplyPassBindGroup(buffers, env, binding);
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, binding);
 
   // Per face render passes
   const {width, height} = renderContext;

@@ -53,7 +53,7 @@ export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: Prop
     overlay = false,
     merge = false,
   } = flags;
-
+  
   const useVariants = useCallback((virtual: VirtualDraw, hovered: boolean) =>
     useMemo(() => hovered ? [DebugRender] : COMPONENTS.modes[virtual.mode], [virtual, hovered]),
     []

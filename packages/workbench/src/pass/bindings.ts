@@ -1,13 +1,14 @@
 import type { DataBinding, UniformAttribute, UseGPURenderContext } from '@use-gpu/core';
-import type { BuffersEnv, PassApplyBindGroup, PassBinding, PassBindGroup, PassEnv, PassFlags } from './types';
+import type { PassApplyBindGroup, PassBinding, PassBindGroup, PassEnv, PassFlags } from './types';
 import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
 import { makeBindGroup, makeDataBindingsEntries, makeViewUniforms, makeShaderBinding } from '@use-gpu/core';
 import { useHooks, useMemo, useNoMemo, useOne } from '@use-gpu/live';
+import { patch, $set } from '@use-gpu/state';
 
 import { getBindGroupLayout } from '../hooks/useBindGroupLayout';
 import { useFrustumCuller } from '../hooks/useFrustumCuller';
-import { useScratchSource, useNoScratchSource } from '../hooks/useScratchSource';
+import { getScratchSource } from '../hooks/useScratchSource';
 import { useUniformSource } from '../hooks/useUniformSource';
 
 import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';
@@ -16,97 +17,74 @@ import { useViewContext } from '../providers/view-provider';
 
 import { ViewUniforms as ViewUniformsWGSL } from '@use-gpu/wgsl/use/view.wgsl';
 import lightBindingWGSL from '@use-gpu/wgsl/use/light.wgsl';
-import shadowBindingWGSL from '@use-gpu/wgsl/use/shadow.wgsl';
-import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
-import motionBindingWGSL from '@use-gpu/wgsl/use/motion.wgsl';
 
 const NO_OBJECT = {} as Record<string, any>;
 
 export const lightBinding: PassBinding = {
   module: lightBindingWGSL,
-  bind: (buffers: BuffersEnv, {light}: PassEnv) => {
+  bind: ({light}: PassEnv) => {
     const {lightData} = light?.sources ?? NO_OBJECT;
     return [lightData];
   },
 };
 
-export const shadowBinding: PassBinding = {
-  module: shadowBindingWGSL,
-  visibility: 'fragment',
-  bind: (buffers: BuffersEnv, {light}: PassEnv) => {
-    const {shadowMap} = light?.sources ?? NO_OBJECT;
-
-    return [
-      shadowMap && {...shadowMap, sampler: null},
-      shadowMap && {sampler: shadowMap.sampler, filter: shadowMap.filter},
-    ];
-  },
-};
-
-export const ssaoBinding: PassBinding = {
-  module: ssaoBindingWGSL,
-  visibility: 'fragment',
-  bind: (buffers: BuffersEnv) => [buffers.ssao?.[4]?.source],
-};
-
-export const motionBinding: PassBinding = {
-  module: motionBindingWGSL,
-  bind: (buffers: BuffersEnv, {motion}: PassEnv) => [motion?.source],
-};
-
 export const useMinimalBindGroups = (): Record<string, PassBindGroup> => {
-  const view = useViewContext();
+  const viewBinding = useViewContextBinding();
 
   return useHooks(() => {
-    const bindGroup = useStandardBindGroup(view, {}, {});
+    const bindGroup = useStandardBindGroup({bindings: {view: viewBinding}}, {});
     return {
       view: bindGroup,
       color: bindGroup,
     };
-  }, []);
+  }, [viewBinding]);
 };
 
 export const useStandardBindGroups = (
-  buffers: BuffersEnv,
+  resources: PassResources,
   flags: PassFlags,
 ): Record<string, PassBindGroup> => {
-  const viewContext = useViewContext();
+  const viewBinding = useViewContextBinding();
 
-  const view = useStandardBindGroup(viewContext, {});
-  const color = useStandardBindGroup(viewContext, flags);
+  const rs = useMemo(() => patch(resources, {bindings: {view: $set(viewBinding)}}), [resources, viewBinding]);
+
+  const view = useStandardBindGroup(rs, {});
+  const color = useStandardBindGroup(rs, flags);
 
   return useMemo(() => ({view, color}), [view, color]);
 };
 
 export const useStandardBindGroup = (
-  view: PassBinding,
+  resources: PassResources,
   flags: PassFlags = {},
 ): PassBindGroup => {
   const device = useDeviceContext();
 
-  const {binding: viewBinding} = view;
-  const {motion, lights, shadows, ssao} = flags;
+  return useMemo(() => {
+    const {motion, lights, shadows, ssao} = flags;
 
-  let resolvedViewBinding = viewBinding;
-  if (!viewBinding.bind) {
-    const viewSource = useScratchSource('f32', {flags: GPUBufferUsage.UNIFORM, reserve: 256})[0];
-    resolvedViewBinding = {...viewBinding, bind: () => [viewSource]};
-  }
-  else {
-    useNoScratchSource();
-  }
+    const {
+      bindings: {
+        view: viewBinding,
+        motion: motionBinding,
+        shadow: shadowBinding,
+        ssao: ssaoBinding,
+      },
+    } = resources;
 
-  const maybeBindings = [
-    resolvedViewBinding,
-    motion && motionBinding,
-    lights && lightBinding,
-    shadows && shadowBinding,
-    ssao && ssaoBinding,
-  ];
+    const bs = [
+      viewBinding,
+      motion && motionBinding,
+      lights && lightBinding,
+      shadows && shadowBinding,
+      ssao && ssaoBinding,
+    ];
+    
+    if (!viewBinding) debugger;
+    const key = bs.reduce((a, b, i) => a | (b ? (1 << i) : 0), 0);
 
-  const key = maybeBindings.reduce((a, b, i) => a | (b ? (1 << i) : 0), 0);
-
-  return getBindGroupLayout(device, maybeBindings, 'PASS', key);
+    return getBindGroupLayout(device, bs, 'PASS', key);
+  }, [device, resources, flags])
 };
 
 type ApplyPass = {
@@ -123,11 +101,10 @@ export const useApplyPass = (
   const {buffers, bindGroups: {[key]: binding}} = passContext;
   if (!binding) throw new Error(`Cannot find pass binding '${key}'`);
   
-  return useApplyPassBindGroup(buffers, env, binding, key);
+  return useApplyPassBindGroup(env, binding, key);
 };
 
 export const useApplyPassBindGroup = (
-  buffers: BuffersEnv,
   env: PassEnv,
   passBindGroup: Partial<PassBindGroup>,
   label?: string,
@@ -138,13 +115,13 @@ export const useApplyPassBindGroup = (
   const device = useDeviceContext();
 
   const values = useMemo(() =>
-    bind(buffers, env).map((v, i) => {
+    bind(env).map((v, i) => {
       const a = attributes[i];
       if (!a) return null;
       if (v == null) throw new Error(`Missing pass binding value for '${a.name}'`);
       return makeShaderBinding(a, v);
     }),
-    [attributes, bind, buffers, env]
+    [attributes, bind, env]
   );
 
   const bindPass = useMemo(() => {
@@ -165,6 +142,19 @@ export const useNoApplyPassBindGroup = () => {
   useNoMemo();
 };
 
+export const useViewContextBinding = () => {
+  const device = useDeviceContext();
+  const {binding: viewBinding} = useViewContext();
+
+  return useMemo(() => {
+    if (viewBinding.bind) return viewBinding;
+
+    // If no view provider mounted, provide an empty buffer
+    const viewSource = getScratchSource(device, 'f32', {flags: GPUBufferUsage.UNIFORM, reserve: 256})[0];
+    return {...viewBinding, bind: () => [viewSource]};
+  }, [device, viewBinding]);
+};
+
 export const useDynamicViewBinding = (
   passBindGroup: PassBindGroup,
 ) => {
@@ -176,7 +166,7 @@ export const useDynamicViewBinding = (
   const [source, updateView] = useUniformSource(ViewUniformsWGSL);
   const binding = useMemo(() => ({
     ...passBindGroup,
-    bind: (buffers, env) => [source, ...passBindGroup.bind(buffers, env).slice(1)],
+    bind: (env) => [source, ...passBindGroup.bind(env).slice(1)],
   }), [passBindGroup, source]);
 
   return {binding, cull, uniforms, updateView};

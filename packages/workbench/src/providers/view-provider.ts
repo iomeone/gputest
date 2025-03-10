@@ -28,7 +28,6 @@ export const ViewContext = makeContext<ViewContextProps>(DEFAULT_VIEW_CONTEXT, '
 export type ViewContextProps = {
   uniforms: ViewUniforms,
   binding: ShaderModule,
-  source: ShaderSource | null,
   cull: (center: vec3 | number[], radius: number) => number | boolean,
 };
 
@@ -44,7 +43,7 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
     uniforms,
     binding = viewBinding,
     type = ViewUniformsWGSL,
-    cull: cullProp,
+    cull: cullProp = true,
 
     children,
   } = props;
@@ -52,9 +51,9 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
   const device = useDeviceContext();
 
   const {projectionViewFrustum, viewPosition} = uniforms;
-  const cull = !cullProp
+  const cull = cullProp
     ? useFrustumCuller(viewPosition, projectionViewFrustum)
-    : (useNoFrustumCuller(), cullProp);
+    : (useNoFrustumCuller(), () => true);
 
   const [source, update] = useUniformSource(type);
   update(uniforms);
@@ -77,3 +76,12 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
 
 export const useViewContext = () => useContext(ViewContext);
 export const useNoViewContext = () => useNoContext(ViewContext);
+
+export const useMakeViewUniforms = () => {
+  const uniforms = useOne(makeViewUniforms);
+
+  const {viewPosition, projectionViewFrustum} = uniforms;
+  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
+  
+  return {cull, uniforms};
+};

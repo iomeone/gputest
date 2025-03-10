@@ -62,7 +62,6 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
 
   const device = useDeviceContext();
   const {
-    buffers,
     buffers: {shadow: [renderContext]},
     bindGroups: {view: viewBindGroup},
   } = usePassContext();
@@ -71,7 +70,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
 
   // Bind to dynamic view
   const {cull, binding, uniforms, updateView} = useDynamicViewBinding(viewBindGroup);
-  const {bindPass, dataBindings} = useApplyPassBindGroup(buffers, env, binding);
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, binding);
 
   const {
     shadow,

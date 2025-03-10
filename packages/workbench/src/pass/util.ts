@@ -54,18 +54,31 @@ export const getRenderPassDescriptor = (
   return descriptor;
 }
 
+const CALLS: Renderable[] = [];
 const ORDER: number[] = [];
 const DEPTHS: (number | boolean)[] = [];
 
-const getDrawOrder = (cull: Culler, calls: Renderable[], sign: number = 1) => {
-  let i = 0;
+export const drawToPass = (
+  cull: Culler,
+  renderables: Renderable[],
+  passEncoder: GPURenderPassEncoder,
+  countGeometry: (v: number, t: number) => void,
+  uniforms: Record<string, Ref<any>>,
+  sign: number = 1,
+  flip: boolean = false,
+) => {
+  const calls = CALLS;
   const order = ORDER;
   const depths = DEPTHS;
 
+  calls.length = 0;
   order.length = 0;
   depths.length = 0;
 
-  for (const {bounds} of calls) {
+  let i = 0;
+  for (const call of renderables) {
+    const {bounds} = call;
+
     let depth: number | boolean;
     if (bounds) {
       const {center, radius} = resolve(bounds);
@@ -76,8 +89,9 @@ const getDrawOrder = (cull: Culler, calls: Renderable[], sign: number = 1) => {
     }
 
     if (depth !== false) {
-      order.push(i);
+      calls.push(call);
       depths.push(depth);
+      order.push(i);
       i++;
     }
   }
@@ -91,18 +105,5 @@ const getDrawOrder = (cull: Culler, calls: Renderable[], sign: number = 1) => {
     return (da - db) * sign;
   })
 
-  return order;
-};
-
-export const drawToPass = (
-  cull: Culler,
-  calls: Renderable[],
-  passEncoder: GPURenderPassEncoder,
-  countGeometry: (v: number, t: number) => void,
-  uniforms: Record<string, Ref<any>>,
-  sign: number = 1,
-  flip: boolean = false,
-) => {
-  const order = getDrawOrder(cull, calls, sign);
   for (const i of order) calls[i].draw(passEncoder, countGeometry, uniforms, flip);
 };

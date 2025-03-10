@@ -21,7 +21,7 @@ export const useBindGroupLayout = (
 ): BindGroupLayout => {
   const device = useDeviceContext();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => getBindGroupLayout(device, bindings, group, key), [device, group, bindings, key]);
+  return useMemo(() => getBindGroupLayout(device, bindings, group, key), [device, bindings, group, key]);
 };
 
 export const getBindGroupLayout = (

@@ -75,11 +75,23 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   const {buffers} = resources;
 
   const {
+    lights = false,
     overlay = false,
     merge = false,
+  
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
   } = flags;
+
+  const normalizedFlags = useMemo(() => ({
+    lights,
+    overlay,
+    merge,
+  
+    shadows,
+    picking,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [flags, buffers]);
 
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
 
@@ -102,8 +114,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   });
 
   // Pass bindings
-  const bindGroups = useStandardBindGroups(buffers, flags);
-  console.log({buffers})
+  const bindGroups = useStandardBindGroups(resources, flags);
 
   return Renderer({ buffers, bindGroups, children: view, components, passes: resolved, overlay, merge });
 }, 'DeferredRenderer');

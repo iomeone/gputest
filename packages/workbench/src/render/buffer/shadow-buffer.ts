@@ -7,9 +7,13 @@ import { useRenderContext } from '../../providers/render-provider';
 
 import { SHADOW_FORMAT } from '../light/light-data';
 
+import shadowBindingWGSL from '@use-gpu/wgsl/use/shadow.wgsl';
+
 export type ShadowBufferProps = PropsWithChildren<{
   format?: GPUTextureFormat,
 }>;
+
+const NO_OBJECT = {} as Record<string, any>;
 
 // Provide render context for depth-only shadow passes
 export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProps) => {
@@ -38,7 +42,21 @@ export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProp
     viewAttachments: [],
   };
 
+  const shadowBinding = {
+    module: shadowBindingWGSL,
+    visibility: 'fragment',
+    bind: ({light}: PassEnv) => {
+      const {shadowMap} = light?.sources ?? NO_OBJECT;
+
+      return [
+        shadowMap && {...shadowMap, sampler: null},
+        shadowMap && {sampler: shadowMap.sampler, filter: shadowMap.filter},
+      ];
+    },
+  };
+
   return yeet({
     buffers: { shadow: [shadowContext] },
+    bindings: { shadow: shadowBinding },
   });
 }, 'ShadowBuffer');

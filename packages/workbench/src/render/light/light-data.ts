@@ -57,6 +57,56 @@ export type LightDataProps = {
   ) => LiveElement,
 };
 
+export const makeLightQueue = () => {
+  const queue = [] as Queued[];
+  const changed = new Set<number>;
+
+  const lights = new Map<number, BoundLight>;
+  const maps = new Map<number, BoundLight>;
+
+  const enqueue = (id: number, light: Light) => {
+    queue.push({id, data: light});
+    changed.add(id);
+  };
+
+  const dispose = (id: number) => {
+    lights.delete(id);
+    maps.delete(id);
+  };
+
+  const flush = () => {
+    // Update light data in-place
+    for (const {id, data} of queue) {
+      const {shadow} = data;
+
+      let d = lights.get(id);
+      if (d) {
+        Object.assign(d, data);
+      }
+      else {
+        d = {shadowMap: -1, ...data};
+        lights.set(id, d);
+      }
+
+      if (shadow) {
+        if (!maps.has(id)) maps.set(id, d);
+      }
+      else if (maps.has(id)) {
+        maps.delete(id);
+      }
+    }
+
+    return changed;
+  }
+
+  const clear = () => {
+    queue.length = 0;
+    changed.clear();    
+  };
+
+  return {enqueue, dispose, flush, clear, lights, maps};
+};
+
 export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) => {
   const {
     reserve = 1,
@@ -65,59 +115,23 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
     then,
   } = props;
 
-  const [queue, changed, lights, maps, count] = useOne(() => [
-    [] as Queued[],
-    new Set<number>,
-    new Map<number, BoundLight>,
-    new Map<number, BoundLight>,
-    new Uint32Array(1),
-  ]);
+  const {enqueue, dispose, flush, clear, lights, maps} = useOne(makeLightQueue);
 
   const useLight = useCallback((light: Light) => {
     const {id} = useFiber();
-    useResource((dispose) => {
-      dispose(() => {
-        lights.delete(id);
-        maps.delete(id);
-      });
+    useResource((d) => {
+      d(() => dispose(id));
     });
     useCapture(LightCapture, null);
-
-    queue.push({id, data: light});
-    changed.add(id);
+    enqueue(id, light);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const count = useOne(() => new Uint32Array(1));
+
   // Produce light/shadow sources
   const Resume = () => {
-
-    // Update light data in-place
-    for (const {id, data} of queue) {
-      const {shadow} = data;
-
-      if (lights.has(id)) {
-        if (shadow) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const d = lights.get(id)!;
-          Object.assign(d, data);
-          continue;
-        }
-        else {
-          if (maps.has(id)) {
-            maps.delete(id);
-          }
-        }
-      }
-
-      const d = {shadowMap: -1, ...data};
-      if (shadow) {
-        lights.set(id, d);
-        maps.set(id, d);
-      }
-      else {
-        lights.set(id, d);
-      }
-    }
+    const changed = flush();
 
     // Check if light / shadow configuration changed
     let lightKey = 0;
@@ -296,8 +310,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
     storage.version = incrementVersion(storage.version);
     if (texture) texture.version = incrementVersion(texture.version);
 
-    queue.length = 0;
-    changed.clear();
+    clear();
 
     const lightEnv = useMemo(() => ({
       lights,
