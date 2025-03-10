@@ -54,10 +54,16 @@ export const getRenderPassDescriptor = (
   return descriptor;
 }
 
-export const getDrawOrder = (cull: Culler, calls: Renderable[], sign: number = 1) => {
+const ORDER: number[] = [];
+const DEPTHS: (number | boolean)[] = [];
+
+const getDrawOrder = (cull: Culler, calls: Renderable[], sign: number = 1) => {
   let i = 0;
-  const order: number[] = [];
-  const depths: (number | boolean)[] = [];
+  const order = ORDER;
+  const depths = DEPTHS;
+
+  order.length = 0;
+  depths.length = 0;
 
   for (const {bounds} of calls) {
     let depth: number | boolean;
@@ -68,10 +74,12 @@ export const getDrawOrder = (cull: Culler, calls: Renderable[], sign: number = 1
     else {
       depth = true;
     }
-    depths.push(depth);
 
-    if (depth !== false) order.push(i);
-    i++;
+    if (depth !== false) {
+      order.push(i);
+      depths.push(depth);
+      i++;
+    }
   }
 
   order.sort((a, b) => {
