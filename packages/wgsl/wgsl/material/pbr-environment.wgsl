@@ -33,9 +33,12 @@ fn varianceForRoughness(roughness: f32) -> f32 {
   let dfx = dpdx(R);
   let dfy = dpdy(R);
 
+  let bentNormal = surface.occlusion.xyz;
+  let occlusion = surface.occlusion.w;
+
   let brdf = environmentBRDF(roughness, dotNV);
-  let diffuse = Fd * sampleEnvironment(surface.occlusion.xyz, -1.0, dfx, dfy).xyz;
+  let diffuse = Fd * sampleEnvironment(bentNormal, -1.0, dfx, dfy).xyz;
   let specular = max(vec3<f32>(0.0), brdf.x + Fs * brdf.y) * sampleEnvironment(R, sigma, dfx, dfy).xyz;
 
-  return (diffuse + specular) * surface.occlusion.w * getGain();
+  return (diffuse + specular) * occlusion * getGain();
 }
