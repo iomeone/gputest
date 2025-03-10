@@ -24,8 +24,10 @@ const NO_DEBUG_ARGS: any[] = [];
 export const MotionDispatch: LiveComponent = () => {
   const {uniforms: viewUniforms} = useViewContext();
 
+  const pc = usePassContext();
   const {
     buffers: {normal, motion},
+    bindings: {motion: {update: updateMotion}},
     bindGroups: {view: {layout: globalLayout}},
   } = usePassContext();
 
@@ -39,8 +41,6 @@ export const MotionDispatch: LiveComponent = () => {
     reprojectionMatrix: {current: mat4.create()},
     inverseReprojectionMatrix: {current: mat4.create()},
   }));
-
-  const [source, updateMotion] = useUniformSource(MotionUniformsWGSL);
 
   // Motion-from-depth shader
   const getDepth = useRawTextureAccess(normalTarget.depth).shader;

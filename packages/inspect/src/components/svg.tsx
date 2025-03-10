@@ -365,7 +365,7 @@ export const SVGViewOutput = ({title = undefined, size = 16}: SVGProps) => (
   </div>
 );
 
-export const SVGShader = ({title = undefined, size = 16}: SVGProps) => (
+export const SVGRaster = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -378,3 +378,18 @@ export const SVGShader = ({title = undefined, size = 16}: SVGProps) => (
     </svg>
   </div>
 );
+
+export const SVGCompute = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+      height={size}
+    >
+    <g>
+      <path d="M2.987 4.507v.506H2v6h.987V12H4v-.987h2V12h1.013v-.987h1.974V12H10v-.987h2V12h1.013v-.987H14v-6h-.987V4H12v1.013h-2V4H8.987v1.013H7.013V4H6v1.013H4V4H2.987v.507" fillRule="evenodd"/>
+    </g>
+    </svg>
+  </div>
+);
+

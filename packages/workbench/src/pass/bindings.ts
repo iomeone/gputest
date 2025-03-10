@@ -46,9 +46,16 @@ export const useStandardBindGroups = (
 ): Record<string, PassBindGroup> => {
   const viewBinding = useViewContextBinding();
 
-  const rs = useMemo(() => patch(resources, {bindings: {view: $set(viewBinding)}}), [resources, viewBinding]);
+  const rs = useMemo(() => patch(resources, {
+    bindings: {
+      view: $set(viewBinding),
+      light: $set(lightBinding),
+    },
+  }), [resources, viewBinding]);
 
-  const view = useStandardBindGroup(rs, {});
+  const {motion} = flags;
+
+  const view = useStandardBindGroup(rs, {motion});
   const color = useStandardBindGroup(rs, flags);
 
   return useMemo(() => ({view, color}), [view, color]);
@@ -66,6 +73,7 @@ export const useStandardBindGroup = (
     const {
       bindings: {
         view: viewBinding,
+        light: lightBinding,
         motion: motionBinding,
         shadow: shadowBinding,
         ssao: ssaoBinding,
@@ -84,7 +92,7 @@ export const useStandardBindGroup = (
     const key = bs.reduce((a, b, i) => a | (b ? (1 << i) : 0), 0);
 
     return getBindGroupLayout(device, bs, 'PASS', key);
-  }, [device, resources, flags])
+  }, [device, resources, ...Object.values(flags)]);
 };
 
 type ApplyPass = {
@@ -111,7 +119,7 @@ export const useApplyPassBindGroup = (
 ): ApplyPass => {
   const {attributes, layout, bind} = passBindGroup;
   if (attributes == null || bind == null || layout == null) return (useNoApplyPassBindGroup(), {dataBindings: []});
-
+  
   const device = useDeviceContext();
 
   const values = useMemo(() =>

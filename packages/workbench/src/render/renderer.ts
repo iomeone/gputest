@@ -1,10 +1,10 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { UseGPURenderContext } from '@use-gpu/core';
-import type { AggregatedCalls, PassBindGroup, RenderComponents, VirtualDraw } from '../pass/types';
+import type { AggregatedCalls, PassBindGroup, PassResources, RenderComponents, VirtualDraw } from '../pass/types';
 
 import { use, memo, unquote, provide, multiGather, extend, useMemo, useNoMemo } from '@use-gpu/live';
 
-import { PassContext, VariantContext } from '../providers/pass-provider';
+import { PassContext, VariantContext, VariantContextProps } from '../providers/pass-provider';
 import { PassReconciler } from '../reconcilers/index';
 
 import { ComputePass } from '../pass/compute-pass';
@@ -18,71 +18,29 @@ export type RendererProps = PropsWithChildren<{
   overlay?: boolean,
   merge?: boolean,
 
-  buffers: Record<string, UseGPURenderContext[]>,
+  resources: PassResources,
   bindGroups: Record<string, PassBindGroup>,
 
   passes: LiveElement[],
-  components: RenderComponents,
-
-  variants?: (virtual: VirtualDraw, hovered: boolean) => LiveComponent | LiveComponent[] | null | undefined,
+  variants: VariantContextProps,
 }>;
-
-const HOVERED_VARIANT = 'debug';
 
 export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   const {
     overlay = false,
     merge = false,
 
-    buffers,
+    resources,
     bindGroups,
-    passes,
-    components,
 
+    passes,
     variants,
+
     children,
   } = props;
 
   // Pass on shared render context(s) for renderables
-  const passContext = useMemo(() => ({buffers, bindGroups}), [buffers, bindGroups]);
-
-  // Provide draw call variants for sub-passes
-  const useVariants = variants ? (useNoMemo(), variants) : useMemo(() => {
-    const {normal, shadow, picking} = buffers;
-
-    const getRender = (mode: string, render: string | null = null) =>
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      components.modes[mode] ?? components.renders[render!]?.[mode];
-
-    const getVariants = (!normal && !shadow && !picking)
-       ? (virtual: VirtualDraw, hovered: boolean) =>
-         hovered ? [getRender(HOVERED_VARIANT)] : getRender(virtual.mode, virtual.renderer)
-
-       : (virtual: VirtualDraw, hovered: boolean) => {
-          const {mode, renderer, links, defines} = virtual;
-
-          const variants = [];
-          if (normal && mode === 'opaque' && defines?.HAS_SHADOW) {
-            variants.push('normal');
-          }
-          if (shadow && mode === 'opaque' && defines?.HAS_SHADOW) {
-            variants.push('shadow');
-          }
-          if (picking && mode !== 'picking' && links?.getPicking) {
-            variants.push('picking');
-          }
-          if (variants.length === 0) return hovered ? getRender(HOVERED_VARIANT) : getRender(mode, renderer);
-
-          variants.push(hovered ? HOVERED_VARIANT : mode);
-          return variants.map(mode => getRender(mode, renderer));
-        };
-
-    const useVariants = (virtual: VirtualDraw, hovered: boolean) =>
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      useMemo(() => getVariants(virtual, hovered), [getVariants, virtual, hovered]);
-
-    return useVariants;
-  }, [buffers, components]);
+  const passContext = useMemo(() => ({...resources, bindGroups}), [resources, bindGroups]);
 
   // Pass aggregrated calls to pass runners
   const Resume = (
@@ -106,16 +64,14 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
         calls.post || calls.readback ? use(ReadbackPass, props) : null,
       ];
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [calls, buffers, passes, overlay, merge]);
+    }, [calls, passes, overlay, merge]);
 
   return (
     reconcile(
       quote(
         provide(PassContext, passContext,
           multiGather(
-            unquote(
-              provide(VariantContext, useVariants, children)
-            ),
+            unquote(provide(VariantContext, variants, children)),
             Resume
           )
         )

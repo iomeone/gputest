@@ -5,10 +5,9 @@ import { use, gather, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import { makeColorAttachment, makeColorState, makeDepthStencilState, makeDepthTexture, makeDepthStencilAttachment, makeTargetTexture } from '@use-gpu/core';
 
 import { RenderTarget } from '../render-target';
-import { TextureBuffer } from '../../compute/texture-buffer';
 
-import { useDeviceContext } from '../../providers/device-provider';
 import { useInspectable } from '../../hooks/useInspectable';
+import { useDeviceContext } from '../../providers/device-provider';
 
 import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
 

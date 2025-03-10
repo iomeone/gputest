@@ -5,6 +5,7 @@ import type { LightEnv, PassResources, PassFlags, RenderComponents } from '../pa
 import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 
 import { PassReconciler } from '../reconcilers/index';
+import { VariantContext } from '../providers/pass-provider';
 import { useRenderContext } from '../providers/render-provider';
 
 import { MotionPass } from '../pass/motion-pass';
@@ -22,6 +23,7 @@ import { NormalRender } from './forward/normal';
 import { UIRender } from './forward/ui';
 
 import { useStandardBindGroups } from '../pass/bindings';
+import { useMakeUseVariants } from '../pass/variants';
 
 import { ColorPass } from '../pass/color-pass';
 import { ColorCubePass } from '../pass/color-cube-pass';
@@ -74,38 +76,38 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
 export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRendererProps) => {
   const {
     resources = NO_RESOURCES,
-    flags = NO_FLAGS,
+    flags: propFlags = NO_FLAGS,
     passes,
 
     children,
   } = props;
 
-  const {buffers, bindings} = resources;
+  const {buffers} = resources;
 
   const {
     lights = false,
     overlay = false,
     merge = false,
   
-    normal = !!buffers.normal,
+    normals = !!buffers.normal,
     motion = !!buffers.motion,
     ssao = !!buffers.ssao,
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
-  } = flags;
+  } = propFlags;
 
-  const normalizedFlags = useMemo(() => ({
+  const flags = useMemo(() => ({
     lights,
     overlay,
     merge,
   
-    normal,
+    normals,
     motion,
     ssao,
     shadows,
     picking,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [flags, buffers]);
+  }), [propFlags, buffers]);
 
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
 
@@ -113,7 +115,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
   const {viewType} = useRenderContext();
 
   const resolved = useMemo(() => passes ?? [
-    normal ? use(NormalPass, props) : null,
+    normals ? use(NormalPass, props) : null,
     motion ? use(MotionPass, props) : null,
     ssao ? use(SSAOPass, props) : null,
     shadows ? use(ShadowPass, props) : null,
@@ -130,7 +132,22 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
   }) : children;
 
   // Pass bindings
-  const bindGroups = useStandardBindGroups(resources, normalizedFlags);
+  const bindGroups = useStandardBindGroups(resources, flags);
 
-  return Renderer({ buffers, bindGroups, children: view, components, passes: resolved, overlay, merge });
+  // Render variants
+  const variants = useMakeUseVariants(components, flags);
+
+  return (
+    Renderer({
+      resources,
+      bindGroups,
+
+      variants,
+      passes: resolved,
+
+      overlay,
+      merge,
+      children: view,
+    })
+  );
 }, 'ForwardRenderer');

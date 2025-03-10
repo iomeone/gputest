@@ -13,7 +13,7 @@ import { ExpandState } from './types';
 import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendColumns, TreeLegendGroup, TreeRowOmitted, TreeLegendItem, Muted, InlineButton } from './layout';
 import { Expandable } from './expandable';
 
-import { IconItem, SVGChevronDown, SVGChevronLeft, SVGChevronRight, SVGNextOpen, SVGNextClosed, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGShader } from './svg';
+import { IconItem, SVGChevronDown, SVGChevronLeft, SVGChevronRight, SVGNextOpen, SVGNextClosed, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute } from './svg';
 
 type FiberTreeProps = {
   state: InspectState,
@@ -149,6 +149,11 @@ export const FiberLegend: React.FC = () => {
 
         <TreeLegendGroup>
           <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGHighlightElement /></IconItem>
+            <span>Highlight</span>
+          </TreeLegendItem>
+
+          <TreeLegendItem>
             <IconItem gap={-5} top={-2}><SVGYeet /></IconItem>
             <span>Yeet</span>
           </TreeLegendItem>
@@ -156,11 +161,6 @@ export const FiberLegend: React.FC = () => {
           <TreeLegendItem>
             <IconItem gap={-5} top={-2}><SVGQuote /></IconItem>
             <span>Quote</span>
-          </TreeLegendItem>
-
-          <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGHighlightElement /></IconItem>
-            <span>Highlight</span>
           </TreeLegendItem>
 
           <TreeLegendItem>
@@ -176,14 +176,20 @@ export const FiberLegend: React.FC = () => {
           </TreeLegendItem>
 
           <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGShader /></IconItem>
-            <span>Shader</span>
-          </TreeLegendItem>
-
-          <TreeLegendItem>
             <IconItem gap={-5} top={-2}><SVGDashboard /></IconItem>
             <span>Layout</span>
           </TreeLegendItem>
+
+          <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGCompute /></IconItem>
+            <span>Compute</span>
+          </TreeLegendItem>
+
+          <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGRaster /></IconItem>
+            <span>Raster</span>
+          </TreeLegendItem>
+
         </TreeLegendGroup>
       </TreeLegendColumns>
       <TreeTip><Muted>Double click to focus a sub-tree</Muted></TreeTip>

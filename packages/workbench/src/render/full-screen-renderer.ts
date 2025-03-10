@@ -1,5 +1,5 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { RenderComponents, VirtualDraw, AggregatedCalls } from '../pass/types';
+import type { AggregatedCalls, PassFlags, RenderComponents, VirtualDraw } from '../pass/types';
 
 import { use, provide, unquote, multiGather, memo, useCallback, useMemo } from '@use-gpu/live';
 
@@ -7,7 +7,7 @@ import { PassContext, VariantContext } from '../providers/pass-provider';
 import { PassReconciler } from '../reconcilers/index';
 
 import { useMinimalBindGroups } from '../pass/bindings';
-import { PassFlags } from '../pass/types';
+import { useMakeUseVariants } from '../pass/variants';
 
 import { DebugRender } from './forward/debug';
 import { SolidRender } from './forward/solid';
@@ -54,10 +54,7 @@ export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: Prop
     merge = false,
   } = flags;
   
-  const useVariants = useCallback((virtual: VirtualDraw, hovered: boolean) =>
-    useMemo(() => hovered ? [DebugRender] : COMPONENTS.modes[virtual.mode], [virtual, hovered]),
-    []
-  );
+  const variants = useMakeUseVariants(COMPONENTS, flags);
 
   // Pass aggregrated calls to pass runners
   const Resume = (
@@ -87,7 +84,7 @@ export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: Prop
         provide(PassContext, {bindGroups},
           multiGather(
             unquote(
-              provide(VariantContext, useVariants, children)
+              provide(VariantContext, variants, children)
             ),
             Resume
           )

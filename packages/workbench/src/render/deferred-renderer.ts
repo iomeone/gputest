@@ -14,6 +14,7 @@ import { SolidRender } from './forward/solid';
 import { UIRender } from './forward/ui';
 
 import { useStandardBindGroups } from '../pass/bindings';
+import { useMakeUseVariants } from '../pass/variants';
 
 import { DeferredPass } from '../pass/deferred-pass';
 import { PickingPass } from '../pass/picking-pass';
@@ -66,7 +67,7 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
 export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: DeferredRendererProps) => {
   const {
     resources = NO_RESOURCES,
-    flags = NO_FLAGS,
+    flags: propFlags = NO_FLAGS,
     passes,
 
     children,
@@ -81,9 +82,9 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
-  } = flags;
+  } = propFlags;
 
-  const normalizedFlags = useMemo(() => ({
+  const flags = useMemo(() => ({
     lights,
     overlay,
     merge,
@@ -91,7 +92,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     shadows,
     picking,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [flags, buffers]);
+  }), [propFlags, buffers]);
 
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
 
@@ -116,5 +117,20 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   // Pass bindings
   const bindGroups = useStandardBindGroups(resources, flags);
 
-  return Renderer({ buffers, bindGroups, children: view, components, passes: resolved, overlay, merge });
+  // Render variants
+  const variants = useMakeUseVariants(components, flags);
+
+  return (
+    Renderer({
+      resources,
+      bindGroups,
+
+      variants,
+      passes: resolved,
+
+      overlay,
+      merge,
+      children: view,
+    })
+  );
 }, 'DeferredRenderer');
