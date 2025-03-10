@@ -15,7 +15,7 @@ import { useInspectable } from '../hooks/useInspectable'
 import { useApplyPass } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
-import { MotionDispatch } from '../render/dispatch/motion-dispatch';
+import { MotionDispatch, makeMotionUniforms } from '../render/dispatch/motion-dispatch';
 
 import { wgsl } from '@use-gpu/shader/wgsl';
 
@@ -49,8 +49,10 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
 
   const {cull, uniforms} = useViewContext();
   const {bindPass, dataBindings} = useApplyPass(env, 'view');
-
+  
   const motions = toArray(calls['motion'] as Renderable[]);
+
+  const motionUniforms = useOne(makeMotionUniforms);
 
   const motionPassDescriptor = useOne(() =>
     getRenderPassDescriptor(renderContext, {label: 'MotionPass'}),
@@ -58,6 +60,7 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
 
   const resolveMotion = useOne(() => (
     use(MotionDispatch, {
+      motionUniforms,
       targetContext: renderContext,
       descriptor: motionPassDescriptor,
     })
@@ -97,7 +100,7 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
           vertices: vs,
           triangles: ts,
         },
-        pass: { uniforms },
+        pass: { ...uniforms, ...motionUniforms },
         bindings: dataBindings,
       });
 

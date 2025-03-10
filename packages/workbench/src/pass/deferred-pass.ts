@@ -147,7 +147,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
         vertices: vs,
         triangles: ts,
       },
-      pass: { uniforms },
+      pass: uniforms,
       bindings: dataBindings,
     });
 

@@ -83,7 +83,7 @@ export const NormalPass: LC<NormalPassProps> = memo((props: PropsWithChildren<No
         vertices: vs,
         triangles: ts,
       },
-      pass: { uniforms },
+      pass: uniforms,
       bindings: dataBindings,
     });
 

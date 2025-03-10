@@ -84,7 +84,7 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PickingPassProps) 
         vertices: vs,
         triangles: ts,
       },
-      pass: { uniforms },
+      pass: uniforms,
       bindings: dataBindings,
     });
 

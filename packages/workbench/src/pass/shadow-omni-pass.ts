@@ -191,7 +191,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
         vertices: vs,
         triangles: ts,
       },
-      pass: { uniforms },
+      pass: uniforms,
       bindings: dataBindings,
     });
 

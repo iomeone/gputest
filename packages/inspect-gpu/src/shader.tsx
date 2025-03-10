@@ -72,7 +72,7 @@ export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
   const bindings = fiber.__inspect?.bindings;
   const volatiles = fiber.__inspect?.volatiles;
   const indirect = fiber.__inspect?.indirect;
-  const pass = fiber.__inspect?.pass?.uniforms;
+  const pass = fiber.__inspect?.pass;
   
   const [state, setState] = useState<Record<string, boolean>>({});
   const toggleState = (id: string) => setState((state) => ({
@@ -88,7 +88,7 @@ export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
 
   const resolveDataBindings = (us: any[]) => {
     const out: Record<string, any> = {};
-    for (let u of us) {
+    for (let u of us) if (u) {
       u = {...u};
       let n = u.attribute.name;
       if (n in out) {

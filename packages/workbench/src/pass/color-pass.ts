@@ -92,7 +92,7 @@ export const ColorPass: LC<ColorPassProps> = memo((props: ColorPassProps) => {
         vertices: vs,
         triangles: ts,
       },
-      pass: { uniforms },
+      pass: uniforms,
       bindings: dataBindings,
     });
 

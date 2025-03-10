@@ -6,7 +6,6 @@ import { makeColorAttachment, makeColorState, makeDepthStencilState, makeDepthTe
 
 import { RenderTarget } from '../render-target';
 
-import { useInspectable } from '../../hooks/useInspectable';
 import { useDeviceContext } from '../../providers/device-provider';
 
 import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
@@ -24,7 +23,6 @@ export const SSAO_RESOLVE_FORMAT = 'rgba8unorm';
 
 export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
   const device = useDeviceContext();
-  const inspect = useInspectable();
 
   const resolution = 1/2;
   const samples = 1;
@@ -105,12 +103,6 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
       accumTarget.source,
       resolveTarget.source,
     ], targets);
-
-    inspect({
-      output: {
-        color: sources,
-      },
-    });
 
     const ssaoBinding: PassBinding = {
       module: ssaoBindingWGSL,
