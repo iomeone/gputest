@@ -7,7 +7,7 @@ import { LayoutContext } from '../providers/layout-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, vec3, vec4 } from 'gl-matrix';
 
 const DEFAULT_FLAT_CAMERA = {
   near: -100,
@@ -27,6 +27,8 @@ export type FlatCameraProps = PropsWithChildren<{
   near?: number,
   far?: number,
 }>;
+
+const INF_POSITION = vec4.fromValues(0, 0, 1, 0);
 
 export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
   const {
@@ -91,7 +93,7 @@ export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
 
   const viewHeight = Math.abs(layout[3] - layout[1]);
 
-  updateViewProjection(uniforms, panned, undefined, undefined, near, far);
+  updateViewProjection(uniforms, panned, undefined, INF_POSITION, near, far);
   updateViewSize(uniforms, width, height, ratio, focus * viewHeight / 2.0, viewHeight / (far - near) / 2.0);
 
   const els = uniforms.projectionMatrix.current;
