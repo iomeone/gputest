@@ -519,8 +519,7 @@ export const makeLayoutFiller = (
     }
   }
 
-  const fill = (items: any | any[]) => {
-    let index = 0;
+  const fill = (items: any | any[], index: number = 0) => {
     if (!Array.isArray(items)) setData(index++, items);
     else for (const item of items) {
       setData(index++, item);

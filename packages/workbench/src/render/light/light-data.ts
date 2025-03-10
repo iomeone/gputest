@@ -48,20 +48,18 @@ export type UseLight = (l: Light) => void;
 
 export type LightDataProps = {
   reserve?: number,
-  deferred?: boolean,
   shadows?: boolean,
   render?: (
     useLight: (l: Light) => void,
   ) => LiveElement,
   then?: (
-    env: LightEnv,
+    lightEnv: LightEnv,
   ) => LiveElement,
 };
 
 export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) => {
   const {
     reserve = 1,
-    deferred = false,
     shadows = false,
     render,
     then,
@@ -285,16 +283,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
     // Upload changed ranges
     if (ranges.length) {
       const {buffer} = storage;
-
-      // Don't count point lights if deferred rendering
-      if (deferred && subranges.has(POINT_LIGHT)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        count[0] = subranges.get(POINT_LIGHT)![0];
-      }
-      else {
-        count[0] = lightCount;
-      }
-
+      count[0] = lightCount;
       uploadBuffer(device, buffer, count.buffer);
 
       const stride = LIGHT_LAYOUT.length;
@@ -310,7 +299,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
     queue.length = 0;
     changed.clear();
 
-    const env = useMemo(() => ({
+    const lightEnv = useMemo(() => ({
       lights,
       shadows: maps,
 
@@ -325,7 +314,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
 
     return [
       signal(),
-      then ? then(env) : yeet(env),
+      then ? then(lightEnv) : yeet(lightEnv),
     ];
   };
 

@@ -63,7 +63,7 @@ export const GBuffer: LC = memo(() => {
     return renderTextures.map(makeSource);
   }, [renderTextures, formats, width, height]);
 
-  const context = useMemo(() => ({
+  const gBufferContext = useMemo(() => ({
     ...renderContext,
     colorStates,
     viewAttachments: [{
@@ -79,5 +79,7 @@ export const GBuffer: LC = memo(() => {
     },
   });
 
-  return yeet({ gBuffer: context });
+  return yeet({
+    buffers: { gBuffer: [gBufferContext] },
+  });
 }, 'GBuffer');

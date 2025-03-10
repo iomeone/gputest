@@ -29,7 +29,11 @@ import { LightMaterial } from './light/light-material';
 
 const {quote} = PassReconciler;
 
-const NO_BUFFERS: Record<string, UseGPURenderContext[]> = {};
+const NO_RESOURCES: PassResources = {
+  buffers: {},
+  bindings: {},
+};
+
 const NO_FLAGS: DeferredRendererFlags = {};
 
 export type DeferredRendererFlags = Pick<PassFlags, 'shadows' | 'merge' | 'overlay'>;
@@ -61,12 +65,14 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
 /** Deferred-mode rendering with a G-Buffer. Lights are painted in afterwards using stencil volumes. */
 export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: DeferredRendererProps) => {
   const {
-    buffers = NO_BUFFERS,
+    resources = NO_RESOURCES,
     flags = NO_FLAGS,
     passes,
 
     children,
   } = props;
+
+  const {buffers} = resources;
 
   const {
     overlay = false,
@@ -97,6 +103,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
 
   // Pass bindings
   const bindGroups = useStandardBindGroups(buffers, flags);
+  console.log({buffers})
 
   return Renderer({ buffers, bindGroups, children: view, components, passes: resolved, overlay, merge });
 }, 'DeferredRenderer');

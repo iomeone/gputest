@@ -111,7 +111,8 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
       },
     });
 
-    return yeet({ ssao: [normalTarget, motionTarget, sampleTarget, accumTarget, resolveTarget] });
+    return yeet({
+      buffers: { ssao: [normalTarget, motionTarget, sampleTarget, accumTarget, resolveTarget] },
+    });
   });
-
 }, 'SSAOBuffer');

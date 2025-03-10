@@ -1,6 +1,6 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { RenderViewType, UseGPURenderContext } from '@use-gpu/core';
-import type { LightEnv, PassFlags, RenderComponents } from '../pass/types';
+import type { LightEnv, PassResources, PassFlags, RenderComponents } from '../pass/types';
 
 import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 
@@ -36,13 +36,17 @@ const DEFAULT_PASSES: Record<RenderViewType, LiveElement[]> = {
   'cube': [use(ColorCubePass, {})],
 };
 
-const NO_BUFFERS: Record<string, UseGPURenderContext[]> = {};
+const NO_RESOURCES: PassResources = {
+  buffers: {},
+  bindings: {},
+};
+
 const NO_FLAGS: ForwardRendererFlags = {};
 
 export type ForwardRendererFlags = Pick<PassFlags, 'lights' | 'shadows' | 'merge' | 'overlay'>;
 
 export type ForwardRendererProps = PropsWithChildren<{
-  buffers?: Record<string, UseGPURenderContext[]>,
+  resources?: PassResources,
   flags?: ForwardRendererFlags,
   passes?: LiveElement[],
   components?: RenderComponents,
@@ -69,12 +73,14 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
 /** Forward-mode rendering with lights immediately evaluated in-shader */
 export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRendererProps) => {
   const {
-    buffers = NO_BUFFERS,
+    resources = NO_RESOURCES,
     flags = NO_FLAGS,
     passes,
 
     children,
   } = props;
+
+  const {buffers} = resources;
 
   const {
     lights = false,
@@ -87,6 +93,19 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
   } = flags;
+
+  const normalizedFlags = useMemo(() => ({
+    lights,
+    overlay,
+    merge,
+  
+    normal,
+    motion,
+    ssao,
+    shadows,
+    picking,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [flags, buffers]);
 
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
 
@@ -111,7 +130,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
   }) : children;
 
   // Pass bindings
-  const bindGroups = useStandardBindGroups(buffers, flags);
+  const bindGroups = useStandardBindGroups(buffers, normalizedFlags);
 
   return Renderer({ buffers, bindGroups, children: view, components, passes: resolved, overlay, merge });
 }, 'ForwardRenderer');

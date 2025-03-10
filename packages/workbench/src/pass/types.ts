@@ -15,9 +15,18 @@ export type PassFlags = {
   merge?: boolean,
 };
 
-export type BuffersEnv = Record<string, UseGPURenderingContext[]>;
+// Env
+
+export type PassResources = {
+  buffers: Record<string, UseGPURenderingContext[]>,
+  bindings: Record<string, PassBinding>,
+};
 
 export type PassEnv = {
+  buffers: Record<string, UseGPURenderingContext[]>,
+  bindings: Record<string, PassBinding>,
+
+  bindGroups: Record<string, PassBindGroup>,
   light?: LightEnv,
 };
 
@@ -33,6 +42,8 @@ export type LightEnv = {
   },
 };
 
+// Bindings
+
 export type PassBinding = {
   module: ShaderModule,
   visibility?: 'vertex' | 'fragment',
@@ -40,6 +51,9 @@ export type PassBinding = {
     buffers: BuffersEnv,
     env: PassEnv,
   ) => ShaderSource[],
+  update?: (
+    values: Record<string, any> | Record<string, any>[],
+  ) => void,
 };
 
 export type PassBindGroup = {
@@ -53,6 +67,8 @@ export type PassBindGroup = {
 };
 
 export type PassApplyBindGroup = (passEncoder: GPURenderPassEncoder) => void;
+
+// Rendering
 
 export type Culler = (center: vec3, radius: number) => number | boolean;
 

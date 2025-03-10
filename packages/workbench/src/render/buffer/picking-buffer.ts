@@ -17,5 +17,7 @@ export const PickingBuffer: LC = memo(() => {
     },
   });
 
-  return yeet({ picking: renderContext });
+  return yeet({
+    buffers: { picking: [renderContext] },
+  });
 }, 'PickingBuffer');

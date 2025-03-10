@@ -7,6 +7,10 @@ import { bundleToAttribute } from '@use-gpu/shader/wgsl';
 
 import { useDeviceContext } from '../providers/device-provider';
 
+/**
+Make a uniform-backed source for a WGSL type.
+Returns a [source, updater] tuple that accepts key/value pairs.
+*/
 export const useUniformSource = (
   type: ShaderModule,
   n?: number,
@@ -15,6 +19,10 @@ export const useUniformSource = (
   return useMemo(() => getUniformSource(device, type, n), [device, type, n]);
 }
 
+/**
+Make a uniform-backed source for a WGSL type.
+Returns a [source, updater] tuple that accepts key/value pairs.
+*/
 export const getUniformSource = (
   device: GPUDevice,
   type: ShaderModule,
@@ -28,17 +36,17 @@ export const getUniformSource = (
   const buffer = makeUniformBuffer(device, pipe.data);
 
   const source: UniformSource = {
-    format: 'T',
+    format: n > 1 ? 'array<T>' : 'T',
     type,
     buffer,
-    length: 1,
-    size: [1],
+    length: n,
+    size: [n],
     version: 0,
 
     addressSpace: 'uniform',
   };
 
-  const update = (values: Record<string, any>) => {
+  const update = (values: Record<string, any> | Record<string, any>[]) => {
     pipe.fill(values);
     uploadBuffer(device, buffer, pipe.data);
   };

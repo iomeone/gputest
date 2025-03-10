@@ -39,8 +39,10 @@ export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
     })
   );
 
-  return gather(target, ([target]: TextureTarget[]) => {
-    return yeet({ normal: [target] });
+  return gather(target, ([normalContext]: TextureTarget[]) => {
+    return yeet({
+      buffers: { normal: [normalContext] },
+    });
   });
 
 }, 'NormalBuffer');

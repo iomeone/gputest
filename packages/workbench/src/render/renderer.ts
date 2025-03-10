@@ -91,8 +91,6 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
     calls: AggregatedCalls,
   ) =>
     useMemo(() => {
-      const {normal, motion, ssao, shadow, picking} = buffers;
-
       const env = (calls.env ?? []).reduce((env: Record<string, any>, data: Record<string, any>) => {
         for (const k in data) env[k] = data[k];
         return env;

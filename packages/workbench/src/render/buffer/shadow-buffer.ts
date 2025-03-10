@@ -20,7 +20,7 @@ export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProp
   const renderContext = useRenderContext();
 
   // Placeholder render context, used for depth-only render pass and depth-copies
-  const context = {
+  const shadowContext = {
     device: renderContext.device,
     gpuContext: renderContext.gpuContext,
 
@@ -38,5 +38,7 @@ export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProp
     viewAttachments: [],
   };
 
-  return yeet({ shadow: context });
+  return yeet({
+    buffers: { shadow: [shadowContext] },
+  });
 }, 'ShadowBuffer');
