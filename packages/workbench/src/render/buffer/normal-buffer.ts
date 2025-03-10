@@ -9,6 +9,7 @@ import { useRenderContext } from '../../providers/render-provider';
 
 export type NormalBufferProps = {
   resolution?: number,
+  overscan?: number,
 };
 
 export const NORMAL_DEPTH_FORMAT = 'depth32float';
@@ -17,6 +18,7 @@ export const NORMAL_RENDER_FORMAT = 'rg8uint';
 export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
   const {
     resolution = 1,
+    overscan = 0,
   } = props;
 
   const device = useDeviceContext();
@@ -30,6 +32,7 @@ export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
     use(RenderTarget, {
       label: 'NormalBuffer',
       resolution,
+      overscan,
       samples,
       sampler: null,
       format: renderFormat,

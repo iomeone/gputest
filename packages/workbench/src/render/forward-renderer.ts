@@ -85,10 +85,11 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
   const {buffers} = resources;
 
   const {
-    lights = false,
     overlay = false,
     merge = false,
+    overscan = 0,
   
+    lights = false,
     normals = !!buffers.normal,
     motion = !!buffers.motion,
     ssao = !!buffers.ssao,
@@ -97,10 +98,11 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
   } = propFlags;
 
   const flags = useMemo(() => ({
-    lights,
     overlay,
     merge,
+    overscan,
   
+    lights,
     normals,
     motion,
     ssao,

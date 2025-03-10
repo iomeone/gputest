@@ -113,7 +113,7 @@ export const SceneSSAOPage: LC = (props) => {
             <Camera>
               <Loop live decimate={60}>
               <PrintHelper count={4096}>
-                <Pass lights ssao={{radius: 2}}>
+                <Pass lights ssao={{radius: 2}} overscan={16}>
 
                   <Environment preset="pisa">
                     <Scene>

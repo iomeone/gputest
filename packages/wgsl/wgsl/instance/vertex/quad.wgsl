@@ -1,5 +1,5 @@
 use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getScreenScale, getViewScale, applyZBias };
+use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getScreenScale, applyZBias };
 use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
 
 @optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };

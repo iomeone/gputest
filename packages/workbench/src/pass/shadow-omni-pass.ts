@@ -69,7 +69,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
   const shadows = toArray(calls['shadow'] as Renderable[]);
 
   // Bind to dynamic view
-  const {cull, binding, uniforms, updateView} = useDynamicViewBinding(viewBindGroup);
+  const {cull, binding, uniforms, uploadView} = useDynamicViewBinding(viewBindGroup);
   const {bindPass, dataBindings} = useApplyPassBindGroup(env, binding);
 
   const {
@@ -157,7 +157,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       mat4.multiply(viewMatrix, getCubeFaceMatrix(i), into!);
       updateViewProjection(uniforms, projectionMatrix, viewMatrix);
-      updateView(uniforms);
+      uploadView();
 
       // Render pass
       const commandEncoder = device.createCommandEncoder(LABEL);

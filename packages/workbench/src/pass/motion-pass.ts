@@ -81,6 +81,7 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
       const passEncoder = commandEncoder.beginRenderPass(motionPassDescriptor);
       bindPass?.(passEncoder);
 
+      calls.forEach(({dispatch: f}) => f());
       calls.forEach(({motion: f}) => f(passEncoder));
       drawToPass(cull, motions, passEncoder, countGeometry, uniforms);
 

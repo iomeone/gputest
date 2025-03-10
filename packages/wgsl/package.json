@@ -18,12 +18,17 @@
     "build:mjs": "../shader/bin/shader2ts.js --output ../../build/packages/wgsl/mjs --basePath ./wgsl --importRoot @use-gpu/wgsl --input ./wgsl --minify --typeDef --sourceMap",
     "build:exports-ts": "ts-node --project ../../tsconfig.json scripts/exports-ts.ts",
     "build:exports-js": "ts-node --project ../../tsconfig.json scripts/exports-js.ts",
-    "build:ts-out": "rm -rf ../../build/ts/wgsl 2>/dev/null; mkdir -p ../../build/ts/wgsl; cp -r ../../build/packages/wgsl/cjs ../../build/ts/wgsl/src"
+    "build:ts-out": "rm -rf ../../build/ts/wgsl 2>/dev/null; mkdir -p ../../build/ts/wgsl; cp -r ../../build/packages/wgsl/cjs ../../build/ts/wgsl/src",
+    "watch": "npm-watch"
+  },
+  "watch": {
+    "build:ts": "wgsl/**/*.wgsl"
   },
   "devDependencies": {
     "@types/command-line-args": "^5.2.3",
     "command-line-args": "^6.0.0",
-    "glob": "^7.2.0"
+    "glob": "^7.2.0",
+    "npm-watch": "^0.13.0"
   },
   "keywords": [
     "use-gpu",
@@ -162,7 +167,9 @@
     "./ssao/ssao-accum.wgsl": "./src/ssao/ssao-accum.wgsl.ts",
     "./ssao/ssao-resolve.wgsl": "./src/ssao/ssao-resolve.wgsl.ts",
     "./ssao/ssao-sample.wgsl": "./src/ssao/ssao-sample.wgsl.ts",
+    "./texture/downsample.wgsl": "./src/texture/downsample.wgsl.ts",
     "./texture/level.wgsl": "./src/texture/level.wgsl.ts",
+    "./texture/raw.wgsl": "./src/texture/raw.wgsl.ts",
     "./texture/unfiltered.wgsl": "./src/texture/unfiltered.wgsl.ts",
     "./transform/cartesian-4d.wgsl": "./src/transform/cartesian-4d.wgsl.ts",
     "./transform/cartesian.wgsl": "./src/transform/cartesian.wgsl.ts",

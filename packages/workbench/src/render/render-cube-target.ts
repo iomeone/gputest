@@ -56,7 +56,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
 
   const {
     resolution = 1,
-    width = Math.floor(renderContext.width * resolution),
+    width = Math.ceil(renderContext.width * resolution),
     samples = renderContext.samples,
     format = PRESENTATION_FORMAT,
     history = 0,

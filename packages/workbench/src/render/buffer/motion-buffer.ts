@@ -14,6 +14,7 @@ import motionBindingWGSL, { MotionUniforms as MotionUniformsWGSL } from '@use-gp
 
 export type MotionBufferProps = {
   resolution?: number,
+  overscan?: number,
 };
 
 export const MOTION_DEPTH_FORMAT = 'depth32float';
@@ -22,6 +23,7 @@ export const MOTION_RENDER_FORMAT = 'rg16float';
 export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
   const {
     resolution = 1,
+    overscan = 0,
   } = props;
 
   const device = useDeviceContext();
@@ -35,6 +37,7 @@ export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
     use(RenderTarget, {
       label: 'MotionBuffer',
       resolution,
+      overscan,
       samples,
       sampler: null,
       format: renderFormat,

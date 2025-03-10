@@ -10,6 +10,7 @@ export type PassFlags = {
   shadows?: boolean,
   picking?: boolean,
   ssao?: boolean,
+  overscan?: number,
 
   overlay?: boolean,
   merge?: boolean,

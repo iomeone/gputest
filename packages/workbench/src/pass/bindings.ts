@@ -163,6 +163,42 @@ export const useViewContextBinding = () => {
   }, [device, viewBinding]);
 };
 
+export const useOverscanViewBinding = (
+  passBindGroup: PassBindGroup,
+) => {
+  const {uniforms: viewUniforms} = useViewContext();
+
+  const uniforms = useOne(() => {
+    const {
+      projectionMatrix,
+      projectionViewMatrix,
+      projectionViewFrustum,
+      inverseProjectionMatrix,
+      inverseProjectionViewMatrix,
+    } = makeViewUniforms();
+
+    return {
+      ...viewUniforms,
+      projectionMatrix,
+      projectionViewMatrix,
+      projectionViewFrustum,
+      inverseProjectionMatrix,
+      inverseProjectionViewMatrix,
+    };
+  }, viewUniforms);
+
+  const {viewPosition, projectionViewFrustum} = uniforms;
+  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
+
+  const [source, updateView] = useUniformSource(ViewUniformsWGSL);
+  const binding = useMemo(() => ({
+    ...passBindGroup,
+    bind: (env) => [source, ...passBindGroup.bind(env).slice(1)],
+  }), [passBindGroup, source]);
+
+  return {binding, cull, uniforms, updateView};
+}
+
 export const useDynamicViewBinding = (
   passBindGroup: PassBindGroup,
 ) => {

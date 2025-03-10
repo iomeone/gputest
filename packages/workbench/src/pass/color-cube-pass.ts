@@ -63,7 +63,7 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
   const debugs       = toArray(calls['debug']       as Renderable[]);
 
   // Bind to dynamic view
-  const {cull, binding, uniforms, updateView} = useDynamicViewBinding(viewBindGroup);
+  const {cull, binding, uniforms, uploadView} = useDynamicViewBinding(viewBindGroup);
   const {bindPass, dataBindings} = useApplyPassBindGroup(env, binding);
 
   // Per face render passes
@@ -96,7 +96,7 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
     for (let i = 0; i < 6; ++i) {
       mat4.multiply(viewMatrix, getCubeFaceMatrix(i), viewUniforms.viewMatrix.current);
       updateViewProjection(uniforms, projectionMatrix, viewMatrix);
-      updateView(uniforms);
+      uploadView();
 
       const commandEncoder = device.createCommandEncoder(LABEL);
       const passEncoder = commandEncoder.beginRenderPass(cubeDescriptors[i]);

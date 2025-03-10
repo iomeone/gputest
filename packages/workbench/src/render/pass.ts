@@ -31,11 +31,12 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     lights = false,
     shadows = false,
     picking = false,
-    ssao = 0,
+    ssao = false,
+    overscan = 0,
 
     overlay = false,
     merge = false,
-    
+
     components,
 
     children,
@@ -46,6 +47,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     shadows,
     picking,
     ssao,
+    overscan,
 
     overlay,
     merge,
@@ -63,13 +65,13 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
 
     const resources = useMemo(() => [
       ...(ssao ? [
-        use(NormalBuffer, NONE),
-        use(MotionBuffer, NONE),
+        use(NormalBuffer, {overscan}),
+        use(MotionBuffer, {overscan}),
       ] : []),
-      ssao ? use(SSAOBuffer, NONE) : null,
+      ssao ? use(SSAOBuffer, {overscan}) : null,
       shadows ? use(ShadowBuffer, NONE) : null,
       picking ? use(PickingBuffer, NONE) : null,
-    ], [ssao, shadows, picking]);
+    ], [ssao, shadows, picking, overscan]);
 
     return gatherPassResources(resources, (resources: PassResources) =>
       use(ForwardRenderer, {resources, lights, flags, children})

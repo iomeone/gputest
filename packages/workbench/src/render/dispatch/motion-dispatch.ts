@@ -76,8 +76,8 @@ export const MotionDispatch: LiveComponent = (props: MotionDispatchProps) => {
   };
 
   return yeet({
+    dispatch: nextFrame,
     motion: (passEncoder: GPURenderPassEncoder) => {
-      nextFrame();
       draw(passEncoder);
     },
   });

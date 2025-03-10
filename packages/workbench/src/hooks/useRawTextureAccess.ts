@@ -1,4 +1,4 @@
-import type { Lazy, TextureSource, VectorLike } from '@use-gpu/core';
+import type { Lazy, LambdaSource, TextureSource, VectorLike } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
 import { TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
 
@@ -11,6 +11,7 @@ import { getSource } from './useSource';
 
 import { getUnfiltered, getUnfilteredOffset } from '@use-gpu/wgsl/texture/unfiltered.wgsl';
 import { loadTextureLevel } from '@use-gpu/wgsl/texture/level.wgsl';
+import { textureUVToXY, textureUVToXYOffset } from '@use-gpu/wgsl/texture/raw.wgsl';
 
 export const useRawTextureAccess = (
   texture: TextureSource,
@@ -45,7 +46,7 @@ export const getTextureAccess = (
   texture: TextureSource,
   level: Lazy<number> | ShaderModule | null,
 ) => {
-  const l = level ? getSource({ name: 'level', format: 'u32', args: ['u32'] }, level) : null;
+  const l = level ? getSource({ name: 'level', format: 'u32', args: [] }, level) : null;
   const t = proxy(texture, { variant: 'textureLoad', sampler: null });
 
   const {format} = texture;
@@ -56,4 +57,19 @@ export const getTextureAccess = (
   const bound = getShader(loadTextureLevel, [load, l]);
 
   return getLambdaSource(bound, texture);
-}
+};
+
+export const useTextureUVToXY = (
+  texture: ShaderSource,
+  size?: Lazy<VectorLike>,
+  offset?: Lazy<VectorLike>,
+) => useMemo(() => getTextureUVToXY(texture, size, offset), [texture, size, offset]);
+
+export const getTextureUVToXY = (
+  texture: ShaderSource,
+  size?: Lazy<VectorLike>,
+  offset?: Lazy<VectorLike>,
+) => {
+  const bound = getShader(offset ? textureUVToXYOffset : textureUVToXY, [texture, size ?? (() => texture.size), offset]);
+  return getLambdaSource(bound, texture);
+};

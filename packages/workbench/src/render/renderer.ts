@@ -25,6 +25,10 @@ export type RendererProps = PropsWithChildren<{
   variants: VariantContextProps,
 }>;
 
+/**
+  Materializes variants of draw calls for its children. (VariantContext)
+  Multi-gathers the draw calls and process them with the given render passes. (PassContext)
+*/
 export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   const {
     overlay = false,

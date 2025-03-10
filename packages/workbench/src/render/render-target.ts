@@ -34,6 +34,7 @@ export type RenderTargetProps = {
   colorInput?: ColorSpace,
   samples?: number,
   resolution?: number,
+  overscan?: number,
   variant?: string,
   absolute?: boolean,
   label?: string,
@@ -55,8 +56,9 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
   const {
     resolution = 1,
-    width = Math.floor(renderContext.width * resolution),
-    height = Math.floor(renderContext.height * resolution),
+    overscan = 0,
+    width = Math.ceil(renderContext.width * resolution + overscan),
+    height = Math.ceil(renderContext.height * resolution + overscan),
     samples = renderContext.samples,
     format = PRESENTATION_FORMAT,
     history = 0,

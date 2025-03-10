@@ -94,6 +94,8 @@ export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
   updateViewProjection(uniforms, panned, undefined, undefined, near, far);
   updateViewSize(uniforms, width, height, ratio, focus * viewHeight / 2.0, viewHeight / (far - near) / 2.0);
 
+  const els = uniforms.projectionMatrix.current;
+
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);
 
