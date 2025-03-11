@@ -88,7 +88,7 @@ struct ViewUniforms {
   viewPosition: vec4<f32>,
   viewResolution: vec2<f32>,
   viewSize: vec2<f32>,
-  viewWorldDepth: f32,
+  viewWorldScale: f32,
   viewPixelRatio: f32,
 };
 
@@ -121,7 +121,7 @@ struct ViewUniforms {
 
 @export fn getPerspectiveScale(w: f32, f: f32) -> f32 {
   var m = viewUniforms.projectionMatrix;
-  var worldScale = m[1][1] * viewUniforms.viewWorldDepth;
+  var worldScale = m[1][1] * viewUniforms.viewWorldScale;
   var clipScale = mix(1.0, worldScale / w, f);
   var pixelScale = clipScale * viewUniforms.viewPixelRatio;
   return pixelScale;

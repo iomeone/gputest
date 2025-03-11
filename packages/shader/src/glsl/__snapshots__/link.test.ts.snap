@@ -112,7 +112,7 @@ layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING) uniform _06_ViewUniforms {
   vec4 viewPosition;
   vec2 viewResolution;
   vec2 viewSize;
-  float viewWorldDepth;
+  float viewWorldScale;
   float viewPixelRatio;
 } _06_viewUniforms;
 
@@ -130,7 +130,7 @@ vec4 _06_worldToClip(vec4 position) {
 
 float _06_getPerspectiveScale(float w, float f) {
   mat4 m = _06_viewUniforms.projectionMatrix;
-  float worldScale = m[1][1] * _06_viewUniforms.viewWorldDepth;
+  float worldScale = m[1][1] * _06_viewUniforms.viewWorldScale;
   float clipScale = mix(1.0, worldScale / w, f);
   float pixelScale = clipScale * _06_viewUniforms.viewPixelRatio;
   return pixelScale;
