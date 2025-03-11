@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, getWorldScale };
 
 @optional @link fn transformPosition(p: vec4<f32>) -> vec4<f32> { return p; };
 @optional @link fn transformDifferential(v: vec4<f32>, b: vec4<f32>, c: bool) -> vec4<f32> { return v; };
@@ -26,7 +26,7 @@ use '@use-gpu/wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
 
   let center = transformPosition(anchor);
   let c = worldToClip(center);
-  let s = getWorldScale(c.w, depth) * getViewScale();
+  let s = getWorldScale(c.w, depth);
 
   if (length(tangent) > 0.0) {
     let diff = transformDifferential(tangent, anchor, false).xyz;

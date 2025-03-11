@@ -68,7 +68,7 @@ export const CubeCamera: LiveComponent<CubeCameraProps> = (props) => {
     near, far,
   );
 
-  updateViewSize(uniforms, width, height, pixelRatio * unit, focus, 1);
+  updateViewSize(uniforms, width, height, pixelRatio * unit, 1, focus, 1);
 
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);

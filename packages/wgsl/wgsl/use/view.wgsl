@@ -10,7 +10,7 @@
   viewNearFar: vec2<f32>,
   viewResolution: vec2<f32>,
   viewSize: vec2<f32>,
-  viewWorldDepth: vec2<f32>,
+  viewWorldScale: vec3<f32>,
   viewPixelRatio: f32,
 };
 
@@ -113,27 +113,19 @@
   return a;
 }
 
-@export fn getViewScale() -> f32 {
-  let m = viewUniforms.projectionMatrix;
-  return 2.0 / length(m[1]);
-}
-
 @export fn getWorldScale(w: f32, f: f32) -> f32 {
-  let v = viewUniforms.viewResolution;
-  return getScreenScale(w, f) * v.y * w;
+  return getScreenScale(w, f) * w * viewUniforms.viewWorldScale.x;
 }
 
 @export fn getScreenScale(w: f32, f: f32) -> f32 {
-  let m = viewUniforms.projectionMatrix;
-  let worldScale = length(m[1]) * viewUniforms.viewWorldDepth.x;
+  let worldScale = viewUniforms.viewWorldScale.y;
   let clipScale = mix(1.0, worldScale / w, f);
   let pixelScale = clipScale * viewUniforms.viewPixelRatio;
   return pixelScale;
 }
 
 @export fn getAbsoluteScale() -> f32 {
-  let m = viewUniforms.projectionMatrix;
-  let worldScale = length(m[1]);
+  let worldScale = viewUniforms.viewWorldScale.y;
   let pixelScale = worldScale * viewUniforms.viewPixelRatio;
   return pixelScale;
 }
@@ -143,20 +135,22 @@
   let v = viewUniforms.viewResolution;
   let zw = m[2].w;
 
+  let zScale = viewUniforms.viewWorldScale.z;
+
   if (zw < 0.0) {
     // reversed z - perspective
-    let z = m[3].z / (-w + w * zBias * v.y * viewUniforms.viewWorldDepth.y) + m[2].z;
+    let z = m[3].z / (-w + w * zBias * v.y * zScale) + m[2].z;
     return vec3<f32>(position.xy, -z);
   }
   else if (zw > 0.0) {
     // normal z - perspective
-    let z = m[3].z / (w + w * zBias * v.y * viewUniforms.viewWorldDepth.y) + m[2].z;
+    let z = m[3].z / (w + w * zBias * v.y * zScale) + m[2].z;
     return vec3<f32>(position.xy, z);
   }
   else {
     // orthographic
     let w = (position.z - m[3].z) / m[2].z;
-    var z = (w - zBias * v.y * viewUniforms.viewWorldDepth.y) * m[2].z + m[3].z;
+    var z = (w - zBias * v.y * zScale) * m[2].z + m[3].z;
     return vec3<f32>(position.xy, z);
   }
 }
@@ -166,21 +160,23 @@
   let v = viewUniforms.viewResolution;
   let w = position.w;
 
+  let zScale = viewUniforms.viewWorldScale.z;
+
   let zw = m[2].w;
   if (zw < 0.0) {
     // reversed z - perspective
-    let z = m[3].z / (-w + w * zBias * v.y * viewUniforms.viewWorldDepth.y) + m[2].z;
+    let z = m[3].z / (-w + w * zBias * v.y * zScale) + m[2].z;
     return vec4<f32>(position.xy, -z * w, w);
   }
   else if (zw > 0.0) {
     // normal z - perspective
-    let z = m[3].z / (w + w * zBias * v.y * viewUniforms.viewWorldDepth.y) + m[2].z;
+    let z = m[3].z / (w + w * zBias * v.y * zScale) + m[2].z;
     return vec4<f32>(position.xy, z * w, w);
   }
   else {
     // orthographic
     let w = (position.z - m[3].z) / m[2].z;
-    let z = (w - zBias * v.y * viewUniforms.viewWorldDepth.y) * m[2].z + m[3].z;
+    let z = (w - zBias * v.y * zScale) * m[2].z + m[3].z;
     return vec4<f32>(position.xy, z, 1.0);
   }
 }

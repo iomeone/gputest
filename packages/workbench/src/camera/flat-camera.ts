@@ -91,10 +91,10 @@ export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
     return m;
   }, [matrix, x, y, zoom]);
 
-  const viewHeight = Math.abs(layout[3] - layout[1]);
+  const viewHeight = Math.abs(layout[3] - layout[1]) / 2.0;
 
   updateViewProjection(uniforms, panned, undefined, INF_POSITION, near, far);
-  updateViewSize(uniforms, width, height, ratio, focus * viewHeight / 2.0, viewHeight / (far - near) / 2.0);
+  updateViewSize(uniforms, width, height, ratio, (relative ? 2 / height : 1) / zoom, focus * zoom, viewHeight / (far - near));
 
   const els = uniforms.projectionMatrix.current;
 

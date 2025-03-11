@@ -3,7 +3,7 @@ import type { PassApplyBindGroup, PassBinding, PassBindGroup, PassEnv, PassFlags
 import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
 import { makeBindGroup, makeDataBindingsEntries, makeViewUniforms, makeShaderBinding } from '@use-gpu/core';
-import { useHooks, useMemo, useNoMemo, useOne } from '@use-gpu/live';
+import { useCallback, useHooks, useMemo, useNoMemo, useOne } from '@use-gpu/live';
 import { patch, $set } from '@use-gpu/state';
 
 import { getBindGroupLayout } from '../hooks/useBindGroupLayout';
@@ -187,22 +187,20 @@ export const useOverscanViewBinding = (
     };
   }, viewUniforms);
 
-  const {viewPosition, projectionViewFrustum} = uniforms;
-  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
+  const {binding, cull, uploadView} = useDynamicViewBinding(passBindGroup, uniforms);
 
-  const [source, updateView] = useUniformSource(ViewUniformsWGSL);
-  const binding = useMemo(() => ({
-    ...passBindGroup,
-    bind: (env) => [source, ...passBindGroup.bind(env).slice(1)],
-  }), [passBindGroup, source]);
+  const syncView = () => {
+    
+  };
 
-  return {binding, cull, uniforms, updateView};
+  return {binding, cull, uniforms, uploadView};
 }
 
 export const useDynamicViewBinding = (
   passBindGroup: PassBindGroup,
+  maybeUniforms?: Record<string, any>,
 ) => {
-  const uniforms = useOne(makeViewUniforms);
+  const uniforms = maybeUniforms ? (useNoOne(), maybeUniforms) : useOne(makeViewUniforms);
 
   const {viewPosition, projectionViewFrustum} = uniforms;
   const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
@@ -212,6 +210,8 @@ export const useDynamicViewBinding = (
     ...passBindGroup,
     bind: (env) => [source, ...passBindGroup.bind(env).slice(1)],
   }), [passBindGroup, source]);
+  
+  const uploadView = useCallback(() => updateView(uniforms), []);
 
-  return {binding, cull, uniforms, updateView};
+  return {binding, cull, uniforms, uploadView};
 }

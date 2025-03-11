@@ -17,7 +17,7 @@ export const makeViewUniforms = (): ViewUniforms => ({
   viewNearFar: { current: vec2.create() },
   viewResolution: { current: vec2.create() },
   viewSize: { current: vec2.create() },
-  viewWorldDepth: { current: vec2.fromValues(1, 1) },
+  viewWorldScale: { current: vec3.fromValues(1, 1, 1) },
   viewPixelRatio: { current: 1 },
 });
 
@@ -25,8 +25,8 @@ export const updateViewSize = (
   uniforms: ViewUniforms,
   width: number,
   height: number,
-
   dpi?: number,
+  viewScale?: number,
   worldScale?: number,
   zbiasScale?: number,
 ) => {
@@ -34,7 +34,7 @@ export const updateViewSize = (
     viewSize,
     viewResolution,
     viewPixelRatio,
-    viewWorldDepth,
+    viewWorldScale,
   } = uniforms;
 
   if (width != null && height != null) {
@@ -43,7 +43,7 @@ export const updateViewSize = (
   }
 
   viewPixelRatio.current = dpi ?? 1;
-  viewWorldDepth.current = vec2.fromValues(worldScale ?? 1, zbiasScale ?? 1);
+  viewWorldScale.current = vec3.fromValues(viewScale ?? 1, worldScale ?? 1, zbiasScale ?? 1);
 };
 
 export const updateViewProjection = (uniforms: ViewUniforms, projection?: mat4, view?: mat4, position?: vec4, near?: number, far?: number) => {

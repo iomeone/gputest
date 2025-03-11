@@ -65,6 +65,8 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
   const uniforms = useOne(makeViewUniforms);
 
   const unit = scale != null ? height / pixelRatio / scale : 1;
+  const ratio = pixelRatio * unit;
+  const tan = Math.tan(fov / 2);
 
   updateViewProjection(
     uniforms,
@@ -73,7 +75,7 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
     undefined,
     near, far,
   );
-  updateViewSize(uniforms, width, height, pixelRatio * unit, focus, 1);
+  updateViewSize(uniforms, width, height, ratio, tan * 2 / height, focus, 1);
 
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);

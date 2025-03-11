@@ -1,4 +1,4 @@
-import { vec2, vec4, mat4 } from 'gl-matrix';
+import { vec2, vec3, vec4, mat4 } from 'gl-matrix';
 
 // Common vector types
 
@@ -371,7 +371,7 @@ export type ViewUniforms = {
   viewNearFar: { current: vec2 },
   viewResolution: { current: vec2 },
   viewSize: { current: vec2 },
-  viewWorldDepth: { current: vec2 },
+  viewWorldScale: { current: vec3 },
   viewPixelRatio: { current: number },
 };
 
