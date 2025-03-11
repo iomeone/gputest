@@ -22,7 +22,13 @@
     "watch": "npm-watch"
   },
   "watch": {
-    "build:ts": "wgsl/**/*.wgsl"
+    "build:ts": {
+      "patterns": [
+        "wgsl/**/*"
+      ],
+      "extensions": "wgsl",
+      "quiet": false
+    }
   },
   "devDependencies": {
     "@types/command-line-args": "^5.2.3",
