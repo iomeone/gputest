@@ -17,7 +17,7 @@ export type GlyphsProps = {
   size?: number,
   detail?: number,
   expand?: number,
-  snap?: boolean,
+  hint?: boolean,
   monochrome?: boolean,
 
   font: number[],
@@ -41,7 +41,7 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     expand = 0,
     size = 16,
     detail = size,
-    snap = false,
+    hint = 'xy',
     monochrome = false,
 
     font,
@@ -68,6 +68,9 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     const scale = getScale(detail) * adjust;
     const texture = getTexture();
 
+    const snapX = hint === 'x' || hint === 'xy';
+    const snapY = hint === 'y' || hint === 'xy';
+
     const fill = color.slice();
     fill[3] *= opacity;
 
@@ -82,10 +85,12 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
       const [l, t] = layout;
 
       const {ascent} = height;
-      let x = snap ? Math.round(l) : l;
-      const y = snap ? Math.round(t + ascent) : t + ascent;
+      let x = snapX ? Math.round(l) : l;
+      let y = t + ascent;
 
       let sx = x;
+      const sy = snapY ? Math.round(y) : y;
+
       spans.iterate((_a, trim, _h, index) => {
         glyphs.iterate((fontIndex: number, glyphId: number, isWhiteSpace: number, kerning: number) => {
           const {glyph, mapping} = getGlyph(font[fontIndex], glyphId, detail);
@@ -102,8 +107,8 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
             if (image && outlineBounds) {
               const [gl, gt, gr, gb] = outlineBounds;
 
-              const cx = snap ? Math.round(sx) : sx;
-              const cy = snap ? Math.round(y) : y;
+              const cx = sx;
+              const cy = sy;
 
               const left   = (s * gl) + cx;
               const top    = (s * gt) + cy;
@@ -133,7 +138,7 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
 
         if (trim) {
           x += gap;
-          sx = snap ? Math.round(x) : x;
+          sx = snapX ? Math.round(x) : x;
         }
       }, start, end);
     }

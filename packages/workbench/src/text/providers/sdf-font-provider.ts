@@ -216,7 +216,7 @@ export const useSDFGlyphData = (
   align: Alignment,
   size: number = 48,
   wrap: number = 0,
-  snap: boolean = false,
+  hint: 'x' | 'y' | 'xy' | false = 'xy',
   monochrome: boolean = false,
 ) => {
   const context = useSDFFontContext();
@@ -277,7 +277,7 @@ export const useSDFGlyphData = (
         lastIndex = index;
       }
 
-      emitGlyphSpans(context, currentLayout, index, font, spans, glyphs, breaks, start, end, size, gap, lead, snap, monochrome, emit);
+      emitGlyphSpans(context, currentLayout, index, font, spans, glyphs, breaks, start, end, size, gap, lead, hint, monochrome, emit);
       currentLayout[1] += lineHeight;
     });
 
@@ -292,7 +292,7 @@ export const useSDFGlyphData = (
       uvs,
       sdf: [radius, scale, size, 0] as [number, number, number, number],
     };
-  }, [context, layout, font, spans, glyphs, breaks, height, align, size, wrap, snap, id, monochrome]);
+  }, [context, layout, font, spans, glyphs, breaks, height, align, size, wrap, hint, id, monochrome]);
 }
 
 export const emitGlyphSpans = (
@@ -311,7 +311,7 @@ export const emitGlyphSpans = (
   size: number,
   gap: number,
   lead: number,
-  snap: boolean,
+  hint: 'x' | 'y' | 'xy' | false,
   monochrome: boolean,
 
   emit: (
@@ -333,9 +333,14 @@ export const emitGlyphSpans = (
 
   const scale = getScale(size);
 
+  const snapX = hint === 'x' || hint === 'xy';
+  const snapY = hint === 'y' || hint === 'xy';
+
   let x = left + lead;
-  const y = top;
-  let sx = snap ? Math.round(x) : x;
+  let y = top;
+  
+  let sx = snapX ? Math.round(x) : x;
+  const sy = snapY ? Math.round(y) : y;
 
   spans.iterate((_a, trim, hard, index) => {
     glyphs.iterate((fontIndex: number, id: number, isWhiteSpace: number, kerning: number) => {
@@ -353,8 +358,8 @@ export const emitGlyphSpans = (
         if (image && outlineBounds) {
           const [gl, gt, gr, gb] = outlineBounds;
 
-          const cx = snap ? Math.round(sx) : sx;
-          const cy = snap ? Math.round(y) : y;
+          const cx = sx;
+          const cy = sy;
 
           emit(
             (s * gl) + cx,
@@ -382,7 +387,7 @@ export const emitGlyphSpans = (
 
     if (trim) {
       x += gap;
-      sx = snap ? Math.round(x) : x;
+      sx = snapX ? Math.round(x) : x;
     }
   }, start, end);
 };
