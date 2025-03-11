@@ -2,7 +2,7 @@ import type { UniformPipe, UniformSource } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
 
 import { makeUniformBuffer, makeUniformPipe, uploadBuffer } from '@use-gpu/core';
-import { useMemo } from '@use-gpu/live';
+import { useCallback, useMemo } from '@use-gpu/live';
 import { bundleToAttribute } from '@use-gpu/shader/wgsl';
 
 import { useDeviceContext } from '../providers/device-provider';
@@ -52,4 +52,21 @@ export const getUniformSource = (
   };
 
   return [source, update];
+};
+
+/**
+Make a uniform-backed source for a WGSL type with given value refs.
+Returns a static binding + upload callback.
+*/
+export const useUniformBinding = (
+  uniforms: Record<string, Ref<any>>,
+  module: ShaderModule,
+  type: ShaderModule,
+) => {
+  const [source, update] = useUniformSource(type);
+
+  const binding = { module, type, bind: () => [source] };
+  const upload = useCallback(() => update(uniforms), []);
+
+  return {binding, upload};
 };

@@ -1,23 +1,35 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { UseGPURenderContext } from '@use-gpu/core';
-import type { PassFlags, RenderComponents } from '../pass/types';
+import type { PassFlags, PassOptions, RenderComponents } from '../pass/types';
 
-import { use, gather, memo, useMemo } from '@use-gpu/live';
+import { use, gather, memo, useOne } from '@use-gpu/live';
+import { toMurmur53 } from '@use-gpu/state';
 
 import { FullScreenRenderer } from './full-screen-renderer';
 import { ForwardRenderer } from './forward-renderer';
 import { DeferredRenderer } from './deferred-renderer';
 
 import { GBuffer } from './buffer/g-buffer';
-import { NormalBuffer } from './buffer/normal-buffer';
+import { LightBuffer } from './buffer/light-buffer';
 import { MotionBuffer } from './buffer/motion-buffer';
-import { SSAOBuffer } from './buffer/ssao-buffer';
+import { NormalBuffer } from './buffer/normal-buffer';
+import { OverscanBuffer } from './buffer/overscan-buffer';
 import { PickingBuffer } from './buffer/picking-buffer';
 import { ShadowBuffer } from './buffer/shadow-buffer';
+import { SSAOBuffer } from './buffer/ssao-buffer';
+import { ViewBuffer, useViewBuffer, useNoViewBuffer } from './buffer/view-buffer';
+
+import { useViewContext } from '../providers/view-provider';
 
 import { PassResource } from '../pass/types';
 
 const NONE: any = {};
+
+const NO_RESOURCES: PassResources = {
+  buffers: {},
+  bindings: {},
+  dispatches: [],
+};
 
 export type PassProps = PropsWithChildren<{
   mode?: 'forward' | 'deferred' | 'fullscreen',
@@ -42,7 +54,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     children,
   } = props;
 
-  const flags = {
+  const options = {
     lights,
     shadows,
     picking,
@@ -53,42 +65,50 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     merge,
   };
 
+  const optionsKey = toMurmur53(options);
+
   if (mode === 'fullscreen') {
+    const resources = useViewBuffer();
     return use(FullScreenRenderer, {
-      flags,
+      resources,
+      options,
       children,
     });
   }
-
   if (mode === 'forward') {
-    if (!ssao && !shadows && !picking) return use(ForwardRenderer, {components, flags, children});
+    useNoViewBuffer();
 
-    const resources = useMemo(() => [
+    const resources = useOne(() => [
+      use(ViewBuffer, options),
+      lights ? use(LightBuffer, options) : null,
+      shadows ? use(ShadowBuffer, options) : null,
+      picking ? use(PickingBuffer, options) : null,
+      overscan ? use(OverscanBuffer, options) : null,
       ...(ssao ? [
-        use(NormalBuffer, {overscan}),
-        use(MotionBuffer, {overscan}),
+        use(NormalBuffer, options),
+        use(MotionBuffer, options),
       ] : []),
-      ssao ? use(SSAOBuffer, {overscan}) : null,
-      shadows ? use(ShadowBuffer, NONE) : null,
-      picking ? use(PickingBuffer, NONE) : null,
-    ], [ssao, shadows, picking, overscan]);
+      ssao ? use(SSAOBuffer, options) : null,
+    ], optionsKey);
 
     return gatherPassResources(resources, (resources: PassResources) =>
-      use(ForwardRenderer, {resources, lights, flags, children})
+      use(ForwardRenderer, {resources, components, options, children})
     );
   }
   if (mode === 'deferred') {
-    if (!shadows && !picking) return use(DeferredRenderer, {components, flags, children})
+    useNoViewBuffer();
 
-    const resources = useMemo(() => [
-      use(GBuffer),
-      // ssao ? use(SSAOBuffer, NONE) : null,
-      shadows ? use(ShadowBuffer, NONE) : null,
-      picking ? use(PickingBuffer, NONE) : null,
-    ], [shadows, picking]);
+    const resources = useOne(() => [
+      use(GBuffer, options),
+      use(ViewBuffer, options),
+      lights ? use(LightBuffer, options) : null,
+      // ssao ? use(SSAOBuffer, options) : null,
+      shadows ? use(ShadowBuffer, options) : null,
+      picking ? use(PickingBuffer, options) : null,
+    ], optionsKey);
 
     return gatherPassResources(resources, (resources: PassResources) =>
-      use(DeferredRenderer, {resources, components, flags, children})
+      use(DeferredRenderer, {resources, components, options, children})
     );
   }
 
@@ -104,7 +124,11 @@ export const gatherPassResources = (
       const s = src[type];
       const d = dst[type];
 
-      for (const k in s) d[k] = s[k];
+      if (Array.isArray(d)) {
+        if (Array.isArray(s)) for (const v of s) d.push(v);
+        else d.push(s);
+      }
+      else for (const k in s) d[k] = s[k];
     }
   };
   
@@ -112,6 +136,8 @@ export const gatherPassResources = (
     const out: PassResources = {
       buffers: {},
       bindings: {},
+      dispatches: [],
+      views: {},
     };
 
     for (const el of els) reduceInPlace(out, el);

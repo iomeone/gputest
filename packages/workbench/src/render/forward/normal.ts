@@ -8,7 +8,6 @@ import { bindBundle } from '@use-gpu/shader/wgsl';
 import { drawCall } from '../../queue/draw-call';
 
 import { usePassContext } from '../../providers/pass-provider';
-import { useViewContext } from '../../providers/view-provider';
 
 import renderVirtualNormal from '@use-gpu/wgsl/render/vertex/virtual-normal.wgsl';
 import {

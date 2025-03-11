@@ -4,13 +4,13 @@ import type { LightEnv, Renderable } from './types';
 import { yeet, memo, useMemo } from '@use-gpu/live';
 
 import { useDeviceContext } from '../providers/device-provider';
+import { usePassContext } from '../providers/pass-provider';
 import { useRenderContext } from '../providers/render-provider';
-import { useViewContext } from '../providers/view-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
 
-import { useApplyPass } from './bindings';
+import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
@@ -51,8 +51,11 @@ export const ColorPass: LC<ColorPassProps> = memo((props: ColorPassProps) => {
   const device = useDeviceContext();
   const renderContext = useRenderContext();
 
-  const {uniforms, cull} = useViewContext();
-  const {bindPass, dataBindings} = useApplyPass(env, 'color');
+  const {
+    bindGroups: {color: bindGroup},
+    views: {view: {cull, uniforms}},
+  } = usePassContext();
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
 
   const opaques      = toArray(calls['opaque']      as Renderable[]);
   const transparents = toArray(calls['transparent'] as Renderable[]);

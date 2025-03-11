@@ -5,17 +5,15 @@ import { use, yeet, memo, gather, useOne } from '@use-gpu/live';
 import { makeDepthStencilAttachments } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
-import { useRenderContext } from '../providers/render-provider';
-import { useViewContext } from '../providers/view-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers';
 
 import { useInspectable } from '../hooks/useInspectable'
 
-import { useApplyPass } from './bindings';
+import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
-import { MotionDispatch, makeMotionUniforms } from '../render/dispatch/motion-dispatch';
+import { MotionDispatch } from '../render/dispatch/motion-dispatch';
 
 import { wgsl } from '@use-gpu/shader/wgsl';
 
@@ -31,6 +29,9 @@ export type MotionPassProps = {
 const NO_OPS: any[] = [];
 const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 
+const label = "<MotionPass>";
+const LABEL = {label};
+
 /** Motion render pass.
 
 Fills motion buffer using current depth map,
@@ -45,22 +46,22 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
   const inspect = useInspectable();
 
   const device = useDeviceContext();
-  const {buffers: {motion: [renderContext]}} = usePassContext();
+  const {
+    bindGroups: {pre: bindGroup},
+    buffers: {motion: [renderContext]},
+    views: {pre: {cull, uniforms}},
+  } = usePassContext();
 
-  const {cull, uniforms} = useViewContext();
-  const {bindPass, dataBindings} = useApplyPass(env, 'view');
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
   
   const motions = toArray(calls['motion'] as Renderable[]);
 
-  const motionUniforms = useOne(makeMotionUniforms);
-
   const motionPassDescriptor = useOne(() =>
-    getRenderPassDescriptor(renderContext, {label: 'MotionPass'}),
+    getRenderPassDescriptor(renderContext, LABEL),
     renderContext);
 
   const resolveMotion = useOne(() => (
     use(MotionDispatch, {
-      motionUniforms,
       targetContext: renderContext,
       descriptor: motionPassDescriptor,
     })
@@ -81,7 +82,6 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
       const passEncoder = commandEncoder.beginRenderPass(motionPassDescriptor);
       bindPass?.(passEncoder);
 
-      calls.forEach(({dispatch: f}) => f());
       calls.forEach(({motion: f}) => f(passEncoder));
       drawToPass(cull, motions, passEncoder, countGeometry, uniforms);
 
@@ -101,7 +101,7 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
           vertices: vs,
           triangles: ts,
         },
-        pass: { ...uniforms, ...motionUniforms },
+        pass: { ...uniforms },
         bindings: dataBindings,
       });
 

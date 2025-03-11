@@ -12,7 +12,7 @@ import { QueueReconciler } from '../reconcilers';
 
 import { useInspectable } from '../hooks/useInspectable'
 
-import { useApplyPass } from '../pass/bindings';
+import { useApplyPassBindGroup } from '../pass/bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 import { SSAODispatch } from '../render/dispatch/ssao-dispatch';
@@ -25,9 +25,7 @@ type SSAOCommand = (
 
 export type SSAOPassProps = {
   env: {
-  },
-  flags: {
-    ssao: boolean | number | { radius: number },
+    ssao: { radius?: number } | number | true,
   },
 };
 
@@ -36,6 +34,8 @@ const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 
 const DEFAULT_RADIUS = 1;
 
+const label = '<SSAOPass>';
+
 /** SSAO render pass.
 
 Resolves SSAO based on pre-existing normal + depth + motion vectors.
@@ -43,24 +43,32 @@ Resolves SSAO based on pre-existing normal + depth + motion vectors.
 export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPassProps>) => {
   const {
     env,
-    flags,
+    ssao: ssaoProp,
   } = props;
   
   const ssaoOptions = useOne(() => ({
-    radius: (typeof flags.ssao === 'number' ? flags.ssao : flags.ssao.radius) || DEFAULT_RADIUS,
-    ...(typeof flags.ssao === 'object' ? flags : {}),
-  }), flags);
+    radius: DEFAULT_RADIUS,
+    ...(
+      ssaoProp === true ? {} :
+      typeof ssaoProp === 'number' ? {radius: ssaoProp} :
+      ssaoProp
+    ),
+  }), ssaoProp);
 
   const inspect = useInspectable();
 
   const device = useDeviceContext();
-  const {buffers: {ssao}, bindGroups: {view: {layout: globalLayout}}} = usePassContext();
+  const {
+    buffers: {ssao},
+    bindGroups: {view: bindGroup},
+    views: {view: {cull, uniforms}},
+  } = usePassContext();
 
   const [normalContext, motionContext, sampleContext, accumContext, resolveContext] = ssao;
   const debugContext = useRenderContext();
 
-  const {cull, uniforms} = useViewContext();
-  const {bindPass, dataBindings} = useApplyPass(env, 'view');
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
+  const {layout: globalLayout} = bindGroup;
 
   const normalPassDescriptor = useOne(() =>
     getRenderPassDescriptor(normalContext, {label: 'SSAOPass/NormalDepth'}),
@@ -118,7 +126,7 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
       descriptor: resolvePassDescriptor,
       bindPass,
     }),
-  ], [ssao, ssaoOptions]);
+  ], [ssao, ssaoOptions, globalLayout]);
   
   return gather(resolveSSAO, (calls: {ssao: SSAOCommand}[]) => {
 

@@ -59,18 +59,23 @@ export const updateViewProjection = (uniforms: ViewUniforms, projection?: mat4, 
     inverseProjectionViewMatrix,
   } = uniforms;
 
-  if (projection) projectionMatrix.current = projection;
-  if (view) viewMatrix.current = view;
+  if (projection) {
+    projectionMatrix.current = projection;
+    mat4.invert(inverseProjectionMatrix.current, projectionMatrix.current);
+  }
+  if (view) {
+    viewMatrix.current = view;
+    mat4.invert(inverseViewMatrix.current, viewMatrix.current);
+  }
 
-  mat4.multiply(projectionViewMatrix.current, projectionMatrix.current, viewMatrix.current);
-  projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
-
-  mat4.invert(inverseViewMatrix.current, viewMatrix.current);
-  mat4.invert(inverseProjectionMatrix.current, projectionMatrix.current);
-  mat4.invert(inverseProjectionViewMatrix.current, projectionViewMatrix.current);
+  if (projection || view) {
+    mat4.multiply(projectionViewMatrix.current, projectionMatrix.current, viewMatrix.current);
+    mat4.invert(inverseProjectionViewMatrix.current, projectionViewMatrix.current);
+    projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
+  }
 
   if (position) viewPosition.current = position;
-  else {
+  else if (view) {
     viewPosition.current[0] = 0;
     viewPosition.current[1] = 0;
     viewPosition.current[2] = 0;

@@ -33,23 +33,18 @@ import { LightMaterial } from './light/light-material';
 
 const {quote} = PassReconciler;
 
-const DEFAULT_PASSES: Record<RenderViewType, LiveElement[]> = {
-  '2d': [use(ColorPass, {})],
-  'cube': [use(ColorCubePass, {})],
+const DEFAULT_PASS: Record<RenderViewType, LiveElement> = {
+  '2d': ColorPass,
+  'cube': ColorCubePass,
 };
 
-const NO_RESOURCES: PassResources = {
-  buffers: {},
-  bindings: {},
-};
-
-const NO_FLAGS: ForwardRendererFlags = {};
+const NO_OPTIONS: Record<string, any> = {};
 
 export type ForwardRendererFlags = Pick<PassFlags, 'lights' | 'shadows' | 'merge' | 'overlay'>;
 
 export type ForwardRendererProps = PropsWithChildren<{
-  resources?: PassResources,
-  flags?: ForwardRendererFlags,
+  resources: PassResources,
+  options?: ForwardRendererFlags,
   passes?: LiveElement[],
   components?: RenderComponents,
 }>;
@@ -76,7 +71,7 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
 export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRendererProps) => {
   const {
     resources = NO_RESOURCES,
-    flags: propFlags = NO_FLAGS,
+    options = NO_OPTIONS,
     passes,
 
     children,
@@ -95,7 +90,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     ssao = !!buffers.ssao,
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
-  } = propFlags;
+  } = options;
 
   const flags = useMemo(() => ({
     overlay,
@@ -109,29 +104,37 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     shadows,
     picking,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [propFlags, buffers]);
+  }), [options, buffers]);
 
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
 
   // Adapt to view type (2d or cube)
   const {viewType} = useRenderContext();
 
+  // Prepare passes
   const resolved = useMemo(() => passes ?? [
-    normals ? use(NormalPass, props) : null,
-    motion ? use(MotionPass, props) : null,
-    ssao ? use(SSAOPass, props) : null,
-    shadows ? use(ShadowPass, props) : null,
-    ...DEFAULT_PASSES[viewType],
-    picking ? use(PickingPass, props) : null,
+    normals ? use(NormalPass, options) : null,
+    motion ? use(MotionPass, options) : null,
+    ssao ? use(SSAOPass, options) : null,
+    shadows ? use(ShadowPass, options) : null,
+    use(DEFAULT_PASS[viewType], options),
+    picking ? use(PickingPass, options) : null,
   ], [props, viewType]);
+
+  // Add resource dispatches to render
+  const dispatches = yeet({ dispatch: resources.dispatches });
+  const combined = [
+    quote(dispatches),
+    children,
+  ];
 
   // Provide forward-lit material
   const view = lights ? use(LightMaterial, {
     shadows,
-    children,
+    children: combined,
     then: (light: LightEnv) =>
-      useOne(() => quote(yeet({ env: { light }})), light),
-  }) : children;
+      useOne(() => quote(yeet({ env: { light }})), light)
+  }) : combined;
 
   // Pass bindings
   const bindGroups = useStandardBindGroups(resources, flags);
@@ -147,8 +150,6 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
       variants,
       passes: resolved,
 
-      overlay,
-      merge,
       children: view,
     })
   );

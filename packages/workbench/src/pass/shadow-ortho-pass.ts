@@ -58,8 +58,8 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
   const shadows = toArray(calls['shadow'] as Renderable[]);
 
   // Bind to dynamic view
-  const {cull, binding, uniforms, uploadView} = useDynamicViewBinding(viewBindGroup);
-  const {bindPass, dataBindings} = useApplyPassBindGroup(env, binding);
+  const {bindGroup, cull, uniforms, upload: uploadView} = useDynamicViewBinding(viewBindGroup);
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup);
 
   const {
     shadow,
@@ -107,7 +107,7 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     updateViewProjection(uniforms, projectionMatrix, into!, position);
-    uploadView();
+    uploadView(uniforms);
 
     // Render pass
     const commandEncoder = device.createCommandEncoder();

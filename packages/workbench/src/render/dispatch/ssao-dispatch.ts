@@ -3,7 +3,6 @@ import type { TextureSource } from '@use-gpu/shader';
 
 import { yeet, useOne, useNoOne, useRef } from '@use-gpu/live';
 
-import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 import { useKeyboard, useMouse, useNoKeyboard, useNoMouse } from '../../providers/event-provider';
 

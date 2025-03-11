@@ -5,13 +5,12 @@ import { use, yeet, memo, multiGather, useMemo, useOne } from '@use-gpu/live';
 import { makeDepthStencilAttachments } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
-import { useViewContext } from '../providers/view-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers';
 
 import { useInspectable } from '../hooks/useInspectable'
 
-import { useApplyPass } from './bindings';
+import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
@@ -30,6 +29,9 @@ export type NormalPassProps = {
 const NO_OPS: any[] = [];
 const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 
+const label = "<NormalPass>";
+const LABEL = {label};
+
 /** Normal (+depth) render pass.
 
 Draws 'normal' calls to normal buffer.
@@ -43,15 +45,18 @@ export const NormalPass: LC<NormalPassProps> = memo((props: PropsWithChildren<No
   const inspect = useInspectable();
 
   const device = useDeviceContext();
-  const {buffers: {normal: [renderContext]}} = usePassContext();
+  const {
+    bindGroups: {pre: bindGroup},
+    buffers: {normal: [renderContext]},
+    views: {pre: {cull, uniforms}},
+  } = usePassContext();
 
-  const {cull, uniforms} = useViewContext();
-  const {bindPass, dataBindings} = useApplyPass(env, 'view');
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
 
   const normals = toArray(calls['normal'] as Renderable[]);
 
   const normalDepthPassDescriptor = useOne(() =>
-    getRenderPassDescriptor(renderContext, {label: 'NormalPass'}),
+    getRenderPassDescriptor(renderContext, LABEL),
     renderContext);
 
   return quote(yeet(() => {

@@ -50,7 +50,7 @@ export const ElementTrait = trait({
   stroke: optional(parseColor),
   fill: optional(parseColor),
 
-  texture: optional(nullable(parseTexture)), // deprecated
+  texture: optional(nullable(parseTexture)),
   image: optional(makeParseTrait(ImageTrait)),
   zIndex: parseInteger,
 });

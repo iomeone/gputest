@@ -5,12 +5,11 @@ import { yeet, memo, useMemo } from '@use-gpu/live';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
-import { useViewContext } from '../providers/view-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
 
-import { useApplyPass } from './bindings';
+import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
@@ -45,10 +44,13 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PickingPassProps) 
   const inspect = useInspectable();
 
   const device = useDeviceContext();
-  const {buffers: {picking: [renderContext]}} = usePassContext();
+  const {
+    bindGroups: {view: bindGroup},
+    buffers: {picking: [renderContext]},
+    views: {view: {cull, uniforms}}
+  } = usePassContext();
 
-  const {uniforms, cull} = useViewContext();
-  const {bindPass, dataBindings} = useApplyPass(env, 'view');
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
 
   const pickings  = toArray(calls['picking'] as Renderable[]);
 

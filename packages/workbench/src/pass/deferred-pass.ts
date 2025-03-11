@@ -5,13 +5,12 @@ import { yeet, memo, useMemo } from '@use-gpu/live';
 
 import { useRenderContext } from '../providers/render-provider';
 import { useDeviceContext } from '../providers/device-provider';
-import { useViewContext } from '../providers/view-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
 
-import { useApplyPass } from './bindings';
+import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
@@ -55,13 +54,17 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
   const renderContext = useRenderContext();
   const {width, height, depth} = renderContext;
 
-  const {cull, uniforms} = useViewContext();
   const {
+    bindGroups: {
+      view: viewBindGroup,
+      color: colorBindGroup,
+    },
     buffers: {gBuffer: [gBuffer]},
+    views: {view: {cull, uniforms}},
   } = usePassContext();
 
-  const {bindPass: bindViewPass} = useApplyPass(env, 'view');
-  const {bindPass: bindColorPass, dataBindings} = useApplyPass(env, 'color');
+  const {bindPass: bindViewPass} = useApplyPassBindGroup(env, viewBindGroup, label);
+  const {bindPass: bindColorPass, dataBindings} = useApplyPassBindGroup(env, colorBindGroup, label);
 
   if (!depth) throw new Error("Deferred renderer requires a depth buffer");
 
@@ -115,7 +118,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
       {texture: depth.texture},
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       {texture: gBuffer.sources![4].texture},
-      [width, height, 1]
+      depth.size
     );
 
     if (stencils.length) {

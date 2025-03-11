@@ -47,7 +47,7 @@ export const ShadowPass: LC<ShadowPassProps> = memo((props: ShadowPassProps) => 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const attachments = makeDepthStencilAttachments(texture!.texture, SHADOW_FORMAT, layers || 1, 0.0, 'load');
     const descriptors = attachments.map((depthStencilAttachment, i) => ({
-      label: `<ShadowPass> Atlas ${i + 1}`,
+      label: `<ShadowPass> Atlas #${i + 1}`,
       colorAttachments: [],
       depthStencilAttachment,
     }));

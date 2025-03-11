@@ -9,7 +9,7 @@ export type PassFlags = {
   lights?: boolean,
   shadows?: boolean,
   picking?: boolean,
-  ssao?: boolean,
+  ssao?: boolean | number | { radius: number },
   overscan?: number,
 
   overlay?: boolean,
@@ -21,13 +21,15 @@ export type PassFlags = {
 export type PassResources = {
   buffers: Record<string, UseGPURenderingContext[]>,
   bindings: Record<string, PassBinding>,
+  views: Record<string, PassView>,
+};
+
+export type PassView = {
+  cull?: Culler,
+  uniforms: Record<string, any>,
 };
 
 export type PassEnv = {
-  buffers: Record<string, UseGPURenderingContext[]>,
-  bindings: Record<string, PassBinding>,
-
-  bindGroups: Record<string, PassBindGroup>,
   light?: LightEnv,
 };
 
@@ -49,12 +51,13 @@ export type PassBinding = {
   module: ShaderModule,
   visibility?: 'vertex' | 'fragment',
   bind?: (
-    buffers: BuffersEnv,
     env: PassEnv,
   ) => ShaderSource[],
+  /*
   update?: (
     values: Record<string, any> | Record<string, any>[],
   ) => void,
+  */
 };
 
 export type PassBindGroup = {

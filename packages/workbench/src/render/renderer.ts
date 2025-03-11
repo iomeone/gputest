@@ -14,10 +14,9 @@ import { ReadbackPass } from '../pass/readback-pass';
 
 const {reconcile, quote} = PassReconciler;
 
-export type RendererProps = PropsWithChildren<{
-  overlay?: boolean,
-  merge?: boolean,
+const NO_ENV: Record<string, any> = {};
 
+export type RendererProps = PropsWithChildren<{
   resources: PassResources,
   bindGroups: Record<string, PassBindGroup>,
 
@@ -31,9 +30,6 @@ export type RendererProps = PropsWithChildren<{
 */
 export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   const {
-    overlay = false,
-    merge = false,
-
     resources,
     bindGroups,
 
@@ -51,15 +47,12 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
     calls: AggregatedCalls,
   ) =>
     useMemo(() => {
-      const env = (calls.env ?? []).reduce((env: Record<string, any>, data: Record<string, any>) => {
+      const env = calls.env?.reduce((env: Record<string, any>, data: Record<string, any>) => {
         for (const k in data) env[k] = data[k];
         return env;
-      }, {});
+      }, {}) ?? NO_ENV;
 
       const props: Record<string, any> = {calls, env};
-
-      if (overlay) props.overlay = true;
-      if (merge) props.merge = true;
 
       return [
         calls.dispatch ? use(DispatchPass, props) : null,
@@ -68,7 +61,7 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
         calls.post || calls.readback ? use(ReadbackPass, props) : null,
       ];
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [calls, passes, overlay, merge]);
+    }, [calls, passes]);
 
   return (
     reconcile(

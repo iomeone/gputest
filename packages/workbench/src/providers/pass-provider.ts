@@ -5,8 +5,7 @@ import type { LiveComponent } from '@use-gpu/live';
 import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 import { PassBindGroup } from '../pass/types';
 
-export type PassContextProps = {
-  buffers: Record<string, UseGPURenderContext[]>,
+export type PassContextProps = PassResources &  {
   bindGroups: Record<string, PassBindGroup>,
 };
 

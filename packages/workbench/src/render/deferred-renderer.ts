@@ -35,13 +35,13 @@ const NO_RESOURCES: PassResources = {
   bindings: {},
 };
 
-const NO_FLAGS: DeferredRendererFlags = {};
+const NO_OPTIONS: DeferredRendererOptions = {};
 
-export type DeferredRendererFlags = Pick<PassFlags, 'shadows' | 'merge' | 'overlay'>;
+export type DeferredRendererOptions = Pick<PassFlags, 'shadows' | 'merge' | 'overlay'>;
 
 export type DeferredRendererProps = PropsWithChildren<{
   buffers?: Record<string, UseGPURenderContext[]>,
-  flags?: DeferredRendererFlags,
+  options?: DeferredRendererOptions,
   passes?: LiveElement[],
   components?: RenderComponents,
 }>;
@@ -67,7 +67,7 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
 export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: DeferredRendererProps) => {
   const {
     resources = NO_RESOURCES,
-    flags: propFlags = NO_FLAGS,
+    options = NO_OPTIONS,
     passes,
 
     children,
@@ -82,7 +82,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
-  } = propFlags;
+  } = options;
 
   const flags = useMemo(() => ({
     lights,
@@ -92,20 +92,28 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     shadows,
     picking,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [propFlags, buffers]);
+  }), [options, buffers]);
 
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
 
+  // Prepare passes
   const resolved = useOne(() => passes ?? [
-    shadows ? use(ShadowPass, props) : null,
-    use(DeferredPass, {}),
-    picking ? use(PickingPass, props) : null, 
+    shadows ? use(ShadowPass, options) : null,
+    use(DeferredPass, options),
+    picking ? use(PickingPass, options) : null, 
   ], props);
+
+  // Add resource dispatches to render
+  const dispatches = yeet({ dispatch: resources.dispatches });
+  const combined = [
+    quote(dispatches),
+    children,
+  ];
 
   // Provide forward-lit material + emit deferred light draw calls
   const view = use(LightMaterial, {
     shadows,
-    children,
+    children: combined,
     then: (light: LightEnv) =>
       useMemo(() => quote([
         yeet({ env: { light }}),
@@ -128,8 +136,6 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
       variants,
       passes: resolved,
 
-      overlay,
-      merge,
       children: view,
     })
   );

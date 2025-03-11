@@ -7,7 +7,6 @@ import { getCubeFaceMatrix, reverseZ, seq, updateViewProjection, updateViewSize 
 
 import { useRenderContext } from '../providers/render-provider';
 import { useDeviceContext } from '../providers/device-provider';
-import { useViewContext } from '../providers/view-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
@@ -54,17 +53,19 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
 
   const device = useDeviceContext();
   const renderContext = useRenderContext();
-  const {uniforms: viewUniforms} = useViewContext();
 
-  const {bindGroups: {color: viewBindGroup}} = usePassContext();
+  const {
+    bindGroups: {color: viewBindGroup},
+    views: {view: {uniforms: viewUniforms}},
+  } = usePassContext();
 
   const opaques      = toArray(calls['opaque']      as Renderable[]);
   const transparents = toArray(calls['transparent'] as Renderable[]);
   const debugs       = toArray(calls['debug']       as Renderable[]);
 
   // Bind to dynamic view
-  const {cull, binding, uniforms, uploadView} = useDynamicViewBinding(viewBindGroup);
-  const {bindPass, dataBindings} = useApplyPassBindGroup(env, binding);
+  const {bindGroup, cull, uniforms, upload: uploadView} = useDynamicViewBinding(viewBindGroup);
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup);
 
   // Per face render passes
   const {width, height} = renderContext;
@@ -96,7 +97,7 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
     for (let i = 0; i < 6; ++i) {
       mat4.multiply(viewMatrix, getCubeFaceMatrix(i), viewUniforms.viewMatrix.current);
       updateViewProjection(uniforms, projectionMatrix, viewMatrix);
-      uploadView();
+      uploadView(uniforms);
 
       const commandEncoder = device.createCommandEncoder(LABEL);
       const passEncoder = commandEncoder.beginRenderPass(cubeDescriptors[i]);

@@ -4,61 +4,39 @@ import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
 import { makeBindGroup, makeDataBindingsEntries, makeViewUniforms, makeShaderBinding } from '@use-gpu/core';
 import { useCallback, useHooks, useMemo, useNoMemo, useOne } from '@use-gpu/live';
-import { patch, $set } from '@use-gpu/state';
+import { patch, $set, toMurmur53 } from '@use-gpu/state';
 
 import { getBindGroupLayout } from '../hooks/useBindGroupLayout';
 import { useFrustumCuller } from '../hooks/useFrustumCuller';
-import { getScratchSource } from '../hooks/useScratchSource';
 import { useUniformSource } from '../hooks/useUniformSource';
 
 import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
-import { useViewContext } from '../providers/view-provider';
+import { useViewContext, useViewUniforms } from '../providers/view-provider';
 
 import { ViewUniforms as ViewUniformsWGSL } from '@use-gpu/wgsl/use/view.wgsl';
-import lightBindingWGSL from '@use-gpu/wgsl/use/light.wgsl';
 
-const NO_OBJECT = {} as Record<string, any>;
-
-export const lightBinding: PassBinding = {
-  module: lightBindingWGSL,
-  bind: ({light}: PassEnv) => {
-    const {lightData} = light?.sources ?? NO_OBJECT;
-    return [lightData];
-  },
-};
-
-export const useMinimalBindGroups = (): Record<string, PassBindGroup> => {
-  const viewBinding = useViewContextBinding();
-
-  return useHooks(() => {
-    const bindGroup = useStandardBindGroup({bindings: {view: viewBinding}}, {});
-    return {
-      view: bindGroup,
-      color: bindGroup,
-    };
-  }, [viewBinding]);
+export const useMinimalBindGroups = (
+  resources: PassResources,
+): Record<string, PassBindGroup> => {
+  const bindGroup = useStandardBindGroup(resources, {});
+  return useOne(() => ({
+    view: bindGroup,
+    color: bindGroup,
+  }), bindGroup);
 };
 
 export const useStandardBindGroups = (
   resources: PassResources,
   flags: PassFlags,
 ): Record<string, PassBindGroup> => {
-  const viewBinding = useViewContextBinding();
+  const {overscan, lights, shadows, ssao} = flags;
 
-  const rs = useMemo(() => patch(resources, {
-    bindings: {
-      view: $set(viewBinding),
-      light: $set(lightBinding),
-    },
-  }), [resources, viewBinding]);
+  const view = useStandardBindGroup(resources, {});
+  const pre = useStandardBindGroup(resources, {overscan});
+  const color = useStandardBindGroup(resources, {lights, shadows, ssao});
 
-  const {motion} = flags;
-
-  const view = useStandardBindGroup(rs, {motion});
-  const color = useStandardBindGroup(rs, flags);
-
-  return useMemo(() => ({view, color}), [view, color]);
+  return useMemo(() => ({view, pre, color}), [view, pre, color]);
 };
 
 export const useStandardBindGroup = (
@@ -66,50 +44,38 @@ export const useStandardBindGroup = (
   flags: PassFlags = {},
 ): PassBindGroup => {
   const device = useDeviceContext();
+  const flagsKey = toMurmur53(flags);
 
   return useMemo(() => {
-    const {motion, lights, shadows, ssao} = flags;
+    const {lights, shadows, ssao, overscan} = flags;
 
     const {
       bindings: {
         view: viewBinding,
+        overscan: overscanBinding,
         light: lightBinding,
-        motion: motionBinding,
         shadow: shadowBinding,
         ssao: ssaoBinding,
       },
     } = resources;
 
-    const bs = [
-      viewBinding,
-      motion && motionBinding,
+    const resolvedBindings = [
+      overscan ? overscanBinding : viewBinding,
       lights && lightBinding,
       shadows && shadowBinding,
       ssao && ssaoBinding,
     ];
     
-    if (!viewBinding) debugger;
-    const key = bs.reduce((a, b, i) => a | (b ? (1 << i) : 0), 0);
+    const pipelineKey = resolvedBindings.reduce((a, b, i) => a | (b ? (1 << i) : 0), 0);
 
-    return getBindGroupLayout(device, bs, 'PASS', key);
-  }, [device, resources, ...Object.values(flags)]);
+    return getBindGroupLayout(device, resolvedBindings, 'PASS', pipelineKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [device, resources, flagsKey]);
 };
 
 type ApplyPass = {
   bindPass?: PassApplyBindGroup,
   dataBindings: DataBinding[],
-};
-
-export const useApplyPass = (
-  env: PassEnv,
-  key: string,
-): ApplyPass => {
-  const passContext = usePassContext();
-
-  const {buffers, bindGroups: {[key]: binding}} = passContext;
-  if (!binding) throw new Error(`Cannot find pass binding '${key}'`);
-  
-  return useApplyPassBindGroup(env, binding, key);
 };
 
 export const useApplyPassBindGroup = (
@@ -150,68 +116,19 @@ export const useNoApplyPassBindGroup = () => {
   useNoMemo();
 };
 
-export const useViewContextBinding = () => {
-  const device = useDeviceContext();
-  const {binding: viewBinding} = useViewContext();
-
-  return useMemo(() => {
-    if (viewBinding.bind) return viewBinding;
-
-    // If no view provider mounted, provide an empty buffer
-    const viewSource = getScratchSource(device, 'f32', {flags: GPUBufferUsage.UNIFORM, reserve: 256})[0];
-    return {...viewBinding, bind: () => [viewSource]};
-  }, [device, viewBinding]);
-};
-
-export const useOverscanViewBinding = (
-  passBindGroup: PassBindGroup,
-) => {
-  const {uniforms: viewUniforms} = useViewContext();
-
-  const uniforms = useOne(() => {
-    const {
-      projectionMatrix,
-      projectionViewMatrix,
-      projectionViewFrustum,
-      inverseProjectionMatrix,
-      inverseProjectionViewMatrix,
-    } = makeViewUniforms();
-
-    return {
-      ...viewUniforms,
-      projectionMatrix,
-      projectionViewMatrix,
-      projectionViewFrustum,
-      inverseProjectionMatrix,
-      inverseProjectionViewMatrix,
-    };
-  }, viewUniforms);
-
-  const {binding, cull, uploadView} = useDynamicViewBinding(passBindGroup, uniforms);
-
-  const syncView = () => {
-    
-  };
-
-  return {binding, cull, uniforms, uploadView};
-}
-
 export const useDynamicViewBinding = (
   passBindGroup: PassBindGroup,
   maybeUniforms?: Record<string, any>,
 ) => {
-  const uniforms = maybeUniforms ? (useNoOne(), maybeUniforms) : useOne(makeViewUniforms);
+  if (!passBindGroup) throw new Error("Missing bind group");
+  
+  const {cull, uniforms} = useViewUniforms(maybeUniforms);
 
-  const {viewPosition, projectionViewFrustum} = uniforms;
-  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
-
-  const [source, updateView] = useUniformSource(ViewUniformsWGSL);
-  const binding = useMemo(() => ({
+  const [source, upload] = useUniformSource(ViewUniformsWGSL);
+  const bindGroup = useMemo(() => ({
     ...passBindGroup,
     bind: (env) => [source, ...passBindGroup.bind(env).slice(1)],
   }), [passBindGroup, source]);
   
-  const uploadView = useCallback(() => updateView(uniforms), []);
-
-  return {binding, cull, uniforms, uploadView};
+  return {bindGroup, cull, uniforms, upload};
 }
