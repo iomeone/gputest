@@ -1,6 +1,4 @@
-@optional @link fn getDepth(
-  uv: vec2<f32>,
-) -> f32 { return 0.0; }
+@optional @link fn getDepth(uv: vec2<f32>) -> f32 { return 0.0; }
 
 @fragment
 fn main(

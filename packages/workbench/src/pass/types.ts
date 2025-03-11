@@ -9,7 +9,7 @@ export type PassFlags = {
   lights?: boolean,
   shadows?: boolean,
   picking?: boolean,
-  ssao?: boolean | number | { radius: number },
+  ssao?: boolean | number | { radius?: number },
   overscan?: number,
 
   overlay?: boolean,

@@ -269,7 +269,7 @@ export const makeResolveBindings = (
   };
 });
 
-export const toNamespace = (i: number) => '_' + ('00' + (i + 1).toString(36)).slice(-2) + '_';
+export const toNamespace = (i: number) => '_' + ('00' + (i).toString(36)).slice(-2) + '_';
 
 export const namespaceBinding = (namespace: string, binding: DataBinding) => {
   const {attribute} = binding;

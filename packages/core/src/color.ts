@@ -1,4 +1,5 @@
 import { seq } from './tuple';
+import { BLEND_MODES, BLEND_PREMULTIPLY, BLEND_NONE } from './constants';
 
 export const makeColorState = (format: GPUTextureFormat, blend?: GPUBlendState): GPUColorTargetState => ({
   format,
@@ -33,3 +34,11 @@ export const makeColorAttachments = (
   loadOp,
   storeOp,
 } as unknown as GPURenderPassColorAttachment));
+
+export const makeBlendState = (
+  blend: Blending | GPUBlendState | null,
+): GPUBlendState | null => (
+  (blend && (typeof blend === 'object' ? blend : BLEND_MODES[blend])) ?? undefined
+);
+
+export const getDefaultBlendMode = (format: string) => format.match(/unorm|float/) ? BLEND_PREMULTIPLY : BLEND_NONE;

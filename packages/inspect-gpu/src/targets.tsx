@@ -247,6 +247,16 @@ const uint8Shader = wgsl`
   }
 `;
 
+const floatShader = wgsl`
+  @link fn getSize() -> vec2<f32>;
+  @link fn getF32(uv: vec2<f32>) -> vec4<f32>;
+
+  fn main(uv: vec2<f32>) -> vec4<f32> {
+    let fl = getF32(uv).xyz;
+    return vec4<f32>(abs(vec3<f32>(fl)), 1.0);
+  }
+`;
+
 type TargetsProps = {
   fiber: LiveFiber<any>,
 };
@@ -320,6 +330,8 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
   const {color, picking, depth} = props;
 
   const makeView = (texture: TextureSource | LambdaSource) => {
+    if (texture.history) return texture.history.map(t => makeView(t));
+
     const {size: [w, h]} = texture;
     const width = w > h ? SIZE : Math.round(w/h * SIZE);
     const height = w > h ? Math.round(h/w * SIZE) : SIZE;
@@ -417,13 +429,6 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
               out.push(makeView(texture));
             }
           }
-          else if (layout.match(/multisampled/)) {
-            let texture = t as any;
-            texture = getShader(depthShader, [() => size, texture]);
-            texture = getLambdaSource(texture, t);
-            adoptMeta(texture, t);
-            out.push(makeView(texture));
-          }
           else {
             let texture = t as any;
             texture = getShader(depthShader, [() => size, texture]);
@@ -467,8 +472,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
           );
           texture = getShader(shader, [() => size, texture]);
           texture = getLambdaSource(texture, t);
-          texture.format = t.format;
-          texture.layout = t.layout;
+          adoptMeta(texture, t);
           out.push(makeView(texture));
         }
         else {
@@ -478,7 +482,11 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
             variant: 'textureSample',
           };
 
-          out.push(makeView(t));
+          let texture = t as any;
+          texture = getShader(floatShader, [() => size, texture]);
+          texture = getLambdaSource(texture, t);
+          adoptMeta(texture, t);
+          out.push(makeView(texture));
         }
       }
 

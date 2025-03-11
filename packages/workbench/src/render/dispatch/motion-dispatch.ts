@@ -3,17 +3,21 @@ import type { ViewUniforms } from '@use-gpu/core';
 import type { TextureSource } from '@use-gpu/shader';
 
 import { yeet, useOne, useNoOne, useRef, Ref } from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 import { useRawTextureAccess } from '../../hooks/useRawTextureAccess';
 import { useShader } from '../../hooks/useShader';
 
 import { usePassContext } from '../../providers/pass-provider';
-import { useDepthCopy } from '../../pass/depth-copy';
+import { useDepthSampleCopy2 } from '../../pass/depth-copy';
 import { mat4 } from 'gl-matrix';
 
 import { getMotionSample } from '@use-gpu/wgsl/motion/motion-sample.wgsl';
 
 const NO_DEBUG_ARGS: any[] = [];
+
+const selectXY = wgsl`@export fn selectXY(v: vec3<f32>) -> vec2<f32> { return v.xy; }`;
+const selectZ = wgsl`@export fn selectZ(v: vec3<f32>) -> f32 { return v.z; }`;
 
 export const MotionDispatch: LiveComponent = () => {
   const pc = usePassContext();
@@ -32,7 +36,7 @@ export const MotionDispatch: LiveComponent = () => {
   const getDepth = useRawTextureAccess(normalTarget.depth).shader;
   const getSample = useShader(getMotionSample, [getDepth, uniforms.reprojectionMatrix]);
 
-  const draw = useDepthCopy(motionTarget, getDepth, getSample, globalLayout);
+  const draw = useDepthSampleCopy2(motionTarget, getDepth, getSample, selectXY, selectZ, globalLayout);
 
   return yeet({
     motion: (passEncoder: GPURenderPassEncoder) => {

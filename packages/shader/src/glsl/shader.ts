@@ -94,7 +94,7 @@ glsl`...`
 ``` */
 export const glsl = (literals: TemplateStringsArray, ...tokens: string[]) => {
   const code = zip(literals, tokens).flat();
-  return loadModuleWithCache(code.join(''));
+  return loadModuleWithCache(code.join(''), '<inline code>', 'auto');
 };
 
 /** Format `number` as GLSL `float` */

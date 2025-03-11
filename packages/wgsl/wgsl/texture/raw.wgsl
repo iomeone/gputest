@@ -1,6 +1,6 @@
 @infer type T;
 
-@link fn getTexture(uv: vec2<u32>, l: u32) -> @infer(T) T;
+@link fn getTexture(uv: vec2<u32>) -> @infer(T) T;
 @link fn getSize() -> vec2<f32>;
 @optional @link fn getOffset() -> vec2<u32> { return vec2<u32>(0); };
 

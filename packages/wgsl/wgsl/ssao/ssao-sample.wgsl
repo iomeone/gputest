@@ -3,11 +3,14 @@ use '@use-gpu/wgsl/fragment/bayer'::{ bayer4x4 };
 use '@use-gpu/wgsl/fragment/noise'::{ IGN };
 use '@use-gpu/wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getAbsoluteScale };
 
-@link fn getNormal16(uv: vec2<f32>) -> vec4<u32>;
-@link fn getDepth(uv: vec2<f32>) -> f32;
+@link fn loadNormal16(xy: vec2<u32>) -> vec4<u32>;
+@link fn loadDepth(xy: vec2<u32>) -> f32;
+
+@link fn getOverscanSize() -> vec2<f32>;
+@link fn getDownsampleSize() -> vec2<f32>;
+@link fn getJitterXY() -> vec2<u32>;
 
 @link fn getRadius() -> f32;
-@link fn getSize() -> vec2<f32>;
 @link fn getFrame() -> u32;
 
 @optional @link fn getPick() -> vec2<u32> { return vec2<u32>(-1); };
@@ -50,17 +53,23 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
 }
 
 @export fn getSSAOSample(uv: vec2<f32>) -> vec4<f32> {
+  
+  // Convert downsampled + jittered UV to full size UV
+  let jitterXY = getJitterXY();
+  let sampleXY = vec2<u32>(uv * getDownsampleSize());
+  let sourceXY = sampleXY * 2 + jitterXY;
+  let sourceUV = vec2<f32>(sourceXY) / getOverscanSize();
 
-  // Convert normal to view-space
-  let worldNormal = decodeNormal16(getNormal16(uv).xy);  
+  // Load normal and convert to view-space
+  let worldNormal = decodeNormal16(loadNormal16(sampleXY).xy);  
   let normal = worldToView(vec4<f32>(worldNormal, 0.0)).xyz;
 
   // Bail (non-uniform control flow)
-  let clipDepth = getDepth(uv);
+  let clipDepth = loadDepth(sampleXY);
   if (clipDepth == 0.0) { return vec4<f32>(0.0, 0.0, 0.0, 1.0); }
 
-  // Reconstruct view-space position from depth
-  let clipXY = clipUVToXY(uv);
+  // Reconstruct view-space position from clip XY + depth
+  let clipXY = clipUVToXY(sourceUV);
   let clip = vec4<f32>(clipXY, clipDepth, 1.0);
 
   let position = to3D(clipToView(clip));
@@ -72,8 +81,8 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
   let inv = 1.0 / f32(SAMPLES);
   let nramp = SAMPLES / 2;
 
-  // Angle + sample dithering / jittering  
-  let ij = vec2<u32>(uv * getSize());
+  // Angle + radius dithering / jittering  
+  let ij = sourceXY;
   let f = getFrame();
   let quasi = (PHI_1 * f32(f)) % 1.0;
   //let quasi2 = (vec2<f32>(PHI_2_1, PHI_2_2) * (vec2<f32>(ij) + f*f + f)) % 1.0;
@@ -91,6 +100,7 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
 
   // Slope bias
   let nz = abs(dot(normal, view));
+  // TODO: check
   let bias = 0.0 * select(0.0, 0.05 * (1.0 - nz * nz), ij.y > 200);
 
   // Clip-space radius (ellipse)
@@ -105,7 +115,7 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
   let pick = getPick();
   let log = (ij.x == pick.x && ij.y == pick.y);
   if (HAS_DEBUG_PICKING && log) {
-    printPoint(viewToWorld(vec4<f32>(position, 1.0)), vec4<f32>(1.0, 1.0, 1.0, 1.0));
+    printPoint(viewToWorld(vec4<f32>(position, 1.0)), vec4<f32>(1.0));
   }
 
   // Accumulate cosine(theta) horizon angles
@@ -115,18 +125,25 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
   var lcths2 = 0.0;
   
   for (var i = 1; i <= SAMPLES; i++) {
+    // Linear radius and (1 - weight) fall-off curve
     let df = (f32(i) - jitterSample) * inv;
-    let df2 = df*df*df;
+    let df3 = df*df*df;
 
+    // Equal and opposite sample pair
     let ds = clipDR * df;
     let clip1 = clip.xy + ds;
     let clip2 = clip.xy - ds;
 
+    // Map clip XY + depth to view space
     let uv1 = clipXYToUV(clip1);
     let uv2 = clipXYToUV(clip2);
+    
+    // Jitter can be ignored here if <1 texel because of nearest sampling
+    let xy1 = vec2<u32>(uv1 * getDownsampleSize());
+    let xy2 = vec2<u32>(uv2 * getDownsampleSize());
 
-    let d1 = getDepth(uv1);
-    let d2 = getDepth(uv2);
+    let d1 = loadDepth(xy1);
+    let d2 = loadDepth(xy2);
 
     var s1 = to3D(clipToView(vec4<f32>(clip1, d1, 1.0)));
     var s2 = to3D(clipToView(vec4<f32>(clip2, d2, 1.0)));
@@ -136,17 +153,20 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
       printLine(viewToWorld(vec4<f32>(position, 1.0)), viewToWorld(vec4<f32>(s2, 1.0)), vec4<f32>(0.6, 0.75, 1.0, 1.0));
     }
 
+    // Get cosine of horizon angles relative to view direction
     let os1 = normalize(projectOnDirection(da, s1 - position));
     let os2 = normalize(projectOnDirection(da, s2 - position));
 
     let cths1 = dot(os1, vproj);
     let cths2 = dot(os2, vproj);
 
+    // Hard edge
     //cth1 = max(cth1, cths1);
     //cth2 = max(cth2, cths2);
     
-    cth1 = mix(updateCosTheta(cth1, cths1, lcths1), cth1, df2);
-    cth2 = mix(updateCosTheta(cth2, cths2, lcths2), cth2, df2);
+    // Accumulate with fall-off curve
+    cth1 = mix(updateCosTheta(cth1, cths1, lcths1), cth1, df3);
+    cth2 = mix(updateCosTheta(cth2, cths2, lcths2), cth2, df3);
 
     lcths1 = cths1;
     lcths2 = cths2;
@@ -170,10 +190,10 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
   let cg = cos(gamma);
   let sg = sin(gamma);
   let thv2 = 2.0 * vec2<f32>(th1, th2);
-  let slice = (cos(thv2 - gamma) - cg - thv2 * sg);
+  let slice = cos(thv2 - gamma) - cg - thv2 * sg;
   let visibility = -0.25 * lnproj * (slice.x + slice.y);
 
-  // Bent normal
+  // Estimate bent normal
   let up = normal;
   let upProj = normalize(nproj);
   let side = vec3<f32>(da, 0.0);
@@ -181,6 +201,7 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
   let bentNormal = slerpAngle(up, side, halfAngle);
   let worldBentNormal = viewToWorld(vec4<f32>(bentNormal, 0.0)).xyz;
 
+  // Visualize sampling arcs
   if (HAS_DEBUG_PICKING && log) {
     let angle1 = th1 - gamma;
     let angle2 = th2 - gamma;

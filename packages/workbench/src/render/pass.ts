@@ -34,6 +34,8 @@ const NO_RESOURCES: PassResources = {
 export type PassProps = PropsWithChildren<{
   mode?: 'forward' | 'deferred' | 'fullscreen',
   components?: RenderComponents,
+  
+  debug?: string,
 } & PassFlags>;
 
 export const Pass: LC<PassProps> = memo((props: PassProps) => {
@@ -50,6 +52,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     merge = false,
 
     components,
+    debug,
 
     children,
   } = props;
@@ -63,6 +66,8 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
 
     overlay,
     merge,
+
+    debug,
   };
 
   const optionsKey = toMurmur53(options);

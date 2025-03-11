@@ -1,13 +1,13 @@
 import type { Update } from '@use-gpu/state';
 import type { Blending, Side } from '@use-gpu/core';
-import { BLEND_NONE, BLEND_ALPHA, BLEND_PREMULTIPLY, BLEND_ADD, BLEND_SUBTRACT, BLEND_MULTIPLY } from '@use-gpu/core';
+import { makeBlendState } from '@use-gpu/core';
 import { useMemo } from '@use-gpu/live';
 import { $set, $delete } from '@use-gpu/state';
 import { useRenderContext } from '../providers/render-provider';
 
 export type PipelineOptions = {
   mode: string,
-  blend: Blending | GPUBlendState,
+  blend: Blending | GPUBlendState | null,
   side: Side,
   shadow: boolean,
   scissor: any,
@@ -17,15 +17,6 @@ export type PipelineOptions = {
   alphaToDiscard: boolean,
   topology: GPUPrimitiveTopology,
   stripIndexFormat: any,
-};
-
-const BLENDS = {
-  none:        BLEND_NONE,
-  alpha:       BLEND_ALPHA,
-  premultiply: BLEND_PREMULTIPLY,
-  add:         BLEND_ADD,
-  subtract:    BLEND_SUBTRACT,
-  multiply:    BLEND_MULTIPLY,
 };
 
 const CULL_SIDE = {
@@ -73,7 +64,7 @@ export const usePipelineOptions = (
 
     const fragment = {
       targets: {
-        0: {blend: typeof blend === 'object' ? $set(blend) : (BLENDS[blend] ?? $delete())},
+        0: {blend: makeBlendState(blend) ?? $delete()},
       } as any
     };
 

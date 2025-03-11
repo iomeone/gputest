@@ -1,5 +1,5 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
+import type { Blending, OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
 import { TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
@@ -11,12 +11,13 @@ import { getRenderFunc } from '../hooks/useRenderProp';
 import { useInspectable } from '../hooks/useInspectable';
 
 import {
+  makeBlendState,
   makeColorState,
   makeColorAttachments,
   makeTargetTexture,
   makeDepthStencilState,
   makeDepthStencilAttachments,
-  BLEND_PREMULTIPLY,
+  getDefaultBlendMode,
   seq,
 } from '@use-gpu/core';
 
@@ -31,6 +32,7 @@ export type RenderCubeTargetProps = {
   format?: GPUTextureFormat | null,
   depthStencil?: GPUTextureFormat | null,
   backgroundColor?: GPUColor,
+  blend?: Blending | GPUBlendState | null,
   colorSpace?: ColorSpace,
   colorInput?: ColorSpace,
   samples?: number,
@@ -63,6 +65,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
     sampler = NO_SAMPLER,
     depthStencil = DEPTH_STENCIL_FORMAT,
     backgroundColor = EMPTY_COLOR,
+    blend,
     colorSpace = COLOR_SPACE,
     colorInput = COLOR_SPACE,
     variant = 'textureSample',
@@ -137,7 +140,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
   const targetTexture = resolveTexture ?? renderTexture;
 
   const colorStates = useOne(() => (
-    format ? [makeColorState(format, format.match(/unorm|float/) ? BLEND_PREMULTIPLY : undefined)] : []
+    format ? [makeColorState(format, makeBlendState(blend ?? getDefaultBlendMode(format)))] : []
   ), format);
 
   const viewColorAttachments = useMemo(() =>
@@ -179,12 +182,12 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
     }));
   }, [viewColorAttachments, viewDepthStencilAttachments]);
 
-  const [source, sources, depth] = useMemo(() => {
+  const [source, depth] = useMemo(() => {
 
     const size = [width, height] as [number, number];
     let source: TextureTarget | undefined;
     let sources: TextureTarget[] | undefined;
-    
+
     if (format && targetTexture) {
       const view = targetTexture.createView({ dimension: 'cube' });
       const volatile = history ? history + 1 : 0;
@@ -261,7 +264,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
       version: 0,
     } as TextureSource : null;
 
-    return [source, sources, depth];
+    return [source, depth];
   }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, bufferLayers, bufferTextures, bufferViews, colorSpace, counter, resolveTexture, viewAttachments]);
 
   const rttContext = useMemo(() => ({
@@ -279,17 +282,15 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
     viewAttachments,
 
     swap: source?.swap,
-    sources,
     source,
     depth,
   } as OffscreenRenderContext),
-  [renderContext, width, height, depth, samples, colorInput, colorSpace, colorStates, depthStencilState, viewAttachments, source, sources]);
+  [renderContext, width, height, depth, samples, colorInput, colorSpace, colorStates, depthStencilState, viewAttachments, source]);
 
   const inspectable = useMemo(() => [
     ...(source ? [source] : []),
-    ...(sources ?? []),
     ...(depth ? [depth] : []),
-  ], [source, sources, depth]);
+  ], [source, depth]);
 
   inspect({
     output: {

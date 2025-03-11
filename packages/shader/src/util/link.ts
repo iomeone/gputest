@@ -152,7 +152,7 @@ export const makeLinker = (
     const {module} = bundle;
     const {name, code, tree, table, shake, virtual} = module;
     const {globals, symbols, visibles, externals, modules, exports: exp} = table;
-
+    
     const key = getBundleKey(bundle);
     const importMap = imported.get(key);
     const aliasMap = aliased.get(key);
@@ -235,22 +235,29 @@ export const makeLinker = (
 
       if (inferred) {
         const sig = signatures.get(imp);
-        const {type, parameters} = sig;
-        for (const {name, at} of inferred) {
-          const resolved = at < 0 ? type : parameters[at];
+        if (!sig) {
+          console.warn(`Cannot infer types because link '${name}:${resolved}' does not exist`);
+          // eslint-disable-next-line no-debugger
+          debugger;
+        }
+        else {
+          const {type, parameters} = sig;
+          for (const {name, at} of inferred) {
+            const resolved = at < 0 ? type : parameters[at];
 
-          const symbol = (resolved.type ?? resolved.name ?? resolved);
-          let imp = !isGlobalType?.(symbol) ? ns + symbol : symbol;
-          let i = imp;
-          while ((i = infers.get(imp)) != null) { imp = i; }
+            const symbol = (resolved.type ?? resolved.name ?? resolved);
+            let imp = !isGlobalType?.(symbol) ? ns + symbol : symbol;
+            let i = imp;
+            while ((i = infers.get(imp)) != null) { imp = i; }
 
-          rename.set(name, imp);
-          infers.set(scope + name, imp);
+            rename.set(name, imp);
+            infers.set(scope + name, imp);
 
-          if (imp === 'auto') {
-            console.warn(`Inferred 'auto' type instead of concrete type - ${module.name} '${name}'\n${code}`);
-            // eslint-disable-next-line no-debugger
-            debugger;
+            if (imp === 'auto') {
+              console.warn(`Inferred 'auto' type instead of concrete type - ${module.name} '${name}'\n${code}`);
+              // eslint-disable-next-line no-debugger
+              debugger;
+            }
           }
         }
       }

@@ -60,6 +60,8 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const {
     buffers: {normal, motion, ssao},
   } = usePassContext();
+  
+  return null;
 
   const [normalContext] = normal;
   const [motionContext] = motion;
@@ -71,11 +73,16 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
 
   const frame = useRef(0);
 
-  const fullSize = useShaderRef([resolveTarget.width, resolveTarget.height]);
+  const resolveSize = useShaderRef([resolveTarget.width, resolveTarget.height]);
+  const overscanSize = useShaderRef([resolveTarget.width, normalContext.height]);
   const downscaleSize = useShaderRef([normalTarget.width, normalTarget.height]);
-  const downscaleOffset = () => getResampleOffset(normalContext.source.size, normalTarget.source.size, frame.current);
+  const uvScale = useShaderRef([downscaleSize[0] / overscanSize[0], downscaleSize[1] / overscanSize[1]]);
+  const ssaoRadius = useShaderRef(radius);
 
-  const downscaleJitter = () => getJitterBayer2x2(frame.current);
+  const downscaleJitter = () => getJitterBayer2x2Alternating(frame.current);
+  const downscaleJitterDelta = () => getJitterBayer2x2Alternating(frame.current) - getJitterBayer2x2Alternating(frame.current - 1);
+
+  const downscaleOffset = () => getResampleOffset(normalContext.source.size, normalTarget.source.size, frame.current);
 
   // Debug viz
   const hasDebugPicking = !!ssaoDebug?.pickAO;
@@ -124,31 +131,51 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
 
     draw = useSampleCopy(targetContext, getMotion, globalLayout);
   }
-  /*
   else if (mode === 'sample') {
     const r = useShaderRef(radius);
     const defs = useOne(() => ({ HAS_DEBUG_PICKING: hasDebugPicking }))
 
-    const getNormal16 = useRawTextureAccess(normalTarget.source);
-    const getDepth = useRawTextureAccess(normalTarget.depth);
-    const getSample = useShader(getSSAOSample, [getNormal16, getDepth, r, downscaleSize, frame, ...debugArgs], defs);
+    const loadDepth = useTextureAccess(normalTarget.depth);
+    const loadNormal16 = useTextureAccess(normalTarget.source);
+
+    const getSample = useShader(getSSAOSample, [
+      loadNormal16,
+      loadDepth,
+      overscanSize,
+      downscaleSize,
+      downscaleJitter,
+      ssaoRadius,
+      frame,
+      ...debugArgs,
+    ], defs);
 
     draw = useSampleCopy(targetContext, getSample, globalLayout);
   }
   else if (mode === 'accum') {
 
-    const getNormal16 = useRawTextureAccess(normalTarget.source);
-    const getDepth = useRawTextureAccess(normalTarget.depth);
+    const loadDepth = useTextureAccess(normalTarget.depth);
+    const loadNormal16 = useTextureAccess(normalTarget.source);
+    const loadSample = useTextureAccess(sampleTarget.source);
+    const loadMotion = useTextureAccess(motionTarget.source);
 
-    const getSample = useRawTextureAccess(sampleTarget.source);
-    const getMotion = useRawTextureAccess(motionTarget.source);
+    const loadLastAccum = useTextureAccess(accumTarget.source.history![0]);
 
-    const getLastAccum = accumTarget.source.history![0];
-
-    const getAccum = useShader(getSSAOAccum, [getNormal16, getDepth, getSample, getMotion, getLastAccum, downscaleSize, frame, debugArgs?.[3]]);
+    const getAccum = useShader(getSSAOAccum, [
+      loadNormal16,
+      loadDepth,
+      loadSample,
+      loadMotion,
+      loadLastAccum,
+      uvScale,
+      downscaleSize,
+      downscaleJitterDelta,
+      frame,
+      debugArgs?.[3],
+    ]);
 
     draw = useSampleCopy(targetContext, getAccum, globalLayout);
   }
+  /*
   else if (mode === 'resolve') {
 
     const getTargetNormal16 = useRawTextureAccess(normalContext.source, downscaleOffset).shader;
@@ -193,7 +220,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   return yeet({ ssao: command });
 };
 
-const getJitterBayer2x2 = (jitter: number) => {
+const getJitterBayer2x2Alternating = (jitter: number) => {
   const i = jitter & 0x7;
   const a = (i & 1);
   const b = (i & 1) ^ ((i & 2) >> 1);

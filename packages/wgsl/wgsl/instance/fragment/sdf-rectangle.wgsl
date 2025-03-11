@@ -116,7 +116,9 @@ use '@use-gpu/wgsl/use/color'::{ premultiply };
       reduce = sdf.outer - sdf.inner;
       sdf.inner = sdf.outer - 1.0;
     }
-    color = mix(fillColor, strokeColor, reduce * clamp(1.0 - sdf.inner, 0.0, 1.0));
+
+    let fill = reduce * clamp(1.0 - sdf.inner, 0.0, 1.0);
+    color = mix(fillColor, strokeColor, fill);
   }
 
   if (HAS_MASK) {

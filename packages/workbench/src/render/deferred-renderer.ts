@@ -16,6 +16,7 @@ import { UIRender } from './forward/ui';
 import { useStandardBindGroups } from '../pass/bindings';
 import { useMakeUseVariants } from '../pass/variants';
 
+import { DebugPass } from '../pass/debug-pass';
 import { DeferredPass } from '../pass/deferred-pass';
 import { PickingPass } from '../pass/picking-pass';
 import { ShadowPass } from '../pass/shadow-pass';
@@ -79,6 +80,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     lights = false,
     overlay = false,
     merge = false,
+    debug = null,
   
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
@@ -101,6 +103,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     shadows ? use(ShadowPass, options) : null,
     use(DeferredPass, options),
     picking ? use(PickingPass, options) : null, 
+    debug ? use(DebugPass, options) : null,
   ], props);
 
   // Add resource dispatches to render

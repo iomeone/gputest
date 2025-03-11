@@ -95,13 +95,20 @@ export const loadVirtualModule = <T extends SymbolTableT = any>(
 // But is structurally different (hash = new entry), so differences in links are reflected in the shader hash.
 export const bindEntryPoint = <T extends ParsedBundle | ParsedModule>(bundle: T, entry?: string): T => {
   // eslint-disable-next-line prefer-const
-  let {key, hash, module, table} = bundle as any;
+  let {name, key, hash, module, table} = bundle as any;
 
   table = table ?? module?.table;
   hash = hash ?? module?.hash;
+  name = name ?? module?.name;
   key = key ?? module?.key;
 
-  if (entry == null && table.symbols?.includes('main')) entry = 'main';
+  const isAuto = entry === 'auto';
+  if (isAuto) entry = null;
+
+  // Use 'main' as default entry, or last export if 'auto' (e.g. inline code).
+  if ((entry == null) && table.symbols?.includes('main')) entry = 'main';
+  else if (isAuto) entry = table.exports?.at(-1)?.symbol ?? null;
+
   if (entry == null) return bundle;
 
   const structural = toMurmur53([hash, entry]);

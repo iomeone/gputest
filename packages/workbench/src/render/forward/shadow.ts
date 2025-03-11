@@ -15,7 +15,7 @@ import {
   mainWithDepth as renderVirtualDepthDepth,
 } from '@use-gpu/wgsl/render/vertex/virtual-depth.wgsl';
 import renderFragmentDepth from '@use-gpu/wgsl/render/fragment/depth.wgsl';
-import renderFragmentDepthDepth from '@use-gpu/wgsl/render/fragment/depth-frag.wgsl';
+import renderFragmentDepthOnly from '@use-gpu/wgsl/render/fragment/depth-only.wgsl';
 
 import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
@@ -41,7 +41,7 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
   } = usePassContext();
 
   const vertexShader = defines?.HAS_DEPTH ? renderVirtualDepthDepth : renderVirtualDepth;
-  const fragmentShader = defines?.HAS_DEPTH ? renderFragmentDepthDepth : renderFragmentDepth;
+  const fragmentShader = defines?.HAS_DEPTH ? renderFragmentDepthOnly : renderFragmentDepth;
 
   const pipeline = useOne(() => patch(propPipeline, {
     multisample: { count: 1, alphaToCoverageEnabled: false },

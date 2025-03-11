@@ -1,12 +1,7 @@
 @infer type T;
 
-@link fn getSample(
-  uv: vec2<f32>,
-) -> @infer(T) T;
-
-@optional @link fn getDepth(
-  uv: vec2<f32>,
-) -> f32 { return 0.0; }
+@link fn getSample(uv: vec2<f32>) -> @infer(T) T;
+@optional @link fn getDepth(uv: vec2<f32>) -> f32 { return 0.0; }
 
 struct WithDepth {
   @builtin(frag_depth) depth: f32,

@@ -1,22 +1,22 @@
 import type { LC } from '@use-gpu/live';
-import type { TextureTarget } from '@use-gpu/core';
+import type { OffscreenRenderContext, TextureTarget } from '@use-gpu/core';
 
-import { use, gather, yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { use, gather, yeet, memo } from '@use-gpu/live';
 import { makeColorAttachment, makeColorState, makeDepthStencilState, makeDepthTexture, makeDepthStencilAttachment, makeTargetTexture } from '@use-gpu/core';
 
-import { RenderTarget } from '../render-target';
+import { RenderTarget, useCombinedRenderTarget } from '../render-target';
 
 import { useDeviceContext } from '../../providers/device-provider';
 
 import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
 
 export type SSAOBufferProps = {
-  resolution?: number,
+  overscan?: number,
 };
 
 export const SSAO_DEPTH_FORMAT = 'depth32float';
 export const SSAO_NORMAL_FORMAT = 'rg8uint';
-export const SSAO_MOTION_FORMAT = 'rg16float';
+export const SSAO_MOTION_FORMATS = ['rg16float', 'r16float'];
 export const SSAO_SAMPLE_FORMAT = 'rgba8unorm';
 export const SSAO_ACCUM_FORMAT = 'rgba16float';
 export const SSAO_RESOLVE_FORMAT = 'rgba8unorm';
@@ -27,9 +27,11 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
   const resolution = 1/2;
   const samples = 1;
 
+  const overscan = props.overscan / 2;
+
   const depthStencil  = SSAO_DEPTH_FORMAT;
   const normalFormat  = SSAO_NORMAL_FORMAT;
-  const motionFormat  = SSAO_MOTION_FORMAT;
+  const motionFormats = SSAO_MOTION_FORMATS;
   const sampleFormat  = SSAO_SAMPLE_FORMAT;
   const accumFormat   = SSAO_ACCUM_FORMAT;
   const resolveFormat = SSAO_RESOLVE_FORMAT;
@@ -45,16 +47,28 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
       depthStencil,
       colorSpace: 'linear',
     }),
-    use(RenderTarget, {
-      label: 'SSAO/Motion',
-      resolution,
-      samples,
-      sampler: null,
-      format: motionFormat,
-      variant: 'textureLoad',
-      depthStencil: null,
-      colorSpace: 'linear',
-    }),
+    gather([
+      use(RenderTarget, {
+        label: 'SSAO/Motion',
+        resolution,
+        samples,
+        sampler: null,
+        format: motionFormats[0],
+        variant: 'textureLoad',
+        depthStencil: null,
+        colorSpace: 'linear',
+      }),
+      use(RenderTarget, {
+        label: 'SSAO/Motion',
+        resolution,
+        samples,
+        sampler: null,
+        format: motionFormats[1],
+        variant: 'textureLoad',
+        depthStencil: null,
+        colorSpace: 'linear',
+      }),
+    ], (targets: OffscreenRenderContext[]) => yeet(useCombinedRenderTarget(targets))),
     use(RenderTarget, {
       label: 'SSAO/Sample',
       resolution,
@@ -86,23 +100,8 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     }),
   ];
   
-  return gather(targets, (targets: TextureTarget[]) => {
-    const [
-      normalTarget,
-      motionTarget,
-      sampleTarget,
-      accumTarget,
-      resolveTarget,
-    ] = targets;
-
-    const sources = useOne(() => [
-      normalTarget.depth,
-      normalTarget.source,
-      motionTarget.source,
-      sampleTarget.source,
-      accumTarget.source,
-      resolveTarget.source,
-    ], targets);
+  return gather(targets, (targets: OffscreenRenderContext[]) => {
+    const [,,,, resolveTarget] = targets;
 
     const ssaoBinding: PassBinding = {
       module: ssaoBindingWGSL,
@@ -111,7 +110,7 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     };
 
     return yeet({
-      buffers: { ssao: [normalTarget, motionTarget, sampleTarget, accumTarget, resolveTarget] },
+      buffers: { ssao: targets },
       bindings: { ssao: ssaoBinding },
     });
   });

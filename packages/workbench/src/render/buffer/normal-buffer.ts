@@ -1,5 +1,5 @@
 import type { LC } from '@use-gpu/live';
-import type { TextureTarget } from '@use-gpu/core';
+import type { OffscreenRenderContext } from '@use-gpu/core';
 
 import { use, gather, yeet, memo } from '@use-gpu/live';
 import { RenderTarget } from '../render-target';
@@ -42,9 +42,9 @@ export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
     })
   );
 
-  return gather(target, ([normalContext]: TextureTarget[]) => {
+  return gather(target, (targets: OffscreenRenderContext[]) => {
     return yeet({
-      buffers: { normal: [normalContext] },
+      buffers: { normal: targets },
     });
   });
 

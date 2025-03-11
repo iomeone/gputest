@@ -1,13 +1,13 @@
 import type { LC } from '@use-gpu/live';
-import type { TextureTarget } from '@use-gpu/core';
+import type { OffscreenRenderContext } from '@use-gpu/core';
 
-import { use, gather, yeet, memo } from '@use-gpu/live';
+import { use, gather, yeet, memo, useMemo } from '@use-gpu/live';
 
 import { useUniformSource } from '../../hooks/useUniformSource';
 
 import { useRenderContext } from '../../providers/render-provider';
 
-import { RenderTarget } from '../render-target';
+import { RenderTarget, useCombinedRenderTarget } from '../render-target';
 
 export type MotionBufferProps = {
   resolution?: number,
@@ -15,7 +15,7 @@ export type MotionBufferProps = {
 };
 
 export const MOTION_DEPTH_FORMAT = 'depth32float';
-export const MOTION_RENDER_FORMAT = 'rg16float';
+export const MOTION_RENDER_FORMATS = ['rg16float', 'r16float'];
 
 export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
   const {
@@ -28,26 +28,39 @@ export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
   // Motion render target
   const samples = 1;
   const depthStencil = MOTION_DEPTH_FORMAT;
-  const renderFormat = MOTION_RENDER_FORMAT;
+  const renderFormats = MOTION_RENDER_FORMATS;
 
-  const target = (
+  const targets = [
     use(RenderTarget, {
-      label: 'MotionBuffer',
+      label: 'MotionBuffer/XY',
       resolution,
       overscan,
       samples,
       sampler: null,
-      format: renderFormat,
+      blend: 'none',
+      format: renderFormats[0],
       variant: 'textureLoad',
       depthStencil,
       colorSpace: 'linear',
-    })
-  );
+    }),
+    use(RenderTarget, {
+      label: 'MotionBuffer/Z',
+      resolution,
+      overscan,
+      samples,
+      sampler: null,
+      blend: 'none',
+      format: renderFormats[1],
+      variant: 'textureLoad',
+      depthStencil: null,
+      colorSpace: 'linear',
+    }),
+  ];
 
-  return gather(target, ([motionContext]: TextureTarget[]) => {
+  return gather(targets, (targets: OffscreenRenderContext[]) => {
+    const motionContext = useCombinedRenderTarget(targets);
     return yeet({
       buffers: { motion: [motionContext] },
     });
   });
-
 }, 'MotionBuffer');

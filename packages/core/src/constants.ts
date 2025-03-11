@@ -8,6 +8,18 @@ export const TYPED_ARRAYS: TypedArrayConstructor[] = [
   Float32Array, Float64Array,
 ];
 
+export const TYPED_ARRAYS_BITS = new Map([
+  [Int8Array, 8],
+  [Uint8Array, 8],
+  [Int16Array, 16],
+  [Uint16Array, 16],
+  [Int32Array, 32],
+  [Uint32Array, 32],
+  [Uint8ClampedArray, 8],
+  [Float32Array, 32],
+  [Float64Array, 64],
+]);
+
 export const VERTEX_SIZES = {
   "uint8x2": 2,
   "uint8x4": 4,
@@ -943,3 +955,12 @@ export const BLEND_MULTIPLY = {
     dstFactor: "one-minus-src-alpha",
   },
 } as any as GPUBlendState;
+
+export const BLEND_MODES = {
+  none:        BLEND_NONE,
+  alpha:       BLEND_ALPHA,
+  premultiply: BLEND_PREMULTIPLY,
+  add:         BLEND_ADD,
+  subtract:    BLEND_SUBTRACT,
+  multiply:    BLEND_MULTIPLY,
+};

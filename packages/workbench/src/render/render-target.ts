@@ -1,5 +1,5 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
+import type { Blending, OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
 import { TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
@@ -11,12 +11,13 @@ import { useInspectable } from '../hooks/useInspectable';
 import { getRenderFunc } from '../hooks/useRenderProp';
 
 import {
+  makeBlendState,
   makeColorState,
   makeColorAttachment,
   makeTargetTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
-  BLEND_PREMULTIPLY,
+  getDefaultBlendMode,
   seq,
 } from '@use-gpu/core';
 
@@ -30,6 +31,7 @@ export type RenderTargetProps = {
   format?: GPUTextureFormat | null,
   depthStencil?: GPUTextureFormat | null,
   backgroundColor?: GPUColor,
+  blend?: Blending | GPUBlendState | null,
   colorSpace?: ColorSpace,
   colorInput?: ColorSpace,
   samples?: number,
@@ -65,6 +67,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     sampler = NO_SAMPLER,
     depthStencil = DEPTH_STENCIL_FORMAT,
     backgroundColor = EMPTY_COLOR,
+    blend,
     colorSpace = COLOR_SPACE,
     colorInput = COLOR_SPACE,
     variant = 'textureSample',
@@ -125,8 +128,8 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
   const targetTexture = resolveTexture ?? renderTexture;
 
-  const colorStates      = useOne(() => (
-    format ? [makeColorState(format, format.match(/unorm|float/) ? BLEND_PREMULTIPLY : undefined)] : []
+  const colorStates = useOne(() => (
+    format ? [makeColorState(format, makeBlendState(blend ?? getDefaultBlendMode(format)))] : []
   ), format);
 
   const colorAttachments = useMemo(() =>
@@ -153,7 +156,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     [device, width, height, depthStencil, samples]
   );
 
-  const [source, sources, depth] = useMemo(() => {
+  const [source, depth] = useMemo(() => {
 
     const size = [width, height] as [number, number];
     let source: TextureTarget | undefined;
@@ -230,7 +233,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       version: 0,
     } as TextureSource : undefined;
 
-    return [source, sources, depth];
+    return [source, depth];
   }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, bufferTextures, bufferViews, colorAttachments, colorSpace, counter, resolveTexture]);
 
   const rttContext = useMemo(() => ({
@@ -251,16 +254,14 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     }],
 
     swap: source?.swap,
-    sources,
     source,
     depth,
-  } as OffscreenRenderContext), [renderContext, width, height, depth, samples, colorInput, colorSpace, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source, sources]);
+  } as OffscreenRenderContext), [renderContext, width, height, depth, samples, colorInput, colorSpace, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source]);
 
   const inspectable = useMemo(() => [
     ...(source ? [source] : []),
-    ...(sources ?? []),
     ...(depth ? [depth] : []),
-  ], [source, sources, depth]);
+  ], [source, depth]);
 
   inspect({
     output: {
@@ -277,3 +278,20 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
   if (then && source) return fence(view, () => then(source));
   return view;
 }
+
+// eslint-disable-next-line react-hooks/exhaustive-deps
+export const useCombinedRenderTarget = (targets: OffscreenRenderContext[]) => useMemo(() => getCombinedRenderTarget(targets), targets);
+
+export const getCombinedRenderTarget = (targets: OffscreenRenderContext[]) => {
+  const [first] = targets;
+
+  return {
+    ...first,
+    colorStates: targets.flatMap(t => t.colorStates),
+    viewAttachments: first.viewAttachments.map((va, i) => ({
+      ...va,
+      colorAttachments: targets.flatMap(t => t.viewAttachments[i].colorAttachments),
+    })),
+    sources: targets.map(t => t.source),
+  };
+};

@@ -143,7 +143,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
   }, [cubeSource]);
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const blit = useDepthCopy(renderContext, getDepth, null, null, shadowUV!, SHADOW_PAGE);
+  const blit = useDepthCopy(renderContext, getDepth, null, shadowUV!, SHADOW_PAGE);
 
   return quote(yeet(() => {
     let vs = 0;

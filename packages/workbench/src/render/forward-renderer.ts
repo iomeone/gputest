@@ -8,6 +8,7 @@ import { PassReconciler } from '../reconcilers/index';
 import { VariantContext } from '../providers/pass-provider';
 import { useRenderContext } from '../providers/render-provider';
 
+import { DebugPass } from '../pass/debug-pass';
 import { MotionPass } from '../pass/motion-pass';
 import { NormalPass } from '../pass/normal-pass';
 import { PickingPass } from '../pass/picking-pass';
@@ -83,6 +84,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     overlay = false,
     merge = false,
     overscan = 0,
+    debug = null,
   
     lights = false,
     normals = !!buffers.normal,
@@ -119,6 +121,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     shadows ? use(ShadowPass, options) : null,
     use(DEFAULT_PASS[viewType], options),
     picking ? use(PickingPass, options) : null,
+    debug ? use(DebugPass, options) : null,
   ], [props, viewType]);
 
   // Add resource dispatches to render

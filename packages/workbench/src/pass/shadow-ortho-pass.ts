@@ -79,7 +79,7 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
   const projectionMatrix = useOne(() => mat4.fromValues(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1));
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const clearDepthBuffer = useDepthCopy(renderContext, null, null, null, shadowUV!, SHADOW_PAGE);
+  const clearDepthBuffer = useDepthCopy(renderContext, null, null, shadowUV!, SHADOW_PAGE);
 
   const draw = quote(yeet(() => {
     let vs = 0;

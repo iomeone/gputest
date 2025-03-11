@@ -130,7 +130,8 @@ exports.default = __default;
     // Generate combined source + map
     const s = new MagicString(source);
     s.prepend(generated);
-    s.update(0, source.length, getSymbols);
+    if (source.length) s.update(0, source.length, getSymbols);
+    else console.warn("Empty source file: " + resourcePath);
 
     ret.output = s.toString();
     ret.magicString = s;

@@ -1,8 +1,6 @@
 @infer type T;
 
-@link fn getSample(
-  uv: vec2<f32>,
-) -> @infer(T) T;
+@link fn getSample(uv: vec2<f32>) -> @infer(T) T;
 
 @fragment
 fn main(

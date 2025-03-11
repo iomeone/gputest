@@ -1,5 +1,5 @@
 import type { LC } from '@use-gpu/live';
-import type { TextureTarget } from '@use-gpu/core';
+import type { OffscreenRenderContext, TextureTarget } from '@use-gpu/core';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
@@ -63,7 +63,7 @@ export const GBuffer: LC = memo(() => {
     return renderTextures.map(makeSource);
   }, [renderTextures, formats, width, height]);
 
-  const gBufferContext = useMemo(() => ({
+  const gBufferContext: OffscreenRenderContext = useMemo(() => ({
     ...renderContext,
     colorStates,
     viewAttachments: [{
