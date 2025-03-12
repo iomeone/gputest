@@ -1,6 +1,6 @@
 import React, { FC, useRef } from 'react';
 
-import { formatValue } from '@use-gpu/live';
+import { formatPrototype, formatValue } from '@use-gpu/live';
 import { SplitRow, TreeRow, TreeIndent, Label, Selectable } from './layout';
 import { IconItem, SVGChevronDown, SVGChevronRight } from './svg';
 import { useAddIns } from '../providers/add-in-provider';
@@ -115,7 +115,7 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
     const compact = <Compact>
       {expanded ? formatValue(object[k]) : truncate(formatValue(object[k]), 80)}
     </Compact>
-
+    
     const full = expanded ? (
       <TreeIndent indent={1}>{
         code
@@ -133,12 +133,7 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
       }</TreeIndent>
     ) : null;
 
-    let proto = object[k]?.__proto__ !== Object.prototype
-      ? object[k]?.__proto__?.constructor?.name ??
-        object[k]?.__proto__?.displayName ??
-        object[k]?.__proto__?.name
-      : 'Object';
-
+    let proto = formatPrototype(object[k]);
     if (object[k]?.length) proto += ' (' + object[k]?.length + ')';
 
     const showFull = (typeof object[k] === 'object' && depth < 20) || code;

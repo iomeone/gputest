@@ -30,6 +30,7 @@ export type LinearRGBProps = PropsWithChildren<{
   tonemap?: 'aces' | 'linear',
   gain?: number,
 
+  label?: string,
   overlay?: boolean,
 
   then?: (texture: TextureSource) => LiveElement,
@@ -48,6 +49,7 @@ export const LinearRGB: LiveComponent<LinearRGBProps> = (props: LinearRGBProps) 
 
   return gather(
     use(RenderTarget, {
+      label: 'LinearRGB',
       ...rest,
       format: "rgba16float",
       colorSpace: 'linear',
@@ -70,7 +72,7 @@ export const LinearRGB: LiveComponent<LinearRGBProps> = (props: LinearRGBProps) 
         }),
         use(Pass, {
           mode: 'fullscreen',
-          picking: false,
+          overlay,
           children:
             use(RawFullScreen, {
               texture: target.source,

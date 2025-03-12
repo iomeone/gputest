@@ -10,6 +10,8 @@ import { useDeviceContext } from '../../providers/device-provider';
 import { useRenderContext } from '../../providers/render-provider';
 import { useInspectable } from '../../hooks/useInspectable';
 
+const LABELS = ['GBuffer/Albedo', 'GBuffer/Normal', 'GBuffer/Material', 'GBuffer/Emissive', 'GBuffer/Depth'];
+
 export const GBuffer: LC = memo(() => {
   const device = useDeviceContext();
   const renderContext = useRenderContext();
@@ -36,13 +38,15 @@ export const GBuffer: LC = memo(() => {
     format,        // Resolve
   ] as GPUTextureFormat[], [hasFloat, format]);
 
-  const renderTextures = useMemo(() => formats.map(format => makeTargetTexture(
+  const renderTextures = useMemo(() => formats.map((format, i) => makeTargetTexture(
     device,
     width,
     height,
     1,
     format,
     1,
+    1,
+    LABELS[i],
   )), [device, width, height, formats]);
 
   const colorStates = useOne(() => formats.slice(0, 4).map(format => makeColorState(format)), formats);
@@ -58,6 +62,7 @@ export const GBuffer: LC = memo(() => {
       colorSpace: 'linear',
       size: [width, height],
       version: 0,
+      hint: i === 4 ? 'depth' : undefined,
     }) as TextureTarget;
 
     return renderTextures.map(makeSource);

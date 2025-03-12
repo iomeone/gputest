@@ -69,6 +69,8 @@ export type ParsedModule<T extends SymbolTableT = any> = {
   entry?: string,
   label?: string,
   key?: number,
+
+  namespace?: string,
 };
 
 export type VirtualTable<T extends SymbolTableT = any> = {

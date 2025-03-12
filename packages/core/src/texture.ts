@@ -1,5 +1,7 @@
 import type { DataTexture, ExternalTexture, VectorLike, XY, XYZ, TextureSource } from './types';
 import { TEXTURE_FORMAT_SIZES, TEXTURE_SAMPLE_TYPES } from './constants';
+import { proxy } from './lazy';
+import { seq } from './tuple';
 import { toTypeString } from './uniform';
 
 const NO_OFFSET = [0, 0, 0] as XYZ;
@@ -19,6 +21,7 @@ export const makeTexture = (
   sampleCount: number = 1,
   mipLevelCount: number = 1,
   dimension: GPUTextureDimension = '2d',
+  label?: string,
 ): GPUTexture => {
   if (width * height * depth === 0) throw new Error("Can't create zero-sized texture");
 
@@ -31,6 +34,7 @@ export const makeTexture = (
     format,
     // @ts-ignore
     usage,
+    label,
   });
 
   return texture;
@@ -45,9 +49,10 @@ export const makeDynamicTexture = (
   sampleCount: number = 1,
   mipLevelCount: number = 1,
   dimension: GPUTextureDimension = '2d',
+  label?: string,
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST;
-  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, dimension);
+  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, dimension, label);
 }
 
 export const makeTargetTexture = (
@@ -58,9 +63,10 @@ export const makeTargetTexture = (
   format: GPUTextureFormat,
   sampleCount: number = 1,
   mipLevelCount: number = 1,
+  label?: string,
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC;
-  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount);
+  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, '2d', label);
 }
 
 export const makeStorageTexture = (
@@ -72,9 +78,10 @@ export const makeStorageTexture = (
   sampleCount: number = 1,
   mipLevelCount: number = 1,
   dimension: GPUTextureDimension = '2d',
+  label?: string,
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING;
-  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, dimension);
+  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, dimension, label);
 }
 
 export const makeReadbackTexture = (
@@ -84,20 +91,23 @@ export const makeReadbackTexture = (
   format: GPUTextureFormat,
   sampleCount: number = 1,
   mipLevelCount: number = 1,
+  label?: string,
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC;
-  return makeTexture(device, width, height, 1, format, usage, sampleCount, mipLevelCount);
+  return makeTexture(device, width, height, 1, format, usage, sampleCount, mipLevelCount, '2d', label);
 }
 
 export const makeRawTexture = (
   device: GPUDevice,
   dataTexture: DataTexture | ExternalTexture,
   mipLevelCount: number = 1,
+  dimension: GPUTextureDimension = '2d',
+  label?: string,
 ) => {
   const {size, format} = dataTexture;
   const [w, h, d] = size as XYZ;
 
-  return makeDynamicTexture(device, w, h, d || 1, format ?? 'rgba8unorm', 1, mipLevelCount);
+  return makeDynamicTexture(device, w, h, d || 1, format ?? 'rgba8unorm', 1, mipLevelCount, dimension, label);
 }
 
 export const makeTextureDataLayout = (
@@ -322,3 +332,23 @@ export const checkTextureType = (
 
   console.warn(`Invalid format '${format}' bound for ${from} "${name}" (${f} != ${t})`);
 }
+
+const CUBE_FACES = ['+X', '-X', '+Y', '-Y', '+Z', '-Z'];
+
+export const splitCubeTexture = (texture: TextureSource): TextureSource[] => {
+  const {layout, size, texture: t} = texture;
+  const l = layout.replace(/(texture_(?:depth_)?)cube/, '$12d');
+
+  const label = t.label ?? texture.label;
+
+  return seq(6).map(i => {
+    const face = CUBE_FACES[i];
+    const faceLabel = label != null ? `${label} ${face}` : face;
+    const view = t.createView({ label: faceLabel, baseArrayLayer: i, arrayLayerCount: 1, dimension: '2d' });
+    return proxy(texture, {
+      layout: l,
+      view,
+      size: [size[0], size[1]],
+    });
+  });
+};

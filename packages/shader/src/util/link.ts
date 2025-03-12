@@ -134,9 +134,6 @@ export const makeLinker = (
   const def = defineConstants(defs);
   if (def.length) program.push(def, "");
 
-  // Namespace by module key
-  const namespaces = new Map<number, string>();
-
   // Track symbols in global namespace
   const exists = new Set<string>();
   const visible = new Set<string>();
@@ -146,8 +143,19 @@ export const makeLinker = (
   const signatures = new Map<string, any>();
   const infers = new Map<string, string>();
 
+  // Namespace by module key
+  const namespaces = new Map<number, string>();
+  const virtuals = bundles.filter(b => b.module.virtual);
+  const seen = new Set<string>();
+
+  // Prepare namespaces while skipping pre-assigned ones
+  for (const {module: {virtual: {namespace}}} of virtuals) seen.add(namespace);
+  const names = Array.from({ length: bundles.length }).map((_, i) => toNamespace(i)).filter(n => !seen.has(n));
+
+  // Safety check for unresolved bindings
   let hasBoundBindings = false;
 
+  // Link bundles top-to-bottom
   for (const bundle of bundles) {
     const {module} = bundle;
     const {name, code, tree, table, shake, virtual} = module;
@@ -163,8 +171,8 @@ export const makeLinker = (
     let scope = '';
     const rename = new Map<string, string>();
     if (key !== main) {
-      const namespace = virtual?.namespace;
-      const ns = reserveNamespace(key, namespaces, namespace);
+      const ns = virtual?.namespace ?? names.shift();
+      namespaces.set(key, ns);
       scope = ns;
 
       if (symbols) for (const name of symbols) rename.set(name, ns + name);
@@ -469,17 +477,6 @@ export const getGraphOrder = (
   return keys;
 }
 
-// Generate a new namespace
-export const reserveNamespace = (
-  key: string | number,
-  namespaces: Map<any, string>,
-  force?: string,
-): string => {
-  const namespace = force ?? toNamespace(namespaces.size);
-  namespaces.set(key, namespace);
-  return namespace;
-}
-
 // Parse run-time specified keys `from:to` into a map of aliases
 export const parseLinkAliases = <T>(
   links?: Record<string, T>,
@@ -508,3 +505,6 @@ export const parseLinkAliases = <T>(
 
   return [out, aliases];
 }
+
+export const nextNamespace = (namespaces: Map<number, string>, seen: Set<string>) => {
+};

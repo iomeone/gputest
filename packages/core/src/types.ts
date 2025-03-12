@@ -266,6 +266,7 @@ export type TextureSource = {
   filter?: FilteringType,
   colorSpace?: ColorSpace,
   aspect?: GPUTextureAspect,
+  hint?: string,
 };
 
 export type StorageSource<T extends ShaderModule = any> = {

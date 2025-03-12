@@ -115,6 +115,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
     format: depthStencil,
     size: [width, height],
     version: 0,
+    hint: 'depth',
   } as TextureSource), [depthTexture, depthStencil, samples, width, height]);
 
   const swap = useCallback(() => {

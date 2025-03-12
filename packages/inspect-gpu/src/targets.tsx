@@ -1,14 +1,19 @@
 import type { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live';
 import type { LambdaSource, TextureSource } from '@use-gpu/core';
 
-import { memo, use, wrap, provide, useFiber, useMemo, useOne } from '@use-gpu/live';
-import { LiveCanvas } from '@use-gpu/react';
-import { wgsl } from '@use-gpu/shader/wgsl';
-import { Pass, FlatCamera, FontLoader, Queue, DeviceContext, getShader, getLambdaSource, QueueReconciler } from '@use-gpu/workbench';
-import { AutoCanvas } from '@use-gpu/webgpu';
-import { UI, Layout, Block, Inline, Text, Overflow, Absolute } from '@use-gpu/layout';
-
 import React from 'react';
+import { memo, use, wrap, provide, useFiber, useMemo, useOne } from '@use-gpu/live';
+
+import { splitCubeTexture } from '@use-gpu/core';
+import { LiveCanvas } from '@use-gpu/react';
+import { AutoCanvas } from '@use-gpu/webgpu';
+import {
+  LinearRGB, Pass, FlatCamera,
+  FontLoader, Queue, QueueReconciler, DeviceContext,
+  getShader, getLambdaSource, getDisplayShader,
+} from '@use-gpu/workbench';
+import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '@use-gpu/layout';
+import { wgsl, chainTo } from '@use-gpu/shader/wgsl';
 
 import { UseInspect } from '@use-gpu/inspect';
 import { inspectGPU } from './index';
@@ -18,7 +23,7 @@ import { decodeOctahedral } from '@use-gpu/wgsl/codec/octahedral.wgsl';
 const {signal} = QueueReconciler;
 
 const SIZE = 512;
-const HEIGHT = SIZE + 24 * 2 + 16;
+const HEIGHT = SIZE + 24 * 2 + 24;
 const IMAGE_FIT = {fit: 'contain', align: 'center', repeat: 'none'};
 
 const NO_OPS: any[] = [];
@@ -205,8 +210,7 @@ const depthShader = wgsl`
     let iuv = vec2<i32>(uv * getSize());
     let depth = getDepth(iuv, 0).x;
 
-    var d = 0.5;
-    if (depth > 0.0) { d = -log(depth); }
+    var d = select(0.5, -log(depth), depth > 0.0);
     return vec4<f32>(fract(d), fract(d * 16.0) * .75, fract(d * 256.0), 1.0);
   }
 `;
@@ -314,14 +318,15 @@ const Inner: LiveComponent<ViewProps> = memo(({canvas, color, picking, depth}: V
     children: [
       wrap(FontLoader,
         wrap(FlatCamera,
-          wrap(Pass,
-            wrap(UI,
-              wrap(Layout,
-                wrap(Absolute, use(Overflow, {
-                  x: 'auto',
-                  direction: 'x',
-                  children: use(TextureViews, {color, picking, depth}),
-                })))))))
+          wrap(LinearRGB,
+            wrap(Pass,
+              wrap(UI,
+                wrap(Layout,
+                  wrap(Absolute, use(Overflow, {
+                    x: 'auto',
+                    direction: 'x',
+                    children: use(TextureViews, {color, picking, depth}),
+                  }))))))))
     ]
   })
 ), 'Inner');
@@ -330,20 +335,22 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
   const {color, picking, depth} = props;
 
   const makeView = (texture: TextureSource | LambdaSource) => {
-    if (texture.history) return texture.history.map(t => makeView(t));
-
-    const {size: [w, h]} = texture;
+    const {size, size: [w, h, d]} = texture;
     const width = w > h ? SIZE : Math.round(w/h * SIZE);
     const height = w > h ? Math.round(h/w * SIZE) : SIZE;
 
     const t = texture as any;
+
+    const label = t.texture?.label ?? t.label;
+    const s = size.join('×');
+
     const parts: string[] = [];
+  
     if (t.layout) parts.push(t.layout);
     if (t.format) parts.push(t.format);
-    parts.push(`${w}×${h}`);
+    if (t.colorSpace) parts.push(t.colorSpace);
 
-    const type = parts.join(' – ');
-    const label = t.label ?? '';
+    const subtype = parts.join(' ');
 
     return (
       use(Block, {
@@ -356,34 +363,89 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
             texture,
             image: IMAGE_FIT,
           }),
-          use(Inline, {
-            children: use(Text, {
-              color: '#ffffff',
-              lineHeight: 24,
-              size: 16,
-              children: type,
-            })
-          }),
-          use(Inline, {
-            children: use(Text, {
-              color: '#ffffff',
-              weight: 'bold',
-              lineHeight: 24,
-              size: 14,
-              children: label,
-            })
-          }),
+          use(Block, {
+            padding: 4,
+            children: [
+              use(Flex, {
+                align: 'justify',
+                children: [
+                  use(Inline, {
+                    children: use(Text, {
+                      color: '#ffffff',
+                      lineHeight: 24,
+                      size: 16,
+                      weight: 'bold',
+                      hint: 'y',
+                      children: label,
+                    })
+                  }),
+                  use(Inline, {
+                    children: use(Text, {
+                      color: '#ffffff',
+                      lineHeight: 24,
+                      size: 16,
+                      hint: 'y',
+                      children: s,
+                    })
+                  }),
+                ],
+              }),
+              use(Inline, {
+                children: use(Text, {
+                  color: '#ffffff',
+                  weight: 'bold',
+                  lineHeight: 24,
+                  size: 14,
+                  hint: 'y',
+                  children: subtype,
+                })
+              }),
+            ],
+          })
         ]
       })
     )
   };
+  
+  const makeViews = (texture: TextureSource) => {
+    const {layout, history} = texture;
+    if (history) return history.flatMap(t => makeViews(t));
+
+    const isCube = layout.match(/cube/);
+    const isDepth = layout.match(/depth/);
+
+    const out = [];
+    if (isCube) {
+
+      let t = {...texture, sampler: {}, variant: 'textureSample'} as any;
+      t = getShader(isDepth ? depthCubeShader : colorCubeShader, [decodeOctahedral, texture]);
+      t = getLambdaSource(t, texture);
+      out.push(makeView(t));
+
+      const faces = splitCubeTexture(texture).map(getDisplayShader);
+      console.log({faces})
+      out.push(faces.map(makeView));
+    }
+    else {
+      const t = getDisplayShader(texture);
+      adoptMeta(t, texture);
+      out.push(makeView(t));
+    }
+
+    return out;
+  };
 
   const colorViews = useMemo(() => {
+    
+    const sources = [...toArray(color), ...toArray(depth)];
+    return sources.flatMap(makeViews);
+    
     const out: LiveElement[] = [];
 
     for (let t of [...toArray(color), ...toArray(depth)]) {
       const {layout, format, size, aspect = 'all'} = t;
 
+      // depth, depth cube, depth array 
       if (layout.match(/depth/) || format.match(/depth/)) {
         t = {
           ...t,
@@ -438,6 +500,8 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
           }
         }
       }
+      
+      // cube map v2
       else if (layout.match(/cube/)) {
         {
           let texture = {...t, sampler: {}, variant: 'textureSample'} as any;
@@ -446,50 +510,19 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
           adoptMeta(texture, t);
           out.push(makeView(texture));
         }
+
+        const faces = splitCubeTexture(t).map(getDisplayShader);
+        out.push(faces.map(makeView));
       }
+
+      // color v2
       else {
-        if (layout.match(/multisampled/)) {
-          console.warn("TODO: inspect multisampled 2d texture");
-        }
-        else if (layout.match(/array/)) {
-          console.warn("TODO: inspect 2d array texture");
-        }
-        else if (format.match(/(8|16|32)uint/)) {
-          t = {
-            ...t,
-            sampler: null,
-            layout: 'texture_2d<u32>',
-            variant: 'textureLoad',
-          };
-
-          let texture = t as any;
-          const bits = +format.match(/[0-9]+/);
-          const shader = (
-            bits === 8 ? uint8Shader :
-            bits === 16 ? uint16Shader :
-            bits === 32 ? uint32Shader :
-            uint32Shader
-          );
-          texture = getShader(shader, [() => size, texture]);
-          texture = getLambdaSource(texture, t);
-          adoptMeta(texture, t);
-          out.push(makeView(texture));
-        }
-        else {
-          t = {
-            ...t,
-            sampler: {},
-            variant: 'textureSample',
-          };
-
-          let texture = t as any;
-          texture = getShader(floatShader, [() => size, texture]);
-          texture = getLambdaSource(texture, t);
-          adoptMeta(texture, t);
-          out.push(makeView(texture));
-        }
+        const texture = getDisplayShader(t);
+        adoptMeta(texture, t);
+        out.push(makeView(texture));
       }
 
+      // stencil
       if (format.match(/stencil/) && aspect !== 'depth-only') {
         t = {
           ...t,
@@ -533,7 +566,8 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
 }, 'TextureViews');
 
 const adoptMeta = (texture: any, t: any) => {
-  texture.format = t.format;
-  texture.layout = t.layout;
-  texture.label  = t.texture?.label ?? t.view?.label;
+  if (!texture.format) texture.format = t.format;
+  if (!texture.layout) texture.layout = t.layout;
+  if (!texture.label) texture.label  = [t.view?.label, t.texture?.label, t.view?.label].filter(s => s?.length).join(' ');
+  if (!texture.colorSpace) texture.colorSpace = t.colorSpace;
 };

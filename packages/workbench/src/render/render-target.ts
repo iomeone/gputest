@@ -26,20 +26,24 @@ const NO_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 export type RenderTargetProps = {
   width?: number,
   height?: number,
+  samples?: number,
+  resolution?: number,
+  overscan?: number,
   history?: number,
-  sampler?: Partial<GPUSamplerDescriptor>,
+
   format?: GPUTextureFormat | null,
   depthStencil?: GPUTextureFormat | null,
+  sampler?: Partial<GPUSamplerDescriptor>,
+  variant?: string,
+  absolute?: boolean,
+
   backgroundColor?: GPUColor,
   blend?: Blending | GPUBlendState | null,
   colorSpace?: ColorSpace,
   colorInput?: ColorSpace,
-  samples?: number,
-  resolution?: number,
-  overscan?: number,
-  variant?: string,
-  absolute?: boolean,
+
   label?: string,
+  hint?: string,
 
   render?: (rttContext: OffscreenRenderContext) => LiveElement,
   children?: LiveElement | ((rttContext: OffscreenRenderContext) => LiveElement),
@@ -73,6 +77,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     variant = 'textureSample',
     absolute = false,
     label,
+    hint,
     children,
     then,
   } = props;
@@ -151,9 +156,11 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
       const texture = makeTargetTexture(device, width, height, 1, depthStencil, samples);
       const attachment = makeDepthStencilAttachment(texture, depthStencil);
+      if (label != null) texture.label = `${label} Depth`;
+      
       return [texture, attachment];
     },
-    [device, width, height, depthStencil, samples]
+    [device, width, height, depthStencil, samples, label]
   );
 
   const [source, depth] = useMemo(() => {
@@ -210,6 +217,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
         size,
         volatile,
         version: 0,
+        hint,
         swap: null as any,
       }) as TextureTarget;
 
@@ -231,10 +239,11 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       absolute,
       size,
       version: 0,
+      hint: 'depth',
     } as TextureSource : undefined;
 
     return [source, depth];
-  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, bufferTextures, bufferViews, colorAttachments, colorSpace, counter, resolveTexture]);
+  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, hint, bufferTextures, bufferViews, colorAttachments, colorSpace, counter, resolveTexture]);
 
   const rttContext = useMemo(() => ({
     ...renderContext,

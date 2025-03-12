@@ -15,8 +15,8 @@ import { useShaderRef } from '../../hooks/useShaderRef';
 import { useDebugContext } from '../../providers/debug-provider';
 import { usePrintContext, useNoPrintContext } from '../../providers/print-provider';
 
-import { useDepthCopy } from '../../pass/depth-copy';
-import { useSampleCopy } from '../../pass/sample-copy';
+import { useDepthSampleCopy } from '../../pass/depth-copy';
+import { useSampleCopy, useSampleCopy2 } from '../../pass/sample-copy';
 
 import { getMotionSample } from '@use-gpu/wgsl/motion/motion-sample.wgsl';
 
@@ -37,7 +37,7 @@ export type SSAODispatchProps = {
   bindPass?: (r: GPURenderPassEncoder) => void,
   globalLayout?: GPUBindGroupLayout,
 
-  mode: 'normal' | 'motion' | 'sample' | 'accum' | 'resolve',
+  mode: 'normal' | 'motion-xy' | 'motion-z' | 'sample' | 'accum' | 'resolve',
   radius: number,
   targetContext: UseGPURenderContext,
   descriptor: GPURenderPassDescriptor,
@@ -61,12 +61,10 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     buffers: {normal, motion, ssao},
   } = usePassContext();
   
-  return null;
-
   const [normalContext] = normal;
   const [motionContext] = motion;
 
-  const [normalTarget, motionTarget, sampleTarget, accumTarget, resolveTarget] = ssao;
+  const [normalTarget, motionXYTarget, motionZTarget, sampleTarget, accumTarget, resolveTarget] = ssao;
   const {pixelRatio} = normalTarget;
 
   const {ssao: ssaoDebug} = useDebugContext();
@@ -122,15 +120,23 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     const loadNormal16 = useShader(downsampleExact2, [loadSourceNormal16, downscaleJitter]);
     const getNormal16 = useTextureUVToXY(loadNormal16, downscaleSize).shader;
 
-    draw = useDepthCopy(targetContext, getDepth, getNormal16, globalLayout);
+    draw = useDepthSampleCopy(targetContext, getDepth, getNormal16, globalLayout);
   }
-  else if (mode === 'motion') {
-    const loadSourceMotion = useTextureAccess(motionContext.source);
-    const loadMotion = useShader(downsampleExact2, [loadSourceMotion, downscaleJitter]);
-    const getMotion = useTextureUVToXY(loadMotion, downscaleSize).shader;
+  else if (mode === 'motion-xy') {
+    const loadSourceMotionXY = useTextureAccess(motionContext.sources[0]);
+    const loadMotionXY = useShader(downsampleExact2, [loadSourceMotionXY, downscaleJitter]);
+    const getMotionXY = useTextureUVToXY(loadMotionXY, downscaleSize).shader;
 
-    draw = useSampleCopy(targetContext, getMotion, globalLayout);
+    draw = useSampleCopy(targetContext, getMotionXY, globalLayout);
   }
+  else if (mode === 'motion-z') {
+    const loadSourceMotionZ = useTextureAccess(motionContext.sources[1]);
+    const loadMotionZ = useShader(downsampleExact2, [loadSourceMotionZ, downscaleJitter]);
+    const getMotionZ = useTextureUVToXY(loadMotionZ, downscaleSize).shader;
+
+    draw = useSampleCopy(targetContext, getMotionZ, globalLayout);
+  }
+  /*
   else if (mode === 'sample') {
     const r = useShaderRef(radius);
     const defs = useOne(() => ({ HAS_DEBUG_PICKING: hasDebugPicking }))
@@ -175,6 +181,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
 
     draw = useSampleCopy(targetContext, getAccum, globalLayout);
   }
+  */
   /*
   else if (mode === 'resolve') {
 

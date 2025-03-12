@@ -42,6 +42,7 @@ export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
       variant: 'textureLoad',
       depthStencil,
       colorSpace: 'linear',
+      hint: 'motion/xy',
     }),
     use(RenderTarget, {
       label: 'MotionBuffer/Z',
@@ -54,11 +55,13 @@ export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
       variant: 'textureLoad',
       depthStencil: null,
       colorSpace: 'linear',
+      hint: 'motion/z',
     }),
   ];
 
   return gather(targets, (targets: OffscreenRenderContext[]) => {
     const motionContext = useCombinedRenderTarget(targets);
+    console.log({motionContext})
     return yeet({
       buffers: { motion: [motionContext] },
     });

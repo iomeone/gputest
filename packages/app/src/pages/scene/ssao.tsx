@@ -108,14 +108,14 @@ export const SceneSSAOPage: LC = (props) => {
           GPUGeometry,
           TextureSource,
         ]) => (
-          <LinearRGB tonemap="aces" gain={2}>
+          <LinearRGB tonemap="aces">
             <Cursor cursor='move' />
             <Camera>
               <Loop live decimate={60}>
               <PrintHelper count={4096}>
                 <Pass lights ssao={2} overscan={16} debug="ssao">
 
-                  <Environment preset="pisa">
+                  <Environment preset="pisa" gain={2}>
                     <Scene>
 
                       <Node position={[0, -2.001, 0]}>

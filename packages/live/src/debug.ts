@@ -203,6 +203,19 @@ export const formatArrayLike = (x: any, seen: WeakMap<object, boolean> = new Wea
   return '[' + out.join(', ') + ']';
 };
 
+export const formatPrototype = (x: any): string => {
+  if (!x) return '' + x;
+  if (typeof x === 'object') {
+    const signature = Object.keys(x).join('/');
+    if (signature === 'f/args/key/by' || signature === 'f/arg/key/by') return formatNode({...x, args: []});
+
+    const proto = x.__proto__ !== Object.prototype ? x.__proto__.constructor.name : null;
+    const label = x.label;
+    return [proto, label].filter(s => s != null).join(' ');
+  }
+  return '';
+}
+
 export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap()): string => {
   if (!x) return '' + x;
   if (Array.isArray(x) || x?.constructor?.name?.match(ARRAY_OR_BUFFER)) {

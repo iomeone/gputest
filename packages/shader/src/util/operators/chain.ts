@@ -54,10 +54,11 @@ export const makeChainTo = (
 
   const fromT = formatFormat(fromFormat, fromType);
   const isVoid = fromT === 'void';
+  const isAuto = fromT === 'auto';
   const restIndex = isVoid ? 0 : 1;
 
   // Return value of `from` must match 1st argument of `to`
-  if (!isVoid && toArgs?.[0] !== fromT) {
+  if (!isAuto && !isVoid && toArgs?.[0] !== fromT) {
     throw new Error(`Type Error: ${fromName} -> ${toName}.\nCannot chain output ${fromT} to args (${toArgs?.join(', ')}).`);
   }
 

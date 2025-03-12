@@ -202,6 +202,7 @@ export const makeResolveBindings = (
 
         // Mutate virtual modules as they are ephemeral
         const namespace = constants?.length ? toNamespace(++index) : undefined;
+        if (DEBUG && namespace) console.log('assign', key, namespace);
         if (!lazy) {
           if (constants?.length) m.virtual.namespace = namespace;
           m.virtual.bindingBase = bindingBase;

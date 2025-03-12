@@ -93,7 +93,7 @@ export const loadVirtualModule = <T extends SymbolTableT = any>(
 // Set entry point of a module, returns new bundle/module.
 // Is the same instance as the original (key = old key/hash), so it merges with copies of itself.
 // But is structurally different (hash = new entry), so differences in links are reflected in the shader hash.
-export const bindEntryPoint = <T extends ParsedBundle | ParsedModule>(bundle: T, entry?: string): T => {
+export const bindEntryPoint = <T extends ParsedBundle | ParsedModule>(bundle: T, entry?: string | null): T => {
   // eslint-disable-next-line prefer-const
   let {name, key, hash, module, table} = bundle as any;
 

@@ -12,7 +12,7 @@ import { QueueReconciler } from '../reconcilers';
 
 import { useInspectable } from '../hooks/useInspectable';
 
-import { getMultiViewShader, getDisplayShader } from './display'; 
+import { getMultiViewShader, getDisplayShader } from '../hooks/useDisplayShader'; 
 import { useSampleCopy } from './sample-copy';
 import { getRenderPassDescriptor } from './util';
 

@@ -42,6 +42,8 @@ const makeAtlasPage = () => makeAtlas(
   SHADOW_PAGE,
 );
 
+const ATLAS_LABEL = 'ShadowMap Atlas';
+
 export const LightCapture = makeCapture<null>('LightCapture');
 
 export type UseLight = (l: Light) => void;
@@ -224,6 +226,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
           1,
           1,
           '2d',
+          ATLAS_LABEL,
         )
       );
 
@@ -236,6 +239,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
         size: [SHADOW_PAGE, SHADOW_PAGE, pages],
         filter: 'comparison',
         version: 0,
+        hint: 'depth',
       } as TextureSource;
 
       return source;

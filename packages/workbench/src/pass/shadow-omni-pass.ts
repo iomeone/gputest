@@ -119,6 +119,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
       size: [s, s, 6],
       format: SHADOW_FORMAT,
       layout: 'texture_depth_cube',
+      hint: 'depth',
       version: 0,
     };
 

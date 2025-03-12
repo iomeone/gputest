@@ -64,7 +64,7 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
     views: {view: {cull, uniforms}},
   } = usePassContext();
 
-  const [normalContext, motionContext, sampleContext, accumContext, resolveContext] = ssao;
+  const [normalContext, motionXYContext, motionZContext, sampleContext, accumContext, resolveContext] = ssao;
   const debugContext = useRenderContext();
 
   const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
@@ -74,9 +74,13 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
     getRenderPassDescriptor(normalContext, {label: 'SSAOPass/NormalDepth'}),
     normalContext);
 
-  const motionPassDescriptor = useOne(() =>
-    getRenderPassDescriptor(motionContext, {label: 'SSAOPass/Motion'}),
-    motionContext);
+  const motionXYPassDescriptor = useOne(() =>
+    getRenderPassDescriptor(motionXYContext, {label: 'SSAOPass/MotionXY'}),
+    motionXYContext);
+
+  const motionZPassDescriptor = useOne(() =>
+    getRenderPassDescriptor(motionZContext, {label: 'SSAOPass/MotionZ'}),
+    motionZContext);
 
   const samplePassDescriptor = useOne(() =>
     getRenderPassDescriptor(sampleContext, {label: 'SSAOPass/Sample'}),
@@ -99,9 +103,15 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
     }),
     use(SSAODispatch, {
       ...ssaoOptions,
-      mode: 'motion',
-      targetContext: motionContext,
-      descriptor: motionPassDescriptor,
+      mode: 'motion-xy',
+      targetContext: motionXYContext,
+      descriptor: motionXYPassDescriptor,
+    }),
+    use(SSAODispatch, {
+      ...ssaoOptions,
+      mode: 'motion-z',
+      targetContext: motionZContext,
+      descriptor: motionZPassDescriptor,
     }),
     use(SSAODispatch, {
       ...ssaoOptions,
@@ -149,7 +159,8 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
           color: [
             normalContext.source,
             normalContext.depth,
-            motionContext.source,
+            motionXYContext.source,
+            motionZContext.source,
             sampleContext.source,
             accumContext.source,
             resolveContext.source,

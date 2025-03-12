@@ -4,7 +4,7 @@ import type { OffscreenRenderContext, TextureTarget } from '@use-gpu/core';
 import { use, gather, yeet, memo } from '@use-gpu/live';
 import { makeColorAttachment, makeColorState, makeDepthStencilState, makeDepthTexture, makeDepthStencilAttachment, makeTargetTexture } from '@use-gpu/core';
 
-import { RenderTarget, useCombinedRenderTarget } from '../render-target';
+import { RenderTarget } from '../render-target';
 
 import { useDeviceContext } from '../../providers/device-provider';
 
@@ -47,28 +47,28 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
       depthStencil,
       colorSpace: 'linear',
     }),
-    gather([
-      use(RenderTarget, {
-        label: 'SSAO/Motion',
-        resolution,
-        samples,
-        sampler: null,
-        format: motionFormats[0],
-        variant: 'textureLoad',
-        depthStencil: null,
-        colorSpace: 'linear',
-      }),
-      use(RenderTarget, {
-        label: 'SSAO/Motion',
-        resolution,
-        samples,
-        sampler: null,
-        format: motionFormats[1],
-        variant: 'textureLoad',
-        depthStencil: null,
-        colorSpace: 'linear',
-      }),
-    ], (targets: OffscreenRenderContext[]) => yeet(useCombinedRenderTarget(targets))),
+    use(RenderTarget, {
+      label: 'SSAO/MotionXY',
+      resolution,
+      samples,
+      sampler: null,
+      format: motionFormats[0],
+      variant: 'textureLoad',
+      depthStencil: null,
+      colorSpace: 'linear',
+      hint: 'motion/xy',
+    }),
+    use(RenderTarget, {
+      label: 'SSAO/MotionZ',
+      resolution,
+      samples,
+      sampler: null,
+      format: motionFormats[1],
+      variant: 'textureLoad',
+      depthStencil: null,
+      colorSpace: 'linear',
+      hint: 'motion/z',
+    }),
     use(RenderTarget, {
       label: 'SSAO/Sample',
       resolution,

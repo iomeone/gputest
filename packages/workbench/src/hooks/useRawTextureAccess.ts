@@ -11,6 +11,7 @@ import { getSource } from './useSource';
 
 import { getUnfiltered, getUnfilteredOffset } from '@use-gpu/wgsl/texture/unfiltered.wgsl';
 import { loadTextureLevel } from '@use-gpu/wgsl/texture/level.wgsl';
+import { loadTextureIndexLevel } from '@use-gpu/wgsl/texture/level-index.wgsl';
 import { textureUVToXY, textureUVToXYOffset } from '@use-gpu/wgsl/texture/raw.wgsl';
 
 export const useRawTextureAccess = (
@@ -40,23 +41,31 @@ export const getRawTextureAccess = (
 export const useTextureAccess = (
   texture: TextureSource,
   level: Lazy<number> | ShaderModule | null,
-) => useMemo(() => getTextureAccess(texture, level), [texture, level]);
+  index: Lazy<number> | ShaderModule | null,
+) => useMemo(() => getTextureAccess(texture, level, index), [texture, level, index]);
 
 export const getTextureAccess = (
   texture: TextureSource,
   level: Lazy<number> | ShaderModule | null,
+  index: Lazy<number> | ShaderModule | null,
 ) => {
   const l = level ? getSource({ name: 'level', format: 'u32', args: [] }, level) : null;
+  const i = index ? getSource({ name: 'index', format: 'u32', args: [] }, index) : null;
   const t = proxy(texture, { variant: 'textureLoad', sampler: null });
 
-  const {format} = texture;
+  const {layout, format} = texture;
   const type = TEXTURE_SAMPLE_TYPES[format];
+
   const f = format.match(/depth/) ? type : `vec4<${type}>`;
+  const isArray = !!layout.match(/array/);
 
-  const load = getSource({ name: 'textureAccess', format: f, args: ['vec2<u32>', 'u32'] }, t);
-  const bound = getShader(loadTextureLevel, [load, l]);
+  const args = isArray ? ['vec2<u32>', 'u32', 'u32'] : ['vec2<u32>', 'u32'];
 
-  return getLambdaSource(bound, texture);
+  let load = getSource({ name: 'textureAccess', format: f, args }, t);
+  if (isArray) load = getShader(loadTextureIndexLevel, [load, i]);
+  load = getShader(loadTextureLevel, [load, l]);
+
+  return getLambdaSource(load, texture);
 };
 
 export const useTextureUVToXY = (

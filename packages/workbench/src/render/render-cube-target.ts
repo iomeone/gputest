@@ -28,18 +28,22 @@ const NO_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 export type RenderCubeTargetProps = {
   width?: number,
   history?: number,
-  sampler?: Partial<GPUSamplerDescriptor>,
+  samples?: number,
+  resolution?: number,
+
   format?: GPUTextureFormat | null,
   depthStencil?: GPUTextureFormat | null,
+  sampler?: Partial<GPUSamplerDescriptor>,
+  variant?: string,
+  absolute?: boolean,
+
   backgroundColor?: GPUColor,
   blend?: Blending | GPUBlendState | null,
   colorSpace?: ColorSpace,
   colorInput?: ColorSpace,
-  samples?: number,
-  resolution?: number,
-  variant?: string,
-  absolute?: boolean,
+
   label?: string,
+  hint?: string,
 
   render?: (rttContext: OffscreenRenderContext) => LiveElement,
   children?: LiveElement | ((rttContext: OffscreenRenderContext) => LiveElement),
@@ -71,6 +75,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
     variant = 'textureSample',
     absolute = false,
     label,
+    hint,
     children,
     then,
   } = props;
@@ -163,6 +168,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
 
       const layers = samples > 1 ? 1 : 6;
       const texture = makeTargetTexture(device, width, height, layers, depthStencil, samples);
+      if (label != null) texture.label = `${label} Depth`;
 
       const [attachment] = makeDepthStencilAttachments(texture, depthStencil, 1);
       const attachments = samples > 1
@@ -171,7 +177,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
 
       return [texture, attachments];
     },
-    [device, width, height, depthStencil, samples]
+    [device, width, height, depthStencil, samples, label]
   );
 
   const viewAttachments = useMemo(() => {
@@ -241,6 +247,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
         size,
         volatile,
         version: 0,
+        hint,
         swap: null as any,
       }) as TextureTarget;
 
@@ -262,10 +269,11 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
       absolute,
       size,
       version: 0,
+      hint: 'depth',
     } as TextureSource : null;
 
     return [source, depth];
-  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, bufferLayers, bufferTextures, bufferViews, colorSpace, counter, resolveTexture, viewAttachments]);
+  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, hint, bufferLayers, bufferTextures, bufferViews, colorSpace, counter, resolveTexture, viewAttachments]);
 
   const rttContext = useMemo(() => ({
     ...renderContext,
