@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren } from 'react';
+import React, { FC, PropsWithChildren, useLayoutEffect, useRef, useState } from 'react';
 import { styled as _styled } from '@stitches/react';
 
 // TODO: TS nightly issue?
@@ -93,14 +93,14 @@ export const TreeRow: FC<TreeIndentProps> = ({ indent, children }: TreeIndentPro
 );
 
 export const TreeRowOmitted: FC<TreeIndentProps> = ({ indent, children }: TreeIndentProps) => (
-  <TreeRowOmittedChunk css={{
-    paddingLeft: indent ? `${indent * 20}px` : 0,
-  }}>
-    <div style={{height: 0}}>{children}</div>
+  <TreeRowOmittedChunk>
+    {children ? <TreeRowAvoidOverlap indent={(indent || 0) * 20}>{children}</TreeRowAvoidOverlap> : null}
   </TreeRowOmittedChunk>
 );
 
 export const TreeRowOmittedChunk = styled('div', {
+  display: 'flex',
+  pointerEvents: 'none',
   height: 20,
   paddingBottom: 20,
   '& + &': {
@@ -111,5 +111,43 @@ export const TreeRowOmittedChunk = styled('div', {
 const TreeRowInner = styled('div', {
   display: 'flex',
   height: '20px',
-  clear: 'left',
 });
+
+const TreeRowOmittedInner = styled('div', {
+  display: 'flex',
+  height: 17,
+});
+
+type TreeRowAvoidOverlapProps = {
+  indent: number,
+};
+
+export const TreeRowAvoidOverlap: FC<TreeRowAvoidOverlapProps> = ({ indent, children }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const {current: el} = ref;
+    if (!el) return;
+    
+    const parent = el.parentElement;
+    let sib = parent;
+    while (sib = sib.previousElementSibling) {
+      if (sib.children.length) break;
+    }
+
+    const previous = sib?.children[0];
+    if (!previous) return;
+
+    const parentRect = parent.getBoundingClientRect();
+    const selfRect = el.getBoundingClientRect();
+    const previousRect = previous.getBoundingClientRect();
+    
+    let maxIndent = indent;
+    if (selfRect.top === previousRect.top) {
+      maxIndent = Math.max(indent, Math.round(previousRect.right - parentRect.left));
+    }    
+    el.style.marginLeft = `${maxIndent}px`;
+  }, []);
+  
+  return <TreeRowOmittedInner ref={ref} style={{marginLeft: indent}}>{children}</TreeRowOmittedInner>;
+};
