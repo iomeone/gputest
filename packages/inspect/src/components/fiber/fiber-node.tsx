@@ -5,34 +5,20 @@ import { isSubNode, DEBUG, RECONCILE } from '@use-gpu/live';
 
 import React, { memo, useMemo, useLayoutEffect, useRef, PropsWithChildren } from 'react';
 
-import { usePingTracker, usePingContext } from '../providers/ping-provider';
-import { Node } from './node';
-import { ReactNode } from './react-node';
-import { ExpandState } from './types';
+import { Expandable } from '../containers/expandable';
+import { usePingTracker, usePingContext } from '../../providers/ping-provider';
+import { TreeExpand } from '../tree/tree-expand';
+import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendColumns,  TreeLegendGroup, TreeRowOmitted, TreeLegendItem } from '../tree/tree-layout';
+import { ExpandState } from '../types';
 
-import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendColumns, TreeLegendGroup, TreeRowOmitted, TreeLegendItem, Muted, InlineButton } from './layout';
-import { Expandable } from './expandable';
+import { Muted, InlineButton } from '../layout';
+import { IconItem, SVGNextOpen, SVGNextClosed } from '../svg';
 
-import { IconItem, SVGChevronDown, SVGChevronLeft, SVGChevronRight, SVGNextOpen, SVGNextClosed, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute } from './svg';
+import { FiberBadge } from './fiber-badge';
+import { FiberBadgeReact } from './fiber-badge-react';
+import { getFiberTags } from './tag';
 
-type FiberTreeProps = {
-  state: InspectState,
-  api: InspectAPI,
-  fiber: LiveFiber<any>,
-  skipDepth: number,
-  depthLimit: number,
-  runCounts: boolean,
-  builtins: boolean,
-  highlight: boolean,
-  legend: boolean,
-}
-
-type FiberNavProps = {
-  state: InspectState,
-  api: InspectAPI,
-};
-
-type FiberNodeProps = {
+export type FiberNodeProps = {
   state: InspectState,
   api: InspectAPI,
   fiber: LiveFiber<any>,
@@ -42,6 +28,7 @@ type FiberNodeProps = {
   skipDepth?: number,
   focusDepth?: number,
   renderDepth?: number,
+  filterTags?: number,
   depthLimit?: number,
   runCounts?: boolean,
   builtins?: boolean,
@@ -52,19 +39,12 @@ type FiberNodeProps = {
   indented?: number,
 }
 
-type FiberReactNodeProps = {
+export type FiberReactNodeProps = {
   reactNode: any,
   expandedCursor: Cursor<ExpandState>,
   indent?: number,
   first?: boolean,
 }
-
-type TreeExpandProps = PropsWithChildren<{
-  expand: boolean,
-  onToggle: (e: any) => void,
-  openIcon?: any,
-  closedIcon?: any,
-}>;
 
 // Get rendered-by depth by tracing `by` props up the tree
 const getRenderDepth = (fibers: Map<number, LiveFiber<any>>, fiber: LiveFiber<any>) => {
@@ -81,161 +61,6 @@ const getRenderDepth = (fibers: Map<number, LiveFiber<any>>, fiber: LiveFiber<an
   return renderDepth;
 };
 
-export const FiberNav: React.FC<FiberNavProps> = (props: FiberNavProps) => {
-  const {api: {focusFiber}, state: {focusedCursor}} = props;
-  const [focusState] = focusedCursor();
-  const back = focusState ? (
-    <TreeBanner>
-      <InlineButton className="icon-left" onClick={() => focusFiber(null)}>
-        <IconItem top={0}><SVGChevronLeft /></IconItem> Back to root
-      </InlineButton>
-    </TreeBanner>
-  ) : null;
-  return back;
-};
-
-// Legend at bottom of fiber tree
-export const FiberLegend: React.FC = () => {
-  const makeFiber = (name: string) => {
-    const f = (() => {}) as any;
-    const fiber = {f, id: 0, by: 1} as any;
-    f.displayName = name;
-    return fiber;
-  };
-
-  const fiber = makeFiber(' ');
-
-  return (<>
-    <TreeLegend><div>
-      <TreeLegendColumns>
-        <TreeLegendGroup>
-          <TreeLegendItem>
-            <Node
-              fiber={fiber}
-              staticMount={true}
-            />
-            <span>Mounted</span>
-          </TreeLegendItem>
-          <TreeLegendItem>
-            <Node
-              fiber={fiber}
-              staticPing={true}
-            />
-            <span>Updated</span>
-          </TreeLegendItem>
-          <TreeLegendItem>
-            <Node
-              fiber={fiber}
-              parents={true}
-            />
-            <span>Rendered By</span>
-          </TreeLegendItem>
-
-          <TreeLegendItem>
-            <Node
-              fiber={fiber}
-              depends={true}
-            />
-            <span>Dependency</span>
-          </TreeLegendItem>
-          <TreeLegendItem>
-            <Node
-              fiber={fiber}
-              quoted={true}
-            />
-            <span>Portal</span>
-          </TreeLegendItem>
-        </TreeLegendGroup>
-
-        <TreeLegendGroup>
-          <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGHighlightElement /></IconItem>
-            <span>Highlight</span>
-          </TreeLegendItem>
-
-          <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGYeet /></IconItem>
-            <span>Yeet</span>
-          </TreeLegendItem>
-
-          <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGQuote /></IconItem>
-            <span>Quote</span>
-          </TreeLegendItem>
-
-          <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGAtom /></IconItem>
-            <span>React</span>
-          </TreeLegendItem>
-        </TreeLegendGroup>
-
-        <TreeLegendGroup>
-          <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGViewOutput /></IconItem>
-            <span>Output</span>
-          </TreeLegendItem>
-
-          <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGDashboard /></IconItem>
-            <span>Layout</span>
-          </TreeLegendItem>
-
-          <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGCompute /></IconItem>
-            <span>Compute</span>
-          </TreeLegendItem>
-
-          <TreeLegendItem>
-            <IconItem gap={-5} top={-2}><SVGRaster /></IconItem>
-            <span>Raster</span>
-          </TreeLegendItem>
-
-        </TreeLegendGroup>
-      </TreeLegendColumns>
-      <TreeTip><Muted>Double click to focus a sub-tree</Muted></TreeTip>
-    </div></TreeLegend>
-  </>)
-};
-
-// Fiber tree including legend
-export const FiberTree: React.FC<FiberTreeProps> = ({
-  state,
-  api,
-  fiber,
-  skipDepth,
-  depthLimit,
-  runCounts,
-  builtins,
-  highlight,
-  legend,
-}) => {
-  const {fibers} = usePingContext();
-  const by = fibers.get(fiber.by);
-  const [focusedId] = state.focusedCursor();
-
-  const Wrap = legend ? TreeWrapperWithLegend : TreeWrapper;
-
-  return (
-    <Wrap style={{paddingTop: focusedId ? 0 : undefined}}>
-      <FiberNode
-        state={state}
-        api={api}
-        by={by}
-        fiber={fiber}
-        fibers={fibers}
-        renderDepth={0}
-        skipDepth={skipDepth}
-        focusDepth={0}
-        depthLimit={depthLimit}
-        runCounts={runCounts}
-        builtins={builtins}
-        highlight={highlight}
-      />
-      {(legend ?? true) ? <FiberLegend /> : null}
-    </Wrap>
-  );
-}
-
 // One node in the tree
 export const FiberNode: React.FC<FiberNodeProps> = memo(({
   state,
@@ -245,6 +70,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   focusDepth = 0,
   skipDepth = 0,
   renderDepth = 0,
+  filterTags = 0,
   depthLimit = Infinity,
   runCounts = false,
   builtins = false,
@@ -303,9 +129,11 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   renderDepth = getRenderDepth(fibers, fiber) ?? renderDepth;
 
   // Resolve node omission
+  const isFilteredOut = filterTags != 0 && !(getFiberTags(fiber) & filterTags);
   const isFocused = !!focusDepth || ((focusState != null) ? fiber.id === focusState : true);
   const isBuiltin = !builtins && (fiber.f?.isLiveBuiltin || fiber.f?.isLiveReconcile) && (fiber.f !== RECONCILE);
   const isVisible = (
+    !isFilteredOut &&
     isFocused &&
     !skipDepth &&
     (renderDepth < depthLimit)
@@ -355,8 +183,8 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   }
 
   // Render node itself
-  const nodeRender = (shouldRender || shouldAbsolute) ? (
-    <Node
+  const badgeRender = (shouldRender || shouldAbsolute) ? (
+    <FiberBadge
       key={id}
       fiber={fiber}
       selected={selected}
@@ -377,7 +205,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
       absolute={!!shouldAbsolute}
     />
   ) : null;
-  //if (shouldAbsolute) nodeRender = <div style={{position: 'absolute'}}>{nodeRender}</div>;
+  //if (shouldAbsolute) badgeRender = <div style={{position: 'absolute'}}>{badgeRender}</div>;
 
   // Render single child
   if (mount) {
@@ -391,6 +219,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
         skipDepth={skipDepth && (skipDepth - 1)}
         focusDepth={isFocused ? focusDepth + 1 : 0}
         renderDepth={renderDepth}
+        filterTags={filterTags}
         depthLimit={depthLimit}
         runCounts={runCounts}
         builtins={builtins}
@@ -417,6 +246,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
             skipDepth={skipDepth && (skipDepth - 1)}
             focusDepth={isFocused ? focusDepth + 1 : 0}
             renderDepth={renderDepth}
+            filterTags={filterTags}
             depthLimit={depthLimit}
             runCounts={runCounts}
             builtins={builtins}
@@ -472,6 +302,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
         skipDepth={skipDepth && (skipDepth - 1)}
         focusDepth={isFocused ? focusDepth + 1 : 0}
         renderDepth={renderDepth}
+        filterTags={filterTags}
         depthLimit={depthLimit}
         runCounts={runCounts}
         builtins={builtins}
@@ -489,7 +320,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   if (!shouldRender && !shouldTerminate) {
     if (skipDepth) return childRender;
     return (<>
-      <TreeRowOmitted indent={indent + 1}>{nodeRender}</TreeRowOmitted>
+      <TreeRowOmitted indent={indent + 1}>{badgeRender}</TreeRowOmitted>
       {childRender}
       {nextRender}
     </>);
@@ -508,7 +339,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
         (expand, onToggle) => (<>
           <TreeRow indent={indent}>
             <TreeExpand expand={expand} onToggle={onToggle} openIcon={openIcon} closedIcon={closedIcon}>
-              {nodeRender}
+              {badgeRender}
             </TreeExpand>
           </TreeRow>
           {expand !== false ? childRender : null}
@@ -523,28 +354,11 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   return (<>
     <TreeRow indent={indent + 1 - +!!continuation}>
       {continuation ? <Muted>{continuationIcon}</Muted> : null}
-      {nodeRender}
+      {badgeRender}
     </TreeRow>
     {nextRender}
   </>);
 });
-
-export const TreeExpand: React.FC<TreeExpandProps> = ({
-  expand,
-  onToggle,
-  children,
-  openIcon = <SVGChevronDown />,
-  closedIcon = <SVGChevronRight />,
-}) => {
-  const icon = <IconItem>{expand !== false ? openIcon : closedIcon}</IconItem>;
-
-  return (<>
-    <TreeRow>
-      <TreeToggle onClick={onToggle}>{icon}</TreeToggle>
-      {children}
-    </TreeRow>
-  </>);
-}
 
 export const FiberReactNode: React.FC<FiberReactNodeProps> = memo(({
   reactNode,
@@ -552,7 +366,7 @@ export const FiberReactNode: React.FC<FiberReactNodeProps> = memo(({
   first = false,
   indent = 0,
 }) => {
-  const nodeRender = <ReactNode reactNode={reactNode} root={first} />;
+  const badgeRender = <FiberBadgeReact reactNode={reactNode} root={first} />;
 
   const {child, sibling, _debugID} = reactNode;
 
@@ -569,7 +383,7 @@ export const FiberReactNode: React.FC<FiberReactNodeProps> = memo(({
         (expand, onToggle) => (<>
           <TreeRow indent={indent}>
             <TreeExpand expand={expand} onToggle={onToggle}>
-              {nodeRender}
+              {badgeRender}
             </TreeExpand>
           </TreeRow>
           {expand !== false ? childRender : null}
@@ -581,7 +395,7 @@ export const FiberReactNode: React.FC<FiberReactNodeProps> = memo(({
 
   return (<>
     <TreeRow indent={indent + 1}>
-      {nodeRender}
+      {badgeRender}
     </TreeRow>
     {siblingRender}
   </>);

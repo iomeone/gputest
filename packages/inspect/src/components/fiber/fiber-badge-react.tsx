@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react';
 
-type ReactNodeProps = {
+type FiberBadgeReactProps = {
   reactNode: any,
   root?: boolean,
 };
 
 const INSPECT_STYLE = '5px solid rgba(76, 229, 255, 1)';
 
-export const ReactNode: React.FC<ReactNodeProps> = ({
+export const FiberBadgeReact: React.FC<FiberBadgeReactProps> = ({
   reactNode,
   root,
 }) => {

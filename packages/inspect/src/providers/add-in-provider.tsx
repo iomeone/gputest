@@ -1,11 +1,12 @@
 import type { InspectAddIns, InspectExtension } from '../components/types';
 import React, { createContext, useContext, PropsWithChildren } from 'react';
 
-import { Props } from '../components/panels/props';
-import { Call } from '../components/panels/call';
-import { Layout } from '../components/panels/layout';
+import { Props } from '../components/tabs/props';
+import { Call } from '../components/tabs/call';
+import { Layout } from '../components/tabs/layout';
 
-import { IconRow, SVGDashboard } from '../components/svg';
+import { IconItem, SVGDashboard, SVGNextClosed, SVGHighlightElement } from '../components/svg';
+import { FiberTag } from '../components/types';
 
 const AddInContext = createContext<InspectAddIns>({
   props: [],
@@ -25,23 +26,37 @@ export const useAddIns = () => useContext(AddInContext);
 export const defaultPanels: InspectExtension = (): InspectAddIns => ({
   props: [
     {
-      id: 'props',
-      label: <span>Props</span>,
+      key: 'props',
+      label: 'Props',
       enabled: () => true,
       render: (fiber, fibers, api) => <Props fiber={fiber} fibers={fibers} api={api} />,
     },
     {
-      id: 'fiber',
-      label: <span>Fiber</span>,
+      key: 'fiber',
+      label: 'Fiber',
       enabled: () => true,
       render: (fiber) => <Call fiber={fiber} />,
     },
     {
-      id: 'layout',
-      label: <span>Layout <IconRow><SVGDashboard /></IconRow></span>,
+      key: 'layout',
+      label: 'Layout',
+      icon: <SVGDashboard />,
       enabled: (fiber) => fiber.__inspect?.layout,
       render: (fiber) => <Layout fiber={fiber} />,
     },
   ],
   prop: [],
+  filters: [
+    {
+      key: FiberTag.Reconcile,
+      label: 'Reconcile',
+      icon: <SVGNextClosed />,
+    },
+    {
+      key: FiberTag.Highlight,
+      label: 'Highlight',
+      icon: <SVGHighlightElement />,
+    },
+  ],
 });
+

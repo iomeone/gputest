@@ -1,13 +1,15 @@
 import type { LiveFiber } from '@use-gpu/live';
 
-import { formatNodeName, YEET, QUOTE, SIGNAL } from '@use-gpu/live';
+import { formatNodeName } from '@use-gpu/live';
 
-import React, { useCallback } from 'react';
-import { usePingTracker } from '../providers/ping-provider';
-import { Muted } from './layout';
-import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute } from './svg';
+import React, { forwardRef, useCallback } from 'react';
+import { usePingTracker } from '../../providers/ping-provider';
+import { Muted } from '../layout';
+import { getFiberTags } from '../fiber/tag';
+import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute } from '../svg';
+import { FiberTag } from '../types';
 
-type NodeProps = {
+type FiberBadgeProps = {
   fiber: LiveFiber<any>,
   pinged?: number,
   staticPing?: boolean,
@@ -29,7 +31,7 @@ type NodeProps = {
   onMouseLeave?: (e: any) => void,
 };
 
-export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
+export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   fiber,
   staticPing,
   staticMount,
@@ -51,13 +53,16 @@ export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
 }, ref) => {
   const {id, by, f, type, __inspect} = fiber;
 
-  const quote = type === QUOTE || type === SIGNAL;
-  const yeet = type === YEET;
-  const react = !!__inspect?.react;
-  const output = !!__inspect?.output;
-  const layout = !!__inspect?.layout;
-  const raster = !!__inspect?.vertex || !!__inspect?.fragment;
-  const compute = !!__inspect?.compute;
+  const tags = getFiberTags(fiber);
+  
+  const quote = tags & FiberTag.Quote;
+  const yeet = tags & FiberTag.Yeet;
+  const react = tags & FiberTag.React;
+  const output = tags & FiberTag.Output;
+  const layout = tags & FiberTag.Layout;
+  const raster = tags & FiberTag.Raster;
+  const compute = tags & FiberTag.Compute;
+  const hover = tags & FiberTag.Hover;
 
   const suffix1 = yeet ? <SVGYeet key="yeet" title="Yeet" /> : null;
   const suffix2 = react ? <SVGAtom key="atom" title="React" /> : null;

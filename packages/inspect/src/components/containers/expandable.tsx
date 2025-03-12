@@ -1,15 +1,15 @@
-import React, { useCallback } from 'react';
+import React, { FC, ReactElement, useCallback } from 'react';
 import type { Cursor } from '@use-gpu/state';
-import type { ExpandState } from './types';
+import type { ExpandState } from '../types';
 
-type ExpandableProps = {
+export type ExpandableProps = {
   id: string | number,
   initialValue: boolean,
   expandedCursor: Cursor<ExpandState>,
-  children: (expand: boolean, onClick: (e: any) => void) => React.ReactElement,
+  children: (expand: boolean, onClick: (e: any) => void) => ReactElement,
 }
 
-export const Expandable: React.FC<ExpandableProps> = ({id, initialValue, expandedCursor, children}) => {
+export const Expandable: FC<ExpandableProps> = ({id, initialValue, expandedCursor, children}) => {
   const [expand = initialValue, updateExpand] = expandedCursor[id]();
 
   const onClick = useCallback((e: any) => {

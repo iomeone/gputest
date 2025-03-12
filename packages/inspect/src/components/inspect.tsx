@@ -1,5 +1,5 @@
 import type { LiveFiber } from '@use-gpu/live';
-import type { ExpandState, SelectState, HoverState, OptionState, FocusState, InspectAPI } from './types';
+import type { ExpandState, SelectState, HoverState, OptionsState, FocusState, InspectAPI } from './types';
 
 import { YEET } from '@use-gpu/live';
 import { useUpdateState, useCursor } from '@use-gpu/state/react';
@@ -11,13 +11,17 @@ import { makeUseLocalState } from '../hooks/useLocalState';
 import { PingProvider, usePingContext } from '../providers/ping-provider';
 import { useAppearance } from '../providers/appearance-provider';
 
-import { FiberTree, FiberNav } from './fiber';
-import { Options } from './options';
-import { Panels } from './panels';
+import { FiberTree } from './fiber/fiber-tree';
+import { ToolbarFilter } from './toolbar/toolbar-filter';
+import { ToolbarNav } from './toolbar/toolbar-nav';
+import { SidebarPanel, ToolbarRow } from './panels/panels-layout';
+
+import { ToolbarOptions } from './toolbar/toolbar-options';
+import { Panels } from './panels/panels';
 import { Resizer } from './resizer';
 import { IconItem, SVGInspect, SVGClose } from './svg';
 import {
-  InspectContainer, InspectToggle, Button, TreeControls, TreeView,
+  InspectContainer, InspectToggle, Button,
   RowPanel, PanelAbsolute, PanelScrollable, InsetColumnFull,
 } from './layout';
 
@@ -34,6 +38,7 @@ const INITIAL_STATE = {
   tab: 'props',
   splitLeft: 33,
   splitBottom: 50,
+  filterTags: 248,
 };
 
 type InspectProps = {
@@ -42,7 +47,7 @@ type InspectProps = {
   onInspect?: (b: boolean) => void,
 
   findFiber?: number,
-  initialState?: Partial<OptionState>,
+  initialState?: Partial<OptionsState>,
   save?: boolean,
 }
 
@@ -60,7 +65,7 @@ export const Inspect: React.FC<InspectProps> = ({
 
   const expandedCursor = useCursor(useUpdateState<ExpandState>({}));
   const selectedCursor = useCursor(useUpdateState<SelectState>(null));
-  const optionCursor = useCursor(useUpdateState<OptionState>(
+  const optionsCursor = useCursor(useUpdateState<OptionsState>(
     {
       ...INITIAL_STATE,
       ...initialState,
@@ -80,26 +85,28 @@ export const Inspect: React.FC<InspectProps> = ({
     selectedCursor,
     hoveredCursor,
     focusedCursor,
-  }), [expandedCursor, selectedCursor, hoveredCursor, focusedCursor]);
+    optionsCursor,
+  }), [expandedCursor, selectedCursor, hoveredCursor, focusedCursor, optionsCursor]);
 
   // eslint-disable-next-line prefer-const
   let [selectedFiber, updateSelected] = selectedCursor();
 
-  const [depthLimit] = optionCursor.depth();
-  const [runCounts] = optionCursor.counts();
-  const [fullSize] = optionCursor.fullSize();
-  const [builtins] = optionCursor.builtins();
-  const [highlight] = optionCursor.highlight();
-  const [tab, updateTab] = optionCursor.tab();
-  const [splitLeft, setSplitLeft] = optionCursor.splitLeft();
-  const [splitBottom, setSplitBottom] = optionCursor.splitBottom();
-  const [, updateInspect] = optionCursor.inspect();
+  const [filterTags] = optionsCursor.filterTags();
+  const [depthLimit] = optionsCursor.depth();
+  const [runCounts] = optionsCursor.counts();
+  const [fullSize] = optionsCursor.fullSize();
+  const [builtins] = optionsCursor.builtins();
+  const [highlight] = optionsCursor.highlight();
+  const [tab, updateTab] = optionsCursor.tab();
+  const [splitLeft, setSplitLeft] = optionsCursor.splitLeft();
+  const [splitBottom, setSplitBottom] = optionsCursor.splitBottom();
+  const [, updateInspect] = optionsCursor.inspect();
   const [{fiber: hoveredFiber}, updateHovered] = hoveredCursor();
   const [focusedId, updateFocused] = focusedCursor();
 
   if (!select) selectedCursor()[1] = updateSelected = NOP;
 
-  const [open, updateOpen] = optionCursor.open();
+  const [open, updateOpen] = optionsCursor.open();
   const toggleOpen = () => updateOpen(!open);
   const toggleInspect = useCallback(() => {
     updateInspect($apply(s => {
@@ -177,27 +184,29 @@ export const Inspect: React.FC<InspectProps> = ({
     return {selectFiber, focusFiber, hoverFiber, makeHandlers};
   }, [rootId, updateSelected, updateFocused, updateHovered]);
 
-  const tree = (
+  const sidebar = (
     <InsetColumnFull>
       {(toolbar ?? true)  ? (
-        <TreeControls>
-          <Options cursor={optionCursor} toggleInspect={onInspect && toggleInspect} />
-        </TreeControls>
+        <ToolbarRow>
+          <ToolbarOptions cursor={optionsCursor} toggleInspect={onInspect && toggleInspect} />
+        </ToolbarRow>
       ) : null}
-      <FiberNav state={state} api={api} />
-      <TreeView key={focusedId} onClick={() => updateSelected(null)} onDoubleClick={() => updateFocused(null)}>
+      <ToolbarFilter state={state} api={api} />
+      <ToolbarNav state={state} api={api} />
+      <SidebarPanel key={focusedId} onClick={() => updateSelected(null)} onDoubleClick={() => updateFocused(null)}>
         <FiberTree
           state={state}
           api={api}
           fiber={fiber}
           legend={legend}
           skipDepth={skip}
-          depthLimit={depthLimit}
+          depthLimit={filterTags ? undefined : depthLimit}
+          filterTags={filterTags}
           runCounts={runCounts}
           builtins={builtins}
           highlight={highlight}
         />
-      </TreeView>
+      </SidebarPanel>
     </InsetColumnFull>
   );
 
@@ -220,7 +229,7 @@ export const Inspect: React.FC<InspectProps> = ({
                 ? {position: 'relative', flexGrow: 1, minHeight: 0}
                 : {position: 'relative', width: splitLeft + '%', borderRight: '1px solid var(--LiveInspect-borderThin'}}>
               <PanelAbsolute>
-                {tree}
+                {sidebar}
               </PanelAbsolute>
               {resize && !fullSize ? <Resizer side="right" value={splitLeft} onChange={setSplitLeft} /> : null}
             </RowPanel>

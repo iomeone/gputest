@@ -1,5 +1,5 @@
 import type { LiveFiber, LC, PropsWithChildren } from '@use-gpu/live';
-import type { InspectExtension, InspectAppearance, OptionState } from './components/types';
+import type { InspectExtension, InspectAppearance, OptionsState } from './components/types';
 import { fragment, use, useFiber, useMemo, useOne, useState } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
 
@@ -18,7 +18,7 @@ export type UseInspectProps = PropsWithChildren<{
   extensions?: InspectExtension[],
 
   findFiber?: number,
-  initialState?: Partial<OptionState>,
+  initialState?: Partial<OptionsState>,
   save?: boolean,
 }>;
 

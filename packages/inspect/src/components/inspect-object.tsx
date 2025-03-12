@@ -1,7 +1,8 @@
 import React, { FC, useRef } from 'react';
 
 import { formatPrototype, formatValue } from '@use-gpu/live';
-import { SplitRow, TreeRow, TreeIndent, Label, Selectable } from './layout';
+import { TreeRow, TreeIndent } from './tree/tree-layout';
+import { SplitRow, Label, Selectable } from './layout';
 import { IconItem, SVGChevronDown, SVGChevronRight } from './svg';
 import { useAddIns } from '../providers/add-in-provider';
 

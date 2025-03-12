@@ -1,18 +1,18 @@
 import React from 'react';
 import { Cursor } from '@use-gpu/state';
-import { SmallButton, OptionsContainer, Spacer } from './layout';
-import { OptionState } from './types';
+import { SmallButton, OptionsContainer, Spacer } from '../layout';
+import { OptionsState } from '../types';
+
+import { IconItem, SVGHighlightElement, SVGLayoutSide, SVGLayoutFull, SVGBuiltinElement, SVGPickElement, SVGRunCount } from '../svg';
 
 import { DetailSlider } from './detail';
 
-import { IconItem, SVGHighlightElement, SVGLayoutSide, SVGLayoutFull, SVGBuiltinElement, SVGPickElement, SVGRunCount } from './svg';
-
-export type OptionsProps = {
-  cursor: Cursor<OptionState>,
+export type ToolbarOptionsProps = {
+  cursor: Cursor<OptionsState>,
   toggleInspect?: () => void,
 };
 
-export const Options: React.FC<OptionsProps> = (props: OptionsProps) => {
+export const ToolbarOptions: React.FC<OptionsProps> = (props: OptionsProps) => {
 
   const {cursor, toggleInspect} = props;
 
