@@ -132,7 +132,7 @@ export const makeBundleToAttributes = (
 
     const out: UniformAttribute[] = [];
     if (externals) for (const d of externals) if (d.func ?? d.variable ?? d.constant) {
-      if (!links?.[d.name]) {
+      if (!links?.[d.symbol]) {
         const attr = toAttribute(bundle, d);
         out.push(attr);
       }

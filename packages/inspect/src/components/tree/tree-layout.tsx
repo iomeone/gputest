@@ -147,7 +147,7 @@ export const TreeRowAvoidOverlap: FC<TreeRowAvoidOverlapProps> = ({ indent, chil
       maxIndent = Math.max(indent, Math.round(previousRect.right - parentRect.left));
     }    
     el.style.marginLeft = `${maxIndent}px`;
-  }, []);
+  });
   
   return <TreeRowOmittedInner ref={ref} style={{marginLeft: indent}}>{children}</TreeRowOmittedInner>;
 };
