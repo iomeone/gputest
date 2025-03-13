@@ -15,6 +15,7 @@ import { QueueReconciler } from '../reconcilers/index';
 import { vec3 } from 'gl-matrix';
 
 import viewBindingWGSL, { ViewUniforms as ViewUniformsWGSL } from '@use-gpu/wgsl/use/view.wgsl';
+import { useInspectable } from '../hooks/useInspectable'
 
 const {signal} = QueueReconciler;
 
@@ -46,8 +47,9 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
 
     children,
   } = props;
-  
+
   const device = useDeviceContext();
+  const inspect = useInspectable();
 
   const {cull, uniforms} = useViewUniforms(maybeUniforms);
   const {binding, upload} = useViewBinding(uniforms);
@@ -58,6 +60,10 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
     cull,
     uniforms,
   }), [binding, cull, uniforms]);
+
+  inspect({
+    view: { uniforms },
+  });
 
   return [
     signal(),

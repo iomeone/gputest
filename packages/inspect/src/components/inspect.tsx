@@ -1,6 +1,5 @@
 import type { LiveFiber } from '@use-gpu/live';
 import type { ExpandState, SelectState, HoverState, OptionsState, FocusState, InspectAPI } from './types';
-import { FiberTag } from './types';
 
 import { YEET } from '@use-gpu/live';
 import { useUpdateState, useCursor } from '@use-gpu/state/react';
@@ -12,7 +11,7 @@ import { makeUseLocalState } from '../hooks/useLocalState';
 import { PingProvider, usePingContext } from '../providers/ping-provider';
 import { useAppearance } from '../providers/appearance-provider';
 
-import { getFiberTags } from './fiber/tag';
+import { FiberTag, getFiberTags } from './fiber/tag';
 
 import { FiberTree } from './fiber/fiber-tree';
 import { ToolbarFilter } from './toolbar/toolbar-filter';
@@ -42,7 +41,7 @@ const INITIAL_STATE = {
   preferredTab: 'props',
   splitLeft: 33,
   splitBottom: 50,
-  filterTags: 511,
+  filterTags: FiberTag.All ^ FiberTag.Other,
 };
 
 type InspectProps = {

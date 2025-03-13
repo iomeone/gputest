@@ -1,5 +1,4 @@
 import type { InspectState, InspectAPI } from '../types';
-import { FiberTag } from '../types';
 
 import React, { FC } from 'react';
 import { useAddIns } from '../../providers/add-in-provider';

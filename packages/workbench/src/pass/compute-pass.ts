@@ -50,10 +50,10 @@ export const ComputePass: LC<ComputePassProps> = memo((props: ComputePassProps) 
   const computes = toArray(calls['compute'] as ComputeToPass[]);
 
   const run = () => {
-    let ds = 0;
+    let ws = 0;
     let ss = 0;
 
-    const countDispatch = (d: number, s: number) => { ds += d; ss += s; };
+    const countDispatch = (w: number, s: number) => { ws += w; ss += s; };
 
     const queue: GPUCommandBuffer[] = []
     for (const f of pres) {
@@ -72,7 +72,7 @@ export const ComputePass: LC<ComputePassProps> = memo((props: ComputePassProps) 
 
     inspect({
       render: {
-        dispatches: ds,
+        workgroups: ws,
         samples: ss,
       },
     });

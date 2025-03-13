@@ -7,7 +7,7 @@ import { usePingContext } from '../../providers/ping-provider';
 import { TreeWrapper, TreeWrapperWithLegend } from '../tree/tree-layout';
 import { FiberLegend } from './fiber-legend';
 import { FiberNode } from './fiber-node';
-import { FIBER_TAG_ALL } from '../types';
+import { FiberTag } from './tag';
 
 export type FiberTreeProps = {
   state: InspectState,
@@ -42,7 +42,7 @@ export const FiberTree: FC<FiberTreeProps> = ({
   const Wrap = legend ? TreeWrapperWithLegend : TreeWrapper;
 
   return (
-    <Wrap style={{paddingTop: (focusedId || (filterTags && filterTags !== FIBER_TAG_ALL)) ? 0 : undefined}}>
+    <Wrap style={{paddingTop: (focusedId || (filterTags && filterTags !== FiberTag.All)) ? 0 : undefined}}>
       <FiberNode
         state={state}
         api={api}

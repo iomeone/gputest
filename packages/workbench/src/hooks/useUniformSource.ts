@@ -65,8 +65,8 @@ export const useUniformBinding = (
 ) => {
   const [source, update] = useUniformSource(type);
 
-  const binding = { module, type, bind: () => [source] };
-  const upload = useCallback(() => update(uniforms), []);
+  const binding = useMemo(() => ({ module, bind: () => [source] }), [module, source]);
+  const upload = useCallback(() => update(uniforms), [update, uniforms]);
 
   return {binding, upload};
 };

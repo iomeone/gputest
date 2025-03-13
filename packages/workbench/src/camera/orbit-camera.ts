@@ -6,7 +6,6 @@ import { parsePosition } from '@use-gpu/parse';
 import { provide, use, useContext, useOne, incrementVersion } from '@use-gpu/live';
 import { makeProjectionMatrix, makeOrbitMatrix, makeViewUniforms, updateViewProjection, updateViewSize } from '@use-gpu/core';
 import { FrameContext } from '../providers/frame-provider';
-import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
 
@@ -45,8 +44,6 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
     pixelRatio,
   } = useContext(RenderContext);
 
-  const layout = useContext(LayoutContext);
-
   const {
     phi    = DEFAULT_ORBIT_CAMERA.phi,
     theta  = DEFAULT_ORBIT_CAMERA.theta,
@@ -83,7 +80,7 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
   return provide(FrameContext, frame.current,
     use(ViewProvider, {
       uniforms,
-      children: provide(LayoutContext, layout, children),
+      children,
     })
   );
 };

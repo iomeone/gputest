@@ -35,7 +35,7 @@ export const RTTLinearRGBPage: LC = () => {
     <LinearRGB>
       <Cursor cursor='move' />
       <Camera>
-        <Pass picking lights>
+        <Pass lights>
           <AmbientLight intensity={0.2} />
           <DirectionalLight position={lightData[0].position} intensity={0.75} color={lightData[0].color} />
           <DirectionalLight position={lightData[1].position} intensity={0.25} color={lightData[1].color} />

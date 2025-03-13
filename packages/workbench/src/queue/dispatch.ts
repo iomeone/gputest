@@ -99,7 +99,7 @@ export const dispatch = (props: DispatchProps) => {
 
   const inspected = inspect({
     render: {
-      dispatches: 0,
+      workgroups: 0,
       version: null,
     },
     indirect,
@@ -107,7 +107,7 @@ export const dispatch = (props: DispatchProps) => {
 
   let dispatchVersion: number | null = null;
 
-  const compute = (passEncoder: GPUComputePassEncoder, countDispatch: (d: number, s: number) => void) => {
+  const compute = (passEncoder: GPUComputePassEncoder, countDispatch: (w: number, s: number) => void) => {
     onDispatch && onDispatch();
 
     const s = resolve(size ?? NO_SIZE);
@@ -123,12 +123,12 @@ export const dispatch = (props: DispatchProps) => {
       sy = Math.ceil(sy / (m[1] || 1));
       sz = Math.ceil(sz / (m[2] || 1));
     }
-    const d = sx * sy * sz;
+    const w = sx * sy * sz;
 
     inspected.render.samples = m ? n : 0;
-    inspected.render.dispatches = d;
+    inspected.render.workgroups = w;
     inspected.render.version = dispatchVersion;
-    countDispatch(d, m ? n : 0);
+    countDispatch(w, m ? n : 0);
 
     /*
     const bs = [];

@@ -5,9 +5,8 @@ import { formatNodeName } from '@use-gpu/live';
 import React, { forwardRef, useCallback } from 'react';
 import { usePingTracker } from '../../providers/ping-provider';
 import { Muted } from '../layout';
-import { getFiberTags } from '../fiber/tag';
+import { FiberTag, getFiberTags } from '../fiber/tag';
 import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute } from '../svg';
-import { FiberTag } from '../types';
 
 type FiberDotProps = {
   fiber: LiveFiber<any>,

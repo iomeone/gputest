@@ -5,9 +5,8 @@ import { formatNodeName } from '@use-gpu/live';
 import React, { forwardRef, useCallback } from 'react';
 import { usePingTracker } from '../../providers/ping-provider';
 import { Muted } from '../layout';
-import { getFiberTags } from '../fiber/tag';
-import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute } from '../svg';
-import { FiberTag } from '../types';
+import { FiberTag, getFiberTags } from '../fiber/tag';
+import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute, SVGCamera } from '../svg';
 
 type FiberBadgeProps = {
   fiber: LiveFiber<any>,
@@ -62,6 +61,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   const layout = tags & FiberTag.Layout;
   const raster = tags & FiberTag.Raster;
   const compute = tags & FiberTag.Compute;
+  const view = tags & FiberTag.View;
   const hover = tags & FiberTag.Hover;
 
   const suffix1 = yeet ? <SVGYeet key="yeet" title="Yeet" /> : null;
@@ -72,9 +72,10 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   const suffix6 = output ? <SVGViewOutput key="output" title="Output" /> : null;
   const suffix7 = raster ? <SVGRaster key="raster" title="Raster" /> : null;
   const suffix8 = compute ? <SVGCompute key="compute" title="Compute" /> : null;
-  const suffix9 = ooo ? '⚠️' : null;
+  const suffix9 = view ? <SVGCamera key="view" title="View" /> : null;
+  const suffix10 = ooo ? '⚠️' : null;
 
-  const icons = [suffix1, suffix2, suffix3, suffix4, suffix5, suffix6, suffix7, suffix8, suffix9].filter(x => !!x);
+  const icons = [suffix1, suffix2, suffix3, suffix4, suffix5, suffix6, suffix7, suffix8, suffix9, suffix10].filter(x => !!x);
 
   const [version, pinged] = usePingTracker(fiber);
 

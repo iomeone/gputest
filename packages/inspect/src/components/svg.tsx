@@ -377,6 +377,17 @@ export const SVGCompute = ({title = undefined, size = 16}: SVGProps) => (
   </div>
 );
 
+export const SVGCamera = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+    >
+      <path d="M12.578 4.88c-1.405.822-2.56 1.493-2.567 1.493-.006 0-.011-.534-.011-1.186V4H.987v8H10v-1.187c0-.652.004-1.186.009-1.186.005 0 1.16.672 2.567 1.494l2.557 1.494.007-2.308c.004-1.269.004-3.345 0-4.613l-.007-2.306-2.555 1.492" fillRule="evenodd"/>
+    </svg>
+  </div>
+);
+
 export const SVGOther = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
