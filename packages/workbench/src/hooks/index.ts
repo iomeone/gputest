@@ -23,6 +23,7 @@ export * from './usePipelineLayout';
 export * from './usePipelineOptions';
 export * from './useRawSource';
 export * from './useRawTextureAccess';
+export * from './useReadbackStorage';
 export * from './useRenderPipeline';
 export * from './useRenderProp';
 export * from './useScratchSource';

@@ -54,7 +54,7 @@ export const makeBindingAccessors = (
   bindings: DataBinding[],
 ): Record<string, ShaderModule> => {
 
-  // Extract uniforms by type
+  // Extract attributes by type
   const lambdas = bindings.filter(({lambda}) => lambda != null);
   const uniforms = bindings.filter(({uniform}) => uniform != null);
   const storages = bindings.filter(({storage}) => storage != null);

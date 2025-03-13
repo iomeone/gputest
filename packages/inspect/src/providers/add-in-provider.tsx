@@ -5,7 +5,7 @@ import { Props } from '../components/tabs/props';
 import { Call } from '../components/tabs/call';
 import { Layout } from '../components/tabs/layout';
 
-import { IconItem, SVGDashboard, SVGNextClosed, SVGHighlightElement } from '../components/svg';
+import { IconItem, SVGDashboard, SVGNextFence, SVGHighlightElement, SVGQuote, SVGYeet, SVGAtom, SVGOther } from '../components/svg';
 import { FiberTag } from '../components/types';
 
 const AddInContext = createContext<InspectAddIns>({
@@ -50,12 +50,36 @@ export const defaultPanels: InspectExtension = (): InspectAddIns => ({
     {
       key: FiberTag.Reconcile,
       label: 'Reconcile',
-      icon: <SVGNextClosed />,
+      icon: <SVGNextFence />,
     },
     {
       key: FiberTag.Highlight,
       label: 'Highlight',
       icon: <SVGHighlightElement />,
+    },
+    {
+      key: FiberTag.Yeet,
+      label: 'Yeet',
+      icon: <SVGYeet />,
+      order: 1e5,
+    },
+    {
+      key: FiberTag.Quote,
+      label: 'Quote',
+      icon: <SVGQuote />,
+      order: 1e5,
+    },
+    {
+      key: FiberTag.React,
+      label: 'React',
+      icon: <SVGAtom />,
+      order: 1e5,
+    },
+    {
+      key: FiberTag.Other,
+      label: 'Other',
+      icon: <SVGOther />,
+      order: 1e5,
     },
   ],
 });

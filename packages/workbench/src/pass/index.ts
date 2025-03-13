@@ -9,8 +9,5 @@ export * from './readback-pass';
 export * from './shadow-pass';
 export * from './ssao-pass';
 
-export * from './depth-copy';
-export * from './sample-copy';
-
 export * from './types';
 export * from './util';

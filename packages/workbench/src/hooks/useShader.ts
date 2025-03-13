@@ -2,7 +2,7 @@ import type { ShaderModule } from '@use-gpu/shader';
 
 import { useMemo, useNoMemo } from '@use-gpu/live';
 import { makeShaderBindings } from '@use-gpu/core';
-import { bindingsToLinks, bindBundle, bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { bindingsToModules, bindBundle, bundleToAttributes } from '@use-gpu/shader/wgsl';
 
 // Bind shader sources/constants/lambdas to a loaded shader module
 export const useShader = (
@@ -23,7 +23,7 @@ export const getShader = (
   if (!attributes) attributes = (shader as any).attributes = bundleToAttributes(shader);
 
   const bindings = makeShaderBindings<ShaderModule>(attributes, values) as any;
-  const links = bindingsToLinks(bindings);
+  const links = bindingsToModules(bindings);
 
   return bindBundle(shader, links, defines);
 }

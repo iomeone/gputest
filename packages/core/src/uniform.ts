@@ -388,9 +388,9 @@ export const makePackedLayout = (
     const isArray = isUniformArrayType(f);
     if (isArray) {
       const el = getUniformElementType(f) as UniformType;
-      const n = getUniformArrayLength(f) || 0;
+      const n = getUniformArrayLength(f) || 1;
 
-      if (n == 0 || el == null) unreachableFormat(f);
+      if (el == null) unreachableFormat(f);
       s = alignSizeTo(getUniformSize(el), align) * n;
     }
     else {
@@ -424,9 +424,9 @@ export const makeUniformLayout = (
     const isArray = isUniformArrayType(f);
     if (isArray) {
       const el = getUniformElementType(f) as UniformType;
-      const n = getUniformArrayLength(f) || 0;
+      const n = getUniformArrayLength(f) || 1;
 
-      if (n == 0 || el == null) unreachableFormat(f);
+      if (el == null) unreachableFormat(f);
 
       a = getUniformAlign(el);
       s = alignSizeTo(getUniformSize(el), a) * n;

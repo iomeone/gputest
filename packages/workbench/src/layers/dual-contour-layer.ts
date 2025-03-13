@@ -32,10 +32,8 @@ import { Dispatch } from '../queue/dispatch';
 
 const {quote} = PassReconciler;
 
-const hasWebGPU = typeof GPUBufferUsage !== 'undefined';
-
-const READ_WRITE_SOURCE_VOLATILE = hasWebGPU ? { readWrite: true, flags: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC, volatile: true } : {};
-const INDIRECT_SOURCE   = hasWebGPU ? { readWrite: true, flags: GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_SRC } : {};
+const READ_WRITE_SOURCE_VOLATILE = { readWrite: true, flags: GPUBufferUsage?.STORAGE | GPUBufferUsage?.COPY_SRC, volatile: true };
+const INDIRECT_SOURCE = { readWrite: true, flags: GPUBufferUsage?.STORAGE | GPUBufferUsage?.INDIRECT | GPUBufferUsage?.COPY_SRC };
 
 const INDIRECT_OFFSET_1 = { byteOffset: 16 };
 const READ_ONLY_SOURCE = { readWrite: false };

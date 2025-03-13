@@ -93,7 +93,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   if (hovered === id) classes.push('hovered');
   if (hovered === by) classes.push('by');
   if (absolute) classes.push('absolute');
-  if (f.isLiveBuiltin || f.isLiveReconcile) classes.push('builtin');
+  if (f.isLiveBuiltin || f.isLiveReconcile || f.isLiveQuote || f.isLiveContinuation) classes.push('builtin');
   classes.push(`depth-${Math.min(4, depth || 0)}`);
   const className = classes.join(' ');
 

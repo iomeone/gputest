@@ -30,8 +30,7 @@ export type PrintHelperProps = {
   children?: LiveElement | ((helper: ShaderPrinter) => LiveElement),
 };
 
-const hasWebGPU = typeof GPUBufferUsage !== 'undefined';
-const READ_WRITE_SOURCE = hasWebGPU ? { readWrite: true, flags: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC } : {};
+const READ_WRITE_SOURCE = { readWrite: true, flags: GPUBufferUsage?.STORAGE | GPUBufferUsage?.COPY_SRC };
 
 export const PrintHelper: LC<PrintHelperProps> = (props: PrintHelperProps) => {
   const {

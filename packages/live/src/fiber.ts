@@ -151,6 +151,7 @@ export const makeNextFiber = <F extends ArrowFunction>(
   Next.displayName = `${prefix}(${name})`;
 
   const nextFiber = makeSubFiber(fiber, use(Next), fiber.id, 1);
+  nextFiber.f.isLiveContinuation = fiber.f.isLiveBuiltin;
 
   // Adopt existing yeet context
   // which will be overwritten on the original fiber.
@@ -655,7 +656,6 @@ export const makeResolveFiber = <F extends ArrowFunction>(
   const Resume = () => {
     reconcileFiberOrder(fiber);
   };
-  Resume.isLiveReconcile = true;
 
   return makeNextFiber(fiber, Resume, name);
 }
@@ -988,6 +988,9 @@ export const mountFiberQuote = <F extends ArrowFunction, T>(
     next = to.next = makeResolveFiber(to);
     next.unquote = null;
     to.fork = true;
+
+    if (quote.root === quote.from) next.f.isLiveReconcile = true;
+    else next.f.isLiveQuote = true;
   }
 
   pingFiber(to, false);
@@ -1020,6 +1023,8 @@ export const mountFiberUnquote = <F extends ArrowFunction>(
     next = to.next = makeResolveFiber(to);
     next.unquote = null;
     to.fork = true;
+
+    next.f.isLiveQuote = true;
   }
 
   pingFiber(to, false);
@@ -1095,6 +1100,7 @@ export const provideFiber = <F extends ArrowFunction>(
   fiber: LiveFiber<F>,
 ) => {
   if (!fiber.args) return;
+  
   const {context: {roots, values}, args: [context, value, calls]} = fiber;
 
   if (roots.get(context) !== fiber.id) {
@@ -1187,6 +1193,7 @@ export const reconcileFiber = <F extends ArrowFunction>(
     quotes.set(reconciler, makeQuoteState(id, fiber, next));
 
     fiber.fork = true;
+    next.f.isLiveReconcile = true;
   }
 
   inlineFiberCall(fiber, calls);

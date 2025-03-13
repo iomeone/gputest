@@ -15,8 +15,7 @@ import { useShaderRef } from '../../hooks/useShaderRef';
 import { useDebugContext } from '../../providers/debug-provider';
 import { usePrintContext, useNoPrintContext } from '../../providers/print-provider';
 
-import { useDepthSampleCopy } from '../../pass/depth-copy';
-import { useSampleCopy, useSampleCopy2 } from '../../pass/sample-copy';
+import { useCopySample, useCopyDepthSample } from '../copy/value-copy';
 
 import { getMotionSample } from '@use-gpu/wgsl/motion/motion-sample.wgsl';
 
@@ -70,17 +69,25 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const {ssao: ssaoDebug} = useDebugContext();
 
   const frame = useRef(0);
+  const ssaoRadius = useShaderRef(radius);
 
   const resolveSize = useShaderRef([resolveTarget.width, resolveTarget.height]);
   const overscanSize = useShaderRef([resolveTarget.width, normalContext.height]);
   const downscaleSize = useShaderRef([normalTarget.width, normalTarget.height]);
+
   const uvScale = useShaderRef([downscaleSize[0] / overscanSize[0], downscaleSize[1] / overscanSize[1]]);
-  const ssaoRadius = useShaderRef(radius);
+  const uvJitterDelta = () => {
+    const [x1, y1] = getJitterBayer2x2Alternating(frame.current);
+    const [x2, y2] = getJitterBayer2x2Alternating(frame.current - 1);
+    return [
+      (x1 - x2) / downscaleSize[0],
+      (y1 - y2) / downscaleSize[1],
+    ];
+  }
 
   const downscaleJitter = () => getJitterBayer2x2Alternating(frame.current);
-  const downscaleJitterDelta = () => getJitterBayer2x2Alternating(frame.current) - getJitterBayer2x2Alternating(frame.current - 1);
 
-  const downscaleOffset = () => getResampleOffset(normalContext.source.size, normalTarget.source.size, frame.current);
+  //const downscaleOffset = () => getResampleOffset(normalContext.source.size, normalTarget.source.size, frame.current);
 
   // Debug viz
   const hasDebugPicking = !!ssaoDebug?.pickAO;
@@ -120,23 +127,22 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     const loadNormal16 = useShader(downsampleExact2, [loadSourceNormal16, downscaleJitter]);
     const getNormal16 = useTextureUVToXY(loadNormal16, downscaleSize).shader;
 
-    draw = useDepthSampleCopy(targetContext, getDepth, getNormal16, globalLayout);
+    draw = useCopyDepthSample(targetContext, getDepth, getNormal16, globalLayout);
   }
   else if (mode === 'motion-xy') {
     const loadSourceMotionXY = useTextureAccess(motionContext.sources[0]);
     const loadMotionXY = useShader(downsampleExact2, [loadSourceMotionXY, downscaleJitter]);
     const getMotionXY = useTextureUVToXY(loadMotionXY, downscaleSize).shader;
 
-    draw = useSampleCopy(targetContext, getMotionXY, globalLayout);
+    draw = useCopySample(targetContext, getMotionXY, globalLayout);
   }
   else if (mode === 'motion-z') {
     const loadSourceMotionZ = useTextureAccess(motionContext.sources[1]);
     const loadMotionZ = useShader(downsampleExact2, [loadSourceMotionZ, downscaleJitter]);
     const getMotionZ = useTextureUVToXY(loadMotionZ, downscaleSize).shader;
 
-    draw = useSampleCopy(targetContext, getMotionZ, globalLayout);
+    draw = useCopySample(targetContext, getMotionZ, globalLayout);
   }
-  /*
   else if (mode === 'sample') {
     const r = useShaderRef(radius);
     const defs = useOne(() => ({ HAS_DEBUG_PICKING: hasDebugPicking }))
@@ -155,14 +161,15 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
       ...debugArgs,
     ], defs);
 
-    draw = useSampleCopy(targetContext, getSample, globalLayout);
+    draw = useCopySample(targetContext, getSample, globalLayout);
   }
   else if (mode === 'accum') {
 
     const loadDepth = useTextureAccess(normalTarget.depth);
     const loadNormal16 = useTextureAccess(normalTarget.source);
     const loadSample = useTextureAccess(sampleTarget.source);
-    const loadMotion = useTextureAccess(motionTarget.source);
+    const loadMotionXY = useTextureAccess(motionXYTarget.source);
+    const loadMotionZ = useTextureAccess(motionXYTarget.source);
 
     const loadLastAccum = useTextureAccess(accumTarget.source.history![0]);
 
@@ -170,18 +177,18 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
       loadNormal16,
       loadDepth,
       loadSample,
-      loadMotion,
+      loadMotionXY,
+      loadMotionZ,
       loadLastAccum,
       uvScale,
+      uvJitterDelta,
       downscaleSize,
-      downscaleJitterDelta,
       frame,
       debugArgs?.[3],
     ]);
 
-    draw = useSampleCopy(targetContext, getAccum, globalLayout);
+    draw = useCopySample(targetContext, getAccum, globalLayout);
   }
-  */
   /*
   else if (mode === 'resolve') {
 
@@ -203,7 +210,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
       downscaleOffset,
     ]);
 
-    draw = useSampleCopy(targetContext, getResolve, globalLayout);
+    draw = useCopySample(targetContext, getResolve, globalLayout);
   }
   */
 
@@ -238,6 +245,7 @@ const getJitterBayer2x2Alternating = (jitter: number) => {
   return [x, y];
 };
 
+/*
 const getResampleOffset = (fromSize: VectorLike, toSize: VectorLike, jitter: number) => {
   const [x, y] = getJitterBayer2x2(jitter);
 
@@ -246,3 +254,4 @@ const getResampleOffset = (fromSize: VectorLike, toSize: VectorLike, jitter: num
   
   return [(.5+x)/w1 - .5/w2, (.5+y)/h1 - .5/h2];
 };
+*/

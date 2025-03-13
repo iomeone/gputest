@@ -19,10 +19,10 @@ import { useInspectable } from '../hooks/useInspectable';
 import { useShader, getShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
+import { useCopyDepth } from '../render/copy/value-copy';
 import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
 
 import { useDynamicViewBinding, useApplyPassBindGroup } from './bindings';
-import { useDepthCopy } from './depth-copy';
 import { drawToPass } from './util';
 
 import { getCubeToOmniSample } from '@use-gpu/wgsl/render/sample/cube-to-omni.wgsl';
@@ -144,7 +144,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
   }, [cubeSource]);
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const blit = useDepthCopy(renderContext, getDepth, null, shadowUV!, SHADOW_PAGE);
+  const blit = useCopyDepth(renderContext, getDepth, null, shadowUV!, SHADOW_PAGE);
 
   return quote(yeet(() => {
     let vs = 0;

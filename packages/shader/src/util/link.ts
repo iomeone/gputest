@@ -149,7 +149,7 @@ export const makeLinker = (
   const seen = new Set<string>();
 
   // Prepare namespaces while skipping pre-assigned ones
-  for (const {module: {virtual: {namespace}}} of virtuals) seen.add(namespace);
+  for (const {module: {virtual}} of virtuals) if (virtual?.namespace) seen.add(virtual.namespace);
   const names = Array.from({ length: bundles.length }).map((_, i) => toNamespace(i)).filter(n => !seen.has(n));
 
   // Safety check for unresolved bindings
@@ -172,6 +172,8 @@ export const makeLinker = (
     const rename = new Map<string, string>();
     if (key !== main) {
       const ns = virtual?.namespace ?? names.shift();
+      if (!ns) throw new Error("No namespace");
+
       namespaces.set(key, ns);
       scope = ns;
 

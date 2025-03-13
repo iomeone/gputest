@@ -1,5 +1,4 @@
 @infer type T;
-
 @infer type T1;
 @infer type T2;
 
@@ -15,12 +14,9 @@ struct SampleOutput {
 
 @fragment
 fn main(
-  @location(0) fragColor: vec4<f32>,
-  @location(1) fragUV: vec4<f32>,
-  @location(2) fragST: vec4<f32>,
-  @location(3) fragScissor: vec4<f32>,
+  @location(0) fragUV: vec2<f32>,
 ) -> SampleOutput {
-  let sample = getSample(fragUV.xy);
+  let sample = getSample(fragUV);
   return SampleOutput(
     selectA(sample),
     selectB(sample),

@@ -19,7 +19,7 @@ export const bindingToModule = (
   return {...module, entry: !lambda ? name : undefined };
 }
 
-export const bindingsToLinks = (
+export const bindingsToModules = (
   bindings: DataBinding[],
 ): Record<string, ShaderModule> => {
   return makeBindingAccessors(bindings);

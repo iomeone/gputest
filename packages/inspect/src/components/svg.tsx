@@ -75,6 +75,20 @@ export const SVGNextClosed = ({title = undefined, size = 16}: SVGProps) => (
       style={{fill: 'currentColor'}}
       viewBox="0 0 16 16"
     >
+    <g transform="rotate(-90 8 8)">
+    <polygon points="12.6,6.7 8,11.4 3.4,6.7 2.1,8 7.8,13.7 8,13.9 13.9,8 "/>
+    <rect x="7" y="2" width="2" height="9.5"/>
+    </g>
+    </svg>
+  </div>
+);
+
+export const SVGNextFence = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+    >
     <path d="M29.4-15c0.3-0.3,0.6-0.7,1-1.2c1.7,1.7,3.3,3.4,4.9,5c0.2,0.2,0.3,0.1,0.3-0.2c0-3.6,0-7.2,0-10.8
       c0.6,0,1.1,0,1.8,0c0,3.6,0,7.2,0,11.1c1.8-1.9,3.4-3.5,5.1-5.3c0.5,0.7,0.8,1.1,1,1.4c-2.3,2.3-4.7,4.7-7,7
       C34.2-10.2,31.8-12.6,29.4-15z"/>
@@ -363,3 +377,21 @@ export const SVGCompute = ({title = undefined, size = 16}: SVGProps) => (
   </div>
 );
 
+export const SVGOther = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+    >
+    <g transform="rotate(0 8 8)">
+    <rect x="7" y="2" width="2" height="11.5"/>
+    </g>
+    <g transform="rotate(120 8 8)">
+    <rect x="7" y="2" width="2" height="11.5"/>
+    </g>
+    <g transform="rotate(240 8 8)">
+    <rect x="7" y="2" width="2" height="11.5"/>
+    </g>
+    </svg>
+  </div>
+);

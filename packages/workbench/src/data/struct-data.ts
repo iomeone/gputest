@@ -84,7 +84,9 @@ export const StructData: LC<StructDataProps> = (props: StructDataProps) => {
       length: 0,
       size: [0],
       version: 1,
-    } as any as StorageSource;
+
+      minBindingSize: layout.length,
+    } as StorageSource;
 
     return [source, array];
   }, [device, layout, l, format, type]);

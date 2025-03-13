@@ -68,6 +68,8 @@ export const UseInspect: LC<UseInspectProps> = ({
       }
     }
 
+    for (const k in out) if (Array.isArray(out[k])) out[k].sort((a, b) => (a?.order || 0) - (b?.order || 0));
+
     return out;
   }, [extensions, fiber]);
 

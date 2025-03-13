@@ -10,6 +10,7 @@ import {
   bundleToAttribute,
   bundleToAttributes,
   bundleToBindings,
+  attributeToFields,
 
   glsl, float, int, uint,
   symbolDictionary,
@@ -18,7 +19,7 @@ import {
 import {
   bindBundle,
   bindModule,
-  bindingsToLinks,
+  bindingsToModules,
   bindingToModule,
   sourceToModule,
   resolveBindings,
@@ -88,6 +89,7 @@ export {
   bundleToAttribute,
   bundleToAttributes,
   bundleToBindings,
+  attributeToFields,
 
   glsl, float, int, uint,
   symbolDictionary,
@@ -96,7 +98,7 @@ export {
 export {
   bindBundle,
   bindModule,
-  bindingsToLinks,
+  bindingsToModules,
   bindingToModule,
   sourceToModule,
   resolveBindings,
@@ -159,6 +161,8 @@ export const GLSLLinker = {
   bundleToAttribute,
   bundleToAttributes,
   bundleToBindings,
+  attributeToFields,
+
   glsl, float, int, uint,
 
   defineConstants,
@@ -171,7 +175,7 @@ export const GLSLLinker = {
 
   bindBundle,
   bindModule,
-  bindingsToLinks,
+  bindingsToModules,
   bindingToModule,
   sourceToModule,
   resolveBindings,

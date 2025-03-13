@@ -13,7 +13,8 @@ import { QueueReconciler } from '../reconcilers';
 import { useInspectable } from '../hooks/useInspectable';
 
 import { getMultiViewShader, getDisplayShader } from '../hooks/useDisplayShader'; 
-import { useSampleCopy } from './sample-copy';
+import { useCopySample } from '../render/copy/value-copy';
+
 import { getRenderPassDescriptor } from './util';
 
 const {quote} = QueueReconciler;
@@ -52,7 +53,7 @@ export const DebugPass: LC<DebugPassProps> = memo((props: PropsWithChildren<Debu
     return getMultiViewShader(displays, true);
   }, [sourceBuffers]);
 
-  const draw = useSampleCopy(renderContext, getSample);
+  const draw = useCopySample(renderContext, getSample);
 
   // Render via a custom render pass
   const variants = () => SolidRender;

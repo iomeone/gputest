@@ -2,7 +2,7 @@ import type { LiveFiber } from '@use-gpu/live';
 import type { InspectExtension, InspectAddIns } from '@use-gpu/inspect';
 
 import React from 'react';
-import { IconRow, SVGAtom, SVGHighlightElement, SVGNextOpen, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute } from '@use-gpu/inspect';
+import { FiberTag, IconItem, SVGAtom, SVGDashboard, SVGHighlightElement, SVGNextOpen, SVGViewOutput, SVGRaster, SVGCompute } from '@use-gpu/inspect';
 
 import { renderCanvas } from './canvas';
 import { renderGeometry } from './geometry';
@@ -13,54 +13,82 @@ import { renderWGSL } from './wgsl';
 export const inspectGPU: InspectExtension = (): InspectAddIns => ({
   props: [
     {
-      id: 'canvas',
-      label: <span>Canvas&nbsp;&nbsp;<IconRow><SVGAtom /></IconRow></span>,
+      key: 'canvas',
+      label: 'Canvas',
+      icon: <SVGAtom />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.canvas,
       render: (fiber: LiveFiber<any>) => renderCanvas({fiber}),
     },
     {
-      id: 'pass',
+      key: 'pass',
       label: 'Pass',
-      label: <span>Pass&nbsp;&nbsp;<IconRow><SVGNextOpen /></IconRow></span>,
+      icon: <SVGNextOpen />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.pass,
       render: (fiber: LiveFiber<any>) => renderShader({fiber, type: 'compute'}),
     },
     {
-      id: 'compute',
-      label: <span>Compute&nbsp;&nbsp;<IconRow><SVGCompute /></IconRow></span>,
+      key: 'compute',
+      label: 'Compute',
+      icon: <SVGCompute />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.compute,
       render: (fiber: LiveFiber<any>) => renderShader({fiber, type: 'compute'}),
     },
     {
-      id: 'vertex',
-      label: <span>Vertex&nbsp;&nbsp;<IconRow><SVGRaster /></IconRow></span>,
+      key: 'vertex',
+      label: 'Vertex',
+      icon: <SVGRaster />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.vertex,
       render: (fiber: LiveFiber<any>) => renderShader({fiber, type: 'vertex'}),
     },
     {
-      id: 'fragment',
-      label: <span>Fragment&nbsp;&nbsp;<IconRow><SVGRaster /></IconRow></span>,
+      key: 'fragment',
+      label: 'Fragment',
+      icon: <SVGRaster />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.fragment,
       render: (fiber: LiveFiber<any>) => renderShader({fiber, type: 'fragment'}),
     },
     {
-      id: 'geometry',
-      label: <span>Geometry&nbsp;&nbsp;<IconRow><SVGHighlightElement /></IconRow></span>,
+      key: 'geometry',
+      label: 'Geometry',
+      icon: <SVGHighlightElement />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.render,
       render: (fiber: LiveFiber<any>) => renderGeometry({fiber}),
     },
     {
-      id: 'targets',
-      label: <span>Targets&nbsp;&nbsp;<IconRow><SVGViewOutput /></IconRow></span>,
+      key: 'targets',
+      label: 'Targets',
+      icon: <SVGViewOutput />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.output,
       render: (fiber: LiveFiber<any>) => renderTargets({fiber}),
     },
   ],
   prop: [
     {
-      id: 'wgsl',
+      key: 'wgsl',
       enabled: (code: string) => !!code.slice(0, 200).match(/\b(::{|@link|@optional|@export|fn)\b/),
       render: (code: string) => renderWGSL({code}),
+    },
+  ],
+  filters: [
+    {
+      key: FiberTag.Layout,
+      label: 'Layout',
+      icon: <SVGDashboard />,
+    },
+    {
+      key: FiberTag.Compute,
+      label: 'Compute',
+      icon: <SVGCompute />,
+    },
+    {
+      key: FiberTag.Raster,
+      label: 'Raster',
+      icon: <SVGRaster />,
+    },
+    {
+      key: FiberTag.Output,
+      label: 'Output',
+      icon: <SVGViewOutput />,
     },
   ],
 });

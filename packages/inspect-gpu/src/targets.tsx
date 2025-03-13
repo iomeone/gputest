@@ -4,7 +4,7 @@ import type { LambdaSource, TextureSource } from '@use-gpu/core';
 import React from 'react';
 import { memo, use, wrap, provide, useFiber, useMemo, useOne } from '@use-gpu/live';
 
-import { splitCubeTexture } from '@use-gpu/core';
+import { splitCubeTexture, splitHistoryTexture } from '@use-gpu/core';
 import { LiveCanvas } from '@use-gpu/react';
 import { AutoCanvas } from '@use-gpu/webgpu';
 import {
@@ -409,26 +409,25 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
   
   const makeViews = (texture: TextureSource) => {
     const {layout, history} = texture;
-    if (history) return history.flatMap(t => makeViews(t));
 
     const isCube = layout.match(/cube/);
     const isDepth = layout.match(/depth/);
 
     const out = [];
-    if (isCube) {
 
+    if (history) return splitHistoryTexture(texture).flatMap(makeViews);
+
+    if (isCube) {
       let t = {...texture, sampler: {}, variant: 'textureSample'} as any;
       t = getShader(isDepth ? depthCubeShader : colorCubeShader, [decodeOctahedral, texture]);
       t = getLambdaSource(t, texture);
       out.push(makeView(t));
 
       const faces = splitCubeTexture(texture).map(getDisplayShader);
-      console.log({faces})
       out.push(faces.map(makeView));
     }
     else {
       const t = getDisplayShader(texture);
-      adoptMeta(t, texture);
       out.push(makeView(t));
     }
 
@@ -439,6 +438,12 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     
     const sources = [...toArray(color), ...toArray(depth)];
     return sources.flatMap(makeViews);
+    
+    /// ------------------------------------------------
+    /// deprecated
+    // TODO: picking
+    // TODO: stencil
+    // TODO: multisampled
     
     const out: LiveElement[] = [];
 

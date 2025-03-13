@@ -1,4 +1,4 @@
-import { bindBundle, bindingsToLinks, resolveBindings } from './bind';
+import { bindBundle, bindingsToModules, resolveBindings } from './bind';
 import { loadModule } from './shader';
 import { linkBundle } from './link';
 import { addASTSerializer } from '../test/snapshot';
@@ -84,10 +84,10 @@ describe("bind", () => {
       return { name, code, table, constants, storages, textures, base };
     }
 
-    const links1 = bindingsToLinks(dataBindings);
+    const links1 = bindingsToModules(dataBindings);
     expect(toSnapshot(links1.getColor)).toMatchSnapshot();
 
-    const links2 = bindingsToLinks(dataBindings);
+    const links2 = bindingsToModules(dataBindings);
     expect(toSnapshot(links2.getColor)).toEqual(toSnapshot(links1.getColor));
   });
 
@@ -120,7 +120,7 @@ describe("bind", () => {
     `;
     const mod = loadModule(code, 'code');
 
-    const links = bindingsToLinks(dataBindings);
+    const links = bindingsToModules(dataBindings);
     const bound = bindBundle(mod, links);
 
     const fail = () => linkBundle(bound);

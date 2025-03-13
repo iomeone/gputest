@@ -207,7 +207,7 @@ export const formatPrototype = (x: any): string => {
   if (!x) return '' + x;
   if (typeof x === 'object') {
     const signature = Object.keys(x).join('/');
-    if (signature === 'f/args/key/by' || signature === 'f/arg/key/by') return formatNode({...x, args: []});
+    if (signature === 'f/args/key/by' || signature === 'f/arg/key/by') return `<${formatNodeName(x)} … />`;
 
     const proto = x.__proto__ !== Object.prototype ? x.__proto__.constructor.name : null;
     const label = x.label;

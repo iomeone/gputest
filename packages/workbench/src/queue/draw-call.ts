@@ -70,7 +70,7 @@ export const DrawCall: LC<DrawCallProps> = (props: DrawCallProps) => {
   return yeet(drawCall(props));
 };
 
-const NO_CALL: Record<string, ArrowFunction> = {};
+const NO_CALL = null;
 
 // Inlined into <Virtual>
 export const drawCall = (props: DrawCallProps) => {
@@ -302,7 +302,7 @@ export const drawCall = (props: DrawCallProps) => {
     };
   }
 
-  return mode ? {[mode]: {draw, bounds}} : {draw};
+  return mode ? {[mode]: {draw, bounds}} : {draw, bounds};
 };
 
 //setShaderLog(100);

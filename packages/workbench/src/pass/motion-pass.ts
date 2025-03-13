@@ -11,7 +11,7 @@ import { QueueReconciler } from '../reconcilers';
 import { useInspectable } from '../hooks/useInspectable'
 
 import { useApplyPassBindGroup } from './bindings';
-import { getRenderPassDescriptor, drawToPass } from './util';
+import { getRenderPassDescriptor, drawToPass, computeToContext } from './util';
 
 import { MotionDispatch } from '../render/dispatch/motion-dispatch';
 
@@ -75,20 +75,34 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
 
       const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
-      const commandEncoder = device.createCommandEncoder();
-      renderContext.swap?.();
+      /*
+      calls.forEach(({dispatch: f}) => f());
+      */
 
-      // Render motion buffer
-      const passEncoder = commandEncoder.beginRenderPass(motionPassDescriptor);
-      bindPass?.(passEncoder);
+      {
+        const commandEncoder = device.createCommandEncoder();
+        renderContext.swap?.();
 
-      calls.forEach(({motion: f}) => f(passEncoder));
-      drawToPass(cull, motions, passEncoder, countGeometry, uniforms);
+        // Render motion buffer
+        const passEncoder = commandEncoder.beginRenderPass(motionPassDescriptor);
+        bindPass?.(passEncoder);
 
-      passEncoder.end();
+        calls.forEach(({motion: f}) => f(passEncoder));
+        drawToPass(cull, motions, passEncoder, countGeometry, uniforms);
 
-      const command = commandEncoder.finish();
-      device.queue.submit([command]);
+        passEncoder.end();
+
+        const command = commandEncoder.finish();
+        device.queue.submit([command]);
+      }
+
+      /*
+      calls.forEach(({post: f}) => {
+        const c = f();
+        c && device.queue.submit([c]);
+      });
+      calls.forEach(({readback: f}) => f());
+      */
 
       inspect({
         output: {

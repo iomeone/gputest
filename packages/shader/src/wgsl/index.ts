@@ -10,6 +10,7 @@ import {
   bundleToAttribute,
   bundleToAttributes,
   bundleToBindings,
+  attributeToFields,
 
   wgsl, f32, i32, u32,
   symbolDictionary,
@@ -18,7 +19,7 @@ import {
 import {
   bindBundle,
   bindModule,
-  bindingsToLinks,
+  bindingsToModules,
   bindingToModule,
   sourceToModule,
   resolveBindings,
@@ -90,6 +91,7 @@ export {
   bundleToAttribute,
   bundleToAttributes,
   bundleToBindings,
+  attributeToFields,
 
   wgsl, f32, i32, u32,
   symbolDictionary,
@@ -98,7 +100,7 @@ export {
 export {
   bindBundle,
   bindModule,
-  bindingsToLinks,
+  bindingsToModules,
   bindingToModule,
   sourceToModule,
   resolveBindings,
@@ -163,6 +165,8 @@ export const WGSLLinker = {
   bundleToAttribute,
   bundleToAttributes,
   bundleToBindings,
+  attributeToFields,
+
   wgsl, f32, i32, u32,
 
   defineConstants,
@@ -173,7 +177,7 @@ export const WGSLLinker = {
 
   bindBundle,
   bindModule,
-  bindingsToLinks,
+  bindingsToModules,
   bindingToModule,
   sourceToModule,
   resolveBindings,

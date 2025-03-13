@@ -38,7 +38,7 @@ const INITIAL_STATE = {
   tab: 'props',
   splitLeft: 33,
   splitBottom: 50,
-  filterTags: 248,
+  filterTags: 511,
 };
 
 type InspectProps = {
@@ -173,7 +173,7 @@ export const Inspect: React.FC<InspectProps> = ({
       }));
 
     const makeHandlers = (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>, renderDepth: number = 0) => {
-      const select = () => selectFiber(fiber);
+      const select = (e?: MouseEvent) => { selectFiber(fiber); e?.stopPropagation(); };
       const hover = (e: MouseEvent) => hoverFiber(fiber, fibers, renderDepth, e.altKey);
       const unhover = (e: MouseEvent) => hoverFiber(null, null, 0, e.altKey);
       const focus = () => focusFiber(fiber);
@@ -200,7 +200,7 @@ export const Inspect: React.FC<InspectProps> = ({
           fiber={fiber}
           legend={legend}
           skipDepth={skip}
-          depthLimit={filterTags ? undefined : depthLimit}
+          depthLimit={depthLimit}
           filterTags={filterTags}
           runCounts={runCounts}
           builtins={builtins}

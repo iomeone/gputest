@@ -1,7 +1,7 @@
 import type { LiveFiber } from '@use-gpu/live';
 import type { Cursor } from '@use-gpu/state';
 import type { InspectState, InspectAPI } from './types'
-import { isSubNode, DEBUG, RECONCILE } from '@use-gpu/live';
+import { isSubNode, DEBUG, RECONCILE, QUOTE, UNQUOTE } from '@use-gpu/live';
 
 import React, { memo, useMemo, useLayoutEffect, useRef, PropsWithChildren } from 'react';
 
@@ -12,7 +12,7 @@ import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeI
 import { ExpandState } from '../types';
 
 import { Muted, InlineButton } from '../layout';
-import { IconItem, SVGNextOpen, SVGNextClosed } from '../svg';
+import { IconItem, SVGNextOpen, SVGNextClosed, SVGNextFence } from '../svg';
 
 import { FiberBadge } from './fiber-badge';
 import { FiberBadgeReact } from './fiber-badge-react';
@@ -97,10 +97,6 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   // Avoid jumpyness on hover
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const lockedWide = useMemo(() => (!mount && !mounts && !next), []);
-  if (!skipDepth) {
-    wide = wide || lockedWide;
-    indent += (indented * (wide ? 1 : .1));
-  }
 
   // Hook up ping provider
   fibers.set(fiber.id, fiber);
@@ -131,7 +127,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   // Resolve node omission
   const isFilteredOut = filterTags != 0 && !(getFiberTags(fiber) & filterTags);
   const isFocused = !!focusDepth || ((focusState != null) ? fiber.id === focusState : true);
-  const isBuiltin = !builtins && (fiber.f?.isLiveBuiltin || fiber.f?.isLiveReconcile) && (fiber.f !== RECONCILE);
+  const isBuiltin = !builtins && (fiber.f?.isLiveBuiltin || fiber.f?.isLiveReconcile || fiber.f?.isLiveQuote || fiber.f?.isLiveContinuation);
   const isVisible = (
     !isFilteredOut &&
     isFocused &&
@@ -139,10 +135,21 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
     (renderDepth < depthLimit)
   );
 
-  const shouldRender = !isBuiltin && isVisible;
-  const shouldTerminate = fiber.f?.isLiveReconcile && !builtin && isVisible;
+  const shouldCollapseIntoParent = !wide && isBuiltin && fiber.next;
+  
+  const shouldDisplay = !isBuiltin && isVisible;
+  const shouldTerminate = (shouldCollapseIntoParent || fiber.f?.isLiveReconcile || fiber.f?.isLiveQuote || fiber.f?.isLiveContinuation) && isVisible;
+  const shouldRender = shouldDisplay || shouldTerminate;
+
   const shouldAbsolute = !shouldRender && (parents || depends || precedes || quoted || unquoted);
   const shouldStartOpen = fiber.f !== DEBUG && !fiber.__inspect?.react;
+
+  if (!skipDepth) {
+    wide = wide || lockedWide;
+    if (!shouldCollapseIntoParent) {
+      indent += (indented * (wide ? 1 : .1));
+    }
+  }
 
   // Make click/hover handlers
   const {select, hover, unhover, focus} = useMemo(() => api.makeHandlers(fiber, fibers, renderDepth), [fiber, fibers, api, renderDepth]);
@@ -183,7 +190,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   }
 
   // Render node itself
-  const badgeRender = (shouldRender || shouldAbsolute) ? (
+  const badgeRender = (shouldDisplay || shouldAbsolute) ? (
     <FiberBadge
       key={id}
       fiber={fiber}
@@ -205,7 +212,6 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
       absolute={!!shouldAbsolute}
     />
   ) : null;
-  //if (shouldAbsolute) badgeRender = <div style={{position: 'absolute'}}>{badgeRender}</div>;
 
   // Render single child
   if (mount) {
@@ -317,10 +323,18 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   }
 
   // Compact omitted row
-  if (!shouldRender && !shouldTerminate) {
+  if (!shouldRender) {
     if (skipDepth) return childRender;
     return (<>
       <TreeRowOmitted indent={indent + 1}>{badgeRender}</TreeRowOmitted>
+      {childRender}
+      {nextRender}
+    </>);
+  }
+
+  // Collapsed row
+  if (shouldCollapseIntoParent) {
+    return (<>
       {childRender}
       {nextRender}
     </>);
@@ -350,10 +364,19 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   }
 
   // Leaf node
-  const continuationIcon = <IconItem><SVGNextClosed /></IconItem>;
   return (<>
     <TreeRow indent={indent + 1 - +!!continuation}>
-      {continuation ? <Muted>{continuationIcon}</Muted> : null}
+      {continuation ? (
+        <Muted            onClick={select}
+            onDoubleClick={focus}
+            onMouseEnter={hover}
+            onMouseLeave={unhover}
+>
+          <IconItem>
+            <SVGNextFence />
+          </IconItem>
+        </Muted>
+      ) : null}
       {badgeRender}
     </TreeRow>
     {nextRender}

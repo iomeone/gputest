@@ -1,12 +1,12 @@
 import type { LiveFiber } from '@use-gpu/live';
-import { RECONCILE, YEET, QUOTE, SIGNAL } from '@use-gpu/live';
+import { RECONCILE, YEET, QUOTE, UNQUOTE, SIGNAL } from '@use-gpu/live';
 
 export const getFiberTags = (fiber: LiveFiber<any>) => {
-  const {type, __inspect} = fiber;
+  const {f, type, __inspect} = fiber;
 
-  const quote = type === QUOTE || type === SIGNAL;
+  const quote = type === QUOTE || type === UNQUOTE || type === SIGNAL || f.isLiveQuote;
   const yeet = type === YEET;
-  const reconcile = type === RECONCILE;
+  const reconcile = type === RECONCILE || f === RECONCILE || f.isLiveReconcile;
 
   const react = !!__inspect?.react;
   const output = !!__inspect?.output;
@@ -25,5 +25,5 @@ export const getFiberTags = (fiber: LiveFiber<any>) => {
     (+!!compute   << 6) |
     (+!!hover     << 7) |
     (+!!reconcile << 8) 
-  );
+  ) || (1 << 9);
 };

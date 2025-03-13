@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import type { LiveFiber } from '@use-gpu/live';
 import type { Cursor } from '@use-gpu/state';
 
+export const FIBER_TAG_ALL = 1023;
+
 export enum FiberTag {
   Quote = 1,
   Yeet = 2,
@@ -12,6 +14,7 @@ export enum FiberTag {
   Compute = 64,
   Highlight = 128,
   Reconcile = 256,
+  Other = 512,
 };
 
 export type ExpandState = Record<string | number, boolean>;

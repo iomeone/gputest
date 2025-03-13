@@ -1,4 +1,4 @@
-import { ShaderModule, LambdaSource, StorageSource, TextureSource, DataBinding } from './types';
+import { ShaderModule, LambdaSource, StorageSource, TextureSource, UniformSource, DataBinding } from './types';
 
 import { makeBindingAccessors, makeUniformBlock } from './gen';
 import { makeResolveBindings } from '../util/bind';
@@ -17,14 +17,14 @@ export const bindingToModule = (
   return {...module, entry: name};
 }
 
-export const bindingsToLinks = (
+export const bindingsToModules = (
   bindings: DataBinding[],
 ): Record<string, ShaderModule> => {
   return makeBindingAccessors(bindings, VIRTUAL_BINDGROUP, VOLATILE_BINDGROUP);
 }
 
 export const sourceToModule = <T>(
-  source: ShaderModule | LambdaSource<T> | StorageSource | TextureSource | any,
+  source: ShaderModule | LambdaSource<T> | UniformSource | StorageSource | TextureSource | any,
 ): ShaderModule | null => {
   if (source == null) return null;
 

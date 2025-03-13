@@ -75,8 +75,7 @@ const CRISP_SIGMA = 0.3989422804; // 1/sqrt(2π) - normalizes to p(0) == 1
 const FIRST_MIP = Math.ceil(PIXEL_PER_SIGMA * (π / 2) / MIN_SIGMA) + 2;
 const DIFFUSE_MIP = 127;
 
-const hasWebGPU = typeof GPUBufferUsage !== 'undefined';
-const READ_WRITE_SOURCE = hasWebGPU ? { readWrite: true, flags: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC } : {};
+const READ_WRITE_SOURCE = { readWrite: true, flags: GPUBufferUsage?.STORAGE | GPUBufferUsage?.COPY_SRC };
 
 export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: PrefilteredEnvMapProps) => {
   const {

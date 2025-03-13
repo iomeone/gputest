@@ -81,6 +81,7 @@ export const makeDeclarationToAttribute = (
       name,
       ...resolveTypeSymbol(bundle, toTypeSymbol(type)),
     }));
+
     return {name, format: ms, args: null, attr};
   }
   throw new Error(`Cannot convert declaration to attribute: ${JSON.stringify(d)}`);
@@ -127,12 +128,14 @@ export const makeBundleToAttributes = (
     shader: ShaderModule,
   ): UniformAttribute[] => {
     const bundle = toBundle(shader);
-    const {module: {table: {externals}}} = bundle;
+    const {links, module: {table: {externals}}} = bundle;
 
     const out: UniformAttribute[] = [];
     if (externals) for (const d of externals) if (d.func ?? d.variable ?? d.constant) {
-      const attr = toAttribute(bundle, d);
-      if (!bundle.links?.[attr.name]) out.push(attr);
+      if (!links?.[d.name]) {
+        const attr = toAttribute(bundle, d);
+        out.push(attr);
+      }
     }
 
     return out;
@@ -205,6 +208,42 @@ export const makeBundleToBindings = (
     return out;
   };
 };
+
+// Convert attributes to nested fields
+export const makeAttributeToFields = (
+  toTypeSymbol: ToTypeSymbol,
+  toArgTypes: ToArgTypes,
+) => {
+  const bundleToAttribute = makeBundleToAttribute(toTypeSymbol, toArgTypes);
+
+  const attributeToFields = (
+    attribute: UniformAttribute,
+  ): UniformAttribute => {
+    const {format, type} = attribute;
+    if (!type) return attribute;
+
+    //console.log('attr', {format, type})
+
+    const attr = bundleToAttribute(type);
+    const {format: f} = attr;
+
+    //console.log('->', {format, f, attr})
+
+    if (Array.isArray(f)) {
+      const ms = f.map(attributeToFields);
+      return {...attribute, format: ms};
+    }
+    else if (f !== 'T' && f !== 'array<T>') {
+      return {...attribute, format: f};
+    }
+    else {
+      throw new Error("Cannot make attribute fields");
+    }
+  };
+
+  return attributeToFields;
+}
+
 
 // Shader module printing for debug/info
 export const getBundleSummary = (bundle: ShaderModule, maxDepth: number = Infinity) => {

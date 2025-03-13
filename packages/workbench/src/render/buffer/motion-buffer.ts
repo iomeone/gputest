@@ -61,7 +61,6 @@ export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
 
   return gather(targets, (targets: OffscreenRenderContext[]) => {
     const motionContext = useCombinedRenderTarget(targets);
-    console.log({motionContext})
     return yeet({
       buffers: { motion: [motionContext] },
     });

@@ -352,3 +352,19 @@ export const splitCubeTexture = (texture: TextureSource): TextureSource[] => {
     });
   });
 };
+
+export const splitHistoryTexture = (texture: TextureSource): TextureSource[] => {
+  const {history} = texture;
+
+  const mainLabel = notEmptyString(texture?.label) ?? notEmptyString(texture?.view?.label) ?? notEmptyString(texture?.texture?.label);
+  
+  const rest = history.map((t, i) => {
+    const historyLabel = `History T-${i + 1}`;  
+    const slotLabel = [mainLabel, historyLabel].filter(s => s != null).join(' – ');
+    return { ...t, label: slotLabel };
+  });
+
+  return [{...texture, history: undefined}, ...rest];
+};
+
+export const notEmptyString = (s?: string | null) => s?.length ? s : null;

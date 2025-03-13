@@ -5,7 +5,7 @@ import type { PassBinding } from '../pass/types';
 import { seq } from '@use-gpu/core';
 import { useMemo } from '@use-gpu/live';
 import { makeBindGroupLayout, makeBindGroupLayoutEntries, makeRawBindingForAttribute } from '@use-gpu/core';
-import { bundleToBindings } from '@use-gpu/shader/wgsl';
+import { attributeToFields, bundleToBindings } from '@use-gpu/shader/wgsl';
 
 import { useDeviceContext } from '../providers/device-provider';
 
@@ -65,6 +65,10 @@ export const getBindGroupLayout = (
 
     bindingIndices.push(indices);
   }
+
+  //console.log({allAttributes})
+  const fields = allAttributes.map(b => b && ({...b, format: attributeToFields(b), type: undefined }));
+  //console.log({fields})
   
   const rawBindings = allAttributes.map(makeRawBindingForAttribute);
 

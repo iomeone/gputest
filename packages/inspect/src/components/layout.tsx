@@ -26,7 +26,7 @@ export const Button = styled('button', {
 
 export const SmallButton = styled('button', {
   border: 0,
-  padding: '5px 10px',
+  padding: '5px 8px',
   background: 'var(--LiveInspect-backgroundInactive)',
   color: 'var(--LiveInspect-colorText)',
   '&:focus': {

@@ -96,6 +96,7 @@ export const makeStructAggregateBuffer = (
 ): StructAggregateBuffer => {
 
   const aggregate = makeStructAggregate(attributes, length, keys);
+  const {layout} = aggregate;
 
   const buffer = makeStorageBuffer(device, aggregate.raw.byteLength);
   const source: StorageSource = {
@@ -104,6 +105,8 @@ export const makeStructAggregateBuffer = (
     length,
     size: [length],
     version: 0,
+
+    minBindingSize: layout.length,
   };
 
   return {buffer, source, ...aggregate};

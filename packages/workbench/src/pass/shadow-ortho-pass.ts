@@ -12,10 +12,10 @@ import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
 
+import { useCopyDepth } from '../render/copy/value-copy';
 import { SHADOW_PAGE } from '../render/light/light-data';
 
 import { useDynamicViewBinding, useApplyPassBindGroup } from './bindings';
-import { useDepthCopy } from './depth-copy';
 import { drawToPass } from './util';
 
 const {quote} = QueueReconciler;
@@ -79,7 +79,7 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
   const projectionMatrix = useOne(() => mat4.fromValues(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1));
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const clearDepthBuffer = useDepthCopy(renderContext, null, null, shadowUV!, SHADOW_PAGE);
+  const clearDepthBuffer = useCopyDepth(renderContext, null, null, shadowUV!, SHADOW_PAGE);
 
   const draw = quote(yeet(() => {
     let vs = 0;
