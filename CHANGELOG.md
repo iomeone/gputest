@@ -1,9 +1,16 @@
 0.14.x
-- `@use-gpu/core`: Improved support for `uniform` storage
-- `@use-gpu/inspect-gpu`: Inspect uniforms and bindings on sub-passes.
+- `@use-gpu/core`: Full support for `uniform` storage
+- `@use-gpu/layout`: Improved pixel hinting for text
+- `@use-gpu/inspect`: Add filtering to tree view
+- `@use-gpu/inspect`: Inspector value formatting improvements
+- `@use-gpu/inspect-gpu`: Inspect uniforms and bindings on sub-passes
+- `@use-gpu/inspect-gpu`: Improved texture display and info
 - `@use-gpu/shader`: Improved support for static bindings and `uniform` storage
 - `@use-gpu/shader`: Allow inferring primitive types via `@infer`
-- `@use-gpu/workbench`: Merge global and per-pass bind group to save a slot.
+- `@use-gpu/shader`: Fallback to last `@export` as `main()` in inline WGSL snippets
+- `@use-gpu/workbench`: Merge global and per-pass bind group to save a slot
+- `@use-gpu/workbench`: Refactor `<Pass>` internals with modular bindings and buffers
+- `@use-gpu/workbench`: Add screen-space ambient occlusion (GTAO)
 
 0.13.1
 - `@use-gpu/app`: Add path tracing + debug picking example.
@@ -11,17 +18,17 @@
 - `@use-gpu/workbench`: Add `<On>` helper for quick dispatch/render callbacks.
 
 0.13.0
-- `@use-gpu/app`: Add solar system example.
-- `@use-gpu/plot`: Support aggregation of label texts with spread.
+- `@use-gpu/app`: Add solar system example
+- `@use-gpu/plot`: Support aggregation of label texts with spread
 - `@use-gpu/layout`: Rename `<Transform>` to `<TransformUI>`
 - `@use-gpu/scene`: Support pickable `<Instances>` with per instance `lookup`
-- `@use-gpu/wgsl-loader`: Pass `minify` option to rollup plug-in.
+- `@use-gpu/wgsl-loader`: Pass `minify` option to rollup plug-in
 - `@use-gpu/workbench`: Add `<RenderCubeTarget>`, `<ColorCubePass>` and `<CubeCamera>` with example
 - `@use-gpu/workbench`: Fix JSX type of <Dispatch> and <DrawCall> for React 18
 - `@use-gpu/workbench`: Allow `format`-less <RenderTarget>
 - `@use-gpu/workbench`: Add zBias to `<LabelLayer>`
 - `@use-gpu/workbench`: Allow adjusting `speed` of `<Animate>` without resetting.
-- `@use-gpu/workbench`: Add `<ValueShader>` which acts like a lazy `map(…)`.
+- `@use-gpu/workbench`: Add `<ValueShader>` which acts like a lazy `map(…)`
 
 0.12.0
 - `@use-gpu/*`: add `ts-vite` example
