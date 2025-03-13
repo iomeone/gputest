@@ -38,6 +38,7 @@ export type OptionsState = {
   highlight: boolean,
   inspect: boolean,
   tab: string,
+  preferredTab: string,
   splitLeft: number,
   splitBottom: number,
   filters: number[],

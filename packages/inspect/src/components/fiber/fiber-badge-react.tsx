@@ -5,7 +5,10 @@ type FiberBadgeReactProps = {
   root?: boolean,
 };
 
-const INSPECT_STYLE = '5px solid rgba(76, 229, 255, 1)';
+const OUTLINE_COLOR = 'rgba(76, 229, 255, 1)';
+
+const OUTLINE_STYLE = `2px solid ${OUTLINE_COLOR}`;
+const BOX_SHADOW_STYLE = `inset 0 0 0 2px ${OUTLINE_COLOR}`;
 
 export const FiberBadgeReact: React.FC<FiberBadgeReactProps> = ({
   reactNode,
@@ -22,15 +25,18 @@ export const FiberBadgeReact: React.FC<FiberBadgeReactProps> = ({
   const [hovered, setHovered] = useState(false);
 
   const handlers = useMemo(() => {
-    let style: string | null = null;
+    let outlineStyle: string | null = null;
+    let boxShadowStyle: string | null = null;
 
     const onMouseEnter = () => {
       const {stateNode} = reactNode;
       const element = (stateNode?.containerInfo ?? stateNode) as any;
       if (!element) return;
 
-      style = element.style?.outline;
-      element.style?.setProperty('outline', INSPECT_STYLE);
+      outlineStyle = element.style?.outline;
+      boxShadowStyle = element.style?.boxShadow;
+      element.style?.setProperty('outline', OUTLINE_STYLE);
+      element.style?.setProperty('box-shadow', BOX_SHADOW_STYLE);
       setHovered(true);
     };
 
@@ -39,7 +45,8 @@ export const FiberBadgeReact: React.FC<FiberBadgeReactProps> = ({
       const element = (stateNode?.containerInfo ?? stateNode) as any;
       if (!element) return;
 
-      element.style?.setProperty('outline', style);
+      element.style?.setProperty('outline', outlineStyle);
+      element.style?.setProperty('box-shadow', boxShadowStyle);
       setHovered(false);
     };
 

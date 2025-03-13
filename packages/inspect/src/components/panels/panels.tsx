@@ -17,11 +17,12 @@ export type PanelsProps = {
   api: InspectAPI,
   fullSize?: boolean,
   tab: string,
+  preferredTab: string,
   onTab: (s: Update<string>) => void,
 };
 
 export const Panels: FC<PanelsProps> = (props: PanelsProps) => {
-  const {fiber, api, fullSize, tab, onTab } = props;
+  const {fiber, api, fullSize, tab, preferredTab, onTab } = props;
 
   const {fibers} = usePingContext();
   const {props: panels} = useAddIns();
@@ -33,7 +34,11 @@ export const Panels: FC<PanelsProps> = (props: PanelsProps) => {
   const {tabs} = useAppearance();
 
   const active = panels.filter((panel) => panel.enabled(fiber, fibers));
-  const currentTab = active.find((panel) => panel.key === tab) ?? active[0];
+  const currentTab = (
+    active.find((panel) => panel.key === tab) ??
+    active.find((panel) => panel.key === preferredTab) ??
+    active[0]
+  );
   if (!currentTab) return null;
 
   const Wrap = fullSize ? InsetLeftRightBottom : Inset;

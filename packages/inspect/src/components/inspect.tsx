@@ -1,5 +1,6 @@
 import type { LiveFiber } from '@use-gpu/live';
 import type { ExpandState, SelectState, HoverState, OptionsState, FocusState, InspectAPI } from './types';
+import { FiberTag } from './types';
 
 import { YEET } from '@use-gpu/live';
 import { useUpdateState, useCursor } from '@use-gpu/state/react';
@@ -10,6 +11,8 @@ import React, { useCallback, useLayoutEffect, useEffect, useMemo, useState } fro
 import { makeUseLocalState } from '../hooks/useLocalState';
 import { PingProvider, usePingContext } from '../providers/ping-provider';
 import { useAppearance } from '../providers/appearance-provider';
+
+import { getFiberTags } from './fiber/tag';
 
 import { FiberTree } from './fiber/fiber-tree';
 import { ToolbarFilter } from './toolbar/toolbar-filter';
@@ -36,6 +39,7 @@ const INITIAL_STATE = {
   highlight: true,
   inspect: false,
   tab: 'props',
+  preferredTab: 'props',
   splitLeft: 33,
   splitBottom: 50,
   filterTags: 511,
@@ -98,6 +102,7 @@ export const Inspect: React.FC<InspectProps> = ({
   const [builtins] = optionsCursor.builtins();
   const [highlight] = optionsCursor.highlight();
   const [tab, updateTab] = optionsCursor.tab();
+  const [preferredTab, updatePreferredTab] = optionsCursor.preferredTab();
   const [splitLeft, setSplitLeft] = optionsCursor.splitLeft();
   const [splitBottom, setSplitBottom] = optionsCursor.splitBottom();
   const [, updateInspect] = optionsCursor.inspect();
@@ -173,7 +178,15 @@ export const Inspect: React.FC<InspectProps> = ({
       }));
 
     const makeHandlers = (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>, renderDepth: number = 0) => {
-      const select = (e?: MouseEvent) => { selectFiber(fiber); e?.stopPropagation(); };
+      const select = (e?: MouseEvent) => {
+        selectFiber(fiber); e?.stopPropagation();
+
+        const tag = getFiberTags(fiber);
+        if (tag & FiberTag.Layout) updatePreferredTab('layout');
+        if (tag & FiberTag.Output) updatePreferredTab('targets');
+        if (tag & FiberTag.Compute) updatePreferredTab('compute');
+        if (tag & FiberTag.Raster) updatePreferredTab('fragment');
+      };
       const hover = (e: MouseEvent) => hoverFiber(fiber, fibers, renderDepth, e.altKey);
       const unhover = (e: MouseEvent) => hoverFiber(null, null, 0, e.altKey);
       const focus = () => focusFiber(fiber);
@@ -182,7 +195,7 @@ export const Inspect: React.FC<InspectProps> = ({
     }
 
     return {selectFiber, focusFiber, hoverFiber, makeHandlers};
-  }, [rootId, updateSelected, updateFocused, updateHovered]);
+  }, [rootId, updateSelected, updateFocused, updateHovered, updateTab]);
 
   const sidebar = (
     <InsetColumnFull>
@@ -239,7 +252,7 @@ export const Inspect: React.FC<InspectProps> = ({
                   : {width: (100 - splitLeft) + '%'}
                 }>
                 <PanelScrollable>
-                  <Panels fiber={selectedFiber} api={api} fullSize={fullSize} tab={tab} onTab={updateTab} />
+                  <Panels fiber={selectedFiber} api={api} fullSize={fullSize} tab={tab} preferredTab={preferredTab} onTab={updateTab} />
                 </PanelScrollable>
                 {resize && fullSize ? <Resizer side="top" value={splitBottom} onChange={setSplitBottom} /> : null}
               </RowPanel>

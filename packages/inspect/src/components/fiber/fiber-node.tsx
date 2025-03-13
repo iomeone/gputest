@@ -14,6 +14,7 @@ import { ExpandState } from '../types';
 import { Muted, InlineButton } from '../layout';
 import { IconItem, SVGNextOpen, SVGNextClosed, SVGNextFence } from '../svg';
 
+import { FiberDot } from './fiber-dot';
 import { FiberBadge } from './fiber-badge';
 import { FiberBadgeReact } from './fiber-badge-react';
 import { getFiberTags } from './tag';
@@ -211,7 +212,28 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
       ooo={ooo}
       absolute={!!shouldAbsolute}
     />
-  ) : null;
+  ) : (
+    <FiberDot
+      key={id}
+      fiber={fiber}
+      selected={selected}
+      hovered={hovered}
+      parents={parents}
+      precedes={precedes}
+      depends={depends}
+      quoted={!!quoted}
+      unquoted={!!unquoted}
+      depth={styleDepth}
+      runCount={runCounts}
+      onClick={select}
+      onDoubleClick={focus}
+      onMouseEnter={hover}
+      onMouseLeave={unhover}
+      ref={rowRef}
+      ooo={ooo}
+      absolute={!!shouldAbsolute}
+    />
+  );
 
   // Render single child
   if (mount) {
@@ -326,7 +348,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   if (!shouldRender) {
     if (skipDepth) return childRender;
     return (<>
-      <TreeRowOmitted indent={indent + 1}>{badgeRender}</TreeRowOmitted>
+      <TreeRowOmitted indent={indent + 1} avoidOverlap={shouldAbsolute}>{badgeRender}</TreeRowOmitted>
       {childRender}
       {nextRender}
     </>);

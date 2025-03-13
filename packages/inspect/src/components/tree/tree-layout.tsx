@@ -92,9 +92,9 @@ export const TreeRow: FC<TreeIndentProps> = ({ indent, children }: TreeIndentPro
   </TreeRowInner>
 );
 
-export const TreeRowOmitted: FC<TreeIndentProps> = ({ indent, children }: TreeIndentProps) => (
+export const TreeRowOmitted: FC<TreeIndentProps> = ({ avoidOverlap, indent, children }: TreeIndentProps) => (
   <TreeRowOmittedChunk>
-    {children ? <TreeRowAvoidOverlap indent={(indent || 0) * 20}>{children}</TreeRowAvoidOverlap> : null}
+    {children ? !avoidOverlap ? children : <TreeRowAvoidOverlap indent={(indent || 0) * 20}>{children}</TreeRowAvoidOverlap> : null}
   </TreeRowOmittedChunk>
 );
 
@@ -132,7 +132,7 @@ export const TreeRowAvoidOverlap: FC<TreeRowAvoidOverlapProps> = ({ indent, chil
     const parent = el.parentElement;
     let sib = parent;
     while (sib = sib.previousElementSibling) {
-      if (sib.children.length) break;
+      if (sib.children.length && sib.children[0].classList.contains('avoidOverlap')) break;
     }
 
     const previous = sib?.children[0];
@@ -149,5 +149,5 @@ export const TreeRowAvoidOverlap: FC<TreeRowAvoidOverlapProps> = ({ indent, chil
     el.style.marginLeft = `${maxIndent}px`;
   });
   
-  return <TreeRowOmittedInner ref={ref} style={{marginLeft: indent}}>{children}</TreeRowOmittedInner>;
+  return <TreeRowOmittedInner ref={ref} style={{marginLeft: indent}} className="avoidOverlap">{children}</TreeRowOmittedInner>;
 };

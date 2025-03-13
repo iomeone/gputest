@@ -2,7 +2,7 @@ import type { LiveFiber } from '@use-gpu/live';
 import type { InspectExtension, InspectAddIns } from '@use-gpu/inspect';
 
 import React from 'react';
-import { FiberTag, IconItem, SVGAtom, SVGDashboard, SVGHighlightElement, SVGNextOpen, SVGViewOutput, SVGRaster, SVGCompute } from '@use-gpu/inspect';
+import { FiberTag, IconItem, SVGAtom, SVGDashboard, SVGHighlightElement, SVGNextOpen, SVGViewOutput, SVGRaster, SVGCompute, SVGOther } from '@use-gpu/inspect';
 
 import { renderCanvas } from './canvas';
 import { renderGeometry } from './geometry';
@@ -24,7 +24,7 @@ export const inspectGPU: InspectExtension = (): InspectAddIns => ({
       label: 'Pass',
       icon: <SVGNextOpen />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.pass,
-      render: (fiber: LiveFiber<any>) => renderShader({fiber, type: 'compute'}),
+      render: (fiber: LiveFiber<any>) => renderShader({fiber, type: ''}),
     },
     {
       key: 'compute',
@@ -50,7 +50,7 @@ export const inspectGPU: InspectExtension = (): InspectAddIns => ({
     {
       key: 'geometry',
       label: 'Geometry',
-      icon: <SVGHighlightElement />,
+      icon: <SVGOther />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.render,
       render: (fiber: LiveFiber<any>) => renderGeometry({fiber}),
     },

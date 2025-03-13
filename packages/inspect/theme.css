@@ -165,13 +165,28 @@ html > body .LiveInspect ::-webkit-scrollbar {
   position: relative;
 }
 
+.LiveInspect div.fiber-tree-dot {
+  position: absolute;
+  left: 12px;
+}
+.LiveInspect div.fiber-tree-dot * {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
 .LiveInspect div.fiber-tree-node.mounted,
-.LiveInspect div.fiber-tree-node.pinged {
+.LiveInspect div.fiber-tree-node.pinged,
+.LiveInspect div.fiber-tree-dot.mounted,
+.LiveInspect div.fiber-tree-dot.pinged {
   background: rgba(0, 0, 0, 1.0);
 }
 
 .LiveInspect div.fiber-tree-node.mounted.cold,
-.LiveInspect div.fiber-tree-node.pinged.cold {
+.LiveInspect div.fiber-tree-node.pinged.cold,
+.LiveInspect div.fiber-tree-dot.mounted.cold,
+.LiveInspect div.fiber-tree-dot.pinged.cold {
   background: rgba(0, 0, 0, 0.0);
 
   animation-name: shadeAnimation;
@@ -179,18 +194,19 @@ html > body .LiveInspect ::-webkit-scrollbar {
   animation-iteration-count: 1;
 }
 
-.LiveInspect div.fiber-tree-node.selected {
+.LiveInspect div.fiber-tree-node.selected,
+.LiveInspect div.fiber-tree-dot.selected {
   z-index: 2;
 }
 
-.LiveInspect div.fiber-tree-node.hovered {
+.LiveInspect div.fiber-tree-node.hovered,
+.LiveInspect div.fiber-tree-dot.hovered {
   z-index: 3;
 }
 
 .LiveInspect div.fiber-tree-node.builtin {
   color: var(--LiveInspect-colorTextMuted);
 }
-
 
 .LiveInspect div.fiber-tree-highlight.selected {
   background: rgba(50, 130, 200, 1.0);
