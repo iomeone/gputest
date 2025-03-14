@@ -46,6 +46,9 @@ export const SmallButton = styled('button', {
     background: 'var(--LiveInspect-backgroundOn)',
     color: 'var(--LiveInspect-colorTextOn)',
   },
+  '&.active:hover': {
+    background: 'var(--LiveInspect-backgroundOnHover)',
+  },
   '&.active:active': {
     background: 'var(--LiveInspect-backgroundOnActive)',
   },
