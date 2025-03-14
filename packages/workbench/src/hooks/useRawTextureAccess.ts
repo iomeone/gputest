@@ -1,6 +1,6 @@
 import type { Lazy, LambdaSource, TextureSource, VectorLike } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
-import { TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
+import { getTextureSampleType } from '@use-gpu/core';
 
 import { useMemo } from '@use-gpu/live';
 import { proxy, resolve } from '@use-gpu/core';
@@ -29,8 +29,8 @@ export const getRawTextureAccess = (
   const b = offset != null ? () => resolve(offset) : null;
   const l = getSource({ name: 'level', format: 'u32', args: ['u32'] }, level);
 
-  const {format} = texture;
-  const type = TEXTURE_SAMPLE_TYPES[format];
+  const {format, aspect} = texture;
+  const type = getTextureSampleType(format, aspect);
   const f = format.match(/depth/) ? type : `vec4<${type}>`;
   const t = getSource({ name: 'texture', format: f, args: ['vec2<u32>', 'u32'] }, texture);
 
@@ -53,8 +53,8 @@ export const getTextureAccess = (
   const i = index ? getSource({ name: 'index', format: 'u32', args: [] }, index) : null;
   const t = proxy(texture, { variant: 'textureLoad', sampler: null });
 
-  const {layout, format} = texture;
-  const type = TEXTURE_SAMPLE_TYPES[format];
+  const {layout, format, aspect} = texture;
+  const type = getTextureSampleType(format, aspect);
 
   const f = format.match(/depth/) ? type : `vec4<${type}>`;
   const isArray = !!layout.match(/array/);

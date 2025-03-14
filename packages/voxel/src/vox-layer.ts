@@ -468,7 +468,6 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
         sdf, palette, pbr, ...sources
       ], defs);
       const getDepth = bindEntryPoint(getSurface, "mainDepthOnly");
-      console.log({getSurface, getDepth})
 
       const environmentMap = useEnvironmentContext();
       const getEnvironment = environmentMap

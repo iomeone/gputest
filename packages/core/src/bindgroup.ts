@@ -38,11 +38,14 @@ const BINDING_SAMPLE_TYPES = {
 /**
  * Parse texture format and sampler variant into binding properties
  */
-const parseTextureType = (format: string, variant: string | null) => {
+const parseTextureType = (format: string, variant: string | null, aspect: string) => {
   const [layout, type] = format.split(/[<>,]/);
   if (layout in BINDING_TEXTURE_TYPES) {
     const props = BINDING_TEXTURE_TYPES[layout];
-    if ('sampleType' in props) return {texture: props};
+    if ('sampleType' in props) {
+      if (aspect === 'stencil-only') return {texture: {...props, sampleType: 'uint'}};
+      return {texture: props};
+    }
 
     if (type && (type[0] in BINDING_SAMPLE_TYPES)) {
       let sampleType = BINDING_SAMPLE_TYPES[type[0]];
@@ -107,8 +110,9 @@ export const makeBindGroupLayoutEntry = (
 
     const textureType = b.attribute.args ? b.texture.layout : (b.attribute.format as string);
     const textureVariant = b.texture.variant ?? (b.attribute.args ? null : 'textureLoad');
+    const textureAspect = b.texture.aspect ?? 'depth-only';
 
-    const props = parseTextureType(textureType, textureVariant);
+    const props = parseTextureType(textureType, textureVariant, textureAspect);
 
     const texture = {binding, visibility, ...props};
 

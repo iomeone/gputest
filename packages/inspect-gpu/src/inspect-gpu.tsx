@@ -69,8 +69,8 @@ export const inspectGPU: InspectExtension = (): InspectAddIns => ({
       render: (fiber: LiveFiber<any>) => renderGeometry({fiber}),
     },
     {
-      key: 'targets',
-      label: 'Targets',
+      key: 'textures',
+      label: 'Textures',
       icon: <SVGViewOutput />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.output,
       render: (fiber: LiveFiber<any>) => renderTargets({fiber}),
@@ -115,8 +115,8 @@ export const inspectGPU: InspectExtension = (): InspectAddIns => ({
       group: 0,
     },
     {
-      key: FiberTag.Output,
-      label: 'Output',
+      key: FiberTag.Texture,
+      label: 'Textures',
       icon: <SVGViewOutput />,
       group: 0,
     },

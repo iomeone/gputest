@@ -2,7 +2,7 @@ import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/liv
 import type { ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, yeet, fence, useContext, useMemo } from '@use-gpu/live';
-import { seq, TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
+import { seq, getTextureSampleType } from '@use-gpu/core';
 import { PRESENTATION_FORMAT, COLOR_SPACE } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
@@ -96,7 +96,7 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureB
     const size = [width, height] as [number, number];
     const volatile = history ? history + 1 : 0;
 
-    const type = TEXTURE_SAMPLE_TYPES[format];
+    const type = getTextureSampleType(format);
     const layout = `texture_2d<${type}>`;
 
     const variant = filterable

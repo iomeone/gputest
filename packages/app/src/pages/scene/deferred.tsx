@@ -87,7 +87,7 @@ export const SceneDeferredPage: LC = () => {
         GPUGeometry,
         TextureSource,
       ]) => (
-        <LinearRGB tonemap="aces" gain={1} samples={1}>
+        <LinearRGB tonemap="aces" gain={1} samples={1} depthStencil="depth32float-stencil8">
           <Cursor cursor='move' />
           <Camera>
             <Pass lights shadows mode="deferred">

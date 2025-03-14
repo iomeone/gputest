@@ -5,7 +5,7 @@ export enum FiberTag {
   Quote = 1,
   Yeet = 2,
   React = 4,
-  Output = 8,
+  Texture = 8,
   Layout = 16,
   Raster = 32,
   Compute = 64,

@@ -155,7 +155,7 @@ export const Inspect: React.FC<InspectProps> = ({
         if (tag & FiberTag.Data) updatePreferredTab('data');
         if (tag & FiberTag.View) updatePreferredTab('view');
         if (tag & FiberTag.Layout) updatePreferredTab('layout');
-        if (tag & FiberTag.Output) updatePreferredTab('targets');
+        if (tag & FiberTag.Texture) updatePreferredTab('textures');
         if (tag & FiberTag.Compute) updatePreferredTab('compute');
         if (tag & FiberTag.Raster) updatePreferredTab('fragment');
       }

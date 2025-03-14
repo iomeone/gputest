@@ -2,7 +2,7 @@ import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { Blending, OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
-import { TEXTURE_SAMPLE_TYPES } from '@use-gpu/core';
+import { getTextureSampleType } from '@use-gpu/core';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
@@ -173,7 +173,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       const view = targetTexture.createView();
       const volatile = history ? history + 1 : 0;
 
-      const type = TEXTURE_SAMPLE_TYPES[format];
+      const type = getTextureSampleType(format);
       const layout = `texture_2d<${type}>`;
 
       const swap = () => {

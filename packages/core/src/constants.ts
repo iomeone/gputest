@@ -8,7 +8,7 @@ export const TYPED_ARRAYS: TypedArrayConstructor[] = [
   Float32Array, Float64Array,
 ];
 
-export const TYPED_ARRAYS_BITS = new Map([
+const TYPED_ARRAYS_BITCOUNT = new Map([
   [Int8Array, 8],
   [Uint8Array, 8],
   [Int16Array, 16],
@@ -591,6 +591,12 @@ export const TEXTURE_FORMAT_SIZES = {
   "depth24plus-stencil8": 4,
   "depth32float": 4,
 
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": 4,
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": 0,
+
   /*
   // BC compressed formats usable if "texture-compression-bc" is both
   // supported by the device/user agent and enabled in requestDevice.
@@ -653,11 +659,6 @@ export const TEXTURE_FORMAT_SIZES = {
   "astc-12x12-unorm",
   "astc-12x12-unorm-srgb",
 
-  // "depth24unorm-stencil8" feature
-  "depth24unorm-stencil8",
-
-  // "depth32float-stencil8" feature
-  "depth32float-stencil8",
   */
 } as Record<GPUTextureFormat, number>;
 
@@ -715,6 +716,12 @@ export const TEXTURE_FORMAT_DIMS = {
   "depth24plus": 1,
   "depth24plus-stencil8": 1,
   "depth32float": 1,
+
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": 1,
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": 1,
 } as Record<GPUTextureFormat, number>;
 
 export const TEXTURE_ARRAY_TYPES = {
@@ -771,6 +778,12 @@ export const TEXTURE_ARRAY_TYPES = {
   "depth24plus": Uint32Array,
   "depth24plus-stencil8": Uint32Array,
   "depth32float": Uint32Array,
+
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": Uint32Array,
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": Uint32Array,
 } as Record<GPUTextureFormat, TypedArrayConstructor>;
 
 export const TEXTURE_SHADER_TYPES = {
@@ -827,9 +840,15 @@ export const TEXTURE_SHADER_TYPES = {
   "depth24plus": 'u32',
   "depth24plus-stencil8": 'u32',
   "depth32float": 'f32',
+
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": 'f32',
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": 'f32',
 } as Record<GPUTextureFormat, string>;
 
-export const TEXTURE_SAMPLE_TYPES = {
+const TEXTURE_SAMPLE_TYPES = {
   // 8-bit formats
   "r8unorm": 'f32',
   "r8snorm": 'f32',
@@ -883,7 +902,25 @@ export const TEXTURE_SAMPLE_TYPES = {
   "depth24plus": 'u32',
   "depth24plus-stencil8": 'u32',
   "depth32float": 'f32',
+
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": 'f32',
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": 'f32',
 } as Record<GPUTextureFormat, string>;
+
+export const getTypedArraysBitCount = (ctor: TypedArrayConstructor) => TYPED_ARRAYS_BITCOUNT.get(ctor);
+
+export const getTextureArrayType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only') => {
+  if (aspect === 'stencil-only') return Uint8Array;
+  return TEXTURE_ARRAY_TYPES[format];
+};
+
+export const getTextureSampleType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only') => {
+  if (aspect === 'stencil-only') return 'u32';
+  return TEXTURE_SAMPLE_TYPES[format];
+};
 
 // @ts-ignore
 export const VERTEX_ATTRIBUTE_SIZES = VERTEX_SIZES as {[v in GPUVertexFormat]: number};

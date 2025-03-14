@@ -59,7 +59,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   const quote = tags & FiberTag.Quote;
   const yeet = tags & FiberTag.Yeet;
   const react = tags & FiberTag.React;
-  const output = tags & FiberTag.Output;
+  const texture = tags & FiberTag.Texture;
   const layout = tags & FiberTag.Layout;
   const raster = tags & FiberTag.Raster;
   const compute = tags & FiberTag.Compute;
@@ -71,7 +71,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   const suffix3 = !layout && __inspect?.setHovered ? <SVGHighlightElement key="layout" title="Highlight" /> : null;
   const suffix4 = layout ? <SVGDashboard key="dash" title="Layout" /> : null;
   const suffix5 = quote ? <SVGQuote key="quote" title="Quote" /> : null;
-  const suffix6 = output ? <SVGViewOutput key="output" title="Output" /> : null;
+  const suffix6 = texture ? <SVGViewOutput key="texture" title="Texture" /> : null;
   const suffix7 = raster ? <SVGRaster key="raster" title="Raster" /> : null;
   const suffix8 = compute ? <SVGCompute key="compute" title="Compute" /> : null;
   const suffix9 = view ? <SVGCamera key="view" title="View" /> : null;

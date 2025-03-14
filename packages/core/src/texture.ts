@@ -1,5 +1,5 @@
 import type { DataTexture, ExternalTexture, VectorLike, XY, XYZ, TextureSource } from './types';
-import { TEXTURE_FORMAT_SIZES, TEXTURE_SAMPLE_TYPES } from './constants';
+import { TEXTURE_FORMAT_SIZES, getTextureSampleType } from './constants';
 import { proxy } from './lazy';
 import { seq } from './tuple';
 import { toTypeString } from './uniform';
@@ -301,21 +301,21 @@ export const checkTextureType = (
   const {name, format: from} = attribute;
   if (Array.isArray(from)) throw new Error(`Invalid texture attribute '${name}'.`);
 
-  const format = link.format;
+  const {aspect, format} = link;
 
   // e.g. `texture_2d<f32>`
   // e.g. `texture_storage_2d<rgba16float, write>`
   const [layout, type] = from.split(/[<>,]/);
 
   // Storage texture has pixel format in type
-  if (type in TEXTURE_SAMPLE_TYPES && type === format) return;
+  if (type in TEXTURE_FORMAT_SIZES && type === format) return;
 
   // Depth texture has implicit pixel type
   if (layout.match(/^texture_depth/) && format.match(/^depth/)) return;
 
   // texture_xxx<type> or vec#<type>
   const fromName = toTypeString(from);
-  const toName = TEXTURE_SAMPLE_TYPES[format];
+  const toName = getTextureSampleType(format, aspect);
 
   let f = fromName;
   let t = toName;
