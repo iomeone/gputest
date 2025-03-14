@@ -216,7 +216,7 @@ html > body .LiveInspect ::-webkit-scrollbar {
   height: 24px;
 }
 .LiveInspect div.fiber-tree-highlight.section {
-  background: rgba(90, 90, 100, 1.0);
+  background: rgba(70, 70, 90, 1.0);
   left: -1000px;
 }
 .LiveInspect div.fiber-tree-highlight.selected {

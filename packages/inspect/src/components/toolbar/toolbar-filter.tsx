@@ -32,14 +32,14 @@ export const ToolbarFilter: FC<ToolbarFilterProps> = (props: ToolbarFilterProps)
     <ToolbarPaddedRow>
       <ToolbarLabel>Filter</ToolbarLabel>
       <Row style={{ gap: 8 }}>
-        {groups.map((group) => (
-          <Row>
+        {groups.map((group, i) => (
+          <Row key={i.toString()}>
             {group.map((filter) => {
               const {key, label, icon} = filter;
 
               const active = filters & filter.key;
               const className = active ? 'active' : '';
-        
+
               return (
                 <SmallButton
                   key={key}

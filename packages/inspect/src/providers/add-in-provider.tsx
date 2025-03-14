@@ -79,15 +79,15 @@ export const defaultPanels: InspectExtension = (): InspectAddIns => ({
       group: 1,
     },
     {
-      key: FiberTag.Other,
-      label: 'Other',
-      icon: <SVGOther />,
-      group: 1e5,
-    },
-    {
       key: FiberTag.By,
       label: 'Include Rendered By',
       icon: <SVGChevronDown />,
+      group: 1e5,
+    },
+    {
+      key: FiberTag.Other,
+      label: 'Other',
+      icon: <SVGOther />,
       group: 1e5,
     },
   ],

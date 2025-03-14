@@ -147,8 +147,21 @@ export const Inspect: React.FC<InspectProps> = ({
       setVersion(incrementVersion);
     };
 
-    const selectFiber = (fiber: LiveFiber<any> | null = null) =>
+    const selectFiber = (fiber: LiveFiber<any> | null = null) => {
       updateSelected({ $set: fiber });
+
+      if (fiber) {
+        const tag = getFiberTags(fiber);
+        if (tag & FiberTag.View) updatePreferredTab('view');
+        if (tag & FiberTag.Layout) updatePreferredTab('layout');
+        if (tag & FiberTag.Output) updatePreferredTab('targets');
+        if (tag & FiberTag.Compute) updatePreferredTab('compute');
+        if (tag & FiberTag.Raster) updatePreferredTab('fragment');
+      }
+      if (!fiber) {
+        updateTab(null);
+      }
+    }
 
     const focusFiber = (fiber: LiveFiber<any> | null = null) => {
       const id = fiber?.id;
@@ -183,16 +196,7 @@ export const Inspect: React.FC<InspectProps> = ({
       }));
 
     const makeHandlers = (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>, renderDepth: number = 0) => {
-      const select = (e?: MouseEvent) => {
-        selectFiber(fiber); e?.stopPropagation();
-
-        const tag = getFiberTags(fiber);
-        if (tag & FiberTag.View) updatePreferredTab('view');
-        if (tag & FiberTag.Layout) updatePreferredTab('layout');
-        if (tag & FiberTag.Output) updatePreferredTab('targets');
-        if (tag & FiberTag.Compute) updatePreferredTab('compute');
-        if (tag & FiberTag.Raster) updatePreferredTab('fragment');
-      };
+      const select = (e?: MouseEvent) => { selectFiber(fiber); e?.stopPropagation(); };
       const hover = (e: MouseEvent) => hoverFiber(fiber, fibers, renderDepth, e.altKey);
       const unhover = (e: MouseEvent) => hoverFiber(null, null, 0, e.altKey);
       const focus = () => focusFiber(fiber);
@@ -212,7 +216,7 @@ export const Inspect: React.FC<InspectProps> = ({
       ) : null}
       <ToolbarFilter state={state} api={api} />
       <ToolbarNav state={state} api={api} />
-      <SidebarPanel key={focusedId} onClick={() => updateSelected(null)} onDoubleClick={() => updateFocused(null)}>
+      <SidebarPanel key={focusedId} onClick={() => api.selectFiber(null)} onDoubleClick={() => updateFocused(null)}>
         <FiberTree
           state={state}
           api={api}

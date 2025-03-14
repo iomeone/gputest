@@ -125,7 +125,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   renderDepth = getRenderDepth(fibers, fiber) ?? renderDepth;
 
   // Resolve node omission
-  const isFilteredOut = filterTags != 0 && !(getFiberTags(fiber) & filterTags);
+  const isFilteredOut = (filterTags & FiberTag.All) != 0 && !(getFiberTags(fiber) & filterTags);
   const isFocused = !!focusDepth || ((focusState != null) ? fiber.id === focusState : true);
   const isBuiltin = !builtins && (fiber.f?.isLiveBuiltin || fiber.f?.isLiveReconcile || fiber.f?.isLiveQuote || fiber.f?.isLiveContinuation);
   const isVisible = (
