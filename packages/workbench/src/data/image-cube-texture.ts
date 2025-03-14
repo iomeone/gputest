@@ -7,6 +7,8 @@ import { makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMip
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
+
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp, getRenderFunc } from '../hooks/useRenderProp';
 
 import { ImageLoader } from './image-loader';
@@ -43,7 +45,9 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
     mip = true,
   } = props;
 
+  const inspect = useInspectable();
   const suspense = useSuspenseContext();
+
   const fetch = useMemo(
     () => wrap(Suspense, urls.map((url: string) => keyed(ImageLoader, url, {url, format, colorSpace}))),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,6 +103,8 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
       return source;
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [resources, sampler]);
+
+    inspect({ output: { source }});
 
     return useRenderProp(props, source);
   });

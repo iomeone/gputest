@@ -149,6 +149,7 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
       format: depthStencilFormat,
       size: [width, height],
       version: 0,
+      hint: 'depth',
     } as TextureSource;
 
     const context = {

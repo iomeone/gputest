@@ -53,5 +53,5 @@ export const StyledTab = styled('button', {
 
 export const ToolbarLabel = styled('div', {
   alignSelf: 'center',
-  padding: '5px 10px',
+  padding: '5px 0',
 });

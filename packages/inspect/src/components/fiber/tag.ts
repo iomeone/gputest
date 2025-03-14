@@ -10,12 +10,13 @@ export enum FiberTag {
   Raster = 32,
   Compute = 64,
   View = 128,
-  Highlight = 256,
-  Reconcile = 512,
-  Other = 1024,
-  All = 2047,
+  Data = 256,
+  Highlight = 512,
+  Reconcile = 1024,
+  Other = 2048,
+  All = 4095,
 
-  By = 2048,
+  By = 4096,
 };
 
 export const getFiberTags = (fiber: LiveFiber<any>) => {
@@ -31,6 +32,7 @@ export const getFiberTags = (fiber: LiveFiber<any>) => {
   const raster = !!__inspect?.vertex || !!__inspect?.fragment;
   const compute = !!__inspect?.compute;
   const view = !!__inspect?.view;
+  const data = !!__inspect?.data;
   const hover = !!__inspect?.setHovered;
 
   return (
@@ -42,7 +44,8 @@ export const getFiberTags = (fiber: LiveFiber<any>) => {
     (+!!raster    << 5) |
     (+!!compute   << 6) |
     (+!!view      << 7) |
-    (+!!hover     << 8) |
-    (+!!reconcile << 9)
-  ) || (1 << 10);
+    (+!!data      << 8) |
+    (+!!hover     << 9) |
+    (+!!reconcile << 10)
+  ) || (1 << 11);
 };

@@ -41,7 +41,7 @@ const INITIAL_STATE = {
   preferredTab: 'props',
   splitLeft: 33,
   splitBottom: 50,
-  filterTags: FiberTag.All ^ FiberTag.Other ^ FiberTag.By,
+  filterTags: FiberTag.All ^ FiberTag.Other ^ FiberTag.By ^ FiberTag.Yeet ^ FiberTag.Quote,
 };
 
 type InspectProps = {
@@ -152,6 +152,7 @@ export const Inspect: React.FC<InspectProps> = ({
 
       if (fiber) {
         const tag = getFiberTags(fiber);
+        if (tag & FiberTag.Data) updatePreferredTab('data');
         if (tag & FiberTag.View) updatePreferredTab('view');
         if (tag & FiberTag.Layout) updatePreferredTab('layout');
         if (tag & FiberTag.Output) updatePreferredTab('targets');

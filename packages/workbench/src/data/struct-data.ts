@@ -136,6 +136,8 @@ export const StructData: LC<StructDataProps> = (props: StructDataProps) => {
     refresh();
   }
 
+  inspect({ data: { type, data, expr, array, source }});
+
   const trigger = useOne(() => signal(), source.version);
   const view = useRenderProp(props, source);
   return [trigger, view];

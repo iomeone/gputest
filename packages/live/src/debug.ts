@@ -211,7 +211,8 @@ export const formatPrototype = (x: any): string => {
 
     const proto = x.__proto__ !== Object.prototype ? x.__proto__.constructor.name : null;
     const label = x.label;
-    return [proto, label].filter(s => s != null).join(' ');
+    const short = signature.length === 0 ? '{}' : null;
+    return [proto, label, short].filter(s => s?.length).join(' ');
   }
   return '';
 }
@@ -238,7 +239,7 @@ export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap
 
     const proto = x.__proto__ !== Object.prototype ? x.__proto__.constructor.name : '';
     const label = x.label;
-    return proto + (label?.length ? ' ' + label : '') + (out.length ? ' {' + out.join(', ') + '}' : '');
+    return proto + (label?.length ? ' ' + label : '') + (out.length ? ' {' + out.join(', ') + '}' : '{}');
   }
   return formatShortValue(x, seen);
 }

@@ -18,9 +18,11 @@ import {
 
 import { useDeviceContext } from '../providers/device-provider';
 import { QueueReconciler } from '../reconcilers/index';
+
 import { useBufferedSize } from '../hooks/useBufferedSize';
-import { getRenderFunc } from '../hooks/useRenderProp';
+import { useInspectable } from '../hooks/useInspectable';
 import { getInstancedAggregate } from '../hooks/useInstancedSources';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
 const {signal} = QueueReconciler;
 
@@ -49,6 +51,8 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
   } = props;
 
   const device = useDeviceContext();
+  const inspect = useInspectable();
+
   const versionRef = useRef(0);
 
   const schema = useOne(() => normalizeSchema(propSchema), propSchema);
@@ -189,6 +193,8 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
       source.size[0] = i;
       source.version = version;
     }, version);
+
+    inspect({ data: { schema, aggregateBuffer, indexBuffer, sources }});
 
     const trigger = useOne(() => signal(), versionRef.current);
     return then ? [trigger, then(sources, indexBuffer?.source as any)] : trigger;

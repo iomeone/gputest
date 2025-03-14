@@ -5,6 +5,7 @@ import { useDeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { QueueReconciler } from '../reconcilers/index';
 import { useBufferedSize } from '../hooks/useBufferedSize';
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp } from '../hooks/useRenderProp';
 import { useStructSources } from '../hooks/useStructSources';
 import { useOne, useMemo, useNoMemo } from '@use-gpu/live';
@@ -41,6 +42,8 @@ export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
     schema: propSchema,
     live = false,
   } = props;
+
+  const inspect = useInspectable();
 
   const schema = useOne(() => normalizeSchema(propSchema), propSchema);
   const typedArray = useOne(() => Array.isArray(data) ? new Float32Array(data) : data ?? new Float32Array(256), data);
@@ -119,6 +122,8 @@ export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
 
   const {source} = aggregateBuffer;
   const sources = useStructSources(attributes, source, 'interleavedData');
+
+  inspect({ data: { schema, data, sources }});
 
   const trigger = useOne(() => signal(), source.version);
 

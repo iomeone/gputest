@@ -7,6 +7,8 @@ import { ImageLoader } from './image-loader';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
+
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp, getRenderFunc } from '../hooks/useRenderProp';
 
 export type ImageTextureProps = {
@@ -41,7 +43,9 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
     mip = true,
   } = props;
 
+  const inspect = useInspectable();
   const suspense = useSuspenseContext();
+
   const fetch = use(ImageLoader, {url, format, colorSpace});
 
   return gather(fetch, ([resource]: any[]) => {
@@ -88,6 +92,8 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
       return source;
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [resource, sampler]);
+
+    inspect({ output: { source }});
 
     return useRenderProp(props, source);
   });

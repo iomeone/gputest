@@ -62,7 +62,7 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
   }), [binding, cull, uniforms]);
 
   inspect({
-    view: { uniforms },
+    view: uniforms,
   });
 
   return [

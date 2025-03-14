@@ -5,6 +5,7 @@ import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provid
 import { QueueReconciler } from '../reconcilers/index';
 import { useAggregator } from '../hooks/useAggregator';
 import { useBufferedSize } from '../hooks/useBufferedSize';
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp } from '../hooks/useRenderProp';
 import { useOne, useMemo } from '@use-gpu/live';
 import {
@@ -98,6 +99,8 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
   const schema = useOne(() => normalizeSchema(propSchema), propSchema);
   const data: Record<string, any>[] | null = propData ? Array.isArray(propData) ? propData : [propData] : null;
   const itemCount = Math.max(0, count ?? ((data?.length || 0) - skip));
+
+  const inspect = useInspectable();
 
   if (itemCount === 0) return null;
 
@@ -289,6 +292,8 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
 
   if (live) useAnimationFrame();
   else useNoAnimationFrame();
+
+  inspect({ data: { schema, virtual, data: propData, items, sources }});
 
   const trigger = useOne(() => signal(), immutable ? null : items);
 

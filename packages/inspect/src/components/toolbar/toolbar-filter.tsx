@@ -30,8 +30,8 @@ export const ToolbarFilter: FC<ToolbarFilterProps> = (props: ToolbarFilterProps)
   
   return (
     <ToolbarPaddedRow>
-      <ToolbarLabel>Filter</ToolbarLabel>
       <Row style={{ gap: 8 }}>
+        <ToolbarLabel>Filter</ToolbarLabel>
         {groups.map((group, i) => (
           <Row key={i.toString()}>
             {group.map((filter) => {

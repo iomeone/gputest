@@ -1,11 +1,13 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { DataTexture, TextureSource } from '@use-gpu/core';
 
+import { yeet, useOne, useMemo, useNoMemo, useContext, useHooks, incrementVersion } from '@use-gpu/live';
+import { makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '@use-gpu/core';
+
+import { useInspectable } from '../hooks/useInspectable';
 import { DeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { QueueReconciler } from '../reconcilers/index';
-import { yeet, useOne, useMemo, useNoMemo, useContext, useHooks, incrementVersion } from '@use-gpu/live';
-import { makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '@use-gpu/core';
 
 const {signal} = QueueReconciler;
 
@@ -36,6 +38,7 @@ const countMips = (width: number, height: number): number => {
 /** Use numeric texture data as a 2D texture. */
 export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
   const device = useContext(DeviceContext);
+  const inspect = useInspectable();
 
   const {
     data,
@@ -119,6 +122,8 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
     useNoMemo();
     refresh();
   }
+
+  inspect({ output: { source }});
 
   const trigger = useOne(() => signal(), source.version);
   const view = useHooks(() => render ? render(source) : yeet(source), [render, source]);

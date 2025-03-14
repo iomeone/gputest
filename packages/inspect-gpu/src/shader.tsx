@@ -74,6 +74,7 @@ export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
   const indirect = fiber.__inspect?.indirect;
   const pass = fiber.__inspect?.pass;
   const view = fiber.__inspect?.view;
+  const data = fiber.__inspect?.data;
   
   const [state, setState] = useState<Record<string, boolean>>({});
   const toggleState = (id: string) => setState((state) => ({
@@ -117,10 +118,14 @@ export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
   const cmd = isMac ? '⌘' : 'Ctrl';
   
   return (<div style={{maxHeight: '80vh'}}>
-    {uniforms?.length || bindings?.length || volatiles?.length || indirect || pass ? (<>
+    {uniforms?.length || bindings?.length || volatiles?.length || indirect || pass || view || data ? (<>
       {indirect ? <>
         <div><b>Indirect Dispatch</b></div>
         <InspectObject object={{source: indirect}} state={state} toggleState={toggleState} path={'i'} />
+      </> : null}
+      {data ? <>
+        <div><b>Data</b></div>
+        <InspectObject object={data} state={state} toggleState={toggleState} path={'v'} />
       </> : null}
       {view ? <>
         <div><b>View</b></div>

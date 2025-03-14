@@ -16,6 +16,7 @@ import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provid
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
 import { QueueReconciler } from '../reconcilers/index';
 import { useBufferedSize } from '../hooks/useBufferedSize';
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp } from '../hooks/useRenderProp';
 import { useSource, useNoSource } from '../hooks/useSource';
 import { getShader } from '../hooks/useShader';
@@ -58,6 +59,7 @@ const NO_BOUNDS = {center: [], radius: 0, min: [], max: []} as DataBounds;
 /** 1D array of a WGSL type. Reads input `data` or samples a given `expr` of WGSL type `format`. */
 export const RawData: LiveComponent<RawDataProps<unknown & boolean>> = <I extends boolean>(props: RawDataProps<I>) => {
   const device = useContext(DeviceContext);
+  const inspect = useInspectable();
 
   const {
     format,
@@ -161,6 +163,8 @@ export const RawData: LiveComponent<RawDataProps<unknown & boolean>> = <I extend
     useNoMemo();
     refresh();
   }
+
+  inspect({data: {expr, data, array }});
 
   const trigger = useOne(() => signal(), source.version);
   const view = useRenderProp(props as any, sources ?? source);

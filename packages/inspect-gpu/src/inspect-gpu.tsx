@@ -2,7 +2,7 @@ import type { LiveFiber } from '@use-gpu/live';
 import type { InspectExtension, InspectAddIns } from '@use-gpu/inspect';
 
 import React from 'react';
-import { FiberTag, IconItem, SVGAtom, SVGDashboard, SVGHighlightElement, SVGNextOpen, SVGViewOutput, SVGRaster, SVGCompute, SVGCamera, SVGOther } from '@use-gpu/inspect';
+import { FiberTag, IconItem, SVGAtom, SVGDashboard, SVGHighlightElement, SVGNextOpen, SVGViewOutput, SVGRaster, SVGCompute, SVGCamera, SVGData, SVGOther } from '@use-gpu/inspect';
 
 import { renderCanvas } from './canvas';
 import { renderGeometry } from './geometry';
@@ -18,6 +18,13 @@ export const inspectGPU: InspectExtension = (): InspectAddIns => ({
       icon: <SVGAtom />,
       enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.canvas,
       render: (fiber: LiveFiber<any>) => renderCanvas({fiber}),
+    },
+    {
+      key: 'data',
+      label: 'Data',
+      icon: <SVGData />,
+      enabled: (fiber: LiveFiber<any>) => fiber.__inspect?.data,
+      render: (fiber: LiveFiber<any>) => renderShader({fiber, type: ''}),
     },
     {
       key: 'view',
@@ -77,6 +84,12 @@ export const inspectGPU: InspectExtension = (): InspectAddIns => ({
     },
   ],
   filters: [
+    {
+      key: FiberTag.Data,
+      label: 'Data',
+      icon: <SVGData />,
+      group: 0,
+    },
     {
       key: FiberTag.View,
       label: 'View',
