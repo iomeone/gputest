@@ -42,7 +42,7 @@ export const FiberTree: FC<FiberTreeProps> = ({
   const Wrap = legend ? TreeWrapperWithLegend : TreeWrapper;
 
   return (
-    <Wrap style={{paddingTop: (focusedId || (filterTags && filterTags !== FiberTag.All)) ? 0 : undefined}}>
+    <Wrap style={{paddingTop: (focusedId || (filterTags && (filterTags & FiberTag.All) !== FiberTag.All)) ? 0 : undefined}}>
       <FiberNode
         state={state}
         api={api}

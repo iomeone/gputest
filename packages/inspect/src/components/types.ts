@@ -71,6 +71,7 @@ export type InspectState = {
 };
 
 export type InspectAPI = {
+  forceUpdate: () => void,
   selectFiber: (fiber: LiveFiber<any> | null | undefined) => void,
   focusFiber: (fiber: LiveFiber<any> | null | undefined) => void,
   hoverFiber: (fiber: LiveFiber<any> | null | undefined, fibers: Map<number, LiveFiber<any>>, renderDepth?: number) => void,

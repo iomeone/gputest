@@ -1,7 +1,7 @@
 import type { LiveFiber } from '@use-gpu/live';
 import type { ExpandState, SelectState, HoverState, OptionsState, FocusState, InspectAPI } from './types';
 
-import { YEET } from '@use-gpu/live';
+import { YEET, incrementVersion } from '@use-gpu/live';
 import { useUpdateState, useCursor } from '@use-gpu/state/react';
 import { $apply } from '@use-gpu/state';
 
@@ -41,7 +41,7 @@ const INITIAL_STATE = {
   preferredTab: 'props',
   splitLeft: 33,
   splitBottom: 50,
-  filterTags: FiberTag.All ^ FiberTag.Other,
+  filterTags: FiberTag.All ^ FiberTag.Other ^ FiberTag.By,
 };
 
 type InspectProps = {
@@ -94,6 +94,8 @@ export const Inspect: React.FC<InspectProps> = ({
   // eslint-disable-next-line prefer-const
   let [selectedFiber, updateSelected] = selectedCursor();
 
+  const [, setVersion] = optionsCursor.version();
+
   const [filterTags] = optionsCursor.filterTags();
   const [depthLimit] = optionsCursor.depth();
   const [runCounts] = optionsCursor.counts();
@@ -141,6 +143,10 @@ export const Inspect: React.FC<InspectProps> = ({
 
   const api: InspectAPI = useMemo(() => {
 
+    const forceUpdate = () => {
+      setVersion(incrementVersion);
+    };
+
     const selectFiber = (fiber: LiveFiber<any> | null = null) =>
       updateSelected({ $set: fiber });
 
@@ -181,6 +187,7 @@ export const Inspect: React.FC<InspectProps> = ({
         selectFiber(fiber); e?.stopPropagation();
 
         const tag = getFiberTags(fiber);
+        if (tag & FiberTag.View) updatePreferredTab('view');
         if (tag & FiberTag.Layout) updatePreferredTab('layout');
         if (tag & FiberTag.Output) updatePreferredTab('targets');
         if (tag & FiberTag.Compute) updatePreferredTab('compute');
@@ -193,7 +200,7 @@ export const Inspect: React.FC<InspectProps> = ({
       return {select, hover, unhover, focus};
     }
 
-    return {selectFiber, focusFiber, hoverFiber, makeHandlers};
+    return {forceUpdate, selectFiber, focusFiber, hoverFiber, makeHandlers};
   }, [rootId, updateSelected, updateFocused, updateHovered, updateTab]);
 
   const sidebar = (
@@ -231,7 +238,7 @@ export const Inspect: React.FC<InspectProps> = ({
 
   return (<div className="LiveInspect">
     {open ? (
-      <PingProvider fiber={fiber}>
+      <PingProvider fiber={fiber} api={api}>
         <HostHighlight fiber={fiber} findFiber={findFiber} toggleInspect={toggleInspect} api={api} />
         <InspectContainer onMouseDown={onMouseDown} className="ui inverted">
           <div style={fullSize

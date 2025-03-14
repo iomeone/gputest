@@ -6,7 +6,7 @@ import { isSubNode, DEBUG, RECONCILE, QUOTE, UNQUOTE } from '@use-gpu/live';
 import React, { memo, useMemo, useLayoutEffect, useRef, PropsWithChildren } from 'react';
 
 import { Expandable } from '../containers/expandable';
-import { usePingTracker, usePingContext } from '../../providers/ping-provider';
+import { usePingTracker } from '../../providers/ping-provider';
 import { TreeExpand } from '../tree/tree-expand';
 import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendColumns,  TreeLegendGroup, TreeRowOmitted, TreeLegendItem } from '../tree/tree-layout';
 import { ExpandState } from '../types';
@@ -17,7 +17,7 @@ import { IconItem, SVGNextOpen, SVGNextClosed, SVGNextFence } from '../svg';
 import { FiberDot } from './fiber-dot';
 import { FiberBadge } from './fiber-badge';
 import { FiberBadgeReact } from './fiber-badge-react';
-import { getFiberTags } from './tag';
+import { FiberTag, getFiberTags } from './tag';
 
 export type FiberNodeProps = {
   state: InspectState,
@@ -101,7 +101,6 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
 
   // Hook up ping provider
   fibers.set(fiber.id, fiber);
-  usePingTracker(fiber);
 
   // Resolve hover-state
   const selected = fiber === selectState;
@@ -138,12 +137,18 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
 
   const shouldCollapseIntoParent = !wide && isBuiltin && fiber.next;
   
-  const shouldDisplay = !isBuiltin && isVisible;
+  const shouldDisplaySelf = !isBuiltin && isVisible;
+  const [,, isPinned] = usePingTracker(fiber, shouldDisplaySelf && (filterTags & FiberTag.By));
+  const shouldDisplay = shouldDisplaySelf || isPinned;
+  
+  const isSection = shouldDisplay && !shouldDisplaySelf && (filterTags & FiberTag.All) != FiberTag.All;
+
   const shouldTerminate = (shouldCollapseIntoParent || fiber.f?.isLiveReconcile || fiber.f?.isLiveQuote || fiber.f?.isLiveContinuation) && isVisible;
   const shouldRender = shouldDisplay || shouldTerminate;
 
   const shouldAbsolute = !shouldRender && (parents || depends || precedes || quoted || unquoted);
   const shouldStartOpen = fiber.f !== DEBUG && !fiber.__inspect?.react;
+
 
   if (!skipDepth) {
     wide = wide || lockedWide;
@@ -203,6 +208,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
       quoted={!!quoted}
       unquoted={!!unquoted}
       depth={styleDepth}
+      section={isSection}
       runCount={runCounts}
       onClick={select}
       onDoubleClick={focus}
@@ -373,7 +379,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
         initialValue={shouldStartOpen}
       >{
         (expand, onToggle) => (<>
-          <TreeRow indent={indent}>
+          <TreeRow indent={indent} section={isSection}>
             <TreeExpand expand={expand} onToggle={onToggle} openIcon={openIcon} closedIcon={closedIcon}>
               {badgeRender}
             </TreeExpand>

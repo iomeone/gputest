@@ -81,26 +81,31 @@ export const inspectGPU: InspectExtension = (): InspectAddIns => ({
       key: FiberTag.View,
       label: 'View',
       icon: <SVGCamera />,
+      group: 0,
     },
     {
       key: FiberTag.Layout,
       label: 'Layout',
       icon: <SVGDashboard />,
+      group: 0,
     },
     {
       key: FiberTag.Compute,
       label: 'Compute',
       icon: <SVGCompute />,
+      group: 0,
     },
     {
       key: FiberTag.Raster,
       label: 'Raster',
       icon: <SVGRaster />,
+      group: 0,
     },
     {
       key: FiberTag.Output,
       label: 'Output',
       icon: <SVGViewOutput />,
+      group: 0,
     },
   ],
 });

@@ -5,7 +5,7 @@ import { Props } from '../components/tabs/props';
 import { Call } from '../components/tabs/call';
 import { Layout } from '../components/tabs/layout';
 
-import { IconItem, SVGDashboard, SVGNextFence, SVGHighlightElement, SVGQuote, SVGYeet, SVGAtom, SVGOther } from '../components/svg';
+import { IconItem, SVGDashboard, SVGNextFence, SVGHighlightElement, SVGQuote, SVGYeet, SVGAtom, SVGOther, SVGChevronDown } from '../components/svg';
 import { FiberTag } from '../components/fiber/tag';
 
 const AddInContext = createContext<InspectAddIns>({
@@ -48,38 +48,47 @@ export const defaultPanels: InspectExtension = (): InspectAddIns => ({
   prop: [],
   filters: [
     {
-      key: FiberTag.Reconcile,
-      label: 'Reconcile',
-      icon: <SVGNextFence />,
-    },
-    {
       key: FiberTag.Highlight,
       label: 'Highlight',
       icon: <SVGHighlightElement />,
-    },
-    {
-      key: FiberTag.Yeet,
-      label: 'Yeet',
-      icon: <SVGYeet />,
-      order: 1e5,
-    },
-    {
-      key: FiberTag.Quote,
-      label: 'Quote',
-      icon: <SVGQuote />,
-      order: 1e5,
+      group: 0,
     },
     {
       key: FiberTag.React,
       label: 'React',
       icon: <SVGAtom />,
+      group: 0,
       order: 1e5,
+    },
+    {
+      key: FiberTag.Reconcile,
+      label: 'Reconcile',
+      icon: <SVGNextFence />,
+      group: 1,
+    },
+    {
+      key: FiberTag.Yeet,
+      label: 'Yeet',
+      icon: <SVGYeet />,
+      group: 1,
+    },
+    {
+      key: FiberTag.Quote,
+      label: 'Quote',
+      icon: <SVGQuote />,
+      group: 1,
     },
     {
       key: FiberTag.Other,
       label: 'Other',
       icon: <SVGOther />,
-      order: 1e5,
+      group: 1e5,
+    },
+    {
+      key: FiberTag.By,
+      label: 'Include Rendered By',
+      icon: <SVGChevronDown />,
+      group: 1e5,
     },
   ],
 });

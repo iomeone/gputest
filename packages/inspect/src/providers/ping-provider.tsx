@@ -1,8 +1,11 @@
 import type { LiveFiber, ArrowFunction } from '@use-gpu/live';
-import { incrementVersion } from '@use-gpu/live';
+import { formatNode, incrementVersion } from '@use-gpu/live';
 
 import React, { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
+
+import { UseInspect } from '../use-inspect';
+import { InspectAPI } from '../types';
 
 const PingContext = createContext<PingContextProps>({
   subscribe: () => {},
@@ -15,11 +18,14 @@ const NO_DEPS: any[] = [];
 type PingContextProps = {
   subscribe: (fiber: LiveFiber<any> | null | undefined, f: ArrowFunction) => void,
   unsubscribe: (fiber: LiveFiber<any> | null | undefined, f: ArrowFunction) => void,
+  pin: (fiberId: number) => void,
+  unpin: (fiberId: number) => void,
   fibers: Map<number, LiveFiber<any>>,
 };
 
 type PingProviderProps = {
   fiber: LiveFiber<any>,
+  api: InspectAPI,
   children?: React.ReactNode,
 };
 
@@ -28,9 +34,11 @@ type Timer = ReturnType<typeof setTimeout>;
 type PingEntry = [number, number, boolean];
 
 // Track update pings to show highlights in tree
-export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => {
+export const PingProvider: React.FC<PingProviderProps> = ({fiber, api: {forceUpdate}, children}) => {
+
   const [fibers, map, all, api] = useMemo(() => {
     const fibers = new Map<number, LiveFiber<any>>();
+    const pinned = new Map<number, number>();
     const map = new Map<number, Set<ArrowFunction>>();
     const all = new Set<ArrowFunction>();
 
@@ -53,8 +61,23 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
           if (s.size === 0) map.delete(fiber.id);
         }
       },
+      pin: (fiberId: number) => {
+        const p = pinned.get(fiberId) || 0;
+        pinned.set(fiberId, p + 1);
+        if (!p) forceUpdate();
+      },
+      unpin: (fiberId: number) => {
+        const count = pinned.get(fiberId) - 1;
+        if (count > 0) pinned.set(fiberId, count);
+        else {
+          pinned.delete(fiberId);
+          forceUpdate();
+        }
+      },
+      version: () => 
       map,
       fibers,
+      pinned,
     };
     return [fibers, map, all, api];
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,7 +156,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, NO_DEPS);
 
-   return (
+  return (
     <PingContext.Provider value={api}>
       {children}
     </PingContext.Provider>
@@ -142,8 +165,8 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
 
 export const usePingContext = () => useContext(PingContext);
 
-export const usePingTracker = (fiber?: LiveFiber<any>) => {
-  const {subscribe, unsubscribe} = useContext(PingContext);
+export const usePingTracker = (fiber?: LiveFiber<any>, shouldPin: boolean) => {
+  const {subscribe, unsubscribe, pin, unpin, fibers, pinned} = useContext(PingContext);
 
   const [, forceUpdate] = useForceUpdate();
   const [version, setVersion] = useState<number>(-1);
@@ -157,10 +180,33 @@ export const usePingTracker = (fiber?: LiveFiber<any>) => {
     };
 
     subscribe(fiber, ping);
-    return () => unsubscribe(fiber, ping);
+    return () => {
+      unsubscribe(fiber, ping);
+    }
   }, [fiber, forceUpdate, subscribe, unsubscribe]);
 
-  return [version, live];
+  useLayoutEffect(() => {
+    if (!shouldPin) return;
+    
+    let parent = fiber;
+    let by = fiber?.by;
+    while (by) {
+      parent = fibers.get(by);
+      if (!parent) { by = 0; break; }
+      if (!parent.f?.isLiveBuiltin || !parent.f?.isLiveContinuation) break;
+      by = parent.by;
+    }
+
+    if (!by) return;
+    if (parent?.f === UseInspect) return;
+
+    pin(by);
+    return () => { unpin(by) };
+  }, [fiber, pin, unpin, shouldPin]);
+
+  const isPinned = pinned.has(fiber?.id);
+
+  return [version, live, isPinned];
 }
 
 export const useForceUpdate = (): [number, () => void] => {

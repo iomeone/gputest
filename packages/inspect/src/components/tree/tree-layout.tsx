@@ -4,7 +4,7 @@ import { styled as _styled } from '@stitches/react';
 // TODO: TS nightly issue?
 const styled: any = _styled;
 
-type TreeIndentProps = PropsWithChildren<{ indent?: number }>;
+type TreeIndentProps = PropsWithChildren<{ indent?: number, section?: number }>;
 
 export const TreeWrapper = styled('div', {
   flexGrow: 1,
@@ -84,10 +84,11 @@ export const TreeIndent: FC<TreeIndentProps> = ({ indent, children }: TreeIndent
   </div>
 );
 
-export const TreeRow: FC<TreeIndentProps> = ({ indent, children }: TreeIndentProps) => (
+export const TreeRow: FC<TreeIndentProps> = ({ indent, section, children }: TreeIndentProps) => (
   <TreeRowInner css={{
     paddingLeft: indent ? `${indent * 20}px` : 0,
-  }}>
+    marginTop: section ? '20px' : 0,
+  }} className={section ? 'section' : undefined}>
     {children}
   </TreeRowInner>
 );
@@ -105,6 +106,9 @@ export const TreeRowOmittedChunk = styled('div', {
   paddingBottom: 20,
   '& + &': {
     marginTop: -20,
+  },
+  '& + .section': {
+    marginTop: 0,
   },
 });
 

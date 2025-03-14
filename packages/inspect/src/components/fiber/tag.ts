@@ -14,6 +14,8 @@ export enum FiberTag {
   Reconcile = 512,
   Other = 1024,
   All = 2047,
+
+  By = 2048,
 };
 
 export const getFiberTags = (fiber: LiveFiber<any>) => {

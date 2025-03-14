@@ -21,6 +21,7 @@ type FiberBadgeProps = {
   unquoted?: boolean,
   parents?: boolean,
   depth?: number,
+  section?: boolean,
   ooo?: boolean,
   runCount?: boolean,
   absolute?: boolean,
@@ -42,6 +43,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   unquoted,
   parents,
   depth,
+  section,
   ooo,
   runCount,
   absolute,
@@ -94,6 +96,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   if (hovered === id) classes.push('hovered');
   if (hovered === by) classes.push('by');
   if (absolute) classes.push('absolute');
+  if (section) classes.push('section');
   if (f.isLiveBuiltin || f.isLiveReconcile || f.isLiveQuote || f.isLiveContinuation) classes.push('builtin');
   classes.push(`depth-${Math.min(4, depth || 0)}`);
   const className = classes.join(' ');

@@ -47,8 +47,6 @@
   --LiveInspect-colorTextLevel8: rgba(255, 255, 255, 0.54);
   --LiveInspect-colorTextLevel9: rgba(255, 255, 255, 0.43);
   --LiveInspect-colorTextLevel10: rgba(255, 255, 255, 0.31);
-  font: 14px/20px Lato, sans-serif;
-  color: var(--LiveInspect-colorText);
 
   position: absolute;
   left: 0;
@@ -194,6 +192,11 @@ html > body .LiveInspect ::-webkit-scrollbar {
   animation-iteration-count: 1;
 }
 
+.LiveInspect div.fiber-tree-node.muted,
+.LiveInspect div.fiber-tree-dot.muted {
+  opacity: 0.5;
+}
+
 .LiveInspect div.fiber-tree-node.selected,
 .LiveInspect div.fiber-tree-dot.selected {
   z-index: 2;
@@ -208,6 +211,13 @@ html > body .LiveInspect ::-webkit-scrollbar {
   color: var(--LiveInspect-colorTextMuted);
 }
 
+.LiveInspect div.fiber-tree-node.section {
+  height: 24px;
+}
+.LiveInspect div.fiber-tree-highlight.section {
+  background: rgba(90, 90, 100, 1.0);
+  left: -1000px;
+}
 .LiveInspect div.fiber-tree-highlight.selected {
   background: rgba(50, 130, 200, 1.0);
 }

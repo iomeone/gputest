@@ -101,6 +101,10 @@ export const Muted = styled('span', {
   color: 'var(--LiveInspect-colorTextMuted)',
 });
 
+export const Row = styled('div', {
+  display: 'flex',
+});
+
 export const Spacer = styled('div', {
   width: '20px',
   height: '20px',
