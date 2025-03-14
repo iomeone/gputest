@@ -2,7 +2,7 @@ import type { InspectState, InspectAPI } from '../types';
 
 import React, { FC } from 'react';
 import { useAddIns } from '../../providers/add-in-provider';
-import { ToolbarLabel, ToolbarPaddedRow } from '../panels/panels-layout';
+import { ToolbarScrollerX, ToolbarLabel, ToolbarPaddedRow } from '../panels/panels-layout';
 import { Row, SmallButton } from '../layout';
 
 export type ToolbarFilterProps = {
@@ -29,31 +29,33 @@ export const ToolbarFilter: FC<ToolbarFilterProps> = (props: ToolbarFilterProps)
   }
   
   return (
-    <ToolbarPaddedRow>
-      <Row style={{ gap: 8 }}>
-        <ToolbarLabel>Filter</ToolbarLabel>
-        {groups.map((group, i) => (
-          <Row key={i.toString()}>
-            {group.map((filter) => {
-              const {key, label, icon} = filter;
+    <ToolbarScrollerX>
+      <ToolbarPaddedRow>
+        <Row style={{ gap: 8 }}>
+          <ToolbarLabel>Filter</ToolbarLabel>
+          {groups.map((group, i) => (
+            <Row key={i.toString()}>
+              {group.map((filter) => {
+                const {key, label, icon} = filter;
 
-              const active = filters & filter.key;
-              const className = active ? 'active' : '';
+                const active = filters & filter.key;
+                const className = active ? 'active' : '';
 
-              return (
-                <SmallButton
-                  key={key}
-                  title={label}
-                  className={className}
-                  onClick={() => toggleFilter(key)}
-                >
-                  {icon}
-                </SmallButton>
-              );
-            })}
-          </Row>
-        ))}
-      </Row>
-    </ToolbarPaddedRow>
+                return (
+                  <SmallButton
+                    key={key}
+                    title={label}
+                    className={className}
+                    onClick={() => toggleFilter(key)}
+                  >
+                    {icon}
+                  </SmallButton>
+                );
+              })}
+            </Row>
+          ))}
+        </Row>
+      </ToolbarPaddedRow>
+    </ToolbarScrollerX>
   );
 };

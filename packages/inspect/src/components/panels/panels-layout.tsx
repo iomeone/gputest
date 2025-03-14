@@ -16,12 +16,16 @@ export const ToolbarRow = styled('div', {
   display: 'flex',
 });
 
+export const ToolbarScrollerX = styled('div', {
+  flexShrink: 0,
+  overflowX: 'auto',
+});
+
 export const ToolbarPaddedRow = styled('div', {
   background: 'var(--LiveInspect-backgroundEmpty)',
   padding: '6px 8px',
   position: 'relative',
   width: '100%',
-
   display: 'flex',
 });
 
