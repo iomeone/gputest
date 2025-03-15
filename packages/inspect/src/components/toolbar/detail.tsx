@@ -80,13 +80,11 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
     if (!dragging || !slider || !thumb) return;
 
     const {width: sliderWidth} = slider.getBoundingClientRect();
-    const {width: thumbWidth} = thumb.getBoundingClientRect();
-    const delta = sliderWidth - thumbWidth;
 
     const {clientX} = e;
     const {value: anchorValue, anchor: [x]} = dragging;
 
-    const offset = (clientX - x) / delta * (max - min);
+    const offset = (clientX - x) / sliderWidth * (max - min);
     const v = min + clamp(Math.round((anchorValue - min + offset) / step) * step, 0, max - min);
     const inf = v >= max ? 1000 : v;
     if (inf !== value) onChange(inf);
@@ -98,11 +96,10 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
     if (!slider || !thumb) return;
 
     const {left, width: sliderWidth} = slider.getBoundingClientRect();
-    const {width: thumbWidth} = thumb.getBoundingClientRect();
-    const delta = sliderWidth - thumbWidth;
+    const delta = sliderWidth;
 
     const {clientX} = e;
-    const v = clamp((clientX - left) / delta, 0, 1) * (max - min);
+    const v = min + clamp((clientX - left) / sliderWidth, 0, 1) * (max - min);
     const inf = v >= max ? 1000 : v;
     if (inf !== value) onChange(inf);
 
@@ -124,10 +121,11 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
   return (
     <StyledSlider
       ref={sliderRef}
+      onPointerDown={handleTrack}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
-      <StyledTrack onPointerDown={handleTrack} />
+      <StyledTrack />
       <StyledThumb
         tabIndex={0}
         ref={thumbRef}

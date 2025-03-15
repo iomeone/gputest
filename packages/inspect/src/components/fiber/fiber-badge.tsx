@@ -122,6 +122,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
+      {section ? <div className={"fiber-tree-background cover-parent " + className} /> : null}
       <div className={"fiber-tree-ping cover-parent " + className} />
       <div className={"fiber-tree-highlight cover-parent " + className} />
       <div className={"fiber-tree-label " + className}>{label}<IconRow>{icons}</IconRow></div>

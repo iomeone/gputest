@@ -175,6 +175,14 @@ html > body .LiveInspect ::-webkit-scrollbar {
   margin-top: 8px;
 }
 
+.LiveInspect div.fiber-tree-background.section {
+  background: rgba(70, 70, 90, 1.0);
+  left: -1000px;
+}
+.LiveInspect div.fiber-tree-highlight.section {
+  left: -1000px;
+}
+
 .LiveInspect div.fiber-tree-node.mounted,
 .LiveInspect div.fiber-tree-node.pinged,
 .LiveInspect div.fiber-tree-dot.mounted,
@@ -214,10 +222,6 @@ html > body .LiveInspect ::-webkit-scrollbar {
 
 .LiveInspect div.fiber-tree-node.section {
   height: 24px;
-}
-.LiveInspect div.fiber-tree-highlight.section {
-  background: rgba(70, 70, 90, 1.0);
-  left: -1000px;
 }
 .LiveInspect div.fiber-tree-highlight.selected {
   background: rgba(50, 130, 200, 1.0);

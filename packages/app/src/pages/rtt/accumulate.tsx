@@ -1,7 +1,7 @@
 import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
 import type { Lazy, OffscreenTarget } from '@use-gpu/core';
 
-import React, { Gather, useVersion } from '@use-gpu/live';
+import React, { Gather, useMemo, useOne, useRef, useVersion } from '@use-gpu/live';
 import { seq } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
 
@@ -138,6 +138,8 @@ type PathTraceProps = {
   printHelper: ShaderPrinter,
 };
 
+const defs = {HAS_DEBUG_PICKING: true}
+
 const PathTrace = (props: PathTraceProps) => {
   const {frame, printHelper} = props;
   
@@ -153,9 +155,9 @@ const PathTrace = (props: PathTraceProps) => {
 
   const shader = useShader(accumulateShader, [
     frame,
-    () => quadSource.length,
+    quadSource.length,
     quadSource,
-    () => sphereSource.length,
+    sphereSource.length,
     sphereSource,
 
     // Mouse debug picking
@@ -163,16 +165,30 @@ const PathTrace = (props: PathTraceProps) => {
     pickRef,
     printHelper.shaders.printPoint,
     printHelper.shaders.printLine,
-  ], {HAS_DEBUG_PICKING: true});
+  ], defs);
 
-  let frameCount = 0;
+  // Clear debug info on frame 0
+  const frameCountRef = useRef(0);
 
-  return (
-    <Pass overlay>
-      {keys.alt ? <On render={() => frameCount++ === 0 && debugHelper.swap()} /> : null}
-      <FullScreen shader={shader} blend="premultiply" alphaToDiscard={false} />
-    </Pass>
-  );
+  // When starting new capture
+  useOne(() => {
+    if (keys.alt) { frameCountRef.current = 0 }
+  }, keys.alt);
+
+  // When moving mouse during capture
+  useOne(() => {
+    if (keys.alt) frameCountRef.current = 0;
+  }, mouse);
+
+  // Avoid trashing render due to mouse move  
+  return useMemo(() => {
+    return (
+      <Pass overlay>
+        <On render={() => frameCountRef.current++ === 0 && printHelper.swap()} />
+        <FullScreen shader={shader} blend="premultiply" alphaToDiscard={false} />
+      </Pass>
+    );
+  }, [printHelper, shader]);
 };
 
 const Camera = ({children}: PropsWithChildren<object>) => (

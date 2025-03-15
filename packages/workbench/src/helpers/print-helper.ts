@@ -91,7 +91,7 @@ export const PrintHelper: LC<PrintHelperProps> = (props: PrintHelperProps) => {
   );
 };
 
-type PrintLayerProps = {
+export type PrintLayerProps = {
   helper?: ShaderPrinter,
   limit?: number,
 
@@ -103,13 +103,26 @@ type PrintLayerProps = {
 };
 
 export const PrintLayer: LC = (props: PrintLayerProps) => {
-  const {limit = 50, size = 4, width = 2, depthTest = true, zBias = 5, helper} = props;
-  const printedRef = useRef(0);
+  const {size = 4, width = 2, depthTest = true, zBias = 1, helper} = props;
   const {attributes, swap} = helper ? (useNoPrintContext(), helper) : usePrintContext();
 
   return [
     use(LineLayer, {...attributes, width, depthTest, zBias}),
     use(PointLayer, {...attributes, size, depthTest, zBias}),
+  ];
+};
+
+export type PrintReadbackProps = {
+  helper?: ShaderPrinter,
+  limit?: number,
+};
+
+export const PrintReadback: LC = (props: PrintLayerProps) => {
+  const {limit = 50, helper} = props;
+  const printedRef = useRef(0);
+  const {attributes, swap} = helper ? (useNoPrintContext(), helper) : usePrintContext();
+
+  return [
     quote(use(Readback, {
       source: attributes.data,
       then: (uint32: Uint32Array) => {

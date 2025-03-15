@@ -54,6 +54,7 @@ export const ToolbarFilter: FC<ToolbarFilterProps> = (props: ToolbarFilterProps)
               })}
             </Row>
           ))}
+          <div />
         </Row>
       </ToolbarPaddedRow>
     </ToolbarScrollerX>
