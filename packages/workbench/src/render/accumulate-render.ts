@@ -37,9 +37,6 @@ export const AccumulateRender: LC<AccumulateRenderProps> = memo((props: Accumula
     then,
   } = props;
 
-  const history = target.source?.history;
-  if (!history || !history.length) throw new Error("<AccumulateRender> target must have history > 0");
-
   const frameRef = useRef(0);
   const convergedRef = useRef(false);
 

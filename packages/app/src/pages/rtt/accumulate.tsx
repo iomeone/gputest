@@ -54,7 +54,7 @@ export const RTTAccumulatePage: LC = () => {
 
     <Gather
       children={[
-        <RenderTarget samples={1} history={1} format="rgba16float" />,
+        <RenderTarget samples={1} format="rgba16float" label="Accumulation Buffer" colorSpace="linear" />,
         <PrintHelper count={4*1024} />,
       ]}
       then={([
