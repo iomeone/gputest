@@ -17,15 +17,14 @@ import { useRawSource } from '../../hooks/useRawSource';
 import { useReadbackStorage } from '../../hooks/useReadbackStorage';
 import { useScratchSource } from '../../hooks/useScratchSource';
 
-import { useCopySelectDepthSample2 } from '../copy/select-copy';
+import { useCopySelectSample2 } from '../copy/select-copy';
 
 import { getMotionSample } from '@use-gpu/wgsl/motion/motion-sample.wgsl';
 
 const NO_DEBUG_ARGS: any[] = [];
 
-const selectXY = wgsl`@export fn selectXY(v: vec4<f32>) -> vec2<f32> { return v.xy; }`;
-const selectZ = wgsl`@export fn selectZ(v: vec4<f32>) -> f32 { return v.z; }`;
-const selectD = wgsl`@export fn selectD(v: vec4<f32>) -> f32 { return v.a; }`;
+const selectXY = wgsl`@export fn selectXY(v: vec3<f32>) -> vec2<f32> { return v.xy; }`;
+const selectZ = wgsl`@export fn selectZ(v: vec3<f32>) -> f32 { return v.z; }`;
 
 export const MotionDispatch: LiveComponent = () => {
 
@@ -59,10 +58,9 @@ export const MotionDispatch: LiveComponent = () => {
   const getSample = useShader(getMotionSample, [getDepth, uniforms.reprojectionMatrix]);
   //const getSample = useShader(getMotionSample, [getDepth, uniforms.reprojectionMatrix, motionDebug]);
 
-  const draw = useCopySelectDepthSample2(
+  const draw = useCopySelectSample2(
     motionTarget,
     getSample,
-    selectD,
     selectXY,
     selectZ,
     globalLayout,

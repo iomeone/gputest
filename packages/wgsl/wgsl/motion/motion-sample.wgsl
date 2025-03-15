@@ -6,7 +6,7 @@ use '@use-gpu/wgsl/use/view'::{ clipUVToXY, to3D };
 
 //@link var<storage, read_write> motionDebug: array<atomic<u32>>;
 
-@export fn getMotionSample(uv: vec2<f32>) -> vec4<f32> {
+@export fn getMotionSample(uv: vec2<f32>) -> vec3<f32> {
   let clipDepth = getDepth(uv);
   let clipXY = clipUVToXY(uv);
   let clip = vec4<f32>(clipXY, clipDepth, 1.0);
@@ -29,5 +29,5 @@ use '@use-gpu/wgsl/use/view'::{ clipUVToXY, to3D };
   }
   */
 
-  return vec4<f32>(deltaUVZ, clipDepth);
+  return deltaUVZ;
 };

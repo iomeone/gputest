@@ -52,7 +52,7 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
   const inspect = useInspectable();
 
   const {cull, uniforms} = useViewUniforms(maybeUniforms);
-  const {binding, upload} = useViewBinding(uniforms);
+  const {binding, upload} = useViewBinding(uniforms, module, type);
   upload();
 
   const context = useMemo(() => ({

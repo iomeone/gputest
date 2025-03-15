@@ -10,7 +10,7 @@ struct SampleOutput {
 @link fn getSample(uv: vec2<f32>) -> @infer(T) T;
 
 @link fn selectA(v: T) -> @infer(T1) T1;
-@link fn selectB(v: T) -> @infer(T1) T2;
+@link fn selectB(v: T) -> @infer(T2) T2;
 
 @fragment
 fn main(

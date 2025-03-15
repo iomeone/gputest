@@ -40,7 +40,7 @@ export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
       blend: 'none',
       format: renderFormats[0],
       variant: 'textureLoad',
-      depthStencil,
+      depthStencil: null,
       colorSpace: 'linear',
       hint: 'motion/xy',
     }),

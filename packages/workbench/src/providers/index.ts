@@ -10,7 +10,6 @@ export * from './layout-provider';
 export * from './light-provider';
 export * from './loop-provider';
 export * from './material-provider';
-export * from './mask-provider';
 export * from './matrix-provider';
 export * from './pass-provider';
 export * from './picking-provider';

@@ -36,20 +36,20 @@ fn depthWeight(a: f32, b: f32) -> f32 {
   let dxy = 1 - ((sampleXY + frame) & vec2<i32>(1)) * 2;
 
   // Sample 2x2 quad
-  let xy00 = vec2<u32>(sampleXY);
-  let xy10 = vec2<u32>(sampleXY + vec2<i32>(dxy.x, 0));
-  let xy01 = vec2<u32>(sampleXY + vec2<i32>(0, dxy.y));
-  let xy11 = vec2<u32>(sampleXY + dxy);
-
-  let normal00 = decodeNormal16(loadNormal16(xy00).xy);  
-  let normal10 = decodeNormal16(loadNormal16(xy10).xy);  
-  let normal01 = decodeNormal16(loadNormal16(xy01).xy);  
-  let normal11 = decodeNormal16(loadNormal16(xy11).xy);  
-
-  let depth00 = loadDepth(xy00);
-  let depth10 = loadDepth(xy10);
-  let depth01 = loadDepth(xy01);
-  let depth11 = loadDepth(xy11);
+  //let xy00 = vec2<u32>(sampleXY);
+  //let xy10 = vec2<u32>(sampleXY + vec2<i32>(dxy.x, 0));
+  //let xy01 = vec2<u32>(sampleXY + vec2<i32>(0, dxy.y));
+  //let xy11 = vec2<u32>(sampleXY + dxy);
+  //
+  //let normal00 = decodeNormal16(loadNormal16(xy00).xy);
+  //let normal10 = decodeNormal16(loadNormal16(xy10).xy);
+  //let normal01 = decodeNormal16(loadNormal16(xy01).xy);
+  //let normal11 = decodeNormal16(loadNormal16(xy11).xy);
+  //
+  //let depth00 = loadDepth(xy00);
+  //let depth10 = loadDepth(xy10);
+  //let depth01 = loadDepth(xy01);
+  //let depth11 = loadDepth(xy11);
 
   // Bilateral 2x2 filter
   //let w00 = 1.0;

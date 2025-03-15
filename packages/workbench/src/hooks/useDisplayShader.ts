@@ -53,8 +53,7 @@ export const getDisplayShader = (texture: TextureSource): ShaderSource => {
     const bits = getTypedArraysBitCount(a);
     const gain = bits < 32 ? (1 << bits) - 1 : 0xffffffff;
 
-    const v = castTo(t, 'vec4<u32>');
-    const s = chainTo(v, getShader(displayInt, [1/gain]));
+    const s = chainTo(t, getShader(displayInt, [1/gain]));
     return getLambdaSource(h ? chainTo(s, h) : s, texture);
   }
 };

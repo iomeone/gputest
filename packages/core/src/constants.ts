@@ -786,7 +786,7 @@ export const TEXTURE_ARRAY_TYPES = {
   "depth32float-stencil8": Uint32Array,
 } as Record<GPUTextureFormat, TypedArrayConstructor>;
 
-export const TEXTURE_SHADER_TYPES = {
+const TEXTURE_SHADER_TYPES = {
   // 8-bit formats
   "r8unorm": 'f32',
   "r8snorm": 'f32',
@@ -920,6 +920,11 @@ export const getTextureArrayType = (format: GPUTextureFormat, aspect: GPUTexture
 export const getTextureSampleType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only') => {
   if (aspect === 'stencil-only') return 'u32';
   return TEXTURE_SAMPLE_TYPES[format];
+};
+
+export const getTextureShaderType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only') => {
+  if (aspect === 'stencil-only') return 'vec4<u32>';
+  return TEXTURE_SHADER_TYPES[format];
 };
 
 // @ts-ignore
