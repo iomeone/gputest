@@ -88,40 +88,40 @@ export const DataSolarSystemPage: LC = () => {
   const view = (options: SolarSystemOptions) => (<>
     <InfoBox>Draw a reactive solar system and stars, with various plot components driven by a clock.</InfoBox>
     <Cursor cursor="move" />
-      <LinearRGB tonemap="aces">
-        <Camera>
-          <Pass>
+    <LinearRGB tonemap="aces">
+      <Camera>
+        <Pass>
 
-            <Plot>
-              <Transform rotation={[-90, 0, 0]}>
-                <Stars />
+          <Plot>
+            <Transform rotation={[-90, 0, 0]}>
+              <Stars />
 
-                <Clock
-                  prop="timestamp"
-                  speed={options.speed}
-                  paused={options.paused}
-                >
-                  <SolarModel />
-                </Clock>
+              <Clock
+                prop="timestamp"
+                speed={options.speed}
+                paused={options.paused}
+              >
+                <SolarModel />
+              </Clock>
 
-              </Transform>
-            </Plot>
+            </Transform>
+          </Plot>
 
-          </Pass>
-        </Camera>
+        </Pass>
+      </Camera>
 
-        <FlatCamera>
-          <Pass overlay>
-            <Clock
-              prop="timestamp"
-              speed={options.speed}
-              paused={options.paused}
-            >
-              <DateTimestamp speed={options.speed} />
-            </Clock>
-          </Pass>
-        </FlatCamera>
-      </LinearRGB>
+      <FlatCamera>
+        <Pass overlay>
+          <Clock
+            prop="timestamp"
+            speed={options.speed}
+            paused={options.paused}
+          >
+            <DateTimestamp speed={options.speed} />
+          </Clock>
+        </Pass>
+      </FlatCamera>
+    </LinearRGB>
   </>);
 
   const root = document.querySelector('#use-gpu .canvas');

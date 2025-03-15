@@ -100,8 +100,7 @@ fn yFlip(uv: vec2<f32>) -> vec2<f32> {
     // ∫ c/π cos θ * dɷ
     // ~= c/N ∑ Li
     else if (SAMPLING == SAMPLING_COSINE) {
-      //reflected = mix(bounceCosine(ray, surface.normal), bounceReflect(ray, surface.normal), surface.gloss);
-      reflected = bounceCosine(ray, surface.normal);
+      reflected = mix(bounceCosine(ray, surface.normal), bounceReflect(ray, surface.normal), surface.gloss);
       radiance *= surface.albedo * globalAlbedo;
     }
 
@@ -262,7 +261,7 @@ fn raytrace(
       normal = rayHit.normal;
       distance = rayHit.distance;
 
-      gloss = 0.0;//sin(f32(i) * 77.51891671) * .5 + .5;
+      gloss = sin(f32(i) * 77.51891671) * .25 + .25;
       albedo = color;
     }
   }
