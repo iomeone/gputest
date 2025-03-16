@@ -3,7 +3,7 @@ import type { OffscreenRenderContext, TextureTarget } from '@use-gpu/core';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
-  makeColorAttachment, makeColorState, makeTargetTexture,
+  makeColorAttachment, makeColorState, makeDepthStencilAttachment, makeDepthStencilState, makeTargetTexture,
 } from '@use-gpu/core';
 
 import { useDeviceContext } from '../../providers/device-provider';
@@ -26,17 +26,18 @@ export const GBuffer: LC = memo(() => {
 
   const {format} = depthStencilState;
   const hasFloat = device.features.has('rg11b10ufloat-renderable');
+  const depthFormat = format.replace(/-stencil8$/, '');
 
   // Set up GBuffer layout
   const formats = useMemo(() => [
-    'rgba8unorm',  // RGB + Occlusion
-    'rgba16float', // Normal (RG) + Bent Normal (RG)
-    'rgba8unorm',  // Material (RGBA) = (metalness, roughness, _, _)
-    hasFloat       // Emissive (RGB)
+    'rgba8unorm',   // RGB + Occlusion
+    'rgba16float',  // Normal (RG) + Bent Normal (RG)
+    'rgba8unorm',   // Material (RGBA) = (metalness, roughness, _, _)
+    hasFloat        // Emissive (RGB)
       ? 'rg11b10ufloat'
       : 'rgb10a2unorm',
-    format,        // Resolve
-  ] as GPUTextureFormat[], [hasFloat, format]);
+    depthFormat,    // Depth copy
+  ] as GPUTextureFormat[], [hasFloat, depthFormat]);
 
   const renderTextures = useMemo(() => formats.map((format, i) => makeTargetTexture(
     device,
@@ -68,6 +69,7 @@ export const GBuffer: LC = memo(() => {
     return renderTextures.map(makeSource);
   }, [renderTextures, formats, width, height]);
 
+  // Render context for producing GBuffer
   const gBufferContext: OffscreenRenderContext = useMemo(() => ({
     ...renderContext,
     colorStates,
@@ -78,6 +80,17 @@ export const GBuffer: LC = memo(() => {
     sources,
   }), [renderContext, colorStates, viewAttachments, colorAttachments, sources]);
 
+  // Depth render copy context, needed to copy from depth+stencil to depth-only
+  const depthCopyContext: OffscreenRenderContext = {
+    ...gBufferContext,
+    colorStates: [],
+    depthStencilState: makeDepthStencilState(depthFormat),
+    viewAttachments: viewAttachments.map(({depthStencilAttachment}) => ({
+      colorAttachments: [],
+      depthStencilAttachment: makeDepthStencilAttachment(renderTextures[4], depthFormat),
+    })),
+  };
+
   inspect({
     output: {
       color: sources,
@@ -85,6 +98,6 @@ export const GBuffer: LC = memo(() => {
   });
 
   return yeet({
-    buffers: { gBuffer: [gBufferContext] },
+    buffers: { gBuffer: [gBufferContext, depthCopyContext] },
   });
 }, 'GBuffer');

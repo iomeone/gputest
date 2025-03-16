@@ -138,7 +138,27 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
       bindPass,
     }),
   ], [ssao, ssaoOptions, globalLayout]);
-  
+
+  const inspected = inspect({
+    output: {
+      sources: [
+        normalContext.source,
+        normalContext.depth,
+        motionXYContext.source,
+        motionZContext.source,
+        sampleContext.source,
+        accumContext.source,
+        resolveContext.source,
+      ],
+    },
+    pass: {uniforms},
+    bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
+  });
+
   return gather(resolveSSAO, (calls: {ssao: SSAOCommand}[]) => {
 
     return quote(yeet(() => {
@@ -155,25 +175,8 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
       const command = commandEncoder.finish();
       device.queue.submit([command]);
 
-      inspect({
-        output: {
-          color: [
-            normalContext.source,
-            normalContext.depth,
-            motionXYContext.source,
-            motionZContext.source,
-            sampleContext.source,
-            accumContext.source,
-            resolveContext.source,
-          ],
-        },
-        render: {
-          vertices: vs,
-          triangles: ts,
-        },
-        pass: {uniforms},
-        bindings: dataBindings,
-      });
+      inspected.render.vertices = vs;
+      inspected.render.triangles = ts;
 
       return null;
     }));

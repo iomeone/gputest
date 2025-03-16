@@ -81,6 +81,11 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const clearDepthBuffer = useCopyDepth(renderContext, null, null, shadowUV!, SHADOW_PAGE);
 
+  const inspected = inspect({
+    pass: uniforms,
+    bindings: dataBindings,
+  });
+
   const draw = quote(yeet(() => {
     let vs = 0;
     let ts = 0;
@@ -135,14 +140,8 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
     const command = commandEncoder.finish();
     device.queue.submit([command]);
 
-    inspect({
-      render: {
-        vertices: vs,
-        triangles: ts,
-      },
-      pass: uniforms,
-      bindings: dataBindings,
-    });
+    inspected.render.vertices = vs;
+    inspected.render.triangles = ts;
 
     return null;
   }));

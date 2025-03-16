@@ -64,8 +64,8 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
   const {
     resolution = 1,
     overscan = 0,
-    width = Math.ceil(renderContext.width * resolution + overscan * 2),
-    height = Math.ceil(renderContext.height * resolution + overscan * 2),
+    width = Math.ceil((renderContext.width + overscan * 2) * resolution),
+    height = Math.ceil((renderContext.height + overscan * 2) * resolution),
     samples = renderContext.samples,
     format = PRESENTATION_FORMAT,
     history = 0,
@@ -166,12 +166,13 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       ) : null;
       if (buffers) buffers.push(texture);
 
-      const views = buffers ? buffers.map(b => b.createView()) : undefined;
+      const views = buffers ? buffers.map(b => b.createView({ aspect: 'depth-only' })) : undefined;
 
       if (label != null) {
-        texture.label = label;
-        if (buffers) for (const b of buffers) b.label = label;
-        if (views) for (const v of views) v.label = label;
+        const l = `${label} Depth`;
+        texture.label = l;
+        if (buffers) for (const b of buffers) b.label = l;
+        if (views) for (const v of views) v.label = l;
       }
 
       const attachment = makeDepthStencilAttachment(texture, depthStencil);
@@ -265,7 +266,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     }
 
     if (depthStencil && depthTexture) {
-      const view = depthTexture.createView();
+      const view = depthTexture.createView({ aspect: 'depth-only' });
       const volatile = history ? history + 1 : 0;
 
       const type = getTextureSampleType(depthStencil);
@@ -282,6 +283,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
         size,
         volatile,
         version: 0,
+        aspect: 'depth-only',
         hint: 'depth',
         swap: undefined,
       }) as TextureTarget;

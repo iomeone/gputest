@@ -88,6 +88,18 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
   updateViewProjection(uniforms, undefined, undefined, undefined, near, far);
   updateViewSize(uniforms, width, height);
 
+  const inspected = inspect({
+    output: {
+      sources: [renderContext.source, renderContext.depth],
+    },
+    pass: uniforms,
+    bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
+  });
+
   return quote(yeet(() => {
     let vs = 0;
     let ts = 0;
@@ -113,18 +125,8 @@ export const ColorCubePass: LC<ColorCubePassProps> = memo((props: ColorCubePassP
       device.queue.submit([command]);
     }
 
-    inspect({
-      output: renderContext.source ? {
-        color: renderContext.source,
-        depth: renderContext.depth,
-      } : undefined,
-      render: {
-        vertices: vs,
-        triangles: ts,
-      },
-      pass: uniforms,
-      bindings: dataBindings,
-    });
+    inspected.render.vertices = vs;
+    inspected.render.triangles = ts;
 
     return null;
   }));

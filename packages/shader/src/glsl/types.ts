@@ -22,6 +22,7 @@ export type {
   StorageSource,
   LambdaSource,
   TextureSource,
+  UniformSource,
   VirtualRender,
 } from '../types';
 

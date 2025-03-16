@@ -1,7 +1,7 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { GPUGeometry, StorageSource, TextureSource, UniformType } from '@use-gpu/core';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
+import React, { Gather, memo, useOne, useResource, useState } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 import { seq } from '@use-gpu/core';
 
@@ -111,9 +111,9 @@ export const SceneSSAOPage: LC = (props) => {
           <LinearRGB tonemap="aces">
             <Cursor cursor='move' />
             <Camera>
-              <Loop live decimate={60}>
+              <Loop live decimate={20}>
               <PrintHelper count={4096}>
-                <Pass lights ssao={2} overscan={16} debug="ssao">
+                <Pass lights ssao={2} overscan={16} debug="ssao" debugIndex={5}>
 
                   <Environment preset="pisa" gain={2}>
                     <Scene>
@@ -165,42 +165,54 @@ export const SceneSSAOPage: LC = (props) => {
   </>);
 };
 
-const Camera = ({children}: PropsWithChildren<object>) => (
-  <FPSControls
-    position={[0, 2, 0]}
-    bearing={0.1}
-    pitch={0.3}
-    moveSpeed={2}
-  >{
-    (phi: number, theta: number, target: vec3) => (
-      <OrbitCamera
-        radius={0}
-        phi={phi}
-        theta={theta}
-        target={target}
-        scale={1080}
-      >
-        {children}
-      </OrbitCamera>
-    )
-  }</FPSControls>
-);
+const Camera = ({children}: PropsWithChildren<object>) => {
+  const inc = 0;
+  //const [inc, setInc] = useState(0);
+  //useResource((dispose) => {
+  //  const timer = setInterval(() => setInc(i => i + .1), 1000);
+  //  dispose(() => clearInterval(timer));
+  //}, []);
+  
+  return (
+    <FPSControls
+      position={[0, 2, 0]}
+      bearing={0.1}
+      pitch={0.3}
+      moveSpeed={2}
+    >{
+      (phi: number, theta: number, target: vec3) => (
+        <OrbitCamera
+          radius={0}
+          phi={phi + inc}
+          theta={theta}
+          target={target}
+          near={0.1}
+          far={1000}
+          scale={1080}
+        >
+          {children}
+        </OrbitCamera>
+      )
+    }</FPSControls>
+  );
+};
 
 const XCamera = ({children}: PropsWithChildren<object>) => (
   <OrbitControls
     radius={9}
     bearing={-1.8}
     pitch={0.6}
-    render={(radius: number, phi: number, theta: number, target: vec3) =>
+    render={(radius: number, phi: number, theta: number, target: vec3) => (
       <OrbitCamera
         radius={radius}
-        phi={phi}
+        phi={phi + inc}
         theta={theta}
         near={0.1}
+        far={100}
         target={target}
       >
         {children}
       </OrbitCamera>
-    }
+    )}
   />
 );

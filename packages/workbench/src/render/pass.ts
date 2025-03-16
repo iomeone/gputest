@@ -36,6 +36,7 @@ export type PassProps = PropsWithChildren<{
   components?: RenderComponents,
   
   debug?: string,
+  debugIndex?: number,
 } & PassFlags>;
 
 export const Pass: LC<PassProps> = memo((props: PassProps) => {
@@ -51,9 +52,10 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     overlay = false,
     merge = false,
 
-    components,
     debug,
+    debugIndex,
 
+    components,
     children,
   } = props;
 
@@ -68,6 +70,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     merge,
 
     debug,
+    debugIndex,
   };
 
   const optionsKey = toMurmur53(options);

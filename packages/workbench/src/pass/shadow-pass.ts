@@ -39,13 +39,12 @@ export const ShadowPass: LC<ShadowPassProps> = memo((props: ShadowPassProps) => 
   const inspect = useInspectable();
 
   const {shadows, sources: {shadowMap: texture}} = light;
+  if (!texture) return null;
 
   const descriptors = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const layers = texture!.size[2];
+    const layers = texture.size[2];
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const attachments = makeDepthStencilAttachments(texture!.texture, SHADOW_FORMAT, layers || 1, 0.0, 'load');
+    const attachments = makeDepthStencilAttachments(texture.texture, SHADOW_FORMAT, layers || 1, 0.0, 'load');
     const descriptors = attachments.map((depthStencilAttachment, i) => ({
       label: `<ShadowPass> Atlas #${i + 1}`,
       colorAttachments: [],
@@ -57,17 +56,14 @@ export const ShadowPass: LC<ShadowPassProps> = memo((props: ShadowPassProps) => 
 
   inspect({
     output: {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      depth: texture!,
+      source: texture,
     },
   });
 
   const out: LiveElement[] = [];
-  for (const map of shadows.values()) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const Component = SHADOW_TYPES[map.shadow!.type];
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    if (Component) out.push(keyed(Component, map.id, {env, calls, map, descriptors, texture: texture!}));
+  for (const map of shadows.values()) if (map.shadow) {
+    const Component = SHADOW_TYPES[map.shadow.type];
+    if (Component) out.push(keyed(Component, map.id, {env, calls, map, descriptors, texture}));
   }
   return out;
 }, 'ShadowPass');

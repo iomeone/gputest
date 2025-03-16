@@ -24,6 +24,7 @@ export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
   const device = useDeviceContext();
   const renderContext = useRenderContext();
 
+  // Normal render target
   const samples = 1;
   const depthStencil = NORMAL_DEPTH_FORMAT;
   const renderFormat = NORMAL_RENDER_FORMAT;

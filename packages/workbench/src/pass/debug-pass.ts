@@ -22,6 +22,7 @@ const {quote} = QueueReconciler;
 export type DebugPassProps = {
   env: Record<string, any>,
   debug: string,
+  debugIndex: number,
 };
 
 const NO_OPS: any[] = [];
@@ -34,7 +35,7 @@ const label = '<DebugPass>';
 Renders raw render buffer.
 */
 export const DebugPass: LC<DebugPassProps> = memo((props: PropsWithChildren<DebugPassProps>) => {
-  const {env, debug} = props;
+  const {env, debug, debugIndex} = props;
 
   const renderContext = useRenderContext();
   const device = useDeviceContext();
@@ -50,8 +51,8 @@ export const DebugPass: LC<DebugPassProps> = memo((props: PropsWithChildren<Debu
   // Multi-view strips of render buffers
   const getSample = useMemo(() => {
     const displays = sourceBuffers.map(c => getDisplayShader(c.source));
-    return getMultiViewShader(displays, true);
-  }, [sourceBuffers]);
+    return debugIndex != null ? displays[debugIndex].shader : getMultiViewShader(displays, true);
+  }, [sourceBuffers, debugIndex]);
 
   const draw = useCopySample(renderContext, getSample);
 

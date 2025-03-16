@@ -49,6 +49,13 @@ export const ComputePass: LC<ComputePassProps> = memo((props: ComputePassProps) 
   const pres = toArray(calls['pre'] as CommandToBuffer[]);
   const computes = toArray(calls['compute'] as ComputeToPass[]);
 
+  const inspected = inspect({
+    render: {
+      workgroups: ws,
+      samples: ss,
+    },
+  });
+  
   const run = () => {
     let ws = 0;
     let ss = 0;
@@ -70,12 +77,8 @@ export const ComputePass: LC<ComputePassProps> = memo((props: ComputePassProps) 
     }
     device.queue.submit(queue);
 
-    inspect({
-      render: {
-        workgroups: ws,
-        samples: ss,
-      },
-    });
+    inspected.render.workgroups = ws;
+    inspectedrender.samples = ss;
 
     return null;
   };

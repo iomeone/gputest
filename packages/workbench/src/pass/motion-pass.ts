@@ -67,6 +67,18 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
     })
   ), [renderContext, motionPassDescriptor]);
 
+  const inspected = inspect({
+    output: {
+      color: [renderContext.source, renderContext.depth],
+    },
+    pass: uniforms,
+    bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
+  });
+
   return gather(resolveMotion, (calls: {motion: Renderable}[]) => {
 
     return quote(yeet(() => {
@@ -104,20 +116,8 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
       calls.forEach(({readback: f}) => f());
       */
 
-      inspect({
-        output: {
-          color: [
-            renderContext.source,
-            renderContext.depth,
-          ],
-        },
-        render: {
-          vertices: vs,
-          triangles: ts,
-        },
-        pass: { ...uniforms },
-        bindings: dataBindings,
-      });
+      inspected.render.vertices = vs;
+      inspected.render.triangles = ts;
 
       return null;
     }));

@@ -229,6 +229,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     if (hasStencil) {
       const label = [texture.label, texture.texture?.label, texture.view?.label, 'Stencil'].filter(l => l?.length).join(' ');
       let ts = proxy(texture, {
+        view: texture.texture?.createView({ aspect: 'stencil-only' }),
         layout: 'texture_2d<u32>',
         aspect: 'stencil-only',
         sampler: null,
@@ -242,5 +243,5 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     return out;
   };
 
-  return useOne(() => sources.flatMap(makeViews), sources);
+  return useOne(() => sources.filter(s => !!s).flatMap(makeViews), sources);
 }, 'TextureViews');

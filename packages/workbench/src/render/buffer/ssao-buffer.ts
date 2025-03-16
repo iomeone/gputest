@@ -24,10 +24,9 @@ export const SSAO_RESOLVE_FORMAT = 'rgba8unorm';
 export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
   const device = useDeviceContext();
 
+  const {overscan} = props;
   const resolution = 1/2;
   const samples = 1;
-
-  const overscan = props.overscan / 2;
 
   const depthStencil  = SSAO_DEPTH_FORMAT;
   const normalFormat  = SSAO_NORMAL_FORMAT;
@@ -40,6 +39,7 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     use(RenderTarget, {
       label: 'SSAO/NormalDepth',
       resolution,
+      overscan,
       history: 1,
       depthHistory: true,
       samples,
@@ -52,6 +52,7 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     use(RenderTarget, {
       label: 'SSAO/MotionXY',
       resolution,
+      overscan,
       samples,
       sampler: null,
       format: motionFormats[0],
@@ -63,6 +64,7 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     use(RenderTarget, {
       label: 'SSAO/MotionZ',
       resolution,
+      overscan,
       samples,
       sampler: null,
       format: motionFormats[1],
@@ -74,6 +76,7 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     use(RenderTarget, {
       label: 'SSAO/Sample',
       resolution,
+      overscan,
       samples,
       sampler: null,
       format: sampleFormat,
@@ -84,6 +87,7 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     use(RenderTarget, {
       label: 'SSAO/Accum',
       resolution,
+      overscan,
       samples,
       sampler: { minFilter: 'linear', magFilter: 'linear' },
       history: 1,
@@ -93,7 +97,6 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     }),
     use(RenderTarget, {
       label: 'SSAO/Resolve',
-      resolution: 1,
       samples,
       sampler: null,
       format: resolveFormat,

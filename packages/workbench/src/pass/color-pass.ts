@@ -65,6 +65,18 @@ export const ColorPass: LC<ColorPassProps> = memo((props: ColorPassProps) => {
     getRenderPassDescriptor(renderContext, {overlay, merge, label}),
     [renderContext, overlay, merge]);
 
+  const inspected = inspect({
+    output: {
+      sources: [renderContext.source, renderContext.depth],
+    },
+    pass: uniforms,
+    bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
+  });
+
   return quote(yeet(() => {
     let vs = 0;
     let ts = 0;
@@ -86,18 +98,8 @@ export const ColorPass: LC<ColorPassProps> = memo((props: ColorPassProps) => {
     const command = commandEncoder.finish();
     device.queue.submit([command]);
 
-    inspect({
-      output: renderContext.source ? {
-        color: renderContext.source,
-        depth: renderContext.depth,
-      } : undefined,
-      render: {
-        vertices: vs,
-        triangles: ts,
-      },
-      pass: uniforms,
-      bindings: dataBindings,
-    });
+    inspected.render.vertices = vs;
+    inspected.render.triangles = ts;
 
     return null;
   }));

@@ -58,6 +58,18 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PickingPassProps) 
     getRenderPassDescriptor(renderContext, {overlay, merge, label}),
     [renderContext, overlay, merge]);
 
+  const inspected = inspect({
+    output: {
+      sources: [renderContext.source, renderContext.depth],
+    },
+    pass: uniforms,
+    bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
+  });
+
   return quote(yeet(() => {
     let vs = 0;
     let ts = 0;
@@ -77,18 +89,8 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PickingPassProps) 
     const command = commandEncoder.finish();
     device.queue.submit([command]);
 
-    inspect({
-      output: {
-        picking: renderContext.source,
-        depth: renderContext.depth,
-      },
-      render: {
-        vertices: vs,
-        triangles: ts,
-      },
-      pass: uniforms,
-      bindings: dataBindings,
-    });
+    inspected.render.vertices = vs;
+    inspected.render.triangles = ts;
 
     return null;
   }));

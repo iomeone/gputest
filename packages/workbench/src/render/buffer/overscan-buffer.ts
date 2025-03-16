@@ -25,30 +25,40 @@ export const OverscanBuffer: LC = memo((props: OverscanBufferProps) => {
   const device = useDeviceContext();
   const renderContext = useRenderContext();
 
-  const matrix = useMemo(() => {
+  const [matrix, inverse] = useMemo(() => {
     const {width, height} = renderContext;
 
     const w1 = width;
     const h1 = height;
 
-    const w2 = Math.ceil(width + overscan * 2);
-    const h2 = Math.ceil(height + overscan * 2);
+    const w2 = width + overscan * 2;
+    const h2 = height + overscan * 2;
 
     const sx = w1 / w2;
     const sy = h1 / h2;
 
-    const dx = -(w2 - w1) / w2 / 2;
-    const dy = -(h2 - h1) / h2 / 2;
+    const dx = (w2 - w1) / w2 / 2;
+    const dy = (h2 - h1) / h2 / 2;
 
-    return mat4.fromValues(
+    const m = mat4.fromValues(
       sx,  0, 0, 0,
        0, sy, 0, 0,
        0,  0, 1, 0,
       dx, dy, 0, 1,
     );
+
+    const i = mat4.fromValues(
+        1/sx,     0, 0, 0,
+           0,  1/sy, 0, 0,
+           0,     0, 1, 0,
+      -dx/sx,-dy/sy, 0, 1,
+    );
+    
+    return [m, i];
   }, [renderContext, overscan]);
 
   const overscanMatrix = useShaderRef(matrix);
+  const inverseOverscanMatrix = useShaderRef(inverse);
 
   const {uniforms: viewUniforms} = useViewContext();
 
@@ -69,6 +79,7 @@ export const OverscanBuffer: LC = memo((props: OverscanBufferProps) => {
       inverseProjectionMatrix,
       inverseProjectionViewMatrix,
       overscanMatrix,
+      inverseOverscanMatrix,
     };
   }, viewUniforms);
 

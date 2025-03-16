@@ -59,6 +59,18 @@ export const NormalPass: LC<NormalPassProps> = memo((props: PropsWithChildren<No
     getRenderPassDescriptor(renderContext, LABEL),
     renderContext);
 
+  const inspected = inspect({
+    output: {
+      sources: [renderContext.source, renderContext.depth],
+    },
+    pass: uniforms,
+    bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
+  });
+
   return quote(yeet(() => {
     let vs = 0;
     let ts = 0;
@@ -77,20 +89,8 @@ export const NormalPass: LC<NormalPassProps> = memo((props: PropsWithChildren<No
     const command = commandEncoder.finish();
     device.queue.submit([command]);
 
-    inspect({
-      output: {
-        color: [
-          renderContext.source,
-          renderContext.depth,
-        ],
-      },
-      render: {
-        vertices: vs,
-        triangles: ts,
-      },
-      pass: uniforms,
-      bindings: dataBindings,
-    });
+    inspected.render.vertices = vs;
+    inspected.render.triangles = ts;
 
     return null;
   }));

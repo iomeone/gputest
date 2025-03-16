@@ -9,7 +9,9 @@ import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
+import { useTextureAccess, useTextureUVToXY } from '../hooks/useRawTextureAccess';
 
+import { useCopyDepth } from '../render/copy/value-copy';
 import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
@@ -59,7 +61,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
       view: viewBindGroup,
       color: colorBindGroup,
     },
-    buffers: {gBuffer: [gBuffer]},
+    buffers: {gBuffer: [gBuffer, depthCopyContext]},
     views: {view: {cull, uniforms}},
   } = usePassContext();
 
@@ -85,7 +87,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
   const stencilPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(renderContext, {
-      label: '<DeferredPass> GBuffer',
+      label: '<DeferredPass> Stencil',
       stencil: true,
     }),
     [renderContext]);
@@ -98,13 +100,26 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
     }),
     [renderContext, overlay]);
 
-  inspect({
+  const depthCopyPassDescriptor = useMemo(() =>
+    getRenderPassDescriptor(depthCopyContext, {
+      label: '<DeferredPass> Depth Copy',
+    }),
+    [depthCopyContext]);
+
+  const inspected = inspect({
     output: {
-      sources: [...gBuffer.sources, renderContext.source],
+      sources: [...gBuffer.sources, renderContext.source, renderContext.depth],
     },
     pass: uniforms,
     bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
   });
+
+  const getDepth = useTextureUVToXY(useTextureAccess(renderContext.depth)).shader;
+  const copyDepthBuffer = useCopyDepth(depthCopyContext, getDepth);
 
   return quote(yeet(() => {
     let vs = 0;
@@ -115,6 +130,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
     const commandEncoder = device.createCommandEncoder(LABEL);
     if (!overlay && !merge) renderContext.swap?.();
 
+    // Produce G-Buffer
     {
       const passEncoder = commandEncoder.beginRenderPass(deferredPassDescriptor);
       bindViewPass?.(passEncoder);
@@ -122,12 +138,23 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
       passEncoder.end();
     }
 
+    // Copy depth to side buffer for reading during render pass
+    // (TODO: check if we can avoid writeable scope on depth buffer and avoid copy)
+    {
+      const passEncoder = commandEncoder.beginRenderPass(depthCopyPassDescriptor);
+      copyDepthBuffer(passEncoder);
+      passEncoder.end();
+    }
+    /*
+    // Note: code below doesn't work to copy from depth+stencil to depth-only.
+    // To avoid having to keep a useless extra stencil buffer, use code above instead.
     commandEncoder.copyTextureToTexture(
       {texture: depth.texture},
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       {texture: gBuffer.sources![4].texture},
       depth.size
     );
+    */
 
     if (stencils.length) {
       const passEncoder = commandEncoder.beginRenderPass(stencilPassDescriptor);
@@ -150,12 +177,8 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
     const command = commandEncoder.finish();
     device.queue.submit([command]);
 
-    inspect({
-      render: {
-        vertices: vs,
-        triangles: ts,
-      },
-    });
+    inspected.render.vertices = vs;
+    inspected.render.triangles = ts;
 
     return null;
   }));

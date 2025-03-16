@@ -146,6 +146,14 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const blit = useCopyDepth(renderContext, getDepth, null, shadowUV!, SHADOW_PAGE);
 
+  const inspected = inspect({
+    output: {
+      depth: cubeSource,
+    },
+    pass: uniforms,
+    bindings: dataBindings,
+  });
+
   return quote(yeet(() => {
     let vs = 0;
     let ts = 0;
@@ -184,17 +192,8 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
       device.queue.submit([command]);
     }
 
-    inspect({
-      output: {
-        depth: cubeSource,
-      },
-      render: {
-        vertices: vs,
-        triangles: ts,
-      },
-      pass: uniforms,
-      bindings: dataBindings,
-    });
+    inspected.render.vertices = vs;
+    inspected.render.triangles = ts;
 
     return null;
   }));
