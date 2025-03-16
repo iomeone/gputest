@@ -9,7 +9,6 @@ use './ssao-weight'::{ normalWeight, depthWeight };
 @link fn loadSample(xy: vec2<u32>) -> vec4<f32>;
 
 @link fn getOverscanScale() -> vec2<f32>;
-@link fn getOverscanOffset() -> vec2<f32>;
 
 @link fn getSize() -> vec2<f32>;
 @link fn getXYJitter() -> vec2<u32>;
@@ -19,7 +18,7 @@ const EPS = 1e-6;
 
 @export fn getSSAOResolve(targetUV: vec2<f32>) -> vec4<f32> {
 
-  let overscanUV = targetUV * getOverscanScale() + getOverscanOffset();
+  let overscanUV = targetUV * getOverscanScale() + (1.0 - getOverscanScale()) * .5;
 
   let targetDepth = getTargetDepth(overscanUV);
   let targetNormal = decodeNormal16(getTargetNormal16(overscanUV).xy);
@@ -60,7 +59,7 @@ const EPS = 1e-6;
     sample10,
     sample01,
     sample11,
-  ) * vec4<f32>(w00, w10, w01, w11);
+  ) * (vec4<f32>(w00, w10, w01, w11) / w);
 
   //let targetSample = loadSample(xy);
   //if (targetUV.x < 0.25) { return vec4<f32>(targetNormal * .5 + .5, 1.0); }

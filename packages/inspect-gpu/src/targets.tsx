@@ -226,6 +226,16 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
       out.push(makeView(t));
     }
 
+    if (format.match(/rgba/)) {
+      const label = [texture.label, texture.texture?.label, texture.view?.label, 'Alpha'].filter(l => l?.length).join(' ');
+      let ts = proxy(texture, {
+        hint: 'alpha',
+        label,
+      });
+      const t = getDisplayShader(ts);
+      out.push(makeView(t));
+    }
+    
     if (hasStencil) {
       const label = [texture.label, texture.texture?.label, texture.view?.label, 'Stencil'].filter(l => l?.length).join(' ');
       let ts = proxy(texture, {

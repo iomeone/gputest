@@ -151,7 +151,7 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
         resolveContext.source,
       ],
     },
-    pass: {uniforms},
+    pass: uniforms,
     bindings: dataBindings,
     render: {
       vertices: 0,

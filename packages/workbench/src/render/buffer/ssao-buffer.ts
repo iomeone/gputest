@@ -106,7 +106,7 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
   ];
   
   return gather(targets, (targets: OffscreenRenderContext[]) => {
-    const [,,,, resolveTarget] = targets;
+    const [,,,,, resolveTarget] = targets;
 
     const ssaoBinding: PassBinding = {
       module: ssaoBindingWGSL,

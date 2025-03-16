@@ -12,6 +12,7 @@ import { getLambdaSource } from '../hooks/useLambdaSource';
 import { displayFloat } from '@use-gpu/wgsl/display/float.wgsl';
 import { displayInt } from '@use-gpu/wgsl/display/int.wgsl';
 
+import { displayAlpha } from '@use-gpu/wgsl/display/alpha.wgsl';
 import { displayDepth } from '@use-gpu/wgsl/display/depth.wgsl';
 import { displayMotionXY } from '@use-gpu/wgsl/display/motion-xy.wgsl';
 import { displayMotionZ } from '@use-gpu/wgsl/display/motion-z.wgsl';
@@ -21,6 +22,7 @@ import { displayStencil } from '@use-gpu/wgsl/display/stencil.wgsl';
 import { getMultiViewSample } from '@use-gpu/wgsl/display/multiview.wgsl';
 
 const HINT_SHADERS = {
+  'alpha': displayAlpha,
   'depth': displayDepth,
   'motion/xy': displayMotionXY,
   'motion/z': displayMotionZ,

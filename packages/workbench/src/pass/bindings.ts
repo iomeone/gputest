@@ -22,6 +22,7 @@ export const useMinimalBindGroups = (
   const bindGroup = useStandardBindGroup(resources, {});
   return useOne(() => ({
     view: bindGroup,
+    pre: bindGroup,
     color: bindGroup,
   }), bindGroup);
 };

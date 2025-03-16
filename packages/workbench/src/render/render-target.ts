@@ -64,8 +64,8 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
   const {
     resolution = 1,
     overscan = 0,
-    width = Math.ceil((renderContext.width + overscan * 2) * resolution),
-    height = Math.ceil((renderContext.height + overscan * 2) * resolution),
+    width = Math.ceil((renderContext.width * (1 + overscan * 2)) * resolution),
+    height = Math.ceil((renderContext.height * (1 + overscan * 2)) * resolution),
     samples = renderContext.samples,
     format = PRESENTATION_FORMAT,
     history = 0,

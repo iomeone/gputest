@@ -63,7 +63,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
 
   const {
     buffers: {normal, motion, ssao},
-    views: { pre: { uniforms: { overscanMatrix: { current: overscanMatrix } }}},
+    views: { pre: { uniforms: { overscanMatrix }}},
   } = usePassContext();
   
   const [normalContext] = normal;
@@ -78,7 +78,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const ssaoRadius = useShaderRef(radius);
 
   const resolveSize = useShaderRef([resolveTarget.width, resolveTarget.height]);
-  const overscanSize = useShaderRef([resolveTarget.width, normalContext.height]);
+  const overscanSize = useShaderRef([normalContext.width, normalContext.height]);
   const downscaleSize = useShaderRef([normalTarget.width, normalTarget.height]);
 
   const {current: os} = overscanSize;
@@ -114,7 +114,20 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     useOne(() => { if (shouldPick) shouldClear = true; }, shouldPick);
     useOne(() => { if (shouldPick) shouldClear = true; }, mouse);
 
-    const pick = useShaderRef([shouldPick ? mouse.x / 2 * pixelRatio : -1, shouldPick ? mouse.y / 2 * pixelRatio : -1]);    
+    const u = mouse.x * pixelRatio / resolveTarget.width;
+    const v = mouse.y * pixelRatio / resolveTarget.height;
+    
+    const m = overscanMatrix?.current;
+
+    const sx = m?.[0] ?? 1;
+    const sy = m?.[5] ?? 1;
+    const dx = (1 - sx) / 2;
+    const dy = (1 - sy) / 2;
+  
+    const mx = Math.round((u * sx + dx) * normalContext.width / 2) * 2;
+    const my = Math.round((v * sy + dy) * normalContext.height / 2) * 2;
+
+    const pick = useShaderRef([shouldPick ? mx : -1, shouldPick ? my : -1]);    
     debugArgs = [pick, printPoint, printLine, printData];
   }
   else {
@@ -207,8 +220,8 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   else if (mode === 'resolve') {
     const defs = ssaoWeights;
 
-    const overscanScale = useShaderRef([overscanMatrix[0], overscanMatrix[5]]);
-    const overscanOffset = useShaderRef([overscanMatrix[12], overscanMatrix[13]]);
+    const m = overscanMatrix?.current;
+    const overscanScale = useShaderRef([m?.[0] ?? 1, m?.[5] ?? 1]);
 
     const loadTargetDepth = useTextureAccess(normalContext.depth);
     const getTargetDepth = useTextureUVToXY(loadTargetDepth).shader;
@@ -227,7 +240,6 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
       loadDepth,
       loadSample,
       overscanScale,
-      overscanOffset,
       downscaleSize,
       xyJitter,
     ], defs);
@@ -263,5 +275,6 @@ const getJitterBayer2x2Alternating = (jitter: number) => {
   const x = (i & 4) ? a : b;
   const y = (i & 4) ? b : a;
 
+  return [0, 0];
   return [x, y];
 };

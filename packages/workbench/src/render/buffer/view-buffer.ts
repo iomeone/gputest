@@ -17,7 +17,10 @@ export const useViewBuffer = () => {
   
   return {
     bindings: {view: viewBinding},
-    views: {view: {cull, uniforms}},
+    views: {
+      pre: {cull, uniforms},
+      view: {cull, uniforms}
+    },
   };
 };
 
