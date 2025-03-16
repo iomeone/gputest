@@ -837,8 +837,8 @@ const TEXTURE_SHADER_TYPES = {
   // Depth and stencil formats
   "stencil8": 'u32',              // u8
   "depth16unorm": 'f32',
-  "depth24plus": 'u32',
-  "depth24plus-stencil8": 'u32',
+  "depth24plus": 'f32',
+  "depth24plus-stencil8": 'f32',
   "depth32float": 'f32',
 
   // "depth24unorm-stencil8" feature
@@ -878,6 +878,7 @@ const TEXTURE_SAMPLE_TYPES = {
   "rgba8sint": 'i32',       // i8
   "bgra8unorm": 'f32',
   "bgra8unorm-srgb": 'f32',
+
   // Packed 32-bit formats
   "rgb9e5ufloat": 'f32',
   "rgb10a2unorm": 'f32',

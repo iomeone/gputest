@@ -23,7 +23,7 @@ fn signNotZero(xy: vec2<f32>) -> vec2<f32> {
   return normalize(v);
 }
 
-/** Wrap octahedral 2D coordinate to (-1...1) */
+/** Wrap octahedral 2D coordinate (-3...3) to (-1...1) (i.e. 1 fold only) */
 @export fn wrapOctahedral(o: vec2<f32>) -> vec2<f32> {
   var wrap = o;
   wrap = select(wrap, vec2<f32>(-2.0 - wrap.x, -wrap.y), wrap.x < -1.0);

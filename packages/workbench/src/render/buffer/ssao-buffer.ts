@@ -41,6 +41,7 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
       label: 'SSAO/NormalDepth',
       resolution,
       history: 1,
+      depthHistory: true,
       samples,
       sampler: null,
       format: normalFormat,
@@ -51,7 +52,6 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     use(RenderTarget, {
       label: 'SSAO/MotionXY',
       resolution,
-      history: 1,
       samples,
       sampler: null,
       format: motionFormats[0],

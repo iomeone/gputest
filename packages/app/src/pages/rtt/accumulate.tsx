@@ -19,6 +19,7 @@ import { InfoBox } from '../../ui/info-box';
 import { accumulateShader } from './accumulate/accumulate.wgsl';
 import { compositeShader } from './accumulate/composite.wgsl';
 
+// Simple raw test scene of ground + spheres
 const GROUND = -3;
 
 const rand = () => Math.random();
@@ -68,7 +69,8 @@ export const RTTAccumulatePage: LC = () => {
         <LinearRGB tonemap="aces">
           <Cursor cursor="move" />
           <Camera>
-            <Loop>
+            {/* Use `decimate` to slow down accumulation loop by factor N, e.g. for debugging */}
+            <Loop decimate={1}>
             
               <AccumulateView
                 limit={1024}
@@ -81,8 +83,6 @@ export const RTTAccumulatePage: LC = () => {
                   </Pass>
                 )}
               />
-
-              {/*<Compute><Readback source={debugHelper.attributes.counter} then={(d) => console.log(d[0])} /></Compute>*/}
 
             </Loop>
 
@@ -185,6 +185,9 @@ const PathTrace = (props: PathTraceProps) => {
     return (
       <Pass overlay>
         <On render={() => frameCountRef.current++ === 0 && printHelper.swap()} />
+        {/* Use of premultiplied blend allows the shader
+            to choose whether to overwrite (alpha=1) or accumulate (alpha=0)
+            without needing a separate clear op */}
         <FullScreen shader={shader} blend="premultiply" alphaToDiscard={false} />
       </Pass>
     );

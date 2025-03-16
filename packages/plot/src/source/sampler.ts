@@ -3,7 +3,7 @@ import type { ElementType, TensorArray, VectorLike, Emit, Emitter, UniformType }
 
 import { provide, yeet, deprecated, memo, useOne, useMemo, useNoMemo } from '@use-gpu/live';
 import {
-  seq, makeTensorArray, emitMultiArray, makeNumberWriter, makeNumberSplitter, updateTensor,
+  seq, makeTensorArray, emitMultiArray, makeNumberWriter, makeNumberInterleavedWriter, updateTensor,
 } from '@use-gpu/core';
 import { parseAxis, parseVec4 } from '@use-gpu/parse';
 import { optional, useProp, shouldEqual, sameShallow } from '@use-gpu/traits/live';
@@ -281,7 +281,7 @@ export const Sampler: LiveComponent<SamplerProps<unknown & (string | string[])>>
       throw new Error("Cannot sample across more than 4 dimensions");
     }
 
-    const emit = split ? makeNumberSplitter(arrays, dims) : makeNumberWriter(arrays[0], dims);
+    const emit = split ? makeNumberInterleavedWriter(arrays, dims) : makeNumberWriter(arrays[0], dims);
     return [sampled, emit];
   }, [centered, range, size, border, arrays, dims, expr, index, origin, split]);
 

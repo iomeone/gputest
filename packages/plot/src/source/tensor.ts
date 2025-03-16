@@ -5,7 +5,7 @@ import { provide, yeet, memo, useOne, useMemo, useNoMemo } from '@use-gpu/live';
 import {
   seq,
   makeTensorArray,
-  makeNumberReader, makeNumberWriter, makeNumberSplitter,
+  makeNumberReader, makeNumberWriter, makeNumberInterleavedWriter,
   emitArray, emitMultiArray,
   toCPUDims,
   updateTensor,
@@ -92,7 +92,7 @@ export const Tensor: LiveComponent<TensorProps<unknown & (string | string[])>> =
     const d = toCPUDims(dims);
 
     let emitted = 0;
-    const emit = split ? makeNumberSplitter(arrays, d) : makeNumberWriter(array, d);
+    const emit = split ? makeNumberInterleavedWriter(arrays, d) : makeNumberWriter(array, d);
     if (data) {
       const expr = makeNumberReader(data, d);
       emitted = emitArray(expr, emit, count);

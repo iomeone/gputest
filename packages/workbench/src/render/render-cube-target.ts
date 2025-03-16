@@ -1,5 +1,5 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { Blending, OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
+import type { Blending, OffscreenRenderContext, ColorSpace, RenderViewAttachment, TextureSource, TextureTarget } from '@use-gpu/core';
 
 import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
 import { getTextureSampleType } from '@use-gpu/core';
@@ -194,46 +194,32 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
     let source: TextureTarget | undefined;
     let sources: TextureTarget[] | undefined;
 
+    const swap = (history > 0) ? () => {
+      const {current: index} = counter;
+
+      if (source && sources && bufferTextures && bufferViews && bufferLayers) {
+        cycleHistorySources(
+          source,
+          sources,
+          index,
+
+          bufferTextures,
+          bufferViews,
+          bufferLayers,
+          viewAttachments,
+          !!resolveTexture,
+        );
+      }
+
+      counter.current = (index + 1) % n;
+    } : null;
+
     if (format && targetTexture) {
       const view = targetTexture.createView({ dimension: 'cube' });
-      const volatile = history ? history + 1 : 0;
+      const volatile = (history > 0) ? history + 1 : 0;
 
       const type = getTextureSampleType(format);
       const layout = `texture_cube<${type}>`;
-
-      const swap = () => {
-        if (!format || !history || !source || !sources) return;
-
-        const {current: index} = counter;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const n = bufferViews!.length;
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const texture = bufferTextures![index];
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const view = bufferViews![index];
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const layers = bufferLayers![index];
-
-        for (let i = 0; i < 6; ++i) {
-          const att = viewAttachments[i].colorAttachments[0];
-          if (resolveTexture) att.resolveTarget = layers[i];
-          else att.view = layers[i];
-        }
-
-        source.texture = texture;
-        source.view = view;
-
-        for (let i = 0; i < history; i++) {
-          const j = (index + n - i - 1) % n;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          sources[i].texture = bufferTextures![j];
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          sources[i].view = bufferViews![j];
-        }
-
-        counter.current = (index + 1) % n;
-      };
 
       const makeSource = () => ({
         texture: targetTexture,
@@ -251,7 +237,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
         swap: null as any,
       }) as TextureTarget;
 
-      sources = history ? seq(history).map(makeSource) : undefined;
+      sources = (history > 0) ? seq(history).map(makeSource) : undefined;
 
       source = makeSource();
       source.history = sources;
@@ -314,4 +300,39 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
 
   if (then && source) return fence(view, () => then(source));
   return view;
+}
+
+const cycleHistorySources = (
+  source: TextureSource,
+  sources: TextureSource[],
+  index: number,
+
+  textures: GPUTexture[],
+  views: GPUTextureView[],
+  layers: GPUTextureView[][],
+
+  viewAttachments: RenderViewAttachment[],
+  resolve: boolean,
+) => {
+  const n = textures.length;
+
+  const texture = textures[index];
+  const view = views[index];
+  const ls = layers[index];
+
+  source.texture = texture;
+  source.view = view;
+
+  for (let i = 0; i < history; i++) {
+    const j = (index + n - i - 1) % n;
+    sources[i].texture = textures[j];
+    sources[i].view = views[j];
+  }
+
+  if (attachments) {
+    for (let i = 0; i < 6; ++i) {
+      const att = viewAttachments[i].colorAttachments[0];
+      att[resolve ? 'resolveTarget' : 'view'] = ls[i];
+    }
+  }
 }

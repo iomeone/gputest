@@ -33,6 +33,7 @@ export type RenderTargetProps = {
 
   format?: GPUTextureFormat | null,
   depthStencil?: GPUTextureFormat | null,
+  depthHistory?: boolean,
   sampler?: Partial<GPUSamplerDescriptor>,
   variant?: string,
   absolute?: boolean,
@@ -70,6 +71,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     history = 0,
     sampler = NO_SAMPLER,
     depthStencil = DEPTH_STENCIL_FORMAT,
+    depthHistory = false,
     backgroundColor = EMPTY_COLOR,
     blend,
     colorSpace = COLOR_SPACE,
@@ -82,6 +84,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     then,
   } = props;
 
+  // Color target + history
   const [renderTexture, resolveTexture, bufferTextures, bufferViews, counter] = useMemo(
     () => {
       const counter = { current: 0 };
@@ -133,6 +136,52 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
   const targetTexture = resolveTexture ?? renderTexture;
 
+  // Depth texture + history
+  const [
+    depthTexture,
+    depthTextures,
+    depthViews,
+    depthStencilAttachment,
+  ] = useMemo(() => {
+      if (!depthStencil) return [];
+
+      const texture = makeTargetTexture(
+        device,
+        width,
+        height,
+        1,
+        depthStencil,
+        samples,
+      );
+
+      const buffers = depthHistory && (history > 0) ? seq(history).map(() =>
+        makeTargetTexture(
+          device,
+          width,
+          height,
+          1,
+          depthStencil,
+          samples,
+        )
+      ) : null;
+      if (buffers) buffers.push(texture);
+
+      const views = buffers ? buffers.map(b => b.createView()) : undefined;
+
+      if (label != null) {
+        texture.label = label;
+        if (buffers) for (const b of buffers) b.label = label;
+        if (views) for (const v of views) v.label = label;
+      }
+
+      const attachment = makeDepthStencilAttachment(texture, depthStencil);
+
+      return [texture, buffers, views, attachment];
+    },
+    [device, width, height, depthStencil, depthHistory, history, samples, label]
+  );
+
+  // Color/depth state and attachments
   const colorStates = useOne(() => (
     format ? [makeColorState(format, makeBlendState(blend ?? getDefaultBlendMode(format)))] : []
   ), format);
@@ -148,62 +197,49 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     : undefined,
     depthStencil);
 
-  const [
-    depthTexture,
-    depthStencilAttachment,
-  ] = useMemo(() => {
-      if (!depthStencil) return [];
-
-      const texture = makeTargetTexture(device, width, height, 1, depthStencil, samples);
-      const attachment = makeDepthStencilAttachment(texture, depthStencil);
-      if (label != null) texture.label = `${label} Depth`;
-      
-      return [texture, attachment];
-    },
-    [device, width, height, depthStencil, samples, label]
-  );
-
+  // Wrapped TextureTargets + history swapper
   const [source, depth] = useMemo(() => {
 
     const size = [width, height] as [number, number];
     let source: TextureTarget | undefined;
     let sources: TextureTarget[] | undefined;
+    let depth: TextureTarget | undefined;
+    let depths: TextureTarget[] | undefined;
+
+    const swap = (history > 0) ? () => {
+      const {current: index} = counter;
+
+      if (source && sources && bufferTextures && bufferViews) {
+        cycleHistorySources(
+          source,
+          sources,
+          index,
+          bufferTextures,
+          bufferViews,
+          colorAttachments[0],
+          !!resolveTexture,
+        );
+      }
+      if (depth && depths && depthTextures && depthViews) {
+        cycleHistorySources(
+          depth,
+          depths,
+          index,
+          depthTextures,
+          depthViews,
+          depthStencilAttachment,
+        );
+      }
+
+      counter.current = (index + 1) % (history + 1);
+    } : null;
     
     if (format && targetTexture) {
       const view = targetTexture.createView();
-      const volatile = history ? history + 1 : 0;
+      const volatile = (history > 0) ? history + 1 : 0;
 
       const type = getTextureSampleType(format);
       const layout = `texture_2d<${type}>`;
-
-      const swap = () => {
-        if (!format || !history || !source || !sources) return;
-
-        const {current: index} = counter;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const n = bufferViews!.length;
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const texture = bufferTextures![index];
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const view = bufferViews![index];
-
-        if (resolveTexture) colorAttachments[0].resolveTarget = view;
-        else colorAttachments[0].view = view;
-
-        source.texture = texture;
-        source.view = view;
-
-        for (let i = 0; i < history; i++) {
-          const j = (index + n - i - 1) % n;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          sources[i].texture = bufferTextures![j];
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          sources[i].view = bufferViews![j];
-        }
-
-        counter.current = (index + 1) % n;
-      };
 
       const makeSource = () => ({
         texture: targetTexture,
@@ -218,33 +254,56 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
         volatile,
         version: 0,
         hint,
-        swap: null as any,
+        swap: undefined,
       }) as TextureTarget;
 
-      sources = history ? seq(history).map(makeSource) : undefined;
+      sources = (history > 0) ? seq(history).map(makeSource) : undefined;
 
       source = makeSource();
       source.history = sources;
       source.swap = swap;
-
-      swap();
     }
 
-    const depth = depthStencil ? {
-      texture: depthTexture,
-      sampler,
-      layout: samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d',
-      format: depthStencil,
-      variant,
-      absolute,
-      size,
-      version: 0,
-      hint: 'depth',
-    } as TextureSource : undefined;
+    if (depthStencil && depthTexture) {
+      const view = depthTexture.createView();
+      const volatile = history ? history + 1 : 0;
+
+      const type = getTextureSampleType(depthStencil);
+      const layout = samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d';
+      
+      const makeSource = () => ({
+        texture: depthTexture,
+        view,
+        sampler,
+        layout: samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d',
+        format: depthStencil,
+        variant,
+        absolute,
+        size,
+        volatile,
+        version: 0,
+        hint: 'depth',
+        swap: undefined,
+      }) as TextureTarget;
+
+      depths = depthHistory && (history > 0) ? seq(history).map(makeSource) : undefined;
+
+      depth = makeSource();
+      depth.history = depths;
+      depth.swap = swap;
+    }
+    
+    swap?.();
 
     return [source, depth];
-  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, hint, bufferTextures, bufferViews, colorAttachments, colorSpace, counter, resolveTexture]);
+  }, [
+    targetTexture, depthTexture,
+    width, height, format, variant, absolute, samples, history, sampler, hint,
+    bufferTextures, bufferViews, colorAttachments, colorSpace, counter, resolveTexture,
+    depthStencil, depthStencilAttachment, depthTextures, depthViews,
+  ]);
 
+  // Offscreen render context
   const rttContext = useMemo(() => ({
     ...renderContext,
     width,
@@ -262,21 +321,19 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       depthStencilAttachment,
     }],
 
-    swap: source?.swap,
+    swap: source?.swap ?? depth?.swap,
     source,
     depth,
   } as OffscreenRenderContext), [renderContext, width, height, depth, samples, colorInput, colorSpace, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source]);
 
-  const inspectable = useMemo(() => [
-    ...(source ? [source] : []),
-    ...(depth ? [depth] : []),
-  ], [source, depth]);
-
-  inspect({
-    output: {
-      color: inspectable,
-    },
-  });
+  useMemo(() => {
+    const inspectable = [source, depth].filter(s => !!s);
+    inspect({
+      output: {
+        color: inspectable,
+      },
+    });
+  }, [source, depth]);
 
   const render = getRenderFunc(props);
   if (!(render ?? children)) return yeet(rttContext);
@@ -286,6 +343,36 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
   if (then && source) return fence(view, () => then(source));
   return view;
+}
+
+const cycleHistorySources = (
+  source: TextureSource,
+  sources: TextureSource[],
+  index: number,
+
+  textures: GPUTexture[],
+  views: GPUTextureView[],
+  attachment: any,
+  resolve: boolean,
+) => {
+  const n = textures.length;
+  const history = n - 1;
+
+  const texture = textures[index];
+  const view = views[index];
+
+  source.texture = texture;
+  source.view = view;
+
+  for (let i = 0; i < history; i++) {
+    const j = (index + n - i - 1) % n;
+    sources[i].texture = textures[j];
+    sources[i].view = views[j];
+  }
+
+  if (attachment) {
+    attachment[resolve ? 'resolveTarget' : 'view'] = view;
+  }
 }
 
 // eslint-disable-next-line react-hooks/exhaustive-deps

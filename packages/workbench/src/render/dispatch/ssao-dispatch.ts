@@ -222,7 +222,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
       shouldClear = false;
     }
 
-    targetContext?.swap();
+    targetContext.swap?.();
 
     const passEncoder = commandEncoder.beginRenderPass(descriptor);
     bindPass?.(passEncoder);
@@ -244,14 +244,3 @@ const getJitterBayer2x2Alternating = (jitter: number) => {
 
   return [x, y];
 };
-
-/*
-const getResampleOffset = (fromSize: VectorLike, toSize: VectorLike, jitter: number) => {
-  const [x, y] = getJitterBayer2x2(jitter);
-
-  const [w1, h1] = fromSize;
-  const [w2, h2] = toSize;
-  
-  return [(.5+x)/w1 - .5/w2, (.5+y)/h1 - .5/h2];
-};
-*/

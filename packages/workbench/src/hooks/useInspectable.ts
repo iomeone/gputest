@@ -8,6 +8,7 @@ export const useInspectable = () => {
   const inspected = fiber.__inspect = fiber.__inspect || {};
   const inspect = useOne(() => (data: Record<string, any>) => {
     for (const key in data) inspected[key] = data[key];
+    fiber.host.__ping(fiber, false);
     return fiber.__inspect as Record<string, any>;
   });
 

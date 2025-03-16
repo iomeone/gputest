@@ -98,6 +98,14 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
     }),
     [renderContext, overlay]);
 
+  inspect({
+    output: {
+      sources: [...gBuffer.sources, renderContext.source],
+    },
+    pass: uniforms,
+    bindings: dataBindings,
+  });
+
   return quote(yeet(() => {
     let vs = 0;
     let ts = 0;
@@ -143,15 +151,10 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
     device.queue.submit([command]);
 
     inspect({
-      output: {
-        color: renderContext.source,
-      },
       render: {
         vertices: vs,
         triangles: ts,
       },
-      pass: uniforms,
-      bindings: dataBindings,
     });
 
     return null;

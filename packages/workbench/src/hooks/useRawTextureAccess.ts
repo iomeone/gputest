@@ -10,9 +10,11 @@ import { getShader } from './useShader';
 import { getSource } from './useSource';
 
 import { getUnfiltered, getUnfilteredOffset } from '@use-gpu/wgsl/texture/unfiltered.wgsl';
+
 import { loadTextureLevel } from '@use-gpu/wgsl/texture/level.wgsl';
 import { loadTextureIndexLevel } from '@use-gpu/wgsl/texture/level-index.wgsl';
-import { textureUVToXY, textureUVToXYOffset } from '@use-gpu/wgsl/texture/raw.wgsl';
+import { textureUVToXY } from '@use-gpu/wgsl/texture/raw.wgsl';
+import { textureUVToXYOffset } from '@use-gpu/wgsl/texture/raw-offset.wgsl';
 
 export const useRawTextureAccess = (
   texture: TextureSource,

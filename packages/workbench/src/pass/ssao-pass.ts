@@ -39,6 +39,7 @@ const label = '<SSAOPass>';
 /** SSAO render pass.
 
 Resolves SSAO based on pre-existing normal + depth + motion vectors.
+Renders to buffers allocated by SSAOBuffer (half res except for final resolve).
 */
 export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPassProps>) => {
   const {
@@ -60,8 +61,8 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
   const device = useDeviceContext();
   const {
     buffers: {ssao},
-    bindGroups: {view: bindGroup},
-    views: {view: {cull, uniforms}},
+    bindGroups: {pre: bindGroup},
+    views: {pre: {cull, uniforms}},
   } = usePassContext();
 
   const [normalContext, motionXYContext, motionZContext, sampleContext, accumContext, resolveContext] = ssao;

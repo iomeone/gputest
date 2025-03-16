@@ -664,7 +664,7 @@ export const makeNumberWriter = (to: VectorLike, dims: number, fields?: number[]
   }
 }
 
-export const makeNumberSplitter = (to: VectorLike[], dims: number) => {
+export const makeNumberInterleavedWriter = (to: VectorLike[], dims: number) => {
   const n = to.length;
   let i = 0;
 

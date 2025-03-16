@@ -3,6 +3,7 @@ import type { ShaderModule } from '@use-gpu/shader';
 
 import { notEmptyString, resolve } from '@use-gpu/core';
 import { useMemo } from '@use-gpu/live';
+import { getObjectKey } from '@use-gpu/state';
 
 export type SourceLike = {
   length?: Lazy<number>,
@@ -40,6 +41,7 @@ export const getLambdaSource = (shader: ShaderModule, sourceProps: SourceLike) =
       if (s === 'colorSpace') return target.colorSpace ?? sourceProps.colorSpace;
       if (s === 'format') return target.format ?? sourceProps.format;
       if (s === 'layout') return target.layout ?? sourceProps.layout;
+      if (s === 'id') return target.id ?? sourceProps.id ?? getObjectKey(sourceProps.view ?? sourceProps.texture);
       return (target as any)[s];
     },
   }) as LambdaSource;

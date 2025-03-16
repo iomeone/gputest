@@ -1,16 +1,19 @@
 0.14.x
 - `@use-gpu/core`: Full support for `uniform` storage
-- `@use-gpu/layout`: Improved pixel hinting for text
-- `@use-gpu/inspect`: Add filtering to tree view
-- `@use-gpu/inspect`: Inspector value formatting improvements
+- `@use-gpu/core`: Improved minimum binding size calc for WGSL structs
+- `@use-gpu/layout`: Improved pixel hinting for SDF text
+- `@use-gpu/inspect`: Add per-type filtering to tree view
+- `@use-gpu/inspect`: Value formatting improvements
 - `@use-gpu/inspect-gpu`: Inspect uniforms and bindings on sub-passes
 - `@use-gpu/inspect-gpu`: Improved texture display and info
 - `@use-gpu/shader`: Improved support for static bindings and `uniform` storage
-- `@use-gpu/shader`: Allow inferring primitive types via `@infer`
-- `@use-gpu/shader`: Fallback to last `@export` as `main()` in inline WGSL snippets
-- `@use-gpu/workbench`: Merge global and per-pass bind group to save a slot
-- `@use-gpu/workbench`: Refactor `<Pass>` internals with modular bindings and buffers
-- `@use-gpu/workbench`: Add screen-space ambient occlusion (GTAO)
+- `@use-gpu/shader`: Allow inferring primitive types via `@infer` (not just structs)
+- `@use-gpu/shader`: Default to last `@export` as implied `main()` in inline WGSL snippets
+- `@use-gpu/workbench`: Refactor `<Pass>` internals with modular global bindings and buffers
+- `@use-gpu/workbench`: Add screen-space ambient occlusion pass (GTAO w/ overscan)
+- `@use-gpu/workbench`: Add normals and motion buffer pre-passes w/ associated render modes
+- `@use-gpu/workbench`: Improved WebGPU resource labels (for error messages and inspector)
+- `@use-gpu/workbench`: Optional `depthHistory` for `<RenderTarget>`
 
 0.13.1
 - `@use-gpu/app`: Add path tracing + debug picking example.
@@ -31,48 +34,48 @@
 - `@use-gpu/workbench`: Add `<ValueShader>` which acts like a lazy `map(…)`
 
 0.12.0
-- `@use-gpu/*`: add `ts-vite` example
-- `@use-gpu/*`: use `swc` to build .js
-- `@use-gpu/*`: emit .cjs / .mjs split module build to avoid node issues
-- `@use-gpu/app`: add quaternion hypersphere example
-- `@use-gpu/app`: add droste shader example
+- `@use-gpu/*`: Add `ts-vite` example
+- `@use-gpu/*`: Use `swc` to build .js
+- `@use-gpu/*`: Emit .cjs / .mjs split module build to avoid node issues
+- `@use-gpu/app`: Add quaternion hypersphere example
+- `@use-gpu/app`: Add droste shader example
 - `@use-gpu/live`: Match React 18 style use of `PropsWithChildren` vs `LC`
-- `@use-gpu/plot`: add 4D cartesian/stereographic transform
-- `@use-gpu/shader`: refactor transpiler so it emits `.wgsl.ts` or `.wgsl.js` modules + defs
-- `@use-gpu/shader`: add shader2ts bin
-- `@use-gpu/wgsl`: ship pre-transpiled JS to avoid bundling issues
+- `@use-gpu/plot`: Add 4D cartesian/stereographic transform
+- `@use-gpu/shader`: Refactor transpiler so it emits `.wgsl.ts` or `.wgsl.js` modules + defs
+- `@use-gpu/shader`: Add shader2ts bin
+- `@use-gpu/wgsl`: Ship pre-transpiled JS to avoid bundling issues
 
 0.11.3
-- `@use-gpu/shader`: pin `@lezer/lr` to 1.3.4 to avoid issue with 1.4.1
+- `@use-gpu/shader`: Pin `@lezer/lr` to 1.3.4 to avoid issue with 1.4.1
 
 0.11.1
-- `@use-gpu/core`: fix edge case around copying zero-length data
-- `@use-gpu/plot`: fix signature of segmented shapes' positions attribute
-- `@use-gpu/plot`: fix `<Surface>` losing its size when multiple per-vertex attributes are bound
+- `@use-gpu/core`: Fix edge case around copying zero-length data
+- `@use-gpu/plot`: Fix signature of segmented shapes' positions attribute
+- `@use-gpu/plot`: Fix `<Surface>` losing its size when multiple per-vertex attributes are bound
 
 0.11.0
-- `@use-gpu/*`: support `render` prop as `children`
-- `@use-gpu/core`: refactor data ingestion pipe
-- `@use-gpu/core`: add spread-aware struct data aggregator
-- `@use-gpu/inspect`: improved tree view and value formatting
-- `@use-gpu/layout`: allow JSX text children on `<Text>`
-- `@use-gpu/live`: change `reconcile` and `quote` to be targeted to a context
+- `@use-gpu/*`: Support `render` prop as `children`
+- `@use-gpu/core`: Refactor data ingestion pipe
+- `@use-gpu/core`: Add spread-aware struct data aggregator
+- `@use-gpu/inspect`: Improved tree view and value formatting
+- `@use-gpu/layout`: Allow JSX text children on `<Text>`
+- `@use-gpu/live`: Change `reconcile` and `quote` to be targeted to a context
 - `@use-gpu/live`: `useYolo` is now `useHooks`
-- `@use-gpu/map`: offload tile loading/tesselation to web workers
-- `@use-gpu/plot`: new declarative drawing API with point/line/etc
-- `@use-gpu/plot`: aggregated matrix transforms
-- `@use-gpu/plot`: make `DataContext` a CPU-side concept with `TensorArray`
-- `@use-gpu/traits`: split off value parsers into `@use-gpu/parse`
-- `@use-gpu/traits`: make hooks React/Live-polymorphic
-- `@use-gpu/shader`: add struct types and instancing operators
-- `@use-gpu/shader`: add automatic vec# casts between lambdas
-- `@use-gpu/workbench`: add explicit `LayerReconciler`, `PassReconciler`, `QueueReconciler`
-- `@use-gpu/workbench`: refactor `<VirtualLayers>`
-- `@use-gpu/workbench`: refactor attribute instancing
-- `@use-gpu/workbench`: add instancing to Line/Arrow/Point/Label layers
-- `@use-gpu/workbench`: use new aggregator schema in data components
-- `@use-gpu/workbench`: move `expr` based samplers to plot package
-- `@use-gpu/workbench`: merge `<CompositeData>` into `<Data>`
+- `@use-gpu/map`: Offload tile loading/tesselation to web workers
+- `@use-gpu/plot`: New declarative drawing API with point/line/etc
+- `@use-gpu/plot`: Aggregated matrix transforms
+- `@use-gpu/plot`: Make `DataContext` a CPU-side concept with `TensorArray`
+- `@use-gpu/traits`: Split off value parsers into `@use-gpu/parse`
+- `@use-gpu/traits`: Make hooks React/Live-polymorphic
+- `@use-gpu/shader`: Add struct types and instancing operators
+- `@use-gpu/shader`: Add automatic vec# casts between lambdas
+- `@use-gpu/workbench`: Add explicit `LayerReconciler`, `PassReconciler`, `QueueReconciler`
+- `@use-gpu/workbench`: Refactor `<VirtualLayers>`
+- `@use-gpu/workbench`: Refactor attribute instancing
+- `@use-gpu/workbench`: Add instancing to Line/Arrow/Point/Label layers
+- `@use-gpu/workbench`: Use new aggregator schema in data components
+- `@use-gpu/workbench`: Move `expr` based samplers to plot package
+- `@use-gpu/workbench`: Merge `<CompositeData>` into `<Data>`
 
 0.10.2
 - `@use-gpu/live`: allow `detach()` to work on fragments, allow immediate render

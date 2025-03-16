@@ -78,8 +78,8 @@ export type UseGPURenderContext = {
 
   swap?: () => void,
   depth?: TextureSource,
-  source?: TextureTarget,
-  sources?: TextureTarget[],
+  source?: TextureSource,
+  sources?: TextureSource,
 };
 
 export type RenderViewAttachment = {
@@ -88,6 +88,8 @@ export type RenderViewAttachment = {
 };
 
 export type OffscreenRenderContext = UseGPURenderContext & {
+  swap?: () => void,
+  depth?: TextureTarget,
   source: TextureTarget,
 };
 

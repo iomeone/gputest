@@ -68,6 +68,7 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
       const texture = makeDynamicTexture(device, width, height, 1, format, 1, mips);
       if ('bitmap' in resource) uploadExternalTexture(device, texture, resource.bitmap, [width, height], [0, 0]);
       if ('data' in resource) uploadDataTexture(device, texture, resource.data, [width, height], [0, 0]);
+      texture.label = url;
 
       const source = {
         texture,
@@ -91,7 +92,7 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
 
       return source;
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [resource, sampler]);
+    }, [resource, sampler, url]);
 
     inspect({ output: { source }});
 
