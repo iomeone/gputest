@@ -4,7 +4,7 @@ import type { LambdaSource, TextureSource } from '@use-gpu/core';
 import React from 'react';
 import { memo, use, wrap, provide, useFiber, useMemo, useOne } from '@use-gpu/live';
 
-import { splitCubeTexture, splitHistoryTexture } from '@use-gpu/core';
+import { proxy, splitCubeTexture, splitHistoryTexture } from '@use-gpu/core';
 import { LiveCanvas } from '@use-gpu/react';
 import { AutoCanvas } from '@use-gpu/webgpu';
 import {
@@ -14,6 +14,7 @@ import {
 } from '@use-gpu/workbench';
 import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '@use-gpu/layout';
 import { wgsl, chainTo } from '@use-gpu/shader/wgsl';
+import { getObjectKey } from '@use-gpu/state';
 
 import { UseInspect } from '@use-gpu/inspect';
 import { inspectGPU } from './index';
@@ -131,6 +132,8 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     if (t.colorSpace) parts.push(t.colorSpace);
 
     const subtype = parts.join(' ');
+    
+    const id = t.id ?? getObjectKey(t.view ?? t.texture);
 
     return (
       use(Block, {
@@ -155,7 +158,6 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
                       lineHeight: 24,
                       size: 16,
                       weight: 'bold',
-                      hint: 'y',
                       children: label,
                     })
                   }),
@@ -164,21 +166,33 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
                       color: '#ffffff',
                       lineHeight: 24,
                       size: 16,
-                      hint: 'y',
                       children: s,
                     })
                   }),
                 ],
               }),
-              use(Inline, {
-                children: use(Text, {
-                  color: '#ffffff',
-                  weight: 'bold',
-                  lineHeight: 24,
-                  size: 14,
-                  hint: 'y',
-                  children: subtype,
-                })
+              use(Flex, {
+                align: 'justify',
+                children: [
+                  use(Inline, {
+                    children: use(Text, {
+                      color: '#cccccc',
+                      weight: 'bold',
+                      lineHeight: 24,
+                      size: 14,
+                      children: subtype,
+                    })
+                  }),
+                  use(Inline, {
+                    children: use(Text, {
+                      color: '#808080',
+                      weight: 'bold',
+                      lineHeight: 24,
+                      size: 14,
+                      children: `#${id}`,
+                    })
+                  }),
+                ],
               }),
             ],
           })
@@ -199,8 +213,8 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     if (history) return splitHistoryTexture(texture).flatMap(makeViews);
 
     if (isCube) {
-      let t = {...texture, sampler: {}, variant: 'textureSample'} as any;
-      t = getShader(isDepth ? displayCubeDepth : displayCubeColor, [texture]);
+      let t = texture;
+      t = getShader(isDepth ? displayCubeDepth : displayCubeColor, [t]);
       t = getLambdaSource(t, texture);
       out.push(makeView(t));
 
@@ -214,14 +228,13 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
 
     if (hasStencil) {
       const label = [texture.label, texture.texture?.label, texture.view?.label, 'Stencil'].filter(l => l?.length).join(' ');
-      let ts = {
-        ...texture,
+      let ts = proxy(texture, {
         layout: 'texture_2d<u32>',
         aspect: 'stencil-only',
         sampler: null,
         hint: 'stencil',
         label,
-      } as any;
+      });
       const t = getDisplayShader(ts);
       out.push(makeView(t));
     }

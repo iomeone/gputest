@@ -4,9 +4,14 @@ import type { Cursor } from '@use-gpu/state';
 
 export type ExpandState = Record<string | number, boolean>;
 export type PingState = Record<number, number>;
-export type SelectState = LiveFiber<any> | null;
 export type FocusState = number | null;
+export type SelectState = LiveFiber<any> | null;
 export type HoverState = {
+  fiber: LiveFiber<any> | null,
+  depth: number,
+};
+
+export type HighlightState = {
   fiber: LiveFiber<any> | null,
   by: LiveFiber<any> | null,
   root: LiveFiber<any> | null,
@@ -14,6 +19,7 @@ export type HoverState = {
   precs: number[],
   depth: number,
 };
+
 export type OptionsState = {
   open: boolean,
   depth: number,
@@ -65,9 +71,12 @@ type Handler<E extends Event> = (event: E) => void;
 
 export type InspectState = {
   expandedCursor: Cursor<ExpandState>,
-  selectedCursor: Cursor<SelectState>,
-  focusedCursor: Cursor<FocusState>,
-  hoveredCursor: Cursor<HoverState>,
+  optionsCursor: Cursor<OptionsState>,
+
+  selectedState: SelectState,
+  focusedState: FocusState,
+  hoveredState: HoverState,
+  highlightState: HighlightState,
 };
 
 export type InspectAPI = {

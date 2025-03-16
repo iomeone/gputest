@@ -66,6 +66,8 @@ export const Inspect: React.FC<InspectProps> = ({
 }) => {
   const {close, toolbar, legend, resize, skip, select} = useAppearance();
 
+  const fibers = useMemo(() => new Map<number, LiveFiber<any>>(), []);
+
   const expandedCursor = useCursor(useUpdateState<ExpandState>({}));
   const selectedCursor = useCursor(useUpdateState<SelectState>(null));
   const optionsCursor = useCursor(useUpdateState<OptionsState>(
@@ -83,31 +85,31 @@ export const Inspect: React.FC<InspectProps> = ({
   })));
   const focusedCursor = useCursor(useUpdateState<FocusState>(null));
 
-  const state = useMemo(() => ({
-    expandedCursor,
-    selectedCursor,
-    hoveredCursor,
-    focusedCursor,
-    optionsCursor,
-  }), [expandedCursor, selectedCursor, hoveredCursor, focusedCursor, optionsCursor]);
-
   // eslint-disable-next-line prefer-const
   let [selectedFiber, updateSelected] = selectedCursor();
+  const [{fiber: hoveredFiber}, updateHovered] = hoveredCursor();
+
+  const highlightState = useMemo(() => {
+    const fiber = hoveredFiber ?? selectedFiber;
+    if (!fiber) return {};
+    return {
+      fiber,
+      by: fibers.get(fiber.by) ?? null,
+      deps: fiber.host ? Array.from(fiber.host.traceDown(fiber)).map(f => f.id) : [],
+      precs: fiber.host ? Array.from(fiber.host.traceUp(fiber)) : [],
+      root: fiber.yeeted && fiber.type === YEET ? fiber.yeeted.root : null,
+    };    
+  }, [selectedFiber, hoveredFiber, fibers]);
 
   const [, setVersion] = optionsCursor.version();
-
-  const [filterTags] = optionsCursor.filterTags();
-  const [depthLimit] = optionsCursor.depth();
-  const [runCounts] = optionsCursor.counts();
   const [fullSize] = optionsCursor.fullSize();
-  const [builtins] = optionsCursor.builtins();
   const [highlight] = optionsCursor.highlight();
+
   const [tab, updateTab] = optionsCursor.tab();
   const [preferredTab, updatePreferredTab] = optionsCursor.preferredTab();
   const [splitLeft, setSplitLeft] = optionsCursor.splitLeft();
   const [splitBottom, setSplitBottom] = optionsCursor.splitBottom();
   const [, updateInspect] = optionsCursor.inspect();
-  const [{fiber: hoveredFiber}, updateHovered] = hoveredCursor();
   const [focusedId, updateFocused] = focusedCursor();
 
   if (!select) selectedCursor()[1] = updateSelected = NOP;
@@ -141,6 +143,15 @@ export const Inspect: React.FC<InspectProps> = ({
 
   const rootId = fiber.id;
 
+  const state = useMemo(() => ({
+    expandedCursor,
+    optionsCursor,
+    hoveredState: hoveredCursor()[0],
+    focusedState: focusedCursor()[0],
+    selectedState: selectedCursor()[0],
+    highlightState,
+  }), [expandedCursor, optionsCursor, selectedCursor, hoveredCursor, focusedCursor, highlightState]);
+
   const api: InspectAPI = useMemo(() => {
 
     const forceUpdate = () => {
@@ -171,34 +182,20 @@ export const Inspect: React.FC<InspectProps> = ({
 
     const hoverFiber = (
       fiber: LiveFiber<any> | null = null,
-      fibers: Map<number, LiveFiber<any>> | null,
       renderDepth: number = 0,
       sticky?: boolean,
     ) =>
-      updateHovered($apply(prev => {
-        if (sticky && prev.fiber) return prev;
-        if (fiber) return {
-          fiber,
-          by: fibers?.get(fiber.by) ?? null,
-          deps: fiber.host ? Array.from(fiber.host.traceDown(fiber)).map(f => f.id) : [],
-          precs: fiber.host ? Array.from(fiber.host.traceUp(fiber)) : [],
-          root: fiber.yeeted && fiber.type === YEET ? fiber.yeeted.root : null,
-          depth: renderDepth,
-        };
+      updateHovered({
+        fiber: $apply(prev => {
+          if (sticky && prev.fiber) return prev;
+          return fiber;
+        }),
+        renderDepth,
+      });
 
-        return {
-          fiber: null,
-          by: null,
-          deps: [],
-          precs: [],
-          root: null,
-          depth: 0,
-        };
-      }));
-
-    const makeHandlers = (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>, renderDepth: number = 0) => {
+    const makeHandlers = (fiber: LiveFiber<any>, renderDepth: number = 0) => {
       const select = (e?: MouseEvent) => { selectFiber(fiber); e?.stopPropagation(); };
-      const hover = (e: MouseEvent) => hoverFiber(fiber, fibers, renderDepth, e.altKey);
+      const hover = (e: MouseEvent) => hoverFiber(fiber, renderDepth, e.altKey);
       const unhover = (e: MouseEvent) => hoverFiber(null, null, 0, e.altKey);
       const focus = () => focusFiber(fiber);
 
@@ -222,13 +219,8 @@ export const Inspect: React.FC<InspectProps> = ({
           state={state}
           api={api}
           fiber={fiber}
-          legend={legend}
+          fibers={fibers}
           skipDepth={skip}
-          depthLimit={depthLimit}
-          filterTags={filterTags}
-          runCounts={runCounts}
-          builtins={builtins}
-          highlight={highlight}
         />
       </SidebarPanel>
     </InsetColumnFull>
@@ -243,8 +235,8 @@ export const Inspect: React.FC<InspectProps> = ({
 
   return (<div className="LiveInspect">
     {open ? (
-      <PingProvider fiber={fiber} api={api}>
-        <HostHighlight fiber={fiber} findFiber={findFiber} toggleInspect={toggleInspect} api={api} />
+      <PingProvider fiber={fiber} fibers={fibers} api={api}>
+        <HostHighlight fiber={fiber} fibers={fibers} findFiber={findFiber} toggleInspect={toggleInspect} api={api} />
         <InspectContainer onMouseDown={onMouseDown} className="ui inverted">
           <div style={fullSize
               ? {display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0, height: '100%', maxHeight: '100%', flexGrow: 1}
@@ -285,14 +277,14 @@ export const Inspect: React.FC<InspectProps> = ({
 
 type HostHighlightProps = {
   fiber: LiveFiber<any>,
+  fibers: Map<number, LiveFiber<any>>,
   findFiber?: number,
   toggleInspect: () => void,
   api: InspectAPI,
 };
 
 const HostHighlight = (props: HostHighlightProps) => {
-  const {api, fiber, findFiber, toggleInspect} = props;
-  const {fibers} = usePingContext();
+  const {api, fiber, fibers, findFiber, toggleInspect} = props;
 
   const {host} = fiber;
   useLayoutEffect(() => {
@@ -306,10 +298,10 @@ const HostHighlight = (props: HostHighlightProps) => {
           return api.selectFiber(fiber);
         }
 
-        api.hoverFiber(fiber, fibers);
+        api.hoverFiber(fiber);
       }
       else {
-        api.hoverFiber(null, fibers);
+        api.hoverFiber(null);
       }
     };
 

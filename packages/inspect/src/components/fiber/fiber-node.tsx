@@ -24,16 +24,11 @@ export type FiberNodeProps = {
   api: InspectAPI,
   fiber: LiveFiber<any>,
   fibers: Map<number, LiveFiber<any>>,
-  by?: LiveFiber<any> | null,
   indent?: number,
   skipDepth?: number,
   focusDepth?: number,
   renderDepth?: number,
-  filterTags?: number,
   depthLimit?: number,
-  runCounts?: boolean,
-  builtins?: boolean,
-  highlight?: boolean,
   continuation?: boolean,
   builtin?: boolean,
   wide?: boolean,
@@ -68,14 +63,12 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   api,
   fiber,
   fibers,
+
   focusDepth = 0,
   skipDepth = 0,
   renderDepth = 0,
-  filterTags = 0,
+
   depthLimit = Infinity,
-  runCounts = false,
-  builtins = false,
-  highlight = true,
   continuation,
   builtin,
   wide,
@@ -84,16 +77,18 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
 }) => {
   const {
     expandedCursor,
-    selectedCursor,
-    hoveredCursor,
-    focusedCursor,
+    optionsCursor,
+    selectedState,
+    hoveredState,
+    focusedState,
+    highlightState,
   } = state;
 
   // eslint-disable-next-line prefer-const
   let {id, mount, mounts, next, order, yeeted, __inspect} = fiber;
-  const [selectState] = selectedCursor();
-  const [hoverState] = hoveredCursor();
-  const [focusState] = focusedCursor();
+
+  const [optionsState] = optionsCursor();
+  const {filterTags, runCounts, builtins, highlight} = optionsState;
 
   // Avoid jumpyness on hover
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -103,13 +98,13 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   fibers.set(fiber.id, fiber);
 
   // Resolve hover-state
-  const selected = fiber === selectState;
-  const {fiber: hoverF, deps, precs, root} = hoverState;
+  const selected = fiber === selectedState;
+  const {fiber: hoverF, deps, precs, root} = highlightState;
 
   const hovered  = hoverF?.id ?? -1;
   const parents  = hoverF?.by === fiber.id;
-  const depends  = deps.indexOf(fiber.id) >= 0 || (root === fiber);
-  const precedes = precs.indexOf(fiber.id) >= 0 || (yeeted?.root === hoverF && yeeted.value !== undefined);
+  const depends  = deps?.indexOf(fiber.id) >= 0 || (root === fiber);
+  const precedes = precs?.indexOf(fiber.id) >= 0 || (yeeted?.root === hoverF && yeeted?.value !== undefined);
   const quoted   = (
     (hoverF?.quote?.to === fiber) ||
     (hoverF && fiber?.quote?.to === hoverF)
@@ -120,13 +115,13 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   );
 
   // Resolve depth-highlighting
-  const subnode = hoverState.by ? isSubNode(hoverState.by, fiber) : true;
-  const styleDepth = hoverState.fiber ? (subnode ? Math.max(-1, renderDepth - hoverState.depth) : -1) : 0;
+  const subnode = highlightState.by ? isSubNode(highlightState.by, fiber) : true;
+  const styleDepth = hoveredState.fiber ? (subnode ? Math.max(-1, renderDepth - hoveredState.depth) : -1) : 0;
   renderDepth = getRenderDepth(fibers, fiber) ?? renderDepth;
 
   // Resolve node omission
   const isFilteredOut = (filterTags & FiberTag.All) != 0 && !(getFiberTags(fiber) & filterTags);
-  const isFocused = !!focusDepth || ((focusState != null) ? fiber.id === focusState : true);
+  const isFocused = !!focusDepth || ((focusedState != null) ? fiber.id === focusedState : true);
   const isBuiltin = !builtins && (fiber.f?.isLiveBuiltin || fiber.f?.isLiveReconcile || fiber.f?.isLiveQuote || fiber.f?.isLiveContinuation);
   const isVisible = (
     !isFilteredOut &&
@@ -148,7 +143,6 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
 
   const shouldAbsolute = !shouldRender && (parents || depends || precedes || quoted || unquoted);
   const shouldStartOpen = fiber.f !== DEBUG && !fiber.__inspect?.react;
-
 
   if (!skipDepth) {
     wide = wide || lockedWide;
@@ -253,11 +247,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
         skipDepth={skipDepth && (skipDepth - 1)}
         focusDepth={isFocused ? focusDepth + 1 : 0}
         renderDepth={renderDepth}
-        filterTags={filterTags}
         depthLimit={depthLimit}
-        runCounts={runCounts}
-        builtins={builtins}
-        highlight={highlight}
         indent={indent}
         indented={+!!shouldRender}
         wide={!!next}
@@ -280,11 +270,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
             skipDepth={skipDepth && (skipDepth - 1)}
             focusDepth={isFocused ? focusDepth + 1 : 0}
             renderDepth={renderDepth}
-            filterTags={filterTags}
             depthLimit={depthLimit}
-            runCounts={runCounts}
-            builtins={builtins}
-            highlight={highlight}
             indent={indent}
             indented={+!!shouldRender}
             wide={order.length > 1 || !!next}
@@ -336,11 +322,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
         skipDepth={skipDepth && (skipDepth - 1)}
         focusDepth={isFocused ? focusDepth + 1 : 0}
         renderDepth={renderDepth}
-        filterTags={filterTags}
         depthLimit={depthLimit}
-        runCounts={runCounts}
-        builtins={builtins}
-        highlight={highlight}
         indented={0}
         wide={true}
         indent={indent}

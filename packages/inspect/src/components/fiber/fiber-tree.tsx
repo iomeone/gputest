@@ -9,17 +9,12 @@ import { FiberLegend } from './fiber-legend';
 import { FiberNode } from './fiber-node';
 import { FiberTag } from './tag';
 
-export type FiberTreeProps = {
-  state: InspectState,
-  api: InspectAPI,
+export type FiberTreeProps = FiberTreeContextProps & {
   fiber: LiveFiber<any>,
-  skipDepth: number,
-  filterTags: number,
-  depthLimit: number,
-  runCounts: boolean,
-  builtins: boolean,
-  highlight: boolean,
+
   legend: boolean,
+  skipDepth: number,
+  depthLimit: number,
 };
 
 // Fiber tree including legend
@@ -27,17 +22,14 @@ export const FiberTree: FC<FiberTreeProps> = ({
   state,
   api,
   fiber,
-  skipDepth,
-  filterTags,
-  depthLimit,
-  runCounts,
-  builtins,
-  highlight,
+  fibers,
+
   legend,
+  skipDepth,
 }) => {
-  const {fibers} = usePingContext();
-  const by = fibers.get(fiber.by);
-  const [focusedId] = state.focusedCursor();
+  const focusedId = state.focusedState;
+  const [filterTags] = state.optionsCursor.filterTags();
+  const [depthLimit] = state.optionsCursor.depth();
 
   const Wrap = legend ? TreeWrapperWithLegend : TreeWrapper;
 
@@ -49,17 +41,12 @@ export const FiberTree: FC<FiberTreeProps> = ({
       <FiberNode
         state={state}
         api={api}
-        by={by}
         fiber={fiber}
         fibers={fibers}
         renderDepth={0}
-        skipDepth={skipDepth}
         focusDepth={0}
-        filterTags={filterTags}
+        skipDepth={skipDepth}
         depthLimit={depthLimit}
-        runCounts={runCounts}
-        builtins={builtins}
-        highlight={highlight}
       />
       {(legend ?? true) ? <FiberLegend /> : null}
     </Wrap>

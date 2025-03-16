@@ -12,9 +12,8 @@ export type ToolbarNavProps = {
 };
 
 export const ToolbarNav: FC<ToolbarNavProps> = (props: ToolbarNavProps) => {
-  const {api: {focusFiber}, state: {focusedCursor}} = props;
-  const [focusState] = focusedCursor();
-  const back = focusState ? (
+  const {api: {focusFiber}, state: {focusedState}} = props;
+  const back = focusedState ? (
     <ToolbarPaddedRow>
       <InlineButton className="icon-left" onClick={() => focusFiber(null)}>
         <IconItem top={0}><SVGChevronLeft /></IconItem> Back to root

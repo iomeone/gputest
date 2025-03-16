@@ -25,6 +25,8 @@ type PingContextProps = {
 
 type PingProviderProps = {
   fiber: LiveFiber<any>,
+  fibers: Map<number, LiveFiber<any>>,
+
   api: InspectAPI,
   children?: React.ReactNode,
 };
@@ -34,10 +36,9 @@ type Timer = ReturnType<typeof setTimeout>;
 type PingEntry = [number, number, boolean];
 
 // Track update pings to show highlights in tree
-export const PingProvider: React.FC<PingProviderProps> = ({fiber, api: {forceUpdate}, children}) => {
+export const PingProvider: React.FC<PingProviderProps> = ({fiber, fibers, api: {forceUpdate}, children}) => {
 
-  const [fibers, map, all, api] = useMemo(() => {
-    const fibers = new Map<number, LiveFiber<any>>();
+  const [map, all, api] = useMemo(() => {
     const pinned = new Map<number, number>();
     const map = new Map<number, Set<ArrowFunction>>();
     const all = new Set<ArrowFunction>();
@@ -79,8 +80,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, api: {forceUpd
       fibers,
       pinned,
     };
-    return [fibers, map, all, api];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return [map, all, api];
   }, NO_DEPS);
 
   useLayoutEffect(() => {
