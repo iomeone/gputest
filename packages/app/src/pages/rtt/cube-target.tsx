@@ -69,7 +69,7 @@ export const RTTCubeTargetPage: LC = () => {
       children={[
         <GeometryData {...sphereGeometry} />,
         <GeometryData {...boxGeometry} />,
-        <RenderCubeTarget width={256} label="Cube Target" />
+        <RenderCubeTarget width={256} label="Cube Target" colorSpace="linear" />
       ]}
       then={([
         sphereMesh,
