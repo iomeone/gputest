@@ -1,5 +1,5 @@
 import type { LC } from '@use-gpu/live';
-import type { OffscreenRenderContext, TextureTarget } from '@use-gpu/core';
+import type { UseGPURenderContext, TextureTarget } from '@use-gpu/core';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
@@ -26,7 +26,7 @@ export const GBuffer: LC = memo(() => {
 
   const {format} = depthStencilState;
   const hasFloat = device.features.has('rg11b10ufloat-renderable');
-  const depthFormat = format.replace(/-stencil8$/, '');
+  const depthFormat = format.replace(/-stencil8$/, '') as GPUTextureFormat;
 
   // Set up GBuffer layout
   const formats = useMemo(() => [
@@ -64,13 +64,14 @@ export const GBuffer: LC = memo(() => {
       size: [width, height],
       version: 0,
       hint: i === 4 ? 'depth' : undefined,
+      swap: () => {},
     }) as TextureTarget;
 
     return renderTextures.map(makeSource);
   }, [renderTextures, formats, width, height]);
 
   // Render context for producing GBuffer
-  const gBufferContext: OffscreenRenderContext = useMemo(() => ({
+  const gBufferContext: UseGPURenderContext = useMemo(() => ({
     ...renderContext,
     colorStates,
     viewAttachments: [{
@@ -81,7 +82,7 @@ export const GBuffer: LC = memo(() => {
   }), [renderContext, colorStates, viewAttachments, colorAttachments, sources]);
 
   // Depth render copy context, needed to copy from depth+stencil to depth-only
-  const depthCopyContext: OffscreenRenderContext = {
+  const depthCopyContext: UseGPURenderContext = {
     ...gBufferContext,
     colorStates: [],
     depthStencilState: makeDepthStencilState(depthFormat),

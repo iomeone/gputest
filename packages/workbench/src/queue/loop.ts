@@ -28,12 +28,13 @@ export type LoopRef = {
   version: {
     frame: number,
     rendered: number,
+    converge: number,
     pending: boolean,
     queued: boolean,
     request: number | null,
   },
   dispatch: {
-    fibers: LiveFiber<any>[],
+    fibers: Set<LiveFiber<any>>,
     render?: (timestamp?: number) => void,
     renderChildren?: () => void,
   }

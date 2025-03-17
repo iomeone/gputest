@@ -79,7 +79,7 @@ export type UseGPURenderContext = {
   swap?: () => void,
   depth?: TextureSource,
   source?: TextureSource,
-  sources?: TextureSource,
+  sources?: TextureSource[],
 };
 
 export type RenderViewAttachment = {
@@ -91,6 +91,7 @@ export type OffscreenRenderContext = UseGPURenderContext & {
   swap?: () => void,
   depth?: TextureTarget,
   source: TextureTarget,
+  sources?: TextureTarget[],
 };
 
 /* @hidden */
@@ -141,7 +142,7 @@ export type UniformFormat = UniformType | UniformAttribute[] | UniformNamedType;
 export type UniformAttribute = {
   name: string,
   format: UniformFormat,
-  type?: ShaderStructType,
+  type?: ShaderType,
   args?: UniformFormat[] | null,
   attr?: UniformShaderAttribute[],
   qual?: string,
@@ -200,12 +201,24 @@ export type UniformDataSetter = (index: number, item: UniformValues) => void;
 export type UniformValueSetter = (index: number, field: number, value: any) => void;
 export type UniformByteSetter = (view: DataView, offset: number, data: any) => void;
 
-// Shaders
-export type ShaderStructType = ShaderModule & {entry?: string};
+// Shaders (placeholder types to avoid dependency on use-gpu/shader)
+export type ShaderType = ShaderModule | ShaderBundle;
 
-export type ShaderModule = {
-  module?: Record<string, any>, // ParsedBundle
-  table?: Record<string, any>,  // ParsedModule
+type ShaderBundle = {
+  module: any, // ParsedBundle
+
+  hash?: number,
+  key?: number,
+  entry?: string,
+}
+
+type ShaderModule = {
+  table: any,  // ParsedModule
+
+  name: string,
+  code: string,
+  hash: number,
+  key?: number,
   entry?: string,
 };
 
@@ -243,7 +256,7 @@ export type DataBounds = {
   max: VectorLike,
 };
 
-export type LambdaSource<T extends ShaderModule = any> = {
+export type LambdaSource<T extends ShaderType = any> = {
   shader: T,
   length: number,
   size: VectorLike,
@@ -276,7 +289,7 @@ export type TextureSource = {
   label?: string,
 };
 
-export type StorageSource<T extends ShaderModule = any> = {
+export type StorageSource<T extends ShaderType = any> = {
   buffer: GPUBuffer,
   format: UniformFormat,
   type?: T,
@@ -330,7 +343,7 @@ export type ExternalTexture = {
 };
 
 // Shader binding placeholders
-export type RawBinding<T extends ShaderModule = any> = {
+export type RawBinding<T extends ShaderType = any> = {
   attribute: UniformAttribute,
 
   uniform?: StoragePlaceholder<T>,
@@ -339,7 +352,7 @@ export type RawBinding<T extends ShaderModule = any> = {
   sampler?: SamplerSource,
 };
 
-export type StoragePlaceholder<T extends ShaderModule = any> = {
+export type StoragePlaceholder<T extends ShaderType = any> = {
   format: UniformFormat,
   type?: T,
   readWrite?: boolean,

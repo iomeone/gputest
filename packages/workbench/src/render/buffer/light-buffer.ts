@@ -1,5 +1,5 @@
 import type { LC } from '@use-gpu/live';
-import type { PassBinding } from '../../pass/types';
+import type { PassBinding, PassEnv } from '../../pass/types';
 
 import { yeet, memo } from '@use-gpu/live';
 

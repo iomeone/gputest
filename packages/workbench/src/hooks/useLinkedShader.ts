@@ -1,5 +1,5 @@
 import type { ShaderModuleDescriptor } from '@use-gpu/core';
-import type { ParsedBundle, ShaderDefine } from '@use-gpu/shader';
+import type { ShaderModule, ShaderDefine } from '@use-gpu/shader';
 
 import { resolveBindings, linkBundle, getBundleHash, getBundleKey, getBundleLabel } from '@use-gpu/shader/wgsl';
 import { formatMurmur53, mixBits53, toMurmur53 } from '@use-gpu/state';
@@ -16,7 +16,7 @@ const MODULE_CACHE = new LRU<string, any>();
 const LAYOUT_CACHE = new LRU<number, any>();
 
 export const useLinkedShader = (
-  stages: (ParsedBundle | null | undefined)[],
+  stages: (ShaderModule | null | undefined)[],
   defines: Record<string, ShaderDefine> | null | undefined,
   propLabel?: string,
 ) => {

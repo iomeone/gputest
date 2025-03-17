@@ -1,24 +1,25 @@
-import type { PassFlags, RenderComponents, VirtualDraw } from './types';
+import type { LC } from '@use-gpu/live';
+import type { ExtendedPassFlags, RenderComponents, VirtualDraw } from './types';
 import { useMemo } from '@use-gpu/live';
 
-type Variants = LiveComponent | LiveComponent[] | null | undefined;
+type Variants = LC | LC[] | null | undefined;
 
 const HOVERED_VARIANT = 'debug';
 
 // Provide draw call variants for sub-passes
 export const makeGetVariants = (
   components: RenderComponents,
-  flags: PassFlags,
+  flags: ExtendedPassFlags,
 ) => {
   const {normals, shadows, picking} = flags;
 
-  const getRender = (mode: string, render: string | null = null): LiveComponent | null | undefined =>
+  const getRender = (mode: string, render: string | null = null): LC | null | undefined =>
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     components.renders[render!]?.[mode] ?? components.modes[mode];
 
   const getVariants = (!normals && !shadows && !picking)
      ? (virtual: VirtualDraw, hovered: boolean): Variants =>
-       hovered ? [getRender(HOVERED_VARIANT)] : getRender(virtual.mode, virtual.renderer)
+       hovered ? [getRender(HOVERED_VARIANT)!] : getRender(virtual.mode, virtual.renderer)
 
      : (virtual: VirtualDraw, hovered: boolean): Variants => {
         const {mode, renderer, links, defines} = virtual;
@@ -36,7 +37,8 @@ export const makeGetVariants = (
         if (variants.length === 0) return hovered ? getRender(HOVERED_VARIANT) : getRender(mode, renderer);
 
         variants.push(hovered ? HOVERED_VARIANT : mode);
-        return variants.map(mode => getRender(mode, renderer));
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return variants.map(mode => getRender(mode, renderer)!);
       };
   
   return getVariants;
@@ -44,7 +46,7 @@ export const makeGetVariants = (
 
 export const useMakeUseVariants = (
   components: RenderComponents,
-  flags: PassFlags,
+  flags: ExtendedPassFlags,
 ) => {
   const {normals, shadows, picking} = flags;
   

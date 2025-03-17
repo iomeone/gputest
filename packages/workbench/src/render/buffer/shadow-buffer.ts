@@ -1,5 +1,6 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { OffscreenRenderContext } from '@use-gpu/core';
+import type { UseGPURenderContext } from '@use-gpu/core';
+import type { PassEnv } from '../../pass/types';
 
 import { yeet, memo } from '@use-gpu/live';
 import { makeDepthStencilState } from '@use-gpu/core';
@@ -25,7 +26,7 @@ export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProp
   const renderContext = useRenderContext();
 
   // Placeholder render context, used for depth-only render pass and depth-copies
-  const shadowContext: OffscreenRenderContext = {
+  const shadowContext: UseGPURenderContext = {
     device: renderContext.device,
     gpuContext: renderContext.gpuContext,
 

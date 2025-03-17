@@ -1,6 +1,6 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { UseGPURenderContext } from '@use-gpu/core';
-import type { LightEnv, PassFlags, RenderComponents } from '../pass/types';
+import type { LightEnv, PassFlags, PassResources, RenderComponents } from '../pass/types';
 
 import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 
@@ -34,6 +34,8 @@ const {quote} = PassReconciler;
 const NO_RESOURCES: PassResources = {
   buffers: {},
   bindings: {},
+  dispatches: [],
+  views: {},
 };
 
 const NO_OPTIONS: DeferredRendererOptions = {};
@@ -41,7 +43,7 @@ const NO_OPTIONS: DeferredRendererOptions = {};
 export type DeferredRendererOptions = Pick<PassFlags, 'shadows' | 'merge' | 'overlay'>;
 
 export type DeferredRendererProps = PropsWithChildren<{
-  buffers?: Record<string, UseGPURenderContext[]>,
+  resources: PassResources,
   options?: DeferredRendererOptions,
   passes?: LiveElement[],
   components?: RenderComponents,
@@ -84,7 +86,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
-  } = options;
+  } = options as Record<string, any>;
 
   const flags = useMemo(() => ({
     lights,

@@ -51,8 +51,8 @@ export const ComputePass: LC<ComputePassProps> = memo((props: ComputePassProps) 
 
   const inspected = inspect({
     render: {
-      workgroups: ws,
-      samples: ss,
+      workgroups: 0,
+      samples: 0,
     },
   });
   

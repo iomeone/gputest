@@ -1,5 +1,5 @@
 import type { LiveComponent } from '@use-gpu/live';
-import type { TextureSource, Lazy } from '@use-gpu/core';
+import type { TextureSource, TextureTarget, Lazy } from '@use-gpu/core';
 import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
@@ -12,7 +12,7 @@ import { getShader } from '../hooks/useShader';
 import { RawFullScreen } from '../primitives/index';
 
 export type FullScreenProps = {
-  texture?: TextureSource,
+  texture?: TextureSource | TextureTarget,
   shader?: ShaderModule,
 
   source?: ShaderSource,
@@ -61,16 +61,18 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
     let t = texture as any;
 
     if (shader) {
+      const ts = target.source as TextureTarget;
+      
       const f = history ? (typeof history === 'number'
-        ? target.source?.history?.slice(0, history)
-        : target.source?.history
+        ? ts?.history?.slice(0, history)
+        : ts?.history
       ) ?? NO_SOURCES : NO_SOURCES;
       const s = (source ? [source] : NO_SOURCES).map(s => ((s as any)?.buffer)
         ? getDerivedSource(s as any, {readWrite: false}) : s);
 
       const bindings = bundleToAttributes(shader);
       const links = {
-        getTexture: texture ?? target.source?.history?.[0],
+        getTexture: texture ?? ts?.history?.[0],
         getTextureSize: () => texture?.size ?? [target.width, target.height],
         getTargetSize: () => [target.width, target.height],
       } as Record<string, any>;

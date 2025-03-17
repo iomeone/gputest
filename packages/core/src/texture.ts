@@ -318,7 +318,7 @@ export const checkTextureType = (
   const toName = getTextureSampleType(format, aspect);
 
   let f = fromName;
-  let t = toName;
+  let t = toName as string;
 
   if (f === 'auto') return;
 

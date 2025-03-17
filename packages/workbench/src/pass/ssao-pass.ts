@@ -21,8 +21,13 @@ type SSAOCommand = (
 
 export type SSAOPassProps = {
   env: {
-    ssao: { radius?: number } | number | true,
+    light: any,
   },
+  ssao: {
+    radius?: number,
+    depthRamp?: number,
+    normalRamp?: number,
+  } | number | true,
 };
 
 const DEFAULT_RADIUS = 1;

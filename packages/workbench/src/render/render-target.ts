@@ -255,14 +255,14 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
         volatile,
         version: 0,
         hint,
-        swap: undefined,
+        swap: undefined as any,
       }) as TextureTarget;
 
       sources = (history > 0) ? seq(history).map(makeSource) : undefined;
 
       source = makeSource();
       source.history = sources;
-      source.swap = swap;
+      if (swap) source.swap = swap;
     }
 
     if (depthStencil && depthTexture) {
@@ -284,14 +284,14 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
         version: 0,
         aspect: 'depth-only',
         hint: 'depth',
-        swap: undefined,
+        swap: undefined as any,
       }) as TextureTarget;
 
       depths = depthHistory && (history > 0) ? seq(history).map(makeSource) : undefined;
 
       depth = makeSource();
       depth.history = depths;
-      depth.swap = swap;
+      if (swap) depth.swap = swap;
     }
     
     swap?.();
@@ -354,7 +354,7 @@ const cycleHistorySources = (
   textures: GPUTexture[],
   views: GPUTextureView[],
   attachment: any,
-  resolve: boolean,
+  resolve?: boolean,
 ) => {
   const n = textures.length;
   const history = n - 1;

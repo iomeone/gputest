@@ -1,4 +1,6 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent, ArrowFunction } from '@use-gpu/live';
+import type { OffscreenTarget, UseGPURenderContext } from '@use-gpu/core';
+import type { RenderToPass } from '../../pass/types';
 
 import { yeet, useMemo, useOne, useNoOne, useRef } from '@use-gpu/live';
 
@@ -57,8 +59,25 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const [normalContext] = normal;
   const [motionContext] = motion;
 
-  const [normalTarget, motionXYTarget, motionZTarget, sampleTarget, accumTarget, resolveTarget] = ssao;
+  const [normalTarget, motionXYTarget, motionZTarget, sampleTarget, accumTarget, resolveTarget] = ssao as OffscreenTarget[];
   const {pixelRatio} = normalTarget;
+
+  const normalContextDepth = normalContext.depth!;
+  const normalContextSource = normalContext.source!;
+  const motionContextXYSource = motionContext.sources![0];
+  const motionContextZSource = motionContext.sources![1];
+  
+  const normalDepth = normalTarget.depth!;
+  const normalSource = normalTarget.source!;
+
+  const lastNormalDepth = normalTarget.depth!.history![0];
+  const lastNormalSource = normalTarget.source!.history![0];
+  const lastAccumSource = accumTarget.source!.history![0];
+
+  const motionXYSource = motionXYTarget.source!;
+  const motionZSource = motionZTarget.source!;
+  const sampleSource = sampleTarget.source!;
+  const accumSource = accumTarget.source!;
 
   const {ssao: ssaoDebug} = useDebugContext();
 
@@ -87,7 +106,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   // Debug viz
   const hasDebugPicking = !!ssaoDebug?.picking
   let debugArgs = NO_DEBUG_ARGS;
-  let clearDebugBuffer = null;
+  let clearDebugBuffer: ArrowFunction | null = null;
   let shouldClear = false;
 
   if (hasDebugPicking) {
@@ -125,27 +144,28 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     useNoOne();
   }
 
-  let draw;
+  type Draw = (r: GPURenderPassEncoder) => void;
+  let draw: Draw | null = null;
   if (mode === 'normal') {
-    const loadSourceDepth = useTextureAccess(normalContext.depth);
+    const loadSourceDepth = useTextureAccess(normalContextDepth);
     const loadDepth = useShader(downsampleExact2, [loadSourceDepth, xyJitter]);
     const getDepth = useTextureUVToXY(loadDepth, downscaleSize).shader;
 
-    const loadSourceNormal16 = useTextureAccess(normalContext.source);
+    const loadSourceNormal16 = useTextureAccess(normalContextSource);
     const loadNormal16 = useShader(downsampleExact2, [loadSourceNormal16, xyJitter]);
     const getNormal16 = useTextureUVToXY(loadNormal16, downscaleSize).shader;
 
     draw = useCopyDepthSample(targetContext, getDepth, getNormal16, globalLayout);
   }
   else if (mode === 'motion-xy') {
-    const loadSourceMotionXY = useTextureAccess(motionContext.sources[0]);
+    const loadSourceMotionXY = useTextureAccess(motionContextXYSource);
     const loadMotionXY = useShader(downsampleExact2, [loadSourceMotionXY, xyJitter]);
     const getMotionXY = useTextureUVToXY(loadMotionXY, downscaleSize).shader;
 
     draw = useCopySample(targetContext, getMotionXY, globalLayout);
   }
   else if (mode === 'motion-z') {
-    const loadSourceMotionZ = useTextureAccess(motionContext.sources[1]);
+    const loadSourceMotionZ = useTextureAccess(motionContextZSource);
     const loadMotionZ = useShader(downsampleExact2, [loadSourceMotionZ, xyJitter]);
     const getMotionZ = useTextureUVToXY(loadMotionZ, downscaleSize).shader;
 
@@ -154,8 +174,8 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   else if (mode === 'sample') {
     const defs = useOne(() => ({ HAS_DEBUG_PICKING: hasDebugPicking }));
 
-    const loadDepth = useTextureAccess(normalTarget.depth);
-    const loadNormal16 = useTextureAccess(normalTarget.source);
+    const loadDepth = useTextureAccess(normalDepth);
+    const loadNormal16 = useTextureAccess(normalSource);
 
     const getSample = useShader(getSSAOSample, [
       loadNormal16,
@@ -173,15 +193,15 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   else if (mode === 'accum') {
     const defs = ssaoWeights;
 
-    const loadSample = useTextureAccess(sampleTarget.source);
-    const loadMotionXY = useTextureAccess(motionXYTarget.source);
-    const loadMotionZ = useTextureAccess(motionZTarget.source);
-    const loadLastAccum = useTextureAccess(accumTarget.source.history?.[0]);
+    const loadSample = useTextureAccess(sampleSource);
+    const loadMotionXY = useTextureAccess(motionXYSource);
+    const loadMotionZ = useTextureAccess(motionZSource);
+    const loadLastAccum = useTextureAccess(lastAccumSource);
 
-    const loadDepth = useTextureAccess(normalTarget.depth);
-    const loadNormal16 = useTextureAccess(normalTarget.source);
-    const loadLastDepth = useTextureAccess(normalTarget.depth.history?.[0]);
-    const loadLastNormal16 = useTextureAccess(normalTarget.source.history?.[0]);
+    const loadDepth = useTextureAccess(normalDepth);
+    const loadNormal16 = useTextureAccess(normalSource);
+    const loadLastDepth = useTextureAccess(lastNormalDepth);
+    const loadLastNormal16 = useTextureAccess(lastNormalSource);
 
     const getAccum = useShader(getSSAOAccum, [
       loadSample,
@@ -209,15 +229,15 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     const m = overscanMatrix?.current;
     const overscanScale = useShaderRef([m?.[0] ?? 1, m?.[5] ?? 1]);
 
-    const loadTargetDepth = useTextureAccess(normalContext.depth);
+    const loadTargetDepth = useTextureAccess(normalContextDepth);
     const getTargetDepth = useTextureUVToXY(loadTargetDepth).shader;
 
-    const loadTargetNormal16 = useTextureAccess(normalContext.source);
+    const loadTargetNormal16 = useTextureAccess(normalContextSource);
     const getTargetNormal16 = useTextureUVToXY(loadTargetNormal16).shader;
 
-    const loadNormal16 = useTextureAccess(normalTarget.source);
-    const loadDepth = useTextureAccess(normalTarget.depth);
-    const loadSample = useTextureAccess(accumTarget.source);
+    const loadNormal16 = useTextureAccess(normalSource);
+    const loadDepth = useTextureAccess(normalDepth);
+    const loadSample = useTextureAccess(accumSource);
 
     const getResolve = useShader(getSSAOResolve, [
       getTargetNormal16,
@@ -245,9 +265,10 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
 
     const passEncoder = commandEncoder.beginRenderPass(descriptor);
     bindPass?.(passEncoder);
-    frame.current = (frame.current + 1) % 0xffff;
-    draw(passEncoder);
+    draw?.(passEncoder);
     passEncoder.end();
+
+    frame.current = (frame.current + 1) % 0xffff;
   };
 
   return yeet({ ssao: command });

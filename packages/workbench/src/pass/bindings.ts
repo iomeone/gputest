@@ -1,5 +1,5 @@
 import type { DataBinding } from '@use-gpu/core';
-import type { PassApplyBindGroup, PassBindGroup, PassEnv, PassFlags } from './types';
+import type { PassApplyBindGroup, PassBindGroup, PassEnv, PassFlags, PassResources } from './types';
 
 import { makeBindGroup, makeDataBindingsEntries, makeShaderBinding } from '@use-gpu/core';
 import { useMemo, useNoMemo, useOne } from '@use-gpu/live';
@@ -64,7 +64,10 @@ export const useStandardBindGroup = (
       ssao && ssaoBinding,
     ];
     
-    const pipelineKey = resolvedBindings.reduce((a, b, i) => a | (b ? (1 << i) : 0), 0);
+    const pipelineKey = resolvedBindings.reduce(
+      (a: number, b: PassBinding | null | undefined, i: number) => (
+        a | (b ? (1 << i) : 0)
+      ), 0);
 
     return getBindGroupLayout(device, resolvedBindings, 'PASS', pipelineKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,7 +76,7 @@ export const useStandardBindGroup = (
 
 type ApplyPass = {
   bindPass?: PassApplyBindGroup,
-  dataBindings: DataBinding[],
+  dataBindings: (DataBinding | null)[],
 };
 
 export const useApplyPassBindGroup = (

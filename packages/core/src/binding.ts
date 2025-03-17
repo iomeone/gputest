@@ -1,6 +1,6 @@
 import type {
   UniformAttribute, UniformAttributeValue,
-  ShaderModule, StorageSource, DataBinding, TextureSource, LambdaSource, SamplerSource,
+  ShaderType, StorageSource, DataBinding, TextureSource, LambdaSource, SamplerSource,
 } from './types';
 import { checkStorageType } from './storage';
 import { checkTextureType } from './texture';
@@ -8,7 +8,7 @@ import { checkTextureType } from './texture';
 /**
  * Parse a set of shader sources for use with a given set of uniforms/attributes.
  */
-export const makeShaderBindings = <T extends ShaderModule>(
+export const makeShaderBindings = <T extends ShaderType>(
   attributes: (UniformAttribute | UniformAttributeValue)[],
   sources: (StorageSource | TextureSource | LambdaSource<T> | any)[],
 ): DataBinding<T>[] => {
@@ -25,7 +25,7 @@ export const makeShaderBindings = <T extends ShaderModule>(
 /**
  * Parse a source for use with a given uniform/attribute.
  */
-export const makeShaderBinding = <T extends ShaderModule>(
+export const makeShaderBinding = <T extends ShaderType>(
   attribute: UniformAttribute | UniformAttributeValue,
   source?: SamplerSource | StorageSource | TextureSource | LambdaSource<T> | T | any,
 ): DataBinding<T> => {
@@ -63,12 +63,12 @@ export const makeShaderBinding = <T extends ShaderModule>(
 /**
  * Make a binding for a wrapped value (a ref) for use with a given uniform/attribute.
  */
-export const makeRefBinding = <T extends ShaderModule>(
+export const makeRefBinding = <T extends ShaderType>(
   attribute: UniformAttribute | UniformAttributeValue,
   value?: {current: T} | T,
 ): DataBinding<T> => ({attribute, constant: value ?? (attribute as any).value});
 
-export const isShaderBinding = <T extends ShaderModule>(
+export const isShaderBinding = <T extends ShaderType>(
   source?: StorageSource | TextureSource | LambdaSource<T> | T | any,
 ): source is StorageSource | TextureSource | LambdaSource<T> | T => {
   if (source != null) {

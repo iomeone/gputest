@@ -1,7 +1,7 @@
 import type { TypedArray, UseGPURenderContext } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
 import type { Update } from '@use-gpu/state';
-import type { Renderable } from '../pass/types';
+import type { Renderable } from '../../pass/types';
 
 import { useCallback } from '@use-gpu/live';
 import { $patch, $delete } from '@use-gpu/state';
@@ -15,7 +15,7 @@ const PIPELINE = {
     depthCompare: 'always',
   },
   fragment: {
-    targets: $patch(ts => ts.reduce((op, _, i) => {
+    targets: $patch(ts => [...ts].reduce((op, _, i) => {
       op[i] = {blend: $delete()};
       return op;
     }, {} as Record<number, Update<any>>)),
@@ -23,7 +23,7 @@ const PIPELINE = {
 } as Update<GPURenderPipelineDescriptor>;
 
 export const useRenderCopy = (
-  vertex: ShaderModule | null = null,
+  vertex: ShaderModule,
   fragment: ShaderModule | null = null,
 
   renderContext: UseGPURenderContext,
@@ -56,7 +56,7 @@ export const useRenderCopy = (
       passEncoder.setViewport(x, y, w, h, 0, 1);
     }
 
-    blit?.draw?.(passEncoder, countGeometry);
+    (blit?.draw as any)?.(passEncoder, countGeometry);
   }, [blit, uv, scale]);
 
   return draw;

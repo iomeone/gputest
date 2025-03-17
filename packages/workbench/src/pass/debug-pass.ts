@@ -1,4 +1,5 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { UseGPURenderingContext } from '@use-gpu/core';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import { proxy } from '@use-gpu/core';
@@ -55,7 +56,7 @@ export const DebugPass: LC<DebugPassProps> = memo((props: PropsWithChildren<Debu
 
     // All buffers
     else {
-      const displays = sourceBuffers.map(c => getDisplayShader(c.source));
+      const displays = sourceBuffers.map((c: UseGPURenderingContext) => getDisplayShader(c.source));
       return getMultiViewShader(displays);
     }
   }, [sourceBuffers, debugIndex]);

@@ -1,7 +1,7 @@
 import type { TextureSource } from '@use-gpu/core';
 import type { ShaderSource } from '@use-gpu/shader';
 
-import { useOne } from '@use-gpu/live';
+import { useMemo, useOne } from '@use-gpu/live';
 
 import { getTextureSampleType, getTextureArrayType, getTypedArraysBitCount } from '@use-gpu/core';
 import { castTo, chainTo } from '@use-gpu/shader/wgsl';
@@ -45,14 +45,14 @@ export const getDisplayShader = (texture: TextureSource): ShaderSource => {
 
   const f = getTextureSampleType(format, aspect);
   const a = getTextureArrayType(format, aspect);
-  const h = HINT_SHADERS[hint] ?? inferTextureHint(texture);
+  const h = (HINT_SHADERS as any)[hint as string] ?? inferTextureHint(texture);
 
   const t = getTextureUVToXY(getTextureAccess(texture), size).shader;
   if (f === 'f32') {
     return getLambdaSource(chainTo(t, h ?? displayFloat), texture);
   }
   else {
-    const bits = getTypedArraysBitCount(a);
+    const bits = getTypedArraysBitCount(a) ?? 1;
     const gain = bits < 32 ? (1 << bits) - 1 : 0xffffffff;
     
     const c = aspect === 'stencil-only' ? castTo(t, 'vec4<u32>') : t;

@@ -1,3 +1,5 @@
+import type { ShaderSource } from '@use-gpu/shader';
+import type { StorageSource } from '@use-gpu/core';
 import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 
 export type ShaderPrinter = {
@@ -7,10 +9,11 @@ export type ShaderPrinter = {
   shaders: {
     printPoint: ShaderSource,
     printLine: ShaderSource,
+    printData: ShaderSource,
   },
 };
 
-export type PrintProviderProps = ShaderPrinter;
+export type PrintContextProps = ShaderPrinter;
 
 export const PrintContext = makeContext<PrintContextProps>(undefined, 'PrintContext');
 export const usePrintContext = () => useContext(PrintContext);

@@ -33,9 +33,16 @@ import { LightMaterial } from './light/light-material';
 
 const {quote} = PassReconciler;
 
-const DEFAULT_PASS: Record<RenderViewType, LiveElement> = {
+const DEFAULT_PASS: Record<RenderViewType, LC<any>> = {
   '2d': ColorPass,
   'cube': ColorCubePass,
+};
+
+const NO_RESOURCES: PassResources = {
+  buffers: {},
+  bindings: {},
+  dispatches: [],
+  views: {},
 };
 
 const NO_OPTIONS: Record<string, any> = {};
@@ -91,7 +98,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     ssao = !!buffers.ssao,
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
-  } = options;
+  } = options as Record<string, any>;
 
   const flags = useMemo(() => ({
     overlay,

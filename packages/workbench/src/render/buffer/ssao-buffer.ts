@@ -1,5 +1,6 @@
 import type { LC } from '@use-gpu/live';
 import type { OffscreenRenderContext } from '@use-gpu/core';
+import type { PassBinding } from '../../pass/types';
 
 import { use, gather, yeet, memo } from '@use-gpu/live';
 

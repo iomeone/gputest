@@ -292,7 +292,8 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
       else if (range[1] === index) range[1]++;
       else ranges.push(range = [index, index + 1]);
 
-      filler.setData(index, lights.get(id));
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      filler.setData(index, lights.get(id)!);
     }
     if (needsRefresh) ranges = [[0, size]];
 

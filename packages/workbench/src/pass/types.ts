@@ -1,4 +1,4 @@
-import type { DataBounds, Lazy, RenderPassMode, StorageSource, TextureSource, UniformAttribute } from '@use-gpu/core';
+import type { DataBounds, Lazy, RenderPassMode, StorageSource, TextureSource, UniformAttribute, UseGPURenderContext } from '@use-gpu/core';
 import type { LiveComponent, ArrowFunction, Ref } from '@use-gpu/live';
 import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 import type { Update } from '@use-gpu/state';
@@ -16,11 +16,17 @@ export type PassFlags = {
   merge?: boolean,
 };
 
+export type ExtendedPassFlags = PassFlags & {
+  normals?: boolean,
+  motion?: boolean,
+};
+
 // Env
 
 export type PassResources = {
-  buffers: Record<string, UseGPURenderingContext[]>,
+  buffers: Record<string, UseGPURenderContext[]>,
   bindings: Record<string, PassBinding>,
+  dispatches: ArrowFunction[],
   views: Record<string, PassView>,
 };
 
@@ -52,22 +58,14 @@ export type PassBinding = {
   visibility?: 'vertex' | 'fragment',
   bind?: (
     env: PassEnv,
-  ) => ShaderSource[],
-  /*
-  update?: (
-    values: Record<string, any> | Record<string, any>[],
-  ) => void,
-  */
+  ) => (ShaderSource | null | undefined)[],
 };
 
 export type PassBindGroup = {
-  key: number,
+  key: string | number,
   layout: GPUBindGroupLayout,
   attributes: (UniformAttribute | null)[],
-  bind?: (
-    buffers: BuffersEnv,
-    env: PassEnv,
-  ) => ShaderSource[],
+  bind?: (env: PassEnv) => (ShaderSource | null | undefined)[],
 };
 
 export type PassApplyBindGroup = (passEncoder: GPURenderPassEncoder) => void;

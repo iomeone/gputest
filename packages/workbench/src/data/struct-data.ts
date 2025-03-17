@@ -9,10 +9,12 @@ import { useMemo, useNoMemo, useOne } from '@use-gpu/live';
 import { bundleToAttribute } from '@use-gpu/shader/wgsl';
 import { incrementVersion } from '@use-gpu/live';
 import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '@use-gpu/core';
+
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { useBufferedSize } from '../hooks/useBufferedSize';
 
+import { useBufferedSize } from '../hooks/useBufferedSize';
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp } from '../hooks/useRenderProp';
 
 const {signal} = QueueReconciler;
@@ -56,6 +58,8 @@ export const StructData: LC<StructDataProps> = (props: StructDataProps) => {
   } = props;
 
   if (!type || typeof type === 'string') throw new Error("<StructData> type must be a WGSL shader type");
+
+  const inspect = useInspectable();
 
   // Make struct uniform layout
   const layout = useOne(() => {

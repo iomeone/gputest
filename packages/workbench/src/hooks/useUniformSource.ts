@@ -1,3 +1,4 @@
+import type { Ref } from '@use-gpu/live';
 import type { UniformPipe, StorageSource } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
 
@@ -27,7 +28,7 @@ export const getUniformSource = (
   device: GPUDevice,
   type: ShaderModule,
   n: number = 1,
-): [StorageSource, UniformPipe] => {
+): [StorageSource, (values: Record<string, any> | Record<string, any>[]) => void] => {
   const attr = bundleToAttribute(type);
   const defs = attr.format;
   if (!Array.isArray(defs)) throw new Error(`Invalid uniform struct type '${attr.name}'`);

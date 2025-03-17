@@ -29,10 +29,10 @@ export const MotionDispatch: LiveComponent = () => {
   const [normalTarget] = normal;
   const [motionTarget] = motion;
 
-  const {next, uniforms} = useMotionUniforms(viewUniforms);
+  const {next, uniforms} = useMotionUniforms(viewUniforms as any);
 
   // Motion-from-depth shader
-  const getDepth = useTextureUVToXY(useTextureAccess(normalTarget.depth)).shader;
+  const getDepth = useTextureUVToXY(useTextureAccess(normalTarget.depth!)).shader;
   const getSample = useShader(getMotionSample, [getDepth, uniforms.reprojectionMatrix]);
   //const getSample = useShader(getMotionSample, [getDepth, uniforms.reprojectionMatrix, motionDebug]);
 
@@ -69,7 +69,7 @@ export const useMotionUniforms = (
   const {reprojectionMatrix, inverseReprojectionMatrix} = uniforms;
 
   // Copy of last frame's projectionViewMatrix
-  const lastPvmRef = useRef<mat4>(mat4.fromValues(projectionViewMatrix.current));
+  const lastPvmRef = useRef<mat4>(mat4.clone(projectionViewMatrix.current));
 
   // Calculate new forwards/backwards reprojection matrix
   const next = () =>  {

@@ -1,5 +1,5 @@
-import type { Lazy, LambdaSource, TextureSource, VectorLike } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { Lazy, LambdaSource, TextureSource, UniformType, VectorLike } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 import { getTextureSampleType } from '@use-gpu/core';
 
 import { useMemo } from '@use-gpu/live';
@@ -30,8 +30,9 @@ export const getRawTextureAccess = (
 
   const {format, aspect} = texture;
   const type = getTextureSampleType(format, aspect);
-  const f = format.match(/depth/) ? type : `vec4<${type}>`;
-  const t = getSource({ name: 'texture', format: f, args: ['vec2<u32>', 'u32'] }, texture);
+  const f = format.match(/depth/) ? type : `vec4<${type}>` as UniformType;
+  const args = ['vec2<u32>', 'u32'] as UniformType[];
+  const t = getSource({ name: 'texture', format: f, args }, texture);
 
   const bound = getShader(offset != null ? getUnfilteredOffset : getUnfiltered, [t, s, b]);
   return getLambdaSource(bound, texture);
@@ -39,14 +40,14 @@ export const getRawTextureAccess = (
 
 export const useTextureAccess = (
   texture: TextureSource,
-  level: Lazy<number> | ShaderModule | null,
-  index: Lazy<number> | ShaderModule | null,
+  level?: Lazy<number> | ShaderModule | null,
+  index?: Lazy<number> | ShaderModule | null,
 ): LambdaSource => useMemo(() => getTextureAccess(texture, level, index), [texture, level, index]);
 
 export const getTextureAccess = (
   texture: TextureSource,
-  level: Lazy<number> | ShaderModule | null,
-  index: Lazy<number> | ShaderModule | null,
+  level?: Lazy<number> | ShaderModule | null,
+  index?: Lazy<number> | ShaderModule | null,
 ): LambdaSource => {
   const l = level ? getSource({ name: 'level', format: 'u32', args: [] }, level) : null;
   const i = index ? getSource({ name: 'index', format: 'u32', args: [] }, index) : null;
@@ -55,10 +56,10 @@ export const getTextureAccess = (
   const {layout, format, aspect} = texture;
   const type = getTextureSampleType(format, aspect);
 
-  const f = format.match(/depth/) ? type : `vec4<${type}>`;
+  const f = format.match(/depth/) ? type : `vec4<${type}>` as UniformType;
   const isArray = !!layout.match(/array/);
 
-  const args = isArray ? ['vec2<u32>', 'u32', 'u32'] : ['vec2<u32>', 'u32'];
+  const args = (isArray ? ['vec2<u32>', 'u32', 'u32'] : ['vec2<u32>', 'u32']) as UniformType[];
 
   let load = getSource({ name: 'textureAccess', format: f, args }, t);
   if (isArray) load = getShader(loadTextureIndexLevel, [load, i]);

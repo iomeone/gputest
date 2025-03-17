@@ -1,5 +1,5 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { UseGPURenderContext, TextureTarget } from '@use-gpu/core';
+import type { OffscreenRenderContext, TextureTarget } from '@use-gpu/core';
 
 import { provide, yeet, useMemo, incrementVersion } from '@use-gpu/live';
 import { RenderContext, useRenderContext, useNoRenderContext } from '../providers/render-provider';
@@ -10,7 +10,7 @@ import { getRenderFunc } from '../hooks/useRenderProp';
 const {quote} = QueueReconciler;
 
 export type RenderToTextureProps = {
-  target?: UseGPURenderContext,
+  target?: OffscreenRenderContext,
   render?: (texture: TextureTarget) => LiveElement,
   children?: LiveElement | ((texture: TextureTarget) => LiveElement),
 };
@@ -23,7 +23,7 @@ export const RenderToTexture: LiveComponent<RenderToTextureProps> = (props: Rend
   } = props;
 
   const renderContext = target ? (useNoRenderContext(), target) : useRenderContext();
-  const {source} = renderContext;
+  const source = renderContext.source as TextureTarget;
   if (!source) throw new Error("No render target provided or in use");
 
   const trigger = useMemo(() => quote(yeet(() => {

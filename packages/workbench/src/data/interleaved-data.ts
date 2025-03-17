@@ -1,13 +1,6 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { LambdaSource, UniformType, VectorLike, DataSchema } from '@use-gpu/core';
 
-import { useDeviceContext } from '../providers/device-provider';
-import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { QueueReconciler } from '../reconcilers/index';
-import { useBufferedSize } from '../hooks/useBufferedSize';
-import { useInspectable } from '../hooks/useInspectable';
-import { useRenderProp } from '../hooks/useRenderProp';
-import { useStructSources } from '../hooks/useStructSources';
 import { useOne, useMemo, useNoMemo } from '@use-gpu/live';
 import {
   makePackedLayout,
@@ -17,6 +10,15 @@ import {
   uploadStorage,
   isUniformArrayType,
 } from '@use-gpu/core';
+
+import { useDeviceContext } from '../providers/device-provider';
+import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
+import { QueueReconciler } from '../reconcilers/index';
+
+import { useBufferedSize } from '../hooks/useBufferedSize';
+import { useInspectable } from '../hooks/useInspectable';
+import { useRenderProp } from '../hooks/useRenderProp';
+import { useStructSources } from '../hooks/useStructSources';
 
 const {signal} = QueueReconciler;
 

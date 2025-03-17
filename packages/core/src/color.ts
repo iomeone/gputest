@@ -37,7 +37,7 @@ export const makeColorAttachments = (
 } as unknown as GPURenderPassColorAttachment));
 
 export const makeBlendState = (
-  blend: Blending | GPUBlendState | null,
+  blend?: Blending | GPUBlendState | null,
 ): GPUBlendState | undefined => (
   (blend && (typeof blend === 'object' ? blend : BLEND_MODES[blend])) ?? undefined
 );

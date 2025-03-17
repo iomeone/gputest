@@ -4,7 +4,7 @@ import { useMemo, useNoMemo } from '@use-gpu/live';
 export const usePipelineLayout = (
   device: GPUDevice,
   entries: GPUBindGroupLayoutEntry[][],
-  bindGroup0?: GPUBindGroupLayout,
+  bindGroup0?: GPUBindGroupLayout | null,
   bindGroups?: GPUBindGroupLayout[],
   label?: string,
 ) => {

@@ -1,4 +1,4 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { PassFlags, RenderComponents } from '../pass/types';
 
 import { use, gather, memo, useOne } from '@use-gpu/live';
@@ -117,9 +117,10 @@ export const gatherPassResources = (
   then: (res: PassResources) => LiveElement,
 ) => {
   const reduceInPlace = (dst: PassResources, src: PassResources) => {
+
     for (const type in src) {
-      const s = src[type];
-      const d = dst[type];
+      const s = (src as any)[type];
+      const d = (dst as any)[type];
 
       if (Array.isArray(d)) {
         if (Array.isArray(s)) for (const v of s) d.push(v);

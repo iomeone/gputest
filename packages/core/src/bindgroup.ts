@@ -1,4 +1,4 @@
-import type { DataBinding, RawBinding, ShaderStructType, UniformFormat, UniformAttribute } from './types';
+import type { DataBinding, RawBinding, ShaderType, UniformFormat, UniformAttribute } from './types';
 import { UNIFORM_ATTRIBUTE_SIZES, UNIFORM_ATTRIBUTE_ALIGNS } from './constants';
 import { makeUniformLayout, toTypeString } from './uniform';
 
@@ -178,11 +178,12 @@ export const makeBindGroup = (
  */
 export const getMinBindingSize = (
   format: UniformFormat | UniformAttribute[],
-  type?: ShaderStructType,
+  type?: ShaderType,
 ) => {
   if (type) {
-    const module = (type.module ?? type) as any;
-    const entry = type.entry ?? module.entry;
+    const t = type as any;
+    const module = (t.module ?? t) as any;
+    const entry = t.entry ?? module.entry;
     const {table: {exports, locals}} = module;
 
     const decl = (
@@ -203,7 +204,7 @@ export const getMinBindingSize = (
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // TODO: resolve arrays of structs inside structs
-      console.warn('getMinBindingSize = 0. Struct declaration not parsed.', {format, type})
+      console.warn('getMinBindingSize = 0. Struct declaration failed to parse.', {format, type});
       return 0;
     }
   }

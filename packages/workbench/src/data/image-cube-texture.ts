@@ -77,7 +77,7 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
         if ('bitmap' in resource) uploadExternalTexture(device, texture, resource.bitmap, [width, height, 1], [0, 0, i]);
         if ('data' in resource) uploadDataTexture(device, texture, resource.data, [width, height, 1], [0, 0, i]);
       });
-      texture.label = url;
+      texture.label = urls.join(' ');
 
       const source = {
         texture,
@@ -103,7 +103,7 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
 
       return source;
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [resources, sampler, url]);
+    }, [resources, sampler, urls]);
 
     inspect({ output: { source }});
 

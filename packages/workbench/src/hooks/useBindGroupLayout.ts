@@ -1,5 +1,5 @@
 import type { UniformAttribute } from '@use-gpu/core';
-import type { PassBinding } from '../pass/types';
+import type { PassBindGroup, PassBinding, PassEnv } from '../pass/types';
 
 import { useMemo } from '@use-gpu/live';
 import { makeBindGroupLayout, makeBindGroupLayoutEntries, makeRawBindingForAttribute } from '@use-gpu/core';
@@ -7,28 +7,23 @@ import { attributeToFields, bundleToBindings } from '@use-gpu/shader/wgsl';
 
 import { useDeviceContext } from '../providers/device-provider';
 
-export type BindGroupLayout = {
-  attributes: UniformAttribute[],
-  layout: GPUBindGroupLayout,
-};
-
 export const useBindGroupLayout = (
   bindings: (PassBinding | null | undefined)[],
   group: string,
-  key?: string,
-): BindGroupLayout => {
+  key: string | number,
+): PassBindGroup => {
   const device = useDeviceContext();
   return useMemo(() => getBindGroupLayout(device, bindings, group, key), [device, bindings, group, key]);
 };
 
 export const getBindGroupLayout = (
   device: GPUDevice,
-  maybeBindings: (Pick<PassBinding, 'module' | 'visibility'> | null | undefined)[],
+  maybeBindings: (PassBinding | null | undefined)[],
   group: string,
-  key?: string,
-): BindGroupLayout => {
+  key: string | number,
+): PassBindGroup => {
 
-  const bindings: PassBinding[] = maybeBindings.filter(s => !!s);
+  const bindings = maybeBindings.filter(s => !!s) as PassBinding[];
   const bindingIndices: number[][] = [];
 
   const match = `group(${group})`;
@@ -47,9 +42,9 @@ export const getBindGroupLayout = (
     const indices: number[] = [];
     for (const attribute of attributes) {
       const {attr} = attribute;
-      if (!attr.find((k: string) => k === match)) continue;
+      if (!attr || !attr.find((k: string) => k === match)) continue;
 
-      const location = attr?.find((k: string) => k.match(/^binding\(/));
+      const location = attr.find((k: string) => k.match(/^binding\(/));
       const index = parseInt(location?.split(/[()]/g)[1] ?? '', 10);
 
       ensureLength(allAttributes, index, null);
@@ -85,13 +80,13 @@ const ensureLength = <T>(list: T[], n: number, v: T) => { while (list.length < n
 const combineBindGroupValues = (
   bindings: PassBinding[],
   bindingIndices: number[][],
-) => (buffers: BuffersEnv, env: PassEnv) => {
+) => (env: PassEnv) => {
   const values = [];
 
   let i = 0;
   for (const b of bindings) {
     const is = bindingIndices[i];
-    const vs = b.bind?.(buffers, env) ?? [];
+    const vs = b.bind?.(env) ?? [];
 
     const n = is.length;
     for (let j = 0; j < n; ++j) {

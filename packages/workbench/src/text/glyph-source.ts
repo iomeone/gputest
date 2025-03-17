@@ -16,7 +16,7 @@ export type GlyphSourceProps = {
   lineHeight?: number,
   align?: Alignment,
   wrap?: number,
-  snap?: boolean,
+  hint?: 'x' | 'y' | 'xy' | false,
   size?: number,
   monochrome?: boolean,
 
@@ -37,7 +37,7 @@ export const GlyphSource: LiveComponent<GlyphSourceProps> = memo((props: GlyphSo
     size = 48,
     wrap = 0,
     monochrome = false,
-    snap,
+    hint,
 
     render,
   } = props;
@@ -56,7 +56,7 @@ export const GlyphSource: LiveComponent<GlyphSourceProps> = memo((props: GlyphSo
     align,
     size,
     wrap,
-    snap,
+    hint,
     monochrome,
   );
 

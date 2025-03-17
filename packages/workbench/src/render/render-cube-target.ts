@@ -211,7 +211,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
         );
       }
 
-      counter.current = (index + 1) % n;
+      counter.current = (index + 1) % (history + 1);
     } : null;
 
     if (format && targetTexture) {
@@ -234,16 +234,14 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
         volatile,
         version: 0,
         hint,
-        swap: null as any,
+        swap: undefined as any,
       }) as TextureTarget;
 
       sources = (history > 0) ? seq(history).map(makeSource) : undefined;
 
       source = makeSource();
       source.history = sources;
-      source.swap = swap;
-
-      swap();
+      if (swap) source.swap = swap;
     }
 
     const depth = depthStencil ? {
@@ -257,6 +255,8 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
       version: 0,
       hint: 'depth',
     } as TextureSource : null;
+
+    swap?.();
 
     return [source, depth];
   }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil, hint, bufferLayers, bufferTextures, bufferViews, colorSpace, counter, resolveTexture, viewAttachments]);
@@ -315,6 +315,7 @@ const cycleHistorySources = (
   resolve: boolean,
 ) => {
   const n = textures.length;
+  const history = n - 1;
 
   const texture = textures[index];
   const view = views[index];
@@ -329,7 +330,7 @@ const cycleHistorySources = (
     sources[i].view = views[j];
   }
 
-  if (attachments) {
+  if (viewAttachments) {
     for (let i = 0; i < 6; ++i) {
       const att = viewAttachments[i].colorAttachments[0];
       att[resolve ? 'resolveTarget' : 'view'] = ls[i];
