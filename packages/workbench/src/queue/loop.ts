@@ -15,6 +15,7 @@ const DEBUG = false;
 export type LoopProps = PropsWithChildren<{
   live?: boolean,
   decimate?: number,
+  converge?: number,
 }>;
 
 export type LoopRef = {
@@ -44,7 +45,7 @@ export type LoopRef = {
 
 /** Provides `useAnimationFrame` and clock to allow for controlled looping and animation. */
 export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
-  const {live, decimate = 1, children} = props;
+  const {live, decimate = 1, converge = 0, children} = props;
   const parent = useContext(LoopContext);
 
   const ref: LoopRef = useOne(() => ({
@@ -57,12 +58,13 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
     version: {
       frame: 0,
       rendered: 0,
+      converge: 0,
       pending: false,
       queued: false,
       request: null,
     },
     dispatch: {
-      fibers: [],
+      fibers: new Set(),
       render: () => {},
     },
     loop: {
@@ -73,6 +75,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
   }));
 
   ref.children = children;
+  ref.version.converge = ref.version.frame + converge;
 
   // Don't nest requestAnimationFrame when <Loop> is nested.
   const isSync = !!parent.buffered;
@@ -99,19 +102,29 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
     dispose(() => mounted = false);
 
     const request = (fiber?: LiveFiber<any>) => {
+      DEBUG && !ref.version.pending && fiber && console.warn(
+        '=> Animated fiber',
+        '#' + fiberId,
+      );
+
+      if (fiber && !fibers.has(fiber)) fibers.add(fiber);
+      ref.version.converge = ref.version.frame + converge;
+
+      return enqueue();
+    };
+
+    const enqueue = () => {
       DEBUG && !ref.version.pending && console.warn(
         '=> Request animation frame',
-        '#' + fiberId,
         '@' + (+new Date() - START)
       );
 
       // Enqueue animated fiber for next frame
       if (!ref.version.pending) ref.version.request = requestAnimationFrame(renderAnimationFrame);
-      if (fiber && fibers.indexOf(fiber) < 0) fibers.push(fiber);
       ref.version.pending = true;
 
       // Ensure parent is also a sync animation frame
-      // parent.request();
+      if (!decimate) parent.request();
 
       return ref.time;
     };
@@ -146,6 +159,9 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       // Loop continuously if live
       if (live && mounted) request();
 
+      // Continue if still converging
+      else if (converge && ref.version.frame < ref.version.converge) enqueue();
+
       // Start elapsed timer once we have timing info
       if (timestamp != null) {
 
@@ -163,12 +179,12 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       }
 
       // Schedule enqueued fibers from last frame
-      DEBUG && console.log('Animated fibers', fibers.length)
-      for (const fiber of fibers) if (fiber.bound) {
+      DEBUG && console.log('Animated fibers', fibers.size)
+      for (const fiber of fibers.values()) if (fiber.bound) {
         fiber.host?.schedule(fiber);
         if (fiber.version != null) fiber.version = incrementVersion(fiber.version);
       }
-      fibers.length = 0;
+      fibers.clear();
 
       // Render detached children
       const {renderChildren} = ref.dispatch;

@@ -1,5 +1,5 @@
 import type { LiveFiber, ArrowFunction } from '@use-gpu/live';
-import { formatNode, incrementVersion } from '@use-gpu/live';
+import { incrementVersion } from '@use-gpu/live';
 
 import React, { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -81,6 +81,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, fibers, api: {
       pinned,
     };
     return [map, all, api];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, NO_DEPS);
 
   useLayoutEffect(() => {
@@ -202,7 +203,7 @@ export const usePingTracker = (fiber?: LiveFiber<any>, shouldPin: boolean) => {
 
     pin(by);
     return () => { unpin(by) };
-  }, [fiber, pin, unpin, shouldPin]);
+  }, [fiber, fibers, pin, unpin, shouldPin]);
 
   const isPinned = pinned.has(fiber?.id);
 

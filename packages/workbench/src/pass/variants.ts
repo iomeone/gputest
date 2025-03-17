@@ -53,5 +53,6 @@ export const useMakeUseVariants = (
     return (virtual: VirtualDraw, hovered: boolean) =>
       // eslint-disable-next-line react-hooks/exhaustive-deps
       useMemo(() => getVariants(virtual, hovered), [getVariants, virtual, hovered]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [components, normals, shadows, picking]);
 };

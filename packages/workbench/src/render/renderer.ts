@@ -1,15 +1,13 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
-import type { AggregatedCalls, PassBindGroup, PassResources, RenderComponents, VirtualDraw } from '../pass/types';
+import type { AggregatedCalls, PassBindGroup, PassResources } from '../pass/types';
 
-import { use, memo, unquote, provide, multiGather, extend, useMemo, useNoMemo } from '@use-gpu/live';
+import { use, memo, unquote, provide, multiGather, extend, useMemo } from '@use-gpu/live';
 
 import { PassContext, VariantContext, VariantContextProps } from '../providers/pass-provider';
 import { PassReconciler } from '../reconcilers/index';
 
 import { ComputePass } from '../pass/compute-pass';
 import { DispatchPass } from '../pass/dispatch-pass';
-import { PickingPass } from '../pass/picking-pass';
 import { ReadbackPass } from '../pass/readback-pass';
 
 const {reconcile, quote} = PassReconciler;

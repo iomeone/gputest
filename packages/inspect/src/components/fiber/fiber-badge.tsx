@@ -8,7 +8,7 @@ import { Muted } from '../layout';
 import { FiberTag, getFiberTags } from '../fiber/tag';
 import { IconRow, SVGAtom, SVGData, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute, SVGCamera } from '../svg';
 
-type FiberBadgeProps = {
+export type FiberBadgeProps = {
   fiber: LiveFiber<any>,
   pinged?: number,
   staticPing?: boolean,
@@ -31,7 +31,7 @@ type FiberBadgeProps = {
   onMouseLeave?: (e: any) => void,
 };
 
-export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
+export const FiberBadge = forwardRef<HTMLDivElement, FiberBadgeProps>(({
   fiber,
   staticPing,
   staticMount,
@@ -52,7 +52,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   onMouseEnter,
   onMouseLeave,
 }, ref) => {
-  const {id, by, f, type, __inspect} = fiber;
+  const {id, by, f, __inspect} = fiber;
 
   const tags = getFiberTags(fiber);
   
@@ -65,7 +65,6 @@ export const FiberBadge = forwardRef<HTMLDivElement, NodeProps>(({
   const compute = tags & FiberTag.Compute;
   const view = tags & FiberTag.View;
   const data = tags & FiberTag.Data;
-  const hover = tags & FiberTag.Hover;
 
   const suffix1 = yeet ? <SVGYeet key="yeet" title="Yeet" /> : null;
   const suffix2 = react ? <SVGAtom key="atom" title="React" /> : null;

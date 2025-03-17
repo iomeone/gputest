@@ -1,8 +1,7 @@
-import type { LC, PropsWithChildren, LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Renderable } from '../pass';
 
 import { use, yeet, memo, gather, useOne } from '@use-gpu/live';
-import { makeDepthStencilAttachments } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
@@ -11,11 +10,9 @@ import { QueueReconciler } from '../reconcilers';
 import { useInspectable } from '../hooks/useInspectable'
 
 import { useApplyPassBindGroup } from './bindings';
-import { getRenderPassDescriptor, drawToPass, computeToContext } from './util';
+import { getRenderPassDescriptor, drawToPass } from './util';
 
 import { MotionDispatch } from '../render/dispatch/motion-dispatch';
-
-import { wgsl } from '@use-gpu/shader/wgsl';
 
 const {quote} = QueueReconciler;
 

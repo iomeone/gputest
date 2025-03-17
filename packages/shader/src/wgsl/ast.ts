@@ -60,7 +60,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     let end = n.to;
     while (start > 0 && code.charAt(start - 1) !== "\n") start--;
     while (end < code.length - 1 && code.charAt(end + 1) !== "\n") end++;
-    let line = code.slice(0, start).split('\n').length + 1;
+    const line = code.slice(0, start).split('\n').length + 1;
 
     const loc = (name != null ? `in '${name}' ` : '') + `on line ${line}`;
     throw new Error(

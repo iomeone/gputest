@@ -1,14 +1,9 @@
 import type { LiveFiber } from '@use-gpu/live';
 
-import { formatNodeName } from '@use-gpu/live';
-
-import React, { forwardRef, useCallback } from 'react';
+import React, { forwardRef } from 'react';
 import { usePingTracker } from '../../providers/ping-provider';
-import { Muted } from '../layout';
-import { FiberTag, getFiberTags } from '../fiber/tag';
-import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput, SVGRaster, SVGCompute } from '../svg';
 
-type FiberDotProps = {
+export type FiberDotProps = {
   fiber: LiveFiber<any>,
   pinged?: number,
   selected?: boolean,
@@ -23,10 +18,8 @@ type FiberDotProps = {
   absolute?: boolean,
 };
 
-export const FiberDot = forwardRef<HTMLDivElement, NodeProps>(({
+export const FiberDot = forwardRef<HTMLDivElement, FiberDotProps>(({
   fiber,
-  staticPing,
-  staticMount,
   selected,
   hovered,
   depends,
@@ -38,11 +31,9 @@ export const FiberDot = forwardRef<HTMLDivElement, NodeProps>(({
   ooo,
   absolute,
 }, ref) => {
-  const {id, by, f, type} = fiber;
+  const {id, by, f} = fiber;
 
-  const tags = getFiberTags(fiber);
   const [version, pinged] = usePingTracker(fiber);
-
   if (version <= 1) return;
   
   const classes: string[] = ['pinged'];

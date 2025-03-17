@@ -1,17 +1,15 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, StorageSource, TextureSource, UniformType } from '@use-gpu/core';
+import type { GPUGeometry, TextureSource } from '@use-gpu/core';
 
-import React, { Gather, memo, useOne, useResource, useState } from '@use-gpu/live';
+import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 import { seq } from '@use-gpu/core';
 
 import {
-  Loop, Pass, FlatCamera, Animate, LinearRGB,
-  GeometryData, PBRMaterial, ImageTexture,
-  OrbitCamera, OrbitControls, Environment, FPSControls,
+  Loop, Pass, LinearRGB,
+  GeometryData, PBRMaterial, ImageTexture, AmbientLight,
+  OrbitCamera, OrbitControls, Environment,
   Cursor,
-  DirectionalLight, PointLight, AmbientLight,
-  Data, PointLayer,
   DebugProvider, PrintLayer, PrintHelper,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
 } from '@use-gpu/workbench';
@@ -22,21 +20,6 @@ import {
 
 import { InfoBox } from '../../ui/info-box';
 import { SSAOControls } from '../../ui/ssao-controls';
-
-const SHADOW_MAP_DIRECTIONAL = {
-  size: [2048, 2048],
-  span: [50, 50],
-  depth: [0, 100],
-  bias: [1/4096, 1/512, 0],
-  blur: 4,
-};
-
-const SHADOW_MAP_POINT = {
-  size: [2048, 2048],
-  depth: [0.1, 50],
-  bias: [1/128, 1/64, 1/16],
-  blur: 4,
-};
 
 const sampler = {
   addressModeU: 'repeat',
@@ -49,7 +32,7 @@ const sphereGeometry = makeSphereGeometry({ width: 2, tile: [6, 3] });
 
 const rnd = () => Math.random() * 2.0 - 1.0;
 
-const cubes = seq(30).map(i => {
+const cubes = seq(30).map(() => {
   const s = Math.random() + .5;
   return {
     position: [rnd() * 12, -2 + s, rnd() * 12],
@@ -58,7 +41,7 @@ const cubes = seq(30).map(i => {
   };
 });
 
-const spheres = seq(30).map(i => {
+const spheres = seq(30).map(() => {
   const s = Math.random() + .5;
   return {
     position: [rnd() * 12, -2 + s, rnd() * 12],
@@ -67,22 +50,7 @@ const spheres = seq(30).map(i => {
   };
 });
 
-const lightData = [
-  {
-    position: [-10, 20, 15, 1],
-    color: [1, 1, 1, 1],
-  },
-  {
-    position: [-15, 20, -5, 1],
-    color: [0.8, 0.4, 0.8, 1],
-  },
-  {
-    position: [2, 4.5, 2.5, 1],
-    color: [0.3, 0.8, 1.0, 1],
-  },
-];
-
-export const SceneSSAOPage: LC = (props) => {
+export const SceneSSAOPage: LC = () => {
 
   const view = (showAO: boolean) => (
     <DebugProvider
@@ -111,39 +79,53 @@ export const SceneSSAOPage: LC = (props) => {
           <LinearRGB tonemap="aces">
             <Cursor cursor='move' />
             <Camera>
-              <Loop live>
-              <PrintHelper count={4096}>
-                <Pass lights ssao={2} overscan={0.05}>
 
-                  <Environment preset="pisa" gain={2}>
-                    <Scene>
+              {/* Ensure at least 32 frames for SSAO noise to converge */}
+              <Loop converge={32}>
 
-                      <Node position={[0, -2.001, 0]}>
-                        <PBRMaterial albedo={'#808080'} roughness={0.7}>
-                          <Mesh
-                            mesh={planeMesh}
-                            side="both"
-                            shaded
-                          />
+                <PrintHelper count={4096}>
+                  <Pass
+                    lights
+                    ssao={{
+                      radius: 2,      // World-space radius
+                      depthRamp: 10,  // Slope of reprojection depth weight (higher = stricter)
+                      normalRamp: 3,  // Slope of reprojection normal weight (higher = stricter)
+                    }}
+                    overscan={0.05}   // 5% extra render margin so SSAO does not disappear at edges
+                  >
+
+                    <AmbientLight intensity={0.4} />
+                    <Environment preset="pisa" gain={1.8}>
+                      <Scene>
+
+                        <Node position={[0, -2.001, 0]}>
+                          <PBRMaterial albedo={'#808080'} roughness={0.7}>
+                            <Mesh
+                              mesh={planeMesh}
+                              side="both"
+                              shaded
+                            />
+                          </PBRMaterial>
+                        </Node>
+
+                        <PBRMaterial xalbedoMap={texture} roughness={0.5}>
+                          <Instances mesh={boxMesh} shaded>
+                            {(Instance) => cubes.map((cube) => <Instance {...cube} />)}
+                          </Instances>
+                          <Instances mesh={sphereMesh} shaded>
+                            {(Instance) => spheres.map((sphere) => <Instance {...sphere} />)}
+                          </Instances>
                         </PBRMaterial>
-                      </Node>
 
-                      <PBRMaterial xalbedoMap={texture} roughness={0.5}>
-                        <Instances mesh={boxMesh} shaded>
-                          {(Instance) => cubes.map((cube) => <Instance {...cube} />)}
-                        </Instances>
-                        <Instances mesh={sphereMesh} shaded>
-                          {(Instance) => spheres.map((sphere) => <Instance {...sphere} />)}
-                        </Instances>
-                      </PBRMaterial>
+                      </Scene>
+                    </Environment>
 
-                    </Scene>
-                  </Environment>
+                    <PrintLayer size={6} width={3} />
 
-                  <PrintLayer size={6} width={3} />
+                  </Pass>
 
-                </Pass>
-              </PrintHelper>
+                </PrintHelper>
+
               </Loop>
             </Camera>
           </LinearRGB>
@@ -155,7 +137,7 @@ export const SceneSSAOPage: LC = (props) => {
   const root = document.querySelector('#use-gpu .canvas');
 
   return (<>
-    <InfoBox>Screen-space ambient occlusion with built-in &lt;SSAOPass&gt;</InfoBox>
+    <InfoBox>Screen-space ambient occlusion with built-in &lt;SSAOPass&gt;, with bent normals, reprojection and overscan at the edges.</InfoBox>
     <SSAOControls
       container={root}
       render={({showAO}) =>
@@ -165,39 +147,7 @@ export const SceneSSAOPage: LC = (props) => {
   </>);
 };
 
-const Camera = ({children}: PropsWithChildren<object>) => {
-  const inc = 0;
-  //const [inc, setInc] = useState(0);
-  //useResource((dispose) => {
-  //  const timer = setInterval(() => setInc(i => i + .1), 1000);
-  //  dispose(() => clearInterval(timer));
-  //}, []);
-  
-  return (
-    <FPSControls
-      position={[0, 2, 0]}
-      bearing={0.1}
-      pitch={0.3}
-      moveSpeed={2}
-    >{
-      (phi: number, theta: number, target: vec3) => (
-        <OrbitCamera
-          radius={0}
-          phi={phi + inc}
-          theta={theta}
-          target={target}
-          near={0.1}
-          far={1000}
-          scale={1080}
-        >
-          {children}
-        </OrbitCamera>
-      )
-    }</FPSControls>
-  );
-};
-
-const XCamera = ({children}: PropsWithChildren<object>) => (
+const Camera = ({children}: PropsWithChildren<object>) => (
   <OrbitControls
     radius={9}
     bearing={-1.8}
@@ -205,10 +155,10 @@ const XCamera = ({children}: PropsWithChildren<object>) => (
     render={(radius: number, phi: number, theta: number, target: vec3) => (
       <OrbitCamera
         radius={radius}
-        phi={phi + inc}
+        phi={phi}
         theta={theta}
         near={0.1}
-        far={100}
+        far={1000}
         target={target}
       >
         {children}

@@ -1,6 +1,6 @@
 import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import { TraitProps } from '@use-gpu/traits';
-import { provide, useDouble, useMemo, useOne } from '@use-gpu/live';
+import { provide, useDouble, useMemo } from '@use-gpu/live';
 import { useMatrixContext, MatrixContext } from '@use-gpu/workbench';
 import { mat4 } from 'gl-matrix';
 
@@ -17,7 +17,6 @@ export const Node: LiveComponent<NodeProps> = (props: NodeProps) => {
   const {children} = props;
 
   const [swapMatrix] = useDouble(makeMat4);
-  const composed = useOne(makeMat4);
 
   const combined = useMemo(() => {
     const matrix = swapMatrix();
@@ -35,7 +34,7 @@ export const Node: LiveComponent<NodeProps> = (props: NodeProps) => {
     if (parent) mat4.multiply(matrix, parent, matrix);
 
     return matrix;
-    // Composed and swapMatrix are static
+    // swapMatrix is static
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p, s, q, r, m, parent]);
 

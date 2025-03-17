@@ -159,6 +159,7 @@ export type UniformAttributeDescriptor = UniformAttribute & {
 
 export type UniformLayout = {
   length: number,
+  align: number,
   attributes: UniformAttributeDescriptor[],
   offsets: number[],
 };

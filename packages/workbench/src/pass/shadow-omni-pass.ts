@@ -16,7 +16,7 @@ import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable';
-import { useShader, getShader } from '../hooks/useShader';
+import { getShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
 import { useCopyDepth } from '../render/copy/value-copy';
@@ -141,7 +141,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
   const getDepth = useMemo(() => {
     const sample = getShader(getCubeToOmniSample, [cubeSource, scaleRef]);
     return castTo(sample, 'f32');
-  }, [cubeSource]);
+  }, [cubeSource, scaleRef]);
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const blit = useCopyDepth(renderContext, getDepth, null, shadowUV!, SHADOW_PAGE);
@@ -184,6 +184,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
 
     {
       const commandEncoder = device.createCommandEncoder(LABEL);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const passEncoder = commandEncoder.beginRenderPass(shadowMapDescriptors[shadowMap!]);
       blit(passEncoder);
       passEncoder.end();

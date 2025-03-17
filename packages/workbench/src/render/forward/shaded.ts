@@ -48,6 +48,7 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
 
   const vertexShader = renderVirtualShaded;
   const fragmentShader = defines?.HAS_DEPTH ? renderFragmentShadedDepth : renderFragmentShaded;
+  const hasScissor = defines?.HAS_SCISSOR;
 
   // Binds links into shader
   const [v, f] = useMemo(() => {
@@ -55,13 +56,13 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
       getVertex,
       getSurface: ssao ? bindBundle(getSSAOSurface, {getSurface, sampleSSAO}) : getSurface,
       getLight: getLight && bindBundle(getLight, {applyLights, applyEnvironment}),
-      getScissor: defines?.HAS_SCISSOR ? getScissorColor : null,
+      getScissor: hasScissor ? getScissorColor : null,
       toColorSpace: getNativeColor(colorInput, colorSpace),
     };
     const v = bindBundle(vertexShader, links);
     const f = bindBundle(fragmentShader, links);
     return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getSurface, getLight, applyLights, applyEnvironment, defines, colorInput, colorSpace]);
+  }, [vertexShader, fragmentShader, getVertex, getSurface, getLight, applyLights, applyEnvironment, colorInput, colorSpace, hasScissor, ssao]);
 
   // Inline the render fiber
   const call = {

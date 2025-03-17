@@ -64,7 +64,7 @@ export const usePipelineOptions = (
 
     const fragment = {
       targets: {
-        0: {blend: makeBlendState(blend) ?? $delete()},
+        0: {blend: $set(makeBlendState(blend)) ?? $delete()},
       } as any
     };
 

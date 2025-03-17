@@ -1,12 +1,9 @@
 import type { LC } from '@use-gpu/live';
-import type { OffscreenRenderContext, TextureTarget } from '@use-gpu/core';
+import type { OffscreenRenderContext } from '@use-gpu/core';
 
 import { use, gather, yeet, memo } from '@use-gpu/live';
-import { makeColorAttachment, makeColorState, makeDepthStencilState, makeDepthTexture, makeDepthStencilAttachment, makeTargetTexture } from '@use-gpu/core';
 
 import { RenderTarget } from '../render-target';
-
-import { useDeviceContext } from '../../providers/device-provider';
 
 import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
 
@@ -22,8 +19,6 @@ export const SSAO_ACCUM_FORMAT = 'rgba16float';
 export const SSAO_RESOLVE_FORMAT = 'rgba8unorm';
 
 export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
-  const device = useDeviceContext();
-
   const {overscan} = props;
   const resolution = 1/2;
   const samples = 1;

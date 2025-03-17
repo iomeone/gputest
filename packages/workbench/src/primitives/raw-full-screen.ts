@@ -4,8 +4,7 @@ import type { ShaderModule } from '@use-gpu/shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useMemo, useOne } from '@use-gpu/live';
-import { getBundleKey } from '@use-gpu/shader/wgsl';
+import { memo, useMemo } from '@use-gpu/live';
 
 import { useShader } from '../hooks/useShader';
 import { usePickingShader } from '../providers/picking-provider';

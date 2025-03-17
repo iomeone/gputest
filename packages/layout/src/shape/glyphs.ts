@@ -84,11 +84,11 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     for (const {layout, start, end, gap} of lines) {
       const [l, t] = layout;
 
-      const {ascent} = height;
       let x = snapX ? Math.round(l) : l;
-      let y = t + ascent;
-
       let sx = x;
+
+      const {ascent} = height;
+      const y = t + ascent;
       const sy = snapY ? Math.round(y) : y;
 
       spans.iterate((_a, trim, _h, index) => {

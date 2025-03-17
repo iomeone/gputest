@@ -1,6 +1,5 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
-import type { PassFlags, PassOptions, RenderComponents } from '../pass/types';
+import type { PassFlags, RenderComponents } from '../pass/types';
 
 import { use, gather, memo, useOne } from '@use-gpu/live';
 import { toMurmur53 } from '@use-gpu/state';
@@ -19,17 +18,7 @@ import { ShadowBuffer } from './buffer/shadow-buffer';
 import { SSAOBuffer } from './buffer/ssao-buffer';
 import { ViewBuffer, useViewBuffer, useNoViewBuffer } from './buffer/view-buffer';
 
-import { useViewContext } from '../providers/view-provider';
-
-import { PassResource } from '../pass/types';
-
-const NONE: any = {};
-
-const NO_RESOURCES: PassResources = {
-  buffers: {},
-  bindings: {},
-  dispatches: [],
-};
+import { PassResources } from '../pass/types';
 
 export type PassProps = PropsWithChildren<{
   mode?: 'forward' | 'deferred' | 'fullscreen',

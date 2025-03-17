@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useLayoutEffect, useRef, useState } from 'react';
+import React, { FC, PropsWithChildren, useLayoutEffect, useRef } from 'react';
 import { styled as _styled } from '@stitches/react';
 
 // TODO: TS nightly issue?
@@ -135,7 +135,7 @@ export const TreeRowAvoidOverlap: FC<TreeRowAvoidOverlapProps> = ({ indent, chil
     
     const parent = el.parentElement;
     let sib = parent;
-    while (sib = sib.previousElementSibling) {
+    while ((sib = sib.previousElementSibling)) {
       if (sib.children.length && sib.children[0].classList.contains('avoidOverlap')) break;
     }
 

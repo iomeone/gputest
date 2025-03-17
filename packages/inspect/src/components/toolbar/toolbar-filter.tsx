@@ -11,7 +11,7 @@ export type ToolbarFilterProps = {
 };
 
 export const ToolbarFilter: FC<ToolbarFilterProps> = (props: ToolbarFilterProps) => {
-  const {state, api} = props;
+  const {state} = props;
   const {filters: options} = useAddIns();
 
   const {optionsCursor} = state;

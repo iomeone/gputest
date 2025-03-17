@@ -1,15 +1,13 @@
 import type { LiveComponent, PropsWithChildren, Ref } from '@use-gpu/live';
 import type { ViewUniforms } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { ShaderModule } from '@use-gpu/shader';
 import type { PassBinding } from '../pass/types';
 
-import { provide, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useNoOne } from '@use-gpu/live';
+import { provide, makeContext, useContext, useNoContext, useMemo, useOne, useNoOne } from '@use-gpu/live';
 import { makeViewUniforms } from '@use-gpu/core';
 
 import { useUniformBinding } from '../hooks/useUniformSource';
-import { makeViewBinding } from '../pass/bindings';
-import { useDeviceContext } from '../providers/device-provider';
-import { useFrustumCuller, useNoFrustumCuller } from '../hooks/useFrustumCuller';
+import { useFrustumCuller } from '../hooks/useFrustumCuller';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { vec3 } from 'gl-matrix';
@@ -48,7 +46,6 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
     children,
   } = props;
 
-  const device = useDeviceContext();
   const inspect = useInspectable();
 
   const {cull, uniforms} = useViewUniforms(maybeUniforms);

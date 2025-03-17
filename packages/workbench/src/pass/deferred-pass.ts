@@ -54,7 +54,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
   const device = useDeviceContext();
   const renderContext = useRenderContext();
-  const {width, height, depth} = renderContext;
+  const {depth} = renderContext;
 
   const {
     bindGroups: {

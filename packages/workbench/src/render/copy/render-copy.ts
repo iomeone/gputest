@@ -3,8 +3,7 @@ import type { ShaderModule } from '@use-gpu/shader';
 import type { Update } from '@use-gpu/state';
 import type { Renderable } from '../pass/types';
 
-import { useCallback, useMemo, useOne } from '@use-gpu/live';
-import { bindBundle, getBundleName } from '@use-gpu/shader/wgsl';
+import { useCallback } from '@use-gpu/live';
 import { $patch, $delete } from '@use-gpu/state';
 
 import { drawCall } from '../../queue/draw-call';

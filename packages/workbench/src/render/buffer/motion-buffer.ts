@@ -1,11 +1,7 @@
 import type { LC } from '@use-gpu/live';
 import type { OffscreenRenderContext } from '@use-gpu/core';
 
-import { use, gather, yeet, memo, useMemo } from '@use-gpu/live';
-
-import { useUniformSource } from '../../hooks/useUniformSource';
-
-import { useRenderContext } from '../../providers/render-provider';
+import { use, gather, yeet, memo } from '@use-gpu/live';
 
 import { RenderTarget, useCombinedRenderTarget } from '../render-target';
 
@@ -23,8 +19,6 @@ export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
     overscan = 0,
   } = props;
 
-  const renderContext = useRenderContext();
-
   // Motion render target
   const samples = 1;
   const depthStencil = MOTION_DEPTH_FORMAT;
@@ -40,7 +34,7 @@ export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
       blend: 'none',
       format: renderFormats[0],
       variant: 'textureLoad',
-      depthStencil: null,
+      depthStencil,
       colorSpace: 'linear',
       hint: 'motion/xy',
     }),

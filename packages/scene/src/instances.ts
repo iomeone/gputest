@@ -119,13 +119,11 @@ const makeInstancer = (
     normalMatrix: mat3.create(),
     color: vec4.create(),
     lookup: 0,
-
-    composed: mat4.create(),
   }));
 
   const v = useVersion(props) + useVersion(parent) + useVersion(lookup);
   useOne(() => {
-    const {matrix, normalMatrix, composed} = ref;
+    const {matrix, normalMatrix} = ref;
 
     if (p || r || q || s) {
       composeTransform(matrix, p, r, q, s, m);

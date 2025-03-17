@@ -1,4 +1,3 @@
-import React, { FC, PropsWithChildren } from 'react';
 import { styled as _styled } from '@stitches/react';
 
 // TODO: TS nightly issue?

@@ -1,11 +1,10 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { RenderViewType, UseGPURenderContext } from '@use-gpu/core';
+import type { RenderViewType } from '@use-gpu/core';
 import type { LightEnv, PassResources, PassFlags, RenderComponents } from '../pass/types';
 
 import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 
 import { PassReconciler } from '../reconcilers/index';
-import { VariantContext } from '../providers/pass-provider';
 import { useRenderContext } from '../providers/render-provider';
 
 import { DebugPass } from '../pass/debug-pass';
@@ -122,6 +121,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     use(DEFAULT_PASS[viewType], options),
     picking ? use(PickingPass, options) : null,
     debug ? use(DebugPass, options) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [props, viewType]);
 
   // Add resource dispatches to render

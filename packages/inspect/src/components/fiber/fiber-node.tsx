@@ -1,17 +1,17 @@
 import type { LiveFiber } from '@use-gpu/live';
 import type { Cursor } from '@use-gpu/state';
 import type { InspectState, InspectAPI } from './types'
-import { isSubNode, DEBUG, RECONCILE, QUOTE, UNQUOTE } from '@use-gpu/live';
+import { isSubNode, DEBUG } from '@use-gpu/live';
 
-import React, { memo, useMemo, useLayoutEffect, useRef, PropsWithChildren } from 'react';
+import React, { memo, useMemo, useLayoutEffect, useRef } from 'react';
 
 import { Expandable } from '../containers/expandable';
 import { usePingTracker } from '../../providers/ping-provider';
 import { TreeExpand } from '../tree/tree-expand';
-import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendColumns,  TreeLegendGroup, TreeRowOmitted, TreeLegendItem } from '../tree/tree-layout';
+import { TreeRow, TreeIndent, TreeLine, TreeRowOmitted } from '../tree/tree-layout';
 import { ExpandState } from '../types';
 
-import { Muted, InlineButton } from '../layout';
+import { Muted } from '../layout';
 import { IconItem, SVGNextOpen, SVGNextClosed, SVGNextFence } from '../svg';
 
 import { FiberDot } from './fiber-dot';
@@ -70,7 +70,6 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
 
   depthLimit = Infinity,
   continuation,
-  builtin,
   wide,
   indented = 1,
   indent = 0,
@@ -88,7 +87,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   let {id, mount, mounts, next, order, yeeted, __inspect} = fiber;
 
   const [optionsState] = optionsCursor();
-  const {filterTags, runCounts, builtins, highlight} = optionsState;
+  const {filterTags, runCounts, builtins} = optionsState;
 
   // Avoid jumpyness on hover
   // eslint-disable-next-line react-hooks/exhaustive-deps

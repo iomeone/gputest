@@ -4,8 +4,6 @@ import type { ShaderModule } from '@use-gpu/shader';
 import { useMemo } from '@use-gpu/live';
 import { bindBundle, getBundleName } from '@use-gpu/shader/wgsl';
 
-import { Update, $delete } from '@use-gpu/state';
-
 import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen.wgsl';
 
 import renderVirtualCopy from '@use-gpu/wgsl/render/vertex/virtual-copy.wgsl';
@@ -75,7 +73,7 @@ export const useCopyDepthSample = (
     const label = `useCopyDepthSample::${getBundleName(getSample)}`;
 
     return [vertexShader, fragmentShader, label];
-  }, [getSample]);
+  }, [getDepth, getSample]);
 
   return useRenderCopy(vertex, fragment, renderContext, layout, uv, scale, label);
 };

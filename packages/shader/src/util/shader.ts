@@ -95,11 +95,10 @@ export const loadVirtualModule = <T extends SymbolTableT = any>(
 // But is structurally different (hash = new entry), so differences in links are reflected in the shader hash.
 export const bindEntryPoint = <T extends ParsedBundle | ParsedModule>(bundle: T, entry?: string | null): T => {
   // eslint-disable-next-line prefer-const
-  let {name, key, hash, module, table} = bundle as any;
+  let {key, hash, module, table} = bundle as any;
 
   table = table ?? module?.table;
   hash = hash ?? module?.hash;
-  name = name ?? module?.name;
   key = key ?? module?.key;
 
   const isAuto = entry === 'auto';

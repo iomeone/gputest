@@ -1,8 +1,6 @@
 import type { UniformAttribute } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
 import type { PassBinding } from '../pass/types';
 
-import { seq } from '@use-gpu/core';
 import { useMemo } from '@use-gpu/live';
 import { makeBindGroupLayout, makeBindGroupLayoutEntries, makeRawBindingForAttribute } from '@use-gpu/core';
 import { attributeToFields, bundleToBindings } from '@use-gpu/shader/wgsl';
@@ -20,7 +18,6 @@ export const useBindGroupLayout = (
   key?: string,
 ): BindGroupLayout => {
   const device = useDeviceContext();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => getBindGroupLayout(device, bindings, group, key), [device, bindings, group, key]);
 };
 
@@ -66,11 +63,8 @@ export const getBindGroupLayout = (
     bindingIndices.push(indices);
   }
 
-  //console.log({allAttributes})
-  const fields = allAttributes.map(b => b && ({...b, format: attributeToFields(b), type: undefined }));
-  //console.log({fields})
-  
-  const rawBindings = allAttributes.map(makeRawBindingForAttribute);
+  const fields = allAttributes.map(b => b && attributeToFields(b));
+  const rawBindings = fields.map(makeRawBindingForAttribute);
 
   const names = allAttributes.map(a => a?.name ?? '<null>');
   const label = match + '::{' + names.join(', ') + '}';

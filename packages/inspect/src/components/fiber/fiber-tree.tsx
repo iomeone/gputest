@@ -2,7 +2,6 @@ import type { InspectState, InspectAPI } from './types'
 import type { LiveFiber } from '@use-gpu/live';
 
 import React, { FC } from 'react';
-import { usePingContext } from '../../providers/ping-provider';
 
 import { TreeWrapper, TreeWrapperWithLegend } from '../tree/tree-layout';
 import { FiberLegend } from './fiber-legend';
@@ -11,6 +10,8 @@ import { FiberTag } from './tag';
 
 export type FiberTreeProps = FiberTreeContextProps & {
   fiber: LiveFiber<any>,
+  state: InspectState,
+  api: InspectAPI,
 
   legend: boolean,
   skipDepth: number,

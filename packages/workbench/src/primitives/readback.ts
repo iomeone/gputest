@@ -1,5 +1,5 @@
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { StorageSource, TypedArray, UniformType } from '@use-gpu/core';
+import type { StorageSource, TypedArray } from '@use-gpu/core';
 
 import { memo, yeet, useRef, useResource } from '@use-gpu/live';
 

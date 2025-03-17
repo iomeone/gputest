@@ -18,8 +18,6 @@ import { useBufferedSize } from '../../hooks/useBufferedSize';
 
 import { Light as WGSLLight } from '@use-gpu/wgsl/use/types.wgsl';
 
-import { POINT_LIGHT } from '../../light/types';
-
 import { vec2, vec4 } from 'gl-matrix';
 
 const {signal} = QueueReconciler;

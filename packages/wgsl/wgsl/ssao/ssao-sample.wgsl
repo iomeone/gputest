@@ -13,9 +13,9 @@ use '@use-gpu/wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld
 @link fn getRadius() -> f32;
 @link fn getFrame() -> u32;
 
-@optional @link fn getPick() -> vec2<u32> { return vec2<u32>(-1); };
-@optional @link fn printPoint(position: vec3<f32>, color: vec3<f32>) { };
-@optional @link fn printLine(start: vec3<f32>, end: vec3<f32>, color: vec3<f32>) { };
+@optional @link fn getPick() -> vec2<i32> { return vec2<i32>(-1); };
+@optional @link fn printPoint(position: vec4<f32>, color: vec4<f32>) { };
+@optional @link fn printLine(start: vec4<f32>, end: vec4<f32>, color: vec4<f32>) { };
 @optional @link fn printData(vector: vec4<f32>) { };
 
 const BLEND_THICKNESS = 0.25;
@@ -113,7 +113,7 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
 
   // Debug logger / point picker
   let pick = getPick();
-  let log = (ij.x == pick.x && ij.y == pick.y);
+  let log = HAS_DEBUG_PICKING & (i32(ij.x) == pick.x && i32(ij.y) == pick.y);
   if (HAS_DEBUG_PICKING && log) {
     printPoint(viewToWorld(vec4<f32>(position, 1.0)), vec4<f32>(1.0));
   }

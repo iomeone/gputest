@@ -8,7 +8,7 @@ import { $apply } from '@use-gpu/state';
 import React, { useCallback, useLayoutEffect, useEffect, useMemo, useState } from 'react';
 
 import { makeUseLocalState } from '../hooks/useLocalState';
-import { PingProvider, usePingContext } from '../providers/ping-provider';
+import { PingProvider } from '../providers/ping-provider';
 import { useAppearance } from '../providers/appearance-provider';
 
 import { FiberTag, getFiberTags } from './fiber/tag';
@@ -203,7 +203,7 @@ export const Inspect: React.FC<InspectProps> = ({
     }
 
     return {forceUpdate, selectFiber, focusFiber, hoverFiber, makeHandlers};
-  }, [rootId, updateSelected, updateFocused, updateHovered, updateTab]);
+  }, [rootId, updateSelected, updateFocused, updateHovered, updateTab, updatePreferredTab, setVersion]);
 
   const sidebar = (
     <InsetColumnFull>
@@ -220,6 +220,7 @@ export const Inspect: React.FC<InspectProps> = ({
           api={api}
           fiber={fiber}
           fibers={fibers}
+          legend={legend}
           skipDepth={skip}
         />
       </SidebarPanel>

@@ -1,8 +1,6 @@
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { StorageSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
 
-import { use, wrap, yeet, provide, useMemo, useOne, useRef } from '@use-gpu/live';
+import { use, yeet, provide, useMemo, useOne, useRef } from '@use-gpu/live';
 import { clearBuffer, seq } from '@use-gpu/core';
 import { bindEntryPoint } from '@use-gpu/shader/wgsl';
 import { useDeviceContext } from '../providers/device-provider';
@@ -16,7 +14,6 @@ import { PassReconciler } from '../reconcilers';
 
 import { LineLayer } from '../layers/line-layer';
 import { PointLayer } from '../layers/point-layer';
-import { Compute } from '../compute/compute';
 import { Readback } from '../primitives/readback';
 
 import { PrintData as PrintDataWGSL } from '@use-gpu/wgsl/debug/print.wgsl';
@@ -81,7 +78,7 @@ export const PrintHelper: LC<PrintHelperProps> = (props: PrintHelperProps) => {
     const shaders = {printPoint, printLine, printData};
 
     return {target, attributes, shaders, swap};
-  }, [device, atomicStorage, atomicArray, debugPositions, debugSegments]);
+  }, [device, atomicStorage, debugPositions, debugColors, debugSegments]);
 
   const render = getRenderFunc(props);
   return (
@@ -104,7 +101,7 @@ export type PrintLayerProps = {
 
 export const PrintLayer: LC = (props: PrintLayerProps) => {
   const {size = 4, width = 2, depthTest = true, zBias = 1, helper} = props;
-  const {attributes, swap} = helper ? (useNoPrintContext(), helper) : usePrintContext();
+  const {attributes} = helper ? (useNoPrintContext(), helper) : usePrintContext();
 
   return [
     use(LineLayer, {...attributes, width, depthTest, zBias}),
@@ -120,7 +117,7 @@ export type PrintReadbackProps = {
 export const PrintReadback: LC = (props: PrintLayerProps) => {
   const {limit = 50, helper} = props;
   const printedRef = useRef(0);
-  const {attributes, swap} = helper ? (useNoPrintContext(), helper) : usePrintContext();
+  const {attributes} = helper ? (useNoPrintContext(), helper) : usePrintContext();
 
   return [
     quote(use(Readback, {

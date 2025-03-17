@@ -85,10 +85,10 @@ export const GBuffer: LC = memo(() => {
     ...gBufferContext,
     colorStates: [],
     depthStencilState: makeDepthStencilState(depthFormat),
-    viewAttachments: viewAttachments.map(({depthStencilAttachment}) => ({
+    viewAttachments: [{
       colorAttachments: [],
       depthStencilAttachment: makeDepthStencilAttachment(renderTextures[4], depthFormat),
-    })),
+    }],
   };
 
   inspect({

@@ -219,22 +219,18 @@ export const makeAttributeToFields = (
   const attributeToFields = (
     attribute: UniformAttribute,
   ): UniformAttribute => {
-    const {format, type} = attribute;
+    const {type} = attribute;
     if (!type) return attribute;
-
-    //console.log('attr', {format, type})
 
     const attr = bundleToAttribute(type);
     const {format: f} = attr;
 
-    //console.log('->', {format, f, attr})
-
     if (Array.isArray(f)) {
       const ms = f.map(attributeToFields);
-      return {...attribute, format: ms};
+      return {...attribute, type: undefined, format: ms};
     }
     else if (f !== 'T' && f !== 'array<T>') {
-      return {...attribute, format: f};
+      return {...attribute, type: undefined, format: f};
     }
     else {
       throw new Error("Cannot make attribute fields");

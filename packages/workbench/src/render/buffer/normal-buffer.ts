@@ -4,9 +4,6 @@ import type { OffscreenRenderContext } from '@use-gpu/core';
 import { use, gather, yeet, memo } from '@use-gpu/live';
 import { RenderTarget } from '../render-target';
 
-import { useDeviceContext } from '../../providers/device-provider';
-import { useRenderContext } from '../../providers/render-provider';
-
 export type NormalBufferProps = {
   resolution?: number,
   overscan?: number,
@@ -20,9 +17,6 @@ export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
     resolution = 1,
     overscan = 0,
   } = props;
-
-  const device = useDeviceContext();
-  const renderContext = useRenderContext();
 
   // Normal render target
   const samples = 1;

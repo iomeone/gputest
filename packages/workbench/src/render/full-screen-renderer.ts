@@ -1,5 +1,5 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { AggregatedCalls, PassFlags, RenderComponents, VirtualDraw } from '../pass/types';
+import type { PassFlags, RenderComponents } from '../pass/types';
 
 import { use, useOne, memo } from '@use-gpu/live';
 

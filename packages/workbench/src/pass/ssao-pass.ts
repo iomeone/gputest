@@ -1,19 +1,15 @@
-import type { LC, PropsWithChildren, LiveComponent, LiveElement } from '@use-gpu/live';
-import type { Renderable } from '../pass';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import { use, yeet, memo, gather, useMemo, useOne } from '@use-gpu/live';
-import { makeDepthStencilAttachments } from '@use-gpu/core';
+import { use, yeet, memo, gather, useOne } from '@use-gpu/live';
 
 import { useDeviceContext } from '../providers/device-provider';
-import { useRenderContext } from '../providers/render-provider';
-import { useViewContext } from '../providers/view-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers';
 
 import { useInspectable } from '../hooks/useInspectable'
 
 import { useApplyPassBindGroup } from '../pass/bindings';
-import { getRenderPassDescriptor, drawToPass } from './util';
+import { getRenderPassDescriptor } from './util';
 
 import { SSAODispatch } from '../render/dispatch/ssao-dispatch';
 
@@ -28,9 +24,6 @@ export type SSAOPassProps = {
     ssao: { radius?: number } | number | true,
   },
 };
-
-const NO_OPS: any[] = [];
-const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 
 const DEFAULT_RADIUS = 1;
 
@@ -62,11 +55,10 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
   const {
     buffers: {ssao},
     bindGroups: {pre: bindGroup},
-    views: {pre: {cull, uniforms}},
+    views: {pre: {uniforms}},
   } = usePassContext();
 
   const [normalContext, motionXYContext, motionZContext, sampleContext, accumContext, resolveContext] = ssao;
-  const debugContext = useRenderContext();
 
   const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
   const {layout: globalLayout} = bindGroup;
@@ -139,7 +131,7 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
     }),
   ], [ssao, ssaoOptions, globalLayout]);
 
-  const inspected = inspect({
+  inspect({
     output: {
       sources: [
         normalContext.source,
@@ -153,20 +145,11 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
     },
     pass: uniforms,
     bindings: dataBindings,
-    render: {
-      vertices: 0,
-      triangles: 0,
-    },
   });
 
   return gather(resolveSSAO, (calls: {ssao: SSAOCommand}[]) => {
 
     return quote(yeet(() => {
-      let vs = 0;
-      let ts = 0;
-
-      const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
-
       const commandEncoder = device.createCommandEncoder();
 
       // Resolve SSAO
@@ -174,9 +157,6 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
     
       const command = commandEncoder.finish();
       device.queue.submit([command]);
-
-      inspected.render.vertices = vs;
-      inspected.render.triangles = ts;
 
       return null;
     }));

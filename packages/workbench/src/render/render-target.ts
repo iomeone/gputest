@@ -131,7 +131,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
       return [render, resolve, buffers, views, counter];
     },
-    [device, width, height, format, samples, history]
+    [device, width, height, format, samples, history, label]
   );
 
   const targetTexture = resolveTexture ?? renderTexture;
@@ -269,14 +269,13 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       const view = depthTexture.createView({ aspect: 'depth-only' });
       const volatile = history ? history + 1 : 0;
 
-      const type = getTextureSampleType(depthStencil);
       const layout = samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d';
       
       const makeSource = () => ({
         texture: depthTexture,
         view,
         sampler,
-        layout: samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d',
+        layout,
         format: depthStencil,
         variant,
         absolute,
@@ -302,7 +301,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     targetTexture, depthTexture,
     width, height, format, variant, absolute, samples, history, sampler, hint,
     bufferTextures, bufferViews, colorAttachments, colorSpace, counter, resolveTexture,
-    depthStencil, depthStencilAttachment, depthTextures, depthViews,
+    depthHistory, depthStencil, depthStencilAttachment, depthTextures, depthViews,
   ]);
 
   // Offscreen render context
@@ -335,7 +334,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
         color: inspectable,
       },
     });
-  }, [source, depth]);
+  }, [source, depth, inspect]);
 
   const render = getRenderFunc(props);
   if (!(render ?? children)) return yeet(rttContext);

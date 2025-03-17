@@ -5,7 +5,7 @@ import { Props } from '../components/tabs/props';
 import { Call } from '../components/tabs/call';
 import { Layout } from '../components/tabs/layout';
 
-import { IconItem, SVGDashboard, SVGNextFence, SVGHighlightElement, SVGQuote, SVGYeet, SVGAtom, SVGOther, SVGChevronDown } from '../components/svg';
+import { SVGDashboard, SVGNextFence, SVGHighlightElement, SVGQuote, SVGYeet, SVGAtom, SVGOther, SVGChevronDown } from '../components/svg';
 import { FiberTag } from '../components/fiber/tag';
 
 const AddInContext = createContext<InspectAddIns>({

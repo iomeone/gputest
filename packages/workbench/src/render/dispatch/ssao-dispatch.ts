@@ -1,14 +1,11 @@
 import type { LiveComponent } from '@use-gpu/live';
-import type { TextureSource } from '@use-gpu/shader';
 
 import { yeet, useMemo, useOne, useNoOne, useRef } from '@use-gpu/live';
 
 import { usePassContext } from '../../providers/pass-provider';
 import { useKeyboard, useMouse, useNoKeyboard, useNoMouse } from '../../providers/event-provider';
 
-import { useLambdaSource } from '../../hooks/useLambdaSource';
-import { useRawTextureAccess, useTextureAccess, useTextureUVToXY } from '../../hooks/useRawTextureAccess';
-import { useSource } from '../../hooks/useSource';
+import { useTextureAccess, useTextureUVToXY } from '../../hooks/useRawTextureAccess';
 import { useShader } from '../../hooks/useShader';
 import { useShaderRef } from '../../hooks/useShaderRef';
 
@@ -17,20 +14,11 @@ import { usePrintContext, useNoPrintContext } from '../../providers/print-provid
 
 import { useCopySample, useCopyDepthSample } from '../copy/value-copy';
 
-import { getMotionSample } from '@use-gpu/wgsl/motion/motion-sample.wgsl';
-
 import { downsampleExact2 } from '@use-gpu/wgsl/texture/downsample.wgsl';
 
 import { getSSAOSample } from '@use-gpu/wgsl/ssao/ssao-sample.wgsl';
 import { getSSAOAccum } from '@use-gpu/wgsl/ssao/ssao-accum.wgsl';
 import { getSSAOResolve } from '@use-gpu/wgsl/ssao/ssao-resolve.wgsl';
-
-import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen.wgsl';
-
-import renderVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
-import renderFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
-
-import { mat4 } from 'gl-matrix';
 
 export type SSAODispatchProps = {
   bindPass?: (r: GPURenderPassEncoder) => void,
@@ -75,9 +63,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const {ssao: ssaoDebug} = useDebugContext();
 
   const frame = useRef(0);
-  const ssaoRadius = useShaderRef(radius);
 
-  const resolveSize = useShaderRef([resolveTarget.width, resolveTarget.height]);
   const overscanSize = useShaderRef([normalContext.width, normalContext.height]);
   const downscaleSize = useShaderRef([normalTarget.width, normalTarget.height]);
 
@@ -95,6 +81,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     ];
   };
 
+  const ssaoRadius = useShaderRef(radius);
   const ssaoWeights = useMemo(() => ({DEPTH_RAMP: depthRamp, NORMAL_RAMP: normalRamp}), [depthRamp, normalRamp]);
 
   // Debug viz
@@ -165,7 +152,6 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     draw = useCopySample(targetContext, getMotionZ, globalLayout);
   }
   else if (mode === 'sample') {
-    const r = useShaderRef(radius);
     const defs = useOne(() => ({ HAS_DEBUG_PICKING: hasDebugPicking }));
 
     const loadDepth = useTextureAccess(normalTarget.depth);
@@ -275,6 +261,7 @@ const getJitterBayer2x2Alternating = (jitter: number) => {
   const x = (i & 4) ? a : b;
   const y = (i & 4) ? b : a;
 
+  // Note: jitter disabled for now, need to investigate if it's useful
   return [0, 0];
   return [x, y];
 };

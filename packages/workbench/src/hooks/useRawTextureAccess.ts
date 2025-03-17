@@ -19,17 +19,14 @@ import { textureUVToXYOffset } from '@use-gpu/wgsl/texture/raw-offset.wgsl';
 export const useRawTextureAccess = (
   texture: TextureSource,
   offset: Lazy<VectorLike>,
-  level: Lazy<number> | ShaderModule = 0,
-) => useMemo(() => getRawTextureAccess(texture, offset, level), [texture, offset, level]);
+) => useMemo(() => getRawTextureAccess(texture, offset), [texture, offset]);
 
 export const getRawTextureAccess = (
   texture: TextureSource,
   offset?: Lazy<VectorLike>,
-  level: Lazy<number> | ShaderModule = 0,
 ) => {
   const s = () => texture.size;
   const b = offset != null ? () => resolve(offset) : null;
-  const l = getSource({ name: 'level', format: 'u32', args: ['u32'] }, level);
 
   const {format, aspect} = texture;
   const type = getTextureSampleType(format, aspect);
@@ -44,13 +41,13 @@ export const useTextureAccess = (
   texture: TextureSource,
   level: Lazy<number> | ShaderModule | null,
   index: Lazy<number> | ShaderModule | null,
-) => useMemo(() => getTextureAccess(texture, level, index), [texture, level, index]);
+): LambdaSource => useMemo(() => getTextureAccess(texture, level, index), [texture, level, index]);
 
 export const getTextureAccess = (
   texture: TextureSource,
   level: Lazy<number> | ShaderModule | null,
   index: Lazy<number> | ShaderModule | null,
-) => {
+): LambdaSource => {
   const l = level ? getSource({ name: 'level', format: 'u32', args: [] }, level) : null;
   const i = index ? getSource({ name: 'index', format: 'u32', args: [] }, index) : null;
   const t = proxy(texture, { variant: 'textureLoad', sampler: null });
@@ -74,13 +71,13 @@ export const useTextureUVToXY = (
   texture: ShaderSource,
   size?: Lazy<VectorLike>,
   offset?: Lazy<VectorLike>,
-) => useMemo(() => getTextureUVToXY(texture, size, offset), [texture, size, offset]);
+): LambdaSource => useMemo(() => getTextureUVToXY(texture, size, offset), [texture, size, offset]);
 
 export const getTextureUVToXY = (
   texture: ShaderSource,
   size?: Lazy<VectorLike>,
   offset?: Lazy<VectorLike>,
-) => {
+): LambdaSource => {
   const bound = getShader(offset ? textureUVToXYOffset : textureUVToXY, [texture, size ?? (() => texture.size), offset]);
   return getLambdaSource(bound, texture);
 };

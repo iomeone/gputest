@@ -4,8 +4,6 @@ import type { ShaderModule } from '@use-gpu/shader';
 import { useMemo } from '@use-gpu/live';
 import { bindBundle, getBundleName } from '@use-gpu/shader/wgsl';
 
-import { Update, $delete } from '@use-gpu/state';
-
 import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen.wgsl';
 
 import renderVirtualCopy from '@use-gpu/wgsl/render/vertex/virtual-copy.wgsl';
@@ -35,7 +33,7 @@ export const useCopySelectSample2 = (
       `::${getBundleName(getSample)}::${getBundleName(selectA)}::${getBundleName(selectB)}`;
 
     return [vertexShader, fragmentShader, label];
-  }, [getSample]);
+  }, [getSample, selectA, selectB]);
 
   return useRenderCopy(vertex, fragment, renderContext, layout, uv, scale, label);
 };
@@ -53,7 +51,7 @@ export const useCopySelectDepthSample = (
 ) => {
   const [vertex, fragment, label] = useMemo(() => {
     const vertexShader = bindBundle(renderVirtualCopy, {getVertex: getFullScreenVertex});
-    const fragmentShader = bindBundle(renderFragmentDepthSampleCopy, {getSample, selectDepth, selectSample});
+    const fragmentShader = bindBundle(renderFragmentSelectDepthSampleCopy, {getSample, selectDepth, selectSample});
     const label = `useCopySelectDepthSample` +
       `::${getBundleName(getSample)}::${getBundleName(selectDepth)}::${getBundleName(selectSample)}`;
 

@@ -31,7 +31,7 @@ export const DeferredSolidRender: LiveComponent<DeferredSolidRenderProps> = (pro
   const {colorInput, colorSpace} = renderContext;
 
   const {
-    buffers: {gbuffer: [gbuffer]},
+    buffers: {gBuffer: [gBuffer]},
     bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
   } = usePassContext();
 

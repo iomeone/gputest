@@ -32,9 +32,6 @@ export type ShadowOrthoPassProps = PropsWithChildren<{
 const NO_OPS: any[] = [];
 const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 
-const label = '<ShadowOrthoPass>';
-const LABEL = { label };
-
 /** Orthographic shadow render pass.
 
 Draws all shadow calls to an orthographic shadow map.

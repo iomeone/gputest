@@ -1,9 +1,8 @@
 import type { LC } from '@use-gpu/live';
 import type { PassBinding } from '../../pass/types';
 
-import { yeet, memo, useMemo } from '@use-gpu/live';
+import { yeet, memo } from '@use-gpu/live';
 
-import { useUniformBinding } from '../../hooks/useUniformSource';
 import { useScratchSource, useNoScratchSource } from '../../hooks/useScratchSource';
 import { useViewContext, useNoViewContext } from '../../providers/view-provider';
 

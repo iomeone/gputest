@@ -329,8 +329,6 @@ export const makeDataBindingsEntries = <T>(
       entries.push({binding, resource: samplerResource});
       binding++;
     }
-    
-    if (b?.skip) { debugger; throw new Error("deprecated: skip"); }
   }
 
   return entries;
@@ -380,12 +378,17 @@ export const makePackedLayout = (
 
   let offset = 0;
   for (const {name, format} of attributes) {
-    if (typeof format === 'object') throw new Error(`Struct cannot be used as uniform member types`);
+    const isComposite = Array.isArray(format);
+    if (!isComposite && typeof format === 'object') throw new Error(`Struct cannot be used as uniform member types`);
 
     let s = 0;
 
     const f = format as UniformType;
     const isArray = isUniformArrayType(f);
+    if (isComposite) {
+      const {length} = makePackedLayout(format as UniformAttribute[], align);
+      s = length;
+    }
     if (isArray) {
       const el = getUniformElementType(f) as UniformType;
       const n = getUniformArrayLength(f) || 1;
@@ -403,7 +406,7 @@ export const makePackedLayout = (
   }
 
   const s = alignSizeTo(offset, align);
-  return {length: s, attributes: out, offsets: [0]};
+  return {length: s, align, attributes: out, offsets: [0]};
 };
 
 export const makeUniformLayout = (
@@ -415,14 +418,21 @@ export const makeUniformLayout = (
   let max = 0;
   let offset = base;
   for (const {name, format} of attributes) {
-    if (typeof format === 'object') throw new Error(`Struct cannot be used as uniform member types`);
+    const isComposite = Array.isArray(format);
+    if (!isComposite && typeof format === 'object') throw new Error(`Struct cannot be used as uniform member types`);
+
+    const f = format as UniformType;
+    const isArray = isUniformArrayType(f);
 
     let s = 0;
     let a = 0;
 
-    const f = format as UniformType;
-    const isArray = isUniformArrayType(f);
-    if (isArray) {
+    if (isComposite) {
+      const {length, align} = makeUniformLayout(format as UniformAttribute[]);
+      a = align;
+      s = length;
+    }
+    else if (isArray) {
       const el = getUniformElementType(f) as UniformType;
       const n = getUniformArrayLength(f) || 1;
 
@@ -446,7 +456,7 @@ export const makeUniformLayout = (
   }
 
   const a = alignSizeTo(offset, max);
-  return {length: a - base, attributes: out, offsets: [base]};
+  return {length: a - base, align: max, attributes: out, offsets: [base]};
 };
 
 export const makeMultiUniformLayout = (

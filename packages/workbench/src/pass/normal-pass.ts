@@ -1,8 +1,7 @@
-import type { LC, PropsWithChildren, LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Renderable } from '../pass';
 
-import { use, yeet, memo, multiGather, useMemo, useOne } from '@use-gpu/live';
-import { makeDepthStencilAttachments } from '@use-gpu/core';
+import { yeet, memo, useOne } from '@use-gpu/live';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
@@ -14,10 +13,6 @@ import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
-
-type SSAOCommand = (
-  commandEncoder: GPUCommandEncoder,
-) => void;
 
 export type NormalPassProps = {
   env: Record<string, any>,

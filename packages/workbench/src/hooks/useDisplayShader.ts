@@ -3,7 +3,7 @@ import type { ShaderSource } from '@use-gpu/shader';
 
 import { useOne } from '@use-gpu/live';
 
-import { seq, getTextureSampleType, getTextureArrayType, getTypedArraysBitCount } from '@use-gpu/core';
+import { getTextureSampleType, getTextureArrayType, getTypedArraysBitCount } from '@use-gpu/core';
 import { castTo, chainTo } from '@use-gpu/shader/wgsl';
 import { getShader } from '../hooks/useShader';
 import { getTextureAccess, getTextureUVToXY } from '../hooks/useRawTextureAccess';
@@ -31,7 +31,7 @@ const HINT_SHADERS = {
 };
 
 export const useMultiViewShader = (textures: ShaderSource[], empty?: boolean) =>
-  useMemo(() => getMultiViewShader(textures, empty), [texture, empty]);
+  useMemo(() => getMultiViewShader(textures, empty), [textures, empty]);
 
 export const getMultiViewShader = (textures: ShaderSource[], empty?: boolean) => {
   const n = textures.length + +!!empty;
@@ -41,7 +41,7 @@ export const getMultiViewShader = (textures: ShaderSource[], empty?: boolean) =>
 export const useDisplayShader = (texture: TextureSource) => useOne(() => getDisplayShader(texture), texture);
 
 export const getDisplayShader = (texture: TextureSource): ShaderSource => {
-  const {aspect, layout, format, size, hint} = texture;
+  const {aspect, format, size, hint} = texture;
 
   const f = getTextureSampleType(format, aspect);
   const a = getTextureArrayType(format, aspect);

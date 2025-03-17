@@ -2,7 +2,7 @@ import type { LiveFiber } from '@use-gpu/live';
 import type { InspectExtension, InspectAddIns } from '@use-gpu/inspect';
 
 import React from 'react';
-import { FiberTag, IconItem, SVGAtom, SVGDashboard, SVGHighlightElement, SVGNextOpen, SVGViewOutput, SVGRaster, SVGCompute, SVGCamera, SVGData, SVGOther } from '@use-gpu/inspect';
+import { FiberTag, SVGAtom, SVGDashboard, SVGNextOpen, SVGViewOutput, SVGRaster, SVGCompute, SVGCamera, SVGData, SVGOther } from '@use-gpu/inspect';
 
 import { renderCanvas } from './canvas';
 import { renderGeometry } from './geometry';

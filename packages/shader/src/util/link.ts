@@ -507,6 +507,3 @@ export const parseLinkAliases = <T>(
 
   return [out, aliases];
 }
-
-export const nextNamespace = (namespaces: Map<number, string>, seen: Set<string>) => {
-};

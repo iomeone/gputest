@@ -37,6 +37,7 @@ export const NormalRender: LiveComponent<NormalRenderProps> = (props: NormalRend
 
   const vertexShader = renderVirtualNormal;
   const fragmentShader = defines?.HAS_DEPTH ? renderFragmentNormalDepth : renderFragmentNormal;
+  const hasScissor = defines?.HAS_SCISSOR;
 
   const pipeline = useOne(() => patch(propPipeline, {
     multisample: { count: 1, alphaToCoverageEnabled: false },
@@ -47,12 +48,12 @@ export const NormalRender: LiveComponent<NormalRenderProps> = (props: NormalRend
     const links = {
       getVertex,
       getSurface,
-      getScissor: defines?.HAS_SCISSOR ? getScissorColor : null,
+      getScissor: hasScissor ? getScissorColor : null,
     };
     const v = bindBundle(vertexShader, links);
     const f = bindBundle(fragmentShader, links);
     return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getSurface]);
+  }, [vertexShader, fragmentShader, getVertex, getSurface, hasScissor]);
 
   // Inline the render fiber
   const call = {

@@ -1,5 +1,4 @@
 import type { VirtualDraw } from '../pass/types';
-import type { UseGPURenderContext } from '@use-gpu/core';
 import type { LiveComponent } from '@use-gpu/live';
 
 import { makeContext, useContext, useNoContext } from '@use-gpu/live';

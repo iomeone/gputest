@@ -94,8 +94,6 @@ export const makeBindGroupLayoutEntry = (
 ): GPUBindGroupLayoutEntry | GPUBindGroupLayoutEntry[] => {
   if (!b) return null;
 
-  if (b.skip) { debugger; throw new Error("deprecated: skip"); }
-
   if (b.uniform != null) {
     const minBindingSize = getMinBindingSize(b.uniform.format, b.uniform.type ?? b.attribute.type);
     return {binding, visibility, buffer: {type: 'uniform', minBindingSize}};
@@ -186,7 +184,7 @@ export const getMinBindingSize = (
       locals.find((d: any) => d.struct?.name === entry)
     );
     if (!decl) {
-      console.warn('getMinBindingSize = 0. Struct declaration not found. Does it have `@export`?', {format, type})
+      console.warn('getMinBindingSize = 0. Struct declaration not found.', {format, type})
       return 0;
     }
 
@@ -199,6 +197,7 @@ export const getMinBindingSize = (
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       // TODO: resolve arrays of structs inside structs
+      console.warn('getMinBindingSize = 0. Struct declaration not parsed.', {format, type})
       return 0;
     }
   }

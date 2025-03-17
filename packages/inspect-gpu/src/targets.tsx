@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveFiber } from '@use-gpu/live';
 import type { LambdaSource, TextureSource } from '@use-gpu/core';
 
 import React from 'react';
-import { memo, use, wrap, provide, useFiber, useMemo, useOne } from '@use-gpu/live';
+import { memo, use, wrap, provide, useFiber, useOne } from '@use-gpu/live';
 
 import { proxy, splitCubeTexture, splitHistoryTexture } from '@use-gpu/core';
 import { LiveCanvas } from '@use-gpu/react';
@@ -13,7 +13,6 @@ import {
   getShader, getLambdaSource, getDisplayShader,
 } from '@use-gpu/workbench';
 import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '@use-gpu/layout';
-import { wgsl, chainTo } from '@use-gpu/shader/wgsl';
 import { getObjectKey } from '@use-gpu/state';
 
 import { UseInspect } from '@use-gpu/inspect';
@@ -29,9 +28,6 @@ const HEIGHT = SIZE + 24 * 2 + 24;
 const IMAGE_FIT = {fit: 'contain', align: 'center', repeat: 'none'};
 const WRAPPER_STYLE = {position: 'relative', height: HEIGHT};
 
-const NO_OPS: any[] = [];
-const toArray = <T,>(x?: T | T[]): T[] => Array.isArray(x) ? x.filter(x => x != null) : x ? [x] : NO_OPS;
-
 const backgroundColor = [0, 0, 0, 0];
 
 type TargetsProps = {
@@ -46,8 +42,6 @@ type ViewProps = TexturesProps & {
 type TexturesProps = {
   sources: TextureSource[],
 };
-
-const NO_TARGETS: TextureSource[] = []
 
 export const renderTargets = (props: any) => <Targets {...props} />;
 
@@ -116,7 +110,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
   const {sources} = props;
 
   const makeView = (texture: TextureSource | LambdaSource) => {
-    const {size, size: [w, h, d]} = texture;
+    const {size, size: [w, h]} = texture;
     const width = w > h ? SIZE : Math.round(w/h * SIZE);
     const height = w > h ? Math.round(h/w * SIZE) : SIZE;
 
@@ -228,7 +222,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
 
     if (format.match(/rgba/)) {
       const label = [texture.label, texture.texture?.label, texture.view?.label, 'Alpha'].filter(l => l?.length).join(' ');
-      let ts = proxy(texture, {
+      const ts = proxy(texture, {
         hint: 'alpha',
         label,
       });
@@ -238,7 +232,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     
     if (hasStencil) {
       const label = [texture.label, texture.texture?.label, texture.view?.label, 'Stencil'].filter(l => l?.length).join(' ');
-      let ts = proxy(texture, {
+      const ts = proxy(texture, {
         view: texture.texture?.createView({ aspect: 'stencil-only' }),
         layout: 'texture_2d<u32>',
         aspect: 'stencil-only',

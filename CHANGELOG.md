@@ -14,6 +14,7 @@
 - `@use-gpu/workbench`: Add normals and motion buffer pre-passes w/ associated render modes
 - `@use-gpu/workbench`: Improved WebGPU resource labels (for error messages and inspector)
 - `@use-gpu/workbench`: Optional `depthHistory` for `<RenderTarget>`
+- `@use-gpu/workbench`: Add `decimate` and `converge` options to `<Loop>` to skip or converge frames.
 
 0.13.1
 - `@use-gpu/app`: Add path tracing + debug picking example.

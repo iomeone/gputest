@@ -96,7 +96,6 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
     if (!slider || !thumb) return;
 
     const {left, width: sliderWidth} = slider.getBoundingClientRect();
-    const delta = sliderWidth;
 
     const {clientX} = e;
     const v = min + clamp((clientX - left) / sliderWidth, 0, 1) * (max - min);
