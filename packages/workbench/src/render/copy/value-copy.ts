@@ -32,7 +32,7 @@ export const useCopySample = (
     return [vertexShader, fragmentShader, label];
   }, [getSample]);
 
-  return useRenderCopy(vertex, fragment, renderContext, layout, uv, scale, label);
+  return useRenderCopy(vertex, fragment, renderContext, false, layout, uv, scale, label);
 };
 
 export const useCopyDepth = (
@@ -53,7 +53,7 @@ export const useCopyDepth = (
     return [vertexShader, fragmentShader, label];
   }, [getDepth]);
 
-  return useRenderCopy(vertex, fragment, renderContext, layout, uv, scale, label);
+  return useRenderCopy(vertex, fragment, renderContext, true, layout, uv, scale, label);
 };
 
 export const useCopyDepthSample = (
@@ -75,5 +75,5 @@ export const useCopyDepthSample = (
     return [vertexShader, fragmentShader, label];
   }, [getDepth, getSample]);
 
-  return useRenderCopy(vertex, fragment, renderContext, layout, uv, scale, label);
+  return useRenderCopy(vertex, fragment, renderContext, true, layout, uv, scale, label);
 };

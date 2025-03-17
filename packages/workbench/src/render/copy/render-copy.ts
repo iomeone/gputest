@@ -9,9 +9,23 @@ import { $patch, $delete } from '@use-gpu/state';
 import { drawCall } from '../../queue/draw-call';
 
 const countGeometry = () => {};
-const PIPELINE = {
+
+const PIPELINE_DEPTH = {
   depthStencil: {
     depthWriteEnabled: true,
+    depthCompare: 'always',
+  },
+  fragment: {
+    targets: $patch(ts => [...ts].reduce((op, _, i) => {
+      op[i] = {blend: $delete()};
+      return op;
+    }, {} as Record<number, Update<any>>)),
+  },
+} as Update<GPURenderPipelineDescriptor>;
+
+const PIPELINE_NO_DEPTH = {
+  depthStencil: {
+    depthWriteEnabled: false,
     depthCompare: 'always',
   },
   fragment: {
@@ -27,6 +41,8 @@ export const useRenderCopy = (
   fragment: ShaderModule | null = null,
 
   renderContext: UseGPURenderContext,
+  depth?: boolean,
+
   layout?: GPUBindGroupLayout | null,
 
   uv?: TypedArray | number[],
@@ -42,7 +58,7 @@ export const useRenderCopy = (
     renderContext,
     globalLayout: layout,
     mode: null,
-    pipeline: PIPELINE,
+    pipeline: depth ? PIPELINE_DEPTH : PIPELINE_NO_DEPTH,
     label,
   }) as (Renderable | undefined);
 

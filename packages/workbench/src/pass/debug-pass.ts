@@ -66,7 +66,7 @@ export const DebugPass: LC<DebugPassProps> = memo((props: PropsWithChildren<Debu
   const draw = useCopySample(renderContext, getSample);
 
   const renderPassDescriptor = useOne(() =>
-    getRenderPassDescriptor(renderContext, {label: `DebugPass/${debug}`}),
+    getRenderPassDescriptor(renderContext, {label: `DebugPass/${debug}`, overlay: true, merge: true}),
     renderContext);
 
   return quote(yeet(() => {
