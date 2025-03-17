@@ -146,9 +146,9 @@ export const PlotImplicitSurfacePage: LC = () => {
             <LinearRGB backgroundColor={BACKGROUND} tonemap="aces" gain={2}>
               <Cursor cursor="move" />
               <Camera>
-                <Pass lights shadows>
-                  <Environment map={envMap} preset={env} gain={0.5}>
-                    <DirectionalLight position={[1, 3, 2]} color={[1, 1, 1]} intensity={1} shadowMap={SHADOW_MAP_DIRECTIONAL} />
+                <Pass lights shadows ssao={0.5}>
+                  <Environment map={envMap} preset={env} gain={1.0}>
+                    <DirectionalLight position={[1, 3, 2]} color={[1, 1, 1]} intensity={0.5} shadowMap={SHADOW_MAP_DIRECTIONAL} />
                     <Plot>
                       <Animate prop='bend' keyframes={keyframes} delay={1} mirror>
                         <Polar
@@ -163,6 +163,7 @@ export const PlotImplicitSurfacePage: LC = () => {
                             second={{ detail: 64, divide: 5, end: true }}
                             depth={0.5}
                             zBias={-1}
+                            color={[0.35, 0.35, 0.35, 1]}
                           />
                           <Grid
                             axes='xz'
@@ -171,26 +172,27 @@ export const PlotImplicitSurfacePage: LC = () => {
                             second={{ unit: π, base: 2, detail: 64, divide: 5, end: true }}
                             depth={0.5}
                             zBias={-1}
+                            color={[0.35, 0.35, 0.35, 1]}
                           />
 
                           <Axis
                             axis='x'
                             detail={64}
                             width={5}
-                            color={[0.75, 0.75, 0.75, 1]}
+                            color={[0.65, 0.65, 0.65, 1]}
                             depth={0.5}
                           />
                           <Axis
                             axis='y'
                             width={5}
-                            color={[0.75, 0.75, 0.75, 1]}
+                            color={[0.65, 0.65, 0.65, 1]}
                             detail={8}
                             depth={0.5}
                           />
                           <Axis
                             axis='z'
                             width={5}
-                            color={[0.75, 0.75, 0.75, 1]}
+                            color={[0.65, 0.65, 0.65, 1]}
                             detail={8}
                             depth={0.5}
                           />
