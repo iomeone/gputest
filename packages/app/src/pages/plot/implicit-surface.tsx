@@ -152,7 +152,7 @@ export const PlotImplicitSurfacePage: LC = () => {
               <Cursor cursor="move" />
               <Camera>
                 <Pass lights shadows ssao={ssaoOptions}>
-                  <Environment map={envMap} preset={env} gain={1.0}>
+                  <Environment map={envMap} preset={env} gain={1.5}>
                     <DirectionalLight position={[1, 3, 2]} color={[1, 1, 1]} intensity={0.5} shadowMap={SHADOW_MAP_DIRECTIONAL} />
                     <Plot>
                       <Animate prop='bend' keyframes={keyframes} delay={1} mirror>

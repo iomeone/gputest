@@ -56,9 +56,9 @@ export const Environment: LC<EnvironmentProps> = (props: EnvironmentProps) => {
     : useShader(getDefaultEnvironment, [...PRESETS[preset as any] ?? PRESETS.park]);
 
   const g = useShaderRef(gain);
-  
+
   const exposure = useMemo(() => {
-    if (!environment || gain == null) return environment;
+    if (!environment) return environment;
     const env = getSource(ENV_ATTR, environment);
     return chainTo(env, getShader(gainColor, [g], {IS_OPAQUE: true}));
   }, [gain, environment, g]);
