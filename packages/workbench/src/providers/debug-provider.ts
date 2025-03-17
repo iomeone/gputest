@@ -27,6 +27,7 @@ export const DEBUG_DEFAULTS = {
 export type DebugContextProps = {
   ssao: {
     picking: boolean,
+    overscan: boolean,
   },
   voxel: {
     iterations: boolean,

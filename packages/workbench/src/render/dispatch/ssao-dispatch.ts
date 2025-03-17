@@ -313,7 +313,10 @@ export const SSAODebugPicking = (props: SSAODebugPickingProps) => {
 };
 
 // Note: jitter disabled for now, need to investigate if it's useful
-const getNoJitter = () => [0, 0];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getNoJitter = (frame: number) => {
+  return [0, 0];
+}
 
 /*
 const getJitterBayer2x2Alternating = (jitter: number) => {

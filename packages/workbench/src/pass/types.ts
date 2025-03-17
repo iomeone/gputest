@@ -14,7 +14,10 @@ export type PassFlags = {
     depthRamp?: number,
     normalRamp?: number,
   },
-  overscan?: number,
+  overscan?: number | {
+    range?: number,
+    all?: boolean,
+  },
 
   overlay?: boolean,
   merge?: boolean,
