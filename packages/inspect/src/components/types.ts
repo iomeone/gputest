@@ -2,6 +2,9 @@ import type { ReactNode } from 'react';
 import type { LiveFiber } from '@use-gpu/live';
 import type { Cursor } from '@use-gpu/state';
 
+// ReactNode makes getdocs-ts crash
+type ReactNode = any & {};
+
 export type ExpandState = Record<string | number, boolean>;
 export type PingState = Record<number, number>;
 export type FocusState = number | null;
