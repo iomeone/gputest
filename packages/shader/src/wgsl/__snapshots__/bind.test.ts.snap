@@ -5,17 +5,17 @@ exports[`bind bind produces a bound bundle 1`] = `3402808970634535`;
 exports[`bind binds an external 1`] = `
 "const TEST = true;
 
-//// @link getColor _01_
+//// @link getColor _00_
 
 
-    fn _01_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    fn _00_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
 //// @link sub 
 
 
     fn colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
 fn getColor() -> vec4<f32> {
-      return _01_getColor() + colorUsed();
+      return _00_getColor() + colorUsed();
     }
     "
 `;
@@ -23,17 +23,17 @@ fn getColor() -> vec4<f32> {
 exports[`bind binds an external 2`] = `
 "const TEST = true;
 
-//// @link getColor _01_
+//// @link getColor _00_
 
 
-    fn _01_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    fn _00_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
 //// @link sub 
 
 
     fn colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
 fn getColor() -> vec4<f32> {
-      return _01_getColor() + colorUsed();
+      return _00_getColor() + colorUsed();
     }
     "
 `;
@@ -41,17 +41,17 @@ fn getColor() -> vec4<f32> {
 exports[`bind binds an external 3`] = `
 "const TEST = true;
 
-//// @link getColor _01_
+//// @link getColor _00_
 
 
-    fn _01_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    fn _00_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
-//// @link sub _02_
+//// @link sub _01_
 
 
-    fn _02_colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
-fn _02_getColor() -> vec4<f32> {
-      return _01_getColor() + _02_colorUsed();
+    fn _01_colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
+fn _01_getColor() -> vec4<f32> {
+      return _00_getColor() + _01_colorUsed();
     }
     
 //// @link main 
@@ -59,38 +59,38 @@ fn _02_getColor() -> vec4<f32> {
 
     fn main() {
       var v: vec4<f32>;
-      v = _02_getColor();
+      v = _01_getColor();
       return v;
     }
     "
 `;
 
 exports[`bind links data bindings 1`] = `
-"//// @link @virtual _01_
+"//// @link @virtual _00_
 
 struct _VT_Type {
-  _VT_1_getColor: vec4<f32>,
+  _01_getColor: vec4<f32>,
 };
 @group(0) @binding(1) var<uniform> _VT_Uniform: _VT_Type;
 
-//// @link @access [getColor getSize] [e0vly3qd7p] _VT_1_
+//// @link @access [getColor getSize] [e0vly3qd7p] _01_
 
-fn _VT_1_getColor(a: i32) -> vec4<f32> {
-  return _VT_Uniform._VT_1_getColor;
+fn _01_getColor(a: i32) -> vec4<f32> {
+  return _VT_Uniform._01_getColor;
 }
 
-@group(0) @binding(0) var<storage> _VT_1_getSizeStorage: array<vec2<f32>>;
+@group(0) @binding(0) var<storage> _01_getSizeStorage: array<vec2<f32>>;
 
-fn _VT_1_getSize(a: i32) -> vec2<f32> {
-  return _VT_1_getSizeStorage[a];
+fn _01_getSize(a: i32) -> vec2<f32> {
+  return _01_getSizeStorage[a];
 }
 
 //// @link code 
 
 
     fn main() {
-      _VT_1_getColor(0);
-      _VT_1_getSize(0);
+      _01_getColor(0);
+      _01_getSize(0);
     }
     "
 `;
@@ -99,19 +99,33 @@ exports[`bind makes deterministic links for data bindings 1`] = `
 {
   "base": undefined,
   "code": "@access [getColor getSize] [e0vly3qd7p]",
+  "constants": [
+    {
+      "attribute": {
+        "args": [
+          "i32",
+        ],
+        "format": "vec4<f32>",
+        "name": "getColor",
+        "value": [
+          0,
+          0.5,
+          1,
+          1,
+        ],
+      },
+      "constant": [
+        1,
+        0.5,
+        1,
+        1,
+      ],
+    },
+  ],
   "name": "_VT_j6r9my",
   "storages": [
     {
-      "storage": {
-        "buffer": {},
-        "format": "vec2<f32>",
-        "length": 10,
-        "size": [
-          10,
-        ],
-        "version": 1,
-      },
-      "uniform": {
+      "attribute": {
         "args": [
           "i32",
         ],
@@ -121,6 +135,15 @@ exports[`bind makes deterministic links for data bindings 1`] = `
           1,
           1,
         ],
+      },
+      "storage": {
+        "buffer": {},
+        "format": "vec2<f32>",
+        "length": 10,
+        "size": [
+          10,
+        ],
+        "version": 1,
       },
     },
   ],
@@ -162,28 +185,5 @@ exports[`bind makes deterministic links for data bindings 1`] = `
     ],
   },
   "textures": [],
-  "uniforms": [
-    {
-      "constant": [
-        1,
-        0.5,
-        1,
-        1,
-      ],
-      "uniform": {
-        "args": [
-          "i32",
-        ],
-        "format": "vec4<f32>",
-        "name": "getColor",
-        "value": [
-          0,
-          0.5,
-          1,
-          1,
-        ],
-      },
-    },
-  ],
 }
 `;

@@ -2,59 +2,59 @@
 
 exports[`link hoists an enable directive 1`] = `
 "enable f16;
-//// @link getColor _01_
+//// @link getColor _00_
 
 
-    fn _01_main() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    fn _00_main() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
 //// @link main 
 
 
     fn main() -> @location(0) vec4<f32> {
-      return _01_main();
+      return _00_main();
     }
     "
 `;
 
 exports[`link lifts recursive dependency 1`] = `
-"//// @link getLifted _01_
+"//// @link getLifted _00_
 
 
     // Lifted Code
-    fn _01_getLifted() {};
+    fn _00_getLifted() {};
     
-//// @link getColor2 _02_
+//// @link getColor2 _01_
 
 
-    fn _02_getColor2() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    fn _01_getColor2() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
-//// @link getColor1 _03_
+//// @link getColor1 _02_
 
 
-    fn _03_getColor1() -> vec4<f32> { return _02_getColor2(); }
+    fn _02_getColor1() -> vec4<f32> { return _01_getColor2(); }
     
 //// @link main 
 
 
     fn main() -> vec4<f32> {
-      return _03_getColor1();
+      return _02_getColor1();
     }
     "
 `;
 
 exports[`link links a global across a module 1`] = `
-"//// @link sub1 _01_
+"//// @link sub1 _00_
 
 
     fn getPosition(index: i32) -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
-//// @link sub2 _02_
+//// @link sub2 _01_
 
 
-    fn _02_getPosition() {};
+    fn _01_getPosition() {};
 
-    fn _02_getColor(index: i32) -> vec4<f32> {
-      _02_getPosition();
+    fn _01_getColor(index: i32) -> vec4<f32> {
+      _01_getPosition();
       return vec4<f32>(1.0, 0.0, 1.0, 1.0);
     }
     
@@ -68,11 +68,11 @@ exports[`link links a global across a module 1`] = `
 `;
 
 exports[`link links a struct and field 1`] = `
-"//// @link sub1 _01_
+"//// @link sub1 _00_
 
 
-    struct _01_Foo { bar: f32 };
-    fn _01_access(foo: _01_Foo) -> f32 { return foo.bar; }
+    struct _00_Foo { bar: f32 };
+    fn _00_access(foo: _00_Foo) -> f32 { return foo.bar; }
 
 //// @link main 
 
@@ -84,55 +84,55 @@ exports[`link links a struct and field 1`] = `
 `;
 
 exports[`link links an external 1`] = `
-"//// @link getColor _01_
+"//// @link getColor _00_
 
 
-    fn _01_main() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    fn _00_main() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
 //// @link main 
 
 
     fn main() -> @location(0) vec4<f32> {
-      return _01_main();
+      return _00_main();
     }
     "
 `;
 
 exports[`link links quad vertex 1`] = `
-"//// @link main _01_
+"//// @link <inline code> _00_
 
 
-    fn _01_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    fn _00_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
-//// @link main _02_
+//// @link <inline code> _01_
 
 
-    fn _02_getColor(index: i32) -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    fn _01_getColor(index: i32) -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
-//// @link main _03_
+//// @link <inline code> _02_
 
 
-    fn _03_getSize(index: i32) -> f32 { return 1.0; }
+    fn _02_getSize(index: i32) -> f32 { return 1.0; }
     
-//// @link main _04_
+//// @link <inline code> _03_
 
 
-    fn _04_getDepth(index: i32) -> f32 { return 0.5; }
+    fn _03_getDepth(index: i32) -> f32 { return 0.5; }
     
-//// @link @use-gpu/wgsl/use/types _05_
+//// @link @use-gpu/wgsl/use/types _04_
 
 
-struct _05_SolidVertex {
+struct _04_SolidVertex {
   position: vec4<f32>,
   color: vec4<f32>,
   uv: vec2<f32>,
 };
 
 
-//// @link @use-gpu/wgsl/use/view _06_
+//// @link @use-gpu/wgsl/use/view _05_
 
 
-struct _06_ViewUniforms {
+struct _05_ViewUniforms {
   projectionMatrix: mat4x4<f32>,
   viewMatrix: mat4x4<f32>,
   viewPosition: vec4<f32>,
@@ -142,64 +142,64 @@ struct _06_ViewUniforms {
   viewPixelRatio: f32,
 };
 
-@group(VIEW) @binding(VIEW) var<uniform> _06_viewUniforms: _06_ViewUniforms;
+@group(VIEW) @binding(VIEW) var<uniform> _05_viewUniforms: _05_ViewUniforms;
 
-fn _06_worldToView(position: vec4<f32>) -> vec4<f32> {
-  return _06_viewUniforms.viewMatrix * position;
+fn _05_worldToView(position: vec4<f32>) -> vec4<f32> {
+  return _05_viewUniforms.viewMatrix * position;
 }
 
-fn _06_viewToClip(position: vec4<f32>) -> vec4<f32> {
-  return _06_viewUniforms.projectionMatrix * position;
+fn _05_viewToClip(position: vec4<f32>) -> vec4<f32> {
+  return _05_viewUniforms.projectionMatrix * position;
 }
 
-fn _06_worldToClip(position: vec4<f32>) -> vec4<f32> {
-  return _06_viewToClip(_06_worldToView(position));
+fn _05_worldToClip(position: vec4<f32>) -> vec4<f32> {
+  return _05_viewToClip(_05_worldToView(position));
 }
 
-fn _06_getPerspectiveScale(w: f32, f: f32) -> f32 {
-  var m = _06_viewUniforms.projectionMatrix;
-  var worldScale = m[1][1] * _06_viewUniforms.viewWorldScale;
+fn _05_getPerspectiveScale(w: f32, f: f32) -> f32 {
+  var m = _05_viewUniforms.projectionMatrix;
+  var worldScale = m[1][1] * _05_viewUniforms.viewWorldScale;
   var clipScale = mix(1.0, worldScale / w, f);
-  var pixelScale = clipScale * _06_viewUniforms.viewPixelRatio;
+  var pixelScale = clipScale * _05_viewUniforms.viewPixelRatio;
   return pixelScale;
 }
 
-//// @link @use-gpu/wgsl/geometry/quad _07_
+//// @link @use-gpu/wgsl/geometry/quad _06_
 
 
 
-const _07_QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(
+const _06_QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(
   vec2<i32>(0, 0),
   vec2<i32>(1, 0),
   vec2<i32>(0, 1),
   vec2<i32>(1, 1),
 );
 
-fn _07_getQuadIndex(vertex: i32) -> vec2<i32> {
-  return _07_QUAD[vertex];
+fn _06_getQuadIndex(vertex: i32) -> vec2<i32> {
+  return _06_QUAD[vertex];
 }
 
-fn _07_getQuadUV(vertex: i32) -> vec2<f32> {
-  return vec2<f32>(_07_getQuadIndex(vertex));
+fn _06_getQuadUV(vertex: i32) -> vec2<f32> {
+  return vec2<f32>(_06_getQuadIndex(vertex));
 }
 
 
 //// @link getQuadVertex 
 
 
-fn getQuadVertex(vertexIndex: i32, instanceIndex: i32) -> _05_SolidVertex {
-  var position = _01_getPosition(instanceIndex);
-  var color = _02_getColor(instanceIndex);
-  var size = _03_getSize(instanceIndex);
-  var depth = _04_getDepth(instanceIndex);
+fn getQuadVertex(vertexIndex: i32, instanceIndex: i32) -> _04_SolidVertex {
+  var position = _00_getPosition(instanceIndex);
+  var color = _01_getColor(instanceIndex);
+  var size = _02_getSize(instanceIndex);
+  var depth = _03_getDepth(instanceIndex);
 
-  var center = _06_worldToClip(position);
+  var center = _05_worldToClip(position);
 
-  var uv = _07_getQuadUV(vertexIndex);
+  var uv = _06_getQuadUV(vertexIndex);
   var xy = uv * 2.0 - 1.0;
 
   // Lerp between fixed size and full perspective.
-  var pixelScale = _06_getPerspectiveScale(center.w, depth);
+  var pixelScale = _05_getPerspectiveScale(center.w, depth);
   // TODO: awaiting compound support
   //size *= pixelScale;
   size = size * pixelScale;
@@ -211,9 +211,9 @@ fn getQuadVertex(vertexIndex: i32, instanceIndex: i32) -> _05_SolidVertex {
 
   // TODO: awaiting compound support
   //center.xy += xy * size * viewUniforms.viewResolution * center.w;
-  center = vec4<f32>(center.xy + xy * size * _06_viewUniforms.viewResolution * center.w, center.zw);
+  center = vec4<f32>(center.xy + xy * size * _05_viewUniforms.viewResolution * center.w, center.zw);
 
-  return _05_SolidVertex(
+  return _04_SolidVertex(
     center,
     color,
     uv
@@ -223,30 +223,30 @@ fn getQuadVertex(vertexIndex: i32, instanceIndex: i32) -> _05_SolidVertex {
 `;
 
 exports[`link links same module twice with different entry point 1`] = `
-"//// @link sub _01_
+"//// @link sub _00_
 
 
-    fn _01_used() -> f32 { return 1.0; }
+    fn _00_used() -> f32 { return 1.0; }
 
-    fn _01_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(_01_used(), 0.0, 1.0, 1.0); }
+    fn _00_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(_00_used(), 0.0, 1.0, 1.0); }
 
-    fn _01_getColor(index: i32) -> vec4<f32> { return vec4<f32>(_01_used(), 0.0, 1.0, 1.0); }
+    fn _00_getColor(index: i32) -> vec4<f32> { return vec4<f32>(_00_used(), 0.0, 1.0, 1.0); }
     
 //// @link main 
 
 
     fn main() {
-      var a = _01_getPosition(0);
-      var b = _01_getColor(0);
+      var a = _00_getPosition(0);
+      var b = _00_getColor(0);
     }
     "
 `;
 
 exports[`link substitutes attributes 1`] = `
-"//// @link getColor _01_
+"//// @link getColor _00_
 
 
-    fn _01_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    fn _00_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
 //// @link main 
 
@@ -254,77 +254,77 @@ exports[`link substitutes attributes 1`] = `
     @group(0) @binding(0) var<uniform> color: vec4<f32>;
 
     fn main() -> @location(0) vec4<f32> {
-      return _01_getColor() + color;
+      return _00_getColor() + color;
     }
     "
 `;
 
 exports[`link tree shakes around identifiers 1`] = `
-"//// @link sub _01_
+"//// @link sub _00_
 
 
-    fn _01_used() -> f32 { return 1.0; }
-fn _01_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(_01_used(), 0.0, 1.0, 1.0); }
+    fn _00_used() -> f32 { return 1.0; }
+fn _00_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(_00_used(), 0.0, 1.0, 1.0); }
 
     
 //// @link main 
 
 
     fn main() {
-      var a = _01_getPosition(0);
+      var a = _00_getPosition(0);
     }
     "
 `;
 
 exports[`link tree shakes around identifiers 2`] = `
-"//// @link sub _01_
+"//// @link sub _00_
 
 
-    fn _01_used() -> f32 { return 1.0; }
-fn _01_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(_01_used(), 0.0, 1.0, 1.0); }
+    fn _00_used() -> f32 { return 1.0; }
+fn _00_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(_00_used(), 0.0, 1.0, 1.0); }
 
     
 //// @link main 
 
 
     fn main() {
-      var a = _01_getPosition(0);
+      var a = _00_getPosition(0);
     }
     "
 `;
 
 exports[`link tree shakes constants 1`] = `
-"//// @link sub _01_
+"//// @link sub _00_
 
 
-    const _01_colorUsed = vec4<f32>(0.0, 0.1, 0.2, 0.0);
-fn _01_getColor() -> vec4<f32> {
-      return _01_colorUsed;
+    const _00_colorUsed = vec4<f32>(0.0, 0.1, 0.2, 0.0);
+fn _00_getColor() -> vec4<f32> {
+      return _00_colorUsed;
     }
     
 //// @link main 
 
 
     fn main() {
-      var a = _01_getColor();
+      var a = _00_getColor();
     }
     "
 `;
 
 exports[`link tree shakes constants 2`] = `
-"//// @link sub _01_
+"//// @link sub _00_
 
 
-    const _01_colorUsed = vec4<f32>(0.0, 0.1, 0.2, 0.0);
-fn _01_getColor() -> vec4<f32> {
-      return _01_colorUsed;
+    const _00_colorUsed = vec4<f32>(0.0, 0.1, 0.2, 0.0);
+fn _00_getColor() -> vec4<f32> {
+      return _00_colorUsed;
     }
     
 //// @link main 
 
 
     fn main() {
-      var a = _01_getColor();
+      var a = _00_getColor();
     }
     "
 `;

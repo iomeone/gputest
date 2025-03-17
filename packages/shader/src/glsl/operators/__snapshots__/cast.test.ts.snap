@@ -2,15 +2,15 @@
 
 exports[`cast casts 1`] = `
 "#version 450
-//// @link code _01_
+//// @link code _00_
 
 
-    vec2 _01_getValue() { return vec2(1.0, 2.0); }
+    vec2 _00_getValue() { return vec2(1.0, 2.0); }
     
 //// @link @cast [getValue vec2] 
 
 vec3 cast() {
-  vec3 v = _01_getValue();
+  vec3 v = _00_getValue();
   return v.xyx;
 }
 "
@@ -18,37 +18,37 @@ vec3 cast() {
 
 exports[`cast casts and links 1`] = `
 "#version 450
-//// @link code _01_
+//// @link code _00_
 
 
-    vec2 _01_getValue() { return vec2(1.0, 2.0); }
+    vec2 _00_getValue() { return vec2(1.0, 2.0); }
     
-//// @link @cast [getValue vec2] _02_
+//// @link @cast [getValue vec2] _01_
 
-vec3 _02_cast() {
-  vec3 v = _01_getValue();
+vec3 _01_cast() {
+  vec3 v = _00_getValue();
   return v.xyx;
 }
 
 //// @link main 
 
 
-    vec3 _02_cast();
-    void main() { _02_cast(); }
+    vec3 _01_cast();
+    void main() { _01_cast(); }
     "
 `;
 
 exports[`cast casts compact swizzle 1`] = `
 "#version 450
-//// @link code _01_
+//// @link code _00_
 
 
-      vec2 _01_getValue() { return vec2(1.0, 2.0); }
+      vec2 _00_getValue() { return vec2(1.0, 2.0); }
     
 //// @link @cast [getValue vec2] 
 
 vec4<f32> cast() {
-  vec4<f32> v = _01_getValue();
+  vec4<f32> v = _00_getValue();
   return vec4<f32>(v.xy, -v.z, v.w) * 2.0;
 }
 "
@@ -56,15 +56,15 @@ vec4<f32> cast() {
 
 exports[`cast casts complex swizzle 1`] = `
 "#version 450
-//// @link code _01_
+//// @link code _00_
 
 
-      vec2 _01_getValue() { return vec2(1.0, 2.0); }
+      vec2 _00_getValue() { return vec2(1.0, 2.0); }
     
 //// @link @cast [getValue vec2] 
 
 vec4<f32> cast() {
-  vec4<f32> v = _01_getValue();
+  vec4<f32> v = _00_getValue();
   return vec4<f32>(-v.x, v.y, -1.0, 0.0) * 2.0;
 }
 "

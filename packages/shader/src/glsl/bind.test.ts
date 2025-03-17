@@ -64,11 +64,11 @@ describe("bind", () => {
   it('makes deterministic links for data bindings', () => {
     const dataBindings = [
       {
-        uniform: { format: 'vec4', name: 'getColor', value: [0, 0.5, 1, 1], args: ['int'] },
+        attribute: { format: 'vec4', name: 'getColor', value: [0, 0.5, 1, 1], args: ['int'] },
         constant: [1, 0.5, 1, 1],
       },
       {
-        uniform: { format: 'vec2', name: 'getSize', value: [1, 1], args: ['int'] },
+        attribute: { format: 'vec2', name: 'getSize', value: [1, 1], args: ['int'] },
         storage: {
           buffer: {} as any,
           format: 'vec2',
@@ -94,11 +94,11 @@ describe("bind", () => {
   it('links data bindings', () => {
     const dataBindings = [
       {
-        uniform: { format: 'vec4', name: 'getColor', value: [0, 0.5, 1, 1], args: ['int'] },
+        attribute: { format: 'vec4', name: 'getColor', value: [0, 0.5, 1, 1], args: ['int'] },
         constant: [1, 0.5, 1, 1],
       },
       {
-        uniform: { format: 'vec2', name: 'getSize', value: [1, 1], args: ['int'] },
+        attribute: { format: 'vec2', name: 'getSize', value: [1, 1], args: ['int'] },
         storage: {
           buffer: {} as any,
           format: 'vec2',
