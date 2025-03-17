@@ -86,7 +86,7 @@ export const makeChainTo = (
     const name = rename.get(entry) ?? entry;
     const from = rename.get('from') ?? 'from';
     const to = rename.get('to') ?? 'to';
-    return makeChainAccessor(format, name, args ?? [], from, to, restIndex);
+    return makeChainAccessor(format, name, args ?? [], from, to, restIndex, toRest.length);
   }
 
   const exports = makeDeclarations(toFormat, fromArgs);
