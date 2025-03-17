@@ -61,10 +61,6 @@ const EPS = 1e-6;
     sample11,
   ) * (vec4<f32>(w00, w10, w01, w11) / w);
 
-  //let targetSample = loadSample(xy);
-  //if (targetUV.x < 0.25) { return vec4<f32>(targetNormal * .5 + .5, 1.0); }
-  //if (targetUV.x < 0.5) { return vec4<f32>(targetSample.xyz * .5 + .5, targetSample.a); }
-
   // Unorm [0..1] encoding for normal
   return vec4<f32>(vec3<f32>(normalize(sample.rgb) * .5 + .5), sample.a);
 }

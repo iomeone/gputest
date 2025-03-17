@@ -187,7 +187,6 @@
     "./shadow/directional.wgsl": "./src/shadow/directional.wgsl.ts",
     "./shadow/point.wgsl": "./src/shadow/point.wgsl.ts",
     "./ssao/ssao-accum.wgsl": "./src/ssao/ssao-accum.wgsl.ts",
-    "./ssao/ssao-align.wgsl": "./src/ssao/ssao-align.wgsl.ts",
     "./ssao/ssao-resolve.wgsl": "./src/ssao/ssao-resolve.wgsl.ts",
     "./ssao/ssao-sample.wgsl": "./src/ssao/ssao-sample.wgsl.ts",
     "./ssao/ssao-weight.wgsl": "./src/ssao/ssao-weight.wgsl.ts",
