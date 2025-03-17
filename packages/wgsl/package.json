@@ -56,6 +56,7 @@
     "./debug/print-helper.wgsl": "./src/debug/print-helper.wgsl.ts",
     "./debug/print.wgsl": "./src/debug/print.wgsl.ts",
     "./display/alpha.wgsl": "./src/display/alpha.wgsl.ts",
+    "./display/cube-alpha.wgsl": "./src/display/cube-alpha.wgsl.ts",
     "./display/cube-color.wgsl": "./src/display/cube-color.wgsl.ts",
     "./display/cube-depth.wgsl": "./src/display/cube-depth.wgsl.ts",
     "./display/cube-grid.wgsl": "./src/display/cube-grid.wgsl.ts",

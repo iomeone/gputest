@@ -1,3 +1,3 @@
 @export fn displayFloat(sample: vec4<f32>) -> vec4<f32> {
-  return abs(sample);
+  return select(-sample * .5, sample, sample > vec4<f32>(0.0));
 };

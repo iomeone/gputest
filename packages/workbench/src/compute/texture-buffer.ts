@@ -75,12 +75,14 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureB
         )
       ) : null;
 
-      let i = 0;
-      if (buffers) for (const b of buffers) b.label = [label ?? 'textureBuffer', 'history', ++i].filter(s => s != null).join(' ');
-      buffer.label = label ?? 'textureBuffer';
-
       if (buffers) buffers.push(buffer);
       const views = buffers ? buffers.map(b => b.createView()) : undefined;
+
+      if (label != null) {
+        buffer.label = label;
+        if (buffers) for (const b of buffers) b.label = label;
+        if (views) for (const v of views) v.label = label;
+      }
 
       const counter = { current: 0 };
 

@@ -61,7 +61,7 @@ export const Environment: LC<EnvironmentProps> = (props: EnvironmentProps) => {
     if (!environment) return environment;
     const env = getSource(ENV_ATTR, environment);
     return chainTo(env, getShader(gainColor, [g], {IS_OPAQUE: true}));
-  }, [gain, environment, g]);
+  }, [environment, g]);
 
   const parent = useMaterialContext();
   const context = useMemo(() => {

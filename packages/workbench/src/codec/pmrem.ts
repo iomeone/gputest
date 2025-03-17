@@ -159,6 +159,7 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
         format: 'rgba16float',
         filterable: true,
         colorSpace: 'linear',
+        label: 'PMREM Atlas',
       }),
       use(TextureBuffer, {
         width: Math.max(size, FIRST_MIP),
@@ -168,6 +169,7 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
         filterable: true,
         colorSpace: 'linear',
         history: 1,
+        label: 'PMREM Front/Back',
       }),
     ], ([target, scratch]: TextureTarget[]) => {
 

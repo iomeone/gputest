@@ -5,7 +5,7 @@ import type { ShaderSource } from '@use-gpu/shader';
 import React, { FC, CSSProperties } from 'react';
 import { memo, use, wrap, provide, useFiber, useOne } from '@use-gpu/live';
 
-import { proxy, splitCubeTexture, splitHistoryTexture } from '@use-gpu/core';
+import { proxy, splitCubeTexture, splitHistoryTexture, notEmptyString } from '@use-gpu/core';
 import { LiveCanvas } from '@use-gpu/react';
 import { AutoCanvas } from '@use-gpu/webgpu';
 import {
@@ -20,6 +20,7 @@ import { UseInspect } from '@use-gpu/inspect';
 import { inspectGPU } from './index';
 
 import { displayCubeColor } from '@use-gpu/wgsl/display/cube-color.wgsl';
+import { displayCubeAlpha } from '@use-gpu/wgsl/display/cube-alpha.wgsl';
 import { displayCubeDepth } from '@use-gpu/wgsl/display/cube-depth.wgsl';
 
 const {signal} = QueueReconciler;
@@ -197,6 +198,14 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     )
   };
   
+  const makeTextureLabel = (
+    texture: TextureTarget | TextureSource,
+    suffix: string,
+  ) => {
+    const mainLabel = notEmptyString(texture?.label) ?? notEmptyString(texture?.view?.label) ?? notEmptyString(texture?.texture?.label);
+    return [mainLabel, suffix].filter(l => l?.length).join(' ');
+  };
+
   const makeViews = (texture: TextureTarget | TextureSource): LiveElement[] => {
     const {layout, format, history} = texture as TextureTarget;
 
@@ -214,36 +223,48 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
       t = getLambdaSource(s, texture);
       out.push(makeView(t));
 
+      if (format.match(/rgba/)) {
+        const label = makeTextureLabel(texture, 'Alpha');
+        const ts = proxy(texture, {
+          hint: 'alpha',
+          label,
+        });
+        const s = getShader(displayCubeAlpha, [ts]);
+        t = getLambdaSource(s, ts);
+        out.push(makeView(t));
+      }
+
       const faces = splitCubeTexture(texture).map(getDisplayShader);
       out.push(faces.map(makeView));
+
     }
     else {
       const t = getDisplayShader(texture);
       out.push(makeView(t));
-    }
 
-    if (format.match(/rgba/)) {
-      const label = [...new Set([texture.label, texture.texture?.label, texture.view?.label, 'Alpha'])].filter(l => l?.length).join(' ');
-      const ts = proxy(texture, {
-        hint: 'alpha',
-        label,
-      });
-      const t = getDisplayShader(ts);
-      out.push(makeView(t));
-    }
+      if (format.match(/rgba/)) {
+        const label = makeTextureLabel(texture, 'Alpha');
+        const ts = proxy(texture, {
+          hint: 'alpha',
+          label,
+        });
+        const t = getDisplayShader(ts);
+        out.push(makeView(t));
+      }
     
-    if (hasStencil) {
-      const label = [...new Set([texture.label, texture.texture?.label, texture.view?.label, 'Stencil'])].filter(l => l?.length).join(' ');
-      const ts = proxy(texture, {
-        view: texture.texture?.createView({ aspect: 'stencil-only' }),
-        layout: 'texture_2d<u32>',
-        aspect: 'stencil-only',
-        sampler: null,
-        hint: 'stencil',
-        label,
-      });
-      const t = getDisplayShader(ts);
-      out.push(makeView(t));
+      if (hasStencil) {
+        const label = makeTextureLabel(texture, 'Stencil');
+        const ts = proxy(texture, {
+          view: texture.texture?.createView({ aspect: 'stencil-only' }),
+          layout: 'texture_2d<u32>',
+          aspect: 'stencil-only',
+          sampler: null,
+          hint: 'stencil',
+          label,
+        });
+        const t = getDisplayShader(ts);
+        out.push(makeView(t));
+      }
     }
 
     return out;

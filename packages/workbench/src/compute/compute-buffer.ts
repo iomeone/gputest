@@ -53,8 +53,8 @@ export const ComputeBuffer: LiveComponent<ComputeBufferProps> = (props: ComputeB
       if (buffers) buffers.push(buffer);
 
       let i = 0;
-      if (buffers) for (const b of buffers) b.label = [label ?? 'computeBuffer', 'history', ++i].filter(s => s != null).join(' ');
-      buffer.label = label ?? 'computeBuffer';
+      if (buffers) for (const b of buffers) b.label = [label ?? 'ComputeBuffer', 'History', ++i].filter(s => s != null).join(' ');
+      buffer.label = label ?? 'ComputeBuffer';
 
       const counter = { current: 0 };
       return [buffer, buffers, counter];
