@@ -477,7 +477,7 @@ export const useContext = <C>(
   }
 
   const value = values.get(context).current;
-  return value !== undefined ? value : context.initialValue;
+  return value !== undefined ? value : context.initialValue as C;
 }
 
 /**

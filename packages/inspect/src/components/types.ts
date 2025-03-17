@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
 import type { LiveFiber } from '@use-gpu/live';
 import type { Cursor } from '@use-gpu/state';
 
+//import type { ReactNode } from 'react';
 // ReactNode makes getdocs-ts crash
 type ReactNode = any & {};
 

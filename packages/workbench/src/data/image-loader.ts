@@ -76,13 +76,12 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
     else if (format === 'rgbm16') {
       const arrayBuffer = await response.arrayBuffer();
 
-      // @ts-ignore
       const decoder = new ImageDecoder({
         data: arrayBuffer,
         type: mime,
-        premultiplyAlpha: premultiply ? 'premultiply' : 'none',
+        premultiplyAlpha: premultiply ? 'premultiply' : 'none', // not part of official types yet
         colorSpaceConversion: 'none',
-      });
+      } as any); // todo: remove any
 
       const {image} = await decoder.decode({ frameIndex: 0 });
       const {codedWidth: w, codedHeight: h} = image;
@@ -91,7 +90,7 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
       image.copyTo(buffer);
 
       let decoded: GPUTextureFormat = 'rgba8unorm';
-      if (image.format.slice(0, 3) === 'BGR') decoded = 'bgra8unorm';
+      if (image.format?.slice(0, 3) === 'BGR') decoded = 'bgra8unorm';
 
       const flip = !!decoded.match(/^bgr/);
       const out = parseRGBM16(buffer, w, h, flip);
