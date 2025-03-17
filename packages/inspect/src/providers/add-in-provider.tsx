@@ -11,6 +11,7 @@ import { FiberTag } from '../components/fiber/tag';
 const AddInContext = createContext<InspectAddIns>({
   props: [],
   prop: [],
+  filters: [],
 });
 
 export const AddInProvider = ({

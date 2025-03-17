@@ -289,7 +289,6 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
                       <Text
                         size={32}
                         detail={64}
-                        snap={false}
                         text={subpixel ? "The Subpixel Distance Transform" : "The Euclidean Distance Transform"}
                         color={WHITE}
                       />
@@ -455,7 +454,6 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
                           size={SIZE}
                           detail={DETAIL}
                           lineHeight={height}
-                          snap={false}
                           text={glyph}
                           color={[1, 1, 1, 1]}
                         />
@@ -516,7 +514,6 @@ const Label: LC<LabelProps> = (props: LabelProps) => (
     <Inline align="center">
       <Text
         size={10}
-        snap={false}
         text={Array.isArray(props.children) ? props.children.join('') : props.children}
         color={WHITE_TRANSPARENT}
       />

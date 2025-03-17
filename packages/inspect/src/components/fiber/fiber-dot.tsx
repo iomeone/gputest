@@ -34,7 +34,7 @@ export const FiberDot = forwardRef<HTMLDivElement, FiberDotProps>(({
   const {id, by, f} = fiber;
 
   const [version, pinged] = usePingTracker(fiber);
-  if (version <= 1) return;
+  if (version <= 1) return null;
   
   const classes: string[] = ['pinged'];
 
@@ -50,7 +50,7 @@ export const FiberDot = forwardRef<HTMLDivElement, FiberDotProps>(({
   if (hovered === id) classes.push('hovered');
   if (hovered === by) classes.push('by');
   if (absolute) classes.push('absolute');
-  if (ooo) classes.add('error');
+  if (ooo) classes.push('error');
 
   if (f.isLiveBuiltin || f.isLiveReconcile || f.isLiveQuote || f.isLiveContinuation) classes.push('builtin');
 

@@ -4,7 +4,7 @@ import { styled as _styled } from '@stitches/react';
 // TODO: TS nightly issue?
 const styled: any = _styled;
 
-type TreeIndentProps = PropsWithChildren<{ indent?: number, section?: number }>;
+type TreeIndentProps = PropsWithChildren<{ avoidOverlap?: boolean, indent?: number, section?: boolean }>;
 
 export const TreeWrapper = styled('div', {
   flexGrow: 1,
@@ -122,9 +122,9 @@ const TreeRowOmittedInner = styled('div', {
   height: 17,
 });
 
-type TreeRowAvoidOverlapProps = {
+type TreeRowAvoidOverlapProps = PropsWithChildren<{
   indent: number,
-};
+}>;
 
 export const TreeRowAvoidOverlap: FC<TreeRowAvoidOverlapProps> = ({ indent, children }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -134,8 +134,10 @@ export const TreeRowAvoidOverlap: FC<TreeRowAvoidOverlapProps> = ({ indent, chil
     if (!el) return;
     
     const parent = el.parentElement;
-    let sib = parent;
-    while ((sib = sib.previousElementSibling)) {
+    if (!parent) return;
+
+    let sib: HTMLElement | null = parent;
+    while ((sib = sib.previousElementSibling as HTMLElement | null)) {
       if (sib.children.length && sib.children[0].classList.contains('avoidOverlap')) break;
     }
 

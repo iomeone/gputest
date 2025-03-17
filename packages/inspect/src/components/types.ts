@@ -17,22 +17,23 @@ export type HighlightState = {
   root: LiveFiber<any> | null,
   deps: number[],
   precs: number[],
-  depth: number,
 };
 
 export type OptionsState = {
   open: boolean,
-  depth: number,
-  counts: boolean,
+  depthLimit: number,
+  runCounts: boolean,
   builtins: boolean,
   fullSize: boolean,
   highlight: boolean,
   inspect: boolean,
-  tab: string,
+  tab: string | null,
   preferredTab: string,
   splitLeft: number,
   splitBottom: number,
-  filters: number[],
+  filterTags: number,
+
+  version: number,
 };
 
 export type InspectAppearance = {
@@ -52,19 +53,29 @@ export type InspectExtension = (root: LiveFiber<any>) => InspectAddIns;
 export type InspectAddIns = {
   props: InspectProps[],
   prop: InspectProp[],
+  filters: InspectFilter[],
 };
 
 export type InspectProps = {
-  id: string,
+  key: string,
   label: string,
+  icon?: ReactNode,
   enabled: (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>) => boolean,
   render: (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>, api: InspectAPI) => ReactNode,
 };
 
 export type InspectProp = {
-  id: string,
+  key: string,
   enabled: (prop: any) => boolean,
   render: (prop: any) => ReactNode,
+};
+
+export type InspectFilter = {
+  key: number,
+  label: ReactNode,
+  icon: ReactNode,
+  group?: number,
+  order?: number,
 };
 
 type Handler<E extends Event> = (event: E) => void;
@@ -83,8 +94,8 @@ export type InspectAPI = {
   forceUpdate: () => void,
   selectFiber: (fiber: LiveFiber<any> | null | undefined) => void,
   focusFiber: (fiber: LiveFiber<any> | null | undefined) => void,
-  hoverFiber: (fiber: LiveFiber<any> | null | undefined, fibers: Map<number, LiveFiber<any>>, renderDepth?: number) => void,
-  makeHandlers: (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>, renderDepth?: number) => {
+  hoverFiber: (fiber: LiveFiber<any> | null | undefined, renderDepth?: number) => void,
+  makeHandlers: (fiber: LiveFiber<any>, renderDepth?: number) => {
     select: Handler<MouseEvent>,
     hover: Handler<MouseEvent>,
     unhover: Handler<MouseEvent>,

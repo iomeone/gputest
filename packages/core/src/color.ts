@@ -1,3 +1,4 @@
+import type { Blending } from './types';
 import { seq } from './tuple';
 import { BLEND_MODES, BLEND_PREMULTIPLY, BLEND_NONE } from './constants';
 
@@ -37,7 +38,7 @@ export const makeColorAttachments = (
 
 export const makeBlendState = (
   blend: Blending | GPUBlendState | null,
-): GPUBlendState | null => (
+): GPUBlendState | undefined => (
   (blend && (typeof blend === 'object' ? blend : BLEND_MODES[blend])) ?? undefined
 );
 

@@ -225,7 +225,7 @@ export type ShaderStageDescriptor = {
 export type DataBinding<T = any, S extends ShaderModule = any> = {
   attribute: UniformAttribute,
 
-  uniform?: UniformSource,
+  uniform?: StorageSource,
   storage?: StorageSource,
   texture?: TextureSource,
   sampler?: SamplerSource,
@@ -251,6 +251,8 @@ export type LambdaSource<T extends ShaderModule = any> = {
 
   bounds?: DataBounds,
   colorSpace?: ColorSpace,
+
+  label?: string,
 };
 
 export type TextureSource = {
@@ -258,7 +260,7 @@ export type TextureSource = {
   view?: GPUTextureView,
   sampler: GPUSampler | GPUSamplerDescriptor | null,
   layout: string,
-  format: string,
+  format: GPUTextureFormat,
   size: VectorLike,
   version: number,
 
@@ -269,13 +271,16 @@ export type TextureSource = {
   filter?: FilteringType,
   colorSpace?: ColorSpace,
   aspect?: GPUTextureAspect,
+
   hint?: string,
+  label?: string,
 };
 
 export type StorageSource<T extends ShaderModule = any> = {
   buffer: GPUBuffer,
   format: UniformFormat,
   type?: T,
+  addressSpace?: 'storage' | 'uniform',
 
   length: number,
   size: VectorLike,
@@ -286,32 +291,17 @@ export type StorageSource<T extends ShaderModule = any> = {
   readWrite?: boolean,
   byteOffset?: number,
   byteLength?: number,
+  minBindingSize?: number,
   colorSpace?: ColorSpace,
 
-  addressSpace?: 'storage',
-};
-
-export type UniformSource<T extends ShaderModule = any> = {
-  buffer: GPUBuffer,
-  format: UniformFormat,
-  type?: T,
-
-  length: number,
-  size: VectorLike,
-  version: number,
-
-  bounds?: DataBounds,
-  volatile?: number,
-  byteOffset?: number,
-  byteLength?: number,
-  colorSpace?: ColorSpace,
-
-  addressSpace: 'uniform',
+  label?: string,
 };
 
 export type SamplerSource = {
   sampler: GPUSampler | GPUSamplerDescriptor | null,
   filter?: FilteringType,
+
+  label?: string,
 };
 
 export type StorageTarget = StorageSource & {
@@ -359,6 +349,7 @@ export type TexturePlaceholder = {
   sampler: GPUSampler | GPUSamplerDescriptor | null,
   layout: string,
   variant?: string,
+  aspect?: GPUTextureAspect,
   filter?: FilteringType,
 };
 

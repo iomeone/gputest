@@ -1,7 +1,8 @@
-import type { LiveComponent, LiveFiber } from '@use-gpu/live';
-import type { LambdaSource, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, LiveFiber } from '@use-gpu/live';
+import type { LambdaSource, TextureSource, TextureTarget } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import React from 'react';
+import React, { FC, CSSProperties } from 'react';
 import { memo, use, wrap, provide, useFiber, useOne } from '@use-gpu/live';
 
 import { proxy, splitCubeTexture, splitHistoryTexture } from '@use-gpu/core';
@@ -26,7 +27,7 @@ const {signal} = QueueReconciler;
 const SIZE = 512;
 const HEIGHT = SIZE + 24 * 2 + 24;
 const IMAGE_FIT = {fit: 'contain', align: 'center', repeat: 'none'};
-const WRAPPER_STYLE = {position: 'relative', height: HEIGHT};
+const WRAPPER_STYLE: CSSProperties = {position: 'relative', height: HEIGHT};
 
 const backgroundColor = [0, 0, 0, 0];
 
@@ -40,12 +41,12 @@ type ViewProps = TexturesProps & {
 };
 
 type TexturesProps = {
-  sources: TextureSource[],
+  sources: TextureTarget[],
 };
 
 export const renderTargets = (props: any) => <Targets {...props} />;
 
-export const Targets: React.FC<TargetsProps> = ({fiber}) => {
+export const Targets: FC<TargetsProps> = ({fiber}) => {
 
   const output = fiber.__inspect?.output ?? ({} as any);
   const device = fiber.context.values.get(DeviceContext)?.current;
@@ -109,8 +110,9 @@ const Inner: LiveComponent<ViewProps> = memo(({canvas, sources}: ViewProps) => (
 const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) => {
   const {sources} = props;
 
-  const makeView = (texture: TextureSource | LambdaSource) => {
-    const {size, size: [w, h]} = texture;
+  const makeView = (texture: ShaderSource) => {
+    const {size} = texture as LambdaSource;
+    const [w, h] = size ?? [1, 1];
     const width = w > h ? SIZE : Math.round(w/h * SIZE);
     const height = w > h ? Math.round(h/w * SIZE) : SIZE;
 
@@ -195,8 +197,8 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     )
   };
   
-  const makeViews = (texture: TextureSource) => {
-    const {layout, format, history} = texture;
+  const makeViews = (texture: TextureTarget | TextureSource): LiveElement[] => {
+    const {layout, format, history} = texture as TextureTarget;
 
     const isCube = layout.match(/cube/);
     const isDepth = layout.match(/depth/);
@@ -204,12 +206,12 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
 
     const out = [];
 
-    if (history) return splitHistoryTexture(texture).flatMap(makeViews);
+    if (history) return splitHistoryTexture(texture as TextureTarget).flatMap(makeViews);
 
     if (isCube) {
-      let t = texture;
-      t = getShader(isDepth ? displayCubeDepth : displayCubeColor, [t]);
-      t = getLambdaSource(t, texture);
+      let t = texture as ShaderSource;
+      let s = getShader(isDepth ? displayCubeDepth : displayCubeColor, [t]);
+      t = getLambdaSource(s, texture);
       out.push(makeView(t));
 
       const faces = splitCubeTexture(texture).map(getDisplayShader);
@@ -221,7 +223,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     }
 
     if (format.match(/rgba/)) {
-      const label = [texture.label, texture.texture?.label, texture.view?.label, 'Alpha'].filter(l => l?.length).join(' ');
+      const label = [...new Set([texture.label, texture.texture?.label, texture.view?.label, 'Alpha'])].filter(l => l?.length).join(' ');
       const ts = proxy(texture, {
         hint: 'alpha',
         label,
@@ -231,7 +233,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     }
     
     if (hasStencil) {
-      const label = [texture.label, texture.texture?.label, texture.view?.label, 'Stencil'].filter(l => l?.length).join(' ');
+      const label = [...new Set([texture.label, texture.texture?.label, texture.view?.label, 'Stencil'])].filter(l => l?.length).join(' ');
       const ts = proxy(texture, {
         view: texture.texture?.createView({ aspect: 'stencil-only' }),
         layout: 'texture_2d<u32>',

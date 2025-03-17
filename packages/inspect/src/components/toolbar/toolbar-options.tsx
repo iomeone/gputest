@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { Cursor } from '@use-gpu/state';
 import { SmallButton, OptionsContainer, Spacer } from '../layout';
 import { OptionsState } from '../types';
@@ -12,12 +12,12 @@ export type ToolbarOptionsProps = {
   toggleInspect?: () => void,
 };
 
-export const ToolbarOptions: React.FC<OptionsProps> = (props: OptionsProps) => {
+export const ToolbarOptions: FC<ToolbarOptionsProps> = (props: ToolbarOptionsProps) => {
 
   const {cursor, toggleInspect} = props;
 
-  const [depthLimit, setDepthLimit] = cursor.depth();
-  const [runCounts, setRunCounts] = cursor.counts();
+  const [depthLimit, setDepthLimit] = cursor.depthLimit();
+  const [runCounts, setRunCounts] = cursor.runCounts();
   const [fullSize, setFullSize] = cursor.fullSize();
   const [builtins, setBuiltins] = cursor.builtins();
   const [highlight, setHighlight] = cursor.highlight();

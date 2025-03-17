@@ -468,16 +468,18 @@ export const makeMultiUniformLayout = (
   const offsets = [];
 
   let offset = base;
+  let max = 0;
   for (const attributes of uniformGroups) {
-    const {length, attributes: attr} = makeUniformLayout(attributes, offset);
+    const {length, attributes: attr, align} = makeUniformLayout(attributes, offset);
     out.push(...attr);
     offsets.push(offset);
     offset += length;
 
     offset = alignSizeTo(offset, alignment);
+    max = Math.max(max, align);
   }
 
-  return {length: offset - base, attributes: out, offsets};
+  return {length: offset - base, attributes: out, offsets, align: max};
 };
 
 export const makeLayoutData = (

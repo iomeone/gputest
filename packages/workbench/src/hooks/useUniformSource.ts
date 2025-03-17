@@ -1,4 +1,4 @@
-import type { UniformPipe, UniformSource } from '@use-gpu/core';
+import type { UniformPipe, StorageSource } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
 
 import { makeUniformBuffer, makeUniformPipe, uploadBuffer } from '@use-gpu/core';
@@ -27,7 +27,7 @@ export const getUniformSource = (
   device: GPUDevice,
   type: ShaderModule,
   n: number = 1,
-): [UniformSource, UniformPipe] => {
+): [StorageSource, UniformPipe] => {
   const attr = bundleToAttribute(type);
   const defs = attr.format;
   if (!Array.isArray(defs)) throw new Error(`Invalid uniform struct type '${attr.name}'`);
@@ -35,7 +35,7 @@ export const getUniformSource = (
   const pipe = makeUniformPipe(defs, n);
   const buffer = makeUniformBuffer(device, pipe.data);
 
-  const source: UniformSource = {
+  const source: StorageSource = {
     format: n > 1 ? 'array<T>' : 'T',
     type,
     buffer,

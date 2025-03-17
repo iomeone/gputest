@@ -151,7 +151,7 @@ export const makeNextFiber = <F extends ArrowFunction>(
   Next.displayName = `${prefix}(${name})`;
 
   const nextFiber = makeSubFiber(fiber, use(Next), fiber.id, 1);
-  nextFiber.f.isLiveContinuation = fiber.f.isLiveBuiltin;
+  (nextFiber.f as any).isLiveContinuation = (fiber.f as any).isLiveBuiltin;
 
   // Adopt existing yeet context
   // which will be overwritten on the original fiber.

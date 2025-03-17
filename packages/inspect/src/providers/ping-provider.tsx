@@ -5,12 +5,15 @@ import React, { createContext, useCallback, useContext, useLayoutEffect, useMemo
 import ReactDOM from 'react-dom';
 
 import { UseInspect } from '../use-inspect';
-import { InspectAPI } from '../types';
+import { InspectAPI } from '../components/types';
 
 const PingContext = createContext<PingContextProps>({
   subscribe: () => {},
   unsubscribe: () => {},
+  pin: () => {},
+  unpin: () => {},
   fibers: new Map(),
+  pinned: new Map(),
 });
 
 const NO_DEPS: any[] = [];
@@ -20,7 +23,9 @@ type PingContextProps = {
   unsubscribe: (fiber: LiveFiber<any> | null | undefined, f: ArrowFunction) => void,
   pin: (fiberId: number) => void,
   unpin: (fiberId: number) => void,
+
   fibers: Map<number, LiveFiber<any>>,
+  pinned: Map<number, number>,
 };
 
 type PingProviderProps = {
@@ -68,7 +73,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, fibers, api: {
         if (!p) forceUpdate();
       },
       unpin: (fiberId: number) => {
-        const count = pinned.get(fiberId) - 1;
+        const count = (pinned.get(fiberId) || 0) - 1;
         if (count > 0) pinned.set(fiberId, count);
         else {
           pinned.delete(fiberId);
@@ -166,7 +171,9 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, fibers, api: {
 
 export const usePingContext = () => useContext(PingContext);
 
-export const usePingTracker = (fiber?: LiveFiber<any>, shouldPin: boolean) => {
+export const usePingTracker = (fiber?: LiveFiber<any>, shouldPin?: boolean): [
+  number, boolean, boolean,
+] => {
   const {subscribe, unsubscribe, pin, unpin, fibers, pinned} = useContext(PingContext);
 
   const [, forceUpdate] = useForceUpdate();
@@ -202,10 +209,10 @@ export const usePingTracker = (fiber?: LiveFiber<any>, shouldPin: boolean) => {
     if (parent?.f === UseInspect) return;
 
     pin(by);
-    return () => { unpin(by) };
+    return () => { by && unpin(by) };
   }, [fiber, fibers, pin, unpin, shouldPin]);
 
-  const isPinned = pinned.has(fiber?.id);
+  const isPinned = !!(fiber && pinned.has(fiber?.id));
 
   return [version, live, isPinned];
 }

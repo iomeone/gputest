@@ -1,5 +1,5 @@
 import type { LiveComponent } from '@use-gpu/live';
-import type { TensorArray } from '@use-gpu/core';
+import type { TensorArray, UniformType } from '@use-gpu/core';
 import type { TraitProps } from '@use-gpu/traits';
 
 import { memo, use } from '@use-gpu/live';
@@ -42,16 +42,24 @@ export const ImplicitSurface: LiveComponent<ImplicitSurfaceProps> = memo((props:
   const s = size ?? tensor ?? (props.values as TensorArray)?.size;
 
   // Avoid copy here because volume data is big and we never aggregate it
-  const vs = values ? useRawTensorSource({
+  const vs = values && formats?.values ? useRawTensorSource({
     array: values,
-    format: formats.values,
+    format: formats.values as UniformType,
     size: s,
+
+    dims: -1, // unused
+    length: -1, // unused
+    version: 0,
   }, { live: true }) : useNoRawTensorSource();
 
-  const ns = normals ? useRawTensorSource({
+  const ns = normals && formats?.normals ? useRawTensorSource({
     array: normals,
-    format: formats.normals,
+    format: formats.normals as UniformType,
     size: s,
+
+    dims: -1, // unused
+    length: -1, // unused
+    version: 0,
   }, { live: true }) : useNoRawTensorSource();
 
   return use(DualContourLayer, {

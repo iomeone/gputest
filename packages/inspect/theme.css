@@ -183,6 +183,11 @@ html > body .LiveInspect ::-webkit-scrollbar {
   left: -1000px;
 }
 
+.LiveInspect div.fiber-tree-dot.error,
+.LiveInspect div.fiber-tree-ping.error {
+  background: rgba(200, 0, 40, 0.9);
+}
+
 .LiveInspect div.fiber-tree-node.mounted,
 .LiveInspect div.fiber-tree-node.pinged,
 .LiveInspect div.fiber-tree-dot.mounted,

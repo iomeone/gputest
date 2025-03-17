@@ -43,7 +43,7 @@ const parseTextureType = (format: string, variant: string | null, aspect: string
   if (layout in BINDING_TEXTURE_TYPES) {
     const props = BINDING_TEXTURE_TYPES[layout];
     if ('sampleType' in props) {
-      if (aspect === 'stencil-only') return {texture: {...props, sampleType: 'uint'}};
+      if (aspect === 'stencil-only') return {texture: {...props, sampleType: 'uint' as GPUTextureSampleType}};
       return {texture: props};
     }
 
@@ -74,10 +74,16 @@ export const makeBindGroupLayoutEntries = (
   const out = [];
   let i = 0;
   for (const b of bindings) {
-    const v = typeof visibilities === 'number' ? visibilities : Array.isArray(visibilities) ? visibilities[i] : (visibilities.get(b) || 7);
-    const l = makeBindGroupLayoutEntry(b, v, out.length + binding);
-    if (Array.isArray(l)) out.push(...l);
-    else if (l) out.push(l);
+    const v = (
+      typeof visibilities === 'number' ? visibilities :
+      Array.isArray(visibilities) ? visibilities[i] :
+      (b && visibilities.get(b)) ?? 7
+    );
+
+    type Entry = GPUBindGroupLayoutEntry | GPUBindGroupLayoutEntry[] | null;
+    const list: Entry = b ? makeBindGroupLayoutEntry(b, v, out.length + binding) : null;
+    if (Array.isArray(list)) out.push(...list);
+    else if (list) out.push(list);
     else binding++;
     ++i;
   }
@@ -92,7 +98,7 @@ export const makeBindGroupLayoutEntry = (
   visibility: GPUShaderStageFlags,
   binding: number,
 ): GPUBindGroupLayoutEntry | GPUBindGroupLayoutEntry[] => {
-  if (!b) return null;
+  if (!b) return [];
 
   if (b.uniform != null) {
     const minBindingSize = getMinBindingSize(b.uniform.format, b.uniform.type ?? b.attribute.type);
@@ -117,7 +123,7 @@ export const makeBindGroupLayoutEntry = (
     if (hasSampler) {
       const isDepth = textureType.match(/_depth(_|$)/);
 
-      const filter = isDepth ? 'non-filtering' : 'filtering' as GPUSamplerBindingType;
+      const filter = (isDepth ? 'non-filtering' : 'filtering') as GPUSamplerBindingType;
       const type = (b.texture.filter ?? filter) as GPUSamplerBindingType;
       const sampler = {binding: binding + 1, visibility, sampler: {type}};
 

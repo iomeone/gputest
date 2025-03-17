@@ -92,6 +92,9 @@ export const SceneSSAOPage: LC = () => {
                       normalRamp: 3,  // Slope of reprojection normal weight (higher = stricter)
                     }}
                     overscan={0.05}   // 5% extra render margin so SSAO does not disappear at edges
+                    
+                    debug={showAO ? 'ssao' : undefined}
+                    debugIndex={3}
                   >
 
                     <AmbientLight intensity={0.4} />

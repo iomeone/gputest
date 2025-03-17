@@ -16,9 +16,9 @@ export type PanelsProps = {
   fiber: LiveFiber<any>,
   api: InspectAPI,
   fullSize?: boolean,
-  tab: string,
+  tab: string | null,
   preferredTab: string,
-  onTab: (s: Update<string>) => void,
+  onTab: (s: Update<string | null>) => void,
 };
 
 export const Panels: FC<PanelsProps> = (props: PanelsProps) => {

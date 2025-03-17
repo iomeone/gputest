@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, PropsWithChildren } from 'react';
 import { IconItem, SVGChevronDown, SVGChevronRight } from '../svg';
 
 import { TreeRow, TreeToggle } from './tree-layout';

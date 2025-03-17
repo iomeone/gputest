@@ -1,4 +1,4 @@
-import type { InspectState, InspectAPI } from '../types';
+import type { InspectState, InspectAPI, InspectFilter } from '../types';
 
 import React, { FC } from 'react';
 import { useAddIns } from '../../providers/add-in-provider';
@@ -17,17 +17,17 @@ export const ToolbarFilter: FC<ToolbarFilterProps> = (props: ToolbarFilterProps)
   const {optionsCursor} = state;
   const [filters, updateFilters] = optionsCursor.filterTags();
 
-  const toggleFilter = (key: string) => {
+  const toggleFilter = (key: number) => {
     updateFilters(filters ^ key);
   };
 
-  const groups: any[] = [];
+  const groups: InspectFilter[][] = [];
   for (const o of options) {
     let g = groups.find(g => g[0].group === o.group);
     if (!g) groups.push(g = []);
     if (g) g.push(o);
   }
-  
+
   return (
     <ToolbarScrollerX>
       <ToolbarPaddedRow>

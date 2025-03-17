@@ -85,7 +85,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const ssaoWeights = useMemo(() => ({DEPTH_RAMP: depthRamp, NORMAL_RAMP: normalRamp}), [depthRamp, normalRamp]);
 
   // Debug viz
-  const hasDebugPicking = !!ssaoDebug?.pickAO;
+  const hasDebugPicking = !!ssaoDebug?.picking
   let debugArgs = NO_DEBUG_ARGS;
   let clearDebugBuffer = null;
   let shouldClear = false;

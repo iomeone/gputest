@@ -82,7 +82,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, FiberBadgeProps>(({
 
   const [version, pinged] = usePingTracker(fiber);
 
-  const classes: string[] = [+version > 1 ? 'pinged' : 'mounted'];
+  const classes: string[] = [+(version || 0) > 1 ? 'pinged' : 'mounted'];
 
   if (!pinged) classes.push('cold');
   if (selected) classes.push('selected');

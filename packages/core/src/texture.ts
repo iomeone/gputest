@@ -1,4 +1,4 @@
-import type { DataTexture, ExternalTexture, VectorLike, XY, XYZ, TextureSource } from './types';
+import type { DataTexture, ExternalTexture, VectorLike, XY, XYZ, TextureSource, TextureTarget, UniformAttribute } from './types';
 import { TEXTURE_FORMAT_SIZES, getTextureSampleType } from './constants';
 import { proxy } from './lazy';
 import { seq } from './tuple';
@@ -319,6 +319,7 @@ export const checkTextureType = (
 
   let f = fromName;
   let t = toName;
+
   if (f === 'auto') return;
 
   // Remove texture layout
@@ -353,16 +354,16 @@ export const splitCubeTexture = (texture: TextureSource): TextureSource[] => {
   });
 };
 
-export const splitHistoryTexture = (texture: TextureSource): TextureSource[] => {
+export const splitHistoryTexture = (texture: TextureTarget): TextureSource[] => {
   const {history} = texture;
 
   const mainLabel = notEmptyString(texture?.label) ?? notEmptyString(texture?.view?.label) ?? notEmptyString(texture?.texture?.label);
   
-  const rest = history.map((t, i) => {
+  const rest = history?.map((t, i) => {
     const historyLabel = `History T-${i + 1}`;  
     const slotLabel = [mainLabel, historyLabel].filter(s => s != null).join(' – ');
     return proxy(t, {label: slotLabel});
-  });
+  }) ?? [];
 
   return [proxy(texture, {history: undefined}), ...rest];
 };

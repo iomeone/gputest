@@ -1,4 +1,4 @@
-import type { LambdaSource, StorageSource, StructAggregateBuffer, UniformAttribute, UniformSource } from '@use-gpu/core';
+import type { LambdaSource, StorageSource, StructAggregateBuffer, UniformAttribute } from '@use-gpu/core';
 
 import { useMemo, useOne } from '@use-gpu/live';
 import { explode, structType, bindEntryPoint } from '@use-gpu/shader/wgsl';
@@ -9,7 +9,7 @@ const toTitleCase = (s: string) => s.slice(0, 1).toUpperCase() + s.slice(1);
 
 export const useStructSources = (
   attributes: UniformAttribute[],
-  source: UniformSource | StorageSource,
+  source: StorageSource,
   name?: string,
 ) => (
   useMemo(() => getStructSources(attributes, source, name), [attributes, source, name])
@@ -17,7 +17,7 @@ export const useStructSources = (
 
 export const getStructSources = (
   attributes: UniformAttribute[],
-  source: UniformSource | StorageSource,
+  source: StorageSource,
   name?: string,
 ): Record<string, LambdaSource> => {
 

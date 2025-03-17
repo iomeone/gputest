@@ -17,7 +17,7 @@ export type GlyphsProps = {
   size?: number,
   detail?: number,
   expand?: number,
-  hint?: boolean,
+  hint?: 'x' | 'y' | 'xy' | false,
   monochrome?: boolean,
 
   font: number[],

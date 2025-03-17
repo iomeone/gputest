@@ -31,8 +31,8 @@ const getOptionsKey = (id: string, sub: string = 'root') => `liveInspect[${sub}]
 
 const INITIAL_STATE = {
   open: false,
-  depth: 1000,
-  counts: false,
+  depthLimit: 1000,
+  runCounts: false,
   fullSize: false,
   builtins: false,
   highlight: true,
@@ -42,6 +42,12 @@ const INITIAL_STATE = {
   splitLeft: 33,
   splitBottom: 50,
   filterTags: FiberTag.All ^ FiberTag.Other ^ FiberTag.By ^ FiberTag.Yeet ^ FiberTag.Quote,
+
+  version: 0,
+};
+
+const NO_HOVER = {
+  fiber: null, by: null, deps: [], precs: [], root: null, depth: 0,
 };
 
 type InspectProps = {
@@ -80,9 +86,7 @@ export const Inspect: React.FC<InspectProps> = ({
       (obj: any) => ({...INITIAL_STATE, ...obj}),
     ) : useState
   ));
-  const hoveredCursor = useCursor(useUpdateState<HoverState>(() => ({
-    fiber: null, by: null, deps: [], precs: [], root: null, depth: 0,
-  })));
+  const hoveredCursor = useCursor(useUpdateState<HoverState>(() => NO_HOVER));
   const focusedCursor = useCursor(useUpdateState<FocusState>(null));
 
   // eslint-disable-next-line prefer-const
@@ -91,7 +95,7 @@ export const Inspect: React.FC<InspectProps> = ({
 
   const highlightState = useMemo(() => {
     const fiber = hoveredFiber ?? selectedFiber;
-    if (!fiber) return {};
+    if (!fiber) return NO_HOVER;
     return {
       fiber,
       by: fibers.get(fiber.by) ?? null,
@@ -155,7 +159,7 @@ export const Inspect: React.FC<InspectProps> = ({
   const api: InspectAPI = useMemo(() => {
 
     const forceUpdate = () => {
-      setVersion(incrementVersion);
+      setVersion($apply(incrementVersion));
     };
 
     const selectFiber = (fiber: LiveFiber<any> | null = null) => {
@@ -185,18 +189,20 @@ export const Inspect: React.FC<InspectProps> = ({
       renderDepth: number = 0,
       sticky?: boolean,
     ) =>
-      updateHovered({
-        fiber: $apply(prev => {
+      updateHovered(
+        $apply(prev => {
           if (sticky && prev.fiber) return prev;
-          return fiber;
-        }),
-        renderDepth,
-      });
+          return {
+            fiber,
+            depth: renderDepth,
+          };
+        })
+      );
 
     const makeHandlers = (fiber: LiveFiber<any>, renderDepth: number = 0) => {
       const select = (e?: MouseEvent) => { selectFiber(fiber); e?.stopPropagation(); };
       const hover = (e: MouseEvent) => hoverFiber(fiber, renderDepth, e.altKey);
-      const unhover = (e: MouseEvent) => hoverFiber(null, null, 0, e.altKey);
+      const unhover = (e: MouseEvent) => hoverFiber(null, 0, e.altKey);
       const focus = () => focusFiber(fiber);
 
       return {select, hover, unhover, focus};

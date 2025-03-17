@@ -5,6 +5,9 @@ import { provide, memo, makeContext, useContext, useMemo } from '@use-gpu/live';
 import { patch } from '@use-gpu/state';
 
 export const DEBUG_DEFAULTS = {
+  ssao: {
+    picking: false,
+  },
   voxel: {
     iterations: false,
   },
@@ -21,6 +24,9 @@ export const DEBUG_DEFAULTS = {
 } as DebugContextProps;
 
 export type DebugContextProps = {
+  ssao: {
+    picking: boolean,
+  },
   voxel: {
     iterations: boolean,
   },

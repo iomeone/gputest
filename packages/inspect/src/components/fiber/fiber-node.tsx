@@ -1,6 +1,6 @@
 import type { LiveFiber } from '@use-gpu/live';
 import type { Cursor } from '@use-gpu/state';
-import type { InspectState, InspectAPI } from './types'
+import type { InspectState, InspectAPI } from '../types'
 import { isSubNode, DEBUG } from '@use-gpu/live';
 
 import React, { memo, useMemo, useLayoutEffect, useRef } from 'react';
@@ -45,7 +45,7 @@ export type FiberReactNodeProps = {
 // Get rendered-by depth by tracing `by` props up the tree
 const getRenderDepth = (fibers: Map<number, LiveFiber<any>>, fiber: LiveFiber<any>) => {
   let renderDepth = 0;
-  let {by} = fiber;
+  let by: number | undefined = fiber.by;
 
   while (by) {
     const source = fibers.get(by);
@@ -119,7 +119,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   renderDepth = getRenderDepth(fibers, fiber) ?? renderDepth;
 
   // Resolve node omission
-  const isFilteredOut = (filterTags & FiberTag.All) != 0 && !(getFiberTags(fiber) & filterTags);
+  const isFilteredOut = ((filterTags & FiberTag.All) != 0) && !(getFiberTags(fiber) & filterTags);
   const isFocused = !!focusDepth || ((focusedState != null) ? fiber.id === focusedState : true);
   const isBuiltin = !builtins && (fiber.f?.isLiveBuiltin || fiber.f?.isLiveReconcile || fiber.f?.isLiveQuote || fiber.f?.isLiveContinuation);
   const isVisible = (
@@ -129,18 +129,18 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
     (renderDepth < depthLimit)
   );
 
-  const shouldCollapseIntoParent = !wide && isBuiltin && fiber.next;
+  const shouldCollapseIntoParent = !wide && isBuiltin && !!fiber.next;
   
   const shouldDisplaySelf = !isBuiltin && isVisible;
-  const [,, isPinned] = usePingTracker(fiber, shouldDisplaySelf && (filterTags & FiberTag.By));
+  const [,, isPinned] = usePingTracker(fiber, shouldDisplaySelf && !!(filterTags & FiberTag.By));
   const shouldDisplay = shouldDisplaySelf || isPinned;
   
-  const isSection = shouldDisplay && !shouldDisplaySelf && (filterTags & FiberTag.All) != FiberTag.All;
+  const isSection = shouldDisplay && !shouldDisplaySelf && ((filterTags & FiberTag.All) != FiberTag.All);
 
   const shouldTerminate = (shouldCollapseIntoParent || fiber.f?.isLiveReconcile || fiber.f?.isLiveQuote || fiber.f?.isLiveContinuation) && isVisible;
   const shouldRender = shouldDisplay || shouldTerminate;
 
-  const shouldAbsolute = !shouldRender && (parents || depends || precedes || quoted || unquoted);
+  const shouldAbsolute = !shouldRender && !!(parents || depends || precedes || quoted || unquoted);
   const shouldStartOpen = fiber.f !== DEBUG && !fiber.__inspect?.react;
 
   if (!skipDepth) {
@@ -151,7 +151,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   }
 
   // Make click/hover handlers
-  const {select, hover, unhover, focus} = useMemo(() => api.makeHandlers(fiber, fibers, renderDepth), [fiber, fibers, api, renderDepth]);
+  const {select, hover, unhover, focus} = useMemo(() => api.makeHandlers(fiber, renderDepth), [fiber, api, renderDepth]);
 
   const rowRef = useRef<HTMLDivElement>(null);
   const out = [] as React.ReactElement[];
@@ -223,11 +223,6 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
       quoted={!!quoted}
       unquoted={!!unquoted}
       depth={styleDepth}
-      runCount={runCounts}
-      onClick={select}
-      onDoubleClick={focus}
-      onMouseEnter={hover}
-      onMouseLeave={unhover}
       ref={rowRef}
       ooo={ooo}
       absolute={!!shouldAbsolute}

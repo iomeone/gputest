@@ -1,6 +1,7 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { proxy } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useRenderContext } from '../providers/render-provider';
@@ -39,8 +40,24 @@ export const DebugPass: LC<DebugPassProps> = memo((props: PropsWithChildren<Debu
 
   // Multi-view strips of render buffers
   const getSample = useMemo(() => {
-    const displays = sourceBuffers.map(c => getDisplayShader(c.source));
-    return debugIndex != null ? displays[debugIndex].shader : getMultiViewShader(displays, true);
+
+    // Isolate 1 buffer
+    if (debugIndex != null) {
+      const {source} = sourceBuffers[debugIndex];
+      const display = getDisplayShader(source);
+
+      if (source.format.match(/rgba/)) {
+        const alpha = getDisplayShader(proxy(source, {hint: 'alpha'}));
+        return getMultiViewShader([display, alpha]);
+      }
+      return display;
+    }
+
+    // All buffers
+    else {
+      const displays = sourceBuffers.map(c => getDisplayShader(c.source));
+      return getMultiViewShader(displays);
+    }
   }, [sourceBuffers, debugIndex]);
 
   const draw = useCopySample(renderContext, getSample);

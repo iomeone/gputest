@@ -8,7 +8,7 @@ export const TYPED_ARRAYS: TypedArrayConstructor[] = [
   Float32Array, Float64Array,
 ];
 
-const TYPED_ARRAYS_BITCOUNT = new Map([
+const TYPED_ARRAYS_BITCOUNT = new Map<Function, number>([
   [Int8Array, 8],
   [Uint8Array, 8],
   [Int16Array, 16],
@@ -660,7 +660,7 @@ export const TEXTURE_FORMAT_SIZES = {
   "astc-12x12-unorm-srgb",
 
   */
-} as Record<GPUTextureFormat, number>;
+} as Partial<Record<GPUTextureFormat, number>>;
 
 export const TEXTURE_FORMAT_DIMS = {
   // 8-bit formats
@@ -722,7 +722,7 @@ export const TEXTURE_FORMAT_DIMS = {
 
   // "depth32float-stencil8" feature
   "depth32float-stencil8": 1,
-} as Record<GPUTextureFormat, number>;
+} as Partial<Record<GPUTextureFormat, number>>;
 
 export const TEXTURE_ARRAY_TYPES = {
   // 8-bit formats
@@ -784,7 +784,7 @@ export const TEXTURE_ARRAY_TYPES = {
 
   // "depth32float-stencil8" feature
   "depth32float-stencil8": Uint32Array,
-} as Record<GPUTextureFormat, TypedArrayConstructor>;
+} as Partial<Record<GPUTextureFormat, TypedArrayConstructor>>;
 
 const TEXTURE_SHADER_TYPES = {
   // 8-bit formats
@@ -846,7 +846,7 @@ const TEXTURE_SHADER_TYPES = {
 
   // "depth32float-stencil8" feature
   "depth32float-stencil8": 'f32',
-} as Record<GPUTextureFormat, string>;
+} as Partial<Record<GPUTextureFormat, string>>;
 
 const TEXTURE_SAMPLE_TYPES = {
   // 8-bit formats
@@ -909,23 +909,26 @@ const TEXTURE_SAMPLE_TYPES = {
 
   // "depth32float-stencil8" feature
   "depth32float-stencil8": 'f32',
-} as Record<GPUTextureFormat, string>;
+} as Partial<Record<GPUTextureFormat, string>>;
 
 export const getTypedArraysBitCount = (ctor: TypedArrayConstructor) => TYPED_ARRAYS_BITCOUNT.get(ctor);
 
-export const getTextureArrayType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only') => {
+export const getTextureArrayType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only'): TypedArrayConstructor => {
   if (aspect === 'stencil-only') return Uint8Array;
-  return TEXTURE_ARRAY_TYPES[format];
+  if (!(format in TEXTURE_ARRAY_TYPES)) throw new Error("Unsupported texture format '${format}");
+  return TEXTURE_ARRAY_TYPES[format] ?? Float32Array;
 };
 
-export const getTextureSampleType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only') => {
+export const getTextureSampleType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only'): string => {
   if (aspect === 'stencil-only') return 'u32';
-  return TEXTURE_SAMPLE_TYPES[format];
+  if (!(format in TEXTURE_SAMPLE_TYPES)) throw new Error("Unsupported texture format '${format}");
+  return TEXTURE_SAMPLE_TYPES[format] ?? '<unknown>';
 };
 
-export const getTextureShaderType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only') => {
+export const getTextureShaderType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only'): string => {
   if (aspect === 'stencil-only') return 'vec4<u32>';
-  return TEXTURE_SHADER_TYPES[format];
+  if (!(format in TEXTURE_SHADER_TYPES)) throw new Error("Unsupported texture format '${format}");
+  return TEXTURE_SHADER_TYPES[format] ?? '<unknown>';
 };
 
 // @ts-ignore

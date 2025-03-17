@@ -1,6 +1,6 @@
 import type {
   UniformAttribute, UniformAttributeValue,
-  ShaderModule, UniformSource, StorageSource, DataBinding, TextureSource, LambdaSource, SamplerSource,
+  ShaderModule, StorageSource, DataBinding, TextureSource, LambdaSource, SamplerSource,
 } from './types';
 import { checkStorageType } from './storage';
 import { checkTextureType } from './texture';
@@ -27,7 +27,7 @@ export const makeShaderBindings = <T extends ShaderModule>(
  */
 export const makeShaderBinding = <T extends ShaderModule>(
   attribute: UniformAttribute | UniformAttributeValue,
-  source?: UniformSource | SamplerSource | StorageSource | TextureSource | LambdaSource<T> | T | any,
+  source?: SamplerSource | StorageSource | TextureSource | LambdaSource<T> | T | any,
 ): DataBinding<T> => {
   if (source != null) {
     if (source.gpuContext) {
@@ -42,10 +42,9 @@ export const makeShaderBinding = <T extends ShaderModule>(
       return {attribute, lambda};
     }
     if (source.buffer && (source.buffer instanceof GPUBuffer)) {
-      const uniform = source as UniformSource;
       const storage = source as StorageSource;
       checkStorageType(attribute, storage);
-      if (source.addressSpace === 'uniform') return {attribute, uniform};
+      if (source.addressSpace === 'uniform') return {attribute, uniform: storage};
       return {attribute, storage};
     }
     if (source.texture || source.view) {

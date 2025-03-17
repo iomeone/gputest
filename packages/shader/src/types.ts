@@ -95,7 +95,7 @@ export type BundleSummary = {
 
 export type DataBinding<T extends SymbolTableT = any> = {
   attribute: UniformAttribute,
-  uniform?: UniformSource,
+  uniform?: StorageSource,
   storage?: StorageSource,
   texture?: TextureSource,
   lambda?: LambdaSource<ShaderModule<T>>,
@@ -144,23 +144,7 @@ export type StorageSource = {
   byteLength?: number,
   colorSpace?: ColorSpace,
 
-  addressSpace?: 'storage',
-};
-
-export type UniformSource = {
-  buffer: GPUBuffer,
-  format: UniformFormat,
-  type?: ShaderModule,
-  length: number,
-  size: number[] | TypedArray,
-  version: number,
-
-  volatile?: number,
-  byteOffset?: number,
-  byteLength?: number,
-  colorSpace?: ColorSpace,
-
-  addressSpace: 'uniform',
+  addressSpace?: 'storage' | 'uniform',
 };
 
 export type FilteringType = 'filtering' | 'non-filtering' | 'comparison';
@@ -197,7 +181,7 @@ export type TextureSource = {
   aspect?: GPUTextureAspect,
 };
 
-export type ShaderSource = UniformSource | StorageSource | LambdaSource<ShaderModule> | TextureSource | SamplerSource | ShaderModule;
+export type ShaderSource = StorageSource | LambdaSource<ShaderModule> | TextureSource | SamplerSource | ShaderModule;
 
 export type UniformFormat = any | UniformAttribute[];
 
