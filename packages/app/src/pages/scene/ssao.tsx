@@ -134,7 +134,7 @@ export const SceneSSAOPage: LC = () => {
                   {/* Put print layer in its own pass so it can render on top of the debug pass */}
                   <Pass
                     overlay
-                    merge // Preserve depth buffer
+                    merge={!showAO} // Preserve depth buffer.. can't preserve when AO debug is on because depth buffer is mismatched
 
                     // Match SSAO overscan
                     overscan={{
