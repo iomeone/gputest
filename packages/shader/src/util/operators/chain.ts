@@ -15,7 +15,8 @@ export type MakeChainAccessor = (
   args: string[],
   from: string,
   to: string,
-  limit: number,
+  rest?: number,
+  length?: number,
 ) => string;
 
 const SYMBOLS = ['chain', 'from', 'to'];

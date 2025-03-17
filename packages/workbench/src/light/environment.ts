@@ -1,13 +1,14 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { ShaderModule, ShaderSource, UniformAttribute } from '@use-gpu/shader';
 
 import { patch, $set } from '@use-gpu/state';
 import { provide, useMemo } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { bundleToAttribute, chainTo } from '@use-gpu/shader/wgsl';
 
 import { EnvironmentContext } from '../providers/environment-provider';
 import { MaterialContext, useMaterialContext } from '../providers/material-provider';
 
+import { getSource } from '../hooks/useSource';
 import { getShader, useShader, useNoShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
@@ -31,6 +32,8 @@ import {
   SH_DIFFUSE  as SH_DIFFUSE_FIELD,
   SH_SPECULAR as SH_SPECULAR_FIELD,
 } from '@use-gpu/wgsl/material/env/field.wgsl';
+
+const ENV_ATTR = bundleToAttribute(getDefaultEnvironment);
 
 const PRESETS = {
   'park':  [SH_DIFFUSE_PARK, SH_SPECULAR_PARK],
@@ -56,7 +59,8 @@ export const Environment: LC<EnvironmentProps> = (props: EnvironmentProps) => {
   
   const exposure = useMemo(() => {
     if (!environment || gain == null) return environment;
-    return chainTo(environment, getShader(gainColor, [g], {IS_OPAQUE: true}));
+    const env = getSource(ENV_ATTR, environment);
+    return chainTo(env, getShader(gainColor, [g], {IS_OPAQUE: true}));
   }, [gain, environment, g]);
 
   const parent = useMaterialContext();

@@ -62,11 +62,11 @@ export const MaterialEnvMapPage: LC = () => {
               debugGrid={debugGrid}
             >{
               (cubeMap: ShaderSource | null, textureMap: TextureSource | null) =>
-                <LinearRGB tonemap="aces" gain={3}>
+                <LinearRGB tonemap="aces">
                   <Cursor cursor='move' />
                   <Pass lights>
 
-                    <Environment map={cubeMap} preset={envPreset}>
+                    <Environment map={cubeMap} preset={envPreset} gain={3}>
                       <Scene>
                         {
                           seq(8).flatMap(i =>
