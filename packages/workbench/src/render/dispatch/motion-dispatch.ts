@@ -32,6 +32,7 @@ export const MotionDispatch: LiveComponent = () => {
   const {next, uniforms} = useMotionUniforms(viewUniforms as any);
 
   // Motion-from-depth shader
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const getDepth = useTextureUVToXY(useTextureAccess(normalTarget.depth!)).shader;
   const getSample = useShader(getMotionSample, [getDepth, uniforms.reprojectionMatrix]);
   //const getSample = useShader(getMotionSample, [getDepth, uniforms.reprojectionMatrix, motionDebug]);

@@ -1,5 +1,4 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
 import type { LightEnv, PassFlags, PassResources, RenderComponents } from '../pass/types';
 
 import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';

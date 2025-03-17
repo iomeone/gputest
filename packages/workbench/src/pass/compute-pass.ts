@@ -78,7 +78,7 @@ export const ComputePass: LC<ComputePassProps> = memo((props: ComputePassProps) 
     device.queue.submit(queue);
 
     inspected.render.workgroups = ws;
-    inspectedrender.samples = ss;
+    inspected.render.samples = ss;
 
     return null;
   };

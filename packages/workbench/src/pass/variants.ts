@@ -19,6 +19,7 @@ export const makeGetVariants = (
 
   const getVariants = (!normals && !shadows && !picking)
      ? (virtual: VirtualDraw, hovered: boolean): Variants =>
+       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
        hovered ? [getRender(HOVERED_VARIANT)!] : getRender(virtual.mode, virtual.renderer)
 
      : (virtual: VirtualDraw, hovered: boolean): Variants => {

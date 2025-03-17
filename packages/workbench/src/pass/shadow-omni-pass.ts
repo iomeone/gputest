@@ -152,6 +152,10 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     },
     pass: uniforms,
     bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
   });
 
   return quote(yeet(() => {

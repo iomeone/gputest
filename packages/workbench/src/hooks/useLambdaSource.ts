@@ -1,5 +1,5 @@
 import type { ColorSpace, LambdaSource, Lazy, TypedArray, UniformFormat } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { ShaderModule } from '@use-gpu/shader';
 
 import { notEmptyString, resolve } from '@use-gpu/core';
 import { useMemo } from '@use-gpu/live';

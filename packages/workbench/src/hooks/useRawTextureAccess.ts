@@ -79,6 +79,7 @@ export const getTextureUVToXY = (
   size?: Lazy<VectorLike>,
   offset?: Lazy<VectorLike>,
 ): LambdaSource => {
-  const bound = getShader(offset ? textureUVToXYOffset : textureUVToXY, [texture, size ?? (() => texture.size), offset]);
-  return getLambdaSource(bound, texture);
+  const t = texture as LambdaSource;
+  const bound = getShader(offset ? textureUVToXYOffset : textureUVToXY, [texture, size ?? (() => t.size), offset]);
+  return getLambdaSource(bound, t);
 };

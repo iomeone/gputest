@@ -2,7 +2,7 @@ use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16 };
 use './ssao-weight'::{ normalWeight, depthWeight };
 
 const PREFILTER_SAMPLES = true;
-const BILATERAL_REPROJECTION = false;
+const BILATERAL_REPROJECTION = true;
 
 @link fn loadSample(xy: vec2<u32>) -> vec4<f32>;
 @link fn loadMotionXY(xy: vec2<u32>) -> vec2<f32>;

@@ -1,5 +1,5 @@
 import type { Ref } from '@use-gpu/live';
-import type { UniformPipe, StorageSource } from '@use-gpu/core';
+import type { StorageSource } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
 
 import { makeUniformBuffer, makeUniformPipe, uploadBuffer } from '@use-gpu/core';

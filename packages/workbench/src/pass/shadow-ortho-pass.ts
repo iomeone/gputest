@@ -81,6 +81,10 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrth
   const inspected = inspect({
     pass: uniforms,
     bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
   });
 
   const draw = quote(yeet(() => {

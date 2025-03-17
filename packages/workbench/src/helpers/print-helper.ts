@@ -90,7 +90,6 @@ export const PrintHelper: LC<PrintHelperProps> = (props: PrintHelperProps) => {
 
 export type PrintLayerProps = {
   helper?: ShaderPrinter,
-  limit?: number,
 
   width?: number,
   size?: number,
@@ -99,7 +98,7 @@ export type PrintLayerProps = {
   depthTest?: boolean,
 };
 
-export const PrintLayer: LC = (props: PrintLayerProps) => {
+export const PrintLayer: LC<PrintLayerProps> = (props: PrintLayerProps) => {
   const {size = 4, width = 2, depthTest = true, zBias = 1, helper} = props;
   const {attributes} = helper ? (useNoPrintContext(), helper) : usePrintContext();
 
@@ -114,7 +113,7 @@ export type PrintReadbackProps = {
   limit?: number,
 };
 
-export const PrintReadback: LC = (props: PrintLayerProps) => {
+export const PrintReadback: LC<PrintReadbackProps> = (props: PrintReadbackProps) => {
   const {limit = 50, helper} = props;
   const printedRef = useRef(0);
   const {attributes} = helper ? (useNoPrintContext(), helper) : usePrintContext();

@@ -1,7 +1,7 @@
 import type { DataBinding } from '@use-gpu/core';
-import type { PassApplyBindGroup, PassBindGroup, PassEnv, PassFlags, PassResources } from './types';
+import type { PassApplyBindGroup, PassBindGroup, PassBinding, PassEnv, PassFlags, PassResources } from './types';
 
-import { makeBindGroup, makeDataBindingsEntries, makeShaderBinding } from '@use-gpu/core';
+import { makeBindGroup, makeDataBindingsEntries, makeShaderBinding, ViewUniforms } from '@use-gpu/core';
 import { useMemo, useNoMemo, useOne } from '@use-gpu/live';
 import { toMurmur53 } from '@use-gpu/state';
 
@@ -59,9 +59,9 @@ export const useStandardBindGroup = (
 
     const resolvedBindings = [
       overscan ? overscanBinding : viewBinding,
-      lights && lightBinding,
-      shadows && shadowBinding,
-      ssao && ssaoBinding,
+      lights ? lightBinding : null,
+      shadows ? shadowBinding : null,
+      ssao ? ssaoBinding : null,
     ];
     
     const pipelineKey = resolvedBindings.reduce(
@@ -119,7 +119,7 @@ export const useNoApplyPassBindGroup = () => {
 
 export const useDynamicViewBinding = (
   passBindGroup: PassBindGroup,
-  maybeUniforms?: Record<string, any>,
+  maybeUniforms?: ViewUniforms,
 ) => {
   if (!passBindGroup) throw new Error("Missing bind group");
   
@@ -128,7 +128,7 @@ export const useDynamicViewBinding = (
   const [source, upload] = useUniformSource(ViewUniformsWGSL);
   const bindGroup = useMemo(() => ({
     ...passBindGroup,
-    bind: (env) => [source, ...passBindGroup.bind(env).slice(1)],
+    bind: (env: PassEnv) => [source, ...(passBindGroup.bind?.(env) ?? []).slice(1)],
   }), [passBindGroup, source]);
   
   return {bindGroup, cull, uniforms, upload};

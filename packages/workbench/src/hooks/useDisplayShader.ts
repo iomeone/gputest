@@ -1,4 +1,4 @@
-import type { TextureSource } from '@use-gpu/core';
+import type { LambdaSource, TextureSource } from '@use-gpu/core';
 import type { ShaderSource } from '@use-gpu/shader';
 
 import { useMemo, useOne } from '@use-gpu/live';
@@ -30,17 +30,17 @@ const HINT_SHADERS = {
   'stencil': displayStencil,
 };
 
-export const useMultiViewShader = (textures: ShaderSource[], empty?: boolean) =>
+export const useMultiViewShader = (textures: (ShaderSource | null | undefined)[], empty?: boolean) =>
   useMemo(() => getMultiViewShader(textures, empty), [textures, empty]);
 
-export const getMultiViewShader = (textures: ShaderSource[], empty?: boolean) => {
+export const getMultiViewShader = (textures: (ShaderSource | null | undefined)[], empty?: boolean) => {
   const n = textures.length + +!!empty;
   return getShader(getMultiViewSample, [n, ...textures]);
 };
 
 export const useDisplayShader = (texture: TextureSource) => useOne(() => getDisplayShader(texture), texture);
 
-export const getDisplayShader = (texture: TextureSource): ShaderSource => {
+export const getDisplayShader = (texture: TextureSource): LambdaSource => {
   const {aspect, format, size, hint} = texture;
 
   const f = getTextureSampleType(format, aspect);

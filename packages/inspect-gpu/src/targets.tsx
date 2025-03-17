@@ -210,7 +210,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
 
     if (isCube) {
       let t = texture as ShaderSource;
-      let s = getShader(isDepth ? displayCubeDepth : displayCubeColor, [t]);
+      const s = getShader(isDepth ? displayCubeDepth : displayCubeColor, [t]);
       t = getLambdaSource(s, texture);
       out.push(makeView(t));
 

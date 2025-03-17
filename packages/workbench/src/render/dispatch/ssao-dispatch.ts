@@ -1,6 +1,5 @@
 import type { LiveComponent, ArrowFunction } from '@use-gpu/live';
 import type { OffscreenTarget, UseGPURenderContext } from '@use-gpu/core';
-import type { RenderToPass } from '../../pass/types';
 
 import { yeet, useMemo, useOne, useNoOne, useRef } from '@use-gpu/live';
 
@@ -62,21 +61,34 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const [normalTarget, motionXYTarget, motionZTarget, sampleTarget, accumTarget, resolveTarget] = ssao as OffscreenTarget[];
   const {pixelRatio} = normalTarget;
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const normalContextDepth = normalContext.depth!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const normalContextSource = normalContext.source!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const motionContextXYSource = motionContext.sources![0];
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const motionContextZSource = motionContext.sources![1];
   
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const normalDepth = normalTarget.depth!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const normalSource = normalTarget.source!;
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const lastNormalDepth = normalTarget.depth!.history![0];
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const lastNormalSource = normalTarget.source!.history![0];
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const lastAccumSource = accumTarget.source!.history![0];
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const motionXYSource = motionXYTarget.source!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const motionZSource = motionZTarget.source!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const sampleSource = sampleTarget.source!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const accumSource = accumTarget.source!;
 
   const {ssao: ssaoDebug} = useDebugContext();

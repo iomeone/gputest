@@ -55,7 +55,7 @@ export const SceneSSAOPage: LC = () => {
   const view = (showAO: boolean) => (
     <DebugProvider
       debug={{
-        ssao: { showAO, pickAO: true },
+        ssao: { picking: true },
       }}
     >
       <Gather
@@ -94,7 +94,7 @@ export const SceneSSAOPage: LC = () => {
                     overscan={0.05}   // 5% extra render margin so SSAO does not disappear at edges
                     
                     debug={showAO ? 'ssao' : undefined}
-                    debugIndex={3}
+                    debugIndex={4}
                   >
 
                     <AmbientLight intensity={0.4} />
@@ -111,7 +111,7 @@ export const SceneSSAOPage: LC = () => {
                           </PBRMaterial>
                         </Node>
 
-                        <PBRMaterial xalbedoMap={texture} roughness={0.5}>
+                        <PBRMaterial albedoMap={texture} roughness={0.5}>
                           <Instances mesh={boxMesh} shaded>
                             {(Instance) => cubes.map((cube) => <Instance {...cube} />)}
                           </Instances>

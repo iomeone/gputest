@@ -108,7 +108,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
   const inspected = inspect({
     output: {
-      sources: [...gBuffer.sources, renderContext.source, renderContext.depth],
+      sources: [...(gBuffer.sources ?? []), renderContext.source, renderContext.depth],
     },
     pass: uniforms,
     bindings: dataBindings,
@@ -117,8 +117,9 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
       triangles: 0,
     },
   });
-
-  const getDepth = useTextureUVToXY(useTextureAccess(renderContext.depth)).shader;
+  
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const getDepth = useTextureUVToXY(useTextureAccess(renderContext.depth!)).shader;
   const copyDepthBuffer = useCopyDepth(depthCopyContext, getDepth);
 
   return quote(yeet(() => {

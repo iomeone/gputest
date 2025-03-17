@@ -80,7 +80,7 @@ export const useViewBinding = (
 export const useViewUniforms = (
   maybeUniforms?: Record<string, any>,
 ) => {
-  const uniforms = maybeUniforms ? (useNoOne(), maybeUniforms) : useOne(makeViewUniforms);
+  const uniforms = (maybeUniforms ? (useNoOne(), maybeUniforms) : useOne(makeViewUniforms)) as ViewUniforms;
   const {viewPosition, projectionViewFrustum} = uniforms;
   const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
 

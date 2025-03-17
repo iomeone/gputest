@@ -1,4 +1,4 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren, ArrowFunction } from '@use-gpu/live';
 import type { Renderable } from '../pass';
 
 import { use, yeet, memo, gather, useOne } from '@use-gpu/live';
@@ -76,7 +76,7 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
     },
   });
 
-  return gather(resolveMotion, (calls: {motion: Renderable}[]) => {
+  return gather(resolveMotion, (calls: {motion: ArrowFunction}[]) => {
 
     return quote(yeet(() => {
       let vs = 0;

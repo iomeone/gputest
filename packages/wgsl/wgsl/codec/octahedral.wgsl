@@ -27,6 +27,6 @@ fn signNotZero(xy: vec2<f32>) -> vec2<f32> {
 @export fn wrapOctahedral(o: vec2<f32>) -> vec2<f32> {
   var wrap = o;
   wrap = select(wrap, vec2<f32>(2.0 * sign(wrap.x) - wrap.x, -wrap.y), abs(wrap.x) > 1.0);
-  wrap = select(wrap, vec2<f32>(-wrap.x, 2.0 * sign(wrap.y) - wrap.y), abs(wrap.y) > -1.0);
+  wrap = select(wrap, vec2<f32>(-wrap.x, 2.0 * sign(wrap.y) - wrap.y), abs(wrap.y) > 1.0);
   return wrap;
 }
