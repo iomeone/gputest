@@ -339,7 +339,7 @@ export const updateFiber = <F extends ArrowFunction>(
     else morphFiberCall(fiber, c);
 
     pingFiber(fiber);
-    return fiber;
+    return;
   }
 
   // If fiber type changed, remount everything
@@ -411,7 +411,10 @@ export const updateFiber = <F extends ArrowFunction>(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       else fiber.yeeted!.value = undefined;
     }
-    else return;
+    else if (fiber.f === YEET) {
+      // Built-in ran but no new value, so don't ping
+      return;
+    }
   }
   // Mount normal node (may still be built-in)
   else {
@@ -419,8 +422,7 @@ export const updateFiber = <F extends ArrowFunction>(
   }
 
   pingFiber(fiber);
-
-  return fiber;
+  return;
 }
 
 // Mount one call on a fiber
