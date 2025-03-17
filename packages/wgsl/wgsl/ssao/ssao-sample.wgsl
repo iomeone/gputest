@@ -11,6 +11,7 @@ use '@use-gpu/wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld
 @link fn getJitterXY() -> vec2<u32>;
 
 @link fn getRadius() -> f32;
+@link fn getOpacity() -> f32;
 @link fn getFrame() -> u32;
 
 @optional @link fn getPick() -> vec2<i32> { return vec2<i32>(-1); };
@@ -244,6 +245,6 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
   }
 
   // Unorm [0..1] encoding for normal
-  let sample = vec4<f32>(worldBentNormal * .5 + .5, visibility);
+  let sample = vec4<f32>(worldBentNormal * .5 + .5, mix(1.0, visibility, getOpacity()));
   return sample;
 }

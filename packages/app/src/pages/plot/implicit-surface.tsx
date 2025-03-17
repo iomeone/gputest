@@ -111,6 +111,11 @@ const SHADOW_MAP_DIRECTIONAL = {
 
 const prefilteredEnvMap = ([texture]: TextureSource[]) => <PrefilteredEnvMap texture={texture} />;
 
+const ssaoOptions = {
+  opacity: 0.5,
+  radius: 0.5,
+};
+
 export const PlotImplicitSurfacePage: LC = () => {
 
   const colorizeValuesShader = wgsl`
@@ -146,7 +151,7 @@ export const PlotImplicitSurfacePage: LC = () => {
             <LinearRGB backgroundColor={BACKGROUND} tonemap="aces" gain={2}>
               <Cursor cursor="move" />
               <Camera>
-                <Pass lights shadows ssao={0.5}>
+                <Pass lights shadows ssao={ssaoOptions}>
                   <Environment map={envMap} preset={env} gain={1.0}>
                     <DirectionalLight position={[1, 3, 2]} color={[1, 1, 1]} intensity={0.5} shadowMap={SHADOW_MAP_DIRECTIONAL} />
                     <Plot>

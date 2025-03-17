@@ -32,7 +32,11 @@ export type SSAOPassProps = {
   } | number | true,
 };
 
+const DEFAULT_OPACITY = 1;
 const DEFAULT_RADIUS = 1;
+const DEFUALT_DEPTH_RAMP = 10;
+const DEFUALT_NORMAL_RAMP = 4;
+
 const ZERO: XY = [0, 0];
 
 const label = '<SSAOPass>';
@@ -50,6 +54,9 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
   
   const ssaoOptions = useOne(() => ({
     radius: DEFAULT_RADIUS,
+    opacity: DEFAULT_OPACITY,
+    depthRamp: DEFUALT_DEPTH_RAMP,
+    normalRamp: DEFUALT_NORMAL_RAMP,
     ...(
       ssaoProp === true ? {} :
       typeof ssaoProp === 'number' ? {radius: ssaoProp} :

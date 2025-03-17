@@ -13,7 +13,6 @@ use './ssao-weight'::{ normalWeight, depthWeight };
 @link fn getSize() -> vec2<f32>;
 @link fn getXYJitter() -> vec2<u32>;
 
-
 const EPS = 1e-6;
 
 @export fn getSSAOResolve(targetUV: vec2<f32>) -> vec4<f32> {

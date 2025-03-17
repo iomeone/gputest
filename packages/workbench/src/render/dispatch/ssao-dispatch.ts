@@ -26,9 +26,11 @@ export type SSAODispatchProps = {
   globalLayout?: GPUBindGroupLayout,
 
   mode: 'normal' | 'motion-xy' | 'motion-z' | 'sample' | 'accum' | 'resolve',
+
   radius: number,
-  depthRamp?: number,
-  normalRamp?: number,
+  opacity: number,
+  depthRamp: number,
+  normalRamp: number,
   
   targetContext: UseGPURenderContext,
   descriptor: GPURenderPassDescriptor,
@@ -45,9 +47,10 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     globalLayout,
     
     mode, // static
-    radius = 32,
-    depthRamp = 10,
-    normalRamp = 4,
+    radius,
+    opacity,
+    depthRamp,
+    normalRamp,
 
     targetContext,
     descriptor,
@@ -115,6 +118,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   };
 
   const ssaoRadius = useShaderRef(radius);
+  const ssaoOpacity = useShaderRef(opacity);
   const ssaoWeights = useMemo(() => ({DEPTH_RAMP: depthRamp, NORMAL_RAMP: normalRamp}), [depthRamp, normalRamp]);
 
   // Debug viz
@@ -167,6 +171,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
       downscaleSize,
       xyJitter,
       ssaoRadius,
+      ssaoOpacity,
       frame,
       ...debugArgs,
     ], defs);
