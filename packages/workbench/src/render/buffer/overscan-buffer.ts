@@ -10,24 +10,36 @@ import { useViewContext, useViewUniforms, useViewBinding } from '../../providers
 import { mat4 } from 'gl-matrix';
 
 export type OverscanBufferProps = {
-  overscan?: number,
+  overscan: {
+    range?: number,
+    all?: boolean,
+  } | number,
 };
 
 export const OverscanBuffer: LC = memo((props: OverscanBufferProps) => {
   const {
-    overscan = 0,
+    overscan: overscanProp,
   } = props;
+  
+  const overscanOptions = useOne(() => ({
+    range: 0.05,
+    ...(
+      typeof overscanProp === 'number' ? {range: overscanProp} :
+      overscanProp
+    ),
+  }), overscanProp);
 
   const renderContext = useRenderContext();
 
+  const {range, all} = overscanOptions;
   const [matrix, w, h] = useMemo(() => {
     const {width, height} = renderContext;
 
     const w1 = width;
     const h1 = height;
 
-    const w2 = width * (1 + overscan * 2);
-    const h2 = height * (1 + overscan * 2);
+    const w2 = width * (1 + range * 2);
+    const h2 = height * (1 + range * 2);
 
     const sx = w1 / w2;
     const sy = h1 / h2;
@@ -40,7 +52,7 @@ export const OverscanBuffer: LC = memo((props: OverscanBufferProps) => {
     );
 
     return [m, w2, h2];
-  }, [renderContext, overscan]);
+  }, [renderContext, range]);
 
   const overscanMatrix = useShaderRef(matrix);
 
@@ -86,9 +98,21 @@ export const OverscanBuffer: LC = memo((props: OverscanBufferProps) => {
     upload();
   };
 
+  const bindings = {
+    overscan: binding,
+  };
+  const views = {
+    pre: { cull, uniforms }
+  };
+
+  if (all) {
+    bindings.view = binding;
+    views.view = { cull, uniforms };
+  }
+
   return yeet({
     dispatches: [update],
-    bindings: { overscan: binding },
-    views: { pre: { cull, uniforms }},
+    bindings,
+    views,
   });
 }, 'OverscanBuffer');

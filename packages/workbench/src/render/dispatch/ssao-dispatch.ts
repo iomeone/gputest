@@ -1,10 +1,10 @@
-import type { LiveComponent, ArrowFunction } from '@use-gpu/live';
+import type { LiveComponent, ArrowFunction, Ref } from '@use-gpu/live';
 import type { OffscreenTarget, UseGPURenderContext } from '@use-gpu/core';
 
-import { yeet, useMemo, useOne, useNoOne, useRef } from '@use-gpu/live';
+import { yeet, useMemo, useOne, useRef } from '@use-gpu/live';
 
 import { usePassContext } from '../../providers/pass-provider';
-import { useKeyboard, useMouse, useNoKeyboard, useNoMouse } from '../../providers/event-provider';
+import { useKeyboard, useMouse } from '../../providers/event-provider';
 
 import { useTextureAccess, useTextureUVToXY } from '../../hooks/useRawTextureAccess';
 import { useShader } from '../../hooks/useShader';
@@ -32,6 +32,9 @@ export type SSAODispatchProps = {
   
   targetContext: UseGPURenderContext,
   descriptor: GPURenderPassDescriptor,
+
+  // Debug picking
+  mouseRef: Ref<[number, number]>,
 };
 
 const NO_DEBUG_ARGS: any[] = [];
@@ -48,6 +51,8 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
 
     targetContext,
     descriptor,
+
+    mouseRef,
   } = props;
 
   const {
@@ -91,8 +96,6 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const accumSource = accumTarget.source!;
 
-  const {ssao: ssaoDebug} = useDebugContext();
-
   const frame = useRef(0);
 
   const overscanSize = useShaderRef([normalContext.width, normalContext.height]);
@@ -116,44 +119,13 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const ssaoWeights = useMemo(() => ({DEPTH_RAMP: depthRamp, NORMAL_RAMP: normalRamp}), [depthRamp, normalRamp]);
 
   // Debug viz
-  const hasDebugPicking = !!ssaoDebug?.picking
   let debugArgs = NO_DEBUG_ARGS;
-  let clearDebugBuffer: ArrowFunction | null = null;
-  let shouldClear = false;
-
-  if (hasDebugPicking) {
+  if (mouseRef) {
     const {swap, shaders: {printPoint, printLine, printData}} = usePrintContext();
-    const {keyboard} = useKeyboard();
-    const {mouse} = useMouse();
-
-    const shouldPick = keyboard.keys.alt;
-    clearDebugBuffer = swap;
-
-    useOne(() => { if (shouldPick) shouldClear = true; }, shouldPick);
-    useOne(() => { if (shouldPick) shouldClear = true; }, mouse);
-
-    const u = mouse.x * pixelRatio / resolveTarget.width;
-    const v = mouse.y * pixelRatio / resolveTarget.height;
-    
-    const m = overscanMatrix?.current;
-
-    const sx = m?.[0] ?? 1;
-    const sy = m?.[5] ?? 1;
-    const dx = (1 - sx) / 2;
-    const dy = (1 - sy) / 2;
-  
-    const mx = Math.round((u * sx + dx) * normalContext.width / 2) * 2;
-    const my = Math.round((v * sy + dy) * normalContext.height / 2) * 2;
-
-    const pick = useShaderRef([shouldPick ? mx : -1, shouldPick ? my : -1]);    
-    debugArgs = [pick, printPoint, printLine, printData];
+    debugArgs = [mouseRef, printPoint, printLine, printData];
   }
   else {
     useNoPrintContext();
-    useNoKeyboard();
-    useNoMouse();
-    useNoOne();
-    useNoOne();
   }
 
   type Draw = (r: GPURenderPassEncoder) => void;
@@ -184,7 +156,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     draw = useCopySample(targetContext, getMotionZ, globalLayout);
   }
   else if (mode === 'sample') {
-    const defs = useOne(() => ({ HAS_DEBUG_PICKING: hasDebugPicking }));
+    const defs = useOne(() => ({ HAS_DEBUG_PICKING: !!mouseRef }));
 
     const loadDepth = useTextureAccess(normalDepth);
     const loadNormal16 = useTextureAccess(normalSource);
@@ -268,11 +240,6 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   if (!draw) return null;
 
   const command = (commandEncoder: GPUCommandEncoder) => {
-    if (mode === 'accum') {
-      if (shouldClear) clearDebugBuffer?.();
-      shouldClear = false;
-    }
-
     targetContext.swap?.();
 
     const passEncoder = commandEncoder.beginRenderPass(descriptor);
@@ -286,6 +253,66 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   return yeet({ ssao: command });
 };
 
+export type SSAODebugPickingProps = {
+  mouseRef: Ref<[number, number]>,
+};
+
+// Debug viz mouse picking
+// This logic is contained here so as to not invalidate the actual render dispatches on mouse move.
+export const SSAODebugPicking = (props: SSAODebugPickingProps) => {
+  const {mouseRef} = props;
+  const {ssao: ssaoDebug} = useDebugContext();
+
+  const {
+    buffers: {ssao: [normalTarget,,,,, resolveTarget]},
+    views: { pre: { uniforms: { overscanMatrix }}},
+  } = usePassContext();
+
+  // Hook into pre-existing print helper context
+  const {swap: clearDebugBuffer} = usePrintContext();
+
+  // Pick when holding ALT
+  const {keyboard} = useKeyboard();
+  const {mouse} = useMouse();
+
+  const shouldPick = keyboard.keys.alt;
+  let shouldClearRef = useRef(false);
+
+  // Clear when starting picking, or when moving mouse
+  useOne(() => { if (shouldPick) shouldClearRef.current = true; }, shouldPick);
+  useOne(() => { if (shouldPick) shouldClearRef.current = true; }, mouse);
+
+  const {pixelRatio} = resolveTarget;
+  const u = mouse.x * pixelRatio / resolveTarget.width;
+  const v = mouse.y * pixelRatio / resolveTarget.height;
+
+  // Reproject UV into overscan range
+  const m = overscanMatrix?.current;
+  const applyOverscan = !!ssaoDebug?.overscan;
+
+  const sx = applyOverscan ? m?.[0] ?? 1 : 1;
+  const sy = applyOverscan ? m?.[5] ?? 1 : 1;
+  const dx = applyOverscan ? (1 - sx) / 2 : 0;
+  const dy = applyOverscan ? (1 - sy) / 2 : 0;
+  
+  // Snap to even source pixels
+  const mx = Math.round((u * sx + dx) * normalTarget.width) * 2;
+  const my = Math.round((v * sy + dy) * normalTarget.height) * 2;
+
+  mouseRef.current = [shouldPick ? mx : -1, shouldPick ? my : -1];
+
+  return useMemo(() => {
+    const command = (commandEncoder: GPUCommandEncoder) => {
+      if (!shouldClearRef.current) return;
+
+      clearDebugBuffer?.();
+      shouldClearRef.current = false;
+    };
+
+    return yeet({ ssao: command });
+  }, [clearDebugBuffer]);
+};
+
 const getJitterBayer2x2Alternating = (jitter: number) => {
   const i = jitter & 0x7;
   const a = (i & 1);
@@ -296,5 +323,5 @@ const getJitterBayer2x2Alternating = (jitter: number) => {
 
   // Note: jitter disabled for now, need to investigate if it's useful
   return [0, 0];
-  return [x, y];
+  //return [x, y];
 };

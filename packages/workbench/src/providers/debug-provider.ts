@@ -7,6 +7,7 @@ import { patch } from '@use-gpu/state';
 export const DEBUG_DEFAULTS = {
   ssao: {
     picking: false,
+    overscan: true,
   },
   voxel: {
     iterations: false,

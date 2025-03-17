@@ -1,7 +1,9 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { XY } from '@use-gpu/core';
 
-import { use, yeet, memo, gather, useOne } from '@use-gpu/live';
+import { use, yeet, memo, gather, useOne, useRef } from '@use-gpu/live';
 
+import { useDebugContext } from '../providers/debug-provider';
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers';
@@ -11,7 +13,7 @@ import { useInspectable } from '../hooks/useInspectable'
 import { useApplyPassBindGroup } from '../pass/bindings';
 import { getRenderPassDescriptor } from './util';
 
-import { SSAODispatch } from '../render/dispatch/ssao-dispatch';
+import { SSAODispatch, SSAODebugPicking } from '../render/dispatch/ssao-dispatch';
 
 const {quote} = QueueReconciler;
 
@@ -31,6 +33,7 @@ export type SSAOPassProps = {
 };
 
 const DEFAULT_RADIUS = 1;
+const ZERO: XY = [0, 0];
 
 const label = '<SSAOPass>';
 
@@ -63,6 +66,10 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
     views: {pre: {uniforms}},
   } = usePassContext();
 
+  const {ssao: ssaoDebug} = useDebugContext();
+  const hasDebugPicking = !!ssaoDebug?.picking;
+  const mouseRef = useRef(ZERO);
+
   const [normalContext, motionXYContext, motionZContext, sampleContext, accumContext, resolveContext] = ssao;
 
   const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
@@ -93,6 +100,7 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
     resolveContext);
 
   const resolveSSAO = useOne(() => [
+    hasDebugPicking ? use(SSAODebugPicking, {mouseRef}) : null,
     use(SSAODispatch, {
       ...ssaoOptions,
       mode: 'normal',
@@ -119,6 +127,7 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
 
       bindPass,
       globalLayout,
+      mouseRef: hasDebugPicking ? mouseRef : undefined,
     }),
     use(SSAODispatch, {
       ...ssaoOptions,

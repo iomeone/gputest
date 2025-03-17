@@ -1,7 +1,7 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { GPUGeometry, TextureSource } from '@use-gpu/core';
 
-import React, { Gather } from '@use-gpu/live';
+import React, { Gather, useCallback, useMemo } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 import { seq } from '@use-gpu/core';
 
@@ -12,6 +12,7 @@ import {
   Cursor,
   DebugProvider, PrintLayer, PrintHelper,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
+  useKeyboard,
 } from '@use-gpu/workbench';
 
 import {
@@ -29,6 +30,16 @@ const sampler = {
 const boxGeometry = makeBoxGeometry({ width: 2 });
 const planeGeometry = makePlaneGeometry({ width: 100, height: 100, axes: 'xz' });
 const sphereGeometry = makeSphereGeometry({ width: 2, tile: [6, 3] });
+
+const RESOURCES = [
+  <GeometryData {...boxGeometry} />,
+  <GeometryData {...planeGeometry} />,
+  <GeometryData {...sphereGeometry} />,
+  <ImageTexture url="/textures/test.png" sampler={sampler} />,
+];
+
+const DEBUG_SSAO_PICKING = {
+};
 
 const rnd = () => Math.random() * 2.0 - 1.0;
 
@@ -52,47 +63,46 @@ const spheres = seq(30).map(() => {
 
 export const SceneSSAOPage: LC = () => {
 
-  const view = (showAO: boolean) => (
-    <DebugProvider
-      debug={{
-        ssao: { picking: true },
-      }}
-    >
-      <Gather
-        children={[
-          <GeometryData {...boxGeometry} />,
-          <GeometryData {...planeGeometry} />,
-          <GeometryData {...sphereGeometry} />,
-          <ImageTexture url="/textures/test.png" sampler={sampler} />,
-        ]}
-        then={([
-          boxMesh,
-          planeMesh,
-          sphereMesh,
-          texture,
-        ]: [
-          GPUGeometry,
-          GPUGeometry,
-          GPUGeometry,
-          TextureSource,
-        ]) => (
+  const {keyboard: {keys}} = useKeyboard();
+
+  const ssaoOptions = {
+    radius: 2,      // World-space radius
+    depthRamp: 10,  // Slope of reprojection depth weight (higher = stricter)
+    normalRamp: 3,  // Slope of reprojection normal weight (higher = stricter)
+  };
+
+  // 5% extra render margin so SSAO does not disappear at edges
+  const overscan = 0.05;
+
+  const view = useCallback((showAO: boolean, renderLive: boolean) => (
+    <Gather
+      children={RESOURCES}
+      then={([
+        boxMesh,
+        planeMesh,
+        sphereMesh,
+        texture,
+      ]: [
+        GPUGeometry,
+        GPUGeometry,
+        GPUGeometry,
+        TextureSource,
+      ]) => (
+        <DebugProvider debug={{
+          ssao: { picking: true, overscan: !showAO },
+        }}>
           <LinearRGB tonemap="aces">
             <Cursor cursor='move' />
             <Camera>
 
               {/* Ensure at least 64 frames for SSAO noise to converge */}
-              <Loop converge={64}>
+              <Loop live={renderLive} converge={64}>
 
                 <PrintHelper count={4096}>
                   <Pass
                     lights
-                    ssao={{
-                      radius: 2,      // World-space radius
-                      depthRamp: 10,  // Slope of reprojection depth weight (higher = stricter)
-                      normalRamp: 3,  // Slope of reprojection normal weight (higher = stricter)
-                    }}
-                    overscan={0.05}   // 5% extra render margin so SSAO does not disappear at edges
-                    
+                    ssao={ssaoOptions}
+                    overscan={overscan}
                     debug={showAO ? 'ssao' : undefined}
                     debugIndex={4}
                   >
@@ -122,9 +132,20 @@ export const SceneSSAOPage: LC = () => {
 
                       </Scene>
                     </Environment>
+                  </Pass>
 
+                  {/* Put print layer in its own pass so it can render on top of the debug pass */}
+                  <Pass
+                    overlay
+                    merge // Preserve depth buffer
+
+                    // Match SSAO overscan
+                    overscan={{
+                      range: 0.05,
+                      all: showAO,
+                    }}
+                  >
                     <PrintLayer size={6} width={3} />
-
                   </Pass>
 
                 </PrintHelper>
@@ -132,10 +153,10 @@ export const SceneSSAOPage: LC = () => {
               </Loop>
             </Camera>
           </LinearRGB>
-        )}
-      />
-    </DebugProvider>
-  );
+        </DebugProvider>
+      )}
+    />
+  ), []);
 
   const root = document.querySelector('#use-gpu .canvas');
 
@@ -144,7 +165,7 @@ export const SceneSSAOPage: LC = () => {
     <SSAOControls
       container={root}
       render={({showAO}) =>
-        view(showAO)
+        useMemo(() => view(showAO, keys.alt), [showAO, keys.alt])
       }
     />
   </>);

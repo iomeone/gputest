@@ -12,7 +12,7 @@ const STYLE = {
   //marginLeft: '-100px',
 
   bottom: 0,
-  width: '300px',
+  width: '420px',
   padding: '20px',
   background: 'rgba(0, 0, 0, .75)',
 };
@@ -36,7 +36,9 @@ export const SSAOControls: LC<SSAOControlsProps> = (props: SSAOControlsProps) =>
       style: STYLE,
       children: (<>
         <div>
-          <label><input type="checkbox" checked={showAO} onChange={(e) => setShowAO(e.target.checked)} /> Show Ambient Occlusion</label>
+          <label><input type="checkbox" checked={showAO} onChange={(e) => setShowAO(e.target.checked)} /> Show Ambient Occlusion Samples</label>
+          
+          <div style={{paddingTop: 20}}>Hold [ALT] to visualize occlusion rays for the selected pixel</div>
         </div>
       </>)
     }),

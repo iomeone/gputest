@@ -36,6 +36,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     shadows = false,
     picking = false,
     ssao = false,
+
     overscan = 0,
 
     overlay = false,
@@ -76,7 +77,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     useNoViewBuffer();
 
     const resources = useOne(() => [
-      use(ViewBuffer, options),
+      !overscan?.all ? use(ViewBuffer, options) : null,
       lights ? use(LightBuffer, options) : null,
       shadows ? use(ShadowBuffer, options) : null,
       picking ? use(PickingBuffer, options) : null,
