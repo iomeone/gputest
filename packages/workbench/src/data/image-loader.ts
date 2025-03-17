@@ -76,6 +76,7 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
     else if (format === 'rgbm16') {
       const arrayBuffer = await response.arrayBuffer();
 
+      // @ts-ignore
       const decoder = new ImageDecoder({
         data: arrayBuffer,
         type: mime,
