@@ -80,8 +80,8 @@ export const SceneSSAOPage: LC = () => {
             <Cursor cursor='move' />
             <Camera>
 
-              {/* Ensure at least 32 frames for SSAO noise to converge */}
-              <Loop converge={32}>
+              {/* Ensure at least 64 frames for SSAO noise to converge */}
+              <Loop converge={64}>
 
                 <PrintHelper count={4096}>
                   <Pass
@@ -98,7 +98,7 @@ export const SceneSSAOPage: LC = () => {
                   >
 
                     <AmbientLight intensity={0.4} />
-                    <Environment preset="pisa" gain={1.8}>
+                    <Environment preset="pisa" gain={3}>
                       <Scene>
 
                         <Node position={[0, -2.001, 0]}>

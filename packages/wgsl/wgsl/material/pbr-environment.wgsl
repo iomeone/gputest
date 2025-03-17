@@ -2,7 +2,6 @@ use '@use-gpu/wgsl/fragment/pbr'::{ IBL, IBLResult, environmentBRDF };
 use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
 
 @link fn sampleEnvironment(uvw: vec3<f32>, sigma: f32, ddx: vec3<f32>, ddy: vec3<f32>) -> vec4<f32>;
-@optional @link fn getGain() -> f32 { return 1.0; };
 
 fn sqr(x: f32) -> f32 { return x * x; }
 
@@ -40,5 +39,5 @@ fn varianceForRoughness(roughness: f32) -> f32 {
   let diffuse = Fd * sampleEnvironment(bentNormal, -1.0, dfx, dfy).xyz;
   let specular = max(vec3<f32>(0.0), brdf.x + Fs * brdf.y) * sampleEnvironment(R, sigma, dfx, dfy).xyz;
 
-  return (diffuse + specular) * occlusion * getGain();
+  return (diffuse + specular) * occlusion;
 }

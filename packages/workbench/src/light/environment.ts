@@ -3,6 +3,7 @@ import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
 import { patch, $set } from '@use-gpu/state';
 import { provide, useMemo } from '@use-gpu/live';
+import { chainTo } from '@use-gpu/shader/wgsl';
 
 import { EnvironmentContext } from '../providers/environment-provider';
 import { MaterialContext, useMaterialContext } from '../providers/material-provider';
@@ -12,6 +13,7 @@ import { useShaderRef } from '../hooks/useShaderRef';
 
 import { getDefaultEnvironment } from '@use-gpu/wgsl/material/lights-default-env.wgsl';
 import { applyPBREnvironment } from '@use-gpu/wgsl/material/pbr-environment.wgsl';
+import { gainColor } from '@use-gpu/wgsl/fragment/gain.wgsl';
 
 import {
   SH_DIFFUSE  as SH_DIFFUSE_PARK,
@@ -51,18 +53,23 @@ export const Environment: LC<EnvironmentProps> = (props: EnvironmentProps) => {
     : useShader(getDefaultEnvironment, [...PRESETS[preset as any] ?? PRESETS.park]);
 
   const g = useShaderRef(gain);
+  
+  const exposure = useMemo(() => {
+    if (!environment || gain == null) return environment;
+    return chainTo(environment, getShader(gainColor, [g], {IS_OPAQUE: true}));
+  }, [gain, environment, g]);
 
   const parent = useMaterialContext();
   const context = useMemo(() => {
     return patch(parent, {
       shaded: {
-        applyEnvironment: $set(environment ? getShader(applyPBREnvironment, [environment, g]) : null as ShaderModule | null | undefined),
+        applyEnvironment: $set(environment ? getShader(applyPBREnvironment, [exposure]) : null as ShaderModule | null | undefined),
       },
     });
-  }, [environment, parent, g])
+  }, [exposure, parent, g])
 
   return (
-    provide(EnvironmentContext, environment,
+    provide(EnvironmentContext, exposure,
       provide(MaterialContext, context, children)
     )
   );
