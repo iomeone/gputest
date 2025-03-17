@@ -102,7 +102,6 @@ export const useApplyPassBindGroup = (
   const bindPass = useMemo(() => {
     const entries = makeDataBindingsEntries(device, values);
     const bindGroup = makeBindGroup(device, layout, entries, `PassBindGroup/${label ?? 'Apply'}`);
-    console.log('new bind group', label)
 
     return (passEncoder: GPURenderPassEncoder) => {
       passEncoder.setBindGroup(0, bindGroup);
