@@ -1,4 +1,4 @@
-import type { LiveComponent, ArrowFunction, Ref } from '@use-gpu/live';
+import type { LiveComponent, Ref } from '@use-gpu/live';
 import type { OffscreenTarget, UseGPURenderContext } from '@use-gpu/core';
 
 import { yeet, useMemo, useOne, useRef } from '@use-gpu/live';
@@ -63,8 +63,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const [normalContext] = normal;
   const [motionContext] = motion;
 
-  const [normalTarget, motionXYTarget, motionZTarget, sampleTarget, accumTarget, resolveTarget] = ssao as OffscreenTarget[];
-  const {pixelRatio} = normalTarget;
+  const [normalTarget, motionXYTarget, motionZTarget, sampleTarget, accumTarget] = ssao as OffscreenTarget[];
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const normalContextDepth = normalContext.depth!;
@@ -104,11 +103,11 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const {current: os} = overscanSize;
   const {current: ds} = downscaleSize;
 
-  const xyJitter = () => getJitterBayer2x2Alternating(frame.current);
+  const xyJitter = () => getNoJitter(frame.current);
   const uvScale = useShaderRef([ds[0] / os[0] * 2, ds[1] / os[1] * 2]);
   const uvJitterDelta = () => {
-    const [x1, y1] = getJitterBayer2x2Alternating(frame.current);
-    const [x2, y2] = getJitterBayer2x2Alternating(frame.current - 1);
+    const [x1, y1] = getNoJitter(frame.current);
+    const [x2, y2] = getNoJitter(frame.current - 1);
     return [
       (x1 - x2) / os[0],
       (y1 - y2) / os[1],
@@ -121,7 +120,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   // Debug viz
   let debugArgs = NO_DEBUG_ARGS;
   if (mouseRef) {
-    const {swap, shaders: {printPoint, printLine, printData}} = usePrintContext();
+    const {shaders: {printPoint, printLine, printData}} = usePrintContext();
     debugArgs = [mouseRef, printPoint, printLine, printData];
   }
   else {
@@ -276,7 +275,7 @@ export const SSAODebugPicking = (props: SSAODebugPickingProps) => {
   const {mouse} = useMouse();
 
   const shouldPick = keyboard.keys.alt;
-  let shouldClearRef = useRef(false);
+  const shouldClearRef = useRef(false);
 
   // Clear when starting picking, or when moving mouse
   useOne(() => { if (shouldPick) shouldClearRef.current = true; }, shouldPick);
@@ -302,7 +301,7 @@ export const SSAODebugPicking = (props: SSAODebugPickingProps) => {
   mouseRef.current = [shouldPick ? mx : -1, shouldPick ? my : -1];
 
   return useMemo(() => {
-    const command = (commandEncoder: GPUCommandEncoder) => {
+    const command = () => {
       if (!shouldClearRef.current) return;
 
       clearDebugBuffer?.();
@@ -313,6 +312,10 @@ export const SSAODebugPicking = (props: SSAODebugPickingProps) => {
   }, [clearDebugBuffer]);
 };
 
+// Note: jitter disabled for now, need to investigate if it's useful
+const getNoJitter = () => [0, 0];
+
+/*
 const getJitterBayer2x2Alternating = (jitter: number) => {
   const i = jitter & 0x7;
   const a = (i & 1);
@@ -321,7 +324,6 @@ const getJitterBayer2x2Alternating = (jitter: number) => {
   const x = (i & 4) ? a : b;
   const y = (i & 4) ? b : a;
 
-  // Note: jitter disabled for now, need to investigate if it's useful
-  return [0, 0];
-  //return [x, y];
+  return [x, y];
 };
+*/

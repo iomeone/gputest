@@ -38,9 +38,6 @@ const RESOURCES = [
   <ImageTexture url="/textures/test.png" sampler={sampler} />,
 ];
 
-const DEBUG_SSAO_PICKING = {
-};
-
 const rnd = () => Math.random() * 2.0 - 1.0;
 
 const cubes = seq(30).map(() => {
@@ -61,18 +58,18 @@ const spheres = seq(30).map(() => {
   };
 });
 
+const ssaoOptions = {
+  radius: 2,      // World-space radius
+  depthRamp: 10,  // Slope of reprojection depth weight (higher = stricter)
+  normalRamp: 3,  // Slope of reprojection normal weight (higher = stricter)
+};
+
+// 5% extra render margin so SSAO does not disappear at edges
+const overscan = 0.05;
+
 export const SceneSSAOPage: LC = () => {
 
   const {keyboard: {keys}} = useKeyboard();
-
-  const ssaoOptions = {
-    radius: 2,      // World-space radius
-    depthRamp: 10,  // Slope of reprojection depth weight (higher = stricter)
-    normalRamp: 3,  // Slope of reprojection normal weight (higher = stricter)
-  };
-
-  // 5% extra render margin so SSAO does not disappear at edges
-  const overscan = 0.05;
 
   const view = useCallback((showAO: boolean, renderLive: boolean) => (
     <Gather
@@ -165,6 +162,8 @@ export const SceneSSAOPage: LC = () => {
     <SSAOControls
       container={root}
       render={({showAO}) =>
+        // React doesn't like a useMemo in a render prop, but it's fine in Live
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         useMemo(() => view(showAO, keys.alt), [showAO, keys.alt])
       }
     />
