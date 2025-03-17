@@ -33,6 +33,7 @@ fn main(
   var outColor = vec4<f32>(1.0, 1.0, 1.0, fragAlpha);
 
   var surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition, fragCoord);
+  outColor = surface.albedo;
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
   if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
@@ -64,13 +65,13 @@ struct WithDepth {
   var outColor = vec4<f32>(1.0, 1.0, 1.0, fragAlpha);
 
   let surface = getSurface(outColor, fragUV, fragST, normal, fragTangent, fragPosition, fragCoord);
-  outColor = getLight(surface);
+  outColor = surface.albedo;
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
   if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
   
   return WithDepth(
-    vec4<u32>(encodeNormal16(surface.normal.xyz), 0u, 0u),
     surface.depth,
+    vec4<u32>(encodeNormal16(surface.normal.xyz), 0u, 0u),
   );
 }

@@ -48,8 +48,8 @@ const ANIMATED_LIGHT = Array(N+1).fill(0).map((_, i) => [
 ]) as Keyframe[];
 
 const STATIC_LIGHTS = [
-  [[-15, 12, -28, 1], [1, .5, .5, 1], 40*40*.5],
-  [[-20, 15, 10, 1], [.5, .75, 1, 1], 40*40*.25],
+  [[-15, 12, -28, 1], [1, .5, .5, 1], 40*40*.125],
+  [[-20, 15, 10, 1], [.5, .75, 1, 1], 40*40*.125],
 ] as [number[], number[], number][];
 
 const WHITE = [1, 1, 1, 1];
@@ -70,10 +70,10 @@ export const GeometryVoxelPage: LC = () => {
       <LinearRGB tonemap="aces" gain={2} samples={1}>
         <Cursor cursor='move' />
         <Camera>
-          <Pass lights shadows>
+          <Pass lights shadows ssao={2}>
             <AmbientLight color={[1, 1, 1, 1]} intensity={0.01} />
 
-            <Environment preset="none">
+            <Environment preset="park">
               <Scene>
                 <Node rotation={[90, 180, 0]}>
                   <Primitive>
@@ -127,7 +127,7 @@ export const GeometryVoxelPage: LC = () => {
             </Environment>
 
             <Animate loop ease="linear" keyframes={ANIMATED_LIGHT} prop="position" render={(position) =>
-              <PointLight position={position} color={WHITE} intensity={40*40} shadowMap={SHADOW_MAP_POINT} debug />
+              <PointLight position={position} color={WHITE} intensity={30*30} shadowMap={SHADOW_MAP_POINT} debug />
             } />
             {STATIC_LIGHTS.map(([position, color, intensity]) =>
               <PointLight position={position} color={color} intensity={intensity} shadowMap={SHADOW_MAP_POINT} debug />
