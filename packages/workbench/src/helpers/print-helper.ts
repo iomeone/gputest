@@ -10,7 +10,7 @@ import { useScratchSource } from '../hooks/useScratchSource';
 import { getShader } from '../hooks/useShader';
 import { useRawSource } from '../hooks/useRawSource';
 import { getRenderFunc } from '../hooks/useRenderProp';
-import { PassReconciler } from '../reconcilers';
+import { PassReconciler } from '../reconcilers/index';
 
 import { LineLayer } from '../layers/line-layer';
 import { PointLayer } from '../layers/point-layer';
