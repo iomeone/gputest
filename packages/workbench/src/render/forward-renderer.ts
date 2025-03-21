@@ -100,7 +100,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     picking = !!buffers.picking,
   } = options as Record<string, any>;
 
-  const flags = useMemo(() => ({
+  const extendedFlags = useMemo(() => ({
     overlay,
     merge,
     overscan,
@@ -147,15 +147,16 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
   }) : combined;
 
   // Pass bindings
-  const bindGroups = useStandardBindGroups(resources, flags);
+  const bindGroups = useStandardBindGroups(resources, extendedFlags);
 
   // Render variants
-  const variants = useMakeUseVariants(components, flags);
+  const variants = useMakeUseVariants(components, extendedFlags);
 
   return (
     Renderer({
       resources,
       bindGroups,
+      options,
 
       variants,
       passes: resolved,

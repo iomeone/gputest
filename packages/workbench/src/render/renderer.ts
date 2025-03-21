@@ -1,5 +1,5 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { AggregatedCalls, PassBindGroup, PassResources } from '../pass/types';
+import type { AggregatedCalls, PassBindGroup, PassFlags, PassResources } from '../pass/types';
 
 import { use, memo, unquote, provide, multiGather, extend, useMemo } from '@use-gpu/live';
 
@@ -17,6 +17,7 @@ const NO_ENV: Record<string, any> = {};
 export type RendererProps = PropsWithChildren<{
   resources: PassResources,
   bindGroups: Record<string, PassBindGroup>,
+  options: PassFlags,
 
   passes: LiveElement[],
   variants: VariantContextProps,
@@ -30,6 +31,7 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   const {
     resources,
     bindGroups,
+    options,
 
     passes,
     variants,
@@ -38,7 +40,7 @@ export const Renderer: LC<RendererProps> = memo((props: RendererProps) => {
   } = props;
 
   // Pass on shared render context(s) for renderables
-  const passContext = useMemo(() => ({...resources, bindGroups}), [resources, bindGroups]);
+  const passContext = useMemo(() => ({...resources, bindGroups, options}), [resources, bindGroups, options]);
 
   // Pass aggregrated calls to pass runners
   const Resume = (

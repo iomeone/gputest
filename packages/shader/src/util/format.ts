@@ -10,7 +10,12 @@ export const flattenFormat = (format: UniformFormat, type?: ShaderModule): strin
 };
 
 export const formatFormat = (format: UniformFormat, type?: ShaderModule): string => {
-  if (type) return `${format}: ${getBundleEntry(type)}`;
+  if (type) {
+    const t = getBundleEntry(type) ?? 'unknown';
+    if (format === 'T') return t;
+    if (format === 'array<T>') return `array<${t}>`;
+    throw new Error(`Unknown format ${format}`);
+  }
   if (typeof format === 'string') return format;
   if (Array.isArray(format)) return `[${format.map(f => formatFormat(f.format, f.type)).join(' ')}]`;
   return 'unknown';

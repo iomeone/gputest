@@ -1,7 +1,7 @@
 use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16 };
 use './ssao-weight'::{ normalWeight, depthWeight };
 
-@link fn getTargetNormal16(uv: vec2<f32>) -> vec4<u32>;
+@link fn getTargetNormal(uv: vec2<f32>) -> vec3<f32>;
 @link fn getTargetDepth(uv: vec2<f32>) -> f32;
 
 @link fn loadNormal16(xy: vec2<u32>) -> vec4<u32>;
@@ -20,7 +20,7 @@ const EPS = 1e-6;
   let overscanUV = targetUV * getOverscanScale() + (1.0 - getOverscanScale()) * .5;
 
   let targetDepth = getTargetDepth(overscanUV);
-  let targetNormal = decodeNormal16(getTargetNormal16(overscanUV).xy);
+  let targetNormal = getTargetNormal(overscanUV);
 
   let sampleXY = overscanUV * getSize() - .5;
   let fxy = floor(sampleXY);
@@ -32,10 +32,10 @@ const EPS = 1e-6;
   let xy01 = xy + vec2<u32>(0, 1);
   let xy11 = xy + vec2<u32>(1);
 
-  let normal00 = decodeNormal16(loadNormal16(xy00).xy);
-  let normal10 = decodeNormal16(loadNormal16(xy10).xy);
-  let normal01 = decodeNormal16(loadNormal16(xy01).xy);
-  let normal11 = decodeNormal16(loadNormal16(xy11).xy);
+  let normal00 = decodeNormal16(loadNormal16(xy00));
+  let normal10 = decodeNormal16(loadNormal16(xy10));
+  let normal01 = decodeNormal16(loadNormal16(xy01));
+  let normal11 = decodeNormal16(loadNormal16(xy11));
 
   let depth00 = loadDepth(xy00);
   let depth10 = loadDepth(xy10);

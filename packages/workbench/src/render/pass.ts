@@ -49,7 +49,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     children,
   } = props;
 
-  const options = {
+  const liveOptions = {
     lights,
     shadows,
     picking,
@@ -63,7 +63,8 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     debugIndex,
   };
 
-  const optionsKey = toMurmur53(options);
+  const optionsKey = toMurmur53(liveOptions);
+  const options = useOne(() => liveOptions, optionsKey);
 
   if (mode === 'fullscreen') {
     const resources = useViewBuffer();
@@ -98,11 +99,14 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
 
     const resources = useOne(() => [
       use(GBuffer, options),
-      use(ViewBuffer, options),
+      !(overscan as any)?.all ? use(ViewBuffer, options) : null,
       lights ? use(LightBuffer, options) : null,
-      // ssao ? use(SSAOBuffer, options) : null,
+      ssao ? use(SSAOBuffer, options) : null,
       shadows ? use(ShadowBuffer, options) : null,
       picking ? use(PickingBuffer, options) : null,
+      ...(ssao ? [
+        use(MotionBuffer, options),
+      ] : []),
     ], optionsKey);
 
     return gatherPassResources(resources, (resources: PassResources) =>

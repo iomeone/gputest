@@ -38,7 +38,7 @@ fn main(
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
   if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
 
-  return vec4<u32>(encodeNormal16(surface.normal.xyz), 0u, 0u);
+  return encodeNormal16(surface.normal.xyz);
 }
 
 struct WithDepth {
@@ -72,6 +72,6 @@ struct WithDepth {
   
   return WithDepth(
     surface.depth,
-    vec4<u32>(encodeNormal16(surface.normal.xyz), 0u, 0u),
+    encodeNormal16(surface.normal.xyz),
   );
 }

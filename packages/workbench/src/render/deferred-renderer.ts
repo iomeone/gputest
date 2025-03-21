@@ -16,9 +16,12 @@ import { useStandardBindGroups } from '../pass/bindings';
 import { useMakeUseVariants } from '../pass/variants';
 
 import { DebugPass } from '../pass/debug-pass';
-import { DeferredPass } from '../pass/deferred-pass';
+import { DeferredGPass } from '../pass/deferred-g-pass';
+import { DeferredResolvePass } from '../pass/deferred-resolve-pass';
+import { MotionPass } from '../pass/motion-pass';
 import { PickingPass } from '../pass/picking-pass';
 import { ShadowPass } from '../pass/shadow-pass';
+import { SSAOPass } from '../pass/ssao-pass';
 
 import { DeferredShadedRender } from './deferred/deferred-shaded';
 import { DeferredSolidRender } from './deferred/deferred-solid';
@@ -78,22 +81,31 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   const {buffers} = resources;
 
   const {
-    lights = false,
     overlay = false,
     merge = false,
+    overscan = 0,
     debug = null,
-  
+
+    lights = true,
+    normals = !!buffers.normal,
+    motion = !!buffers.motion,
+    ssao = !!buffers.ssao,
     shadows = !!buffers.shadow,
     picking = !!buffers.picking,
   } = options as Record<string, any>;
 
-  const flags = useMemo(() => ({
-    lights,
+  const extendedFlags = useMemo(() => ({
     overlay,
     merge,
+    overscan,
   
+    lights,
+    normals,
+    motion,
+    ssao,
     shadows,
     picking,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [options, buffers]);
 
@@ -101,8 +113,11 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
 
   // Prepare passes
   const resolved = useOne(() => passes ?? [
+    motion ? use(MotionPass, options) : null,
     shadows ? use(ShadowPass, options) : null,
-    use(DeferredPass, options),
+    use(DeferredGPass, options),
+    ssao ? use(SSAOPass, options) : null,
+    use(DeferredResolvePass, options),
     picking ? use(PickingPass, options) : null, 
     debug ? use(DebugPass, options) : null,
   ], props);
@@ -127,15 +142,16 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   });
 
   // Pass bindings
-  const bindGroups = useStandardBindGroups(resources, flags);
+  const bindGroups = useStandardBindGroups(resources, extendedFlags);
 
   // Render variants
-  const variants = useMakeUseVariants(components, flags);
+  const variants = useMakeUseVariants(components, extendedFlags);
 
   return (
     Renderer({
       resources,
       bindGroups,
+      options,
 
       variants,
       passes: resolved,

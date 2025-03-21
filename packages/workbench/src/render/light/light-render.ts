@@ -11,11 +11,13 @@ import { $delete } from '@use-gpu/state';
 
 import { drawCall } from '../../queue/draw-call';
 
+import { getShader } from '../../hooks/useShader';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
 import { AMBIENT_LIGHT, DIRECTIONAL_LIGHT, DOME_LIGHT, POINT_LIGHT } from '../../light/types';
 import { SHADOW_PAGE } from './light-data';
+import { DEFAULT_SSAO_OPTIONS } from '../../pass/ssao-pass';
 
 import { EmissiveLightRender } from './emissive-light-render';
 import { FullScreenLightRender } from './full-screen-light-render';
@@ -26,6 +28,10 @@ import { sampleShadow } from '@use-gpu/wgsl/use/shadow.wgsl';
 
 import renderVirtualLight from '@use-gpu/wgsl/render/vertex/virtual-light.wgsl';
 import renderFragmentLight from '@use-gpu/wgsl/render/fragment/deferred-light.wgsl';
+
+import { getGBufferSurface } from '@use-gpu/wgsl/instance/surface/g-buffer-surface.wgsl';
+import { getGBufferSSAOSurface } from '@use-gpu/wgsl/instance/surface/g-buffer-ssao-surface.wgsl';
+import { sampleSSAO } from '@use-gpu/wgsl/use/ssao.wgsl';
 
 import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl';
 import { applyPBRMaterial as applyMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
@@ -164,7 +170,11 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
     subranges,
   } = props;
 
-  const {buffers: {gBuffer: [gBuffer], shadow: [shadow]}} = usePassContext();
+  const {
+    buffers: {gBuffer: [gBuffer], shadow: [shadow], ssao},
+    bindGroups: {color: {layout: globalLayout, key: pipelineKey}},
+    options: {ssao: ssaoOptionsProp},
+  } = usePassContext();
   const {depthStencilState, sources} = gBuffer;
 
   const shadows = !!shadow;
@@ -181,11 +191,21 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
     }, {SHADOW_PAGE});
   }, shadows);
 
+  const getSurface = useMemo(() => {
+    const ssaoOptions = {
+      ...DEFAULT_SSAO_OPTIONS,
+      ...ssaoOptionsProp,
+    };
+    
+    const getSurface = getShader(getGBufferSurface, sources);
+    return ssao ? getShader(getGBufferSSAOSurface, [getSurface, sampleSSAO, ssaoOptions.opacity, ssaoOptions.indirect]) : getSurface;
+  }, [sources, ssao, ssaoOptionsProp]);
+
   const out = [...subranges.keys()].map(kind => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const [start, end] = subranges.get(kind)!;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const props = {lights, order, start, end, stencil, gBuffer: sources!, getLight, applyLight};
+    const props = {lights, order, start, end, stencil, gBuffer: sources!, getSurface, getLight, applyLight};
 
     const Component = LIGHT_RENDERERS[kind];
     return Component ? keyed(Component, kind, props) : null;

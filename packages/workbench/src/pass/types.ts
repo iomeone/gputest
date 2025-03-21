@@ -10,9 +10,13 @@ export type PassFlags = {
   shadows?: boolean,
   picking?: boolean,
   ssao?: boolean | number | {
+    opacity?: number,
+    indirect?: number,
+
     radius?: number,
     depthRamp?: number,
     normalRamp?: number,
+    temporalBlend?: number,
   },
   overscan?: number | {
     range?: number,

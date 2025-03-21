@@ -9,34 +9,10 @@ import { getLambdaSource } from './useLambdaSource';
 import { getShader } from './useShader';
 import { getSource } from './useSource';
 
-import { getUnfiltered, getUnfilteredOffset } from '@use-gpu/wgsl/texture/unfiltered.wgsl';
-
 import { loadTextureLevel } from '@use-gpu/wgsl/texture/level.wgsl';
 import { loadTextureIndexLevel } from '@use-gpu/wgsl/texture/level-index.wgsl';
 import { textureUVToXY } from '@use-gpu/wgsl/texture/raw.wgsl';
 import { textureUVToXYOffset } from '@use-gpu/wgsl/texture/raw-offset.wgsl';
-
-export const useRawTextureAccess = (
-  texture: TextureSource,
-  offset: Lazy<VectorLike>,
-) => useMemo(() => getRawTextureAccess(texture, offset), [texture, offset]);
-
-export const getRawTextureAccess = (
-  texture: TextureSource,
-  offset?: Lazy<VectorLike>,
-) => {
-  const s = () => texture.size;
-  const b = offset != null ? () => resolve(offset) : null;
-
-  const {format, aspect} = texture;
-  const type = getTextureSampleType(format, aspect);
-  const f = format.match(/depth/) ? type : `vec4<${type}>` as UniformType;
-  const args = ['vec2<u32>', 'u32'] as UniformType[];
-  const t = getSource({ name: 'texture', format: f, args }, texture);
-
-  const bound = getShader(offset != null ? getUnfilteredOffset : getUnfiltered, [t, s, b]);
-  return getLambdaSource(bound, texture);
-}
 
 export const useTextureAccess = (
   texture: TextureSource,

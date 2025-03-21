@@ -206,8 +206,7 @@ export const makeBindingAccessors = (
       const base = volatile ? volatileBase++ : bindingBase++;
       if (sampler && args !== null) volatile ? volatileBase++ : bindingBase++;
 
-      const type = (formatOut === 'auto') ? resolveBindingValueType(binding) : formatOut as string;
-
+      const type = formatOut.match(/auto(<|$)/) ? resolveBindingValueType(binding) : formatOut as string;
       program.push(makeTextureAccessor(namespace, set, base, type, formatIn, name, layout, variant, aspect, absolute, !!sampler, filter, args));
     }
 
@@ -251,8 +250,7 @@ export const makeBindingAccessors = (
 
 export const resolveBindingValueType = (binding: DataBinding) => {
   const {attribute: {name, format}} = binding;
-
-  if (format !== 'auto') return format;
+  if (!format.match(/auto(<|$)/)) return format;
 
   const {uniform, storage, texture} = binding;
   if (uniform) return uniform.format;
@@ -283,7 +281,7 @@ export const needsCastLambdaType = (
   let t = to;
 
   if (f === t) return false;
-  if (f === 'auto' || t === 'auto') return false;
+  if (f.match(/auto(<|$)/) || t.match(/auto(<|$)/)) return false;
   if (t == null) {
     console.warn(`Unable to determine lambda format for attribute ${attribute.name} -> bundle ${getBundleEntry(bundle)}`)
     return false;

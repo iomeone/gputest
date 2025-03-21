@@ -13,6 +13,7 @@ export type SourceLike = Partial<{
   view: { label?: string },
   format: UniformFormat | string,
   layout: string,
+  aspect: string,
   colorSpace: ColorSpace,
 
   label: string,
@@ -45,6 +46,7 @@ export const getLambdaSource = (shader: ShaderModule, sourceProps: SourceLike) =
       if (s === 'colorSpace') return sourceProps.colorSpace;
       if (s === 'format') return sourceProps.format;
       if (s === 'layout') return sourceProps.layout;
+      if (s === 'aspect') return sourceProps.aspect;
       if (s === 'id') return sourceProps.id ?? getObjectKey(sourceProps.view ?? sourceProps.texture);
       return (target as any)[s];
     },

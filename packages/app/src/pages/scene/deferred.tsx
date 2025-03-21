@@ -90,7 +90,7 @@ export const SceneDeferredPage: LC = () => {
         <LinearRGB tonemap="aces" gain={1} samples={1} depthStencil="depth32float-stencil8">
           <Cursor cursor='move' />
           <Camera>
-            <Pass lights shadows mode="deferred">
+            <Pass lights shadows mode="deferred" ssao={{radius: 2}}>
               <AmbientLight intensity={0.2} />
               <DirectionalLight position={lightData[0].position} intensity={1}   color={lightData[0].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />
               <DirectionalLight position={lightData[1].position} intensity={0.5} color={lightData[1].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />

@@ -5,11 +5,14 @@ import { yeet, useMemo } from '@use-gpu/live';
 import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { getNativeColor } from '../../hooks/useNativeColor';
+import { getShader } from '../../hooks/useShader';
 import { drawCall } from '../../queue/draw-call';
 import { getShaderLabel } from '../../pass/util';
 
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
+
+import { DEFAULT_SSAO_OPTIONS } from '../../pass/ssao-pass';
 
 import renderVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
 import {
@@ -44,6 +47,7 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
   const {
     buffers: {ssao},
     bindGroups: {color: {layout: globalLayout, key: pipelineKey}},
+    options: {ssao: ssaoOptionsProp},
   } = usePassContext();
 
   const vertexShader = renderVirtualShaded;
@@ -52,9 +56,14 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
 
   // Binds links into shader
   const [v, f] = useMemo(() => {
+    const ssaoOptions = {
+      ...DEFAULT_SSAO_OPTIONS,
+      ...ssaoOptionsProp,
+    };
+
     const links = {
       getVertex,
-      getSurface: ssao ? bindBundle(getSSAOSurface, {getSurface, sampleSSAO}) : getSurface,
+      getSurface: ssao ? getShader(getSSAOSurface, [getSurface, sampleSSAO, ssaoOptions.opacity, ssaoOptions.indirect]) : getSurface,
       getLight: getLight && bindBundle(getLight, {applyLights, applyEnvironment}),
       getScissor: hasScissor ? getScissorColor : null,
       toColorSpace: getNativeColor(colorInput, colorSpace),
@@ -62,7 +71,7 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
     const v = bindBundle(vertexShader, links);
     const f = bindBundle(fragmentShader, links);
     return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getSurface, getLight, applyLights, applyEnvironment, colorInput, colorSpace, hasScissor, ssao]);
+  }, [vertexShader, fragmentShader, getVertex, getSurface, getLight, applyLights, applyEnvironment, colorInput, colorSpace, hasScissor, ssao, ssaoOptionsProp]);
 
   // Inline the render fiber
   const call = {

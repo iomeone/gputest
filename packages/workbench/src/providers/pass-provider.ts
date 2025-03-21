@@ -1,11 +1,11 @@
-import type { PassResources, VirtualDraw } from '../pass/types';
 import type { LC } from '@use-gpu/live';
+import type { PassBindGroup, PassFlags, PassResources, VirtualDraw } from '../pass/types';
 
 import { makeContext, useContext, useNoContext } from '@use-gpu/live';
-import { PassBindGroup } from '../pass/types';
 
 export type PassContextProps = PassResources &  {
   bindGroups: Record<string, PassBindGroup>,
+  options: PassFlags,
 };
 
 export type VariantContextProps = (virtual: VirtualDraw, hovered: boolean) => LC | LC[] | null | undefined;

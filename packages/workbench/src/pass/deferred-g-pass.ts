@@ -17,16 +17,9 @@ import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
 
-export type DeferredPassProps = PropsWithChildren<{
-  env: {
-    light?: LightEnv,
-  },
+export type DeferredGPassProps = PropsWithChildren<{
   calls: {
     opaque?: Renderable[],
-    transparent?: Renderable[],
-    debug?: Renderable[],
-    stencil?: Renderable[],
-    light?: Renderable[],
   },
   overlay?: boolean,
   merge?: boolean,
@@ -35,14 +28,14 @@ export type DeferredPassProps = PropsWithChildren<{
 const NO_OPS: any[] = [];
 const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 
-const label = '<DeferredPass>';
+const label = '<DeferredGPass>';
 const LABEL = { label };
 
 /** Deferred render pass.
 
 Draws all opaque calls to gBuffer, then stencils lights, then draws lights, then all transparent calls, then all debug wireframes.
 */
-export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProps) => {
+export const DeferredGPass: LC<DeferredGPassProps> = memo((props: DeferredGPassProps) => {
   const {
     overlay = false,
     merge = false,
@@ -57,48 +50,24 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
   const {depth} = renderContext;
 
   const {
-    bindGroups: {
-      view: viewBindGroup,
-      color: colorBindGroup,
-    },
+    bindGroups: {view: bindGroup},
     buffers: {gBuffer: [gBuffer, depthCopyContext]},
     views: {view: {cull, uniforms}},
   } = usePassContext();
 
-  const {bindPass: bindViewPass} = useApplyPassBindGroup(env, viewBindGroup, label);
-  const {bindPass: bindColorPass, dataBindings} = useApplyPassBindGroup(env, colorBindGroup, label);
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
 
   if (!depth) throw new Error("Deferred renderer requires a depth buffer");
 
-  const opaques      = toArray(calls['opaque']      as Renderable[]);
-  const transparents = toArray(calls['transparent'] as Renderable[]);
-  const debugs       = toArray(calls['debug']       as Renderable[]);
+  const opaques = toArray(calls['opaque'] as Renderable[]);
 
-  const stencils     = toArray(calls['stencil']     as Renderable[]);
-  const lights       = toArray(calls['light']       as Renderable[]);
-
-  const deferredPassDescriptor = useMemo(() =>
+  const DeferredGPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(gBuffer, {
-      label: '<DeferredPass> GBuffer',
+      label: '<DeferredGPass> GBuffer',
       overlay: false,
       merge,
     }),
     [gBuffer, merge]);
-
-  const stencilPassDescriptor = useMemo(() =>
-    getRenderPassDescriptor(renderContext, {
-      label: '<DeferredPass> Stencil',
-      stencil: true,
-    }),
-    [renderContext]);
-
-  const renderPassDescriptor = useMemo(() =>
-    getRenderPassDescriptor(renderContext, {
-      label: '<DeferredPass> Color',
-      overlay,
-      merge: true,
-    }),
-    [renderContext, overlay]);
 
   const depthCopyPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(depthCopyContext, {
@@ -108,7 +77,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
   const inspected = inspect({
     output: {
-      sources: [...(gBuffer.sources ?? []), renderContext.source, renderContext.depth],
+      sources: [...(gBuffer.sources ?? [])],
     },
     pass: uniforms,
     bindings: dataBindings,
@@ -133,14 +102,14 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
     // Produce G-Buffer
     {
-      const passEncoder = commandEncoder.beginRenderPass(deferredPassDescriptor);
-      bindViewPass?.(passEncoder);
+      const passEncoder = commandEncoder.beginRenderPass(DeferredGPassDescriptor);
+      bindPass?.(passEncoder);
       drawToPass(cull, opaques, passEncoder, countGeometry, uniforms);
       passEncoder.end();
     }
 
     // Copy depth to side buffer for reading during render pass
-    // (TODO: check if we can avoid writeable scope on depth buffer and avoid copy)
+    // (TODO: check if we can avoid writeable scope on depth buffer in resolve pasZ, and avoid copy)
     {
       const passEncoder = commandEncoder.beginRenderPass(depthCopyPassDescriptor);
       copyDepthBuffer(passEncoder);
@@ -157,24 +126,6 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
     );
     */
 
-    if (stencils.length) {
-      const passEncoder = commandEncoder.beginRenderPass(stencilPassDescriptor);
-      bindColorPass?.(passEncoder);
-
-      drawToPass(cull, stencils, passEncoder, countGeometry, uniforms);
-      passEncoder.end();
-    }
-
-    {
-      const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-      bindColorPass?.(passEncoder);
-
-      drawToPass(cull, lights, passEncoder, countGeometry, uniforms);
-      drawToPass(cull, transparents, passEncoder, countGeometry, uniforms, -1);
-      drawToPass(cull, debugs, passEncoder, countGeometry, uniforms);
-      passEncoder.end();
-    }
-
     const command = commandEncoder.finish();
     device.queue.submit([command]);
 
@@ -183,4 +134,4 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProp
 
     return null;
   }));
-}, 'DeferredPass');
+}, 'DeferredGPass');

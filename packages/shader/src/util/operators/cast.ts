@@ -89,7 +89,7 @@ export const makeCastTo = (
   const bundle = toBundle(source);
   const {name, format, args} = bundleToAttribute(bundle);
 
-  if (type === 'auto') throw new Error(`Cannot cast to 'auto' type`);
+  if (type.match(/auto(<|$)/)) throw new Error(`Cannot cast to 'auto' type`);
 
   const entry = 'cast';
 

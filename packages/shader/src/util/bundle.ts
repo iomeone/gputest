@@ -96,7 +96,7 @@ const resolveTypeSymbol = (
   const {table: {infers}} = module;
   const {format, type: typeName} = f;
 
-  if (infers && infers.includes(typeName)) return {format: 'auto'};
+  if (infers && infers.includes(typeName)) return {format: `auto<${typeName}>`};
 
   if (typeName != null && libs) {
     const {table: {modules}} = module;

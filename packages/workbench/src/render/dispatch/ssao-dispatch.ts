@@ -2,11 +2,12 @@ import type { LiveComponent, Ref } from '@use-gpu/live';
 import type { OffscreenTarget, UseGPURenderContext } from '@use-gpu/core';
 
 import { yeet, useMemo, useOne, useRef } from '@use-gpu/live';
+import { chainTo } from '@use-gpu/shader/wgsl';
 
 import { usePassContext } from '../../providers/pass-provider';
 import { useKeyboard, useMouse } from '../../providers/event-provider';
 
-import { useTextureAccess, useTextureUVToXY } from '../../hooks/useRawTextureAccess';
+import { useTextureAccess, useTextureUVToXY, useTextureCast } from '../../hooks/useTextureAccess';
 import { useShader } from '../../hooks/useShader';
 import { useShaderRef } from '../../hooks/useShaderRef';
 
@@ -20,6 +21,8 @@ import { downsampleExact2 } from '@use-gpu/wgsl/texture/downsample.wgsl';
 import { getSSAOSample } from '@use-gpu/wgsl/ssao/ssao-sample.wgsl';
 import { getSSAOAccum } from '@use-gpu/wgsl/ssao/ssao-accum.wgsl';
 import { getSSAOResolve } from '@use-gpu/wgsl/ssao/ssao-resolve.wgsl';
+import { decodeOctahedral } from '@use-gpu/wgsl/codec/octahedral.wgsl';
+import { decodeNormal16, octaToNormal, octaToNormal16 } from '@use-gpu/wgsl/codec/normal16.wgsl';
 
 export type SSAODispatchProps = {
   bindPass?: (r: GPURenderPassEncoder) => void,
@@ -31,6 +34,7 @@ export type SSAODispatchProps = {
   opacity: number,
   depthRamp: number,
   normalRamp: number,
+  temporalBlend: number,
   
   targetContext: UseGPURenderContext,
   descriptor: GPURenderPassDescriptor,
@@ -51,6 +55,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     opacity,
     depthRamp,
     normalRamp,
+    temporalBlend,
 
     targetContext,
     descriptor,
@@ -118,7 +123,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   };
 
   const ssaoRadius = useShaderRef(radius);
-  const ssaoOpacity = useShaderRef(opacity);
+  const ssaoBlend = useShaderRef(temporalBlend);
   const ssaoWeights = useMemo(() => ({DEPTH_RAMP: depthRamp, NORMAL_RAMP: normalRamp}), [depthRamp, normalRamp]);
 
   // Debug viz
@@ -138,7 +143,13 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     const loadDepth = useShader(downsampleExact2, [loadSourceDepth, xyJitter]);
     const getDepth = useTextureUVToXY(loadDepth, downscaleSize).shader;
 
-    const loadSourceNormal16 = useTextureAccess(normalContextSource);
+    const {format} = normalContextSource;
+    const loadSourceNormal = useTextureAccess(normalContextSource).shader;
+    const loadSourceNormal16 = useMemo(() => {
+      if (format.match(/uint/)) return loadSourceNormal;
+      return chainTo(loadSourceNormal, octaToNormal16);
+    }, [format, loadSourceNormal]);
+
     const loadNormal16 = useShader(downsampleExact2, [loadSourceNormal16, xyJitter]);
     const getNormal16 = useTextureUVToXY(loadNormal16, downscaleSize).shader;
 
@@ -171,7 +182,6 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
       downscaleSize,
       xyJitter,
       ssaoRadius,
-      ssaoOpacity,
       frame,
       ...debugArgs,
     ], defs);
@@ -202,6 +212,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
       loadLastNormal16,
       loadLastDepth,
 
+      ssaoBlend,
       uvScale,
       uvJitterDelta,
       downscaleSize,
@@ -220,15 +231,20 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     const loadTargetDepth = useTextureAccess(normalContextDepth);
     const getTargetDepth = useTextureUVToXY(loadTargetDepth).shader;
 
-    const loadTargetNormal16 = useTextureAccess(normalContextSource);
-    const getTargetNormal16 = useTextureUVToXY(loadTargetNormal16).shader;
+    const {format} = normalContextSource;
+    const loadTargetNormalRaw = useTextureAccess(normalContextSource);
+    const loadTargetNormal = useMemo(() => {
+      if (format.match(/uint/)) return chainTo(loadTargetNormalRaw.shader, decodeNormal16);
+      return chainTo(loadTargetNormalRaw.shader, octaToNormal);
+    }, [format, loadTargetNormalRaw]);
+    const getTargetNormal = useTextureUVToXY(loadTargetNormal, loadTargetNormalRaw.size).shader;
 
     const loadNormal16 = useTextureAccess(normalSource);
     const loadDepth = useTextureAccess(normalDepth);
     const loadSample = useTextureAccess(accumSource);
 
     const getResolve = useShader(getSSAOResolve, [
-      getTargetNormal16,
+      getTargetNormal,
       getTargetDepth,
       loadNormal16,
       loadDepth,

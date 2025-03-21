@@ -23,7 +23,7 @@ export const EmissiveLightRender: LiveComponent<EmissiveLightRenderProps> = (pro
   } = props;
 
   const getVertex = useShader(getDeferredLightVertex, [getLight], FULLSCREEN_DEFS);
-  const getFragment = useShader(getDeferredEmissiveFragment, gBuffer);
+  const getFragment = useShader(getDeferredEmissiveFragment, [gBuffer[3]]);
 
   const links = useMemo(() => ({getVertex, getFragment}), [getVertex, getFragment]);
 

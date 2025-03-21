@@ -54,12 +54,13 @@ export const makeChainTo = (
   const args = fromArgs;
 
   const fromT = formatFormat(fromFormat, fromType);
+  const isStruct = fromT.match(/^[A-Z]/);
   const isVoid = fromT === 'void';
-  const isAuto = fromT === 'auto';
+  const isAuto = fromT.match(/auto(<|$)/);
   const restIndex = isVoid ? 0 : 1;
-
+  
   // Return value of `from` must match 1st argument of `to`
-  if (!isAuto && !isVoid && toArgs?.[0] !== fromT) {
+  if (!isStruct && !isAuto && !isVoid && toArgs?.[0] !== fromT) {
     throw new Error(`Type Error: ${fromName} -> ${toName}.\nCannot chain output ${fromT} to args (${toArgs?.join(', ')}).`);
   }
 

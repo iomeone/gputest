@@ -5,7 +5,7 @@ import { yeet, useOne, useNoOne, useRef } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 import { mat4 } from 'gl-matrix';
 
-import { useTextureUVToXY, useTextureAccess } from '../../hooks/useRawTextureAccess';
+import { useTextureUVToXY, useTextureAccess } from '../../hooks/useTextureAccess';
 import { useShader } from '../../hooks/useShader';
 
 import { usePassContext } from '../../providers/pass-provider';

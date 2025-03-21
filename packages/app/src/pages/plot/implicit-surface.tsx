@@ -112,7 +112,8 @@ const SHADOW_MAP_DIRECTIONAL = {
 const prefilteredEnvMap = ([texture]: TextureSource[]) => <PrefilteredEnvMap texture={texture} />;
 
 const ssaoOptions = {
-  opacity: 0.5,
+  opacity: 1.0,
+  indirect: 0.5,
   radius: 0.5,
 };
 

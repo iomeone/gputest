@@ -83,7 +83,7 @@ export const SceneShadowPage: LC = () => {
         <LinearRGB tonemap="aces" gain={1}>
           <Cursor cursor='move' />
           <Camera>
-            <Pass lights shadows>
+            <Pass lights shadows ssao={2}>
               <AmbientLight intensity={0.2} />
               <DirectionalLight position={lightData[0].position} intensity={1}   color={lightData[0].color} shadowMap={SHADOW_MAP_DIRECTIONAL} debug />
               <DirectionalLight position={lightData[1].position} intensity={0.5} color={lightData[1].color} shadowMap={SHADOW_MAP_DIRECTIONAL} debug />

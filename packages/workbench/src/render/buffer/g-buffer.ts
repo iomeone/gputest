@@ -81,6 +81,16 @@ export const GBuffer: LC = memo(() => {
     sources,
   }), [renderContext, colorStates, viewAttachments, colorAttachments, sources]);
 
+  const normalContext: UseGPURenderContext = useMemo(() => ({
+    ...renderContext,
+    colorStates: [colorStates[1]],
+    viewAttachments: [{
+      ...viewAttachments[0],
+      colorAttachments: [colorAttachments[1]],
+    }],
+    source: sources[1],
+  }), [renderContext, colorStates, viewAttachments, colorAttachments, sources]);
+
   // Depth render copy context, needed to copy from depth+stencil to depth-only
   const depthCopyContext: UseGPURenderContext = {
     ...gBufferContext,
@@ -99,6 +109,9 @@ export const GBuffer: LC = memo(() => {
   });
 
   return yeet({
-    buffers: { gBuffer: [gBufferContext, depthCopyContext] },
+    buffers: {
+      gBuffer: [gBufferContext, depthCopyContext],
+      normal: [normalContext],
+    },
   });
 }, 'GBuffer');

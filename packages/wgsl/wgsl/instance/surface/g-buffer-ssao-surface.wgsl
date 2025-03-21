@@ -1,12 +1,7 @@
 @infer type T;
 
 @link fn getSurface(
-  color: vec4<f32>,
   uv: vec4<f32>,
-  st: vec4<f32>,
-  normal: vec4<f32>,
-  tangent: vec4<f32>,
-  position: vec4<f32>,
   coord: vec4<f32>,
 ) -> @infer(T) T {};
 
@@ -15,17 +10,11 @@
 @link fn getOpacity() -> f32;
 @link fn getIndirect() -> f32;
 
-@export fn getSSAOSurface(
-  color: vec4<f32>,
-  uv: vec4<f32>,
-  st: vec4<f32>,
-  normal: vec4<f32>,
-  tangent: vec4<f32>,
-  position: vec4<f32>,
+@export fn getGBufferSSAOSurface(
+  uv: vec2<f32>,
   coord: vec4<f32>,
 ) -> T {
-
-  var surface = getSurface(color, uv, st, normal, tangent, position, coord);
+  var surface = getSurface(uv, coord);
   let ssao = sampleSSAO(vec2<u32>(coord.xy));
 
   // Albedo-based indirect bounce approximation

@@ -59,9 +59,13 @@ const spheres = seq(30).map(() => {
 });
 
 const ssaoOptions = {
-  radius: 2,      // World-space radius
-  depthRamp: 10,  // Slope of reprojection depth weight (higher = stricter)
-  normalRamp: 3,  // Slope of reprojection normal weight (higher = stricter)
+  radius: 2,            // World-space radius
+  opacity: 1,           // Intensity of AO
+  indirect: 0.7,        // Intensity of fake indirect bounce
+
+  temporalBlend: 0.125, // Blend X% new samples in per frame (if reprojected)
+  depthRamp: 10,        // Slope of reprojection depth weight (higher = stricter)
+  normalRamp: 3,        // Slope of reprojection normal weight (higher = stricter)
 };
 
 // 5% extra render margin so SSAO does not disappear at edges
@@ -104,12 +108,12 @@ export const SceneSSAOPage: LC = () => {
                     debugIndex={4}
                   >
 
-                    <AmbientLight intensity={0.4} />
-                    <Environment preset="pisa" gain={3}>
+                    <AmbientLight intensity={0.05} />
+                    <Environment preset="pisa" gain={4}>
                       <Scene>
 
                         <Node position={[0, -2.001, 0]}>
-                          <PBRMaterial albedo={'#808080'} roughness={0.7}>
+                          <PBRMaterial albedo={'#505050'} roughness={0.7}>
                             <Mesh
                               mesh={planeMesh}
                               side="both"

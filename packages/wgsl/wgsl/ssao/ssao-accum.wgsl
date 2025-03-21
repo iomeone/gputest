@@ -14,13 +14,12 @@ const BILATERAL_REPROJECTION = true;
 @link fn loadLastNormal16(xy: vec2<u32>) -> vec4<u32>;
 @link fn loadLastDepth(xy: vec2<u32>) -> f32;
 
+@link fn getBlend() -> f32;
+
 @link fn getUVScale() -> vec2<f32>;
 @link fn getUVJitterDelta() -> vec2<f32>;
 @link fn getSize() -> vec2<f32>;
 @link fn getFrame() -> i32;
-
-// Converged = 12.5% blend
-const BLEND_ACCUM = 0.125;
 
 @export fn getSSAOAccum(uv: vec2<f32>) -> vec4<f32> {
 
@@ -47,10 +46,10 @@ const BLEND_ACCUM = 0.125;
     let xy01 = vec2<u32>(sampleXYI + vec2<i32>(0, dxy));
     let xy11 = vec2<u32>(sampleXYI + dxy);
 
-    let normal00 = decodeNormal16(loadNormal16(xy00).xy);
-    let normal10 = decodeNormal16(loadNormal16(xy10).xy);
-    let normal01 = decodeNormal16(loadNormal16(xy01).xy);
-    let normal11 = decodeNormal16(loadNormal16(xy11).xy);
+    let normal00 = decodeNormal16(loadNormal16(xy00));
+    let normal10 = decodeNormal16(loadNormal16(xy10));
+    let normal01 = decodeNormal16(loadNormal16(xy01));
+    let normal11 = decodeNormal16(loadNormal16(xy11));
 
     let depth00 = loadDepth(xy00);
     let depth10 = loadDepth(xy10);
@@ -72,20 +71,20 @@ const BLEND_ACCUM = 0.125;
     let sample10 = loadSample(xy10);
     let sample01 = loadSample(xy01);
     let sample11 = loadSample(xy11);
-  
+
     sample = mat4x4(
       sample00,
       sample10,
       sample01,
       sample11,
     ) * wBilateralNormed;
-  
+
     normal = normal00;
     depth = depth00;
   }
   else {
     // Use sample directly
-    normal = decodeNormal16(loadNormal16(sampleXY).xy);
+    normal = decodeNormal16(loadNormal16(sampleXY));
     depth = loadDepth(sampleXY);
     sample = loadSample(sampleXY);
   }
@@ -117,7 +116,7 @@ const BLEND_ACCUM = 0.125;
 
     // Bilinear weights
     let dw = lastDXY;
-    let dw1 = 1.0 - dw;  
+    let dw1 = 1.0 - dw;
     let wBilinear = (
       vec4<f32>(dw1.x, dw.x, dw1.x, dw.x) *
       vec4<f32>(dw1.y, dw1.y, dw.y, dw.y)
@@ -128,10 +127,10 @@ const BLEND_ACCUM = 0.125;
     let sample01 = loadLastAccum(xy01);
     let sample11 = loadLastAccum(xy11);
 
-    let normal00 = decodeNormal16(loadLastNormal16(xy00).xy);
-    let normal10 = decodeNormal16(loadLastNormal16(xy10).xy);
-    let normal01 = decodeNormal16(loadLastNormal16(xy01).xy);
-    let normal11 = decodeNormal16(loadLastNormal16(xy11).xy);
+    let normal00 = decodeNormal16(loadLastNormal16(xy00));
+    let normal10 = decodeNormal16(loadLastNormal16(xy10));
+    let normal01 = decodeNormal16(loadLastNormal16(xy01));
+    let normal11 = decodeNormal16(loadLastNormal16(xy11));
 
     let depth00 = loadLastDepth(xy00);
     let depth10 = loadLastDepth(xy10);
@@ -200,10 +199,10 @@ const BLEND_ACCUM = 0.125;
   // Clip to edges
   let outOfBoundsXY = (lastUV < vec2<f32>(0.0)) | (lastUV > vec2<f32>(1.0));
   let outOfBounds = outOfBoundsXY.x || outOfBoundsXY.y || frame == 0;
-  
+
   // Blend weight
   let blendWeight = select(0.0, normalWeight(normal, lastNormal) * depthWeight(lastExpectedDepth, lastDepth), !outOfBounds);
-  let accumulateBlend = mix(1.0, BLEND_ACCUM, blendWeight);
+  let accumulateBlend = mix(1.0, getBlend(), blendWeight);
 
   // Float [-1..1] encoding for normal, averaged around zero
   let newSample = vec4<f32>(sample.xyz * 2.0 - 1.0, sample.a);

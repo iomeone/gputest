@@ -6,7 +6,7 @@ import { useMemo, useOne } from '@use-gpu/live';
 import { getTextureSampleType, getTextureArrayType, getTypedArraysBitCount } from '@use-gpu/core';
 import { castTo, chainTo } from '@use-gpu/shader/wgsl';
 import { getShader } from '../hooks/useShader';
-import { getTextureAccess, getTextureUVToXY } from '../hooks/useRawTextureAccess';
+import { getTextureAccess, getTextureUVToXY } from '../hooks/useTextureAccess';
 import { getLambdaSource } from '../hooks/useLambdaSource';
 
 import { displayFloat } from '@use-gpu/wgsl/display/float.wgsl';

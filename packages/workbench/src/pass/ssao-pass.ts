@@ -1,5 +1,6 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { XY } from '@use-gpu/core';
+import { PassFlags } from '../pass/types';
 
 import { use, yeet, memo, gather, useOne, useRef } from '@use-gpu/live';
 
@@ -25,17 +26,18 @@ export type SSAOPassProps = {
   env: {
     light: any,
   },
-  ssao: {
-    radius?: number,
-    depthRamp?: number,
-    normalRamp?: number,
-  } | number | true,
+  ssao: PassFlags['ssao'],
 };
 
-const DEFAULT_OPACITY = 1;
-const DEFAULT_RADIUS = 1;
-const DEFUALT_DEPTH_RAMP = 10;
-const DEFUALT_NORMAL_RAMP = 4;
+export const DEFAULT_SSAO_OPTIONS = {
+  opacity: 1,
+  indirect: 0.5,
+
+  radius: 1,
+  temporalBlend: 0.125,
+  depthRamp: 10,
+  normalRamp: 4,
+};
 
 const ZERO: XY = [0, 0];
 
@@ -53,10 +55,7 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
   } = props;
   
   const ssaoOptions = useOne(() => ({
-    radius: DEFAULT_RADIUS,
-    opacity: DEFAULT_OPACITY,
-    depthRamp: DEFUALT_DEPTH_RAMP,
-    normalRamp: DEFUALT_NORMAL_RAMP,
+    ...DEFAULT_SSAO_OPTIONS,
     ...(
       ssaoProp === true ? {} :
       typeof ssaoProp === 'number' ? {radius: ssaoProp} :

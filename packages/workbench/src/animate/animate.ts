@@ -8,6 +8,8 @@ import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
 
+import { makeValueRef, interpolateValue } from './interpolate';
+
 import mapValues from 'lodash/mapValues.js';
 import zipObject from 'lodash/zipObject.js';
 
@@ -17,7 +19,7 @@ export type AnimateProps<T extends number | VectorLike | VectorLikes> = {
   loop?: boolean,
   mirror?: boolean,
   repeat?: number,
-  ease?: 'ease' | 'cosine' | 'linear' | 'bezier',
+  ease?: 'cosine' | 'linear' | 'bezier',
 
   delay?: number,
   rest?: number,
@@ -68,15 +70,20 @@ export const Animate: LC<AnimateProps<Numberish>> = <T extends Numberish>(props:
   const timeRef = useOne(() => ({current: 0}), script);
 
   const length = useMemo(() => {
-    if (duration) return duration;
+    if (duration != null) return duration;
     const tracks = Array.from(Object.values(script));
     return tracks.reduce((length, keyframes) => Math.max(length, keyframes[keyframes.length - 1][0]), 0)
   }, [script, duration]);
 
   const render = getRenderFunc(props);
+
+  // To avoid garbage collection, make a double-buffered value object with copies of all values
   const [swapValues] = useDouble(() => mapValues(script, keyframes => makeValueRef(keyframes[0][1])), Object.keys(script));
+
+  // If rendering JSX children, optimize this too
   const [swapElements] = useDouble(() => children && !render ? extend(children, swapValues()) : null, [children, swapValues]);
 
+  // But scalars can't be passed by reference, so track them
   const scalars = zipObject(Object.keys(script).filter(k => typeof script[k][0][1] === 'number'));
 
   const Run = useCallback(() => {
@@ -117,13 +124,6 @@ export const Animate: LC<AnimateProps<Numberish>> = <T extends Numberish>(props:
   return fence(null, Run);
 };
 
-const makeValueRef = (v: number[][] | number[] | TypedArray | number) => {
-  const vs = v as number[];
-  if (typeof vs[0] === 'number') return new Float32Array(vs.length || 1);
-  if (typeof v === 'number') return 0;
-  return JSON.parse(JSON.stringify(v));
-}
-
 const evaluateKeyframe = <T extends number | VectorLike | VectorLikes>(
   values: Record<string, T>,
   prop: string,
@@ -148,39 +148,6 @@ const evaluateKeyframe = <T extends number | VectorLike | VectorLikes>(
   else {
     if (ease === 'cosine') fraction = .5 - Math.cos(fraction * π) * .5;
     interpolateValue(values as any, prop, a[1] as any, b[1] as any, fraction);
-  }
-};
-
-const interpolateValue = (
-  values: Record<string, number | number[] | number[][] | Float32Array>,
-  prop: string,
-  a: number[][] | number[] | Float32Array | number,
-  b: number[][] | number[] | Float32Array | number,
-  t: number,
-) => {
-  const as = a as number[];
-  const bs = b as number[];
-  const aas = a as number[][];
-  const bbs = b as number[][];
-
-  if (typeof a === 'number') values[prop] = lerp(a as number, b as number, t);
-  else if (typeof as[0] === 'number') {
-    const target = values[prop] as number[];
-    const n = target.length;
-    for (let i = 0; i < n; ++i) target[i] = lerp(as[i], bs[i], t);
-  }
-  else if (typeof aas[0][0] === 'number') {
-    const target = values[prop] as number[][];
-    const n = target.length;
-    for (let i = 0; i < n; ++i) {
-      const aa = aas[i];
-      const bb = bbs[i];
-      const tt = target[i];
-      const m = tt.length;
-      for (let j = 0; j < m; ++j) {
-        tt[j] = lerp(aa[j], bb[j], t);
-      }
-    }
   }
 };
 
