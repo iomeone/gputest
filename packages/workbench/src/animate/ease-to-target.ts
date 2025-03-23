@@ -2,13 +2,13 @@ import type { LC, LiveElement } from '@use-gpu/live';
 import type { TypedArray, VectorLike, VectorLikes } from '@use-gpu/core';
 import type { Keyframe } from './types';
 
-import { clamp } from '@use-gpu/core';
-import { extend, mutate, fence, useCallback, useDouble, useMemo, useOne } from '@use-gpu/live';
+import { clamp, seq } from '@use-gpu/core';
+import { extend, mutate, fence, useCallback, useDouble, useLog, useMemo, useOne, useRef } from '@use-gpu/live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
 
-import { makeValueRef, interpolateValue } from './interpolate';
+import { makeValueRef, interpolateValue, distanceValue, copyValue } from './interpolate';
 
 import mapValues from 'lodash/mapValues.js';
 import zipObject from 'lodash/zipObject.js';
@@ -32,48 +32,83 @@ type Numberish = number | TypedArray | NestedNumberArray;
 
 export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberish>(props: AnimateProps<T>) => {
   const {
-    ease = 'exp2',
-    duration = 1000,
+    steps = 1,
+
+    duration = 0.1,
     speed = 1,
     paused = false,
+    epsilon = 1e-3,
 
-    values,
+    values: target,
 
     children,
   } = props;
 
   const render = getRenderFunc(props);
-
+  
   // To avoid garbage collection, make a double-buffered value object with copies of all values
-  const [swapValues] = useDouble(() => mapValues(values, v => makeValueRef(v)), Object.keys(values));
+  const keys = Object.keys(target);
+  const [swapValues] = useDouble(() => mapValues(target, v => makeValueRef(v)), keys);
 
   // If rendering JSX children, optimize this too
   const [swapElements] = useDouble(() => children && !render ? extend(children, swapValues()) : null, [children, swapValues]);
 
-  // But scalars can't be passed by reference, so track them
-  const scalars = zipObject(Object.keys(values).filter(k => typeof values[k] === 'number'));
+  // Track current values + intermediates
+  const trackedValues = useMemo(() => seq(steps).map(() => mapValues(target, v => makeValueRef(v))), [steps, swapValues]);
 
+  // But scalars can't be passed by reference, so track them
+  const scalars = useMemo(() => zipObject(keys.filter(k => typeof target[k] === 'number')), keys);
+
+  // Pass new target by ref
+  const targetRef = useRef(target);
+  targetRef.current = target;
+  
+  // Static continuation callback
   const Run = useCallback(() => {
     const {delta} = useTimeContext();
+    const current = swapValues();
+    const {current: target} = targetRef;
 
-    const values = swapValues();
-    for (const k in values) evaluateKeyframe(values, k, script[k], t, ease);
+    // Interpolate values
+    if (delta) {
+      const fraction = 1 - Math.pow(2, -delta / 1000 / duration);
 
-    // Run if not paused or not past end
-    if (!paused && time < max) useAnimationFrame();
+      for (const k in current) {
+        for (let i = 0; i < steps; ++i) {
+          const a = trackedValues[i - 1] ?? target;
+          const b = trackedValues[i];
+          interpolateValue(b, k, b[k], a[k], fraction);
+        }
+        copyValue(current, k, trackedValues[steps - 1][k]);
+      }
+    }
+
+    // Track max distance
+    let maxDistance = 0;
+    for (const k in current) {
+      const d = distanceValue(current[k], target[k]);
+      maxDistance = Math.max(maxDistance, d);
+    }
+
+    const finished = delta && (maxDistance < epsilon);
+
+    // Run if not paused or not converged
+    if (!paused && !finished) useAnimationFrame();
     else useNoAnimationFrame();
+    
+    const result = current;// finished ? target : current;
 
-    if (render) return tracks ? render(values) : (prop ? render(values[prop]) : null);
+    if (render) return render(result);
     else if (typeof children === 'object') {
       const elements = swapElements();
-      for (const k in scalars) scalars[k] = values[k];
+      for (const k in scalars) scalars[k] = result[k];
       mutate(elements, scalars);
       return elements;
     }
 
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [script, swapValues, swapElements, delay, rest, length, speed, loop, mirror, repeat, ease, paused, render, children]);
+  }, [swapValues, swapElements, duration, speed, steps, paused, render, children]);
 
   // Fence so that only continuation runs repeatedly
   return fence(null, Run);

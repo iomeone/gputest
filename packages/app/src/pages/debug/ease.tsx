@@ -8,9 +8,9 @@ import { vec3 } from 'gl-matrix';
 import {
   Pass, LinearRGB,
   GeometryData, ImageCubeTexture,
-  OrbitCamera, OrbitControls,
+  OrbitCamera, OrbitControls, EaseToTarget,
   Cursor,
-  AxisHelper,
+  AxisHelper, Environment, AmbientLight,
   ShaderFlatMaterial,
 
   makeBoxGeometry,
@@ -39,7 +39,7 @@ export const DebugEasePage: LC = () => {
   const geometry = useOne(() => makeBoxGeometry({ width: 2 }));
 
   return (<>
-    <InfoBox>Easing.</InfoBox>
+    <InfoBox>Easing a camera using &lt;EaseToTarget&gt;.</InfoBox>
     <Gather
       children={[
         <GeometryData {...geometry} />,
@@ -53,13 +53,15 @@ export const DebugEasePage: LC = () => {
           <LinearRGB tonemap="aces">
             <Cursor cursor='move' />
             <Camera>
-              <Pass>
-                <AxisHelper size={2} width={3} />
+              <Pass lights>
+                <Environment preset="park">
+                  <AmbientLight intensity={0.1} />
+                  <AxisHelper size={2} width={3} />
 
-                <Scene>
-                  <Mesh mesh={mesh} />
-                </Scene>
-
+                  <Scene>
+                    <Mesh mesh={mesh} shaded />
+                  </Scene>
+                </Environment>
               </Pass>
             </Camera>
           </LinearRGB>
@@ -69,20 +71,24 @@ export const DebugEasePage: LC = () => {
   </>);
 };
 
-const Camera = ({children}: PropsWithChildren<object>) => (
-  <OrbitControls
-    radius={5}
-    bearing={0.5}
-    pitch={0.3}
-    render={(radius: number, phi: number, theta: number, target: vec3) =>
-      <OrbitCamera
-        radius={radius}
-        phi={phi}
-        theta={theta}
-        target={target}
-      >
-        {children}
-      </OrbitCamera>
-    }
-  />
-);
+const Camera = ({children}: PropsWithChildren<object>) => {
+  // As the camera receives its props from EaseToTarget, reuse the same JSX in the (animated) render prop.
+  const view = (
+    <OrbitCamera>
+      {children}
+    </OrbitCamera>
+  );
+
+  return (
+    <OrbitControls
+      radius={5}
+      bearing={0.5}
+      pitch={0.3}
+      render={(radius: number, phi: number, theta: number, target: vec3) =>
+        <EaseToTarget values={{radius, phi, theta, target}}>
+          {view}
+        </EaseToTarget>
+      }
+    />
+  );
+};

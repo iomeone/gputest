@@ -83,7 +83,7 @@ export const makePages = () => [
   {path: "/controls/fps",                title: "Controls - FPS",                    element: <FPSControlsPage />},
   {path: "/debug/atlas",                 title: "Debug - Text Atlas",                element: <DebugAtlasPage />},
   {path: "/debug/axes",                  title: "Debug - Axes",                      element: <DebugAxesPage />},
-  {path: "/debug/ease",                  title: "Debug - Ease",                      element: <DebugEasePage />},
+  {path: "/debug/ease",                  title: "Debug - Ease To Target",            element: <DebugEasePage />},
   {path: "/debug/wireframe",             title: "Debug - Wireframe",                 element: <DebugWireframePage />},
 
   {path: "/", title: "Index", element: <HomePage container={document.querySelector('#use-gpu')} />},

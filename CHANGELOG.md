@@ -16,6 +16,7 @@
 - `@use-gpu/workbench`: Optional `depthHistory` for `<RenderTarget>`
 - `@use-gpu/workbench`: Add `decimate` and `converge` options to `<Loop>` to skip or converge frames.
 - `@use-gpu/workbench`: Fix `<Environment>` `gain` not working in some cases
+- `@use-gpu/workbench`: Add `<EaseToTarget>` animation helper
 
 0.13.1
 - `@use-gpu/app`: Add path tracing + debug picking example.
