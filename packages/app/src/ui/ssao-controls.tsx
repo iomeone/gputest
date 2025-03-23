@@ -19,7 +19,8 @@ const STYLE = {
 
 type SSAOControlsProps = {
   container?: Element | null,
-  render?: ({showAO}: {
+  render?: ({applyAO, showAO}: {
+    applyAO: boolean,
     showAO: boolean,
   }) => LiveElement
 };

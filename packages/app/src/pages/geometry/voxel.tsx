@@ -70,7 +70,7 @@ export const GeometryVoxelPage: LC = () => {
       <LinearRGB tonemap="aces" gain={2} samples={1}>
         <Cursor cursor='move' />
         <Camera>
-          <Loop accumulate={64}>
+          <Loop converge={64}>
             <Pass lights shadows ssao={2}>
               <AmbientLight color={[1, 1, 1, 1]} intensity={0.01} />
 
