@@ -17,7 +17,6 @@ import { usePassContext } from '../../providers/pass-provider';
 
 import { AMBIENT_LIGHT, DIRECTIONAL_LIGHT, DOME_LIGHT, POINT_LIGHT } from '../../light/types';
 import { SHADOW_PAGE } from './light-data';
-import { DEFAULT_SSAO_OPTIONS } from '../../pass/ssao-pass';
 
 import { EmissiveLightRender } from './emissive-light-render';
 import { FullScreenLightRender } from './full-screen-light-render';
@@ -172,7 +171,7 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
 
   const {
     buffers: {gBuffer: [gBuffer], shadow: [shadow], ssao},
-    options: {ssao: ssaoOptionsProp},
+    options: {ssao: ssaoOptions},
   } = usePassContext();
   const {depthStencilState, sources} = gBuffer;
 
@@ -191,14 +190,9 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
   }, shadows);
 
   const getSurface = useMemo(() => {
-    const ssaoOptions = {
-      ...DEFAULT_SSAO_OPTIONS,
-      ...ssaoOptionsProp,
-    };
-    
     const getSurface = getShader(getGBufferSurface, sources);
     return ssao ? getShader(getGBufferSSAOSurface, [getSurface, sampleSSAO, ssaoOptions.opacity, ssaoOptions.indirect]) : getSurface;
-  }, [sources, ssao, ssaoOptionsProp]);
+  }, [sources, ssao, ssaoOptions]);
 
   const out = [...subranges.keys()].map(kind => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

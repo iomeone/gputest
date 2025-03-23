@@ -18,6 +18,7 @@ import { getRenderPassDescriptor, drawToPass } from './util';
 const {quote} = QueueReconciler;
 
 export type DeferredGPassProps = PropsWithChildren<{
+  env: Record<string, any>,
   calls: {
     opaque?: Renderable[],
   },

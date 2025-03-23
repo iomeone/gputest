@@ -1,12 +1,13 @@
 import type { LC } from '@use-gpu/live';
 import type { OffscreenRenderContext } from '@use-gpu/core';
+import type { OverscanOptions } from '../../pass/types';
 
 import { use, gather, yeet, memo } from '@use-gpu/live';
 import { RenderTarget } from '../render-target';
 
 export type NormalBufferProps = {
   resolution?: number,
-  overscan?: number,
+  overscan?: OverscanOptions,
 };
 
 export const NORMAL_DEPTH_FORMAT = 'depth32float';
@@ -15,8 +16,10 @@ export const NORMAL_RENDER_FORMAT = 'rg8uint';
 export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
   const {
     resolution = 1,
-    overscan = 0,
+    overscan: overscanProp,
   } = props;
+
+  const overscan = overscanProp?.range || 0;
 
   // Normal render target
   const samples = 1;

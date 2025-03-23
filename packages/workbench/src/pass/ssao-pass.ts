@@ -1,6 +1,6 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { XY } from '@use-gpu/core';
-import { PassFlags } from '../pass/types';
+import { SSAOOptions } from '../pass/types';
 
 import { use, yeet, memo, gather, useOne, useRef } from '@use-gpu/live';
 
@@ -26,17 +26,7 @@ export type SSAOPassProps = {
   env: {
     light: any,
   },
-  ssao: PassFlags['ssao'],
-};
-
-export const DEFAULT_SSAO_OPTIONS = {
-  opacity: 1,
-  indirect: 0.5,
-
-  radius: 1,
-  temporalBlend: 0.125,
-  depthRamp: 10,
-  normalRamp: 4,
+  ssao: SSAOOptions,
 };
 
 const ZERO: XY = [0, 0];
@@ -51,17 +41,8 @@ Renders to buffers allocated by SSAOBuffer (half res except for final resolve).
 export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPassProps>) => {
   const {
     env,
-    ssao: ssaoProp,
+    ssao: ssaoOptions,
   } = props;
-  
-  const ssaoOptions = useOne(() => ({
-    ...DEFAULT_SSAO_OPTIONS,
-    ...(
-      ssaoProp === true ? {} :
-      typeof ssaoProp === 'number' ? {radius: ssaoProp} :
-      ssaoProp
-    ),
-  }), ssaoProp);
 
   const inspect = useInspectable();
 

@@ -78,8 +78,6 @@ export const DeferredResolvePass: LC<DeferredResolvePassProps> = memo((props: De
     }),
     [renderContext, overlay]);
     
-  console.log({renderPassDescriptor})
-
   const inspected = inspect({
     output: {
       sources: [renderContext.source, renderContext.depth],

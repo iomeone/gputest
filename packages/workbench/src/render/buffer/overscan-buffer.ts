@@ -1,5 +1,5 @@
 import type { LC } from '@use-gpu/live';
-import type { PassBinding, PassView } from '../../pass/types';
+import type { OverscanOptions, PassBinding, PassView } from '../../pass/types';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import { makeViewUniforms, updateViewProjection } from '@use-gpu/core';
@@ -11,24 +11,13 @@ import { useViewContext, useViewUniforms, useViewBinding } from '../../providers
 import { mat4 } from 'gl-matrix';
 
 export type OverscanBufferProps = {
-  overscan: {
-    range?: number,
-    all?: boolean,
-  } | number,
+  overscan: OverscanOptions,
 };
 
 export const OverscanBuffer: LC<OverscanBufferProps> = memo((props: OverscanBufferProps) => {
   const {
-    overscan: overscanProp,
+    overscan: overscanOptions,
   } = props;
-  
-  const overscanOptions = useOne(() => ({
-    range: 0.05,
-    ...(
-      typeof overscanProp === 'number' ? {range: overscanProp} :
-      overscanProp
-    ),
-  }), overscanProp);
 
   const renderContext = useRenderContext();
 
@@ -117,3 +106,16 @@ export const OverscanBuffer: LC<OverscanBufferProps> = memo((props: OverscanBuff
     views,
   });
 }, 'OverscanBuffer');
+
+const DEFAULT_OVERSCAN_OPTIONS = {
+  range: 0,
+  all: false,
+};
+
+export const parseOverscanOptions = (opt: number | OverscanOptions) => ({
+  ...DEFAULT_OVERSCAN_OPTIONS,
+  ...(
+    typeof opt === 'number' ? {range: opt} :
+    opt
+  ),
+});

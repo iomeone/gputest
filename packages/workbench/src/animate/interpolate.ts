@@ -1,3 +1,4 @@
+import type { TypedArray } from '@use-gpu/core';
 import { lerp } from '@use-gpu/core';
 
 const sqr = (x: number) => x * x;
@@ -36,7 +37,7 @@ export const copyValue = (
     }
   }
   else {
-    throw new Error(`Cannot copy value for ${prop} '${a}' '${b}'`);
+    throw new Error(`Cannot copy value for ${prop} '${v}'`);
   }
 };
 
@@ -77,15 +78,15 @@ export const interpolateValue = (
 };
 
 export const distanceValue = (
-  a: number[][] | number[] | Float32Array | number,
-  b: number[][] | number[] | Float32Array | number,
+  a: number[][] | number[] | TypedArray | number,
+  b: number[][] | number[] | TypedArray | number,
 ) => {
   const as = a as number[];
   const bs = b as number[];
   const aas = a as number[][];
   const bbs = b as number[][];
 
-  if (typeof a === 'number') return Math.abs(a - b);
+  if (typeof a === 'number') return Math.abs(a - (b as number));
   else if (typeof as[0] === 'number') {
     const n = as.length;
     let d = 0;
@@ -99,8 +100,7 @@ export const distanceValue = (
     for (let i = 0; i < n; ++i) {
       const aa = aas[i];
       const bb = bbs[i];
-      const tt = target[i];
-      const m = tt.length;
+      const m = aa.length;
       for (let j = 0; j < m; ++j) {
         d += sqr(aa[j] - bb[j]);
       }

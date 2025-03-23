@@ -5,23 +5,17 @@ import type { Update } from '@use-gpu/state';
 import type { BoundLight } from '../light/types';
 import { vec3 } from 'gl-matrix';
 
+export type PassOptions = {
+  ssao?: boolean | number | SSAOOptions,
+  overscan?: number | OverscanOptions,
+} & Pick<PassFlags, 'lights' | 'shadows' | 'picking' | 'overlay' | 'merge'>;
+
 export type PassFlags = {
   lights?: boolean,
   shadows?: boolean,
   picking?: boolean,
-  ssao?: boolean | number | {
-    opacity?: number,
-    indirect?: number,
-
-    radius?: number,
-    depthRamp?: number,
-    normalRamp?: number,
-    temporalBlend?: number,
-  },
-  overscan?: number | {
-    range?: number,
-    all?: boolean,
-  },
+  ssao?: SSAOOptions,
+  overscan?: OverscanOptions,
 
   overlay?: boolean,
   merge?: boolean,
@@ -30,6 +24,21 @@ export type PassFlags = {
 export type ExtendedPassFlags = PassFlags & {
   normals?: boolean,
   motion?: boolean,
+};
+
+export type SSAOOptions = {
+  opacity?: number,
+  indirect?: number,
+
+  radius?: number,
+  depthRamp?: number,
+  normalRamp?: number,
+  temporalBlend?: number,
+};
+
+export type OverscanOptions = {
+  range?: number,
+  all?: boolean,
 };
 
 // Env

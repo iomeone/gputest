@@ -1,13 +1,13 @@
 import type { LC } from '@use-gpu/live';
 import type { OffscreenRenderContext } from '@use-gpu/core';
+import type { OverscanOptions } from '../../pass/types';
 
 import { use, gather, yeet, memo } from '@use-gpu/live';
-
 import { RenderTarget, useCombinedRenderTarget } from '../render-target';
 
 export type MotionBufferProps = {
   resolution?: number,
-  overscan?: number,
+  overscan?: OverscanOptions,
 };
 
 export const MOTION_DEPTH_FORMAT = 'depth32float';
@@ -16,8 +16,10 @@ export const MOTION_RENDER_FORMATS = ['rg16float', 'r16float'];
 export const MotionBuffer: LC = memo((props: MotionBufferProps) => {
   const {
     resolution = 1,
-    overscan = 0,
+    overscan: overscanProp,
   } = props;
+
+  const overscan = overscanProp?.range || 0;
 
   // Motion render target
   const samples = 1;

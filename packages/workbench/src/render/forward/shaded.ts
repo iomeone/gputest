@@ -12,8 +12,6 @@ import { getShaderLabel } from '../../pass/util';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import { DEFAULT_SSAO_OPTIONS } from '../../pass/ssao-pass';
-
 import renderVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
 import {
   main as renderFragmentShaded,
@@ -47,7 +45,7 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
   const {
     buffers: {ssao},
     bindGroups: {color: {layout: globalLayout, key: pipelineKey}},
-    options: {ssao: ssaoOptionsProp},
+    options: {ssao: ssaoOptions},
   } = usePassContext();
 
   const vertexShader = renderVirtualShaded;
@@ -56,11 +54,6 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
 
   // Binds links into shader
   const [v, f] = useMemo(() => {
-    const ssaoOptions = {
-      ...DEFAULT_SSAO_OPTIONS,
-      ...ssaoOptionsProp,
-    };
-
     const links = {
       getVertex,
       getSurface: ssao ? getShader(getSSAOSurface, [getSurface, sampleSSAO, ssaoOptions.opacity, ssaoOptions.indirect]) : getSurface,
@@ -71,7 +64,7 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
     const v = bindBundle(vertexShader, links);
     const f = bindBundle(fragmentShader, links);
     return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getSurface, getLight, applyLights, applyEnvironment, colorInput, colorSpace, hasScissor, ssao, ssaoOptionsProp]);
+  }, [vertexShader, fragmentShader, getVertex, getSurface, getLight, applyLights, applyEnvironment, colorInput, colorSpace, hasScissor, ssao, ssaoOptions]);
 
   // Inline the render fiber
   const call = {

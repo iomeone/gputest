@@ -1,5 +1,5 @@
 import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { PassFlags, RenderComponents } from '../pass/types';
+import type { PassOptions, RenderComponents } from '../pass/types';
 
 import { use, gather, memo, useOne } from '@use-gpu/live';
 import { toMurmur53 } from '@use-gpu/state';
@@ -12,10 +12,10 @@ import { GBuffer } from './buffer/g-buffer';
 import { LightBuffer } from './buffer/light-buffer';
 import { MotionBuffer } from './buffer/motion-buffer';
 import { NormalBuffer } from './buffer/normal-buffer';
-import { OverscanBuffer } from './buffer/overscan-buffer';
+import { OverscanBuffer, parseOverscanOptions } from './buffer/overscan-buffer';
 import { PickingBuffer } from './buffer/picking-buffer';
 import { ShadowBuffer } from './buffer/shadow-buffer';
-import { SSAOBuffer } from './buffer/ssao-buffer';
+import { SSAOBuffer, parseSSAOOptions } from './buffer/ssao-buffer';
 import { ViewBuffer, useViewBuffer, useNoViewBuffer } from './buffer/view-buffer';
 
 import { PassResources } from '../pass/types';
@@ -26,7 +26,7 @@ export type PassProps = PropsWithChildren<{
   
   debug?: string,
   debugIndex?: number,
-} & PassFlags>;
+} & PassOptions>;
 
 export const Pass: LC<PassProps> = memo((props: PassProps) => {
   const {
@@ -53,8 +53,8 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     lights,
     shadows,
     picking,
-    ssao,
-    overscan,
+    ssao: ssao ? parseSSAOOptions(ssao) : undefined,
+    overscan: overscan ? parseOverscanOptions(overscan) : undefined,
 
     overlay,
     merge,

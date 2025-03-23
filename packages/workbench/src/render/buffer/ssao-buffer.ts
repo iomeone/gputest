@@ -1,6 +1,6 @@
 import type { LC } from '@use-gpu/live';
 import type { OffscreenRenderContext } from '@use-gpu/core';
-import type { PassBinding } from '../../pass/types';
+import type { OverscanOptions, PassBinding, SSAOOptions } from '../../pass/types';
 
 import { use, gather, yeet, memo } from '@use-gpu/live';
 
@@ -9,7 +9,8 @@ import { RenderTarget } from '../render-target';
 import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
 
 export type SSAOBufferProps = {
-  overscan?: number,
+  overscan?: OverscanOptions,
+  ssao?: SSAOOptions,
 };
 
 export const SSAO_DEPTH_FORMAT = 'depth32float';
@@ -20,7 +21,12 @@ export const SSAO_ACCUM_FORMAT = 'rgba16float';
 export const SSAO_RESOLVE_FORMAT = 'rgba8unorm';
 
 export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
-  const {overscan} = props;
+  const {
+    overscan: overscanProp,
+  } = props;
+
+  const overscan = overscanProp?.range || 0;
+
   const resolution = 1/2;
   const samples = 1;
 
@@ -116,3 +122,22 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
     });
   });
 }, 'SSAOBuffer');
+
+export const DEFAULT_SSAO_OPTIONS = {
+  opacity: 1,
+  indirect: 0.5,
+
+  radius: 1,
+  temporalBlend: 0.125,
+  depthRamp: 10,
+  normalRamp: 4,
+};
+
+export const parseSSAOOptions = (opt: boolean | number | SSAOOptions) => ({
+  ...DEFAULT_SSAO_OPTIONS,
+  ...(
+    opt === true ? {} :
+    typeof opt === 'number' ? {radius: opt} :
+    opt
+  ),
+});

@@ -13,13 +13,14 @@ import mapValues from 'lodash/mapValues.js';
 import zipObject from 'lodash/zipObject.js';
 
 export type EaseToTargetProps<T extends number | VectorLike | VectorLikes> = {
-  ease?: 'exp' | 'exp2',
+  smooth?: number,
 
   duration?: number,
   speed?: number,
   paused?: boolean,
+  epsilon?: number,
 
-  values?: Record<string, T>,
+  values: Record<string, T>,
   version?: number,
 
   render?: (values: Record<string, T>) => LiveElement,
@@ -30,9 +31,9 @@ export type EaseToTargetProps<T extends number | VectorLike | VectorLikes> = {
 type NestedNumberArray = any[];
 type Numberish = number | TypedArray | NestedNumberArray;
 
-export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberish>(props: AnimateProps<T>) => {
+export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberish>(props: EaseToTargetProps<T>) => {
   const {
-    steps = 1,
+    smooth = 1,
 
     duration = 0.1,
     speed = 1,
@@ -56,7 +57,7 @@ export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberi
 
   // Track current values + intermediates
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const trackedValues = useMemo(() => seq(steps).map(() => mapValues(target, v => makeValueRef(v))), [steps, swapValues, version]);
+  const trackedValues = useMemo(() => seq(smooth).map(() => mapValues(target, v => makeValueRef(v))), [smooth, swapValues, version]);
 
   // But scalars can't be passed by reference, so track them
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,12 +78,12 @@ export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberi
       const fraction = 1 - Math.pow(2, -delta / 1000 / duration);
 
       for (const k in current) {
-        for (let i = 0; i < steps; ++i) {
+        for (let i = 0; i < smooth; ++i) {
           const a = trackedValues[i - 1] ?? target;
           const b = trackedValues[i];
           interpolateValue(b, k, b[k], a[k], fraction);
         }
-        copyValue(current, k, trackedValues[steps - 1][k]);
+        copyValue(current, k, trackedValues[smooth - 1][k]);
       }
     }
 
@@ -111,7 +112,7 @@ export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberi
 
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [swapValues, swapElements, duration, speed, steps, paused, render, children]);
+  }, [swapValues, swapElements, duration, speed, smooth, paused, render, children]);
 
   // Fence so that only continuation runs repeatedly
   return fence(null, Run);
