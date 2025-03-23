@@ -3,9 +3,11 @@ import { ShaderModule, ParsedBundle, ParsedModule, ParsedModuleCache, ShaderDefi
 import { VIRTUAL_BINDINGS } from '../constants';
 
 import { bindBundle, bindModule, toNamespace } from './bind';
-import { toBundle, getBundleKey } from './bundle';
+import { toBundle, getBundleKey, getBundleName } from './bundle';
 import { resolveShakeOps } from './shake';
 import mapValues from 'lodash/mapValues.js';
+
+const DEBUG = false;
 
 export type Linker = (
   source: ParsedBundle,
@@ -116,6 +118,8 @@ export const makeLinker = (
   const bundle = toBundle(source);
   const main = getBundleKey(source);
 
+  DEBUG && console.log('-- Link', getBundleName(bundle));
+
   const {bundles, exported, imported, aliased} = loadBundlesInOrder(bundle, libraries);
   const program = getPreambles();
 
@@ -160,7 +164,7 @@ export const makeLinker = (
     const {module} = bundle;
     const {name, code, tree, table, shake, virtual} = module;
     const {globals, symbols, visibles, externals, modules, exports: exp} = table;
-    
+
     const key = getBundleKey(bundle);
     const importMap = imported.get(key);
     const aliasMap = aliased.get(key);
@@ -194,6 +198,8 @@ export const makeLinker = (
         }
       }
     }
+
+    DEBUG && console.log('Module', scope, getBundleName(bundle));
 
     program.push(`//// @link ${virtual?.render ? code : name} ${scope}\n`);
 
@@ -241,7 +247,9 @@ export const makeLinker = (
         debugger;
       }
       else if (!visible.has(imp)) console.warn(`Link '${name}:${resolved}' is private`);
+
       rename.set(name, imp);
+      infers.set(scope + name, imp);
 
       if (inferred) {
         const sig = signatures.get(imp);

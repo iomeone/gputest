@@ -8,7 +8,7 @@
   tangent: vec4<f32>,
   position: vec4<f32>,
   coord: vec4<f32>,
-) -> @infer(T) T {};
+) -> @infer(T) T;
 
 @link fn sampleSSAO(xy: vec2<u32>) -> vec4<f32>;
 
