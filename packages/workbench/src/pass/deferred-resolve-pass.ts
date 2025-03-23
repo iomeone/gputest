@@ -40,7 +40,7 @@ Draws stencils for lights, then draws lights, then all transparent calls, then a
 */
 export const DeferredResolvePass: LC<DeferredResolvePassProps> = memo((props: DeferredResolvePassProps) => {
   const {
-    overlay = false,
+    overlay = true,
     calls,
     env,
   } = props;
@@ -74,8 +74,11 @@ export const DeferredResolvePass: LC<DeferredResolvePassProps> = memo((props: De
     getRenderPassDescriptor(renderContext, {
       label: '<DeferredResolvePass> Color',
       overlay,
+      merge: true,
     }),
     [renderContext, overlay]);
+    
+  console.log({renderPassDescriptor})
 
   const inspected = inspect({
     output: {

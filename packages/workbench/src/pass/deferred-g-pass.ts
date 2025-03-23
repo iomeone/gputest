@@ -21,7 +21,6 @@ export type DeferredGPassProps = PropsWithChildren<{
   calls: {
     opaque?: Renderable[],
   },
-  overlay?: boolean,
   merge?: boolean,
 }>;
 
@@ -37,7 +36,6 @@ Draws all opaque calls to gBuffer.
 */
 export const DeferredGPass: LC<DeferredGPassProps> = memo((props: DeferredGPassProps) => {
   const {
-    overlay = false,
     merge = false,
     calls,
     env,
@@ -98,7 +96,7 @@ export const DeferredGPass: LC<DeferredGPassProps> = memo((props: DeferredGPassP
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
     const commandEncoder = device.createCommandEncoder(LABEL);
-    if (!overlay && !merge) renderContext.swap?.();
+    if (!merge) renderContext.swap?.();
 
     // Produce G-Buffer
     {
