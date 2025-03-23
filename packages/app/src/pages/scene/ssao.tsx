@@ -61,7 +61,7 @@ const spheres = seq(30).map(() => {
 const ssaoOptions = {
   radius: 2,            // World-space radius
   opacity: 1,           // Intensity of AO
-  indirect: 0.7,        // Intensity of fake indirect bounce
+  indirect: 0.6,        // Intensity of fake indirect bounce
 
   temporalBlend: 0.125, // Blend X% new samples in per frame (if reprojected)
   depthRamp: 10,        // Slope of reprojection depth weight (higher = stricter)
@@ -75,7 +75,7 @@ export const SceneSSAOPage: LC = () => {
 
   const {keyboard: {keys}} = useKeyboard();
 
-  const view = useCallback((showAO: boolean, renderLive: boolean) => (
+  const view = useCallback((applyAO: boolean, showAO: boolean, renderLive: boolean) => (
     <Gather
       children={RESOURCES}
       then={([
@@ -102,7 +102,7 @@ export const SceneSSAOPage: LC = () => {
                 <PrintHelper count={4096}>
                   <Pass
                     lights
-                    ssao={ssaoOptions}
+                    ssao={applyAO ? ssaoOptions : undefined}
                     overscan={overscan}
                     debug={showAO ? 'ssao' : undefined}
                     debugIndex={4}
@@ -165,10 +165,10 @@ export const SceneSSAOPage: LC = () => {
     <InfoBox>Screen-space ambient occlusion with built-in &lt;SSAOPass&gt;, with bent normals, reprojection and overscan at the edges.</InfoBox>
     <SSAOControls
       container={root}
-      render={({showAO}) =>
+      render={({applyAO, showAO}) =>
         // React doesn't like a useMemo in a render prop, but it's fine in Live
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        useMemo(() => view(showAO, keys.alt), [showAO, keys.alt])
+        useMemo(() => view(applyAO, showAO, keys.alt), [applyAO, showAO, keys.alt])
       }
     />
   </>);
