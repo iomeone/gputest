@@ -3,7 +3,7 @@ import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 import { getTextureSampleType } from '@use-gpu/core';
 
 import { useMemo } from '@use-gpu/live';
-import { proxy, resolve } from '@use-gpu/core';
+import { proxy } from '@use-gpu/core';
 
 import { getLambdaSource } from './useLambdaSource';
 import { getShader } from './useShader';

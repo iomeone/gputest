@@ -172,7 +172,6 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
 
   const {
     buffers: {gBuffer: [gBuffer], shadow: [shadow], ssao},
-    bindGroups: {color: {layout: globalLayout, key: pipelineKey}},
     options: {ssao: ssaoOptionsProp},
   } = usePassContext();
   const {depthStencilState, sources} = gBuffer;

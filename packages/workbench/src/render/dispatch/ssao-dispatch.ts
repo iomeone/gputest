@@ -7,7 +7,7 @@ import { chainTo } from '@use-gpu/shader/wgsl';
 import { usePassContext } from '../../providers/pass-provider';
 import { useKeyboard, useMouse } from '../../providers/event-provider';
 
-import { useTextureAccess, useTextureUVToXY, useTextureCast } from '../../hooks/useTextureAccess';
+import { useTextureAccess, useTextureUVToXY } from '../../hooks/useTextureAccess';
 import { useShader } from '../../hooks/useShader';
 import { useShaderRef } from '../../hooks/useShaderRef';
 
@@ -21,7 +21,6 @@ import { downsampleExact2 } from '@use-gpu/wgsl/texture/downsample.wgsl';
 import { getSSAOSample } from '@use-gpu/wgsl/ssao/ssao-sample.wgsl';
 import { getSSAOAccum } from '@use-gpu/wgsl/ssao/ssao-accum.wgsl';
 import { getSSAOResolve } from '@use-gpu/wgsl/ssao/ssao-resolve.wgsl';
-import { decodeOctahedral } from '@use-gpu/wgsl/codec/octahedral.wgsl';
 import { decodeNormal16, octaToNormal, octaToNormal16 } from '@use-gpu/wgsl/codec/normal16.wgsl';
 
 export type SSAODispatchProps = {
@@ -31,7 +30,6 @@ export type SSAODispatchProps = {
   mode: 'normal' | 'motion-xy' | 'motion-z' | 'sample' | 'accum' | 'resolve',
 
   radius: number,
-  opacity: number,
   depthRamp: number,
   normalRamp: number,
   temporalBlend: number,
@@ -52,7 +50,6 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     
     mode, // static
     radius,
-    opacity,
     depthRamp,
     normalRamp,
     temporalBlend,

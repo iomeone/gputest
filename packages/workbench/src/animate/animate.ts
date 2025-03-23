@@ -2,7 +2,7 @@ import type { LC, LiveElement } from '@use-gpu/live';
 import type { TypedArray, VectorLike, VectorLikes } from '@use-gpu/core';
 import type { Keyframe } from './types';
 
-import { clamp, lerp } from '@use-gpu/core';
+import { clamp } from '@use-gpu/core';
 import { extend, mutate, fence, useCallback, useDouble, useMemo, useOne } from '@use-gpu/live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';

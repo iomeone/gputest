@@ -1,20 +1,17 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, TextureSource } from '@use-gpu/core';
+import type { GPUGeometry } from '@use-gpu/core';
 
 import React, { Gather, useOne } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
 import { vec3 } from 'gl-matrix';
 
 import {
   Pass, LinearRGB,
-  GeometryData, ImageCubeTexture,
+  GeometryData,
   OrbitCamera, OrbitControls, EaseToTarget,
   Cursor,
   AxisHelper, Environment, AmbientLight,
-  ShaderFlatMaterial,
 
   makeBoxGeometry,
-  useShader,
 } from '@use-gpu/workbench';
 
 import {
@@ -22,18 +19,6 @@ import {
 } from '@use-gpu/scene';
 
 import { InfoBox } from '../../ui/info-box';
-
-const cubeMaterial = wgsl`
-@optional @link fn getCubeMap(uvw: vec3<f32>) -> vec4<f32> { return vec4<f32>(0.0); };
-
-@export fn main(
-  inColor: vec4<f32>,
-  mapUV: vec4<f32>,
-  mapST: vec4<f32>,
-) -> vec4<f32> {
-  return getCubeMap(mapUV.xyz);
-}
-`;
 
 export const DebugEasePage: LC = () => {
   const geometry = useOne(() => makeBoxGeometry({ width: 2 }));

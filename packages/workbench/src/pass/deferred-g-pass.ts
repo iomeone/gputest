@@ -1,5 +1,5 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { LightEnv, Renderable } from './types';
+import type { Renderable } from './types';
 
 import { yeet, memo, useMemo } from '@use-gpu/live';
 
@@ -33,7 +33,7 @@ const LABEL = { label };
 
 /** Deferred render pass.
 
-Draws all opaque calls to gBuffer, then stencils lights, then draws lights, then all transparent calls, then all debug wireframes.
+Draws all opaque calls to gBuffer.
 */
 export const DeferredGPass: LC<DeferredGPassProps> = memo((props: DeferredGPassProps) => {
   const {

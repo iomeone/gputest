@@ -9,7 +9,6 @@ import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
-import { useTextureAccess, useTextureUVToXY } from '../hooks/useTextureAccess';
 
 import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
@@ -27,7 +26,6 @@ export type DeferredResolvePassProps = PropsWithChildren<{
     light?: Renderable[],
   },
   overlay?: boolean,
-  merge?: boolean,
 }>;
 
 const NO_OPS: any[] = [];
@@ -36,14 +34,13 @@ const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 const label = '<DeferredResolvePass>';
 const LABEL = { label };
 
-/** Deferred render pass.
+/** Deferred resolve render pass.
 
-Draws all opaque calls to gBuffer, then stencils lights, then draws lights, then all transparent calls, then all debug wireframes.
+Draws stencils for lights, then draws lights, then all transparent calls, then all debug wireframes.
 */
 export const DeferredResolvePass: LC<DeferredResolvePassProps> = memo((props: DeferredResolvePassProps) => {
   const {
     overlay = false,
-    merge = false,
     calls,
     env,
   } = props;
@@ -52,11 +49,9 @@ export const DeferredResolvePass: LC<DeferredResolvePassProps> = memo((props: De
 
   const device = useDeviceContext();
   const renderContext = useRenderContext();
-  const {depth} = renderContext;
 
   const {
     bindGroups: {color: bindGroup},
-    buffers: {gBuffer: [gBuffer]},
     views: {view: {cull, uniforms}},
   } = usePassContext();
 
@@ -79,7 +74,6 @@ export const DeferredResolvePass: LC<DeferredResolvePassProps> = memo((props: De
     getRenderPassDescriptor(renderContext, {
       label: '<DeferredResolvePass> Color',
       overlay,
-      merge: true,
     }),
     [renderContext, overlay]);
 

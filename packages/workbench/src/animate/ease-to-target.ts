@@ -1,9 +1,8 @@
 import type { LC, LiveElement } from '@use-gpu/live';
 import type { TypedArray, VectorLike, VectorLikes } from '@use-gpu/core';
-import type { Keyframe } from './types';
 
-import { clamp, seq } from '@use-gpu/core';
-import { extend, mutate, fence, useCallback, useDouble, useLog, useMemo, useOne, useRef } from '@use-gpu/live';
+import { seq } from '@use-gpu/core';
+import { extend, mutate, fence, useCallback, useDouble, useMemo, useRef } from '@use-gpu/live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
@@ -21,6 +20,7 @@ export type EaseToTargetProps<T extends number | VectorLike | VectorLikes> = {
   paused?: boolean,
 
   values?: Record<string, T>,
+  version?: number,
 
   render?: (values: Record<string, T>) => LiveElement,
   children?: LiveElement | ((values: Record<string, T>) => LiveElement),
@@ -40,6 +40,7 @@ export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberi
     epsilon = 1e-3,
 
     values: target,
+    version = 0,
 
     children,
   } = props;
@@ -54,9 +55,11 @@ export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberi
   const [swapElements] = useDouble(() => children && !render ? extend(children, swapValues()) : null, [children, swapValues]);
 
   // Track current values + intermediates
-  const trackedValues = useMemo(() => seq(steps).map(() => mapValues(target, v => makeValueRef(v))), [steps, swapValues]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const trackedValues = useMemo(() => seq(steps).map(() => mapValues(target, v => makeValueRef(v))), [steps, swapValues, version]);
 
   // But scalars can't be passed by reference, so track them
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const scalars = useMemo(() => zipObject(keys.filter(k => typeof target[k] === 'number')), keys);
 
   // Pass new target by ref
@@ -96,7 +99,7 @@ export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberi
     if (!paused && !finished) useAnimationFrame();
     else useNoAnimationFrame();
     
-    const result = current;// finished ? target : current;
+    const result = finished ? target : current;
 
     if (render) return render(result);
     else if (typeof children === 'object') {

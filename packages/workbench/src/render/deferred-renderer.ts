@@ -106,7 +106,6 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     shadows,
     picking,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [options, buffers]);
 
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
