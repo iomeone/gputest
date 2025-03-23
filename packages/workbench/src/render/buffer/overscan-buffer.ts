@@ -112,7 +112,7 @@ const DEFAULT_OVERSCAN_OPTIONS = {
   all: false,
 };
 
-export const parseOverscanOptions = (opt: number | OverscanOptions) => ({
+export const parseOverscanOptions = (opt: number | Partial<OverscanOptions>) => ({
   ...DEFAULT_OVERSCAN_OPTIONS,
   ...(
     typeof opt === 'number' ? {range: opt} :

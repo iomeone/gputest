@@ -52,6 +52,7 @@ export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: Prop
     Renderer({
       resources,
       bindGroups,
+      options,
 
       variants,
       passes,

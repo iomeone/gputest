@@ -133,7 +133,7 @@ export const DEFAULT_SSAO_OPTIONS = {
   normalRamp: 4,
 };
 
-export const parseSSAOOptions = (opt: boolean | number | SSAOOptions) => ({
+export const parseSSAOOptions = (opt: boolean | number | Partial<SSAOOptions>) => ({
   ...DEFAULT_SSAO_OPTIONS,
   ...(
     opt === true ? {} :

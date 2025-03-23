@@ -54,6 +54,7 @@ export type LightKindProps = {
   start: number,
   end: number,
 
+  getSurface: ShaderModule,
   getLight: ShaderModule,
   applyLight: ShaderModule,
 };
@@ -190,8 +191,9 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
   }, shadows);
 
   const getSurface = useMemo(() => {
-    const getSurface = getShader(getGBufferSurface, sources);
-    return ssao ? getShader(getGBufferSSAOSurface, [getSurface, sampleSSAO, ssaoOptions.opacity, ssaoOptions.indirect]) : getSurface;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const getSurface = getShader(getGBufferSurface, sources!);
+    return ssao && ssaoOptions ? getShader(getGBufferSSAOSurface, [getSurface, sampleSSAO, ssaoOptions.opacity, ssaoOptions.indirect]) : getSurface;
   }, [sources, ssao, ssaoOptions]);
 
   const out = [...subranges.keys()].map(kind => {

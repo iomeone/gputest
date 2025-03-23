@@ -56,7 +56,7 @@ export const ShadedRender: LiveComponent<ShadedRenderProps> = (props: ShadedRend
   const [v, f] = useMemo(() => {
     const links = {
       getVertex,
-      getSurface: ssao ? getShader(getSSAOSurface, [getSurface, sampleSSAO, ssaoOptions.opacity, ssaoOptions.indirect]) : getSurface,
+      getSurface: ssao && ssaoOptions ? getShader(getSSAOSurface, [getSurface, sampleSSAO, ssaoOptions.opacity, ssaoOptions.indirect]) : getSurface,
       getLight: getLight && bindBundle(getLight, {applyLights, applyEnvironment}),
       getScissor: hasScissor ? getScissorColor : null,
       toColorSpace: getNativeColor(colorInput, colorSpace),
