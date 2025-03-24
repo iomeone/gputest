@@ -42,10 +42,10 @@ const EPS = 1e-6;
   let depth01 = loadDepth(xy01);
   let depth11 = loadDepth(xy11);
 
-  let w00 = normalWeight(normal00, targetNormal) * depthWeight(depth00, targetDepth);
-  let w10 = normalWeight(normal10, targetNormal) * depthWeight(depth10, targetDepth);
-  let w01 = normalWeight(normal01, targetNormal) * depthWeight(depth01, targetDepth);
-  let w11 = normalWeight(normal11, targetNormal) * depthWeight(depth11, targetDepth);
+  let w00 = normalWeight(normal00, targetNormal) * depthWeight(depth00, targetDepth) + EPS;
+  let w10 = normalWeight(normal10, targetNormal) * depthWeight(depth10, targetDepth) + EPS;
+  let w01 = normalWeight(normal01, targetNormal) * depthWeight(depth01, targetDepth) + EPS;
+  let w11 = normalWeight(normal11, targetNormal) * depthWeight(depth11, targetDepth) + EPS;
   let w = w00 + w10 + w01 + w11;
 
   let sample00 = loadSample(xy00);
