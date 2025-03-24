@@ -1,14 +1,14 @@
 {
   "name": "@use-gpu/webgpu",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
   "license": "MIT",
   "dependencies": {
-    "@use-gpu/core": "^0.13.1",
-    "@use-gpu/live": "^0.13.1",
-    "@use-gpu/workbench": "^0.13.1"
+    "@use-gpu/core": "^0.14.0",
+    "@use-gpu/live": "^0.14.0",
+    "@use-gpu/workbench": "^0.14.0"
   },
   "scripts": {
     "build": "NPM_PACKAGE=webgpu ../../scripts/build-mjs-cjs.sh",

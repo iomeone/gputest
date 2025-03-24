@@ -1,18 +1,18 @@
 {
   "name": "@use-gpu/layout",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
   "license": "MIT",
   "dependencies": {
-    "@use-gpu/state": "^0.13.1",
-    "@use-gpu/traits": "^0.13.1",
-    "@use-gpu/workbench": "^0.13.1",
-    "@use-gpu/core": "^0.13.1",
-    "@use-gpu/live": "^0.13.1",
-    "@use-gpu/shader": "^0.13.1",
-    "@use-gpu/wgsl": "^0.13.1",
+    "@use-gpu/state": "^0.14.0",
+    "@use-gpu/traits": "^0.14.0",
+    "@use-gpu/workbench": "^0.14.0",
+    "@use-gpu/core": "^0.14.0",
+    "@use-gpu/live": "^0.14.0",
+    "@use-gpu/shader": "^0.14.0",
+    "@use-gpu/wgsl": "^0.14.0",
     "gl-matrix": "^3.3.0"
   },
   "scripts": {

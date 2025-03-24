@@ -1,6 +1,6 @@
 {
   "name": "@use-gpu/glyph",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
@@ -10,7 +10,7 @@
     "./sdf": "./src/sdf.ts"
   },
   "dependencies": {
-    "@use-gpu/state": "^0.13.1"
+    "@use-gpu/state": "^0.14.0"
   },
   "scripts": {
     "build": "yarn run build:wasm && yarn run build:js && yarn run build:pkg",

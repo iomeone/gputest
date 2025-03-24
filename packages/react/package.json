@@ -1,6 +1,6 @@
 {
   "name": "@use-gpu/react",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
@@ -10,7 +10,7 @@
     "react-dom": "*"
   },
   "dependencies": {
-    "@use-gpu/live": "^0.13.1"
+    "@use-gpu/live": "^0.14.0"
   },
   "scripts": {
     "build": "NPM_PACKAGE=react ../../scripts/build-mjs-cjs.sh",
