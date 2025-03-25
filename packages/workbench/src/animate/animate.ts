@@ -1,5 +1,5 @@
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { TypedArray, VectorLike, VectorLikes } from '@use-gpu/core';
+import type { VectorLike, VectorLikes } from '@use-gpu/core';
 import type { Keyframe, Lerpable, LerpableRecord, Tracks } from './types';
 
 import { clamp } from '@use-gpu/core';
@@ -35,14 +35,6 @@ export type AnimateProps<T extends Lerpable | LerpableRecord> = {
   render?: (value: T) => LiveElement,
   children?: LiveElement | ((value: T) => LiveElement),
 };
-
-// causes typescript docgen to crash if defined as recursive
-type NestedNumberArray = any[];
-type Numberish = number | TypedArray | NestedNumberArray;
-
-//export interface Animate extends FC<AnimateProps<Lerpable | LerpableRecord>> {
-//  <T extends Lerpable | LerpableRecord>(props: AnimateProps<T>): ReturnType<FC>
-//};
 
 export const Animate: LC<AnimateProps<any>> = <T extends Lerpable | LerpableRecord>(props: AnimateProps<T>) => {
   const {
