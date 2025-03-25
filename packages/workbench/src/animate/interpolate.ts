@@ -1,9 +1,10 @@
 import type { TypedArray } from '@use-gpu/core';
+import type { Lerpable, LerpableRecord } from './types';
 import { lerp } from '@use-gpu/core';
 
 const sqr = (x: number) => x * x;
 
-export const makeValueRef = (v: number[][] | number[] | TypedArray | number) => {
+export const makeValueRef = (v: Lerpable) => {
   const vs = v as number[];
   if (typeof vs[0] === 'number') return new Float32Array([...vs]);
   if (typeof v === 'number') return v;
@@ -11,7 +12,7 @@ export const makeValueRef = (v: number[][] | number[] | TypedArray | number) => 
 }
 
 export const copyValue = (
-  values: Record<string, number | number[] | number[][] | TypedArray>,
+  values: LerpableRecord,
   prop: string,
   v: number[][] | number[] | TypedArray | number,
 ) => {
@@ -42,10 +43,10 @@ export const copyValue = (
 };
 
 export const interpolateValue = (
-  values: Record<string, number | number[] | number[][] | Float32Array>,
+  values: LerpableRecord,
   prop: string,
-  a: number[][] | number[] | Float32Array | number,
-  b: number[][] | number[] | Float32Array | number,
+  a: number | number[] | number[][] | Float32Array | Float32Array[],
+  b: number | number[] | number[][] | Float32Array | Float32Array[],
   t: number,
 ) => {
   const as = a as number[];
@@ -78,8 +79,8 @@ export const interpolateValue = (
 };
 
 export const distanceValue = (
-  a: number[][] | number[] | TypedArray | number,
-  b: number[][] | number[] | TypedArray | number,
+  a: number | number[] | number[][] | TypedArray,
+  b: number | number[] | number[][] | TypedArray,
 ) => {
   const as = a as number[];
   const bs = b as number[];

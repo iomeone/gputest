@@ -58,7 +58,7 @@ const randomRotations = seq(64).map(() => {
 const ROTATION_KEYFRAMES = [
   [ 0, [0,   0, 0]],
   [ 6, [0, 360, 0]],
-] as Keyframe[];
+] as Keyframe<[number, number, number]>[];
 
 export const RTTCubeTargetPage: LC = () => {
 

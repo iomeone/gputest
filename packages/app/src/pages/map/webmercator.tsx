@@ -110,7 +110,12 @@ export const MapWebMercatorPage: LC = () => {
       [60, 1],
       [70, 0],
     ],
-  } as Tracks;
+  } satisfies Tracks<{
+    zoom: number,
+    long: number,
+    lat: number,
+    bend: number,
+  }>;
 
   return (<>
     <InfoBox>Render MVT vector tiles in a Web Mercator projection using the map package.</InfoBox>

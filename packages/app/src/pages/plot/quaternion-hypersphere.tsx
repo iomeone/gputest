@@ -84,7 +84,7 @@ export const PlotQuaternionHyperspherePage: LC = () => {
   const frames = [
     [0, 0],
     [120, τ],
-  ] as Keyframe[];
+  ] as Keyframe<number>[];
 
   const view = (options: HypersphereOptions) => (<>
     <InfoBox>Visualizing a 4D hypersphere under stereographic projection, as 3 mutually perpendicular toruses.</InfoBox>

@@ -138,7 +138,7 @@ export const PlotImplicitSurfacePage: LC = () => {
   `;
 
   const root = document.querySelector('#use-gpu .canvas');
-  const keyframes = [[0, 0], [23, 1.0]] as Keyframe[];
+  const keyframes = [[0, 0], [23, 1.0]] as Keyframe<number>[];
 
   return (<>
     <InfoBox>Plot an implicit function with &lt;ImplicitSurface&gt; in an animated &lt;Polar&gt; viewport. Control lighting and environment.</InfoBox>

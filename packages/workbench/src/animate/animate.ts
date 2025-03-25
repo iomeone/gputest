@@ -1,6 +1,6 @@
 import type { LC, LiveElement } from '@use-gpu/live';
 import type { TypedArray, VectorLike, VectorLikes } from '@use-gpu/core';
-import type { Keyframe } from './types';
+import type { Keyframe, Lerpable, LerpableRecord, Tracks } from './types';
 
 import { clamp } from '@use-gpu/core';
 import { extend, mutate, fence, useCallback, useDouble, useMemo, useOne } from '@use-gpu/live';
@@ -15,7 +15,11 @@ import zipObject from 'lodash/zipObject.js';
 
 const π = Math.PI;
 
-export type AnimateProps<T extends number | VectorLike | VectorLikes> = {
+export type AnimateProps<T extends Lerpable | LerpableRecord> = {
+  tracks?: T extends LerpableRecord ? Tracks<T> : never,
+  keyframes?: T extends Lerpable ? Keyframe<T>[] : never,
+  prop?: T extends Lerpable ? string : never,
+
   loop?: boolean,
   mirror?: boolean,
   repeat?: number,
@@ -26,21 +30,21 @@ export type AnimateProps<T extends number | VectorLike | VectorLikes> = {
   duration?: number,
   speed?: number,
 
-  tracks?: Record<string, Keyframe<T>[]>,
-  keyframes?: Keyframe<T>[],
-  prop?: string,
-
   paused?: boolean,
 
-  render?: (value: any) => LiveElement,
-  children?: LiveElement | ((value: any) => LiveElement),
+  render?: (value: T) => LiveElement,
+  children?: LiveElement | ((value: T) => LiveElement),
 };
 
 // causes typescript docgen to crash if defined as recursive
 type NestedNumberArray = any[];
 type Numberish = number | TypedArray | NestedNumberArray;
 
-export const Animate: LC<AnimateProps<Numberish>> = <T extends Numberish>(props: AnimateProps<T>) => {
+//export interface Animate extends FC<AnimateProps<Lerpable | LerpableRecord>> {
+//  <T extends Lerpable | LerpableRecord>(props: AnimateProps<T>): ReturnType<FC>
+//};
+
+export const Animate: LC<AnimateProps<any>> = <T extends Lerpable | LerpableRecord>(props: AnimateProps<T>) => {
   const {
     loop = false,
     mirror = false,
@@ -55,14 +59,14 @@ export const Animate: LC<AnimateProps<Numberish>> = <T extends Numberish>(props:
 
     tracks,
     keyframes,
-    prop,
+    prop = 'value',
 
     children,
   } = props;
 
   const script = useMemo(() => (
     tracks ??
-    ((keyframes && prop) ? {[prop]: keyframes} : null)
+    (keyframes ? {[prop]: keyframes} : null)
   ), [tracks, keyframes, prop]);
   if (!script) return null;
 
@@ -108,7 +112,7 @@ export const Animate: LC<AnimateProps<Numberish>> = <T extends Numberish>(props:
     if (!paused && time < max) useAnimationFrame();
     else useNoAnimationFrame();
 
-    if (render) return tracks ? render(values) : (prop ? render(values[prop]) : null);
+    if (render) return tracks ? render(values as T) : render(values[prop] as T);
     else if (typeof children === 'object') {
       const elements = swapElements();
       for (const k in scalars) scalars[k] = values[k];

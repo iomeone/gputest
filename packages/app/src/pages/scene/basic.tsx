@@ -30,7 +30,7 @@ const KEYFRAMES = [
   [20, [ 3,  0, 0]],
   [30, [ 0,  3, 0]],
   [40, [-3,  0, 0]],
-] as Keyframe[];
+] as Keyframe<[number, number, number]>[];
 
 type PickableMeshProps = {
   mesh: GPUGeometry,

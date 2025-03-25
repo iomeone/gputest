@@ -16,7 +16,7 @@ import { InfoBox } from '../../ui/info-box';
 const KEYFRAMES = [
   [ 0, 0],
   [10, 360],
-] as Keyframe[];
+] as Keyframe<number>[];
 
 export const Plot2DPage: LC = () => {
 

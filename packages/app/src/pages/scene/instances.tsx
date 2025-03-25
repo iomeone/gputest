@@ -28,7 +28,7 @@ const POSITION_KEYFRAMES = [
   [20, [ 3,  0, 0]],
   [30, [ 0,  3, 0]],
   [40, [-3,  0, 0]],
-] as Keyframe[];
+] as Keyframe<[number, number, number]>[];
 
 const ROTATION_KEYFRAMES = [
   [ 0, [0,   0, 0]],
@@ -37,7 +37,7 @@ const ROTATION_KEYFRAMES = [
   [ 8, [0,   0, 0]],
   [14, [360, 0, 0]],
   [16, [360, 0, 0]],
-] as Keyframe[];
+] as Keyframe<[number, number, number]>[];
 
 export const SceneInstancesPage: LC = () => {
   const geometry = useOne(() => makeBoxGeometry({ width: 2 }));

@@ -37,7 +37,7 @@ export const PlotStereographicPage: LC = () => {
     [1, 0],
     [10, 1],
     [11, 1],
-  ] as Keyframe[];
+  ] as Keyframe<number>[];
 
   const view = (normalize: number) => (<>
     <InfoBox>Plot curves and grids in an animated &lt;Stereographic&gt; viewport.</InfoBox>
