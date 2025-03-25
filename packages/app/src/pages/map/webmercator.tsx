@@ -110,7 +110,7 @@ export const MapWebMercatorPage: LC = () => {
       [60, 1],
       [70, 0],
     ],
-  } satisfies Tracks<{
+  } as Tracks<{
     zoom: number,
     long: number,
     lat: number,
