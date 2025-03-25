@@ -87,7 +87,7 @@ export const EaseToTarget: LC<EaseToTargetProps<Record<string, Numberish>>> = <T
     // Interpolate values
     if (!finished) {
       if (delta) {
-        const fraction = 1 - Math.pow(2, -delta / 1000 / duration);
+        const fraction = 1 - Math.pow(2, -(delta * speed) / 1000 / duration);
 
         for (const k in current) {
           for (let i = 0; i < smooth; ++i) {
