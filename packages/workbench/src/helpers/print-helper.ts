@@ -82,7 +82,7 @@ export const PrintHelper: LC<PrintHelperProps> = (props: PrintHelperProps) => {
 
   const render = getRenderFunc(props);
   return (
-    render ? provide(PrintContext, render(helper), children) :
+    render ? provide(PrintContext, helper, render(helper)) :
     children ? provide(PrintContext, helper, children) :
     yeet(helper)
   );

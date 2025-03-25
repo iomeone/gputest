@@ -1,4 +1,10 @@
-0.14.x
+0.14.1
+- `@use-gpu/live`: Match React behavior to zero out `key` in received props
+- `@use-gpu/live`: Narrow type of `provide(…)`
+- `@use-gpu/workbench`: Narrow `<EaseToTarget>` value types
+
+
+0.14.0
 - `@use-gpu/core`: Full support for `uniform` storage
 - `@use-gpu/core`: Improved minimum binding size calc for WGSL structs
 - `@use-gpu/layout`: Improved pixel hinting for SDF text

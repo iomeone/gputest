@@ -74,9 +74,9 @@ export const Scale: LiveComponent<ScaleProps> = memo((props: ScaleProps) => {
   const context = !render && children ? useMemo(() => ({
     ...dataContext,
     ...tensors,
-  }), [dataContext, tensors]) : useNoMemo();
+  }), [dataContext, tensors]) : (useNoMemo(), undefined);
 
-  return render ? render(tensors) : children ? provide(DataContext, context, children) : yeet(tensors);
+  return render ? render(tensors) : (context && children) ? provide(DataContext, context, children) : yeet(tensors);
 }, shouldEqual({
   origin: sameShallow(),
   range: sameShallow(sameShallow()),

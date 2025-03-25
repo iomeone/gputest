@@ -16,10 +16,11 @@ export type EventContextProps = {
 
 export type MouseContextProps = {
   mouse: MouseState,
-  captureId: number | null,
-  targetId: number,
-  targetIndex: number,
-  stopPropagation: () => void,
+  target: {
+    captureId: number | null,
+    targetId: number,
+    targetIndex: number,
+  },
 
   hasLock: boolean,
   beginLock: () => void,
@@ -48,9 +49,9 @@ export type EventProviderProps = {
 };
 
 export type PointerLockAPI = {
-  locked: () => boolean,
-  lock: () => void,
-  unlock: () => void,
+  beginLock: () => void,
+  endLock: () => void,
+  hasLock: boolean,
 };
 
 export type MouseState = {

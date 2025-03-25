@@ -9,7 +9,7 @@ const sqr = (x: number) => x * x;
 export const useFrustumCuller = (
   positionRef: Ref<vec3 | vec4 | number[]>,
   frustumRef: Ref<vec4[]>,
-) => useCallback((center: vec3, radius: number) => {
+) => useCallback((center: vec3 | number[], radius: number) => {
   const {current: frustum} = frustumRef;
 
   const [x, y, z = 0] = center;

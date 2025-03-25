@@ -6,7 +6,7 @@ import { Route } from './types';
 export type RouteState = {
   base: string,
   params: Record<string, string>,
-  routes?: Record<string, Route>,
+  routes?: Record<string, Route> | null,
 };
 
 export const RouteContext = makeContext<RouteState>({

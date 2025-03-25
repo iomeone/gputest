@@ -220,9 +220,9 @@ export const yeet = <T>(
 ): DeferredCall<() => void> => ({f: YEET, arg: value, key, by: getCurrentFiberID()} as any);
 
 /** Provide a value for a Live context. */
-export const provide = <T, C>(
+export const provide = <C>(
   context: LiveContext<C>,
-  value: T,
+  value: C,
   calls?: LiveNode<any>,
   key?: Key,
 ): DeferredCall<() => void> => ({f: PROVIDE, args: [context, value, calls], key, by: getCurrentFiberID()} as any);

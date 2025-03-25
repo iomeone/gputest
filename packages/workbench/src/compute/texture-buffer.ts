@@ -165,7 +165,7 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureB
   if (!(render ?? children)) return yeet(source);
 
   const content = render ? render(source) : children;
-  const view = provide(ComputeContext, source, content);
+  const view = provide(ComputeContext, [source], content);
 
   if (then) return fence(view, () => then(source));
   return view;
