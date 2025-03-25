@@ -2,7 +2,7 @@ import type { LC, LiveElement } from '@use-gpu/live';
 import type { TypedArray, VectorLike, VectorLikes } from '@use-gpu/core';
 
 import { seq } from '@use-gpu/core';
-import { extend, mutate, fence, useCallback, useDouble, useMemo, useRef } from '@use-gpu/live';
+import { extend, mutate, fence, useCallback, useDouble, useMemo, useOne, useNoOne, useRef } from '@use-gpu/live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
@@ -71,7 +71,7 @@ export const EaseToTarget: LC<EaseToTargetProps<Record<string, Numberish>>> = <T
   
   // Static continuation callback
   const Run = useCallback(() => {
-    const {delta} = useTimeContext();
+    const {elapsed, delta} = useTimeContext();
     const current = swapValues();
     const {current: target} = targetRef;
 
@@ -86,7 +86,9 @@ export const EaseToTarget: LC<EaseToTargetProps<Record<string, Numberish>>> = <T
 
     // Interpolate values
     if (!finished) {
-      if (delta) {
+      useOne(() => {
+        if (!delta) return;
+
         const fraction = 1 - Math.pow(2, -(delta * speed) / 1000 / duration);
 
         for (const k in current) {
@@ -97,10 +99,11 @@ export const EaseToTarget: LC<EaseToTargetProps<Record<string, Numberish>>> = <T
           }
           copyValue(current, k, trackedValues[smooth - 1][k]);
         }
-      }
+      }, elapsed);
     }
     // Snap to target for clean exit
     else {
+      useNoOne();
       for (const k in current) {
         copyValue(current, k, target[k]);
       }
