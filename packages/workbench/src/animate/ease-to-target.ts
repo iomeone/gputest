@@ -12,7 +12,7 @@ import { makeValueRef, interpolateValue, distanceValue, copyValue } from './inte
 import mapValues from 'lodash/mapValues.js';
 import zipObject from 'lodash/zipObject.js';
 
-export type EaseToTargetProps<T extends number | VectorLike | VectorLikes> = {
+export type EaseToTargetProps<T extends Record<string, number | VectorLike | VectorLikes>> = {
   smooth?: number,
 
   duration?: number,
@@ -20,18 +20,20 @@ export type EaseToTargetProps<T extends number | VectorLike | VectorLikes> = {
   paused?: boolean,
   epsilon?: number,
 
-  values: Record<string, T>,
+  values: T,
   version?: number,
 
-  render?: (values: Record<string, T>) => LiveElement,
-  children?: LiveElement | ((values: Record<string, T>) => LiveElement),
+  render?: (values: T) => LiveElement,
+  children?: LiveElement | ((values: T) => LiveElement),
 };
 
 // causes typescript docgen to crash if defined as recursive
 type NestedNumberArray = any[];
 type Numberish = number | TypedArray | NestedNumberArray;
 
-export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberish>(props: EaseToTargetProps<T>) => {
+export const EaseToTarget: LC<EaseToTargetProps<Record<string, Numberish>>> = <T extends Record<string, Numberish>>(
+  props: EaseToTargetProps<T>
+) => {
   const {
     smooth = 1,
 
@@ -73,20 +75,6 @@ export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberi
     const current = swapValues();
     const {current: target} = targetRef;
 
-    // Interpolate values
-    if (delta) {
-      const fraction = 1 - Math.pow(2, -delta / 1000 / duration);
-
-      for (const k in current) {
-        for (let i = 0; i < smooth; ++i) {
-          const a = trackedValues[i - 1] ?? target;
-          const b = trackedValues[i];
-          interpolateValue(b, k, b[k], a[k], fraction);
-        }
-        copyValue(current, k, trackedValues[smooth - 1][k]);
-      }
-    }
-
     // Track max distance
     let maxDistance = 0;
     for (const k in current) {
@@ -96,23 +84,43 @@ export const EaseToTarget: LC<EaseToTargetProps<Numberish>> = <T extends Numberi
 
     const finished = delta && (maxDistance < epsilon);
 
+    // Interpolate values
+    if (!finished) {
+      if (delta) {
+        const fraction = 1 - Math.pow(2, -delta / 1000 / duration);
+
+        for (const k in current) {
+          for (let i = 0; i < smooth; ++i) {
+            const a = trackedValues[i - 1] ?? target;
+            const b = trackedValues[i];
+            interpolateValue(b, k, b[k], a[k], fraction);
+          }
+          copyValue(current, k, trackedValues[smooth - 1][k]);
+        }
+      }
+    }
+    // Snap to target for clean exit
+    else {
+      for (const k in current) {
+        copyValue(current, k, target[k]);
+      }
+    }
+
     // Run if not paused or not converged
     if (!paused && !finished) useAnimationFrame();
     else useNoAnimationFrame();
-    
-    const result = finished ? target : current;
 
-    if (render) return render(result);
+    if (render) return render(current);
     else if (typeof children === 'object') {
       const elements = swapElements();
-      for (const k in scalars) scalars[k] = result[k];
+      for (const k in scalars) scalars[k] = current[k];
       mutate(elements, scalars);
       return elements;
     }
 
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [swapValues, swapElements, duration, speed, smooth, paused, render, children]);
+  }, [swapValues, swapElements, trackedValues, scalars, duration, speed, smooth, paused, render, children]);
 
   // Fence so that only continuation runs repeatedly
   return fence(null, Run);

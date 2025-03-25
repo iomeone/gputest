@@ -11,9 +11,9 @@ export const makeValueRef = (v: number[][] | number[] | TypedArray | number) => 
 }
 
 export const copyValue = (
-  values: Record<string, number | number[] | number[][] | Float32Array>,
+  values: Record<string, number | number[] | number[][] | TypedArray>,
   prop: string,
-  v: number[][] | number[] | Float32Array | number,
+  v: number[][] | number[] | TypedArray | number,
 ) => {
   const vs = v as number[];
   const vvs = v as number[][];
