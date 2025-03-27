@@ -12,7 +12,7 @@ import { useInitialRender, useNoInitialRender } from '../hooks/useInitialDispatc
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen.wgsl';
+import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen-view.wgsl';
 import { getTextureColor } from '@use-gpu/wgsl/mask/textured.wgsl';
 
 export type RawFullScreenProps = {
