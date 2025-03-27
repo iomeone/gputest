@@ -105,6 +105,7 @@
     "./instance/vertex/deferred-light.wgsl": "./src/instance/vertex/deferred-light.wgsl.ts",
     "./instance/vertex/dual-contour.wgsl": "./src/instance/vertex/dual-contour.wgsl.ts",
     "./instance/vertex/face.wgsl": "./src/instance/vertex/face.wgsl.ts",
+    "./instance/vertex/full-screen-view.wgsl": "./src/instance/vertex/full-screen-view.wgsl.ts",
     "./instance/vertex/full-screen.wgsl": "./src/instance/vertex/full-screen.wgsl.ts",
     "./instance/vertex/instanced.wgsl": "./src/instance/vertex/instanced.wgsl.ts",
     "./instance/vertex/label.wgsl": "./src/instance/vertex/label.wgsl.ts",
