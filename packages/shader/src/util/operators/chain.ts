@@ -20,6 +20,8 @@ export type MakeChainAccessor = (
   length?: number,
 ) => string;
 
+const EMPTY: any[] = [];
+
 const SYMBOLS = ['chain', 'from', 'to'];
 
 const EXTERNALS = [
@@ -43,7 +45,7 @@ const extractImports = (bundle: ParsedBundle, symbols: string[]): ModuleRef[] =>
   const {module: {table}} = bundle;
 
   if (table.modules) for (const i of table.modules) {
-    const syms = i.symbols.filter(s => symbols.includes(s));
+    const syms = i.symbols.filter((s: string) => symbols.includes(s));
     if (syms.length) {
       refs.push({...i, symbols: syms});
     }
@@ -80,8 +82,8 @@ export const makeChainTo = (
   }
 
   // Other arguments of `from` and `to` must match
-  const toRest = toArgs?.slice(restIndex) ?? [];
-  const fromRest = fromArgs?.slice(restIndex, restIndex + toRest.length) ?? [];
+  const toRest = toArgs?.slice(restIndex) ?? EMPTY;
+  const fromRest = fromArgs?.slice(restIndex, restIndex + toRest.length) ?? EMPTY;
   if (fromRest.join('/') !== toRest.join('/')) {
     throw new Error(`Type Error: ${fromName} -> ${toName}.\nCannot chain remainder (..., ${fromRest.join(', ')}) to args (..., ${toRest.join(', ')}).`);
   }
@@ -105,16 +107,16 @@ export const makeChainTo = (
     const name = rename.get(entry) ?? entry;
     const from = rename.get('from') ?? 'from';
     const to = rename.get('to') ?? 'to';
-    return makeChainAccessor(format, name, args ?? [], from, to, restIndex, toRest.length);
+    return makeChainAccessor(format, name, args ?? EMPTY, from, to, restIndex, toRest.length);
   }
 
   // If using imported types, adopt imports
-  const importSymbols = [...fromArgs, ...toArgs];
+  const importSymbols = [...fromArgs ?? EMPTY, ...toArgs ?? EMPTY];
   if (fromType) importSymbols.push(getBundleEntry(fromType));
   if (toType) importSymbols.push(getBundleEntry(toType));
 
-  const fImports = extractImports(fBundle, importSymbols);
-  const tImports = extractImports(tBundle, importSymbols);
+  const fImports = extractImports(fBundle, importSymbols) ?? EMPTY;
+  const tImports = extractImports(tBundle, importSymbols) ?? EMPTY;
 
   const imports = [...fImports, ...tImports];
   const modules = [
@@ -122,9 +124,11 @@ export const makeChainTo = (
     ...extractImports(tBundle, importSymbols),
   ];
 
+  const fLibs = fBundle.libs;
+  const tLibs = tBundle.libs;
   const libs = {
-    ...zipObject(fImports.map(m => m.name), fImports.map(m => fBundle.libs[m.name])),
-    ...zipObject(tImports.map(m => m.name), tImports.map(m => tBundle.libs[m.name])),
+    ...(fLibs ? zipObject(fImports.map(m => m.name), fImports.map(m => fLibs[m.name])) : undefined),
+    ...(tLibs ? zipObject(tImports.map(m => m.name), tImports.map(m => tLibs[m.name])) : undefined),
   }
 
   // Make virtual module

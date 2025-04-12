@@ -6,7 +6,7 @@
 // o-- ... --o--o--o
 // s           e-1 e
 
-@optional @link fn getLineDetail() -> i32 { return LINE_DETAIL; }
+@optional @link fn getLineDetail() -> i32 { return ANCHOR_LINE_DETAIL; }
 @optional @link fn getAnchorStart() -> i32 { return ANCHOR_START; }
 @optional @link fn getAnchorEnd() -> i32 { return ANCHOR_END; }
 

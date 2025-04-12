@@ -47,7 +47,7 @@ export const AABBHelper: LC<AABBHelperProps> = memo((props: AABBHelperProps) => 
     ...geometry,
     render: (geometry: Record<string, ShaderSource>) =>
       provide(TransformContext, context,
-        use(LineLayer, { ...geometry.attributes, color, width })
+        use(LineLayer, { ...geometry.attributes, color, width: 3 })
       ),
   });
 }, 'AABBHelper');

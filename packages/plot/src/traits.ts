@@ -95,9 +95,7 @@ export const AxisTrait = trait(
 export const FaceTrait = trait(
   {
     flat: optional(parseBoolean),
-    shaded: optional(parseBoolean),
     side: optional(parseSide),
-    shadow: optional(parseBoolean),
   },
   {
     side: 'both',
@@ -220,6 +218,13 @@ export const ScaleTrait = trait(
     zero: true,
     factor: 1,
     nice: true,
+  },
+);
+
+export const ShadedTrait = trait(
+  {
+    shaded: optional(parseBoolean),
+    shadow: optional(parseBoolean),
   },
 );
 
@@ -678,12 +683,14 @@ export const LineTraits = combine(
   trait({
     width: optional(parseScalarArrayLike),
     widths: bindable(optional(parseMultiScalarArray)),
+    sides: optional(parseNumber),
   }),
   CompositeVerticesTrait,
   DataTrait(['positions', 'colors', 'depths', 'zBiases', 'ids', 'lookups', 'widths']),
   LineSegmentsTrait,
 
   ROPTrait,
+  ShadedTrait,
   StrokeTrait,
   ZIndexTrait,
 );
@@ -695,6 +702,9 @@ export const ArrowTraits = combine(
     widths: bindable(optional(parseMultiScalarArray)),
     size: optional(parseScalarArrayLike),
     sizes: bindable(optional(parseMultiScalarArray)),
+
+    detail: optional(parseNumber),
+    sides: optional(parseNumber),
   }),
   CompositeVerticesTrait,
   DataTrait(['positions', 'colors', 'depths', 'zBiases', 'ids', 'lookups', 'widths', 'sizes']),
@@ -702,6 +712,7 @@ export const ArrowTraits = combine(
 
   ArrowTrait,
   ROPTrait,
+  ShadedTrait,
   StrokeTrait,
   ZIndexTrait,
 );
@@ -714,6 +725,7 @@ export const FaceTraits = combine(
 
   FaceTrait,
   ROPTrait,
+  ShadedTrait,
   ZIndexTrait,
 );
 

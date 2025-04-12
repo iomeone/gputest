@@ -132,7 +132,7 @@ export const Grid: LiveComponent<GridProps> = memo((props) => {
     const m2 = useShaderRef(max);
     const s = useShaderRef(shift);
 
-    const defines = useOne(() => ({ LINE_DETAIL: detail, GRID_AUTO: !!auto }), detail);
+    const defines = useOne(() => ({ GRID_LINE_DETAIL: detail, GRID_AUTO: !!auto, SEGMENT_LINE_DETAIL: detail }), detail);
     const bound = useShader(getGridPosition, [data, m, m1, m2, s, autoBound], defines);
 
     // Expose position source

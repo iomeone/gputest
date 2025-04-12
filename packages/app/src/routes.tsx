@@ -19,6 +19,7 @@ import { MapWebMercatorPage } from './pages/map/webmercator';
 import { MeshInterleavedPage } from './pages/mesh/interleaved';
 import { Plot2DPage } from './pages/plot/2d';
 import { Plot3DPage } from './pages/plot/3d';
+import { PlotTubesPage } from './pages/plot/tubes';
 import { PlotPickingPage } from './pages/plot/picking';
 import { PlotCartesianPage } from './pages/plot/cartesian';
 import { PlotPolarPage } from './pages/plot/polar';
@@ -47,6 +48,7 @@ import { EmptyPage } from './pages/empty';
 export const makePages = () => [
   {path: "/plot/2d",                     title: "Plot - 2D",                         element: <Plot2DPage />},
   {path: "/plot/3d",                     title: "Plot - 3D",                         element: <Plot3DPage />},
+  {path: "/plot/tubes",                  title: "Plot - Shaded Lines",               element: <PlotTubesPage />},
   {path: "/plot/picking",                title: "Plot - GPU Picking",                element: <PlotPickingPage />},
   {path: "/data/solar",                  title: "Data - Solar System",               element: <DataSolarSystemPage />},
   {path: "/geometry/lines",              title: "Geometry - 3D Lines and Arrows",    element: <GeometryLinesPage />},

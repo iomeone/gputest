@@ -22,6 +22,7 @@ export const DEFAULT_MATERIAL_CONTEXT = {
     getFragment: getPassThruColor,
   },
   shaded: {
+    getFragment: getPassThruColor,
     getSurface,
     getLight: getLitFragment,
     applyLights: DEFAULT_LIGHT_CONTEXT.bindApplyMaterial(applyPBRMaterial),

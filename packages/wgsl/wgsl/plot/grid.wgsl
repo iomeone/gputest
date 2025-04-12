@@ -9,7 +9,7 @@ const STEP = vec2<f32>(0.0, 1.0);
 @optional @link fn getGridAutoState(base: vec4<f32>, shift: vec4<f32>) -> bool { return true; };
 
 @export fn getGridPosition(index: u32) -> vec4<f32> {
-  let n = u32(LINE_DETAIL + 1);
+  let n = u32(GRID_LINE_DETAIL + 1);
 
   let k = index / n;
   let i = select(k, k / 2, GRID_AUTO);

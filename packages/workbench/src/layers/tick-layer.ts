@@ -88,7 +88,7 @@ export const TickLayer: LiveComponent<TickLayerProps> = memo((props: TickLayerPr
 
   const c = useCallback(() => ((positions as any)?.length ?? resolve(count) ?? 1) * (detail + 1), [positions, count, detail]);
 
-  const defines = useOne(() => ({ LINE_DETAIL: detail }), detail);
+  const defines = useOne(() => ({ TICK_LINE_DETAIL: detail, SEGMENT_LINE_DETAIL: detail }), detail);
   const bound = useShader(getTickPosition, [xf, xd, p, o, d, s, t, b], defines);
 
   return (

@@ -1,7 +1,7 @@
 use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16 };
 use '@use-gpu/wgsl/fragment/bayer'::{ bayer4x4 };
 use '@use-gpu/wgsl/fragment/noise'::{ IGN };
-use '@use-gpu/wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getAbsoluteScale };
+use '@use-gpu/wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getViewPixelRatio };
 
 @link fn loadNormal16(xy: vec2<u32>) -> vec4<u32>;
 @link fn loadDepth(xy: vec2<u32>) -> f32;
@@ -83,7 +83,7 @@ fn slerpAngle(a: vec3<f32>, b: vec3<f32>, angle: f32) -> vec3<f32> {
 
   // Get view vector + effective sampling radius
   let view = -normalize(position);
-  let radius = min(MAX_RADIUS * abs(position.z) / getAbsoluteScale(), getRadius());
+  let radius = min(MAX_RADIUS * abs(position.z) / getViewPixelRatio(), getRadius());
 
   let inv = 1.0 / f32(SAMPLES);
   let nramp = SAMPLES / 2;

@@ -5,6 +5,7 @@ import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 import { useDraw } from '../hooks/useDraw';
 
 import { memo, useCallback, useMemo, useOne, useNoCallback } from '@use-gpu/live';
+import { chainTo } from '@use-gpu/shader/wgsl';
 
 import { useMaterialContext } from '../providers/material-provider';
 import { PickingSource, usePickingShader } from '../providers/picking-provider';
@@ -19,13 +20,16 @@ import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions
 import { useShaderRef } from '../hooks/useShaderRef';
 
 import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
-import { getLineVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
+import { getLineVertex, getLineShadedVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
+import { solidToShaded } from '@use-gpu/wgsl/instance/solid-to-shaded.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 
 export type RawLinesFlags = {
-  join?: 'miter' | 'round' | 'bevel',
-} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'depthTest' | 'depthWrite' | 'blend'>;
+  sides?: number,
+  shaded?: boolean,
+  join?: 'tangent' | 'miter' | 'round' | 'bevel',
+} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'alphaToCoverage' | 'alphaToDiscard' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 export type RawLinesProps = {
   position?: VectorLike,
@@ -59,15 +63,17 @@ export type RawLinesProps = {
 } & PickingSource & RawLinesFlags;
 
 const LINE_JOIN_SIZE = {
+  'tangent': 0,
   'bevel': 1,
   'miter': 2,
   'round': 4,
 } as Record<string, number>;
 
 const LINE_JOIN_STYLE = {
-  'bevel': 0,
-  'miter': 1,
-  'round': 2,
+  'tangent': 0,
+  'bevel': 1,
+  'miter': 2,
+  'round': 3,
 } as Record<string, number>;
 
 export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps) => {
@@ -84,6 +90,10 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
     transform,
 
     count = null,
+    shaded = false,
+    shadow = false,
+
+    sides = 0,
     join,
   } = props;
 
@@ -93,10 +103,10 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
 
   const style = LINE_JOIN_STYLE[j];
   const segments = LINE_JOIN_SIZE[j];
-  const tris = (1+segments) * 2;
+  const quads = (1 + segments);
 
   // Set up draw
-  const vertexCount = 2 + tris;
+  const vertexCount = (shaded && sides > 0) ? quads * (2 * (3 + sides)) : 2 * (1 + quads);
   const instanceCount = useDataLength(count, props.positions, -1);
 
   // Instanced draw (repeated or random access)
@@ -124,9 +134,11 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
     useNoCallback();
   }
 
-  const material = useMaterialContext().solid;
+  // Solid or shaded material
+  const renderer = shadow || shaded ? 'shaded' : 'solid';
+  const material = useMaterialContext()[renderer];
 
-  const boundVertex = useShader(getLineVertex, [
+  const boundVertex = useShader(shaded ? getLineShadedVertex : getLineVertex, [
     positions, scissor,
     u, s,
     g ?? auto, c, w, d, z,
@@ -137,16 +149,17 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
   const getPicking = usePickingShader(props);
 
   const links = useMemo(() => ({
-    getVertex,
+    getVertex: shadow && !shaded ? chainTo(getVertex, solidToShaded) : getVertex,
     getPicking,
     ...material,
-  }), [getVertex, getPicking, material]);
+  }), [getVertex, getPicking, shadow, shaded, material]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,
     topology: 'triangle-strip',
     stripIndexFormat: 'uint16',
     side: 'both',
+    shadow,
     scissor,
     alphaToCoverage,
     alphaToDiscard,
@@ -158,9 +171,11 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
   const defines = useMemo(() => ({
     ...defs,
     ...instanceDefs,
+    HAS_LINE_SHADING: !!shaded,
+    LINE_STRIP_DETAIL: shaded ? sides : 0,
     LINE_JOIN_STYLE: style,
     LINE_JOIN_SIZE: segments,
-  }), [defs, instanceDefs, style, segments]);
+  }), [defs, instanceDefs, shaded, sides, style, segments]);
 
   return useDraw({
     vertexCount,
@@ -170,7 +185,7 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
     links,
     defines,
 
-    renderer: 'solid',
+    renderer,
     pipeline,
     mode,
   });

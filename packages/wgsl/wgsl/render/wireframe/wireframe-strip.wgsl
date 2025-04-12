@@ -36,6 +36,18 @@ use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
     );
   }
 
+  let l = length(left - right);
+  if (l == 0.0) {
+    return SolidVertex(
+      vec4<f32>(0.0),
+      vec4<f32>(1.0),
+      vec4<f32>(0.0),
+      vec4<f32>(0.0),
+      vec4<f32>(1.0),
+      0u,
+    );
+  }
+
   let lineWidth = getViewPixelRatio() * 2.0;
   var join: vec3<f32>;
   if (ij.x > 0u) {

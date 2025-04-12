@@ -113,21 +113,28 @@
   return a;
 }
 
+// Screen-space sizing in world space (or absolute)
 @export fn getWorldScale(w: f32, f: f32) -> f32 {
   return getScreenScale(w, f) * w * viewUniforms.viewWorldScale.x;
 }
 
+// Screen-space sizing in screen space (or absolute)
 @export fn getScreenScale(w: f32, f: f32) -> f32 {
+  if (f < 0.0) {
+    // Fixed world-space units
+    return getAbsoluteScale() / w;
+  }
+
   let worldScale = viewUniforms.viewWorldScale.y;
   let clipScale = mix(1.0, worldScale / w, f);
   let pixelScale = clipScale * viewUniforms.viewPixelRatio;
+
   return pixelScale;
 }
 
+// Ratio of world-space units to clip space units
 @export fn getAbsoluteScale() -> f32 {
-  let worldScale = viewUniforms.viewWorldScale.y;
-  let pixelScale = worldScale * viewUniforms.viewPixelRatio;
-  return pixelScale;
+  return 1 / viewUniforms.viewWorldScale.x;
 }
 
 @export fn applyZBias3(position: vec3<f32>, zBias: f32, w: f32) -> vec3<f32> {

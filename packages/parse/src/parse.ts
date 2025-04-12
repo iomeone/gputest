@@ -363,7 +363,7 @@ export const parsePositionMultiMultiArray = makeParseMultiMultiVectorArray(4, 1,
 
 export const parseSide       = makeParseEnum<Side>(['front', 'back', 'both']);
 
-export const parseJoin       = makeParseEnum<Join>(['bevel', 'miter', 'round']);
+export const parseJoin       = makeParseEnum<Join>(['tangent', 'bevel', 'miter', 'round']);
 export const parseBlending   = makeParseEnum<Blending>(['none', 'premultiply', 'alpha', 'add', 'subtract', 'multiply']);
 
 export const parsePlacement  = makeParseMap({
