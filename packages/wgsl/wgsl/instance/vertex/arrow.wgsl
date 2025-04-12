@@ -1,6 +1,6 @@
 use '@use-gpu/wgsl/use/types'::{ SolidVertex, ShadedVertex };
 use '@use-gpu/wgsl/use/view'::{ getViewVector, worldToClip, worldToView, viewToClip, worldToClip3D, applyZBias, getViewPosition };
-use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize, getArrowCorrection };
+use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
 
 @optional @link fn getVertex(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 @optional @link fn getNormal(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
@@ -50,7 +50,7 @@ const ARROW_ASPECT: f32 = 2.5;
   let uv4 = getAnchorUV(anchorIndex, nextIndex);
   let st4 = getST(anchorIndex);
 
-  let orientedPos = anchorFrame.matrix * vec4<f32>(vec3<f32>(meshPosition.x, meshPosition.yz * anchorFrame.radius) * anchorFrame.size, 1.0);
+  let orientedPos = anchorFrame.matrix * vec4<f32>(meshPosition.xyz * anchorFrame.size, 1.0);
 
   let finalPos = vec4<f32>(orientedPos.xyz + startPos.xyz, 1.0);
   var position = worldToClip(finalPos);
@@ -97,7 +97,7 @@ const ARROW_ASPECT: f32 = 2.5;
   let uv4 = getAnchorUV(anchorIndex, nextIndex);
   let st4 = getST(anchorIndex);
 
-  let orientedPos = anchorFrame.matrix * vec4<f32>(vec3<f32>(meshPosition.x, meshPosition.yz * anchorFrame.radius) * anchorFrame.size, 1.0);
+  let orientedPos = anchorFrame.matrix * vec4<f32>(meshPosition.xyz * anchorFrame.size, 1.0);
   let orientedNormal = anchorFrame.matrix * vec4<f32>(meshNormal.xyz, 1.0);
   let orientedTangent = vec4<f32>(0.0);
 
@@ -124,7 +124,6 @@ const ARROW_ASPECT: f32 = 2.5;
 struct AnchorFrame {
   matrix: mat4x4<f32>,
   size: f32,
-  radius: f32,
 };
 
 fn getAnchorFrame(
@@ -155,14 +154,7 @@ fn getAnchorFrame(
   );
 
   let offset = vec4<f32>(t.xyz, 0.0) * (ARROW_ASPECT * arrowSize);
-  let cap = worldToClip(startPos + offset);
-
-  var arrowRadius = 1.0;
-  if (cap.w > 0.0 && center.w > 0.0) {
-    arrowRadius = getArrowCorrection(cap.w, center.w, depth);
-  }
-
-  return AnchorFrame(m, arrowSize, arrowRadius);
+  return AnchorFrame(m, arrowSize);
 }
 
 fn getAnchorUV(anchorIndex: u32, nextIndex: u32) -> vec4<f32> {

@@ -85,16 +85,9 @@ const ARROW_ASPECT: f32 = 2.5;
     var endIndex = trimIndex.y;
 
     centerPos = trimLine(beforePos, centerPos, afterPos, cornerIndex, trimIndex.x, trimIndex.y, trimMode, width, depth, size);
-
     if (centerPos.w == 0.0) {
-      return SolidVertex(
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        0u,
-      );
+      centerPos.w = 1.0;
+      width = 0.0;
     }
   }
 
@@ -191,19 +184,9 @@ const ARROW_ASPECT: f32 = 2.5;
     var endIndex = trimIndex.y;
 
     centerPos = trimLine(beforePos, centerPos, afterPos, cornerIndex, trimIndex.x, trimIndex.y, trimMode, width, depth, size);
-
     if (centerPos.w == 0.0) {
-      return ShadedVertex(
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        vec4<f32>(0.0),
-        0u,
-      );
+      centerPos.w = 1.0;
+      width = 0.0;
     }
   }
 
@@ -299,14 +282,14 @@ fn trimLine(
     var start = worldToClip(startPos);
     if (start.w > 0.0) {
       var nextPos = getPosition(startIndex + 1u);
-      trimmedPos = trimAnchor(maxLength, startPos.xyz, nextPos.xyz, trimmedPos.xyz, afterPos.xyz, width, size, both, start.w, depth);
+      trimmedPos = trimAnchor(maxLength, trimmedPos.w, startPos.xyz, nextPos.xyz, trimmedPos.xyz, afterPos.xyz, width, size, both, start.w, depth);
     }
   }
   if ((trimMode & 2) != 0) {
     var end = worldToClip(endPos);
     if (end.w > 0.0) {
       var nextPos = getPosition(endIndex - 1u);
-      trimmedPos = trimAnchor(maxLength, endPos.xyz, nextPos.xyz, trimmedPos.xyz, beforePos.xyz, width, size, both, end.w, depth);
+      trimmedPos = trimAnchor(maxLength, trimmedPos.w, endPos.xyz, nextPos.xyz, trimmedPos.xyz, beforePos.xyz, width, size, both, end.w, depth);
     }
   }
 
@@ -315,6 +298,8 @@ fn trimLine(
 
 fn trimAnchor(
   maxLength: f32,
+  trimmedW: f32,
+
   anchor: vec3<f32>,
   next: vec3<f32>,
   center: vec3<f32>,
@@ -332,11 +317,12 @@ fn trimAnchor(
   var arrowLength = getArrowSize(maxLength, width, size, both, w, depth) * ARROW_ASPECT;
 
   if (distanceStart >= 0.0 && distanceStart < arrowLength) {
+    let shouldTrim = select(trimmedW, 0.0, distanceEnd >= 0.0 && distanceEnd < arrowLength);
     let ratio = (arrowLength - distanceStart) / (distanceEnd - distanceStart);
-    return vec4<f32>(mix(center, after, ratio), 1.0);
+    return vec4<f32>(mix(center, after, ratio), shouldTrim);
   }
 
-  return vec4<f32>(center, 1.0);
+  return vec4<f32>(center, trimmedW);
 }
 
 fn getAnchorDistance(anchor: vec3<f32>, tangent: vec3<f32>, center: vec3<f32>) -> f32 {

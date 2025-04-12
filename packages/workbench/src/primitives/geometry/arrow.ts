@@ -25,7 +25,7 @@ const makeArrowVertices = (detail: number, width: number = 2.5) => {
   const normals = [] as [number, number, number, number][];
 
   const nl = Math.hypot(width, 1);
-  const nx = 1 / nl;
+  const nx = -1 / nl;
   const ny = width / nl;
 
   for (let i = 0; i <= detail; ++i) {
@@ -60,9 +60,9 @@ const makeArrowVertices = (detail: number, width: number = 2.5) => {
     vertices.push(...ring[i + 1]);
     vertices.push(...ring[i]);
 
-    normals.push(-1, 0, 0, 0);
-    normals.push(-1, 0, 0, 0);
-    normals.push(-1, 0, 0, 0);
+    normals.push(1, 0, 0, 0);
+    normals.push(1, 0, 0, 0);
+    normals.push(1, 0, 0, 0);
   }
 
   return {

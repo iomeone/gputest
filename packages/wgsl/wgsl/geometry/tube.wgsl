@@ -86,10 +86,15 @@ struct PositionNormal {
   }
 
   let offset = tubeJoinTangent(viewDir, tangent, y);
-  let plane = normalize(cross(left, right));
+  let plane = cross(left, right);
 
-  let inPlane = offset - plane * dot(offset, plane);
-  return offset + boost * inPlane;
+  if (length(plane) > 0.0) {
+    let p = normalize(plane);
+    let inPlane = offset - p * dot(offset, p);
+    return offset + boost * inPlane;
+  }
+
+  return offset;
 }
 
 @export fn tubeJoinRound(viewDir: vec3<f32>, left: vec3<f32>, right: vec3<f32>, arc: f32, y: f32) -> vec3<f32> {

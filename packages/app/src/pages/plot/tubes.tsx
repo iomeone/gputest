@@ -129,18 +129,19 @@ export const PlotTubesPage: LC = () => {
                   as={'positions'}
                   expr={(emit: Emit, i: number, j: number, time: Time) => {
                     const r = (1 + j / PATHS) * .7;
+                    const t = time.elapsed;
 
                     const pz = ((j + .5) / PATHS) * 6.28;
                     const tz = (((i + .5) / STEPS) * 2 - 1) * 3.1415;
 
-                    const phi1 = pz + Math.sin(pz + tz + time.elapsed * .000661);
-                    const th1 = tz + Math.cos(tz * .519 - pz*pz*.1 + time.elapsed * .000113) * .56;
+                    const phi1 = pz + Math.sin(pz + tz + t * .000661);
+                    const th1 = tz + Math.cos(tz * .519 - pz*pz*.1 + t * .000113) * .56;
 
-                    const phi2 = phi1 + Math.sin(phi1 + tz + Math.cos(2 * pz - th1 + time.elapsed * .000349) + time.elapsed * .000259);
-                    const th2 = th1 + Math.cos(th1 * .419 - phi1*phi1*.1 + time.elapsed * .000277) * .53;
+                    const phi2 = phi1 + Math.sin(phi1 + tz + Math.cos(2 * pz - th1 + t * .000349) + t * .000259);
+                    const th2 = th1 + Math.cos(th1 * .419 - phi1*phi1*.1 + t * .000277) * .53;
 
                     const phi = phi2;
-                    const th = th2 + time.elapsed * .001;
+                    const th = th2 + t * .001;
 
                     const ct = Math.cos(th);
                     const st = Math.sin(th);
@@ -184,7 +185,7 @@ export const PlotTubesPage: LC = () => {
                   width={0.1}
                   depth={-1}
 
-                  sides={3}
+                  sides={5}
                   shadow
                   shaded
                   start

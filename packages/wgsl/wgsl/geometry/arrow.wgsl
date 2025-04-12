@@ -19,8 +19,3 @@ fn sqr(f: f32) -> f32 { return f * f; };
 
   return finalSize;
 };
-
-@export fn getArrowCorrection(w1: f32, w2: f32, depth: f32) -> f32 {
-  return mix(w1 / w2, 1.0, depth);
-};
-

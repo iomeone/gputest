@@ -54,7 +54,7 @@ export const GeometryLinesPage: LC = () => {
           data={zigzagData}
           segments={getLineSegments}
         >{
-          (props: GPUAttributes) => <LineLayer {...props} depth={0.5} join='round' />
+          (props: GPUAttributes) => <LineLayer {...props} depth={0.5} />
         }</Data>
 
         <Data
@@ -69,6 +69,8 @@ export const GeometryLinesPage: LC = () => {
             <ArrowLayer
               {...props}
               depth={0.5}
+              sides={4}
+              join='tangent'
             />
         }</Data>
 

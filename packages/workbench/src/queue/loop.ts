@@ -138,7 +138,6 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
 
     const resetIfIdle = () => {
       if (!ref.version.pending) {
-        console.log('resetIfIdle', '#' + fiberId)
         requestAnimationFrame(() => time.timestamp = -Infinity);
       }
     };
