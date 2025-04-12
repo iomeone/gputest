@@ -1,8 +1,9 @@
 0.14.1
 - `@use-gpu/live`: Match React behavior to zero out `key` in received props
 - `@use-gpu/live`: Narrow type of `provide(…)`
+- `@use-gpu/plot`: Add `shaded` / `shadow` prop to `<Line>` and `<Arrow>`
 - `@use-gpu/workbench`: Narrow `<EaseToTarget>` value types
-
+- `@use-gpu/workbench`: Add `shaded` / `shadow` prop to `<LineLayer>` and `<ArrowLayer>`
 
 0.14.0
 - `@use-gpu/core`: Full support for `uniform` storage

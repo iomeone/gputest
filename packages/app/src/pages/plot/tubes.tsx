@@ -68,7 +68,7 @@ const color = seq(PATHS).map(() => {
   const r = 0.5 + Math.random() * 0.5;
   const g = 0.25 + Math.random() * 0.5;
   const b = 0.15 + Math.random() * 0.5;
-  return [b, g + r * .1 - b * .2, r + g * .2];
+  return [Math.max(0, 2*b - r*r), g - r * .1 - g * .2, r + g * .2];
 });
 const width = seq(PATHS).map(() => (Math.random() * 20 + 5) / 100);
 
@@ -129,9 +129,9 @@ export const PlotTubesPage: LC = () => {
                 </PBRMaterial>
               </Transform>
 
-              <AmbientLight intensity={0.2} />
-              <DirectionalLight position={lightData[0].position} intensity={0.7} color={lightData[0].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />
-              <DirectionalLight position={lightData[1].position} intensity={0.7} color={lightData[1].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />
+              <AmbientLight intensity={0.3} />
+              <DirectionalLight position={lightData[0].position} intensity={0.6} color={lightData[0].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />
+              <DirectionalLight position={lightData[1].position} intensity={0.6} color={lightData[1].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />
               <PointLight       position={lightData[2].position} intensity={50}  color={lightData[2].color} shadowMap={SHADOW_MAP_POINT} />
 
               <PBRMaterial>
