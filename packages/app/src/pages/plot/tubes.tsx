@@ -1,4 +1,5 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Emit, Time } from '@use-gpu/core';
 
 import React from '@use-gpu/live';
 
@@ -7,11 +8,11 @@ import {
   OrbitControls, OrbitCamera,
   Cursor,
   DirectionalLight, PointLight, AmbientLight,
-  PBRMaterial,
+  PBRMaterial, EaseToTarget,
   GeometryData, makeSphereGeometry,
 } from '@use-gpu/workbench';
 import {
-  Plot, Arrow, Transform,
+  Plot, Arrow, Transform, Tensor,
 } from '@use-gpu/plot';
 import {
   Mesh,
@@ -35,25 +36,10 @@ const vecSteps = [
 
 // Make 80 paths of 60 steps
 const PATHS = 80;
-const STEPS = 60;
+const STEPS = 120;
 
 const paths: number[][][] = seq(PATHS).map((j) => seq(STEPS).map((i) => {
 
-  const r = (1 + j / PATHS) / 2;
-  const phi = ((j + .5) / PATHS) * 6.28;
-  const th = (((i + .5) / STEPS) * 2 - 1) * 3.1415;
-
-  const ct = Math.cos(th);
-  const st = Math.sin(th);
-
-  const cp = Math.cos(phi);
-  const sp = Math.sin(phi);
-
-  const x = ct * cp * r;
-  const y = st * cp * r;
-  const z = sp * r;
-
-  return [x, y, z + th];
 }, [] as number[][]));
 
 const squarePath = [
@@ -113,7 +99,7 @@ const GRAY = [0.25, 0.25, 0.25, 1.0];
 export const PlotTubesPage: LC = () => {
 
   return (<>
-    <InfoBox>Applying shading and materials to 3D lines and arrows, generated using vertex shaders.</InfoBox>
+    <InfoBox>Applying shading and materials to 3D lines and arrows, tesselated using vertex shaders.</InfoBox>
     <Cursor cursor="move" />
     <LinearRGB>
       <Camera>
@@ -135,23 +121,57 @@ export const PlotTubesPage: LC = () => {
               <PointLight       position={lightData[2].position} intensity={50}  color={lightData[2].color} shadowMap={SHADOW_MAP_POINT} />
 
               <PBRMaterial>
-                <Arrow
-                  positions={paths}
-                  color={color}
-                  zBias={zBias}
-                  size={1}
+                <Tensor
+                  format='vec3<f32>'
+                  size={[STEPS, PATHS]}
+                  live
+                  time
+                  as={'positions'}
+                  expr={(emit: Emit, i: number, j: number, time: Time) => {
+                    const r = (1 + j / PATHS) * .7;
 
-                  // use absolute 3D sizing so shadow maps can work
-                  width={0.05}
-                  depth={-1}
+                    const pz = ((j + .5) / PATHS) * 6.28;
+                    const tz = (((i + .5) / STEPS) * 2 - 1) * 3.1415;
 
-                  sides={3}
-                  shaded
-                  shadow
-                  start
-                  end
-                  join="tangent"
-                />
+                    const phi1 = pz + Math.sin(pz + tz + time.elapsed * .000661);
+                    const th1 = tz + Math.cos(tz * .519 - pz*pz*.1 + time.elapsed * .000113) * .56;
+
+                    const phi2 = phi1 + Math.sin(phi1 + tz + Math.cos(2 * pz - th1 + time.elapsed * .000349) + time.elapsed * .000259);
+                    const th2 = th1 + Math.cos(th1 * .419 - phi1*phi1*.1 + time.elapsed * .000277) * .53;
+
+                    const phi = phi2;
+                    const th = th2 + time.elapsed * .001;
+
+                    const ct = Math.cos(th);
+                    const st = Math.sin(th);
+
+                    const cp = Math.cos(phi);
+                    const sp = Math.sin(phi);
+
+                    const x = ct * cp * r;
+                    const y = st * cp * r;
+                    const z = sp * r;
+
+                    emit(x, y, z + tz);
+                  }}
+                >
+                  <Arrow
+                    color={color}
+                    zBias={zBias}
+                    size={1}
+
+                    // use absolute 3D sizing so shadow maps can work
+                    width={0.05}
+                    depth={-1}
+
+                    sides={3}
+                    shaded
+                    shadow
+                    start
+                    end
+                    join="tangent"
+                  />
+                </Tensor>
               </PBRMaterial>
 
               <PBRMaterial albedo={GRAY}>
@@ -181,21 +201,26 @@ export const PlotTubesPage: LC = () => {
   </>);
 }
 
-const Camera = ({children}: PropsWithChildren<object>) => (
-  <OrbitControls
-    radius={6}
-    bearing={0.5}
-    pitch={0.3}
-    render={(radius: number, phi: number, theta: number, target: vec3) =>
-      <OrbitCamera
-        radius={radius}
-        phi={phi}
-        theta={theta}
-        target={target}
-        fov={0.5}
-      >
-        {children}
-      </OrbitCamera>
-    }
-  />
-);
+const Camera = ({children}: PropsWithChildren<object>) => {
+  const view = <OrbitCamera>{children}</OrbitCamera>;
+
+  return (
+    <OrbitControls
+      radius={6}
+      bearing={0.5}
+      pitch={0.3}
+      render={(radius: number, phi: number, theta: number, target: vec3) =>
+        <EaseToTarget
+          values={{
+            radius,
+            phi,
+            theta,
+            target,
+          }}
+        >
+          {view}
+        </EaseToTarget>
+      }
+    />
+  );
+};
