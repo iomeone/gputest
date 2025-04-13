@@ -1,5 +1,6 @@
 import React from '@use-gpu/live';
 
+import { DataPointCloudPage } from './pages/data/point-cloud';
 import { DataSolarSystemPage } from './pages/data/solar';
 import { DebugAtlasPage } from './pages/debug/atlas';
 import { DebugAxesPage } from './pages/debug/axes';
@@ -51,6 +52,7 @@ export const makePages = () => [
   {path: "/plot/tubes",                  title: "Plot - Shaded Lines",               element: <PlotTubesPage />},
   {path: "/plot/picking",                title: "Plot - GPU Picking",                element: <PlotPickingPage />},
   {path: "/data/solar",                  title: "Data - Solar System",               element: <DataSolarSystemPage />},
+  {path: "/data/point-cloud",            title: "Data - Point Cloud",                element: <DataPointCloudPage />},
   {path: "/geometry/lines",              title: "Geometry - 3D Lines and Arrows",    element: <GeometryLinesPage />},
   {path: "/geometry/labels",             title: "Geometry - 3D Points and Labels",   element: <GeometryLabelsPage />},
   {path: "/geometry/gltf",               title: "Geometry - GLTF",                   element: <GeometryGLTFPage />},

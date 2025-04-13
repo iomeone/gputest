@@ -1,6 +1,6 @@
 use '@use-gpu/wgsl/use/types'::{ SolidVertex, ShadedVertex };
 use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipToWorld, clipLineIntoView, getWorldScale, getScreenScale, applyZBias3, applyZBias };
-use '@use-gpu/wgsl/geometry/strip'::{ getStripUV, getTubeUV };
+use '@use-gpu/wgsl/geometry/strip'::{ getStripUV, getStripTubeUV };
 use '@use-gpu/wgsl/geometry/tube'::{ getTubeJoin };
 use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
 use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
@@ -37,7 +37,7 @@ const ARROW_ASPECT: f32 = 2.5;
     );
   }
 
-  var uv1 = select(getStripUV(vertexIndex), getTubeUV(vertexIndex, LINE_STRIP_DETAIL), LINE_STRIP_DETAIL > 0);
+  var uv1 = getStripUV(vertexIndex);
   var xy = uv1 * 2.0 - 1.0;
 
   var cornerIndex: u32;
@@ -136,7 +136,7 @@ const ARROW_ASPECT: f32 = 2.5;
     );
   }
 
-  var uv1 = select(getStripUV(vertexIndex), getTubeUV(vertexIndex, LINE_STRIP_DETAIL), LINE_STRIP_DETAIL > 0);
+  var uv1 = select(getStripUV(vertexIndex), getStripTubeUV(vertexIndex, LINE_STRIP_DETAIL), LINE_STRIP_DETAIL > 0);
   var xy = uv1 * 2.0 - 1.0;
 
   var cornerIndex: u32;

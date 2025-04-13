@@ -14,6 +14,7 @@ import { useSource } from '../hooks/useSource';
 
 import { circleSDF, diamondSDF, squareSDF, upSDF, downSDF, leftSDF, rightSDF } from '@use-gpu/wgsl/mask/sdf.wgsl';
 import { getFilledMask, getOutlinedMask } from '@use-gpu/wgsl/mask/point.wgsl';
+import { getSphereDepthNormal } from '@use-gpu/wgsl/mask/sphere.wgsl';
 
 const MASK_SHADER = {
   'circle': circleSDF,
@@ -30,7 +31,9 @@ export type PointLayerFlags = {
   hard?: boolean,
   hollow?: boolean,
   outline?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
+  shaded?: boolean,
+  sides?: number,
+} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export type PointLayerProps = {
   position?: VectorLike,
@@ -77,8 +80,11 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
     hard = false,
     hollow = false,
     outline = 0,
+    shaded = false,
+    shadow = false,
     shape = 'circle',
     mode = 'opaque',
+    sides = 0,
     id,
 
     ...rest
@@ -101,7 +107,9 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
   const mask = hollow ? getOutlinedMask : getFilledMask;
 
   const defs = useOne(() => ({POINT_SMOOTH: !hard}), hard);
+
   const boundMask = useShader(mask, [sdf, o], defs);
+  const depthNormal = shaded ? useShader(getSphereDepthNormal, [], defs) : null;
 
   return use(RawQuads, {
     position,
@@ -118,11 +126,14 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
     zBiases,
 
     rectangles,
-    masks: boundMask,
+    mask: boundMask,
+    depthNormal,
 
     ...rest,
     alphaToCoverage: rest.alphaToCoverage ?? !hard,
 
+    shaded,
+    shadow,
     count,
     mode,
     id,

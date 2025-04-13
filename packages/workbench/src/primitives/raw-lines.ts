@@ -21,7 +21,7 @@ import { useShaderRef } from '../hooks/useShaderRef';
 
 import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
 import { getLineVertex, getLineShadedVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
-import { solidToShaded } from '@use-gpu/wgsl/instance/solid-to-shaded.wgsl';
+import { solidToShaded } from '@use-gpu/wgsl/instance/surface/solid-to-shaded.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 
@@ -93,9 +93,11 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
     shaded = false,
     shadow = false,
 
-    sides = 0,
+    sides = 2,
     join,
   } = props;
+
+  if (typeof depth === 'number' && depth >= 0 && shadow) console.warn("Shadow-casting lines must have absolute sizing (depth = -1)");
 
   // Customize line shader
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -25,7 +25,7 @@ import { makeArrowGeometry } from './geometry/arrow';
 
 import { getAnchorIndex } from '@use-gpu/wgsl/instance/index/anchor.wgsl';
 import { getArrowVertex, getArrowVertexShaded } from '@use-gpu/wgsl/instance/vertex/arrow.wgsl';
-import { solidToShaded } from '@use-gpu/wgsl/instance/solid-to-shaded.wgsl';
+import { solidToShaded } from '@use-gpu/wgsl/instance/surface/solid-to-shaded.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

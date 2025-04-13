@@ -2,7 +2,7 @@ import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { XY, ColorSpace, TextureSource } from '@use-gpu/core';
 
 import { use, yeet, gather, suspend, useMemo } from '@use-gpu/live';
-import { makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipTextureChain } from '@use-gpu/core';
+import { getTextureSampleType, makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipTextureChain } from '@use-gpu/core';
 import { ImageLoader } from './image-loader';
 
 import { useDeviceContext } from '../providers/device-provider';
@@ -70,6 +70,9 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
       if ('data' in resource) uploadDataTexture(device, texture, resource.data, [width, height], [0, 0]);
       texture.label = url;
 
+      const type = getTextureSampleType(format);
+      const layout = `texture_2d<${type}>`;
+
       const source = {
         texture,
         view: texture.createView(),
@@ -80,7 +83,7 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
           maxAnisotropy: 4,
           ...sampler,
         } as GPUSamplerDescriptor,
-        layout: 'texture_2d<f32>',
+        layout,
         mips,
         format,
         size,
@@ -88,7 +91,7 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
         version: 1,
       };
 
-      updateMipTextureChain(device, source);
+      if (mip) updateMipTextureChain(device, source);
 
       return source;
       // eslint-disable-next-line react-hooks/exhaustive-deps

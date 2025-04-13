@@ -6,7 +6,7 @@ import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
 import { adjustSchema, schemaToArchetype, schemaToAttributes, toCPUDims, getTensorLength, getUniformDims } from '@use-gpu/core';
 import { yeet, memo, useOne } from '@use-gpu/live';
 
-import { useInspectHoverable, useTransformContext, POINT_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
+import { useInspectHoverable, useMaterialContext, useNoMaterialContext, useTransformContext, POINT_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
 
 import { PointTraits } from '../traits';
 
@@ -49,6 +49,8 @@ export const Point: LiveComponent<PointProps> = memo((props) => {
   if (hovered) flags.mode = "debug";
 
   const context = useTransformContext();
+
+  const material = flags.shaded ? useMaterialContext() : (useNoMaterialContext(), undefined);
   const {transform, nonlinear, matrix: refs} = context;
 
   const schema = useOne(() => adjustSchema(POINT_SCHEMA, formats), formats);
@@ -68,6 +70,7 @@ export const Point: LiveComponent<PointProps> = memo((props) => {
       archetype,
       attributes,
       flags,
+      material,
       refs,
       schema,
       sources,

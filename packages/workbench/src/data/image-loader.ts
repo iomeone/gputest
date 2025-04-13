@@ -52,6 +52,23 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const mime = response.headers.get('content-type') ?? MIME_TYPES[format!] ?? 'bin';
 
+    const getRawImage = async (arrayBuffer: ArrayBuffer) => {
+      const decoder = new ImageDecoder({
+        data: arrayBuffer,
+        type: mime,
+        premultiplyAlpha: premultiply ? 'premultiply' : 'none', // not part of official types yet
+        colorSpaceConversion: 'none',
+      } as any); // todo: remove any
+
+      const {image} = await decoder.decode({ frameIndex: 0 });
+      const {codedWidth: width, codedHeight: height} = image;
+
+      const buffer = new Uint8Array(image.allocationSize());
+      image.copyTo(buffer);
+
+      return {image, buffer, width, height};
+    };
+
     const resolveFormat = (format: GPUTextureFormat) => {
       let cs = colorSpace;
 
@@ -75,20 +92,7 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
     }
     else if (format === 'rgbm16') {
       const arrayBuffer = await response.arrayBuffer();
-
-      // @ts-ignore
-      const decoder = new ImageDecoder({
-        data: arrayBuffer,
-        type: mime,
-        premultiplyAlpha: premultiply ? 'premultiply' : 'none', // not part of official types yet
-        colorSpaceConversion: 'none',
-      } as any); // todo: remove any
-
-      const {image} = await decoder.decode({ frameIndex: 0 });
-      const {codedWidth: w, codedHeight: h} = image;
-
-      const buffer = new Uint8Array(image.allocationSize());
-      image.copyTo(buffer);
+      const {image, buffer, width, height} = await getRawImage(arrayBuffer);
 
       let decoded: GPUTextureFormat = 'rgba8unorm';
       if (image.format?.slice(0, 3) === 'BGR') decoded = 'bgra8unorm';
@@ -107,16 +111,36 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
       };
     }
     else {
-      const blob = await response.blob();
-      const {format: f, colorSpace} = resolveFormat('rgba8unorm');
-      return {
-        format: f,
-        colorSpace,
-        bitmap: await createImageBitmap(blob, {
-          premultiplyAlpha: premultiply ? 'premultiply' : 'none',
-          colorSpaceConversion: 'none',
-        }),
-      };
+      const {format: f, colorSpace} = resolveFormat(format);
+      
+      if (f.match(/unorm(-srgb)?$/)) {
+        const blob = await response.blob();
+        return {
+          format: f,
+          colorSpace,
+          bitmap: await createImageBitmap(blob, {
+            premultiplyAlpha: premultiply ? 'premultiply' : 'none',
+            colorSpaceConversion: 'none',
+          }),
+        };
+      }
+      else if (f.match(/u?int(-srgb)?$/)) {
+        // Can't upload as native texture, copy f32 -> u32 fails
+        const arrayBuffer = await response.arrayBuffer();
+        const {image, buffer, width, height} = await getRawImage(arrayBuffer);
+        return {
+          format: f,
+          colorSpace,
+          data: {
+            data: buffer,
+            format: f,
+            size: [width, height],
+          },
+        };
+      }
+      else {
+        throw new Error(`Unsupported image format '${format}' -> '${f}'`);
+      }
     }
   }, [format, colorSpace, premultiply]);
 

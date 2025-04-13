@@ -122,7 +122,7 @@
 @export fn getScreenScale(w: f32, f: f32) -> f32 {
   if (f < 0.0) {
     // Fixed world-space units
-    return getAbsoluteScale() / w;
+    return getWorldToClipScale() / w;
   }
 
   let worldScale = viewUniforms.viewWorldScale.y;
@@ -133,8 +133,12 @@
 }
 
 // Ratio of world-space units to clip space units
-@export fn getAbsoluteScale() -> f32 {
+@export fn getWorldToClipScale() -> f32 {
   return 1 / viewUniforms.viewWorldScale.x;
+}
+
+@export fn getClipToWorldScale() -> f32 {
+  return viewUniforms.viewWorldScale.x;
 }
 
 @export fn applyZBias3(position: vec3<f32>, zBias: f32, w: f32) -> vec3<f32> {

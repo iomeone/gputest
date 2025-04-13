@@ -18,7 +18,6 @@ fn main(
   @location(2) fragST: vec4<f32>,
   @location(3) fragScissor: vec4<f32>,
 ) {
-
   var outColor = vec4<f32>(1.0, 1.0, 1.0, fragAlpha);
   outColor = getFragment(outColor, fragUV, fragST);
 

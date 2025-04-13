@@ -98,7 +98,7 @@ export const makeChainTo = (
   const rehash  = scrambleBits53(mixBits53(toMurmur53(code), mixBits53(h1, h2)));
   const rekey   = scrambleBits53(mixBits53(rehash, mixBits53(k1, k2)));
 
-  const exports = makeDeclarations(toFormat, fromArgs);
+  const exports = makeDeclarations(formatFormat(toFormat, toType), fromArgs);
 
   // Code generator
   const render = (namespace: string, rename: Map<string, string>) => {

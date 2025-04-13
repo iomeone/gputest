@@ -3,7 +3,7 @@ import type { XY, ColorSpace, TextureSource } from '@use-gpu/core';
 
 import { yeet, gather, keyed, wrap, suspend, useMemo } from '@use-gpu/live';
 import { Suspense } from '@use-gpu/workbench';
-import { makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipArrayTextureChain } from '@use-gpu/core';
+import { getTextureSampleType, makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipArrayTextureChain } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
@@ -79,6 +79,9 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
       });
       texture.label = urls.join(' ');
 
+      const type = getTextureSampleType(format);
+      const layout = `texture_cube<${type}>`;
+
       const source = {
         texture,
         view: texture.createView({
@@ -91,7 +94,7 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
           maxAnisotropy: 4,
           ...sampler,
         } as GPUSamplerDescriptor,
-        layout: 'texture_cube<f32>',
+        layout,
         mips,
         format,
         size: [width, height, 6],

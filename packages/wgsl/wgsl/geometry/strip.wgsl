@@ -8,7 +8,7 @@
   return vec2<f32>(getStripIndex(vertex));
 }
 
-@export fn getTubeIndex(vertex: u32, detail: u32) -> vec2<u32> {
+@export fn getStripGridIndex(vertex: u32, detail: u32) -> vec2<u32> {
   let n = 2 * (detail + 3);
 
   let i = vertex / n;
@@ -20,7 +20,12 @@
   return vec2<u32>(x, y);
 }
 
-@export fn getTubeUV(vertex: u32, detail: u32) -> vec2<f32> {
-  let xy = vec2<f32>(getTubeIndex(vertex, detail));
+@export fn getStripTubeUV(vertex: u32, detail: u32) -> vec2<f32> {
+  let xy = vec2<f32>(getStripGridIndex(vertex, detail));
   return vec2<f32>(xy.x, xy.y / f32(detail + 1));
+}
+
+@export fn getStripGridUV(vertex: u32, detail: u32) -> vec2<f32> {
+  let xy = vec2<f32>(getStripGridIndex(vertex, detail));
+  return vec2<f32>(xy.x / f32(detail + 1), xy.y / f32(detail + 1));
 }

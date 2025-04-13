@@ -14,8 +14,12 @@ import {
   main as renderVirtualDepth,
   mainWithDepth as renderVirtualDepthDepth,
 } from '@use-gpu/wgsl/render/vertex/virtual-depth.wgsl';
+import {
+  main as renderVirtualShaded,
+} from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
 import renderFragmentDepth from '@use-gpu/wgsl/render/fragment/depth.wgsl';
 import renderFragmentDepthOnly from '@use-gpu/wgsl/render/fragment/depth-only.wgsl';
+import renderFragmentDepthShaded from '@use-gpu/wgsl/render/fragment/depth-shaded.wgsl';
 
 import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
@@ -29,6 +33,7 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
       getVertex,
       getFragment,
       getDepth,
+      getSurface,
     },
     defines,
     pipeline: propPipeline,
@@ -40,8 +45,19 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
     bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
   } = usePassContext();
 
-  const vertexShader = defines?.HAS_DEPTH ? renderVirtualDepthDepth : renderVirtualDepth;
-  const fragmentShader = defines?.HAS_DEPTH ? renderFragmentDepthOnly : renderFragmentDepth;
+  const vertexShader = defines?.HAS_DEPTH ?
+    (
+      getDepth ? renderVirtualDepthDepth :
+      !getFragment && getSurface ? renderVirtualShaded :
+      renderVirtualDepth
+    ) : renderVirtualDepth;
+
+  const fragmentShader = defines?.HAS_DEPTH ?
+    (
+      getDepth ? renderFragmentDepthOnly :
+      !getFragment && getSurface ? renderFragmentDepthShaded :
+      renderFragmentDepth
+    ) : renderFragmentDepth;
 
   const pipeline = useOne(() => patch(propPipeline, {
     multisample: { count: 1, alphaToCoverageEnabled: false },
@@ -54,12 +70,13 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
       getVertex,
       getFragment,
       getDepth,
+      getSurface,
       getScissor: defines?.HAS_SCISSOR ? getScissorColor : null,
     };
     const v = bindBundle(vertexShader, links);
     const f = bindBundle(fragmentShader, links);
     return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getFragment, getDepth, defines]);
+  }, [vertexShader, fragmentShader, getVertex, getFragment, getDepth, getSurface, defines]);
 
   const defs = useOne(() => ({...defines, HAS_ALPHA_TO_COVERAGE: true}), defines);
 
