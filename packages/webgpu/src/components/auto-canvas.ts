@@ -1,4 +1,5 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { ColorSpace } from '@use-gpu/core';
 
 import { use, useResource, useNoResource } from '@use-gpu/live';
 import { PickingTarget } from '@use-gpu/workbench';
@@ -21,6 +22,10 @@ export type AutoCanvasProps = {
   depthStencil?: GPUTextureFormat,
   /** Canvas background */
   backgroundColor?: GPUColor,
+  /** Canvas rendering color space */
+  colorSpace?: ColorSpace,
+  /** Color space for inputs */
+  colorInput?: ColorSpace,
   /** Multisampling / Anti-aliasing */
   samples?: number,
 
