@@ -26,6 +26,8 @@ export type ImageLoaderProps = {
   url: string,
   /** Type hint (extension or mime type) */
   format?: string,
+  /** Pixel format override for texture */
+  pixelFormat?: GPUTextureFormat,
   /** Color space */
   colorSpace?: ColorSpace,
   /** Premultiply alpha */
@@ -39,7 +41,8 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
 
   const {
     url,
-    format = 'rgba8unorm',
+    format,
+    pixelFormat,
     colorSpace = 'srgb',
     premultiply,
     render,
@@ -111,8 +114,8 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
       };
     }
     else {
-      const {format: f, colorSpace} = resolveFormat(format);
-      
+      const {format: f, colorSpace} = resolveFormat(pixelFormat ?? 'rgba8unorm');
+
       if (f.match(/unorm(-srgb)?$/)) {
         const blob = await response.blob();
         return {
@@ -142,7 +145,7 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
         throw new Error(`Unsupported image format '${format}' -> '${f}'`);
       }
     }
-  }, [format, colorSpace, premultiply]);
+  }, [format, pixelFormat, colorSpace, premultiply]);
 
   return use(Fetch, {
     url,

@@ -89,7 +89,7 @@ export const PointCloudLoader: LC<PointCloudLoaderProps> = (props: PointCloudLoa
               <ImageTexture
                 key={url}
                 url={url}
-                format='rgba8uint'
+                pixelFormat='rgba8uint'
                 colorSpace='linear'
                 mip={false}
               />

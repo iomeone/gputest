@@ -16,6 +16,8 @@ export type ImageTextureProps = {
   url: string,
   /** Type hint */
   format?: string,
+  /** Pixel format override for texture */
+  pixelFormat?: GPUTextureFormat,
   /** Color space to tag texture as. Does not convert input data. */
   colorSpace?: ColorSpace,
   /** MIPs */
@@ -39,6 +41,7 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
     url,
     sampler,
     format,
+    pixelFormat,
     colorSpace = 'srgb',
     mip = true,
   } = props;
@@ -46,7 +49,7 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
   const inspect = useInspectable();
   const suspense = useSuspenseContext();
 
-  const fetch = use(ImageLoader, {url, format, colorSpace});
+  const fetch = use(ImageLoader, {url, format, pixelFormat, colorSpace});
 
   return gather(fetch, ([resource]: any[]) => {
     const render = getRenderFunc(props);

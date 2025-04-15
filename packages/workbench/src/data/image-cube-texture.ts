@@ -18,6 +18,8 @@ export type ImageCubeTextureProps = {
   urls: string[],
   /** Type hint */
   format?: string,
+  /** Pixel format override for texture */
+  pixelFormat?: GPUTextureFormat,
   /** Color space to tag texture as. Does not convert input data. */
   colorSpace?: ColorSpace,
   /** MIPs */
@@ -41,6 +43,7 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
     urls,
     sampler,
     format,
+    pixelFormat,
     colorSpace = 'srgb',
     mip = true,
   } = props;
@@ -49,7 +52,7 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
   const suspense = useSuspenseContext();
 
   const fetch = useMemo(
-    () => wrap(Suspense, urls.map((url: string) => keyed(ImageLoader, url, {url, format, colorSpace}))),
+    () => wrap(Suspense, urls.map((url: string) => keyed(ImageLoader, url, {url, format, pixelFormat, colorSpace}))),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [...urls, format, colorSpace]
   );
