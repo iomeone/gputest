@@ -22,7 +22,7 @@ import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions
 import { getQuadVertex, getQuadVertexShaded } from '@use-gpu/wgsl/instance/vertex/quad.wgsl';
 import { getMaskedColor, getMaskedSurface } from '@use-gpu/wgsl/mask/masked.wgsl';
 import { solidToShaded } from '@use-gpu/wgsl/instance/surface/solid-to-shaded.wgsl';
-import { getDepthNormalSurface } from '@use-gpu/wgsl/instance/surface/depth-normal-surface.wgsl';
+import { getRaytraceSurface } from '@use-gpu/wgsl/instance/surface/raytrace-surface.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 
@@ -49,7 +49,7 @@ export type RawQuadsProps = {
   sts?: ShaderSource,
 
   mask?: ShaderSource,
-  depthNormal?: ShaderSource,
+  raytrace?: ShaderSource,
 
   instance?: number,
   instances?: ShaderSource,
@@ -88,7 +88,7 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
   const s = useShaderRef(props.st, props.sts ?? p);
 
   const m = (mode !== 'debug') ? props.mask : null;
-  const dn = (mode !== 'debug') ? props.depthNormal : null;
+  const rt = (mode !== 'debug') ? props.raytrace : null;
 
   const {positions, scissor, bounds: getBounds} = useApplyTransform(p, transform);
 
@@ -118,16 +118,16 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
   const applyFragmentMask = m && material.getFragment ? useShader(getMaskedColor, [m]) : useNoShader();
   const applySurfaceMask = m && material.getSurface ? useShader(getMaskedSurface, [m]) : useNoShader();
 
-  // Depth/normal mask (3D)
-  const getSurfaceDN = (
-    dn && material.getSurface ? useShader(getDepthNormalSurface, [material.getSurface, dn]) : useNoShader()
+  // Depth/normal mask via raytrace (3D)
+  const getSurfaceRT = (
+    rt && material.getSurface ? useShader(getRaytraceSurface, [material.getSurface, rt]) : useNoShader()
   );
 
   const links = useMemo(() => ({
     getVertex: shadow && !shaded ? chainTo(getVertex, solidToShaded) : getVertex,
     getPicking,
     ...material,
-    getSurface: getSurfaceDN ?? (material.getSurface && applySurfaceMask ? chainTo(applySurfaceMask, material.getSurface) : material.getSurface),
+    getSurface: getSurfaceRT ?? (material.getSurface && applySurfaceMask ? chainTo(applySurfaceMask, material.getSurface) : material.getSurface),
     getFragment: material.getFragment && applyFragmentMask ? chainTo(applyFragmentMask, material.getFragment) : material.getFragment,
   }), [getVertex, getPicking, applyFragmentMask, applySurfaceMask, shadow, shaded, material]);
 

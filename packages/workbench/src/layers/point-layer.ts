@@ -14,7 +14,7 @@ import { useSource } from '../hooks/useSource';
 
 import { circleSDF, diamondSDF, squareSDF, upSDF, downSDF, leftSDF, rightSDF } from '@use-gpu/wgsl/mask/sdf.wgsl';
 import { getFilledMask, getOutlinedMask } from '@use-gpu/wgsl/mask/point.wgsl';
-import { getSphereDepthNormal } from '@use-gpu/wgsl/mask/sphere.wgsl';
+import { traceSphereQuad } from '@use-gpu/wgsl/mask/sphere.wgsl';
 
 const MASK_SHADER = {
   'circle': circleSDF,
@@ -109,7 +109,7 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
   const defs = useOne(() => ({POINT_SMOOTH: !hard}), hard);
 
   const boundMask = useShader(mask, [sdf, o], defs);
-  const depthNormal = shaded ? useShader(getSphereDepthNormal, [], defs) : null;
+  const raytrace = shaded ? useShader(traceSphereQuad, [], defs) : null;
 
   return use(RawQuads, {
     position,
@@ -127,7 +127,7 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
 
     rectangles,
     mask: boundMask,
-    depthNormal,
+    raytrace,
 
     ...rest,
     alphaToCoverage: rest.alphaToCoverage ?? !hard,

@@ -5,6 +5,13 @@
   return (length(dx) + length(dy));
 }
 
+@export fn getUVWScale(uvw: vec3<f32>) -> f32 {
+  let dx = dpdx(uvw);
+  let dy = dpdy(uvw);
+  // implicit * 2 / 2
+  return (length(dx) + length(dy));
+}
+
 @export fn scaleSDF(sdf: f32, scale: f32) -> f32 {
   let d = sdf / scale + 0.5;
   return clamp(d, 0.0, 1.0) * max(0.0, min(1.0, 2.0 / scale) * 2.0 - 1.0);

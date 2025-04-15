@@ -1,6 +1,4 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Emit, GPUAttributes } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
 
 import React from '@use-gpu/live';
 
@@ -9,17 +7,10 @@ import {
   OrbitControls, OrbitCamera, EaseToTarget,
   Cursor, PointLayer, PBRMaterial,
   DirectionalLight, AmbientLight, Environment,
-  GeometryData, makePlaneGeometry, makeSphereGeometry,
+  GeometryData, makePlaneGeometry,
 } from '@use-gpu/workbench';
-import {
-  Plot, Line, Point, Label, Tensor, Transform,
-} from '@use-gpu/plot';
-import {
-  UI, Layout, Absolute, Flex, Inline, Text,
-} from '@use-gpu/layout';
-import {
-  Mesh,
-} from '@use-gpu/scene';
+import { Transform } from '@use-gpu/plot';
+import { Mesh } from '@use-gpu/scene';
 import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';
@@ -32,7 +23,6 @@ const π = Math.PI;
 const WHITE = [1, 1, 1, 1];
 
 const planeGeometry = makePlaneGeometry({ width: 5500, height: 5500, axes: 'xz' });
-const sphereGeometry = makeSphereGeometry({ width: 50, detail: [8, 16] });
 
 const SHADOW_MAP_DIRECTIONAL = {
   size: [2048, 2048],
@@ -54,7 +44,7 @@ export const DataPointCloudPage: LC = () => {
   const url = `${base}points/cmdf-veg/data.json`;
 
   const view = (<>
-    <InfoBox>Point cloud rendered as shaded sprites, using a pixel shader.</InfoBox>
+    <InfoBox>Geographical point cloud rendered as shaded sprites, using a built-in pixel shader.</InfoBox>
     <Cursor cursor="move" />
 
     <LinearRGB tonemap="aces">
@@ -105,13 +95,6 @@ export const DataPointCloudPage: LC = () => {
   const root = document.querySelector('#use-gpu .canvas');
 
   return view;
-  /*(
-    <SolarSystemControls
-      container={root}
-      render={view}
-    />
-  );
-  */
 }
 
 const Camera = ({children}: PropsWithChildren<object>) => {

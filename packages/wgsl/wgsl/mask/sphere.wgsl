@@ -1,20 +1,50 @@
-use '@use-gpu/wgsl/mask/sdf'::{ getUVScale, scaleSDF };
+use '@use-gpu/wgsl/mask/sdf'::{ getUVWScale };
 use '@use-gpu/wgsl/use/types'::{ DepthNormalFragment };
+use '@use-gpu/wgsl/use/view'::{ getViewVector, worldToDepth, worldToW };
 
-@export fn getSphereDepthNormal(uv: vec4<f32>) -> DepthNormalFragment {
-  let xy = uv.xy * 2.0 - 1.0;
-  let r = length(xy);
+@export fn traceSphereQuad(
+  uv: vec4<f32>,
+  st: vec4<f32>,
+  normal: vec4<f32>,
+  tangent: vec4<f32>,
+  position: vec4<f32>,
+  coord: vec4<f32>,
+) -> DepthNormalFragment {
 
-  let z = sqrt(max(0.0, 1 - r*r));
-  let n = normalize(vec3<f32>(xy, z));
+  // Sphere encoded in tangent component
+  let center = tangent.xyz;
+  let radius = tangent.w;
 
-  let sdf = 1.0 - r;
-  let s = getUVScale(uv.xy);
-  let a = scaleSDF(sdf, s);
+  let origin = position.xyz;
+  let view = getViewVector(position.xyz);
+  let direction = normalize(view);
 
-  let normal = vec4<f32>(n, 0.0);
-  let alpha = select(select(0.0, 1.0, a >= 0.5), a, POINT_SMOOTH);
-  let depth = z;
+  let dr = getUVWScale(position.xyz) / 1.414;
+  
+  // Distance from ray to center
+  let dp = origin - center;
+  let b = dot(direction, dp);
+  let d = length(dp - b * direction);
+  
+  // Extend radius for anti-aliasing (ray always hits)
+  let r = max(radius, d);
+  let c = dot(dp, dp) - r * r;
 
-  return DepthNormalFragment(normal, alpha, depth);
+  // Solve intersection
+  let det = max(0.0, b * b - c);
+  let t = -(b - sqrt(det));
+
+  // Apply edge SDF
+  let sdf = radius - d;
+  let a = clamp((sdf / dr) + .5, 0.0, 1.0);
+  
+  // Sphere point
+  let world = origin + direction * t;
+  let worldNormal = normalize(world - center);
+  let outNormal = vec4<f32>(worldNormal, 0.0);
+
+  let alpha = a;
+  let depth = worldToDepth(vec4<f32>(world.xyz, 1.0));
+
+  return DepthNormalFragment(outNormal, alpha, depth);
 }

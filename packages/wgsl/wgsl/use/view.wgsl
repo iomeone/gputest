@@ -55,6 +55,18 @@
   return viewUniforms.inverseProjectionViewMatrix * position;
 }
 
+@export fn worldToW(position: vec4<f32>) -> f32 {
+  let pvm = viewUniforms.projectionViewMatrix;
+  let w = dot(vec4<f32>(pvm[0][3], pvm[1][3], pvm[2][3], pvm[3][3]), position);
+  return w;
+}
+
+@export fn viewToW(position: vec4<f32>) -> f32 {
+  let pvm = viewUniforms.projectionMatrix;
+  let w = dot(vec4<f32>(pvm[0][3], pvm[1][3], pvm[2][3], pvm[3][3]), position);
+  return w;
+}
+
 @export fn worldToDepth(position: vec4<f32>) -> f32 {
   let pvm = viewUniforms.projectionViewMatrix;
   let z = dot(vec4<f32>(pvm[0][2], pvm[1][2], pvm[2][2], pvm[3][2]), position);

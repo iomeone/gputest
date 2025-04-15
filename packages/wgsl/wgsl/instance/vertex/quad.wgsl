@@ -1,5 +1,5 @@
 use '@use-gpu/wgsl/use/types'::{ SolidVertex, ShadedVertex };
-use '@use-gpu/wgsl/use/view'::{ getViewResolution, viewToWorld, worldToClip, getClipToWorldScale, getScreenScale, getViewVector, clipToWorld, to3D, applyZBias };
+use '@use-gpu/wgsl/use/view'::{ getViewResolution, viewToWorld, worldToClip, worldToW, getClipToWorldScale, getScreenScale, getViewNearFar, getViewVector, clipToWorld, to3D, applyZBias };
 use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
 use '@use-gpu/wgsl/geometry/strip'::{ getStripGridUV };
 
@@ -71,36 +71,48 @@ use '@use-gpu/wgsl/geometry/strip'::{ getStripGridUV };
   let st4 = getST(elementIndex);
   let zBias = getZBias(elementIndex);
 
-  var center = worldToClip(position);
+  let centerW = worldToW(position);
 
   let uvQuad = getQuadUV(vertexIndex);
 
   // Lerp between fixed size and full perspective.
-  let pixelScale = getScreenScale(center.w, depth);
+  let pixelScale = getScreenScale(centerW, depth);
+  let worldScale = centerW * getClipToWorldScale();
 
   // Get UV for quad corners + edge bleed
   let uvxy = getRectangleUV(uvQuad, rectangle, rectangleUV, pixelScale);
   let uv = uvxy.xy;
-  let xy = uvxy.zw;
+  let xy = uvxy.zw * worldScale;
 
-  // Attach to position
-  let vr = getViewResolution();
-  let offset = xy * vr;
-  center = vec4<f32>(center.xy + 2.0 * offset * center.w, center.zw);
+  // XY size
+  let size = max(abs(xy.x), abs(xy.y));
 
+  // Camera-facing sprite (not parallel to Z plane)
+  let view = getViewVector(position.xyz);
+  let normal = normalize(view);
+
+  // Shift forwards by sprite radius, but clamp to near-plane
+  let nearFar = getViewNearFar();
+  let near = mix(nearFar.x, nearFar.y, 0.0000001);
+  let offset = min(size, length(view) - near);
+
+  let tangentX = normalize(cross(viewToWorld(vec4<f32>(0.0, 1.0, 0.0, 0.0)).xyz, normal));
+  let tangentY = -normalize(cross(viewToWorld(vec4<f32>(1.0, 0.0, 0.0, 0.0)).xyz, normal));
+
+  // Attach to position in world space
+  let world = vec4<f32>(position.xyz + mat2x3<f32>(tangentX, tangentY) * xy + offset * normal, 1.0);
+
+  // Sphere center + radius
+  let worldNormal = vec4<f32>(normal.xyz, 0.0);
+  let worldTangent = vec4<f32>(position.xyz, size);
+
+  // ZBias
+  var center = worldToClip(world);
   if (zBias != 0.0) {
-    let size = max(abs(xy.x), abs(xy.y));
     center = applyZBias(center, size * zBias);
   }
 
   let uv4 = vec4<f32>(uv, f32(elementIndex) / getPointCount(), 0.0);
-
-  let size2 = rectangle.zw - rectangle.xy;
-  let size = max(abs(size2.x), abs(size2.y)) * pixelScale / 2.0;
-
-  let world = vec4<f32>(to3D(clipToWorld(center)), 1.0);
-  let worldNormal = vec4<f32>(normalize(getViewVector(world.xyz)), size * center.w * getClipToWorldScale());
-  let worldTangent = vec4<f32>(0.0);
 
   return ShadedVertex(
     center,
