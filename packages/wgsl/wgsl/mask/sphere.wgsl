@@ -37,6 +37,9 @@ use '@use-gpu/wgsl/use/view'::{ getViewVector, worldToDepth, worldToW };
   // Apply edge SDF
   let sdf = radius - d;
   let a = clamp((sdf / dr) + .5, 0.0, 1.0);
+  if (a == 0.0) {
+    return DepthNormalFragment(normal, a, 0.0);
+  }
   
   // Sphere point
   let world = origin + direction * t;
