@@ -20,7 +20,7 @@ use '@use-gpu/wgsl/use/view'::{ getViewVector, worldToDepth, worldToW };
   let direction = normalize(view);
 
   let dr = getUVWScale(position.xyz) / 1.414;
-  
+
   // Distance from ray to center
   let dp = origin - center;
   let b = dot(direction, dp);
@@ -43,7 +43,7 @@ use '@use-gpu/wgsl/use/view'::{ getViewVector, worldToDepth, worldToW };
   let worldNormal = normalize(world - center);
   let outNormal = vec4<f32>(worldNormal, 0.0);
 
-  let alpha = a;
+  let alpha = select(select(0.0, 1.0, a >= 0.5), a, POINT_SMOOTH);
   let depth = worldToDepth(vec4<f32>(world.xyz, 1.0));
 
   return DepthNormalFragment(outNormal, alpha, depth);
