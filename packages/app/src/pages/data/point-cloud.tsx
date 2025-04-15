@@ -76,6 +76,7 @@ const Camera = ({children}: PropsWithChildren<object>) => {
       radius={400}
       bearing={0.95}
       pitch={0.3}
+      maxRadius={5000}
       render={(radius: number, phi: number, theta: number, target: vec3) =>
         <EaseToTarget
           values={{

@@ -19,13 +19,17 @@ use '@use-gpu/wgsl/use/view'::{ getViewVector, worldToDepth, worldToW };
   let view = getViewVector(position.xyz);
   let direction = normalize(view);
 
-  let dr = getUVWScale(position.xyz) / 1.414;
+  // SDF AA range
+  let dr = 1.414 / getUVWScale(position.xyz);
 
   // Distance from ray to center
   let dp = origin - center;
   let b = dot(direction, dp);
   let d = length(dp - b * direction);
-  
+  if (d > radius + dr) {
+    return DepthNormalFragment(normal, 0.0, 0.0);
+  }
+
   // Extend radius for anti-aliasing (ray always hits)
   let r = max(radius, d);
   let c = dot(dp, dp) - r * r;
@@ -36,10 +40,7 @@ use '@use-gpu/wgsl/use/view'::{ getViewVector, worldToDepth, worldToW };
 
   // Apply edge SDF
   let sdf = radius - d;
-  let a = clamp((sdf / dr) + .5, 0.0, 1.0);
-  if (a == 0.0) {
-    return DepthNormalFragment(normal, a, 0.0);
-  }
+  let a = clamp((sdf * dr) + .5, 0.0, 1.0);
   
   // Sphere point
   let world = origin + direction * t;
