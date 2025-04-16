@@ -12,6 +12,12 @@ const maybeEmptyArray = <T extends TypedArrayConstructor>(
   ctor: T,
 ) => Array.isArray(xs) && !xs.length ? new ctor(0) : null;
 
+// Array of booleans
+const maybeBooleanArray = <T extends TypedArrayConstructor>(
+  xs: VectorLike | VectorLikes | VectorLikes[] | TensorArray,
+  ctor: T,
+) => typeof (xs as VectorLike)[0] === 'boolean' ? new ctor(xs as VectorLike) : null
+
 // Array of scalars
 const maybeScalarArray = <T extends TypedArrayConstructor>(
   xs: VectorLike | VectorLikes | VectorLikes[] | TensorArray,
@@ -134,6 +140,18 @@ const maybeMultiMultiVectorArray = <T extends TypedArrayConstructor>(
   }
   return to;
 }
+
+export const toBooleanArray = <T extends TypedArrayConstructor>(
+  xs: VectorLike | TensorArray,
+  ctor: T = Float32Array as any
+): T | null => (
+  (
+    maybeTypedArray(xs) ??
+    maybeEmptyArray(xs, ctor) ??
+    maybeBooleanArray(xs, ctor) ??
+    maybeScalarArray(xs, ctor)
+  ) as T | null
+);
 
 export const toScalarArray = <T extends TypedArrayConstructor>(
   xs: VectorLike | TensorArray,

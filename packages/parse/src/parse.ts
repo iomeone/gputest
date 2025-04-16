@@ -4,7 +4,7 @@ import type {
 } from '@use-gpu/core';
 import type { Parser, Join, PointShape, Domain } from './types';
 import { mat4, vec4, vec3, vec2, quat } from 'gl-matrix';
-import { toScalarArray, toVectorArray, toMultiVectorArray, toMultiScalarArray, toMultiMultiVectorArray } from './flatten';
+import { toBooleanArray, toScalarArray, toVectorArray, toMultiVectorArray, toMultiScalarArray, toMultiMultiVectorArray } from './flatten';
 
 const NO_VEC2 = vec2.fromValues(0, 0);
 const NO_VEC3 = vec3.fromValues(0, 0, 0);
@@ -305,8 +305,9 @@ export const parseColor = (color?: ColorLike) => parseColorOpacity(color);
 
 export const parseStringArray = makeParseArray(NO_STRINGS, parseString);
 
-export const parseBooleanArray = (vec: VectorLike | boolean[]): Uint8Array =>
-  vec ? toScalarArray(vec as VectorLike, Uint8Array) as any as Uint8Array : new Uint8Array();
+export const parseBooleanArray = (vec: VectorLike | boolean[]): Uint8Array => {
+  return vec ? toBooleanArray(vec as VectorLike, Uint8Array) as any as Uint8Array : new Uint8Array();
+};
 
 export const parseBooleanArrayLike = (vec: VectorLike | boolean | boolean[]): Uint8Array | boolean =>
   typeof vec === 'boolean' ? vec : vec ? toScalarArray(vec as VectorLike, Uint8Array) as any as Uint8Array : new Uint8Array();
