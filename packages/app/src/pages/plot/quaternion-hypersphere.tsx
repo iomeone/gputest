@@ -9,7 +9,8 @@ import {
   Pass,
   OrbitCamera, OrbitControls,
   Cursor, Animate,
-  LinearRGB,
+  LinearRGB, PBRMaterial,
+  AmbientLight, DirectionalLight, PointLight,
 } from '@use-gpu/workbench';
 import {
   Plot, Stereographic4D, Transform4D, Tensor, Line,
@@ -79,6 +80,23 @@ const angleToQuat = (angle: number) => {
   return [s * 0.433, s * 0.866, s * 0.25, c];
 };
 
+// Light setup
+const lightData = [
+  {
+    position: [-10, 20, 15, 1],
+    color: [1, 1, 1, 1],
+  },
+  {
+    position: [-15, -20, -5, 1],
+    color: [0.8, 0.4, 0.8, 1],
+  },
+  {
+    position: [2, 4.5, 2.5, 1],
+    color: [0.3, 0.8, 1.0, 1],
+  },
+];
+
+
 export const PlotQuaternionHyperspherePage: LC = () => {
 
   const frames = [
@@ -91,32 +109,42 @@ export const PlotQuaternionHyperspherePage: LC = () => {
     <LinearRGB>
       <Cursor cursor="move" />
       <Camera>
-        <Pass>
-          <Plot>
-            <Stereographic4D
-              bend={options.bend}
-              range={[[-1, 1], [-1, 1], [-1, 1], [-1, 1]]}
-              scale={[1, 1, 1, 1]}
-            >
-              {options.animate ? (
-                <Animate
-                  loop
-                  delay={0}
-                  ease="linear"
-                  keyframes={frames}
-                  prop="angle"
-                >{(angle: number) => (
-                  <Transform4D leftQuaternion={angleToQuat(angle + options.spin)}>
-                    <Hypersphere showX={options.showX} showY={options.showY} showZ={options.showZ} full={options.full} />
+        <Pass lights={options.shaded} ssao={options.shaded ? 1 : undefined}>
+
+          {options.shaded ? (<>
+            <AmbientLight intensity={0.3} />
+            <DirectionalLight position={lightData[0].position} intensity={0.6} color={lightData[0].color} />
+            <DirectionalLight position={lightData[1].position} intensity={0.6} color={lightData[1].color} />
+            <PointLight       position={lightData[2].position} intensity={50}  color={lightData[2].color} />
+          </>) : null}
+
+          <PBRMaterial>
+            <Plot>
+              <Stereographic4D
+                bend={options.bend}
+                range={[[-1, 1], [-1, 1], [-1, 1], [-1, 1]]}
+                scale={[1, 1, 1, 1]}
+              >
+                {options.animate ? (
+                  <Animate
+                    loop
+                    delay={0}
+                    ease="linear"
+                    keyframes={frames}
+                    prop="angle"
+                  >{(angle: number) => (
+                    <Transform4D leftQuaternion={angleToQuat(angle + options.spin)}>
+                      <Hypersphere showX={options.showX} showY={options.showY} showZ={options.showZ} full={options.full} shaded={options.shaded} />
+                    </Transform4D>
+                  )}</Animate>
+                ) : (
+                  <Transform4D leftQuaternion={angleToQuat(options.spin)}>
+                    <Hypersphere showX={options.showX} showY={options.showY} showZ={options.showZ} full={options.full} shaded={options.shaded} />
                   </Transform4D>
-                )}</Animate>
-              ) : (
-                <Transform4D leftQuaternion={angleToQuat(options.spin)}>
-                  <Hypersphere showX={options.showX} showY={options.showY} showZ={options.showZ} full={options.full} />
-                </Transform4D>
-              )}
-            </Stereographic4D>
-          </Plot>
+                )}
+              </Stereographic4D>
+            </Plot>
+          </PBRMaterial>
         </Pass>
       </Camera>
     </LinearRGB>
@@ -142,7 +170,7 @@ const Hypersphere = memo((options: Partial<HypersphereOptions>) => (
         as={['positions', 'colors']}
         expr={geodesicQuaternionSampler(0, N, M, options.full)}
       >
-        <Line width={LINE_WIDTH} depth={.65} />
+        <Line width={LINE_WIDTH} depth={.65} shaded={options.shaded} shadow={options.shaded} />
       </Tensor>
     ) : null }
 
@@ -154,7 +182,7 @@ const Hypersphere = memo((options: Partial<HypersphereOptions>) => (
         as={['positions', 'colors']}
         expr={geodesicQuaternionSampler(1, N, M, options.full)}
       >
-        <Line width={LINE_WIDTH} depth={.65} />
+        <Line width={LINE_WIDTH} depth={.65} shaded={options.shaded} shadow={options.shaded} />
       </Tensor>
     ) : null }
 
@@ -166,7 +194,7 @@ const Hypersphere = memo((options: Partial<HypersphereOptions>) => (
         as={['positions', 'colors']}
         expr={geodesicQuaternionSampler(2, N, M, options.full)}
       >
-        <Line width={LINE_WIDTH} depth={.65} />
+        <Line width={LINE_WIDTH} depth={.65} shaded={options.shaded} shadow={options.shaded} />
       </Tensor>
     ) : null }
   </>

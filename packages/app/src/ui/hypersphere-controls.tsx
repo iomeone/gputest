@@ -25,6 +25,7 @@ type HypersphereControlsProps = {
 export type HypersphereOptions = {
   bend: number,
   spin: number,
+  shaded: boolean,
   animate: boolean,
   full: boolean,
   showX: boolean,
@@ -39,13 +40,14 @@ export const HypersphereControls: LC<HypersphereControlsProps> = (props: Hypersp
   const [spin, setSpin] = useState(0);
   const [full, setFull] = useState(false);
 
+  const [shaded, setShaded] = useState(true);
   const [animate, setAnimate] = useState(true);
   const [showX, setShowX] = useState(true);
   const [showY, setShowY] = useState(true);
   const [showZ, setShowZ] = useState(true);
 
   return fragment([
-    render ? render({bend, spin, animate, full, showX, showY, showZ}) : null,
+    render ? render({bend, spin, shaded, animate, full, showX, showY, showZ}) : null,
     use(HTML, {
       container,
       style: STYLE,
@@ -60,6 +62,7 @@ export const HypersphereControls: LC<HypersphereControlsProps> = (props: Hypersp
             <label>4D Rotation &nbsp;&nbsp;</label>
             <input type="range" min="0" max="6.28" value={spin} step={0.0001} onChange={(e) => setSpin(parseFloat(e.target.value))} style={{width: '200px'}} />
           </div>
+          <div><label><input type="checkbox" checked={shaded} onChange={(e) => setShaded(e.target.checked)}  /> Shaded lines</label></div>
           <div><label><input type="checkbox" checked={animate} onChange={(e) => setAnimate(e.target.checked)}  /> Auto-rotate</label></div>
           <div><label><input type="checkbox" checked={full}    onChange={(e) => setFull(e.target.checked)}  /> Show negative half-space</label></div>
           <div><label><input type="checkbox" checked={showX}   onChange={(e) => setShowX(e.target.checked)} /> Show X geodesics</label></div>
