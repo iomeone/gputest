@@ -38,7 +38,7 @@ export const MeshProjectedSamplerPage: LC = () => {
       <InfoBox>Sample points on a mesh using mesh helpers.</InfoBox>
       <Cursor cursor='move' />
       <Camera>
-        <SampleCamera onChange={setPoint} />
+        <SampleCamera point={point} onChange={setPoint} />
       
         <Gather
           children={[
@@ -75,16 +75,20 @@ export const MeshProjectedSamplerPage: LC = () => {
 };
 
 type SampleCameraProps = {
-  onChange: (point: VectorLike) => void,
+  point: VectorLike | null,
+  onChange: (point: VectorLike | null) => void,
 };
 
 const SampleCamera = (props: SampleCameraProps) => {
-  const {onChange} = props;
+  const {point, onChange} = props;
   const {uniforms} = useViewContext();
 
   return (
     <HTML style={POPUP_STYLE}>
-      <button onClick={() => onChange([...uniforms.viewPosition.current])}>Sample</button>
+      <>
+        <button onClick={() => onChange([...uniforms.viewPosition.current])}>Sample</button>
+        <button onClick={() => onChange(null)} disabled={!point}>Clear</button>
+      </>
     </HTML>
   );
 }
