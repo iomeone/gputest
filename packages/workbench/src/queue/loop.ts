@@ -186,7 +186,6 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
       if (timestamp != null) {
         if (timestamp === time.timestamp && timestamp !== -Infinity) {
           // Avoid double render due to colliding animation frame + sync render
-          return;
         }
         else if (timestamp - time.timestamp < 3) {
           // Check for variable frame rate shenanigans

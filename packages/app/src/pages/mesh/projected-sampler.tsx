@@ -119,7 +119,7 @@ const SampleMesh = (props: SampleMeshProps) => {
       />
     </Plot>
     <GeometryData {...culled}>
-      {(mesh) => (
+      {(mesh) => (<>
         <FaceLayer
           mesh={mesh}
           side="front"
@@ -127,7 +127,13 @@ const SampleMesh = (props: SampleMeshProps) => {
           color={[1, 1, 1, 0.25]}
           mode="transparent"
         />
-      )}
+        <FaceLayer
+          mesh={mesh}
+          side="front"
+          zBias={5}
+          mode="debug"
+        />
+      </>)}
     </GeometryData>
   </>);
 };

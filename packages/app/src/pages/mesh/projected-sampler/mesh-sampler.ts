@@ -1,5 +1,6 @@
 import type { CPUGeometry, VectorLike } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
+import { lerp } from '@use-gpu/core';
 import { patch } from '@use-gpu/state';
 import { forMeshTriangles, getMeshTriangle } from '@use-gpu/workbench';
 
@@ -82,7 +83,11 @@ export const sampleMesh = (
       u = 1 - u;
       v = 1 - v;
     }
-    const w = 1 - u - v;
+    let w = 1 - u - v;
+    
+    u = lerp(u, 1/3, .5);
+    v = lerp(v, 1/3, .5);
+    w = lerp(w, 1/3, .5);
     
     vec3.zero(vs);
     vec3.scaleAndAdd(vs, vs, v1, u);
