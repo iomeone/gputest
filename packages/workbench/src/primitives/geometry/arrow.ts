@@ -17,13 +17,16 @@ export const makeArrowGeometry = (
 
 const makeArrowVertices = (detail: number, width: number = 2.5) => {
 
+  // Vertices
   const ring = [] as [number, number, number, number][];
   const ringNormals = [] as [number, number, number, number][];
   const tipNormals = [] as [number, number, number, number][];
 
-  const vertices = [] as [number, number, number, number][];
-  const normals = [] as [number, number, number, number][];
+  // Flattened
+  const vertices = [] as number[];
+  const normals = [] as number[];
 
+  // Normals
   const nl = Math.hypot(width, 1);
   const nx = -1 / nl;
   const ny = width / nl;
@@ -45,6 +48,7 @@ const makeArrowVertices = (detail: number, width: number = 2.5) => {
     }
   }
 
+  // Triangular sides
   for (let i = 0; i < detail; ++i) {
     vertices.push(0, 0, 0, 1);
     vertices.push(...ring[i]);
@@ -55,6 +59,7 @@ const makeArrowVertices = (detail: number, width: number = 2.5) => {
     normals.push(...ringNormals[i + 1]);
   }
 
+  // Bottom round face
   for (let i = 1; i < detail - 1; ++i) {
     vertices.push(...ring[0]);
     vertices.push(...ring[i + 1]);

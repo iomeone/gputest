@@ -791,6 +791,7 @@ export const ImplicitSurfaceTraits = combine(
   FaceTrait,
   Loop3DTrait,
   ROPTrait,
+  ShadedTrait,
   ZIndexTrait,
   trait({
     range: optional(parseRanges),

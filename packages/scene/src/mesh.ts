@@ -11,6 +11,7 @@ export type MeshProps = PropsWithChildren<{
   id?: number,
   mesh: GPUGeometry,
   shaded?: boolean,
+  shadow?: boolean,
   side?: 'front' | 'back' | 'both',
   mode?: string,
 }>;

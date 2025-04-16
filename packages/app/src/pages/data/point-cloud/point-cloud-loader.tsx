@@ -1,8 +1,10 @@
 import React from '@use-gpu/live';
 import type { LC, LiveElement } from '@use-gpu/live';
+import type { DataBoundingBox } from '@use-gpu/core';
+import type { ShaderModule, TextureSource } from '@use-gpu/shader';
 
 import { Gather, useMemo } from '@use-gpu/live';
-import { chainTo, wgsl } from '@use-gpu/shader/wgsl';
+import { chainTo, wgsl, f32 } from '@use-gpu/shader/wgsl';
 import { Fetch, ImageTexture, PointLayerProps, useRenderProp, getShader, useShader } from '@use-gpu/workbench';
 
 const makeValueMapper = (precision: number) => wgsl`
@@ -12,7 +14,7 @@ const makeValueMapper = (precision: number) => wgsl`
 @export fn getValue(ij: vec2<u32>) -> f32 {
   let rgba = getIntTexture(ij, 0u);
   let i = (rgba.b << 16) | (rgba.g << 8) | rgba.r;
-  let v = f32(i) / ${precision};
+  let v = f32(i) / ${f32(precision)};
   return v + getBase();
 }
 `;
@@ -99,7 +101,7 @@ export const PointCloudLoader: LC<PointCloudLoaderProps> = (props: PointCloudLoa
         }
         
         return (
-          <Gather children={images} then={(images) => {
+          <Gather children={images} then={(images: TextureSource[]) => {
             if (images.some(i => !i)) return null;
 
             const sources = useMemo(() => {
@@ -119,7 +121,10 @@ export const PointCloudLoader: LC<PointCloudLoaderProps> = (props: PointCloudLoa
             const count = recordCount;
             const positions = useMemo(() => chainTo(indexMapper, valueTexture), [indexMapper, valueTexture]);
 
-            return useRenderProp(props, {count, positions});
+            return useRenderProp(props, {
+              attributes: {count, positions},
+              boundingBox: {min, max},
+            });
           }} />
         );
       }}

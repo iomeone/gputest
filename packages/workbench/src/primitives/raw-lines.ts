@@ -95,6 +95,7 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
 
     sides = 2,
     join,
+    depth,
   } = props;
 
   if (typeof depth === 'number' && depth >= 0 && shadow) console.warn("Shadow-casting lines must have absolute sizing (depth = -1)");

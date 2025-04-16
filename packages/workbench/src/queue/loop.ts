@@ -26,11 +26,17 @@ export type LoopRef = {
     start: number,
   },
   version: {
+    // Requested frame
     frame: number,
+    // Rendered frame
     rendered: number,
+    // Converge until frame #
     converge: number,
+    // Animation frame requested
     pending: boolean,
+    // Animation frame dispatched
     queued: boolean,
+    // Animation frame handle
     request: number | null,
   },
   dispatch: {
@@ -41,6 +47,7 @@ export type LoopRef = {
   loop: {
     request?: (fiber?: LiveFiber<any>) => TimeContextProps,
   },
+  parentTime: TimeContextProps,
   children?: LiveNode,
 };
 

@@ -39,7 +39,7 @@ export const DataPointCloudPage: LC = () => {
               <PointCloudLoader
                 url={url}
               >
-                {(attributes) => (
+                {({attributes}) => (
                   <Transform position={[-2000, -100, -2300]}>
                     <PBRMaterial albedo={WHITE}>
                       <PointLayer

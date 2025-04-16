@@ -56,6 +56,7 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
     const mime = response.headers.get('content-type') ?? MIME_TYPES[format!] ?? 'bin';
 
     const getRawImage = async (arrayBuffer: ArrayBuffer) => {
+      // @ts-ignore
       const decoder = new ImageDecoder({
         data: arrayBuffer,
         type: mime,
