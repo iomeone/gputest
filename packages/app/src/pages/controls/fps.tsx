@@ -52,7 +52,7 @@ const zBias = width.map(w => w / 100);
 export const FPSControlsPage: LC = () => {
 
   return (<>
-    <InfoBox>Use &lt;FPSControls&gt; with pointer lock.</InfoBox>
+    <InfoBox>Use &lt;FPSControls&gt; with pointer lock. Move with WASD/QE keys. Hold shift to go fast.</InfoBox>
     <Cursor cursor="move" />
     <Camera>
       <Pass>
