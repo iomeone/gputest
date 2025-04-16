@@ -84,7 +84,7 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
   const [glyphs, atlas, source, biasable, biasedSource] = useMemo(() => {
     const glyphs   = new Map<number, CachedGlyph>();
     const atlas    = makeAtlas(width, height);
-    const source   = makeAtlasSource(device, atlas, format, 1);
+    const source   = makeAtlasSource(device, atlas, format, 'linear', 1);
     const biasable = {
       ...source,
       variant: 'textureSampleBias',

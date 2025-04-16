@@ -212,9 +212,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
 
       // Render detached children
       const {renderChildren} = ref.dispatch;
-      if (renderChildren) {
-        renderChildren();
-      }
+      if (renderChildren) renderChildren();
 
       // Check if animation stopped
       queueMicrotask(resetIfIdle);
