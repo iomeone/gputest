@@ -184,7 +184,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
         timestamp = ref.parentTime.timestamp;
       }
       if (timestamp != null) {
-        if (timestamp === time.timestamp) {
+        if (timestamp === time.timestamp && timestamp !== -Infinity) {
           // Avoid double render due to colliding animation frame + sync render
           return;
         }
@@ -212,7 +212,9 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
 
       // Render detached children
       const {renderChildren} = ref.dispatch;
-      if (renderChildren) renderChildren();
+      if (renderChildren) {
+        renderChildren();
+      }
 
       // Check if animation stopped
       queueMicrotask(resetIfIdle);

@@ -9,7 +9,7 @@ import {
   Loop, Pass, OrbitControls, OrbitCamera, Cursor,
   LinearRGB, FullScreen, RenderTarget, AccumulateRender,
   PrintHelper, PrintLayer, ShaderPrinter, On,
-  
+
   useMouse, useKeyboard,
   usePerFrame, useShader, useShaderRef, useRawSource, useViewContext,
 } from '@use-gpu/workbench';
@@ -71,7 +71,7 @@ export const RTTAccumulatePage: LC = () => {
           <Camera>
             {/* Use `decimate` to slow down accumulation loop by factor N, e.g. for debugging */}
             <Loop decimate={1}>
-            
+
               <AccumulateView
                 limit={1024}
                 target={feedbackTarget}
@@ -142,7 +142,7 @@ const defs = {HAS_DEBUG_PICKING: true}
 
 const PathTrace = (props: PathTraceProps) => {
   const {frame, printHelper} = props;
-  
+
   const {mouse} = useMouse();
   const {keyboard: {keys}} = useKeyboard();
 
@@ -180,7 +180,7 @@ const PathTrace = (props: PathTraceProps) => {
     if (keys.alt) frameCountRef.current = 0;
   }, mouse);
 
-  // Avoid trashing render due to mouse move  
+  // Avoid trashing render due to mouse move
   return useMemo(() => {
     return (
       <Pass overlay>
