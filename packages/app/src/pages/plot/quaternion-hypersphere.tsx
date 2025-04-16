@@ -170,7 +170,7 @@ const Hypersphere = memo((options: Partial<HypersphereOptions>) => (
         as={['positions', 'colors']}
         expr={geodesicQuaternionSampler(0, N, M, options.full)}
       >
-        <Line width={LINE_WIDTH} depth={.65} shaded={options.shaded} shadow={options.shaded} />
+        <Line width={LINE_WIDTH} depth={.65} shaded={options.shaded} shadow={options.shaded} sides={5} />
       </Tensor>
     ) : null }
 
@@ -182,7 +182,7 @@ const Hypersphere = memo((options: Partial<HypersphereOptions>) => (
         as={['positions', 'colors']}
         expr={geodesicQuaternionSampler(1, N, M, options.full)}
       >
-        <Line width={LINE_WIDTH} depth={.65} shaded={options.shaded} shadow={options.shaded} />
+        <Line width={LINE_WIDTH} depth={.65} shaded={options.shaded} shadow={options.shaded} sides={5} />
       </Tensor>
     ) : null }
 
@@ -194,7 +194,7 @@ const Hypersphere = memo((options: Partial<HypersphereOptions>) => (
         as={['positions', 'colors']}
         expr={geodesicQuaternionSampler(2, N, M, options.full)}
       >
-        <Line width={LINE_WIDTH} depth={.65} shaded={options.shaded} shadow={options.shaded} />
+        <Line width={LINE_WIDTH} depth={.65} shaded={options.shaded} shadow={options.shaded} sides={5} />
       </Tensor>
     ) : null }
   </>
