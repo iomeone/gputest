@@ -79,7 +79,7 @@ export const PointCloudLoader: LC<PointCloudLoaderProps> = (props: PointCloudLoa
         const max: number[] = [];
         
         const {width} = imageSize;
-        
+
         for (const k in fields) {
           const {type, precision, range} = fields[k];
           
@@ -99,7 +99,7 @@ export const PointCloudLoader: LC<PointCloudLoaderProps> = (props: PointCloudLoa
             max.push(range.max);
           }
         }
-        
+
         return (
           <Gather children={images} then={(images: TextureSource[]) => {
             if (images.some(i => !i)) return null;
