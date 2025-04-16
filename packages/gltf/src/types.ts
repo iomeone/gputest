@@ -32,6 +32,10 @@ export type GLTFObject<T = any> = {
   extras?: T,
 };
 
+export type GLTFOptions = {
+  tangents?: boolean,
+};
+
 //////////////////////////////////////////////////
 // Scene
 

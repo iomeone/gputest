@@ -1,5 +1,5 @@
 import type { TypedArray, UniformType } from '@use-gpu/core';
-import type { GLTF, GLTFPrimitiveData } from './types';
+import type { GLTF, GLTFOptions, GLTFPrimitiveData } from './types';
 
 import { toUnweldedArray, formatToArchetype, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
 import { useMemo } from '@use-gpu/live';
@@ -13,15 +13,18 @@ export const useGLTFGeometry = (
   primitive: GLTFPrimitiveData,
 
   transform?: mat4,
+  options?: GLTFOptions,
 ) => {
   const {materials} = gltf;
   const {material} = primitive;
 
+  const tangents = !!options?.tangents;
+
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const side = materials?.[material!]?.doubleSided ? 'both' : 'front';
+  const {data: {arrays, formats: fmts}} = gltf;
 
   const geometry = useMemo(() => {
-    const {data: {arrays, formats: fmts}} = gltf;
     const {
       attributes: {POSITION, NORMAL, TANGENT, TEXCOORD_0},
       indices,
@@ -52,7 +55,7 @@ export const useGLTFGeometry = (
     }
 
     // Generate mikkTSpace tangents
-    if (TANGENT != null && (attributes.positions && attributes.normals && attributes.uvs && !attributes.tangents)) {
+    if (TANGENT == null && tangents && (attributes.positions && attributes.normals && attributes.uvs && !attributes.tangents)) {
       let ps = arrays[POSITION];
       let ns = arrays[NORMAL];
       let ts = arrays[TEXCOORD_0];
@@ -78,14 +81,15 @@ export const useGLTFGeometry = (
     const unwelded = formats.tangents ? {tangents: true} : undefined;
     const dims = Math.floor((UNIFORM_ARRAY_DIMS as any)[formats.positions]) || 1;
     return {
-      count: attributes.indices?.length ?? (attributes.positions.length / dims),
+      count: attributes.indices?.length ?? ((attributes.positions?.length || 0) / dims),
       attributes,
       formats,
       archetype: formatToArchetype(formats, unwelded),
       unwelded,
       side,
     };
-  }, [gltf, primitive, side]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps    
+  }, [...arrays, tangents, fmts, primitive, side]);
 
   const transformed = useMemo(() => {
     if (!transform) return geometry;

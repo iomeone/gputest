@@ -18,6 +18,7 @@ import { LayoutAlignPage } from './pages/layout/align';
 import { MaterialEnvMapPage } from './pages/material/envmap';
 import { MapWebMercatorPage } from './pages/map/webmercator';
 import { MeshInterleavedPage } from './pages/mesh/interleaved';
+import { MeshProjectedSamplerPage } from './pages/mesh/projected-sampler';
 import { Plot2DPage } from './pages/plot/2d';
 import { Plot3DPage } from './pages/plot/3d';
 import { PlotTubesPage } from './pages/plot/tubes';
@@ -83,6 +84,7 @@ export const makePages = () => [
   {path: "/plot/implicit-surface",       title: "Plot - Implicit Surface",           element: <PlotImplicitSurfacePage />},
   {path: "/plot/quaternion-hypersphere", title: "Plot - Quaternion Hypersphere",     element: <PlotQuaternionHyperspherePage />},
   {path: "/present/slides",              title: "Present - Slides",                  element: <PresentSlidesPage />},
+  {path: "/mesh/projected-sampler",      title: "Raw Mesh - Projected Sampler",      element: <MeshProjectedSamplerPage />},
   {path: "/mesh/interleaved",            title: "Raw Mesh - Native Components",      element: <MeshInterleavedPage />},
   {path: "/controls/fps",                title: "Controls - FPS",                    element: <FPSControlsPage />},
   {path: "/debug/atlas",                 title: "Debug - Text Atlas",                element: <DebugAtlasPage />},

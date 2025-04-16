@@ -71,7 +71,7 @@ export const useRawSource = (
 export const useNoRawSource = () => {
   useNoDeviceContext();
   useNoBufferedSize();
-  useNoOne();
+  useNoMemo();
   useNoVersion();
   useNoVersion();
   useNoOne();

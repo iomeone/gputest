@@ -1,4 +1,5 @@
 export * from './gltf-data';
+export * from './gltf-geometry';
 export * from './gltf-material';
 export * from './gltf-mesh';
 export * from './gltf-model';

@@ -1,6 +1,6 @@
 import type { LC, LiveElement } from '@use-gpu/live';
 import type { VectorLike } from '@use-gpu/core';
-import type { GLTF } from './types';
+import type { GLTF, GLTFOptions } from './types';
 import { vec3, mat4, quat } from 'gl-matrix';
 
 import { use, useMemo } from '@use-gpu/live';
@@ -11,6 +11,7 @@ export type GLTFNodeProps = {
   node: number,
 
   matrix?: mat4,
+  options?: GLTFOptions,
 };
 
 export const GLTFNode: LC<GLTFNodeProps> = (props: GLTFNodeProps) => {
@@ -18,6 +19,7 @@ export const GLTFNode: LC<GLTFNodeProps> = (props: GLTFNodeProps) => {
     gltf,
     node,
     matrix: parent,
+    options,
   } = props;
   if (!gltf.nodes) return null;
 
@@ -40,14 +42,14 @@ export const GLTFNode: LC<GLTFNodeProps> = (props: GLTFNodeProps) => {
   }, [matrix, translation, rotation, scale, parent]);
 
   const self = mesh != null ? (
-    use(GLTFMesh, {gltf, mesh, transform})
+    use(GLTFMesh, {gltf, mesh, transform, options})
   ) : null;
 
   if (children) {
     const out: LiveElement[] = [];
 
     if (self) out.push(self);
-    out.push(...Array.from(children).map((node: number) => use(GLTFNode, {gltf, node, matrix: transform})));
+    out.push(...Array.from(children).map((node: number) => use(GLTFNode, {gltf, node, matrix: transform, options})));
     return out;
   }
 

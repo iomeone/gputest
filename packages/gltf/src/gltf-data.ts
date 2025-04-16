@@ -138,7 +138,7 @@ export const GLTFData: LC<GLTFDataProps> = (props) => {
           const dims = (UNIFORM_ARRAY_DIMS as any)[format];
           if (!ctor) return null;
 
-          if (!bufferView) return new ctor(count * Math.floor(dims));
+          if (bufferView == null) return new ctor(count * Math.floor(dims));
 
           const {buffer, byteLength, byteOffset} = bufferViews[bufferView];
           const arrayBuffer = bufferResources[bufferAssetIndices[buffer]];

@@ -1,5 +1,5 @@
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { GLTF, GLTFPrimitiveData } from './types';
+import type { GLTF, GLTFOptions, GLTFPrimitiveData } from './types';
 
 import { toUnweldedArray } from '@use-gpu/core';
 import { use, provide, useMemo, useNoMemo } from '@use-gpu/live';
@@ -20,6 +20,11 @@ export type GLTFPrimitiveProps = {
   primitive: GLTFPrimitiveData,
 
   transform?: mat4,
+  options?: GLTFOptions,
+};
+
+const DEFAULT_OPTIONS = {
+  tangents: false,
 };
 
 export const GLTFPrimitive: LC<GLTFPrimitiveProps> = (props) => {
@@ -27,8 +32,11 @@ export const GLTFPrimitive: LC<GLTFPrimitiveProps> = (props) => {
     gltf,
     primitive,
     transform: matrix,
+    options = DEFAULT_OPTIONS,
   } = props;
   if (!gltf.bound) throw new Error("GLTF bound data is missing. Load GLTF using <GLTFData unbound={false}>.");
+
+  const tangents = !!options.tangents;
 
   const {data: {arrays}, bound: {storage}} = gltf;
   const {
@@ -54,14 +62,13 @@ export const GLTFPrimitive: LC<GLTFPrimitiveProps> = (props) => {
   if (indices    != null) faces.indices   = storage[indices];
 
   // Generate mikkTSpace tangents
-  if (TANGENT != null && (faces.positions && faces.normals && faces.uvs && !faces.tangents)) {
+  if (TANGENT == null && tangents && (faces.positions && faces.normals && faces.uvs && !faces.tangents)) {
     const ps = arrays[POSITION];
     const ns = arrays[NORMAL];
     const ts = arrays[TEXCOORD_0];
 
     const tangents = useMemo(() => {
       let _ps = ps, _ns = ns, _ts = ts;
-
       if (indices != null) {
         // Unweld mesh
         const inds = arrays[indices];

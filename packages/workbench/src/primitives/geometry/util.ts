@@ -21,8 +21,9 @@ export const forMeshTriangles = (() => {
   ) => {
     const {count, attributes: {positions, indices}, formats} = mesh;
     const getVertex = (v: vec3, i: number) => {
-      const j = (indices ? indices[i] : i) * 4;
-      vec3.set(v, positions[j], positions[j + 1], positions[j + 2]);
+      const j = (indices ? indices[i] : i);
+      const j4 = j * 4;
+      vec3.set(v, positions[j4], positions[j4 + 1], positions[j4 + 2]);
       return j;
     };
 
@@ -37,17 +38,50 @@ export const forMeshTriangles = (() => {
   }
 })();
 
+export const getMeshTriangle = (() => {
+  const v1 = vec3.create();
+  const v2 = vec3.create();
+  const v3 = vec3.create();
+
+  return <T>(
+    mesh: CPUGeometry,
+    index: number,
+    callback: (
+      v1: vec3,
+      v2: vec3,
+      v3: vec3,
+    ) => T,
+  ): T => {
+    const {attributes: {positions, indices}} = mesh;
+    const getVertex = (v: vec3, i: number) => {
+      const j = (indices ? indices[i] : i);
+      const j4 = j * 4;
+      vec3.set(v, positions[j4], positions[j4 + 1], positions[j4 + 2]);
+      return j;
+    };
+
+    const i3 = index * 3;
+    getVertex(v1, i3);
+    getVertex(v2, i3 + 1);
+    getVertex(v3, i3 + 2);
+
+    return callback(v1, v2, v3);
+  }
+})();
+
 export const transformPositions = (pos: TypedArray, format: string, matrix: mat4 | null) => {
   let step = 0;
-  if (format === 'vec3to4<f32>') step = 3;
-  if (format === 'vec4<f32>') step = 4;
+  let stride = 0;
+  if (format === 'vec3<f32>') { step = 3; stride = 3; }
+  if (format === 'vec3to4<f32>') { step = 3; stride = 4; }
+  if (format === 'vec4<f32>') { step = 4; stride = 4; }
   if (!step) throw new Error(`unimplemented CPUGeometry positions format '${format}'`);
 
   const v = vec3.create();
 
   const n = Math.floor(pos.length / step);
   const out = new Float32Array(n * 4);
-  for (let i = 0, j = 0, k = 0; i < n; ++i, j += step, k += 4) {
+  for (let i = 0, j = 0, k = 0; i < n; ++i, j += step, k += stride) {
     const x = pos[j];
     const y = pos[j + 1];
     const z = pos[j + 2];
@@ -59,7 +93,7 @@ export const transformPositions = (pos: TypedArray, format: string, matrix: mat4
     out[k    ] = v[0];
     out[k + 1] = v[1];
     out[k + 2] = v[2];
-    out[k + 3] = w;
+    if (stride === 4) out[k + 3] = w;
   }
 
   return out;
@@ -67,8 +101,10 @@ export const transformPositions = (pos: TypedArray, format: string, matrix: mat4
 
 export const transformNormals = (norms: TypedArray, format: string, matrix: mat4 | null) => {
   let step = 0;
-  if (format === 'vec3to4<f32>') step = 3;
-  if (format === 'vec4<f32>') step = 4;
+  let stride = 0;
+  if (format === 'vec3<f32>') { step = 3; stride = 3; }
+  if (format === 'vec3to4<f32>') { step = 3; stride = 4; }
+  if (format === 'vec4<f32>') { step = 4; stride = 4; }
   if (!step) throw new Error(`unimplemented CPUGeometry normals format '${format}'`);
 
   const m = matrix ? mat3.normalFromMat4(mat3.create(), matrix) : mat3.create();
@@ -76,7 +112,7 @@ export const transformNormals = (norms: TypedArray, format: string, matrix: mat4
 
   const n = Math.floor(norms.length / step);
   const out = new Float32Array(n * 4);
-  for (let i = 0, j = 0, k = 0; i < n; ++i, j += step, k += 4) {
+  for (let i = 0, j = 0, k = 0; i < n; ++i, j += step, k += stride) {
     const x = norms[j];
     const y = norms[j + 1];
     const z = norms[j + 2];
@@ -88,7 +124,7 @@ export const transformNormals = (norms: TypedArray, format: string, matrix: mat4
     out[k    ] = v[0];
     out[k + 1] = v[1];
     out[k + 2] = v[2];
-    out[k + 3] = w;
+    if (stride === 4) out[k + 3] = w;
   }
 
   return out;
