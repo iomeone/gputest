@@ -1,7 +1,11 @@
 0.14.1
+- `@use-gpu/app`: Add shaded lines and point cloud examples
 - `@use-gpu/live`: Match React behavior to zero out `key` in received props
 - `@use-gpu/live`: Narrow type of `provide(…)`
-- `@use-gpu/plot`: Add `shaded` / `shadow` prop to `<Line>` and `<Arrow>`
+- `@use-gpu/plot`: Add `sides` / `shaded` / `shadow` props to `<Point>`, `<Line>` and `<Arrow>`
+- `@use-gpu/shader`: Improved type inference through auto-chained functions
+- `@use-gpu/workbench`: Allow overriding pixel format to uint for `<ImageLoader>`
+- `@use-gpu/workbench`: Support shaded and shadowed versions of points, lines and arrows
 - `@use-gpu/workbench`: Add `shaded` / `shadow` prop to `<LineLayer>` and `<ArrowLayer>`
 - `@use-gpu/workbench`: Narrow `<EaseToTarget>` value types
 - `@use-gpu/workbench`: Improved `<Loop>` nesting with animation outside

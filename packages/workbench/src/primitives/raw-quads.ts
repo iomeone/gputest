@@ -129,7 +129,7 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
     ...material,
     getSurface: getSurfaceRT ?? (material.getSurface && applySurfaceMask ? chainTo(applySurfaceMask, material.getSurface) : material.getSurface),
     getFragment: material.getFragment && applyFragmentMask ? chainTo(applyFragmentMask, material.getFragment) : material.getFragment,
-  }), [getVertex, getPicking, applyFragmentMask, applySurfaceMask, shadow, shaded, material]);
+  }), [getVertex, getPicking, getSurfaceRT, applyFragmentMask, applySurfaceMask, shadow, shaded, material]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,

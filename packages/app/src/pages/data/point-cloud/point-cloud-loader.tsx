@@ -1,10 +1,9 @@
 import React from '@use-gpu/live';
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { ShaderSource } from '@use-gpu/shader';
 
 import { Gather, useMemo } from '@use-gpu/live';
 import { chainTo, wgsl } from '@use-gpu/shader/wgsl';
-import { Fetch, ImageTexture, PointLayerProps, useRenderProp, getShader, useShader, useShaderRef } from '@use-gpu/workbench';
+import { Fetch, ImageTexture, PointLayerProps, useRenderProp, getShader, useShader } from '@use-gpu/workbench';
 
 const makeValueMapper = (precision: number) => wgsl`
 @link fn getIntTexture(ij: vec2<u32>, level: u32) -> vec4<u32>;
@@ -77,8 +76,7 @@ export const PointCloudLoader: LC<PointCloudLoaderProps> = (props: PointCloudLoa
         const min: number[] = [];
         const max: number[] = [];
         
-        const {width, height} = imageSize;
-        const size = useShaderRef([width, height]);
+        const {width} = imageSize;
         
         for (const k in fields) {
           const {type, precision, range} = fields[k];

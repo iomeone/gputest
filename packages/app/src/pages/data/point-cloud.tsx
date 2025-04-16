@@ -6,10 +6,9 @@ import {
   Pass, LinearRGB, Loop,
   OrbitControls, OrbitCamera, EaseToTarget,
   Cursor, PointLayer, PBRMaterial,
-  DirectionalLight, AmbientLight, Environment,
+  AmbientLight, Environment,
 } from '@use-gpu/workbench';
 import { Transform } from '@use-gpu/plot';
-import { Mesh } from '@use-gpu/scene';
 import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';
@@ -18,15 +17,15 @@ import { PointCloudLoader } from './point-cloud/point-cloud-loader';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const base = isDevelopment ? '/' : '/demo/';
 
-const π = Math.PI;
 const WHITE = [1, 1, 1, 1];
+const YELLOW = [0.8, 0.8, 0.25, 1.0];
 
 export const DataPointCloudPage: LC = () => {
 
   const url = `${base}points/cmdf-veg/data.json`;
 
-  const view = (<>
-    <InfoBox>Point cloud data rendered as sphere sprites, using a built-in pixel shader.</InfoBox>
+  return (<>
+    <InfoBox>Point cloud data rendered as sphere sprites, using a built-in pixel shader and a custom loader.</InfoBox>
     <Cursor cursor="move" />
 
     <LinearRGB tonemap="aces">
@@ -42,12 +41,12 @@ export const DataPointCloudPage: LC = () => {
               >
                 {(attributes) => (
                   <Transform position={[-2000, -100, -2300]}>
-                    <PBRMaterial albedo={[1, 1, 1, 1]}>
+                    <PBRMaterial albedo={WHITE}>
                       <PointLayer
                         {...attributes}
                         size={5}
                         depth={-1}
-                        color={[0.8, 0.8, 0.25, 1.0]}
+                        color={YELLOW}
                         shaded
                         shadow
                       />
@@ -62,10 +61,6 @@ export const DataPointCloudPage: LC = () => {
       </Loop>
     </LinearRGB>
   </>);
-
-  const root = document.querySelector('#use-gpu .canvas');
-
-  return view;
 }
 
 const Camera = ({children}: PropsWithChildren<object>) => {

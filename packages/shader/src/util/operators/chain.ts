@@ -118,7 +118,6 @@ export const makeChainTo = (
   const fImports = extractImports(fBundle, importSymbols) ?? EMPTY;
   const tImports = extractImports(tBundle, importSymbols) ?? EMPTY;
 
-  const imports = [...fImports, ...tImports];
   const modules = [
     ...extractImports(fBundle, importSymbols),
     ...extractImports(tBundle, importSymbols),

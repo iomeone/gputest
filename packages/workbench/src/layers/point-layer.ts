@@ -32,7 +32,6 @@ export type PointLayerFlags = {
   hollow?: boolean,
   outline?: number,
   shaded?: boolean,
-  sides?: number,
 } & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export type PointLayerProps = {
@@ -84,7 +83,6 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
     shadow = false,
     shape = 'circle',
     mode = 'opaque',
-    sides = 0,
     id,
 
     ...rest

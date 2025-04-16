@@ -101,12 +101,12 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
       if (image.format?.slice(0, 3) === 'BGR') decoded = 'bgra8unorm';
 
       const flip = !!decoded.match(/^bgr/);
-      const out = parseRGBM16(buffer, w, h, flip);
+      const out = parseRGBM16(buffer, width, height, flip);
 
       return {
         data: {
           data: out,
-          size: [w, h],
+          size: [width, height],
           format: 'rgba16float',
         },
         format: 'rgba16float',
@@ -130,7 +130,7 @@ export const ImageLoader: LiveComponent<ImageLoaderProps> = (props) => {
       else if (f.match(/u?int(-srgb)?$/)) {
         // Can't upload as native texture, copy f32 -> u32 fails
         const arrayBuffer = await response.arrayBuffer();
-        const {image, buffer, width, height} = await getRawImage(arrayBuffer);
+        const {buffer, width, height} = await getRawImage(arrayBuffer);
         return {
           format: f,
           colorSpace,

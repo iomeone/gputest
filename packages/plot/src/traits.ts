@@ -668,7 +668,6 @@ export const PointTraits = combine(
   trait({
     size: optional(parseNumber),
     sizes: bindable(optional(parseScalarArray)),
-    sides: optional(parseNumber),
   }),
   VerticesTrait,
   DataTrait(['positions', 'colors', 'depths', 'zBiases', 'ids', 'lookups', 'sizes']),

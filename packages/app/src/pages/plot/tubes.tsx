@@ -22,25 +22,9 @@ import { seq } from '@use-gpu/core';
 
 import { InfoBox } from '../../ui/info-box';
 
-// Generate a line voxel grid
-
-// Take random +/- X/Y/Z steps
-const vecSteps = [
-  vec3.fromValues(1, 0, 0),
-  vec3.fromValues(-1, 0, 0),
-  vec3.fromValues(0, 1, 0),
-  vec3.fromValues(0, -1, 0),
-  vec3.fromValues(0, 0, 1),
-  vec3.fromValues(0, 0, -1),
-];
-
 // Make 80 paths of 60 steps
 const PATHS = 80;
 const STEPS = 120;
-
-const paths: number[][][] = seq(PATHS).map((j) => seq(STEPS).map((i) => {
-
-}, [] as number[][]));
 
 const squarePath = [
   [-2,  2, 0],
