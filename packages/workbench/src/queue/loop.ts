@@ -303,7 +303,7 @@ export const Loop: LiveComponent<LoopProps> = (props: LoopProps) => {
               // To avoid flashes, respond to outside updates immediately,
               // as they are usually a resize event.
               if (ref.version.pending) {
-                cancelAnimationFrame(ref.version.request);
+                if (ref.version.request != null) cancelAnimationFrame(ref.version.request);
                 ref.version.pending = false;
               }
               DEBUG && console.log('Sync render', '#' + fiberId);
