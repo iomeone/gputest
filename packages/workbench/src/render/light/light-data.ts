@@ -72,6 +72,7 @@ export const makeLightQueue = () => {
   const dispose = (id: number) => {
     lights.delete(id);
     maps.delete(id);
+    changed.delete(id);
   };
 
   const flush = () => {
@@ -90,6 +91,18 @@ export const makeLightQueue = () => {
 
       if (shadow) {
         if (!maps.has(id)) maps.set(id, d);
+
+        // Precalculate depth range constants
+        const {depth: [near, far], bias, blur} = shadow;
+        const nf = 1 / (near - far);
+        const dx = far * nf + 1;
+        const dy = -far * near * nf;
+        if (!d.shadowDepth) d.shadowDepth = vec2.fromValues(dx, dy);
+
+        d.shadowDepth[0] = dx;
+        d.shadowDepth[1] = dy;
+        d.shadowBias = bias;
+        d.shadowBlur = blur;
       }
       else if (maps.has(id)) {
         maps.delete(id);
@@ -190,7 +203,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
         const light = maps.get(key)!;
         const {shadow} = light;
         if (shadow) {
-          const {size: [w, h], depth: [near, far], bias, blur} = shadow;
+          const {size: [w, h]} = shadow;
 
           let mapping;
           try {
@@ -202,12 +215,8 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
           }
           const page = atlases.length - 1;
 
-          const nf = 1 / (near - far);
           light.shadowMap = page;
           light.shadowUV = (vec4.fromValues as any)(...mapping.map((x: number) => x / SHADOW_PAGE));
-          light.shadowDepth = vec2.fromValues(far * nf + 1, -far * near * nf);
-          light.shadowBias = bias;
-          light.shadowBlur = blur;
         }
       }
 
