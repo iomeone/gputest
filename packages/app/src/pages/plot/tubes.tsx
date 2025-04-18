@@ -191,8 +191,8 @@ const Camera = ({children}: PropsWithChildren<object>) => {
 
   return (
     <OrbitControls
-      radius={6}
-      bearing={0.5}
+      radius={5}
+      bearing={-1}
       pitch={0.3}
       render={(radius: number, phi: number, theta: number, target: vec3) =>
         <EaseToTarget
