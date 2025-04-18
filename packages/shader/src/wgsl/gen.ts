@@ -18,6 +18,8 @@ const is3to4 = (type: string) => type.match(/vec3to4</);
 const to3 = (type: string) => type.replace(/vec3to4</, 'vec3<');
 const to4 = (type: string) => type.replace(/vec3to4</, 'vec4<');
 
+const to1 = (type: string) => type.replace(/vec[^<]+<([^>]+)>/, '$1');
+
 const is8to32 = (type: string) => type.match(/^(u|i)8$/);
 const is16to32 = (type: string) => type.match(/^(u|i)16$/);
 const isVec8to32 = (type: string) => type.match(/^vec[234]<(u|i)8>$/);
@@ -163,7 +165,7 @@ export const makeBindingAccessors = (
 
       if (is3to4(formatIn)) {
         const accessor = name + '3to4';
-        program.push(makeStorageAccessor(namespace, set, base, to4(formatIn), to4(formatIn), accessor, readWrite, !!uniform));
+        program.push(makeStorageAccessor(namespace, set, base, to1(formatIn), to1(formatIn), accessor, readWrite, !!uniform));
         program.push(makeVec3to4Accessor(namespace, formatOut, to3(formatIn), name, accessor));
         continue;
       }
@@ -433,20 +435,12 @@ export const makeVec3to4Accessor = (
 ) => (
 `fn ${ns}${name}(i: u32) -> ${type} {
   let i3 = i * 3u;
-  let b = i3 / 4u;
 
-  let b4 = b * 4u;
-  let f3 = i3 - b4;
+  let vx = ${ns}${accessor}(i3);
+  let vy = ${ns}${accessor}(i3 + 1u);
+  let vz = ${ns}${accessor}(i3 + 2u);
 
-  let v1 = ${ns}${accessor}(b);
-  let v2 = ${ns}${accessor}(b + 1u);
-
-  var v: ${format};
-  if (f3 == 0u) { v = v1.xyz; }
-  else if (f3 == 1u) { v = v1.yzw; }
-  else if (f3 == 2u) { v = ${format}(v1.zw, v2.x); }
-  else { v = ${format}(v1.w, v2.xy); }
-
+  let v = ${format}(vx, vy, vz);
   return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
 `);
