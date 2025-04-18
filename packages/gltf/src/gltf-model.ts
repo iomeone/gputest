@@ -4,7 +4,6 @@ import { GLTF, GLTFOptions, GLTFNodeData } from './types';
 
 import { use, memo, useMemo } from '@use-gpu/live';
 import { GLTFNode } from './gltf-node';
-import { useMatrixContext } from '@use-gpu/workbench';
 import { seq, toArray } from '@use-gpu/core';
 
 export type GLTFModelProps = GLTFOptions & {
@@ -30,8 +29,6 @@ export const GLTFModel: LC<GLTFModelProps> = memo((props: GLTFModelProps) => {
     nodes: propNodes,
     tangents,
   } = props;
-
-  const matrix = useMatrixContext();
 
   const roots = useMemo(() => {
     const {scenes, nodes} = gltf;
@@ -59,5 +56,5 @@ export const GLTFModel: LC<GLTFModelProps> = memo((props: GLTFModelProps) => {
 
   const options = useMemo(() => ({tangents}), [tangents]);
 
-  return roots.map(root => root != null ? use(GLTFNode, {gltf, node: root, matrix, options}) : null);
+  return roots.map(root => root != null ? use(GLTFNode, {gltf, node: root, options}) : null);
 }, 'GLTFModel');

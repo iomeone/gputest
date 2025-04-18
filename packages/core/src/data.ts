@@ -559,7 +559,7 @@ export const makeUnweldEmitter = (
 ) => (
   to: TypedArray,
   toIndex: number = 0,
-  count?: number,
+  count: number = indices.length,
   stride?: number,
 ) => unweldNumberArray(from, to, indices, fromDims, toDims, fromIndex, toIndex, count, stride);
 
@@ -570,7 +570,7 @@ export const toUnweldedArray = (
   toDims: number = fromDims,
   fromIndex: number = 0,
   toIndex: number = 0,
-  count?: number,
+  count: number = indices.length,
   stride?: number,
 ) => {
   const ctor = (from.constructor ?? Float32Array) as any;
