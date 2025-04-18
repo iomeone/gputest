@@ -1,6 +1,6 @@
 import React from 'react';
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { TextureSource } from '@use-gpu/core';
+import type { TextureSource, VectorLike } from '@use-gpu/core';
 
 import { use, fragment, useState } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
@@ -19,11 +19,31 @@ const STYLE = {
   background: 'rgba(0, 0, 0, .75)',
 };
 
+type EnvMapRenderProps = {
+  preset: string,
+  map: any,
+  seamFix: boolean,
+  debugGrid: boolean,
+  model: string,
+  position: VectorLike,
+};
+
 type EnvMapControlsProps = {
   hasDebug?: boolean,
+  hasModel?: boolean,
   container?: Element | null,
-  render?: (mode: string, map: any, seamFix: boolean, debugGrid: boolean) => LiveElement,
+  render?: (props: EnvMapRenderProps) => LiveElement,
 };
+
+// @ts-ignore
+const isDevelopment = process.env.NODE_ENV === 'development';
+const base = isDevelopment ? '/' : '/demo/';
+
+const MODELS = [
+  {label: "Damaged Helmet", value: base + "gltf/DamagedHelmet/DamagedHelmet.gltf", position: [0, 0, 0]},
+  {label: "Antique Camera", value: base + "gltf/AntiqueCamera/AntiqueCamera.glb", position: [0, -3, 0]},
+  {label: "Glam Velvet Sofa", value: base + "gltf/GlamVelvetSofa/GlamVelvetSofa.glb", position: [0, -0.2, 0]},
+];
 
 export const ENVIRONMENTS = {
   park:
@@ -69,22 +89,48 @@ export const ENVIRONMENTS = {
     }</ImageTexture>,
 } as Record<string, any>;
 
+const DEFAULT_MODEL = MODELS[0];
+
 export const EnvMapControls: LC<EnvMapControlsProps> = (props: EnvMapControlsProps) => {
-  const {hasDebug, container, render} = props;
-  const [mode, setMode] = useState('park');
+  const {hasDebug, hasModel, container, render} = props;
+
+  const [position, setPosition] = useState(DEFAULT_MODEL.position);
+  const [model, setModel] = useState(DEFAULT_MODEL.value);
+
+  const [preset, setPreset] = useState('park');
   const [approximate, setApproximate] = useState(false);
   const [seamFix, setSeamFix] = useState(true);
   const [debugGrid, setDebugGrid] = useState(false);
 
   return fragment([
-    render ? render(mode, approximate ? null : ENVIRONMENTS[mode], seamFix, debugGrid) : null,
+    render ? render({
+      preset,
+      map: approximate ? null : ENVIRONMENTS[preset],
+      seamFix,
+      debugGrid,
+      model,
+      position,
+    }) : null,
     use(HTML, {
       container,
       style: STYLE,
       children: (<>
+        {hasModel ? (<div>
+          Model
+          <select value={model} onChange={(e) => {
+            const m = e.target.value;
+
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const model = MODELS.find(model => model.value === m)!;
+            setModel(m);
+            setPosition(model.position);
+          }}>
+            {MODELS.map(({label, value}) => <option key={value} value={value}>{label}</option>)}
+          </select>
+        </div>) : null}
         <div>
           Environment Map
-          <select onChange={(e) => setMode(e.target.value)}>
+          <select value={preset} onChange={(e) => setPreset(e.target.value)}>
             <option value="park">Park</option>
             <option value="pisa">Pisa</option>
             <option value="road">Road</option>

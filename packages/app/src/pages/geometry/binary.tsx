@@ -5,7 +5,7 @@ import React, { Gather, useOne, useMemo } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Pass, Data, DataShader,
+  Pass, Data, DataShader, LoadingSpinner,
   OrbitCamera, OrbitControls,
   Cursor,
   PointLayer,
@@ -178,7 +178,7 @@ export const GeometryBinaryPage: LC = () => {
     <InfoBox>Load a dataset using &lt;Data&gt; and color it using a custom &lt;DataShader&gt;. Render with &lt;PointLayer&gt;.</InfoBox>
     <BinaryControls
       container={root}
-      render={({mode, buffer, gamma, transparent}) => {
+      render={({mode, buffer, gamma, transparent, loading}) => {
         const data = useMemo(() => buffer ? arrayBufferToXYZ(buffer) : null, [buffer]);
 
         const grey = Math.pow(0.25, gamma);
@@ -219,6 +219,7 @@ export const GeometryBinaryPage: LC = () => {
         const view = useMemo(() => (
           <Camera>
             <Pass>
+              {loading ? <LoadingSpinner /> : null}
               <Cartesian
                 range={RANGE}
               >
@@ -256,7 +257,7 @@ export const GeometryBinaryPage: LC = () => {
               </Cartesian>
             </Pass>
           </Camera>
-        ), [viz, gridColor]);
+        ), [viz, gridColor, loading]);
 
         return (
           <LinearRGB tonemap="aces" colorInput="linear" gain={gamma}>

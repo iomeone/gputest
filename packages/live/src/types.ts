@@ -126,6 +126,7 @@ export type LiveFiber<F extends Function> = FunctionCall<F> & {
   depth: number,
   id: number,
   by: number,
+  key?: string | number,
 
   // Instance of F bound to self
   bound?: F,

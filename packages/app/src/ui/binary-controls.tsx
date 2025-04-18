@@ -72,6 +72,7 @@ type State = {
   buffer: ArrayBuffer,
   gamma: number,
   transparent: boolean,
+  loading: boolean,
 };
 
 type BinaryControlsProps = {
@@ -96,6 +97,7 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
 
   const [dragging, setDragging] = useState(false);
   const [note, setNote] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const [fileId, setFileId] = useState('doom');
   const [customFile, setCustomFile] = useState<string | null>(null);
@@ -155,8 +157,10 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
     if (!file) return;
 
     const {url} = file;
+    setLoading(true);
     const buffer = await fetch(url).then(r => r.arrayBuffer());
     setBuffer(buffer);
+    setLoading(false);
   }, [fileId, customFile]);
 
   useResource((dispose) => {
@@ -165,7 +169,7 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
   });
 
   return fragment([
-    render ? render({mode, buffer, gamma, transparent}) : null,
+    render ? render({mode, buffer, gamma, transparent, loading}) : null,
     use(HTML, {
       container,
       style: DROP_ZONE,

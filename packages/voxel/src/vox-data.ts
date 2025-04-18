@@ -12,6 +12,7 @@ export type VoxDataProps = {
   url?: string,
   base?: string,
   data?: ArrayBuffer,
+  fallback?: LiveElement,
   render?: (vox: Vox) => LiveElement,
   children?: (vox: Vox) => LiveElement,
 };
@@ -20,11 +21,12 @@ export const VoxData: LC<VoxDataProps> = (props) => {
   const {
     data,
     url,
+    fallback,
   } = props;
 
   // Resume after loading .vox
   const Resume = ([data]: (ArrayBuffer | null)[]) => {
-    if (!data) return;
+    if (!data) return fallback;
 
     const mips = 3;
     const device = useDeviceContext();

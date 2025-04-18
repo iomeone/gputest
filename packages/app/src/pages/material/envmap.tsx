@@ -41,11 +41,11 @@ export const MaterialEnvMapPage: LC = () => {
 
   return (<>
     <InfoBox>PBR material spheres of varying roughness and metalness. Octahedral PMREM environment map is generated using compute shaders.</InfoBox>
-    <EnvMapControls container={root} hasDebug render={(envPreset, envMap, seamFix, debugGrid) => (
+    <EnvMapControls container={root} hasDebug render={({preset, map, seamFix, debugGrid}) => (
       <Gather
         children={[
           <GeometryData {...geometry} />,
-          <Suspense>{envMap}</Suspense>
+          <Suspense>{map}</Suspense>
         ]}
         then={([
           mesh,
@@ -66,7 +66,7 @@ export const MaterialEnvMapPage: LC = () => {
                   <Cursor cursor='move' />
                   <Pass lights>
 
-                    <Environment map={cubeMap} preset={envPreset} gain={3}>
+                    <Environment map={cubeMap} preset={preset} gain={3}>
                       <Scene>
                         {
                           seq(8).flatMap(i =>

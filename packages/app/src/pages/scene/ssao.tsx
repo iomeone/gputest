@@ -9,7 +9,7 @@ import {
   Loop, Pass, LinearRGB,
   GeometryData, PBRMaterial, ImageTexture, AmbientLight,
   OrbitCamera, OrbitControls, Environment,
-  Cursor,
+  Cursor, EaseToTarget,
   DebugProvider, PrintLayer, PrintHelper,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
   useKeyboard,
@@ -174,22 +174,26 @@ export const SceneSSAOPage: LC = () => {
   </>);
 };
 
-const Camera = ({children}: PropsWithChildren<object>) => (
-  <OrbitControls
-    radius={9}
-    bearing={-1.8}
-    pitch={0.6}
-    render={(radius: number, phi: number, theta: number, target: vec3) => (
-      <OrbitCamera
-        radius={radius}
-        phi={phi}
-        theta={theta}
-        near={0.1}
-        far={1000}
-        target={target}
-      >
-        {children}
-      </OrbitCamera>
-    )}
-  />
-);
+const Camera = ({children}: PropsWithChildren<object>) => {
+  const view = <OrbitCamera near={0.1} far={1000}>{children}</OrbitCamera>;
+
+  return (
+    <OrbitControls
+      radius={9}
+      bearing={-1.8}
+      pitch={0.6}
+      render={(radius: number, phi: number, theta: number, target: vec3) => (
+        <EaseToTarget
+          values={{
+            radius,
+            phi,
+            theta,
+            target,
+          }}
+        >
+          {view}
+        </EaseToTarget>
+      )}
+    />
+  );
+};

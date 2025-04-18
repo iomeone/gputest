@@ -1,5 +1,7 @@
 0.14.1
 - `@use-gpu/app`: Add shaded lines and point cloud examples
+- `@use-gpu/gltf`: Support extracting textures from .bin blobs
+- `@use-gpu/gltf`: Improved model reloading + `partial` option
 - `@use-gpu/live`: Match React behavior to zero out `key` in received props
 - `@use-gpu/live`: Narrow type of `provide(…)`
 - `@use-gpu/plot`: Add `sides` / `shaded` / `shadow` props to `<Point>`, `<Line>` and `<Arrow>`
@@ -9,6 +11,7 @@
 - `@use-gpu/workbench`: Add `shaded` / `shadow` prop to `<LineLayer>` and `<ArrowLayer>`
 - `@use-gpu/workbench`: Narrow `<EaseToTarget>` value types
 - `@use-gpu/workbench`: Improved `<Loop>` nesting with animation outside
+- `@use-gpu/workbench`: Add `<LoadingSpinner>` helper
 
 0.14.0
 - `@use-gpu/core`: Full support for `uniform` storage

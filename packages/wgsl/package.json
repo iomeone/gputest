@@ -121,6 +121,7 @@
     "./layout/rectangle.wgsl": "./src/layout/rectangle.wgsl.ts",
     "./layout/scroll.wgsl": "./src/layout/scroll.wgsl.ts",
     "./layout/shift.wgsl": "./src/layout/shift.wgsl.ts",
+    "./mask/loading.wgsl": "./src/mask/loading.wgsl.ts",
     "./mask/masked.wgsl": "./src/mask/masked.wgsl.ts",
     "./mask/passthru.wgsl": "./src/mask/passthru.wgsl.ts",
     "./mask/point.wgsl": "./src/mask/point.wgsl.ts",

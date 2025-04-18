@@ -7,7 +7,7 @@ import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  LinearRGB, Loop, Pass,
+  LinearRGB, Loop, Pass, LoadingSpinner,
   OrbitCamera, OrbitControls,
   Cursor,
   AmbientLight, PointLight,
@@ -107,7 +107,7 @@ export const GeometryVoxelPage: LC = () => {
                       </Plot>
                     </Primitive>
 
-                    <VoxData url={url}>{
+                    <VoxData url={url} fallback={<LoadingSpinner />}>{
                       (vox: Vox) => <VoxModel vox={vox} flat />
                     }</VoxData>
 
