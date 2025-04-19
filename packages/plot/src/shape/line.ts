@@ -83,7 +83,7 @@ export const InnerLine: LiveComponent<LineProps> = (props) => {
       schema: formats ? schema : undefined,
       scissor,
       sources,
-      transform: nonlinear ?? context,
+      transform: nonlinear ?? (context.key ? context : undefined),
       zIndex,
     },
   };

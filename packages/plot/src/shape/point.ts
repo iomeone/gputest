@@ -74,7 +74,7 @@ export const Point: LiveComponent<PointProps> = memo((props) => {
       refs,
       schema,
       sources,
-      transform: nonlinear ?? context,
+      transform: nonlinear ?? (context.key ? context : undefined),
       zIndex,
     },
   };

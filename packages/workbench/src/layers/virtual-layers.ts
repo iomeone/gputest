@@ -118,7 +118,7 @@ const provideContext = (
   const {material, scissor, transform} = item;
 
   const hasRefTransform = !!refSources?.matrices;
-  const hasTransform = !!transform?.key;
+  const hasTransform = !!transform;
   const hasMaterial = !!material;
   const hasScissor = !!scissor;
   

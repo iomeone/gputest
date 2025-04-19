@@ -499,7 +499,6 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
               fragDepth: true,
               shaded: true,
               side: 'back',
-              depthTest: false,
               blend,
               mode,
               shouldDispatch: (uniforms: Record<string, Ref<any>>) => {

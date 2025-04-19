@@ -83,7 +83,7 @@ export const InnerFace: LiveComponent<FaceProps> = (props) => {
       schema,
       scissor,
       sources,
-      transform: nonlinear ?? context,
+      transform: nonlinear ?? (context.key ? context : undefined),
       zIndex,
     },
   };
