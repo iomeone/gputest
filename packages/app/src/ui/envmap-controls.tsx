@@ -26,6 +26,7 @@ type EnvMapRenderProps = {
   debugGrid: boolean,
   model: string,
   position: VectorLike,
+  scale: number,
 };
 
 type EnvMapControlsProps = {
@@ -40,9 +41,9 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const base = isDevelopment ? '/' : '/demo/';
 
 const MODELS = [
-  {label: "Damaged Helmet", value: base + "gltf/DamagedHelmet/DamagedHelmet.gltf", position: [0, 0, 0]},
-  {label: "Antique Camera", value: base + "gltf/AntiqueCamera/AntiqueCamera.glb", position: [0, -3, 0]},
-  {label: "Glam Velvet Sofa", value: base + "gltf/GlamVelvetSofa/GlamVelvetSofa.glb", position: [0, -0.2, 0]},
+  {label: "Damaged Helmet", value: base + "gltf/DamagedHelmet/DamagedHelmet.gltf", position: [0, 0, 0], scale: 1},
+  {label: "Antique Camera", value: base + "gltf/AntiqueCamera/AntiqueCamera.glb", position: [0, -3, 0], scale: 0.5},
+  {label: "Glam Velvet Sofa", value: base + "gltf/GlamVelvetSofa/GlamVelvetSofa.glb", position: [0, -0.7, 0], scale: 1.2},
 ];
 
 export const ENVIRONMENTS = {
@@ -89,12 +90,13 @@ export const ENVIRONMENTS = {
     }</ImageTexture>,
 } as Record<string, any>;
 
-const DEFAULT_MODEL = MODELS[0];
+const DEFAULT_MODEL = MODELS[2];
 
 export const EnvMapControls: LC<EnvMapControlsProps> = (props: EnvMapControlsProps) => {
   const {hasDebug, hasModel, container, render} = props;
 
   const [position, setPosition] = useState(DEFAULT_MODEL.position);
+  const [scale, setScale] = useState(DEFAULT_MODEL.scale);
   const [model, setModel] = useState(DEFAULT_MODEL.value);
 
   const [preset, setPreset] = useState('park');
@@ -110,6 +112,7 @@ export const EnvMapControls: LC<EnvMapControlsProps> = (props: EnvMapControlsPro
       debugGrid,
       model,
       position,
+      scale,
     }) : null,
     use(HTML, {
       container,
@@ -124,6 +127,7 @@ export const EnvMapControls: LC<EnvMapControlsProps> = (props: EnvMapControlsPro
             const model = MODELS.find(model => model.value === m)!;
             setModel(m);
             setPosition(model.position);
+            setScale(model.scale);
           }}>
             {MODELS.map(({label, value}) => <option key={value} value={value}>{label}</option>)}
           </select>

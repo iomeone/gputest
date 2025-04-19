@@ -33,7 +33,7 @@ export const GeometryGLTFPage: LC = () => {
 
   return (<>
     <InfoBox>Load a .glb model using the GLTF package. Supports PBR materials.</InfoBox>
-    <EnvMapControls hasModel container={root} render={({preset, map, model, position}) => (
+    <EnvMapControls hasModel container={root} render={({preset, map, model, position, scale}) => (
       <Gather
         children={[
           <Gather
@@ -80,7 +80,7 @@ export const GeometryGLTFPage: LC = () => {
 
                 <Environment map={cubeMap} preset={preset} gain={0.65}>
                   <Scene>
-                    <Node position={position}>
+                    <Node position={position} scale={scale}>
                       <GLTFData url={model} fallback={<LoadingSpinner />}>{
                         (gltf: GLTF) => <GLTFModel gltf={gltf} />
                       }</GLTFData>

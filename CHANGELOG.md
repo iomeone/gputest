@@ -6,6 +6,7 @@
 - `@use-gpu/live`: Narrow type of `provide(…)`
 - `@use-gpu/plot`: Add `sides` / `shaded` / `shadow` props to `<Point>`, `<Line>` and `<Arrow>`
 - `@use-gpu/shader`: Improved type inference through auto-chained functions
+- `@use-gpu/shader`: Fix sampling bug at end of unaligned vec3to4 arrays
 - `@use-gpu/workbench`: Allow overriding pixel format to uint for `<ImageLoader>`
 - `@use-gpu/workbench`: Support shaded and shadowed versions of points, lines and arrows
 - `@use-gpu/workbench`: Add `shaded` / `shadow` prop to `<LineLayer>` and `<ArrowLayer>`

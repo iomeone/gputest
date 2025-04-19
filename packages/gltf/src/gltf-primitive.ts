@@ -10,7 +10,7 @@ import {
   FaceLayer, FaceLayerProps,
   PBRMaterial,
   TransformContext,
-  useCombinedMatrixTransform, useNoCombinedMatrixTransform,
+  useCombinedTransform, useCombinedMatrixTransform, useNoCombinedMatrixTransform,
   useRawSource, useNoRawSource,
 } from '@use-gpu/workbench';
 import { useGLTFMaterial } from './gltf-material';
@@ -93,16 +93,7 @@ export const GLTFPrimitive: LC<GLTFPrimitiveProps> = (props) => {
   }
 
   const render = use(PBRMaterial, {...pbrMaterial, children: use(FaceLayer, faces)});
+  const [context, combined] = useCombinedMatrixTransform(matrix);
 
-  let view: LiveElement = render;
-  if (matrix) {
-    const [context] = useCombinedMatrixTransform(matrix);
-
-    view = provide(TransformContext, context, view);
-  }
-  else {
-    useNoCombinedMatrixTransform();
-  }
-
-  return view;
+  return combined ? provide(TransformContext, context, render) : render;
 };
