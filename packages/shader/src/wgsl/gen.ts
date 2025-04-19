@@ -16,8 +16,6 @@ const arg = (x: number) => String.fromCharCode(97 + x);
 
 const is3to4 = (type: string) => type.match(/vec3to4</);
 const to3 = (type: string) => type.replace(/vec3to4</, 'vec3<');
-const to4 = (type: string) => type.replace(/vec3to4</, 'vec4<');
-
 const to1 = (type: string) => type.replace(/vec[^<]+<([^>]+)>/, '$1');
 
 const is8to32 = (type: string) => type.match(/^(u|i)8$/);

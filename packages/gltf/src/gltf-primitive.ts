@@ -1,4 +1,4 @@
-import type { LC, LiveElement } from '@use-gpu/live';
+import type { LC } from '@use-gpu/live';
 import type { GLTF, GLTFOptions, GLTFPrimitiveData } from './types';
 
 import { toUnweldedArray } from '@use-gpu/core';
@@ -10,7 +10,7 @@ import {
   FaceLayer, FaceLayerProps,
   PBRMaterial,
   TransformContext,
-  useCombinedTransform, useCombinedMatrixTransform, useNoCombinedMatrixTransform,
+  useCombinedMatrixTransform,
   useRawSource, useNoRawSource,
 } from '@use-gpu/workbench';
 import { useGLTFMaterial } from './gltf-material';
