@@ -42,8 +42,6 @@ const INITIAL_STATE = {
   splitLeft: 33,
   splitBottom: 50,
   filterTags: FiberTag.All ^ FiberTag.Other ^ FiberTag.By ^ FiberTag.Yeet ^ FiberTag.Quote,
-
-  version: 0,
 };
 
 const NO_HOVER = {
@@ -105,7 +103,7 @@ export const Inspect: React.FC<InspectProps> = ({
     };    
   }, [selectedFiber, hoveredFiber, fibers]);
 
-  const [, setVersion] = optionsCursor.version();
+  const [version, setVersion] = useState(0);
   const [fullSize] = optionsCursor.fullSize();
   const [highlight] = optionsCursor.highlight();
 
@@ -159,7 +157,7 @@ export const Inspect: React.FC<InspectProps> = ({
   const api: InspectAPI = useMemo(() => {
 
     const forceUpdate = () => {
-      setVersion($apply(incrementVersion));
+      setVersion(incrementVersion);
     };
 
     const selectFiber = (fiber: LiveFiber<any> | null = null) => {

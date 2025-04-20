@@ -35,8 +35,6 @@ export type OptionsState = {
   splitLeft: number,
   splitBottom: number,
   filterTags: number,
-
-  version: number,
 };
 
 export type InspectAppearance = {
