@@ -14,6 +14,7 @@
 - `@use-gpu/workbench`: Narrow `<EaseToTarget>` value types
 - `@use-gpu/workbench`: Improved `<Loop>` nesting with animation outside
 - `@use-gpu/workbench`: Add `<LoadingSpinner>` helper
+- `@use-gpu/workbench`: Fix unlit UI renders not working in lit passes
 
 0.14.0
 - `@use-gpu/core`: Full support for `uniform` storage
