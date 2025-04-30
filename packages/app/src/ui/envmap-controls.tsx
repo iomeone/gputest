@@ -46,6 +46,8 @@ const MODELS = [
   {label: "Glam Velvet Sofa", value: base + "gltf/GlamVelvetSofa/GlamVelvetSofa.glb", position: [0, -0.7, 0], scale: 1.2},
 ];
 
+const DEFAULT_MODEL = MODELS[0];
+
 export const ENVIRONMENTS = {
   park:
     <ImageCubeTexture
@@ -89,8 +91,6 @@ export const ENVIRONMENTS = {
       (texture: TextureSource | null) => <PanoramaMap texture={texture} />
     }</ImageTexture>,
 } as Record<string, any>;
-
-const DEFAULT_MODEL = MODELS[2];
 
 export const EnvMapControls: LC<EnvMapControlsProps> = (props: EnvMapControlsProps) => {
   const {hasDebug, hasModel, container, render} = props;
