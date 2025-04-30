@@ -4,7 +4,7 @@
 - `@use-gpu/gltf`: Improved model reloading + `partial` option
 - `@use-gpu/live`: Match React behavior to zero out `key` in received props
 - `@use-gpu/live`: Narrow type of `provide(…)`
-- `@use-gpu/plot`: Add `sides` / `shaded` / `shadow` props to `<Point>`, `<Line>` and `<Arrow>`
+- `@use-gpu/plot`: Add shaded/shadowed versions of `<Point>`, `<Line>` and `<Arrow>`
 - `@use-gpu/plot`: Fix transform interaction with scene `<Node>`
 - `@use-gpu/shader`: Improved type inference through auto-chained functions
 - `@use-gpu/shader`: Fix sampling bug at end of unaligned vec3to4 arrays
