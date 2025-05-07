@@ -1,8 +1,8 @@
 import { mat4 } from 'gl-matrix';
 
-const VIEW_LABELS = ['Right (+X)', 'Left (-X)', 'Top (+Y)', 'Bottom (-Y)', 'Front (+Z)', 'Back (-Z)'];
+const CUBE_VIEW_LABELS = ['Right (+X)', 'Left (-X)', 'Top (+Y)', 'Bottom (-Y)', 'Front (+Z)', 'Back (-Z)'];
 
-const VIEW_MATRICES = [
+const CUBE_VIEW_MATRICES = [
   mat4.fromValues(
     0, 0,-1, 0,
     0, 1, 0, 0,
@@ -41,6 +41,6 @@ const VIEW_MATRICES = [
   ),  // Bk
 ];
 
-export const getCubeFaceLabel = (i: number) => VIEW_LABELS[i];
+export const getCubeFaceLabel = (i: number) => CUBE_VIEW_LABELS[i];
 
-export const getCubeFaceMatrix = (i: number) => VIEW_MATRICES[i];
+export const getCubeFaceMatrix = (i: number) => CUBE_VIEW_MATRICES[i];

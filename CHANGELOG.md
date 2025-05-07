@@ -6,6 +6,7 @@
 - `@use-gpu/live`: Narrow type of `provide(…)`
 - `@use-gpu/plot`: Add shaded/shadowed versions of `<Point>`, `<Line>` and `<Arrow>`
 - `@use-gpu/plot`: Fix transform interaction with scene `<Node>`
+- `@use-gpu/scene`: Support all `<FaceLayer>` props on `<Mesh>`
 - `@use-gpu/shader`: Improved type inference through auto-chained functions
 - `@use-gpu/shader`: Fix sampling bug at end of unaligned vec3to4 arrays
 - `@use-gpu/workbench`: Allow overriding pixel format to uint for `<ImageLoader>`
@@ -15,6 +16,7 @@
 - `@use-gpu/workbench`: Improved `<Loop>` nesting with animation outside
 - `@use-gpu/workbench`: Add `<LoadingSpinner>` helper
 - `@use-gpu/workbench`: Fix unlit UI renders not working in lit passes
+- `@use-gpu/workbench`: Add `<HemiLight>` for hemispherical point light
 
 0.14.0
 - `@use-gpu/core`: Full support for `uniform` storage

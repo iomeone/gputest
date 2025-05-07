@@ -16,6 +16,7 @@ import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl'
 import { applyLights as applyLightsWGSL } from '@use-gpu/wgsl/material/lights.wgsl';
 import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '@use-gpu/wgsl/shadow/directional.wgsl';
 import { applyPointShadow as applyPointShadowWGSL } from '@use-gpu/wgsl/shadow/point.wgsl';
+import { applyHemiShadow as applyHemiShadowWGSL } from '@use-gpu/wgsl/shadow/hemi.wgsl';
 
 export type LightMaterialProps = PropsWithChildren<{
   shadows?: boolean,
@@ -40,11 +41,13 @@ export const LightMaterial: LC<LightMaterialProps> = (props: LightMaterialProps)
 
           const applyDirectionalShadow = shadows ? bindBundle(applyDirectionalShadowWGSL, {sampleShadow}) : null;
           const applyPointShadow = shadows ? bindBundle(applyPointShadowWGSL, {sampleShadow}) : null;
+          const applyHemiShadow = shadows ? bindBundle(applyHemiShadowWGSL, {sampleShadow}) : null;
 
           const applyLight = bindBundle(applyLightWGSL, {
             applyMaterial,
             applyDirectionalShadow,
             applyPointShadow,
+            applyHemiShadow,
           }, {SHADOW_PAGE});
 
           return bindBundle(applyLightsWGSL, {applyLight, getLightCount, getLight});

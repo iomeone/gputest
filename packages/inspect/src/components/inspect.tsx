@@ -103,7 +103,7 @@ export const Inspect: React.FC<InspectProps> = ({
     };    
   }, [selectedFiber, hoveredFiber, fibers]);
 
-  const [version, setVersion] = useState(0);
+  const [, setVersion] = useState(0);
   const [fullSize] = optionsCursor.fullSize();
   const [highlight] = optionsCursor.highlight();
 

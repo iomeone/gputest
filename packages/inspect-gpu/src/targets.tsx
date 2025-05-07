@@ -5,7 +5,7 @@ import type { ShaderSource } from '@use-gpu/shader';
 import React, { FC, CSSProperties } from 'react';
 import { memo, use, wrap, provide, useFiber, useOne } from '@use-gpu/live';
 
-import { proxy, splitCubeTexture, splitHistoryTexture, notEmptyString } from '@use-gpu/core';
+import { proxy, splitCubeTexture, splitArrayTexture, splitHistoryTexture, notEmptyString } from '@use-gpu/core';
 import { LiveCanvas } from '@use-gpu/react';
 import { AutoCanvas } from '@use-gpu/webgpu';
 import {
@@ -207,7 +207,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
   };
 
   const makeViews = (texture: TextureTarget | TextureSource): LiveElement[] => {
-    const {layout, format, history} = texture as TextureTarget;
+    const {layout, size, format, history} = texture as TextureTarget;
 
     const isCube = layout.match(/cube/);
     const isDepth = layout.match(/depth/);
@@ -216,6 +216,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     const out = [];
 
     if (history) return splitHistoryTexture(texture as TextureTarget).flatMap(makeViews);
+    if (size[2] > 0 && !isCube) return splitArrayTexture(texture as TextureTarget).flatMap(makeViews);
 
     if (isCube) {
       let t = texture as ShaderSource;

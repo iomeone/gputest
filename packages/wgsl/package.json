@@ -43,6 +43,7 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
+    "./codec/cubemap.wgsl": "./src/codec/cubemap.wgsl.ts",
     "./codec/f16.wgsl": "./src/codec/f16.wgsl.ts",
     "./codec/normal16.wgsl": "./src/codec/normal16.wgsl.ts",
     "./codec/octahedral.wgsl": "./src/codec/octahedral.wgsl.ts",
@@ -183,6 +184,7 @@
     "./render/pick.wgsl": "./src/render/pick.wgsl.ts",
     "./render/sample/cube-to-omni.wgsl": "./src/render/sample/cube-to-omni.wgsl.ts",
     "./render/sample/equi-to-cube.wgsl": "./src/render/sample/equi-to-cube.wgsl.ts",
+    "./render/sample/quads-to-hemi.wgsl": "./src/render/sample/quads-to-hemi.wgsl.ts",
     "./render/vertex/virtual-copy.wgsl": "./src/render/vertex/virtual-copy.wgsl.ts",
     "./render/vertex/virtual-depth.wgsl": "./src/render/vertex/virtual-depth.wgsl.ts",
     "./render/vertex/virtual-light.wgsl": "./src/render/vertex/virtual-light.wgsl.ts",
@@ -195,6 +197,7 @@
     "./render/wireframe/wireframe-list.wgsl": "./src/render/wireframe/wireframe-list.wgsl.ts",
     "./render/wireframe/wireframe-strip.wgsl": "./src/render/wireframe/wireframe-strip.wgsl.ts",
     "./shadow/directional.wgsl": "./src/shadow/directional.wgsl.ts",
+    "./shadow/hemi.wgsl": "./src/shadow/hemi.wgsl.ts",
     "./shadow/point.wgsl": "./src/shadow/point.wgsl.ts",
     "./ssao/ssao-accum.wgsl": "./src/ssao/ssao-accum.wgsl.ts",
     "./ssao/ssao-resolve.wgsl": "./src/ssao/ssao-resolve.wgsl.ts",

@@ -354,6 +354,25 @@ export const splitCubeTexture = (texture: TextureSource): TextureSource[] => {
   });
 };
 
+export const splitArrayTexture = (texture: TextureSource): TextureSource[] => {
+  const {layout, size, texture: t} = texture;
+
+  const label = t.label ?? texture.label;
+
+  return seq(size[2]).map(i => {
+    const faceLabel = label != null ? `${label} #${i + 1}` : `#${i + 1}`;
+
+    const l = layout.replace(/_array$/, '');
+
+    const view = t.createView({ label: faceLabel, baseArrayLayer: i, arrayLayerCount: 1, dimension: '2d' });
+    return proxy(texture, {
+      layout: l,
+      view,
+      size: [size[0], size[1]],
+    });
+  });
+};
+
 export const splitHistoryTexture = (texture: TextureTarget): TextureSource[] => {
   const {history} = texture;
 

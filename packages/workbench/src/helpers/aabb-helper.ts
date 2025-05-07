@@ -20,19 +20,23 @@ type AABBHelperProps = {
   width?: number,
 };
 
-const EMPTY: any = [];
+const MIN = [-1, -1, -1];
+const MAX = [1, 1, 1];
 
 export const AABBHelper: LC<AABBHelperProps> = memo((props: AABBHelperProps) => {
   const {
     matrix,
     into,
-    min = EMPTY,
-    max = EMPTY,
+    min = MIN,
+    max = MAX,
     color = [1, 0.75, 0.5, 1],
     width = 3,
   } = props;
 
-  const geometry = useMemo(() => makeAABBGeometry({min, max}), [min, max]);
+  const geometry = useMemo(() => makeAABBGeometry({
+    min: min as [number, number, number],
+    max: max as [number, number, number],
+  }), [min, max]);
 
   const combined = useMemo(() => {
     const m = mat4.create();

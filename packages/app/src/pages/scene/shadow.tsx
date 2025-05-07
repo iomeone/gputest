@@ -9,7 +9,7 @@ import {
   GeometryData, PBRMaterial, ImageTexture,
   OrbitCamera, OrbitControls, Environment,
   Cursor,
-  DirectionalLight, PointLight, AmbientLight,
+  DirectionalLight, PointLight, AmbientLight, HemiLight,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
 } from '@use-gpu/workbench';
 
@@ -56,6 +56,11 @@ const lightData = [
     position: [2, 4.5, 2.5, 1],
     color: [0.3, 0.8, 1.0, 1],
   },
+  {
+    position: [5, 20, -3, 1],
+    direction: [-0.307, -1, 0.307, 1],
+    color: [0.25, 1.0, 0.1, 1],
+  },
 ];
 
 export const SceneShadowPage: LC = () => {
@@ -86,22 +91,24 @@ export const SceneShadowPage: LC = () => {
             <Loop converge={64}>
               <Pass lights shadows ssao={2}>
                 <AmbientLight intensity={0.2} />
-                <DirectionalLight position={lightData[0].position} intensity={1}   color={lightData[0].color} shadowMap={SHADOW_MAP_DIRECTIONAL} debug />
-                <DirectionalLight position={lightData[1].position} intensity={0.5} color={lightData[1].color} shadowMap={SHADOW_MAP_DIRECTIONAL} debug />
-                <PointLight       position={lightData[2].position} intensity={100} color={lightData[2].color} shadowMap={SHADOW_MAP_POINT} debug />
+
+                <DirectionalLight {...lightData[0]} intensity={1}   shadowMap={SHADOW_MAP_DIRECTIONAL} debug />
+                <DirectionalLight {...lightData[1]} intensity={0.5} shadowMap={SHADOW_MAP_DIRECTIONAL} debug />
+                <PointLight       {...lightData[2]} intensity={100} shadowMap={SHADOW_MAP_POINT} debug />
+                <HemiLight        {...lightData[3]} intensity={100} shadowMap={SHADOW_MAP_POINT} debug />
 
                 <Environment preset="none">
                   <Scene>
 
-                    <Node position={[0, -4, 0]}>
-                      <PBRMaterial albedo={'#808080'} roughness={0.7}>
+                    <PBRMaterial albedo={'#808080'} roughness={0.7}>
+                      <Node position={[0, -4, 0]}>
                         <Mesh
                           mesh={planeMesh}
                           side="both"
                           shaded
                         />
-                      </PBRMaterial>
-                    </Node>
+                      </Node>
+                    </PBRMaterial>
 
                     <PBRMaterial albedoMap={texture} roughness={0.5}>
                       <Instances
