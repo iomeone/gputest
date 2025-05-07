@@ -29,6 +29,7 @@ const DEFAULT_SHADOW_MAP = {
 
   bias: [1/4096, 1/512, 0],
   blur: 4,
+  resolution: 0.6,
 };
 
 export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => {
@@ -44,10 +45,11 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
   const [into, shadow] = useMemo(() => {
     if (!shadowMap) return [null, null];
 
-    const size  = parseVec2(shadowMap.size  ?? DEFAULT_SHADOW_MAP.size);
-    const depth = parseVec2(shadowMap.depth ?? DEFAULT_SHADOW_MAP.depth);
-    const bias  = parseVec3(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
-    const blur  = parseNumber(shadowMap.blur ?? DEFAULT_SHADOW_MAP.blur);
+    const size       = parseVec2(shadowMap.size  ?? DEFAULT_SHADOW_MAP.size);
+    const depth      = parseVec2(shadowMap.depth ?? DEFAULT_SHADOW_MAP.depth);
+    const bias       = parseVec3(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
+    const blur       = parseNumber(shadowMap.blur ?? DEFAULT_SHADOW_MAP.blur);
+    const resolution = parseNumber(shadowMap.resolution ?? DEFAULT_SHADOW_MAP.resolution);
 
     const matrix = mat4.create();
     mat4.fromTranslation(matrix, position as vec3);
@@ -56,7 +58,7 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
 
     mat4.invert(matrix, matrix);
 
-    const shadow = {type: 'omni', size, depth, bias, blur};
+    const shadow = {type: 'omni', size, depth, bias, blur, resolution};
     return [matrix, shadow];
   }, [position, shadowMap, parent]);
 

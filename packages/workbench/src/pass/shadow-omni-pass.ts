@@ -82,11 +82,12 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
   const {
     depth, depth: [near, far],
     size: [width, height],
+    resolution,
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   } = shadow!;
 
   const [cubeSource, cubeDescriptors] = useMemo(() => {
-    const s = Math.round(Math.max(width, height) * .5);
+    const s = Math.round(Math.max(width, height) * (resolution ?? 0.5));
     const texture = makeTexture(
       device,
       s,
@@ -124,7 +125,7 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     };
 
     return [source, descriptors];
-  }, [device, width, height]);
+  }, [device, width, height, resolution]);
 
   const [projectionMatrix, viewMatrix] = useOne(() => {
     const m = mat4.perspectiveZO(mat4.create(), τ/4, 1, near, far);

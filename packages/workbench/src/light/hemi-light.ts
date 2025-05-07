@@ -34,6 +34,7 @@ const DEFAULT_SHADOW_MAP = {
 
   bias: [1/4096, 1/512, 0],
   blur: 4,
+  resolution: 0.85,
 };
 
 export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
@@ -53,11 +54,12 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
 
     if (!shadowMap) return [null, null, normal, 0, 0];
 
-    const size  = parseVec2(shadowMap.size  ?? DEFAULT_SHADOW_MAP.size);
-    const depth = parseVec2(shadowMap.depth ?? DEFAULT_SHADOW_MAP.depth);
-    const bias  = parseVec3(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
-    const up    = parseVec3(shadowMap.up    ?? DEFAULT_SHADOW_MAP.up);
-    const blur  = parseNumber(shadowMap.blur ?? DEFAULT_SHADOW_MAP.blur);
+    const size       = parseVec2(shadowMap.size  ?? DEFAULT_SHADOW_MAP.size);
+    const depth      = parseVec2(shadowMap.depth ?? DEFAULT_SHADOW_MAP.depth);
+    const bias       = parseVec3(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
+    const up         = parseVec3(shadowMap.up    ?? DEFAULT_SHADOW_MAP.up);
+    const blur       = parseNumber(shadowMap.blur ?? DEFAULT_SHADOW_MAP.blur);
+    const resolution = parseNumber(shadowMap.resolution ?? DEFAULT_SHADOW_MAP.resolution);
 
     const matrix = mat4.create();
 
@@ -83,7 +85,7 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
     mat4.invert(matrix, matrix);
 
     const [near, far] = depth;
-    const shadow = {type: 'hemi', size, depth, bias, blur};
+    const shadow = {type: 'hemi', size, depth, bias, blur, resolution};
     return [matrix, shadow, normal, near, far];
   }, [position, direction, shadowMap, parent]);
 

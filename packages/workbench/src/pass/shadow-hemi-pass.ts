@@ -91,11 +91,13 @@ export const ShadowHemiPass: LC<ShadowHemiPassProps> = memo((props: ShadowHemiPa
   const {
     depth, depth: [near, far],
     size: [width, height],
+    resolution,
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   } = shadow!;
 
   const [hemiSource, hemiDescriptors] = useMemo(() => {
-    const s = Math.round(Math.max(width, height) * .707 / 2) * 2;
+    const s = Math.round(Math.max(width, height) * (resolution ?? 0.707) / 2) * 2;
+
     const texture = makeTexture(
       device,
       s,
@@ -140,7 +142,7 @@ export const ShadowHemiPass: LC<ShadowHemiPassProps> = memo((props: ShadowHemiPa
     };
 
     return [source, viewDescriptors];
-  }, [device, width, height]);
+  }, [device, width, height, resolution]);
 
   const [projectionMatrix, halfProjectionMatrix, viewMatrix] = useOne(() => {
     const m = mat4.perspectiveZO(mat4.create(), τ/4, 1, near, far);

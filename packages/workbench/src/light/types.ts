@@ -35,6 +35,7 @@ export type ShadowMapProps = {
   depth: vec2,
   bias: vec3,
   blur: number,
+  resolution: number,
 };
 
 export type ShadowMapLike = {
@@ -44,4 +45,5 @@ export type ShadowMapLike = {
   span?: vec2 | [number, number] | number[],
   up?: vec3 | [number, number, number] | number[],
   blur?: number,
+  resolution?: number,
 };
