@@ -25,6 +25,7 @@ export type HemiLightProps = {
   intensity?: number,
   cutoff?: number,
   fov?: number,
+  feather?: number,
   shadowMap?: ShadowMapLike,
   debug?: boolean,
 };
@@ -47,6 +48,7 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
   const intensity = useProp(props.intensity, parseNumber, 1);
   const cutoff = Math.pow(useProp(props.cutoff, parseNumber, 0.01), 1/2.2);
   const fov = useProp(props.fov, parseNumber, 180);
+  const feather = useProp(props.feather, parseNumber, 5);
 
   const {shadowMap} = props;
   const parent = useMatrixContext();
@@ -104,6 +106,8 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
     }
     
     const cosFov = Math.cos(fov / 2 * Math.PI / 180);
+    const cosFeather = Math.cos((fov / 2 - feather) * Math.PI / 180);
+    const featherRamp = 1 / (cosFeather - cosFov);
 
     return {
       kind: HEMI_LIGHT,
@@ -113,7 +117,7 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
       color,
       cutoff,
       intensity,
-      opts: [cosFov, 0, 0, 0],
+      opts: [cosFov, featherRamp, 0, 0],
       shadow,
     };
   }, [into, position, normal, color, intensity, cutoff, fov, shadow, parent]);

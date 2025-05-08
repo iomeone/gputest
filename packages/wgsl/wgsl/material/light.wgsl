@@ -85,7 +85,8 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
       if (light.shadowMap >= 0) {
         r *= applyHemiShadow(light, surface);
       }
-      radiance = light.color.rgb * r;
+      let feather = min((f - light.opts.x) * light.opts.y, 1.0);
+      radiance = light.color.rgb * r * smoothstep(0.0, 1.0, feather);
     }
     else {
       return vec3<f32>(0.0);
