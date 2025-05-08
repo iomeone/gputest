@@ -81,7 +81,7 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
 
     let f = dot(L, -light.normal.xyz);
     var r = intensity / dot(d, d) - light.cutoff;
-    if (r > 0.0 && f >= 0.0) {
+    if (r > 0.0 && f >= light.opts.x) {
       if (light.shadowMap >= 0) {
         r *= applyHemiShadow(light, surface);
       }

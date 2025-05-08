@@ -14,6 +14,7 @@ import { mat4, vec3, vec4 } from 'gl-matrix';
 import { HEMI_LIGHT } from './types';
 import { PointHelper } from '../helpers/point-helper';
 import { VectorHelper } from '../helpers/vector-helper';
+import { ConeHelper } from '../helpers/cone-helper';
 
 const parseOptionalPosition = optional(parsePosition);
 
@@ -23,6 +24,7 @@ export type HemiLightProps = {
   color?: ColorLike,
   intensity?: number,
   cutoff?: number,
+  fov?: number,
   shadowMap?: ShadowMapLike,
   debug?: boolean,
 };
@@ -44,6 +46,7 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
   const color = useProp(props.color, parseColor);
   const intensity = useProp(props.intensity, parseNumber, 1);
   const cutoff = Math.pow(useProp(props.cutoff, parseNumber, 0.01), 1/2.2);
+  const fov = useProp(props.fov, parseNumber, 180);
 
   const {shadowMap} = props;
   const parent = useMatrixContext();
@@ -99,6 +102,8 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
       vec4.transformMat4(p, p, parent);
       vec4.transformMat4(n, n, parent);
     }
+    
+    const cosFov = Math.cos(fov / 2 * Math.PI / 180);
 
     return {
       kind: HEMI_LIGHT,
@@ -108,9 +113,10 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
       color,
       cutoff,
       intensity,
+      opts: [cosFov, 0, 0, 0],
       shadow,
     };
-  }, [into, position, normal, color, intensity, cutoff, shadow, parent]);
+  }, [into, position, normal, color, intensity, cutoff, fov, shadow, parent]);
 
   const {useLight} = useLightContext();
   useLight(light);
@@ -119,6 +125,7 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
 
   return [
     use(PointHelper, { position, color }),
-    use(VectorHelper, { position, tangent: direction, color, length: far || 100 }),
+    use(VectorHelper, { position, direction, color, length: far || 100 }),
+    use(ConeHelper, { position, direction, angle: fov, color, length: far || 100 }),
   ];
 }, 'HemiLight');

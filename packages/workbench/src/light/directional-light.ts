@@ -122,7 +122,7 @@ export const DirectionalLight: LC<DirectionalLightProps> = memo((props: Directio
 
   return [
     use(PointHelper, { position, color }),
-    use(VectorHelper, { position, tangent: normal, color, length: far || 100 }),
+    use(VectorHelper, { position, direction: normal, color, length: far || 100 }),
     shadow ? use(AABBHelper, {
       into,
       min: [-1, -1, 0],

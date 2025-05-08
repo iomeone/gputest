@@ -34,6 +34,13 @@ const SHADOW_MAP_POINT = {
   blur: 4,
 };
 
+const SHADOW_MAP_HEMI = {
+  size: [2048, 2048],
+  depth: [0.1, 70],
+  bias: [1/64, 1/32, 1/16],
+  blur: 4,
+};
+
 const sampler = {
   addressModeU: 'repeat',
   addressModeV: 'repeat',
@@ -59,7 +66,7 @@ const lightData = [
   {
     position: [5, 20, -3, 1],
     direction: [-0.307, -1, 0.307, 1],
-    color: [0.25, 1.0, 0.1, 1],
+    color: [0.85, 0.65, 0.2, 1],
   },
 ];
 
@@ -95,7 +102,7 @@ export const SceneShadowPage: LC = () => {
                 <DirectionalLight {...lightData[0]} intensity={1}   shadowMap={SHADOW_MAP_DIRECTIONAL} debug />
                 <DirectionalLight {...lightData[1]} intensity={0.5} shadowMap={SHADOW_MAP_DIRECTIONAL} debug />
                 <PointLight       {...lightData[2]} intensity={100} shadowMap={SHADOW_MAP_POINT} debug />
-                <HemiLight        {...lightData[3]} intensity={100} shadowMap={SHADOW_MAP_POINT} debug />
+                <HemiLight        {...lightData[3]} intensity={600} shadowMap={SHADOW_MAP_HEMI} fov={140} cutoff={0.001} debug />
 
                 <Environment preset="none">
                   <Scene>
