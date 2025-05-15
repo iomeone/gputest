@@ -3,7 +3,7 @@ import type { ColorLike, VectorLike } from '@use-gpu/core';
 import type { ShadowMapLike } from './types';
 
 import { optional, useProp } from '@use-gpu/traits/live';
-import { parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '@use-gpu/parse';
+import { parseBoolean, parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '@use-gpu/parse';
 import { memo, use, useMemo } from '@use-gpu/live';
 
 import { useLightContext } from '../providers/light-provider';
@@ -28,6 +28,7 @@ export type SpotLightProps = {
   feather?: number,
   shadowMap?: ShadowMapLike,
   debug?: boolean,
+  infinite?: boolean,
 };
 
 const DEFAULT_SHADOW_MAP = {
@@ -49,6 +50,7 @@ export const SpotLight: LC<SpotLightProps> = memo((props: SpotLightProps) => {
   const cutoff = Math.pow(useProp(props.cutoff, parseNumber, 0.01), 1/2.2);
   const fov = useProp(props.fov, parseNumber, 180);
   const feather = useProp(props.feather, parseNumber, 0);
+  const infinite = useProp(props.infinite, parseBoolean, false);
 
   const {shadowMap} = props;
   const parent = useMatrixContext();
@@ -136,10 +138,10 @@ export const SpotLight: LC<SpotLightProps> = memo((props: SpotLightProps) => {
       color,
       cutoff,
       intensity,
-      opts: vec4.fromValues(cosFov, featherRamp, itanFov, 0),
       shadow,
+      opts: vec4.fromValues(cosFov, featherRamp, itanFov, +infinite),
     };
-  }, [into, position, normal, color, intensity, cutoff, fov, feather, shadow, parent, isHemi]);
+  }, [into, position, normal, color, intensity, cutoff, fov, feather, shadow, parent, infinite, isHemi]);
 
   const {useLight} = useLightContext();
   useLight(light);

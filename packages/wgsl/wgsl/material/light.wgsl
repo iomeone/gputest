@@ -68,7 +68,7 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
     let d = light.position.xyz - surface.position.xyz;
     L = normalize(d);
 
-    var r = intensity / dot(d, d) - light.cutoff;
+    var r = select(intensity / dot(d, d) - light.cutoff, intensity, light.opts.w > 0);
     if (r > 0.0) {
       if (light.shadowMap >= 0) {
         r *= applyPointShadow(light, surface);
@@ -85,7 +85,7 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
     L = normalize(d);
 
     let f = dot(L, -light.normal.xyz);
-    var r = intensity / dot(d, d) - light.cutoff;
+    var r = select(intensity / dot(d, d) - light.cutoff, intensity, light.opts.w > 0);
     if (r > 0.0 && f >= light.opts.x) {
       if (light.shadowMap >= 0) {
         r *= applyHemiShadow(light, surface);
@@ -103,7 +103,7 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
     L = normalize(d);
 
     let f = dot(L, -light.normal.xyz);
-    var r = intensity / dot(d, d) - light.cutoff;
+    var r = select(intensity / dot(d, d) - light.cutoff, intensity, light.opts.w > 0);
     if (r > 0.0 && f >= light.opts.x) {
       if (light.shadowMap >= 0) {
         r *= applySpotShadow(light, surface);

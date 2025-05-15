@@ -16,7 +16,7 @@
 - `@use-gpu/workbench`: Improved `<Loop>` nesting with animation outside
 - `@use-gpu/workbench`: Add `<LoadingSpinner>` helper
 - `@use-gpu/workbench`: Fix unlit UI renders not working in lit passes
-- `@use-gpu/workbench`: Add `<HemiLight>` for hemispherical point light
+- `@use-gpu/workbench`: Add `<SpotLight>` for spot/hemisphere light
 - `@use-gpu/workbench`: Add `resolution` to tune intermediate shadowmap quality
 
 0.14.0

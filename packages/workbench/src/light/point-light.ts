@@ -3,7 +3,7 @@ import type { ColorLike, VectorLike } from '@use-gpu/core';
 import type { ShadowMapLike } from './types';
 
 import { useProp } from '@use-gpu/traits/live';
-import { parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '@use-gpu/parse';
+import { parseBoolean, parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '@use-gpu/parse';
 import { memo, use, useMemo } from '@use-gpu/live';
 
 import { useLightContext } from '../providers/light-provider';
@@ -20,6 +20,7 @@ export type PointLightProps = {
   intensity?: number,
   cutoff?: number,
   shadowMap?: ShadowMapLike,
+  infinite?: boolean,
   debug?: boolean,
 };
 
@@ -38,6 +39,7 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
   const color = useProp(props.color, parseColor);
   const intensity = useProp(props.intensity, parseNumber, 1);
   const cutoff = Math.pow(useProp(props.cutoff, parseNumber, 0.01), 1/2.2);
+  const infinite = useProp(props.infinite, parseBoolean, false);
 
   const {shadowMap} = props;
   const parent = useMatrixContext();
@@ -75,8 +77,9 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
       cutoff,
       intensity,
       shadow,
+      opts: vec4.fromValues(0, 0, 0, +infinite),
     };
-  }, [into, position, color, intensity, cutoff, shadow, parent]);
+  }, [into, position, color, intensity, cutoff, shadow, parent, infinite]);
 
   const {useLight} = useLightContext();
   useLight(light);
