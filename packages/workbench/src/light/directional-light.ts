@@ -71,6 +71,11 @@ export const DirectionalLight: LC<DirectionalLightProps> = memo((props: Directio
 
     vec3.normalize(normal as vec3, normal as vec3);
     vec3.cross(tangent, normal as vec3, up);
+
+    if (vec3.length(tangent) < 1e-5) {
+      vec3.cross(tangent, normal as vec3, [up[1], up[2], up[0]]);
+    }
+
     vec3.normalize(tangent, tangent);
     vec3.cross(bitangent, normal as vec3, tangent);
     mat4.set(matrix,
@@ -89,7 +94,7 @@ export const DirectionalLight: LC<DirectionalLightProps> = memo((props: Directio
     mat4.invert(matrix, matrix);
     matrix[14] += far / (far - near);
 
-    const shadow = {type: 'ortho', size, depth, bias, blur};
+    const shadow = {type: 'ortho', size, depth, bias, blur, resolution: 0, fov: 0};
     return [matrix, shadow, near, far];
   }, [position, normal, shadowMap, parent]);
 

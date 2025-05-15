@@ -199,6 +199,7 @@
     "./shadow/directional.wgsl": "./src/shadow/directional.wgsl.ts",
     "./shadow/hemi.wgsl": "./src/shadow/hemi.wgsl.ts",
     "./shadow/point.wgsl": "./src/shadow/point.wgsl.ts",
+    "./shadow/spot.wgsl": "./src/shadow/spot.wgsl.ts",
     "./ssao/ssao-accum.wgsl": "./src/ssao/ssao-accum.wgsl.ts",
     "./ssao/ssao-resolve.wgsl": "./src/ssao/ssao-resolve.wgsl.ts",
     "./ssao/ssao-sample.wgsl": "./src/ssao/ssao-sample.wgsl.ts",

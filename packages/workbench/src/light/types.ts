@@ -5,6 +5,7 @@ export const DOME_LIGHT = 1;
 export const DIRECTIONAL_LIGHT = 2;
 export const POINT_LIGHT = 3;
 export const HEMI_LIGHT = 4;
+export const SPOT_LIGHT = 5;
 
 export type Light = {
   into?: mat4 | null,
@@ -36,6 +37,7 @@ export type ShadowMapProps = {
   bias: vec3,
   blur: number,
   resolution: number,
+  fov: number,
 };
 
 export type ShadowMapLike = {
@@ -44,6 +46,8 @@ export type ShadowMapLike = {
   bias?: vec2 | [number, number] | number[],
   span?: vec2 | [number, number] | number[],
   up?: vec3 | [number, number, number] | number[],
+
   blur?: number,
   resolution?: number,
+  fov?: number,
 };

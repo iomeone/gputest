@@ -57,7 +57,7 @@ const HEMI_FACES = [
 
 /** Shadow render pass.
 
-Draws all shadow calls to an hemispherical shadow map.
+Draws all shadow calls to a hemispherical shadow map.
 */
 export const ShadowHemiPass: LC<ShadowHemiPassProps> = memo((props: ShadowHemiPassProps) => {
   const {

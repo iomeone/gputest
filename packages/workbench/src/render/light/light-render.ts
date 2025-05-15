@@ -15,7 +15,7 @@ import { getShader } from '../../hooks/useShader';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import { AMBIENT_LIGHT, DOME_LIGHT, DIRECTIONAL_LIGHT, POINT_LIGHT, HEMI_LIGHT } from '../../light/types';
+import { AMBIENT_LIGHT, DOME_LIGHT, DIRECTIONAL_LIGHT, POINT_LIGHT, HEMI_LIGHT, SPOT_LIGHT } from '../../light/types';
 import { SHADOW_PAGE } from './light-data';
 
 import { EmissiveLightRender } from './emissive-light-render';
@@ -37,6 +37,7 @@ import { applyPBRMaterial as applyMaterial } from '@use-gpu/wgsl/material/pbr-ap
 import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '@use-gpu/wgsl/shadow/directional.wgsl';
 import { applyPointShadow as applyPointShadowWGSL } from '@use-gpu/wgsl/shadow/point.wgsl';
 import { applyHemiShadow as applyHemiShadowWGSL } from '@use-gpu/wgsl/shadow/hemi.wgsl';
+import { applySpotShadow as applySpotShadowWGSL } from '@use-gpu/wgsl/shadow/spot.wgsl';
 
 export type LightRenderProps = {
   lights: Map<number, BoundLight>,
@@ -162,7 +163,8 @@ const LIGHT_RENDERERS = {
   [DOME_LIGHT]: FullScreenLightRender,
   [DIRECTIONAL_LIGHT]: FullScreenLightRender,
   [POINT_LIGHT]: PointLightRender,
-  [HEMI_LIGHT]: PointLightRender, // TODO: Make HemiLightRender with hemisphere geometry
+  [HEMI_LIGHT]: PointLightRender, // TODO: Make SpotLightRender with cone geometry
+  [SPOT_LIGHT]: PointLightRender, // TODO: Make SpotLightRender with cone geometry
 } as Record<number, LiveComponent<any>>;
 
 export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRenderProps) => {
@@ -185,12 +187,14 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
     const applyDirectionalShadow = shadows ? bindBundle(applyDirectionalShadowWGSL, {sampleShadow}) : null;
     const applyPointShadow = shadows ? bindBundle(applyPointShadowWGSL, {sampleShadow}) : null;
     const applyHemiShadow = shadows ? bindBundle(applyHemiShadowWGSL, {sampleShadow}) : null;
+    const applySpotShadow = shadows ? bindBundle(applySpotShadowWGSL, {sampleShadow}) : null;
 
     return bindBundle(applyLightWGSL, {
       applyMaterial,
       applyDirectionalShadow,
       applyPointShadow,
       applyHemiShadow,
+      applySpotShadow,
     }, {SHADOW_PAGE});
   }, shadows);
 

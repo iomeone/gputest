@@ -21,12 +21,12 @@ use '@use-gpu/wgsl/codec/octahedral'::{ encodeOctahedral, encodeHemiOctahedral }
   let depth = dot(vec2<f32>(1.0, 1.0/z), light.shadowDepth);
 
   let blur = light.shadowBlur;
-  var s = 0.0;
 
   let size = (light.shadowUV.zw - light.shadowUV.xy) * SHADOW_PAGE;
   let uvm = (encodeHemiOctahedral(dir.zxy) * (size - f32(blur) * 2.0) / size) *.5 + .5;
   let uv = mix(light.shadowUV.xy, light.shadowUV.zw, uvm);
 
+  var s = 0.0;
   if (blur >= 4) {
     for (var y = -1.5; y <= 1.5; y += 1.0) {
       for (var x = -1.5; x <= 1.5; x += 1.0) {

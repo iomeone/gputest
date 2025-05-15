@@ -12,7 +12,8 @@ import { mat4, vec3 } from 'gl-matrix';
 
 type ConeHelperProps = {
   position?: number[] | TypedArray,
-  tangent?: number[] | TypedArray,
+  direction?: number[] | TypedArray,
+  up?: number[] | TypedArray,
 
   color?: number[] | TypedArray,
   width?: number,
@@ -20,6 +21,8 @@ type ConeHelperProps = {
   angle?: number,
   length?: number,
   detail?: number,
+
+  radial?: boolean,
 };
 
 const ORIGIN = [0, 0, 0];
@@ -38,6 +41,8 @@ export const ConeHelper: LC<ConeHelperProps> = memo((props: ConeHelperProps) => 
 
     color = [1, 0.75, 0.5, 1],
     width = 3,
+
+    radial = false,
   } = props;
 
   const matrix = useMemo(() => {
@@ -49,7 +54,7 @@ export const ConeHelper: LC<ConeHelperProps> = memo((props: ConeHelperProps) => 
     const bitangent = vec3.create();
 
     vec3.normalize(normal as vec3, direction as vec3);
-    vec3.cross(tangent, normal as vec3, up);
+    vec3.cross(tangent, normal as vec3, up as vec3);
     vec3.normalize(tangent, tangent);
     vec3.cross(bitangent, normal as vec3, tangent);
     mat4.set(matrix,
@@ -62,12 +67,12 @@ export const ConeHelper: LC<ConeHelperProps> = memo((props: ConeHelperProps) => 
     return matrix;
   }, [position, direction, up]);
 
-  console.log({matrix})
   const [context] = useCombinedMatrixTransform(matrix);
 
   const [ps, ss] = useMemo(() => {
-    const radius = length;
-    const width = length / Math.tan(angle / 2 * Math.PI / 180);
+    const ratio = Math.tan(angle / 2 * Math.PI / 180);
+    const radius = radial ? length : length * ratio;
+    const width = radial ? length / ratio : length;
 
     const circle = seq(detail + 1).map(i => {
       const th = i / detail * Math.PI * 2;
@@ -94,7 +99,7 @@ export const ConeHelper: LC<ConeHelperProps> = memo((props: ConeHelperProps) => 
       new Float32Array(vertices),
       new Uint8Array(segments.slice(0, (segments.length >> 2) << 2)),
     ];
-  }, [detail, angle, length]);
+  }, [detail, angle, length, radial]);
 
   const positions = useRawSource(ps, 'vec4<f32>');
   const segments = useRawSource(ss, 'i8');

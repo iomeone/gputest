@@ -2,7 +2,7 @@ import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { TextureSource } from '@use-gpu/core';
 import type { Renderable } from '../pass';
 import type { BoundLight } from '../light/types';
-import { mat4 } from 'gl-matrix';
+import { mat4, vec4 } from 'gl-matrix';
 
 import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
@@ -163,14 +163,14 @@ export const ShadowOmniPass: LC<ShadowOmniPassProps> = memo((props: ShadowOmniPa
     let vs = 0;
     let ts = 0;
 
-    const {into} = map;
+    const {position, into} = map;
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
     for (let i = 0; i < 6; ++i) {
       // Update view
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       mat4.multiply(viewMatrix, getCubeFaceMatrix(i), into!);
-      updateViewProjection(uniforms, projectionMatrix, viewMatrix);
+      updateViewProjection(uniforms, projectionMatrix, viewMatrix, position as vec4);
       uploadView(uniforms);
 
       // Render pass

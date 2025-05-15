@@ -58,7 +58,7 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
 
     mat4.invert(matrix, matrix);
 
-    const shadow = {type: 'omni', size, depth, bias, blur, resolution};
+    const shadow = {type: 'omni', size, depth, bias, blur, resolution, fov: 0};
     return [matrix, shadow];
   }, [position, shadowMap, parent]);
 

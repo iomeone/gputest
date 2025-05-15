@@ -10,7 +10,7 @@ import {
   GeometryData, PBRMaterial, ImageTexture,
   OrbitCamera, OrbitControls, Environment,
   Cursor,
-  DirectionalLight, PointLight, AmbientLight, HemiLight,
+  DirectionalLight, PointLight, AmbientLight, SpotLight,
   Data, PointLayer,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
 } from '@use-gpu/workbench';
@@ -36,7 +36,7 @@ const SHADOW_MAP_POINT = {
   blur: 4,
 };
 
-const SHADOW_MAP_HEMI = {
+const SHADOW_MAP_SPOT = {
   size: [2048, 2048],
   depth: [0.1, 50],
   bias: [1/64, 1/64, 1/16],
@@ -74,13 +74,24 @@ const lightData = [
     position: [5, 20, -3, 1],
     direction: [-0.307, -1, 0.307, 1],
     color: [0.85, 0.65, 0.2, 1],
+    fov: 120,
+    feather: 5,
+    cutoff: 0.001,
+  },
+  {
+    position: [-5, 30, 3, 1],
+    direction: [0.307, -1, -0.307, 1],
+    color: [0.2, 0.85, 0.65, 1],
+    fov: 30,
+    feather: 5,
+    cutoff: 0.001,
   },
 ];
 
 export const SceneDeferredPage: LC = () => {
 
   return (<>
-    <InfoBox>&lt;DirectionalLight&gt; and &lt;PointLight&gt; with shadow map (deferred renderer)</InfoBox>
+    <InfoBox>&lt;DirectionalLight&gt;, &lt;PointLight&gt; and &lt;SpotLight&gt; with shadow map (deferred renderer)</InfoBox>
     <Gather
       children={[
         <GeometryData {...boxGeometry} />,
@@ -109,7 +120,8 @@ export const SceneDeferredPage: LC = () => {
                 <DirectionalLight {...lightData[0]} intensity={1}   shadowMap={SHADOW_MAP_DIRECTIONAL} />
                 <DirectionalLight {...lightData[1]} intensity={0.5} shadowMap={SHADOW_MAP_DIRECTIONAL} />
                 <PointLight       {...lightData[2]} intensity={100} shadowMap={SHADOW_MAP_POINT} />
-                <HemiLight        {...lightData[3]} intensity={600} shadowMap={SHADOW_MAP_HEMI} fov={140} cutoff={0.001} />
+                <SpotLight        {...lightData[3]} intensity={600} shadowMap={SHADOW_MAP_SPOT} />
+                <SpotLight        {...lightData[4]} intensity={600} shadowMap={SHADOW_MAP_SPOT} />
 
                 <Environment preset="none">
                   <Scene>

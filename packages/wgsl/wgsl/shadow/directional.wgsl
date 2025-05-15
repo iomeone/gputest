@@ -18,16 +18,16 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
 
   let depth = pos.z * (1.0 + light.shadowBias.x) + slope * light.shadowBias.y;
   let blur = light.shadowBlur;
-  var s = 0.0;
 
   let res = f32(blur) / (2.0 * (light.shadowUV.zw - light.shadowUV.xy) * SHADOW_PAGE);
-  let uv = clamp(pos.xy * .5 + .5, vec2<f32>(res), vec2<f32>(1.0 - res));
-  let uvm = mix(light.shadowUV.xy, light.shadowUV.zw, uv);
+  let uvm = clamp(pos.xy * .5 + .5, vec2<f32>(res), vec2<f32>(1.0 - res));
+  let uv = mix(light.shadowUV.xy, light.shadowUV.zw, uvm);
 
+  var s = 0.0;
   if (blur >= 4) {
     for (var y = -1.5; y <= 1.5; y += 1.0) {
       for (var x = -1.5; x <= 1.5; x += 1.0) {
-        s += sampleShadow(uvm + vec2<f32>(x, y) / SHADOW_PAGE, index, depth);
+        s += sampleShadow(uv + vec2<f32>(x, y) / SHADOW_PAGE, index, depth);
       }
     }
     s /= 16.0;
@@ -35,7 +35,7 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
   else if (blur == 3) {
     for (var y = -1.0; y <= 1.0; y += 1.0) {
       for (var x = -1.0; x <= 1.0; x += 1.0) {
-        s += sampleShadow(uvm + vec2<f32>(x, y) / SHADOW_PAGE, index, depth);
+        s += sampleShadow(uv + vec2<f32>(x, y) / SHADOW_PAGE, index, depth);
       }
     }
     s /= 9.0;
@@ -43,13 +43,13 @@ use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
   else if (blur == 2) {
     for (var y = -0.5; y <= 0.5; y += 1.0) {
       for (var x = -0.5; x <= 0.5; x += 1.0) {
-        s += sampleShadow(uvm + vec2<f32>(x, y) / SHADOW_PAGE, index, depth);
+        s += sampleShadow(uv + vec2<f32>(x, y) / SHADOW_PAGE, index, depth);
       }
     }
     s /= 4.0;
   }
   else {
-    s += sampleShadow(uvm, index, depth);
+    s += sampleShadow(uv, index, depth);
   }
 
   return s;

@@ -11,14 +11,14 @@ import { useMatrixContext } from '../providers/matrix-provider';
 
 import { mat4, vec3, vec4 } from 'gl-matrix';
 
-import { HEMI_LIGHT } from './types';
+import { HEMI_LIGHT, SPOT_LIGHT } from './types';
 import { PointHelper } from '../helpers/point-helper';
 import { VectorHelper } from '../helpers/vector-helper';
 import { ConeHelper } from '../helpers/cone-helper';
 
 const parseOptionalPosition = optional(parsePosition);
 
-export type HemiLightProps = {
+export type SpotLightProps = {
   position?: VectorLike,
   direction?: VectorLike,
   color?: ColorLike,
@@ -40,7 +40,7 @@ const DEFAULT_SHADOW_MAP = {
   resolution: 0.85,
 };
 
-export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
+export const SpotLight: LC<SpotLightProps> = memo((props: SpotLightProps) => {
 
   const position = useProp(props.position, parsePosition);
   const direction = useProp(props.direction, parseOptionalPosition);
@@ -48,10 +48,12 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
   const intensity = useProp(props.intensity, parseNumber, 1);
   const cutoff = Math.pow(useProp(props.cutoff, parseNumber, 0.01), 1/2.2);
   const fov = useProp(props.fov, parseNumber, 180);
-  const feather = useProp(props.feather, parseNumber, 5);
+  const feather = useProp(props.feather, parseNumber, 0);
 
   const {shadowMap} = props;
   const parent = useMatrixContext();
+
+  const isHemi = fov > 90;
 
   const [into, shadow, normal,, far] = useMemo(() => {
     const normal = vec3.create();
@@ -78,21 +80,35 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
 
     vec3.normalize(tangent, tangent);
     vec3.cross(bitangent, normal as vec3, tangent);
-    mat4.set(matrix,
-      bitangent[0], bitangent[1], bitangent[2], 0.0,
-      normal[0], normal[1], normal[2], 0.0,
-      tangent[0], tangent[1], tangent[2], 0.0,
-      position[0], position[1], position[2], 1.0,
-    );
+
+    if (isHemi) {
+      // Hemisphere cubemap is aligned along Y
+      mat4.set(matrix,
+        bitangent[0], bitangent[1], bitangent[2], 0.0,
+        normal[0], normal[1], normal[2], 0.0,
+        tangent[0], tangent[1], tangent[2], 0.0,
+        position[0], position[1], position[2], 1.0,
+      );
+    }
+    else {
+      mat4.set(matrix,
+        -tangent[0], -tangent[1], -tangent[2], 0.0,
+        -bitangent[0], -bitangent[1], -bitangent[2], 0.0,
+        -normal[0], -normal[1], -normal[2], 0.0,
+        position[0], position[1], position[2], 1.0,
+      );
+    }
 
     if (parent) mat4.multiply(matrix, parent, matrix);
 
     mat4.invert(matrix, matrix);
 
     const [near, far] = depth;
-    const shadow = {type: 'hemi', size, depth, bias, blur, resolution};
+    const type = isHemi ? 'hemi' : 'spot';
+    const shadow = {type, size, depth, bias, blur, resolution, fov};
+
     return [matrix, shadow, normal, near, far];
-  }, [position, direction, shadowMap, parent]);
+  }, [position, direction, shadowMap, parent, fov, isHemi]);
 
   const light = useMemo(() => {
     const p = vec4.clone(position as any as vec4);
@@ -104,23 +120,26 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
       vec4.transformMat4(p, p, parent);
       vec4.transformMat4(n, n, parent);
     }
-    
-    const cosFov = Math.cos(fov / 2 * Math.PI / 180);
+
+    const f = fov / 2 * Math.PI / 180;
+
+    const itanFov = 1/Math.tan(f);
+    const cosFov = Math.cos(f);
     const cosFeather = Math.cos((fov / 2 - feather) * Math.PI / 180);
     const featherRamp = 1 / (cosFeather - cosFov);
 
     return {
-      kind: HEMI_LIGHT,
+      kind: isHemi ? HEMI_LIGHT : SPOT_LIGHT,
       into,
       position: p,
       normal: n,
       color,
       cutoff,
       intensity,
-      opts: [cosFov, featherRamp, 0, 0],
+      opts: vec4.fromValues(cosFov, featherRamp, itanFov, 0),
       shadow,
     };
-  }, [into, position, normal, color, intensity, cutoff, fov, shadow, parent]);
+  }, [into, position, normal, color, intensity, cutoff, fov, feather, shadow, parent, isHemi]);
 
   const {useLight} = useLightContext();
   useLight(light);
@@ -130,6 +149,6 @@ export const HemiLight: LC<HemiLightProps> = memo((props: HemiLightProps) => {
   return [
     use(PointHelper, { position, color }),
     use(VectorHelper, { position, direction, color, length: far || 100 }),
-    use(ConeHelper, { position, direction, angle: fov, color, length: far || 100 }),
+    use(ConeHelper, { position, direction, angle: fov, color, length: far || 100, radial: isHemi }),
   ];
-}, 'HemiLight');
+}, 'SpotLight');

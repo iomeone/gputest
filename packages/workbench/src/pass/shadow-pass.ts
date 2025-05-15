@@ -11,6 +11,7 @@ import { SHADOW_FORMAT } from '../render/light/light-data';
 import { ShadowOrthoPass } from './shadow-ortho-pass';
 import { ShadowOmniPass } from './shadow-omni-pass';
 import { ShadowHemiPass } from './shadow-hemi-pass';
+import { ShadowSpotPass } from './shadow-spot-pass';
 
 export type ShadowPassProps = PropsWithChildren<{
   env: {
@@ -25,6 +26,7 @@ const SHADOW_TYPES = {
   ortho: ShadowOrthoPass,
   omni: ShadowOmniPass,
   hemi: ShadowHemiPass,
+  spot: ShadowSpotPass,
 } as Record<string, LiveComponent<any>>;
 
 /** Shadow render pass.
