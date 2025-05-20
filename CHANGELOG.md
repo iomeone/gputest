@@ -1,4 +1,4 @@
-0.14.1
+0.15.0
 - `@use-gpu/app`: Add shaded lines and point cloud examples
 - `@use-gpu/gltf`: Support extracting textures from .bin blobs
 - `@use-gpu/gltf`: Improved model reloading + `partial` option

@@ -1,12 +1,12 @@
 {
   "name": "@use-gpu/core",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
   "license": "MIT",
   "dependencies": {
-    "@use-gpu/state": "^0.14.0",
+    "@use-gpu/state": "^0.15.0",
     "earcut": "^2.2.4",
     "gl-matrix": "^3.3.0",
     "lodash": "^4.17.21"

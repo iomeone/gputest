@@ -1,6 +1,6 @@
 {
   "name": "@use-gpu/traits",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
@@ -11,7 +11,7 @@
     "./react": "./src/index-react.ts"
   },
   "dependencies": {
-    "@use-gpu/live": "^0.14.0"
+    "@use-gpu/live": "^0.15.0"
   },
   "scripts": {
     "build": "NPM_PACKAGE=traits ../../scripts/build-mjs-cjs.sh",

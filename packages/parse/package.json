@@ -1,12 +1,12 @@
 {
   "name": "@use-gpu/parse",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "main": "src/index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "module": true,
   "license": "MIT",
   "dependencies": {
-    "@use-gpu/core": "^0.14.0",
+    "@use-gpu/core": "^0.15.0",
     "gl-matrix": "^3.3.0"
   },
   "scripts": {
