@@ -1,3 +1,9 @@
+0.x.x
+- `@use-gpu/app`: Add Binet plot example
+- `@use-gpu/live`: Improved reporting of undefined component fns
+- `@use-gpu/live`: Allow `false` as element
+- `@use-gpu/workbench`: Fix unshaded surface layer in a pass with shadows
+
 0.15.0
 - `@use-gpu/app`: Add shaded lines and point cloud examples
 - `@use-gpu/gltf`: Support extracting textures from .bin blobs
