@@ -73,7 +73,7 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
   const {
     flat = false,
     shaded = false,
-    shadow = true,
+    shadow = shaded,
     count = null,
 
     mode = 'opaque',

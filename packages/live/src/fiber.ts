@@ -1322,7 +1322,10 @@ export const updateMount = <P extends ArrowFunction>(
   let from = mount?.f;
   let to = newMount?.f;
 
-  if (!to && newMount) throw new Error("Undefined JSX element type", newMount);
+  if (!to && newMount) {
+    const node = formatNode(newMount);
+    throw new Error("Undefined JSX element type: " + node);
+  }
 
   if ((from === to) && (from === PROVIDE || from === CAPTURE)) {
     from = mount?.args?.[0] as any;

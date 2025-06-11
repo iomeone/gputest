@@ -126,6 +126,10 @@ export const LabelTrait = trait(
     size:   optional(parseNumber),
     depth:  optional(parseNumber),
     expand: parseNumber,
+
+    family: optional(parseString),
+    weight: optional(parseWeight),
+    style: optional(parseString),
   },
   {
     size: 16,
@@ -781,6 +785,7 @@ export const SurfaceTraits = combine(
   ColorTrait,
   FaceTrait,
   ROPTrait,
+  ShadedTrait,
   StrokeTrait,
   ZIndexTrait,
 );

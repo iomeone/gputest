@@ -23,7 +23,7 @@ export type ReactElementInterop = {
 };
 
 export type LivePure<F extends Function = ArrowFunction> = undefined | null | DeferredCall<F> | LivePure<any>[];
-export type LiveElement<F extends Function = ArrowFunction> = undefined | null | DeferredCall<F> | LiveElement[] | ReactElementInterop;
+export type LiveElement<F extends Function = ArrowFunction> = undefined | null | false | DeferredCall<F> | LiveElement[] | ReactElementInterop;
 export type LiveNode<F extends Function = ArrowFunction> = LiveElement<F> | string | number | ArrowFunction | Array<LiveNode<any>>;
 
 // Mounting key

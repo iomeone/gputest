@@ -29,6 +29,7 @@ import { PlotSphericalPage } from './pages/plot/spherical';
 import { PlotStereographicPage } from './pages/plot/stereographic';
 import { PlotImplicitSurfacePage } from './pages/plot/implicit-surface';
 import { PlotQuaternionHyperspherePage } from './pages/plot/quaternion-hypersphere';
+import { PlotBinetPage } from './pages/plot/binet';
 import { PresentSlidesPage } from './pages/present/slides';
 import { RTTCubeTargetPage } from './pages/rtt/cube-target';
 import { RTTLinearRGBPage } from './pages/rtt/linear-rgb';
@@ -83,6 +84,7 @@ export const makePages = () => [
   {path: "/plot/stereographic",          title: "Plot - Stereographic",              element: <PlotStereographicPage />},
   {path: "/plot/implicit-surface",       title: "Plot - Implicit Surface",           element: <PlotImplicitSurfacePage />},
   {path: "/plot/quaternion-hypersphere", title: "Plot - Quaternion Hypersphere",     element: <PlotQuaternionHyperspherePage />},
+  {path: "/plot/binet",                  title: "Plot - Binet",                      element: <PlotBinetPage />},
   {path: "/present/slides",              title: "Present - Slides",                  element: <PresentSlidesPage />},
   {path: "/mesh/projected-sampler",      title: "Raw Mesh - Projected Sampler",      element: <MeshProjectedSamplerPage />},
   {path: "/mesh/interleaved",            title: "Raw Mesh - Native Components",      element: <MeshInterleavedPage />},
