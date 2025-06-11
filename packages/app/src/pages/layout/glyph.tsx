@@ -50,7 +50,6 @@ export const LayoutGlyphPage: LC = () => {
           <Morph>
             <OrbitControls
               radius={500}
-              moveSpeed={1/1000}
               bearing={0.3}
               pitch={0.5}
               render={(radius: number, phi: number, theta: number, target: vec3) =>
