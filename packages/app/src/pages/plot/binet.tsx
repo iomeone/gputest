@@ -1,6 +1,5 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Emit } from '@use-gpu/core';
-import type { Keyframe } from '@use-gpu/workbench';
 
 import React, { memo } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
@@ -8,7 +7,7 @@ import { vec3 } from 'gl-matrix';
 import {
   Pass,
   OrbitCamera, OrbitControls,
-  Cursor, Animate,
+  Cursor,
   LinearRGB, PBRMaterial,
   AmbientLight, DirectionalLight, PointLight,
 } from '@use-gpu/workbench';
@@ -19,29 +18,27 @@ import {
 import { BinetControls, BinetOptions } from '../../ui/binet-controls';
 import { InfoBox } from '../../ui/info-box';
 
-import { vec2, quat } from 'gl-matrix';
+import { vec2 } from 'gl-matrix';
 
 const π = Math.PI;
 const τ = π*2;
-const EPS = 1e-3;
 
 const N = 1024;
 const M = 256;
 
 const LINE_WIDTH = 5;
 
-const BLUE = [30, 150, 255];
-
 const binetSampler = (w: number, h: number, n: number, m: number) => {
-  const v1 = vec2.create();
-  const v2 = vec2.create();
+  const v = vec2.create();
 
+  /*
   const addc = (t: vec2, a: vec2, b: vec2) => {
     const [ar, ai] = a;
     const [br, bi] = b;
     t[0] = ar + br;
     t[1] = ai + bi;
   };
+  */
 
   const subc = (t: vec2, a: vec2, b: vec2) => {
     const [ar, ai] = a;
@@ -73,9 +70,9 @@ const binetSampler = (w: number, h: number, n: number, m: number) => {
   };
 
   const powc = (t: vec2, a: vec2, b: vec2) => {
-    logc(v1, a);
-    mulc(v1, v1, b);
-    expc(t, v1);
+    logc(v, a);
+    mulc(v, v, b);
+    expc(t, v);
   };
 
   const z = vec2.create();
@@ -135,11 +132,6 @@ const angleToMat4 = (angle1: number, angle2: number) => {
 const GREY = [0.7, 0.7, 0.7, 1];
 
 export const PlotBinetPage: LC = () => {
-
-  const frames = [
-    [0, 0],
-    [120, τ],
-  ] as Keyframe<number>[];
 
   const view = (options: BinetOptions) => (<>
     <InfoBox>Visualizing the complex Binet formula in 4D under 3D cartesian projection.</InfoBox>

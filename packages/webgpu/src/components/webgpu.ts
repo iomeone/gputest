@@ -1,6 +1,7 @@
 import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
 
 import { provide, wrap, useAwait, useResource } from '@use-gpu/live';
+import { injectMethodLogger } from '@use-gpu/core';
 import { Queue, DeviceContext } from '@use-gpu/workbench';
 
 import { mountGPUDevice } from '../web';
@@ -14,6 +15,7 @@ export type WebGPUProps = PropsWithChildren<{
   required?: GPUFeatureName[],
   optional?: GPUFeatureName[],
   fallback: LiveElement | ErrorRenderer,
+  debug?: boolean,
 }>;
 
 export const WebGPU: LC<WebGPUProps> = (props: WebGPUProps) => {
@@ -21,10 +23,11 @@ export const WebGPU: LC<WebGPUProps> = (props: WebGPUProps) => {
     required = REQUIRED_EXTENSIONS,
     optional = OPTIONAL_EXTENSIONS,
     fallback,
+    debug,
     children,
   } = props;
 
-  const [result, error] = useAwait(() => mountGPUDevice(required, optional), [...required, null, ...optional]);
+  const [result, error] = useAwait(() => mountGPUDevice(required, optional), [...required, null, ...optional, debug]);
   useResource((dispose) => {
     if (!result) return;
 
@@ -35,10 +38,14 @@ export const WebGPU: LC<WebGPUProps> = (props: WebGPUProps) => {
 
     device.addEventListener('uncapturederror', handler);
     dispose(() => device.removeEventListener('uncapturederror', handler));
-  }, [result]);
+    
+    if (debug) injectMethodLogger(device);
+  }, [result, debug]);
 
   return (
     result ? provide(DeviceContext, result.device, wrap(Queue, children)) :
     error ? (typeof fallback === 'function' ? fallback(error) : fallback) : null
   );
 };
+
+
