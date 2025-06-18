@@ -5,6 +5,7 @@ import { DataSolarSystemPage } from './pages/data/solar';
 import { DebugAtlasPage } from './pages/debug/atlas';
 import { DebugAxesPage } from './pages/debug/axes';
 import { DebugEasePage } from './pages/debug/ease';
+import { DebugLookAtPage } from './pages/debug/look-at';
 import { DebugWireframePage } from './pages/debug/wireframe';
 import { FPSControlsPage } from './pages/controls/fps';
 import { GeometryGLTFPage } from './pages/geometry/gltf';
@@ -92,6 +93,7 @@ export const makePages = () => [
   {path: "/debug/atlas",                 title: "Debug - Text Atlas",                element: <DebugAtlasPage />},
   {path: "/debug/axes",                  title: "Debug - Axes",                      element: <DebugAxesPage />},
   {path: "/debug/ease",                  title: "Debug - Ease To Target",            element: <DebugEasePage />},
+  {path: "/debug/look-at",               title: "Debug - Look At",                   element: <DebugLookAtPage />},
   {path: "/debug/wireframe",             title: "Debug - Wireframe",                 element: <DebugWireframePage />},
 
   {path: "/", title: "Index", element: <HomePage container={document.querySelector('#use-gpu')} />},

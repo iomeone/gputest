@@ -1,7 +1,7 @@
 import type { LC, LiveElement } from '@use-gpu/live';
 import type { TypedArray, VectorLike, VectorLikes } from '@use-gpu/core';
 
-import { seq } from '@use-gpu/core';
+import { seq, lerp, clerp } from '@use-gpu/core';
 import { extend, mutate, fence, useCallback, useDouble, useMemo, useOne, useNoOne, useRef } from '@use-gpu/live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
@@ -12,6 +12,8 @@ import { makeValueRef, interpolateValue, distanceValue, copyValue } from './inte
 import mapValues from 'lodash/mapValues.js';
 import zipObject from 'lodash/zipObject.js';
 
+export type EaseType = 'linear' | 'angle';
+
 export type EaseToTargetProps<T extends Record<string, number | VectorLike | VectorLikes>> = {
   smooth?: number,
 
@@ -21,6 +23,7 @@ export type EaseToTargetProps<T extends Record<string, number | VectorLike | Vec
   epsilon?: number,
 
   values: T,
+  types: Record<string, EaseType>,
   version?: number,
 
   render?: (values: T) => LiveElement,
@@ -43,6 +46,7 @@ export const EaseToTarget: LC<EaseToTargetProps<Record<string, Numberish>>> = <T
     epsilon = 1e-3,
 
     values: target,
+    types,
     version = 0,
 
     children,
@@ -95,7 +99,8 @@ export const EaseToTarget: LC<EaseToTargetProps<Record<string, Numberish>>> = <T
           for (let i = 0; i < smooth; ++i) {
             const a = trackedValues[i - 1] ?? target;
             const b = trackedValues[i];
-            interpolateValue(b, k, b[k], a[k], fraction);
+            const fn = types?.[k] === 'angle' ? clerp : lerp;
+            interpolateValue(b, k, b[k], a[k], fraction, fn);
           }
           copyValue(current, k, trackedValues[smooth - 1][k]);
         }

@@ -1,8 +1,16 @@
 import type { TypedArray, Tuples } from './types';
 
+export const π = Math.PI;
+export const τ = 2*π;
+
 export const seq = (n: number, s: number = 0, d: number = 1): number[] => Array.from({ length: n }).map((_, i: number) => s + d * i);
 export const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 export const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
+
+export const clerp = (a: number, b: number, t: number) => {
+  const d = (((b - a + π) / τ) % 1) * τ - π;
+  return lerp(a, a + d, t);
+};
 
 export const toArray = <T>(t?: T | T[] | null) => Array.isArray(t) ? t : t != null ? [t] : [];
 

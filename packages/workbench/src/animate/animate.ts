@@ -138,12 +138,12 @@ const evaluateKeyframe = <T extends number | VectorLike | VectorLikes>(
   let fraction = clamp(dt ? (time - start) / dt : 0, 0, 1);
 
   if (ease === 'bezier') {
-    interpolateValue(values as any, prop, a[1] as any, b[1] as any, fraction);
+    interpolateValue(values as any, prop, a[1] as any, b[1] as any, fraction, lerp);
     //value = interpolateValueBezier(a[1], b[1], a[2], a[3], b[2], b[3], r);
   }
   else {
     if (ease === 'cosine') fraction = .5 - Math.cos(fraction * π) * .5;
-    interpolateValue(values as any, prop, a[1] as any, b[1] as any, fraction);
+    interpolateValue(values as any, prop, a[1] as any, b[1] as any, fraction, lerp);
   }
 };
 

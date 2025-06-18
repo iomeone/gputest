@@ -1,6 +1,5 @@
 import type { TypedArray } from '@use-gpu/core';
 import type { Lerpable, LerpableRecord } from './types';
-import { lerp } from '@use-gpu/core';
 
 const sqr = (x: number) => x * x;
 
@@ -48,6 +47,7 @@ export const interpolateValue = (
   a: number | number[] | number[][] | Float32Array | Float32Array[],
   b: number | number[] | number[][] | Float32Array | Float32Array[],
   t: number,
+  lerp: (a: number, b: number, t: number) => number,
 ) => {
   const as = a as number[];
   const bs = b as number[];

@@ -3,6 +3,7 @@ import type { Emit, TextureSource, LambdaSource, TensorArray, Time } from '@use-
 import type { ShaderSource } from '@use-gpu/shader';
 
 import React, { Gather } from '@use-gpu/live';
+import { lerp } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -22,8 +23,6 @@ import { SurfaceControls } from '../../ui/surface-controls';
 import { InfoBox } from '../../ui/info-box';
 
 const π = Math.PI;
-
-const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
 const f = (x: number, y: number, z: number, t: number) => {
   //return Math.sqrt(x*x + (y-6)*(y-6) + z*z) - 3.5;
