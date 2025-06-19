@@ -78,7 +78,7 @@ const Camera = ({position, target, children}: CameraProps) => {
       {children}
     </OrbitCamera>
   );
-  
+
   const types = { phi: 'angle', theta: 'angle '};
 
   return (
