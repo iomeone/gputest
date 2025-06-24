@@ -1,166 +1,106 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import { extend, useContext, useMemo, useNoMemo, useOne, useResource, useNoResource, useHooks } from '@use-gpu/live';
-import { EventContext, MouseContext, MouseEventState } from '../providers/event-provider';
+import { extend, useMemo, useHooks, useState } from '@use-gpu/live';
+import { useObjectId, usePointerCapture, useCanvasEvents } from '../providers/event-provider-2';
 import { getRenderFunc } from '../hooks/useRenderProp';
+import { PointerEvent } from './types';
 
 export type PickState = {
   id: number,
+  index: number,
   hovered: boolean,
   pressed: {
     left: boolean,
     middle: boolean,
     right: boolean,
   },
-  presses: {
-    left: number,
-    middle: number,
-    right: number,
-  },
-  clicks: {
-    left: number,
-    middle: number,
-    right: number,
-  },
-  x: number,
-  y: number,
-  moveX: number,
-  moveY: number,
-  index: number,
 };
 
 export type PickProps = {
   all?: boolean,
   move?: boolean,
-  capture?: boolean,
-  onMouseOver?: (m: MouseEventState, index: number) => void,
-  onMouseOut?:  (m: MouseEventState, index: number) => void,
-  onMouseDown?: (m: MouseEventState, index: number) => void,
-  onMouseUp?:   (m: MouseEventState, index: number) => void,
-  onMouseMove?: (m: MouseEventState, index: number) => void,
+  onPointerEnter?: (e: PointerEvent, index: number) => void,
+  onPointerLeave?: (e: PointerEvent, index: number) => void,
+  onPointerDown?:  (e: PointerEvent, index: number) => void,
+  onPointerUp?:    (e: PointerEvent, index: number) => void,
+  onPointerMove?:  (e: PointerEvent, index: number) => void,
 
   render?: (state: PickState) => LiveElement,
   children?: LiveElement | ((state: PickState) => LiveElement),
 };
 
+const INITIAL_BUTTON_STATE = { left: false, middle: false, right: false };
+
 export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
   const {
     all,
     move,
-    capture,
     children,
-    onMouseOver,
-    onMouseOut,
-    onMouseDown,
-    onMouseUp,
-    onMouseMove,
+    onPointerEnter,
+    onPointerLeave,
+    onPointerDown,
+    onPointerUp,
+    onPointerMove,
   } = props;
 
-  const {useId} = useContext(EventContext);
-  const {useMouse, beginCapture, endCapture} = useContext(MouseContext);
+  const {beginCapture, endCapture} = usePointerCapture();
 
-  const id = useId();
-  const mouse = useMouse(all ? undefined : id);
-  const {mouse: {x, y, moveX, moveY}, hovered, captured, pressed, presses, clicks, index} = mouse;
+  const [hovered, setHovered] = useState(false);
+  const [index, setIndex] = useState(-1);
+  const [moved, setMoved] = useState(false);
+  const [pressed, setPressed] = useState(INITIAL_BUTTON_STATE);
 
-  const mouseRef = useOne(() => ({current: mouse}));
-  mouseRef.current = mouse;
-
-  const countRef = useOne(() => ({current: 0}));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => countRef.current++, [x, y]);
-
-  const handlersRef = useOne(() => ({
-    current: {
-      onMouseOver,
-      onMouseOut,
-      onMouseDown,
-      onMouseUp,
-      onMouseMove,
+  const id = useObjectId();
+  const callbacks = useMemo(() => ({
+    pointerDown: (e: any) => {
+      if (!all) beginCapture(id);
+      onPointerDown?.(e, e.pickIndex);
+      setPressed(e.buttons);
     },
-  }));
-  handlersRef.current.onMouseOver = onMouseOver;
-  handlersRef.current.onMouseOut = onMouseOut;
-  handlersRef.current.onMouseDown = onMouseDown;
-  handlersRef.current.onMouseUp = onMouseUp;
-  handlersRef.current.onMouseMove = onMouseMove;
+    pointerUp: (e: any) => {
+      if (!all) endCapture();
+      onPointerUp?.(e, e.pickIndex);
+      setPressed(e.buttons);
+    },
 
-  if (onMouseMove) {
-    useMemo(() => {
-      if (hovered || captured) {
-        if (onMouseMove) onMouseMove(mouse, index);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [x, y]);
-  }
-  else {
-    useNoMemo();
-  }
+    pointerEnter: (e: any) => {
+      setHovered(true);
+      onPointerEnter?.(e, e.pickIndex);
+    },
+    pointerMove: (e: any) => {
+      setMoved(true);
+      setIndex(e.pickIndex);
+      onPointerMove?.(e, e.pickIndex);
+    },
+    pointerLeave: (e: any) => {
+      setHovered(false);
+      setIndex(-1);
+      onPointerLeave?.(e, e.pickIndex);
+    },
+  }), [
+    all,
+    id,
+    onPointerEnter,
+    onPointerLeave,
+    onPointerDown,
+    onPointerUp,
+    onPointerMove,
+    beginCapture,
+    endCapture,
+  ]);
 
-  if (onMouseOver || onMouseOut) {
-    useResource((dispose) => {
-      if (hovered || captured) {
-        const {current: {onMouseOver}} = handlersRef;
-        if (onMouseOver) onMouseOver(mouse, index);
-        dispose(() => {
-          const {current: {onMouseOut}} = handlersRef;
-          if (onMouseOut) onMouseOut(mouse, index);
-        });
-      }
-    }, [hovered, captured, index]);
-  }
-  else {
-    useNoResource();
-  }
+  const handlers = useCanvasEvents(all ? null : id, callbacks);
 
-  if (onMouseDown || onMouseUp || capture) {
-    const {left, middle, right} = pressed;
-    const click = (dispose: (f: Function) => void) => {
-      const {current: {onMouseDown}} = handlersRef;
-      if (onMouseDown) onMouseDown(mouse, index);
-      if (capture) beginCapture(id);
-      dispose(() => {
-        const {current: {onMouseUp}} = handlersRef;
-        if (capture) endCapture();
-        if (onMouseUp) onMouseUp(mouseRef.current, index);
-      });
-    };
-
-    useResource((dispose) => {
-      if (left) click(dispose);
-    }, [left]);
-    useResource((dispose) => {
-      if (middle) click(dispose);
-    }, [middle]);
-    useResource((dispose) => {
-      if (right) click(dispose);
-    }, [right]);
-  }
-  else {
-    useNoResource();
-    useNoResource();
-    useNoResource();
-  }
-
-  const count = presses.left + clicks.left + presses.middle + clicks.middle + presses.right + clicks.right;
-
-  const px = move ? x : 0;
-  const py = move ? y : 0;
-
-  const dx = move ? moveX : 0;
-  const dy = move ? moveY : 0;
-
-  if (move && countRef.current === 1) return null;
+  if (move && !moved) return null;
 
   const value = useMemo(
-    () => ({id, index, hovered, pressed, presses, clicks, x: px, y: py, moveX: dx, moveY: dy}),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id, index, hovered, pressed, count, px, py, dx, dy]
+    () => ({id, index, hovered, pressed}),
+    [id, index, hovered, pressed]
   );
 
   const render = getRenderFunc(props);
 
   return useHooks(() =>
-    render ? render(value) : (children ? extend(children as LiveElement, {id}) : null),
+    [handlers, render ? render(value) : (children ? extend(children as LiveElement, {id}) : null)],
     [render, children, value]
   );
 };

@@ -2,7 +2,7 @@ import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { GPUGeometry, TextureSource } from '@use-gpu/core';
 import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
+import React, { Gather, memo, useOne, useState } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -38,10 +38,12 @@ type PickableMeshProps = {
 };
 
 const PickableMesh = memo(({mesh, texture}: PickableMeshProps) => {
+  const [state, setState] = useState(false);
   return (
     <Pick
-      render={({id, hovered, presses}) =>
-        <PBRMaterial albedoMap={texture} albedo={presses.left % 2 ? COLOR_ON : COLOR_OFF}>
+      onPointerDown={() => setState(s => !s)}
+      render={({id, hovered}) =>
+        <PBRMaterial albedoMap={texture} albedo={state ? COLOR_ON : COLOR_OFF}>
           <Mesh
             id={id}
             mesh={mesh}

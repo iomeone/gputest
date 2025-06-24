@@ -140,6 +140,7 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
       colorSpace: 'picking',
       version: 0,
       id: Math.floor(Math.random() * 1000),
+      hint: 'picking',
     } as TextureSource;
 
     const depth = {
