@@ -36,7 +36,7 @@ export const getAggregateSummary = (items: AggregateItem[]) => {
 
   for (let i = 0; i < n; ++i) {
     const {count, indexed, instanced} = items[i];
-    if (indexed != null) indexOffsets.push(allCount);
+    indexOffsets.push(allCount);
     allCount += count;
     allIndexed += indexed ?? count;
     allInstanced += instanced ?? 1;
@@ -146,6 +146,7 @@ export const updateAggregateArray = (
   unwelded?: boolean,
   single?: boolean,
   offsets?: number[],
+  mask?: (boolean | number)[],
 ) => {
   const {array, dims, base, stride} = aggregate;
 
@@ -170,7 +171,9 @@ export const updateAggregateArray = (
     const c = single ? instanced : unwelded ? indexed : count;
 
     if (typeof values === 'function') (values as VectorEmitter)(array, b, c, stride);
-    else if (offsets) offsetNumberArray(values, array, offsets[i], dimsIn, dimsOut, 0, b, c, stride);
+    else if (offsets) {
+      offsetNumberArray(values, array, offsets[i], dimsIn, dimsOut, 0, b, c, stride, mask);
+    }
     else copyNumberArray(values, array, dimsIn, dimsOut, 0, b, c, stride);
 
     b += c * step;

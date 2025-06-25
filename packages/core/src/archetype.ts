@@ -510,23 +510,26 @@ export const updateAggregateFromSchema = (
     const {name: n, index, unwelded} = schema[k];
     const name = n ?? k;
     const o = index ? indexOffsets : undefined;
-    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o);
+    const m = Array.isArray(index) ? index : undefined;
+    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o, m);
   }
 
   if (bySelfs) for (const [k] of bySelfs.keys) {
     const {name: n, index, unwelded} = schema[k];
     const name = n ?? k;
     const o = index ? indexOffsets : undefined;
-    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o);
+    const m = Array.isArray(index) ? index : undefined;
+    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o, m);
   }
 
   if (byJss) for (const [k] of byJss.keys) {
     const {name: n, index, unwelded} = schema[k];
     const name = n ?? k;
     const o = index ? indexOffsets : undefined;
+    const m = Array.isArray(index) ? index : undefined;
 
     (aggregateBuffers[name].array as any).length = 0;
-    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o);
+    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o, m);
 
     if ('values' in byJss) {
       const front = aggregateBuffers[name].array;

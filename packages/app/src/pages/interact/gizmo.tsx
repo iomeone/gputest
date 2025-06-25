@@ -69,9 +69,11 @@ export const InteractGizmoPage: LC = () => {
                 <Scene>
                   <GizmoMatrix value={matrix} onChange={setMatrix} />
                   <Node matrix={matrix}>
+                    {/*
                     <PBRMaterial>
                       <Mesh mesh={mesh} />
                     </PBRMaterial>
+                    */}
                   </Node>
                 </Scene>
 

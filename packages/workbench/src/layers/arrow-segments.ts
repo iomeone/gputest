@@ -27,14 +27,16 @@ export const getArrowSegments = ({
 }) => {
   const count = accumulateChunks(chunks, loops);
 
+  const hasTrim = starts || ends;
+
   const segments = new Int8Array(alignSizeTo(count, 4));
   const slices = new Uint32Array(groups?.length ?? chunks.length);
   const unwelds = loops ? new Uint32Array(count, 2) : undefined;
-  const anchors = new Uint32Array(count * 4);
-  const trims = new Uint32Array(count * 4);
+  const anchors = hasTrim ? new Uint32Array(count * (starts && ends ? 4 : 2)) : undefined;
+  const trims = hasTrim ? new Uint32Array(count * 4) : undefined;
 
   generateChunkSegments(segments, slices, unwelds, chunks, groups, loops, starts, ends);
-  const sparse = generateChunkAnchors(anchors, trims, chunks, loops, starts, ends);
+  const sparse = hasTrim ? generateChunkAnchors(anchors, trims, chunks, loops, starts, ends) : undefined;
 
   return {
     count,

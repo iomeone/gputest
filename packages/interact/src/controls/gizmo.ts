@@ -4,6 +4,7 @@ import { provide, use, useMemo } from '@use-gpu/live';
 
 import { AxisHelper, PlaneHelper, TransformContext, useCombinedMatrixTransform, useMatrixContext } from '@use-gpu/workbench';
 import { Pick, Cursor } from '@use-gpu/interact';
+import { Plot, Line, Arrow } from '@use-gpu/plot';
 
 import { mat4 } from 'gl-matrix';
 
@@ -17,6 +18,10 @@ export type GizmoMatrixProps = {
   scale?: boolean | string,
 
   onChange: (m: mat4) => void,
+};
+
+export type GizmoAxisProps = {
+  axis: number,
 };
 
 export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
@@ -33,23 +38,36 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
     return m;
   }, [parent, value]);
 
-  const view = [
-    use(Pick, {
-      render: ({id, hovered}) => [
-        hovered ? use(Cursor, {cursor: 'pointer'}) : null,
-        use(PlaneHelper, {size: size / 2, zBias: 1, opacity: 0.5, mode: 'transparent'}),
-        use(PlaneHelper, {id, size: size / 2, zBias: 1, mode: 'picking', depthTest: false}),
+  const view = (
+    use(Plot, {
+      children: [
+        use(GizmoAxis, {axis: 0}),
+        use(GizmoAxis, {axis: 1}),
+        use(GizmoAxis, {axis: 2}),
       ],
-    }),
-    use(Pick, {
-      render: ({id, hovered}) => [
-        hovered ? use(Cursor, {cursor: 'pointer'}) : null,
-        use(AxisHelper, {size, width: 5, zBias: 2}),
-        use(AxisHelper, {id, size, width: 15, zBias: 2, mode: 'picking'}),
-      ],
-    }),
-  ];
+    })
+  );
 
   const [context, combined] = useCombinedMatrixTransform(world);
   return provide(TransformContext, context, view);
+};
+
+export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
+  const {axis} = props;
+
+  const end = [0, 0, 0];
+  const color = [0.1, 0.1, 0.1];
+
+  end[axis] = 1;
+  color[axis] = 1;
+
+  return (
+    use(Pick, {
+      render: ({id, hovered}) => [
+        hovered ? use(Cursor, {cursor: 'pointer'}) : null,
+        use(Arrow, {positions: [[0, 0, 0], end], color, width: 5, end: true}),
+        //use(Line, {id, positions: [[0, 0, 0], end], color, width: 15, mode: 'picking'}),
+      ],
+    })
+  );
 };

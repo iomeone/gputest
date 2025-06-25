@@ -9,7 +9,7 @@ type CompactSchema = {
   format: string,
   ref?: boolean,
   js?: boolean,
-  index?: boolean,
+  index?: boolean | (boolean | number)[],
   unwelded?: boolean,
 };
 
@@ -78,8 +78,8 @@ export const LINE_SCHEMA = {
 export const ARROW_SEGMENTS_SCHEMA = {
   ...LINE_SEGMENTS_SCHEMA,
   ...expandArrays({
-    anchors:   {format: 'vec4<u32>', unwelded: true},
-    trims:     {format: 'vec4<u32>', unwelded: true},
+    anchors:   {format: 'vec4<u32>', unwelded: true, index: [1, 1, 1, 0]},
+    trims:     {format: 'vec4<u32>', unwelded: true, index: [1, 1, 0, 0]},
   }),
 };
 

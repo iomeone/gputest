@@ -471,7 +471,7 @@ export type DataField = {
   /** Prop name in input data */
   prop?: string,
   /** Is an index attribute */
-  index?: boolean,
+  index?: boolean | (boolean | number)[],
   /** Is an unwelded vertex attribute */
   unwelded?: boolean,
   /** Spread a singular to a plural attribute */
@@ -489,7 +489,7 @@ export type ArchetypeField = {
   /** Output attribute name */
   name?: string,
   /** Is an index attribute */
-  index?: boolean,
+  index?: boolean | (boolean | number)[],
   /** Is an unwelded vertex attribute */
   unwelded?: boolean,
   /** Spread a singular to a plural attribute */

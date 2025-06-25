@@ -4,6 +4,7 @@ import { getUniformArrayType, getUniformArrayDepth, getUniformDims, getUniformAl
 import { isTypedArray } from './buffer';
 
 type NumberMapper = (x: number) => number;
+type NumberIndexMapper = (x: number, i: number) => number;
 
 const IDENTITY = (x: number) => x;
 
@@ -78,7 +79,7 @@ export const makeCopyPipe = ({
   map = IDENTITY,
 }: {
   index?: NumberMapper,
-  map?: NumberMapper,
+  map?: NumberIndexMapper,
 } = {}) => (
   from: VectorLike | number,
   to: TypedArray,
@@ -115,7 +116,7 @@ export const makeCopyPipe = ({
       for (let i = 0; i < n; ++i) {
         for (let j = 0; j < repeat; ++j) {
           const b = f + index(i);
-          to[t + j] = map(from[b]);
+          to[t + j] = map(from[b], 0);
         }
         t += step;
       }
@@ -123,17 +124,17 @@ export const makeCopyPipe = ({
     else if (dims4 === 2) {
       for (let i = 0; i < n; ++i) {
         const b = f + index(i) * 2;
-        to[t    ] = map(from[b]);
-        to[t + 1] = map(from[b + 1]);
+        to[t    ] = map(from[b], 0);
+        to[t + 1] = map(from[b + 1], 1);
         t += step;
       }
     }
     else if (dims4 === 3) {
       for (let i = 0; i < n; ++i) {
         const b = f + index(i) * 3;
-        to[t    ] = map(from[b]);
-        to[t + 1] = map(from[b + 1]);
-        to[t + 2] = map(from[b + 2]);
+        to[t    ] = map(from[b], 0);
+        to[t + 1] = map(from[b + 1], 1);
+        to[t + 2] = map(from[b + 2], 2);
         t += step;
       }
     }
@@ -146,9 +147,9 @@ export const makeCopyPipe = ({
             for (let j = 0; j < repeat; ++j) {
               const bb = b + j * 3;
               const tt = t + j * 4;
-              to[tt    ] = map(from[bb]);
-              to[tt + 1] = map(from[bb + 1]);
-              to[tt + 2] = map(from[bb + 2]);
+              to[tt    ] = map(from[bb], 0);
+              to[tt + 1] = map(from[bb + 1], 1);
+              to[tt + 2] = map(from[bb + 2], 2);
               to[tt + 3] = 0; // unused
             }
             t += step;
@@ -157,9 +158,9 @@ export const makeCopyPipe = ({
         else {
           for (let i = 0; i < n; ++i) {
             const b = f + index(i) * 3; // !
-            to[t    ] = map(from[b]);
-            to[t + 1] = map(from[b + 1]);
-            to[t + 2] = map(from[b + 2]);
+            to[t    ] = map(from[b], 0);
+            to[t + 1] = map(from[b + 1], 1);
+            to[t + 2] = map(from[b + 2], 2);
             to[t + 3] = 0; // unused
             t += step;
           }
@@ -173,10 +174,10 @@ export const makeCopyPipe = ({
               const j4 = j * 4;
               const tt = t + j4;
               const bb = b + j4;
-              to[tt    ] = map(from[bb]);
-              to[tt + 1] = map(from[bb + 1]);
-              to[tt + 2] = map(from[bb + 2]);
-              to[tt + 3] = map(from[bb + 3]);
+              to[tt    ] = map(from[bb], 0);
+              to[tt + 1] = map(from[bb + 1], 1);
+              to[tt + 2] = map(from[bb + 2], 2);
+              to[tt + 3] = map(from[bb + 3], 3);
             }
             t += step;
           }
@@ -184,10 +185,10 @@ export const makeCopyPipe = ({
         else {
           for (let i = 0; i < n; ++i) {
             const b = f + index(i) * 4;
-            to[t    ] = map(from[b]);
-            to[t + 1] = map(from[b + 1]);
-            to[t + 2] = map(from[b + 2]);
-            to[t + 3] = map(from[b + 3]);
+            to[t    ] = map(from[b], 0);
+            to[t + 1] = map(from[b + 1], 1);
+            to[t + 2] = map(from[b + 2], 2);
+            to[t + 3] = map(from[b + 3], 3);
             t += step;
           }
         }
@@ -199,7 +200,7 @@ export const makeCopyPipe = ({
 
     if (typeof from === 'number') {
       for (let i = 0; i < n; ++i) {
-        to[t] = map(from);
+        to[t] = map(from, 0);
         for (let j = 1; j < toDims; ++j) to[t + j] = 0;
         t += toDims;
       }
@@ -207,7 +208,7 @@ export const makeCopyPipe = ({
     else {
       const b = t;
       for (let i = 0; i < nd; ++i) {
-        to[b + i] = map(from[f + i]);
+        to[b + i] = map(from[f + i], i % toDims);
       }
     }
   }
@@ -287,9 +288,16 @@ export const unweldNumberArray = (() => {
 })();
 
 export const offsetNumberArray = (() => {
-  let arg: number;
-  const map = (x: number) => x + arg;
+  let argOffset: number;
+  let argMask: (boolean | number)[];
+  const map = (x: number) => x + argOffset;
+  const maskedMap = (x: number, i: number) => {
+    return argMask[i] ? x + argOffset : x;
+  };
+
   const copyWithOffset = makeCopyPipe({map});
+  const copyWithOffsetAndMask = makeCopyPipe({map: maskedMap});
+
   return (
     from: VectorLike | number,
     to: TypedArray,
@@ -300,9 +308,11 @@ export const offsetNumberArray = (() => {
     toIndex: number = 0,
     count?: number,
     stride?: number,
+    mask?: (boolean | number)[],
   ) => {
-    arg = offset;
-    return copyWithOffset(from, to, fromDims, toDims, fromIndex, toIndex, count, stride);
+    argOffset = offset;
+    argMask = mask;
+    return (mask ? copyWithOffsetAndMask : copyWithOffset)(from, to, fromDims, toDims, fromIndex, toIndex, count, stride);
   };
 })();
 
