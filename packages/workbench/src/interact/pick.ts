@@ -17,9 +17,13 @@ export type PickState = {
 
 export type PickProps = {
   all?: boolean,
-  move?: boolean,
-  onPointerEnter?: (e: PointerEvent, index: number) => void,
-  onPointerLeave?: (e: PointerEvent, index: number) => void,
+
+  onPointerEnter?: (e: PointerEvent) => void,
+  onPointerLeave?: (e: PointerEvent) => void,
+
+  onPointerOver?: (e: PointerEvent, index: number) => void,
+  onPointerOut?: (e: PointerEvent, index: number) => void,
+
   onPointerDown?:  (e: PointerEvent, index: number) => void,
   onPointerUp?:    (e: PointerEvent, index: number) => void,
   onPointerMove?:  (e: PointerEvent, index: number) => void,
@@ -33,10 +37,11 @@ const INITIAL_BUTTON_STATE = { left: false, middle: false, right: false };
 export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
   const {
     all,
-    move,
     children,
     onPointerEnter,
     onPointerLeave,
+    onPointerOver,
+    onPointerOut,
     onPointerDown,
     onPointerUp,
     onPointerMove,
@@ -46,7 +51,6 @@ export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
 
   const [hovered, setHovered] = useState(false);
   const [index, setIndex] = useState(-1);
-  const [moved, setMoved] = useState(false);
   const [pressed, setPressed] = useState(INITIAL_BUTTON_STATE);
 
   const id = useObjectId();
@@ -64,23 +68,30 @@ export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
 
     pointerEnter: (e: any) => {
       setHovered(true);
-      onPointerEnter?.(e, e.pickIndex);
+      onPointerEnter?.(e);
+    },
+    pointerOver: (e: any) => {
+      onPointerOver?.(e, e.pickIndex);
     },
     pointerMove: (e: any) => {
-      setMoved(true);
       setIndex(e.pickIndex);
       onPointerMove?.(e, e.pickIndex);
+    },
+    pointerOut: (e: any) => {
+      onPointerOut?.(e, e.pickIndex);
     },
     pointerLeave: (e: any) => {
       setHovered(false);
       setIndex(-1);
-      onPointerLeave?.(e, e.pickIndex);
+      onPointerLeave?.(e);
     },
   }), [
     all,
     id,
     onPointerEnter,
     onPointerLeave,
+    onPointerOver,
+    onPointerOut,
     onPointerDown,
     onPointerUp,
     onPointerMove,
@@ -89,8 +100,6 @@ export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
   ]);
 
   const handlers = useCanvasEvents(all ? null : id, callbacks);
-
-  if (move && !moved) return null;
 
   const value = useMemo(
     () => ({id, index, hovered, pressed}),

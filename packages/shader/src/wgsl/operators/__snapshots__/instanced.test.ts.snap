@@ -29,7 +29,7 @@ fn _03_loadIndex(index: u32) {
 fn _03_getValue1(index: u32) -> vec4<f32> { return _03_a; }
 fn _03_getValue2(index: u32) -> vec2<u32> { return _03_b; }
 
-//// @link main 
+//// @link main
 
 
     fn main(i: u32) -> vec4<f32> {

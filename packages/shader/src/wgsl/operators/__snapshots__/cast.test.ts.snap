@@ -6,7 +6,7 @@ exports[`cast casts 1`] = `
 
      fn _00_getValue() -> vec2<f32> { return vec2<f32>(1.0, 2.0); }
     
-//// @link @cast [getValue vec2<f32>] 
+//// @link @cast [getValue vec2<f32>]
 
 fn cast() -> vec3<f32> {
   let v = _00_getValue();
@@ -28,7 +28,7 @@ fn _01_cast() -> vec3<f32> {
   return v.xyx;
 }
 
-//// @link main 
+//// @link main
 
 
     fn main() { _01_cast(); }
@@ -41,7 +41,7 @@ exports[`cast casts compact swizzle 1`] = `
 
      fn _00_getValue() -> vec2<f32> { return vec2<f32>(1.0, 2.0); }
     
-//// @link @cast [getValue vec2<f32>] 
+//// @link @cast [getValue vec2<f32>]
 
 fn cast() -> vec4<f32> {
   let v = _00_getValue();
@@ -56,7 +56,7 @@ exports[`cast casts complex swizzle 1`] = `
 
      fn _00_getValue() -> vec2<f32> { return vec2<f32>(1.0, 2.0); }
     
-//// @link @cast [getValue vec2<f32>] 
+//// @link @cast [getValue vec2<f32>]
 
 fn cast() -> vec4<f32> {
   let v = _00_getValue();
@@ -66,7 +66,7 @@ fn cast() -> vec4<f32> {
 `;
 
 exports[`cast swizzles 1`] = `
-"//// @link @swizzle 
+"//// @link @swizzle
 
 fn swizzle(a: vec3<f32>) -> vec3<f32> {
   return a.xyx;

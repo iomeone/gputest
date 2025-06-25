@@ -9,7 +9,7 @@ import { useDerivedState } from '../hooks/useDerivedState';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { getRenderFunc } from '../hooks/useRenderProp';
 import { matchActionBindings } from '../interact/hdi';
-import { ActionMap, PointerEvent } from '../interact/types';
+import { ActionMap, PointerEvent, WheelEvent } from '../interact/types';
 import { useCanvasEvents } from '../providers/event-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { mat4, vec3 } from 'gl-matrix';
@@ -27,7 +27,7 @@ export const ORBIT_CONTROLS_DEFAULT: ActionMap = {
     {button: 'left', modifiers: ['shift']},
   ],
   rotate: [
-    {button: 'left'},
+    {button: 'left', notModifiers: ['shift']},
   ],
   zoom: [
     {wheel: true},
@@ -129,8 +129,8 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
     setRadius((radius: number) => maybeClamp(radius * Math.pow(2, spinY * speedY), minRadius, maxRadius))
   }, [radiusSpeed, minRadius, maxRadius, setRadius]);
 
-  const handleEvent = useCallback((event: PointerEvent) => {
-    const { moveX, moveY, spinY } = event;
+  const handleEvent = useCallback((event: PointerEvent | WheelEvent) => {
+    const { moveX, moveY, spinY } = event as WheelEvent;
 
     if (matchActionBindings(event, actionBindings.move)) {
       const sign = event.type === 'wheel' ? 1 : -1;

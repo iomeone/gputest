@@ -5,7 +5,7 @@ import React, { Gather } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, FlatCamera, Pass, Pick,
+  Loop, FlatCamera, Pass, Mouse,
   TextureBuffer, Compute, Stage, Iterate, Kernel, Suspense, RawFullScreen,
   useShader, useLambdaSource,
 } from '@use-gpu/workbench';
@@ -124,7 +124,7 @@ export const RTTCFDTexturePage: LC = () => {
             pressure,
           ]: TextureTarget[]) => (<>
 
-            <Pick all move render={({x, y, moveX, moveY}) => (
+            <Mouse move render={({x, y, moveX, moveY}) => (
               <Compute immediate>
                 <Stage target={velocity}>
                   <Kernel shader={pushVelocity} args={[[x / 2 * dpi, y / 2 * dpi], [moveX, moveY]]} history />

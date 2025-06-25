@@ -1,12 +1,11 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement, ArrowFunction } from '@use-gpu/live';
 
 import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
-import { makeIdAllocator } from '@use-gpu/core';
-import { EventReconciler } from '../reconcilers/index';
+import { proxy, makeIdAllocator } from '@use-gpu/core';
+import { EventHandler, EventBinding, MouseState, WheelState, KeyboardState, PointerCaptureAPI, PointerLockAPI } from '../interact/types';
 import { PickingContext } from '../providers/picking-provider';
 import { RenderContext } from '../providers/render-provider';
-
-import { PointerCaptureAPI, PointerLockAPI } from './types';
+import { EventReconciler } from '../reconcilers/index';
 
 const {reconcile, quote} = EventReconciler;
 
@@ -27,7 +26,7 @@ export type EventStateProviderProps = {
 };
 
 export type EventContextProps = {
-  useId: () => number,
+  useObjectId: () => number,
   usePointerCapture: () => PointerCaptureAPI,
   usePointerLock: () => PointerLockAPI,
 };
@@ -56,7 +55,7 @@ const makeCaptureIdRef = () => ({
   current: null as number | null,
 });
 
-const makePointerEnterIdRef = () => ({
+const makeIdRef = () => ({
   current: 0,
 });
 
@@ -97,8 +96,9 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
     usePointerLock: () => pointerLock,
   }));
 
-  // Pointer enter/leave tracking by ID
-  const pointerEnterIdRef = useOne(makePointerEnterIdRef);
+  // Pointer enter/leave over/out tracking by ID
+  const pointerEnterIdRef = useOne(makeIdRef);
+  const pointerOverIndexRef = useOne(makeIdRef);
 
   const annotateEvent = (e: any) => {
     if (e.x != null && e.y != null && e.pickId === undefined) {
@@ -107,23 +107,62 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
   };
 
   // Gather user event handlers
-  const Resume = (handlers: Record<string, ArrowFunction[]>) => {
+  const Resume = (handlers: Record<string, EventHandler[]>) => {
 
-    // Dispatch enter/leave events before move
-    const {pointerEnter, pointerLeave, ...rest} = handlers;
+    // Dispatch enter/leave/over/out events before move
+    // -- Enter/exit is by ID
+    // -- Over/out is by index
+    const {pointerEnter, pointerLeave, pointerOver, pointerOut, ...rest} = handlers;
     const handlePointerEnterLeave = useCallback((e: any) => {
       annotateEvent(e);
 
       const {current: pointerEnterId} = pointerEnterIdRef;
-      if (e.pickId !== pointerEnterId) {
-        for (const handler of pointerLeave) if (handler.id === pointerEnterId) handler.callback(e);
-        for (const handler of pointerEnter) if (handler.id === e.pickId) handler.callback(e);
+      const {current: pointerOverIndex} = pointerOverIndexRef;
+
+      const differentId = e.pickId !== pointerEnterId;
+      const differentIndex = e.pickIndex !== pointerOverIndex;
+
+      if (differentId || differentIndex) {
+        if (pointerOut) {
+          const ev = proxy(e, {type: 'pointerOut'});
+          for (const handler of pointerOut) {
+            if ((handler as EventBinding).id === pointerEnterId) (handler as EventBinding).callback(ev);
+          }
+        }
+      }
+
+      if (differentId) {
+        if (pointerLeave) {
+          const ev = proxy(e, {type: 'pointerLeave'});
+          for (const handler of pointerLeave) {
+            if ((handler as EventBinding).id === pointerEnterId) (handler as EventBinding).callback(ev);
+          }
+        }
+        if (pointerEnter) {
+          const ev = proxy(e, {type: 'pointerEnter'});
+          for (const handler of pointerEnter) {
+            if ((handler as EventBinding).id === e.pickId) (handler as EventBinding).callback(ev);
+          }
+        }
+
         pointerEnterIdRef.current = e.pickId;
       }
-    }, [pointerEnter, pointerLeave]);
+
+      if (differentId || differentIndex) {
+        if (pointerOver) {
+          const ev = proxy(e, {type: 'pointerOver'});
+          for (const handler of pointerOver) {
+            if ((handler as EventBinding).id === e.pickId) (handler as EventBinding).callback(ev);
+          }
+        }
+        pointerOverIndexRef.current = e.pickIndex;
+      }
+    }, [pointerEnter, pointerLeave, pointerOver, pointerOut]);
     useHandler(subscribeEvent, 'pointerMove', handlePointerEnterLeave);
 
     for (const k in rest) {
+      if (k.match(/^mouse/)) throw new Error("Mouse events are unsupported, use Pointer events instead.");
+
       const fn = useMemo(() => {
         const hs = handlers[k];
         return (e: any) => {
@@ -156,6 +195,8 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
 
       useHandler(subscribeEvent, k, fn);
     }
+
+    return null;
   };
 
   const stack = (
@@ -202,14 +243,14 @@ export const EventStateProvider = (props: EventStateProviderProps) => {
   const handleKeyDown = useCallback((e: any) => {
     setKeyboardState(s => ({
       ...s,
-      [e.key.toLowerCase()]: true,
+      [e.key]: true,
     }));
   }, []);
 
   const handleKeyUp = useCallback((e: any) => {
     setKeyboardState(s => ({
       ...s,
-      [e.key.toLowerCase()]: false,
+      [e.key]: false,
     }));
   }, []);
 
@@ -242,11 +283,11 @@ export const useObjectEvents = (callbacks: Record<string, ArrowFunction>) => {
 };
 
 export const useCanvasEvents = (id: number | null, callbacks: Record<string, ArrowFunction>) => {
-  return useOne(() => {
-    const handlers = id != null ? {} : callbacks;
+  return useMemo(() => {
+    const handlers: Record<string, EventHandler> = id != null ? {} : callbacks;
     if (id != null) for (const k in callbacks) handlers[k] = { id, callback: callbacks[k] };
     return quote(yeet(handlers));
-  }, callbacks);
+  }, [id, callbacks]);
 };
 
 export const useKeyboardState = () => useContext(KeyboardContext);

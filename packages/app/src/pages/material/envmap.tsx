@@ -88,7 +88,6 @@ export const MaterialEnvMapPage: LC = () => {
                   <PanControls
                     x={-window.innerWidth/2} y={-window.innerHeight/2} zoom={1/2}
                     active={panning || zooming}
-                    scroll={zooming}
                   >{
                     (x: number, y: number, zoom: number) =>
                       textureMap ? (

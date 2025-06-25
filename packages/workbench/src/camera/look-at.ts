@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import type { VectorLike } from '@use-gpu/core';
 
 import { useProp } from '@use-gpu/traits/live';
-import { parsePosition } from '@use-gpu/parse';
+import { parseVec3 } from '@use-gpu/parse';
 import { useMemo } from '@use-gpu/live';
 
 import { useRenderProp } from '../hooks/useRenderProp';
@@ -24,8 +24,8 @@ export type LookAtProps = {
 };
 
 export const LookAt: LiveComponent<LookAtProps> = (props) => {
-  const position = useProp(props.position, parsePosition, DEFAULT_LOOK_AT.position);
-  const target = useProp(props.target, parsePosition, DEFAULT_LOOK_AT.target);
+  const position = useProp(props.position, parseVec3, DEFAULT_LOOK_AT.position as vec3);
+  const target = useProp(props.target, parseVec3, DEFAULT_LOOK_AT.target as vec3);
 
   const orbit = useMemo(() => {
 

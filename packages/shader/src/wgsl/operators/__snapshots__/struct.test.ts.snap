@@ -8,7 +8,7 @@ struct _00_struct {
   bar: u32,
 };
 
-//// @link main 
+//// @link main
 
 fn main() -> _00_struct { };
 "

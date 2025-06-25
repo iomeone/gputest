@@ -23,7 +23,7 @@ export type EaseToTargetProps<T extends Record<string, number | VectorLike | Vec
   epsilon?: number,
 
   values: T,
-  types: Record<string, EaseType>,
+  types?: Record<string, EaseType>,
   version?: number,
 
   render?: (values: T) => LiveElement,

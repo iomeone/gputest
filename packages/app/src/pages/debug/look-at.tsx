@@ -7,7 +7,7 @@ import { vec3 } from 'gl-matrix';
 import {
   Pass, LinearRGB,
   GeometryData,
-  OrbitCamera, OrbitControls, EaseToTarget, LookAt,
+  OrbitCamera, OrbitControls, EaseToTarget, LookAt, EaseType,
   Cursor,
   AxisHelper, Environment, AmbientLight,
 
@@ -79,7 +79,7 @@ const Camera = ({position, target, children}: CameraProps) => {
     </OrbitCamera>
   );
 
-  const types = { phi: 'angle', theta: 'angle '};
+  const types: Record<string, EaseType> = { phi: 'angle', theta: 'angle' };
 
   return (
     <EaseToTarget values={{position, target}} duration={0.1}>

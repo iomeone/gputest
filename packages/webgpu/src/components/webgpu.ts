@@ -39,7 +39,7 @@ export const WebGPU: LC<WebGPUProps> = (props: WebGPUProps) => {
     device.addEventListener('uncapturederror', handler);
     dispose(() => device.removeEventListener('uncapturederror', handler));
 
-    if (debug) injectMethodLogger(device);
+    if (debug) injectMethodLogger(device, 'WebGPU');
   }, [result, debug]);
 
   return (

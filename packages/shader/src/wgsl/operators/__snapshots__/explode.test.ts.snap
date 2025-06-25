@@ -21,7 +21,7 @@ fn _02_bar(i: u32) -> u32 {
   return _01_source[i].bar;
 }
 
-//// @link main 
+//// @link main
 
 fn main() {
   _02_foo(0u);

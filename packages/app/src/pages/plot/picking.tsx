@@ -74,7 +74,8 @@ export const PlotPickingPage: LC = () => {
           <Grid axes="zx" width={3} color="#ffffff40" range={[[-5, 5], [-5, 5]]} origin={[0, -3, 0]} />
 
           <Pick
-            onMouseOver={(mouse, index) => console.log('Round shape #' + index, mouse)}
+            onPointerEnter={(event) => console.log(event.type, 'Round shapes', event)}
+            onPointerOver={(event, index) => console.log(event.type, 'Round shape #' + index, event)}
           >{
             ({id, hovered, index}: PickState) => [
               hovered ? <Cursor cursor="default" /> : null,
@@ -94,7 +95,8 @@ export const PlotPickingPage: LC = () => {
           }</Pick>
 
           <Pick
-            onMouseOver={(mouse, index) => console.log('Spiky shape #' + index, mouse)}
+            onPointerEnter={(event) => console.log(event.type, 'Spiky shapes', event)}
+            onPointerOver={(event, index) => console.log(event.type, 'Spiky shape #' + index, event)}
           >{
             ({id, hovered, index}: PickState) => [
               hovered ? <Cursor cursor="default" /> : null,

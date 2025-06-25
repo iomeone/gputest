@@ -1,4 +1,5 @@
-import type { XY, Ref, LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { ArrowFunction, Ref, LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { XY } from '@use-gpu/core';
 
 import { proxy } from '@use-gpu/core';
 import { use, memo, useMemo, useOne, useResource } from '@use-gpu/live';
@@ -15,8 +16,6 @@ export type DOMEventsProps = PropsWithChildren<{
   autofocus?: boolean,
   capture?: boolean,
 }>;
-
-export type EventCallback<T> = (event: T, element: HTMLElement) => void;
 
 const handlePointerCapture = (e: PointerEvent) => {
   try {
@@ -100,7 +99,7 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: DOMEventsPr
   useHandler(subscribeEvent, 'pointerOut', () => {
     lastPosRef.current = null;
   });
-  useHandler(subscribeEvent, 'contextMenu', (e) => {
+  useHandler(subscribeEvent, 'contextMenu', (e: Event) => {
     e.preventDefault();
   });
 
@@ -114,7 +113,7 @@ const useHandler = (subscribe: ArrowFunction, type: string, handler: ArrowFuncti
 const makeDOMSubscriber = (
   el: HTMLElement,
   domCaptureOptions: any,
-  moveRef?: Ref<XY>,
+  moveRef: Ref<XY>,
 ) => (
   type: string,
   handler: ArrowFunction,
@@ -127,7 +126,7 @@ const makeDOMSubscriber = (
     const extra = decorate?.(e);
 
     const ev = makeSyntheticEvent(el, e, extra, stop, move);
-    handler(ev, el);
+    handler(ev);
   };
 
   if (t === 'wheel') return subscribeDOMWheelEvent(el, f, domCaptureOptions);
@@ -144,7 +143,7 @@ const subscribeDOMWheelEvent = (
   domCaptureOptions: any,
 ) => {
   const onDOMMouseScroll = (e: any) => {
-    element.removeEventListener('wheel', handler, domCaptureOptions);
+    el.removeEventListener('wheel', handler, domCaptureOptions);
     handler(e);
   };
 
@@ -164,7 +163,7 @@ const makeSyntheticEvent = (
   stop?: ArrowFunction,
   move?: XY,
 ) => {
-  const {clientX, clientY} = nativeEvent;
+  const {key, type, clientX, clientY} = nativeEvent;
 
   const button = toButton(nativeEvent.button);
   const buttons = toButtons(nativeEvent.buttons);
@@ -178,6 +177,15 @@ const makeSyntheticEvent = (
   }
   for (const k in extra) {
     event[k] = extra[k];
+  }
+
+  if (key != null) {
+    event.key = key.slice(0, 1).toLowerCase() + key.slice(1);
+  }
+
+  if (type != null) {
+    const t = type.split(/(?<=(key|pointer))/);
+    event.type = t.length > 1 ? t[0] + t[1].slice(0, 1).toUpperCase() + t[1].slice(1) : type;
   }
 
   if (clientX != null && clientY != null) {

@@ -9,6 +9,8 @@ import mapValues from 'lodash/mapValues.js';
 
 const DEBUG = false;
 
+const trim = (s: string) => s.replace(/^ +| +$/, '');
+
 export type Linker = (
   source: ParsedBundle,
   libraries?: Record<string, ShaderModule>,
@@ -201,7 +203,7 @@ export const makeLinker = (
 
     DEBUG && console.log('Module', scope, getBundleName(bundle));
 
-    program.push(`//// @link ${virtual?.render ? code : name} ${scope}\n`);
+    program.push(`//// @link ${trim(`${virtual?.render ? code : name} ${scope}`)}\n`);
 
     // Replace imported symbol names with target
     if (modules) for (const {name: module, imports} of modules) {

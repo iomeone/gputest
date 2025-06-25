@@ -9,7 +9,7 @@ uniform vec4 color;
 vec4 _00_getColor() {
   return color;
 }
-//// @link main 
+//// @link main
 
 vec4 _00_getColor();
 
@@ -27,7 +27,7 @@ uniform vec4 color;
 vec4 _00_getColor() {
   return color;
 }
-//// @link main 
+//// @link main
 
 void main() {
   gl_FragColor = _00_getColor();
@@ -43,7 +43,7 @@ uniform vec4 color;
 vec4 _00_getColor() {
   return color;
 }
-//// @link main 
+//// @link main
 
 vec4 _00_getColor();
 
@@ -61,7 +61,7 @@ uniform vec4 color;
 vec4 _00_getColor() {
   return color;
 }
-//// @link main 
+//// @link main
 
 void main() {
   gl_FragColor = _00_getColor();
@@ -81,7 +81,7 @@ float _00_used() {
 }
 
 
-//// @link main 
+//// @link main
 
 void main() {
   gl_FragColor = _00_getColor();

@@ -7,7 +7,7 @@ exports[`link hoists an enable directive 1`] = `
 
     fn _00_main() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
-//// @link main 
+//// @link main
 
 
     fn main() -> @location(0) vec4<f32> {
@@ -33,7 +33,7 @@ exports[`link lifts recursive dependency 1`] = `
 
     fn _02_getColor1() -> vec4<f32> { return _01_getColor2(); }
     
-//// @link main 
+//// @link main
 
 
     fn main() -> vec4<f32> {
@@ -58,7 +58,7 @@ exports[`link links a global across a module 1`] = `
       return vec4<f32>(1.0, 0.0, 1.0, 1.0);
     }
     
-//// @link main 
+//// @link main
 
 
     fn main() {
@@ -74,7 +74,7 @@ exports[`link links a struct and field 1`] = `
     struct _00_Foo { bar: f32 };
     fn _00_access(foo: _00_Foo) -> f32 { return foo.bar; }
 
-//// @link main 
+//// @link main
 
 
     fn main() {
@@ -89,7 +89,7 @@ exports[`link links an external 1`] = `
 
     fn _00_main() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
-//// @link main 
+//// @link main
 
 
     fn main() -> @location(0) vec4<f32> {
@@ -184,7 +184,7 @@ fn _06_getQuadUV(vertex: i32) -> vec2<f32> {
 }
 
 
-//// @link getQuadVertex 
+//// @link getQuadVertex
 
 
 fn getQuadVertex(vertexIndex: i32, instanceIndex: i32) -> _04_SolidVertex {
@@ -232,7 +232,7 @@ exports[`link links same module twice with different entry point 1`] = `
 
     fn _00_getColor(index: i32) -> vec4<f32> { return vec4<f32>(_00_used(), 0.0, 1.0, 1.0); }
     
-//// @link main 
+//// @link main
 
 
     fn main() {
@@ -248,7 +248,7 @@ exports[`link substitutes attributes 1`] = `
 
     fn _00_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
-//// @link main 
+//// @link main
 
 
     @group(0) @binding(0) var<uniform> color: vec4<f32>;
@@ -267,7 +267,7 @@ exports[`link tree shakes around identifiers 1`] = `
 fn _00_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(_00_used(), 0.0, 1.0, 1.0); }
 
     
-//// @link main 
+//// @link main
 
 
     fn main() {
@@ -284,7 +284,7 @@ exports[`link tree shakes around identifiers 2`] = `
 fn _00_getPosition(index: i32) -> vec4<f32> { return vec4<f32>(_00_used(), 0.0, 1.0, 1.0); }
 
     
-//// @link main 
+//// @link main
 
 
     fn main() {
@@ -302,7 +302,7 @@ fn _00_getColor() -> vec4<f32> {
       return _00_colorUsed;
     }
     
-//// @link main 
+//// @link main
 
 
     fn main() {
@@ -320,7 +320,7 @@ fn _00_getColor() -> vec4<f32> {
       return _00_colorUsed;
     }
     
-//// @link main 
+//// @link main
 
 
     fn main() {

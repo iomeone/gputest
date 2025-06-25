@@ -1,17 +1,19 @@
-export type ButtonType = 'left' | 'middle' | 'right';
-export type ModifierType = 'shift' | 'alt' | 'accel';
+export type MouseButton = 'left' | 'middle' | 'right';
+export type KeyboardModifier = 'shift' | 'alt' | 'accel';
 
 export type ActionBinding = {
   wheel?: boolean,
-  button?: ButtonType,
-  modifiers?: ModifierType[],
+  button?: MouseButton,
+  modifiers?: KeyboardModifier[],
+  notModifiers?: KeyboardModifier[],
+  exact?: boolean,
 };
 
 export type ActionMap = Record<string, ActionBinding[] | null>;
 
 export type MouseState = {
-  buttons: Record<ButtonType, boolean>,
-  button: ButtonType | null,
+  buttons: Record<MouseButton, boolean>,
+  button: MouseButton | null,
   x: number,
   y: number,
   moveX: number,
@@ -41,10 +43,19 @@ export type PointerLockAPI = {
   hasLock: () => boolean,
 };
 
+export type EventCallback<T extends CanvasEvent<T> = CanvasEvent<any>> = (event: T) => void;
+export type EventBinding<T extends CanvasEvent<T> = CanvasEvent<any>> = {
+  id: number,
+  callback: EventCallback<T>,
+};
+
+export type EventHandler<T extends CanvasEvent<T> = CanvasEvent<any>> = EventCallback<T> | EventBinding<T>;
+
 export type CanvasEvent<T = any> = {
+  type: string,
+  target: T,
   preventDefault: () => void,
   stopPropagation: () => void,
-  target: T,
 
   detail: number,
   which: number,

@@ -7,7 +7,7 @@ exports[`cast casts 1`] = `
 
     vec2 _00_getValue() { return vec2(1.0, 2.0); }
     
-//// @link @cast [getValue vec2] 
+//// @link @cast [getValue vec2]
 
 vec3 cast() {
   vec3 v = _00_getValue();
@@ -30,7 +30,7 @@ vec3 _01_cast() {
   return v.xyx;
 }
 
-//// @link main 
+//// @link main
 
 
     vec3 _01_cast();
@@ -45,7 +45,7 @@ exports[`cast casts compact swizzle 1`] = `
 
       vec2 _00_getValue() { return vec2(1.0, 2.0); }
     
-//// @link @cast [getValue vec2] 
+//// @link @cast [getValue vec2]
 
 vec4<f32> cast() {
   vec4<f32> v = _00_getValue();
@@ -61,7 +61,7 @@ exports[`cast casts complex swizzle 1`] = `
 
       vec2 _00_getValue() { return vec2(1.0, 2.0); }
     
-//// @link @cast [getValue vec2] 
+//// @link @cast [getValue vec2]
 
 vec4<f32> cast() {
   vec4<f32> v = _00_getValue();
@@ -72,7 +72,7 @@ vec4<f32> cast() {
 
 exports[`cast swizzles 1`] = `
 "#version 450
-//// @link @swizzle 
+//// @link @swizzle
 
 vec3 swizzle(vec3 a) {
   return a.xyx;

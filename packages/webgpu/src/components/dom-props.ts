@@ -1,17 +1,15 @@
+import type { MouseButton, CanvasEvent } from '@use-gpu/workbench';
+
 export const DOM_EVENT_PROPS = [
   // Event
   'preventDefault',
   'stopPropagation',
   'target',
-  'type',
 
   // KeyboardEvent
   'altKey',
-  //'charCode',
   'code',
   'ctrlKey',
-  'key',
-  //'keyCode',
   'locale',
   'metaKey',
   'location',
@@ -72,8 +70,8 @@ export type PointerEvent = UIEvent & {
   y: number,
   moveX: number,
   moveY: number,
-  button: ButtonType,
-  buttons: Record<ButtonType, boolean>,
+  button: MouseButton,
+  buttons: Record<MouseButton, boolean>,
 } & Record<
   | 'height'
   | 'isPrimary'

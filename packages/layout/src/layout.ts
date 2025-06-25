@@ -175,8 +175,7 @@ export const Scroller = (pickers: any[], flip: [number, number], shift: [number,
   let version = versionRef.current;
 
   useOne(() => {
-    const { moveX, moveY, stopped } = wheel;
-    if (stopped) return;
+    const { moveX, moveY } = wheel;
 
     let x = px - shift[0];
     let y = py - shift[1];
@@ -226,7 +225,7 @@ export const Inspect = (pickers: any[], flip: [number, number], shift: [number, 
 
   const [pickedId] = picked;
   useOne(() => setHighlight(pickedId ?? null), pickedId);
-  useOne(() => pressed.left && setHighlight(pickedId ?? null, true), pressed.left);
+  useOne(() => mouse.buttons.left && setHighlight(pickedId ?? null, true), mouse.buttons.left);
 
   return null;
 }

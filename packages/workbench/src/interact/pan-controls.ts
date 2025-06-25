@@ -3,7 +3,7 @@ import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import { lerp } from '@use-gpu/core';
 import { useCallback, useContext, useHooks, useMemo, useOne, useRef, useState } from '@use-gpu/live';
 import { matchActionBindings } from '../interact/hdi';
-import { ActionMap, PointerEvent } from '../interact/types';
+import { ActionMap, PointerEvent, WheelEvent } from '../interact/types';
 import { useCanvasEvents, useKeyboardState } from '../providers/event-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
@@ -22,17 +22,17 @@ export const PAN_CONTROLS_DEFAULT: ActionMap = {
     {wheel: true, modifiers: ['shift']},
   ],
   zoom: [
-    {wheel: true},
+    {wheel: true, notModifiers: ['shift']},
   ],
 };
 
 export const PAN_CONTROLS_SCROLL: ActionMap = {
   move: [
     {button: 'left', modifiers: ['shift']},
-    {button: 'left', modifiers: ['alt']},
+    {wheel: true, notModifiers: ['shift']},
   ],
-  rotate: [
-    {button: 'left'},
+  zoom: [
+    {wheel: true, modifiers: ['shift']},
   ],
 };
 
@@ -59,12 +59,6 @@ export type PanControlsProps = {
 
   render?: (x: number, y: number, zoom: number, ox: number, oy: number) => LiveElement,
   children?: (x: number, y: number, zoom: number, ox: number, oy: number) => LiveElement,
-};
-
-export type PanState = {
-  x?: number,
-  y?: number,
-  zoom?: number,
 };
 
 const DEFAULT_ANCHOR = [0.5, 0.5];
@@ -96,7 +90,7 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     version,
   } = props;
 
-  const [pos, setPos] = useState<PanState>(() => [initialX, initialY, initialZoom]);
+  const [pos, setPos] = useState<number[]>(() => [initialX, initialY, initialZoom]);
 
   let originX = 0;
   let originY = 0;
@@ -172,7 +166,8 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     return factor ? lerp(zz, z, factor) : z;
   }, [minZoom, maxZoom]);
 
-  const [x, y, zoom] = pos;
+  // eslint-disable-next-line
+  let [x, y, zoom] = pos;
 
   const EPS = 1e-3 / zoom;
   const outOfBoundsX = Math.abs(clampX(x, zoom) - x) > EPS;
@@ -216,15 +211,18 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
 
     if (outOfBounds) {
       const factor = Math.pow(SOFT_LERP, delta / (1000/60));
-      setZoom(zoom = clampZ(zoom, factor));
-      setX(x = clampX(x, zoom, factor));
-      setY(y = clampY(y, zoom, factor));
+      setPos(([x, y, zoom]) => {
+        zoom = clampZ(zoom, factor);
+        x = clampX(x, zoom, factor);
+        y = clampY(y, zoom, factor);
+        return [x, y, zoom];
+      });
     }
     else if (nearUnitSnap) {
       const snapTime = now - lastZoomRef.current;
       if (snapTime > SNAP_WAIT) {
         const factor = Math.pow(EASE_LERP, delta / (1000/60));
-        setZoom(zoom = lerp(zoom, 1, factor));
+        setPos(([x, y, zoom]) => [x, y, lerp(zoom, 1, factor)]);
       }
     }
   }, frame);
@@ -264,7 +262,7 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     });
   }, [limitX, limitY, limitZ, originX, originY, zoomSpeed]);
 
-  const handleEvent = useCallback((event: PointerEvent) => {
+  const handleEvent = useCallback((event: PointerEvent | WheelEvent) => {
     const { x, y, moveX, moveY } = event;
 
     if (matchActionBindings(event, actionBindings.move)) {

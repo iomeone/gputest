@@ -10,18 +10,18 @@ export const decodeUsageFlags = (flags: GPUBufferUsageFlags) => {
   return out;
 };
 
-export const injectMethodLogger = (obj: object, label: string) => {
+export const injectMethodLogger = <T extends Record<string, any>>(obj: T, label: string) => {
   for (const k in obj) {
     const v = obj[k];
     if (typeof v === 'function') {
       const f = v.bind(obj);
       const l = label ? `${label} ${k}` : k;
 
-      obj[k] = (...args) => {
+      obj[k] = ((...args: any[]) => {
         console.log(l, ...args);
         const v = f(...args);
         if (typeof v === 'object') return injectMethodLogger(v, l);
-      };
+      }) as any;
     }
   }
   return obj;
