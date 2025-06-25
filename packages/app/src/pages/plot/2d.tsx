@@ -276,7 +276,7 @@ export const Plot2DPage: LC = () => {
                   depth={0.75}
                 />
               </Transform>
-            
+
               {/* Text labels */}
               <Transform position={[300, 700]}>
                 <Label
@@ -326,7 +326,7 @@ export const Plot2DPage: LC = () => {
             </Transform>
           </Plot>
         </Pass>
-      
+
       </Camera>
     </LinearRGB>
   </>);

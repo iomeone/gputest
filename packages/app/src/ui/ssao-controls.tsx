@@ -44,7 +44,7 @@ export const SSAOControls: LC<SSAOControlsProps> = (props: SSAOControlsProps) =>
           <div>
             <label><input type="checkbox" checked={showAO} onChange={(e) => setShowAO(e.target.checked)} /> Show Ambient Occlusion Samples</label>
           </div>
-          
+
           <div style={{paddingTop: 20}}>Hold [ALT] to visualize occlusion rays for the selected pixel</div>
         </div>
       </>)

@@ -34,6 +34,6 @@ struct XYLayer {
       uvw.z < 0.0
     );
   }
-  
+
   return XYLayer(faceXY / maxAUVW, face);
 };

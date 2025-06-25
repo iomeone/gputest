@@ -86,7 +86,7 @@ export const useMotionUniforms = (
     mat4.invert(irm, rm);
     mat4.copy(lastPvm, viewPvm);
   };
-  
+
   return {next, uniforms};
 }
 

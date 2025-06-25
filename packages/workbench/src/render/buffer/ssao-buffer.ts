@@ -106,7 +106,7 @@ export const SSAOBuffer: LC = memo((props: SSAOBufferProps) => {
       colorSpace: 'linear',
     }),
   ];
-  
+
   return gather(targets, (targets: OffscreenRenderContext[]) => {
     const [,,,,, resolveTarget] = targets;
 

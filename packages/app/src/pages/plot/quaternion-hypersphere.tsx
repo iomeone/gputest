@@ -58,7 +58,7 @@ const geodesicQuaternionSampler = (axis: number, w: number, h: number, full?: bo
     a[3] = cp;
 
     b[(axis + 1) % 3] = st;
-    b[3] = ct; 
+    b[3] = ct;
 
     quat.mul(a, a, b);
 

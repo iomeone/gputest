@@ -118,7 +118,7 @@ export const ShadowHemiPass: LC<ShadowHemiPassProps> = memo((props: ShadowHemiPa
       colorAttachments: [],
       depthStencilAttachment,
     }));
-    
+
     const viewDescriptors = HEMI_FACES.map(([face, layer,, clear]) => patch(descriptors[layer], {
       label: `<ShadowHemiPass> #${getCubeFaceLabel(face)}`,
       depthStencilAttachment: {
@@ -147,7 +147,7 @@ export const ShadowHemiPass: LC<ShadowHemiPassProps> = memo((props: ShadowHemiPa
   const [projectionMatrix, halfProjectionMatrix, viewMatrix] = useOne(() => {
     const m = mat4.perspectiveZO(mat4.create(), τ/4, 1, near, far);
     reverseZ(m, m);
-    
+
     const h = mat4.create();
     mat4.multiply(h, [
       1, 0, 0, 0,

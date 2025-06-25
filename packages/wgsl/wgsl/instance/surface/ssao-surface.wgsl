@@ -31,7 +31,7 @@
   // Albedo-based indirect bounce approximation
   let directAO = ssao.w;
   let albedo = length(surface.albedo) / 1.73;
-  let abc = vec3<f32>(2.0404, 4.7951, 2.7552) * albedo + vec3<f32>(-0.3324, -0.6417, 0.6903);  
+  let abc = vec3<f32>(2.0404, 4.7951, 2.7552) * albedo + vec3<f32>(-0.3324, -0.6417, 0.6903);
   let indirectAO = ((abc.x * directAO - abc.y) * directAO + abc.z) * directAO;
 
   // Control effect with visual blend

@@ -38,10 +38,9 @@ export const makeGetVariants = (
         if (variants.length === 0) return hovered ? getRender(HOVERED_VARIANT) : getRender(mode, renderer);
 
         variants.push(hovered ? HOVERED_VARIANT : mode);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return variants.map(mode => getRender(mode, renderer)!);
+        return variants.map(mode => getRender(mode, renderer)).filter(v => v != null) as Variants;
       };
-  
+
   return getVariants;
 };
 
@@ -50,7 +49,7 @@ export const useMakeUseVariants = (
   flags: ExtendedPassFlags,
 ) => {
   const {normals, shadows, picking} = flags;
-  
+
   return useMemo(() => {
     const getVariants = makeGetVariants(components, flags);
     return (virtual: VirtualDraw, hovered: boolean) =>

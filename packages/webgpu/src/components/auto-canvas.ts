@@ -9,7 +9,6 @@ import { makeOrAdoptCanvas } from '../web';
 import { AutoSize } from './auto-size';
 import { Canvas } from './canvas';
 import { DOMEvents } from './dom-events';
-import { DOMEvents as DOMEvents2 } from './dom-events-2';
 
 export type AutoCanvasProps = {
   /** Adopt HTML canvas */
@@ -36,8 +35,6 @@ export type AutoCanvasProps = {
   events?: boolean,
   /** Enable GPU picking */
   picking?: boolean,
-  /** If running in an iframe, avoid preventing default on scroll. */
-  iframe?: boolean, // deprecated
 
   children?: LiveElement,
 };
@@ -49,7 +46,6 @@ export const AutoCanvas: LiveComponent<AutoCanvasProps> = (props) => {
     events = true,
     autofocus = false,
     picking = true,
-    iframe = false,
     ...rest
   } = props;
 
@@ -68,19 +64,13 @@ export const AutoCanvas: LiveComponent<AutoCanvasProps> = (props) => {
 
   let view = children;
   if (events) view = (
-    use(DOMEvents2, {
+    use(DOMEvents, {
       autofocus,
       element: canvas,
       children:
-        use(DOMEvents, {
-          autofocus,
-          iframe,
+        use(CursorProvider, {
           element: canvas,
-          children:
-            use(CursorProvider, {
-              element: canvas,
-              children: view,
-            })
+          children: view,
         })
     })
   );

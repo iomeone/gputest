@@ -1,8 +1,11 @@
-0.x.x
+0.16.0-dev
 - `@use-gpu/app`: Add Binet plot example
 - `@use-gpu/live`: Improved reporting of undefined component fns
 - `@use-gpu/live`: Allow `false` as element
+- `@use-gpu/live`: Multigather ignores `undefined` values
+- `@use-gpu/webgpu`: New `<DOMEvents>` modeled after React synthetic events
 - `@use-gpu/workbench`: Fix unshaded surface layer in a pass with shadows
+- `@use-gpu/workbench`: Refactor `EventProvider` to use reconciled event handlers
 
 0.15.0
 - `@use-gpu/app`: Add shaded lines and point cloud examples

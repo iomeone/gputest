@@ -62,7 +62,7 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
 
     if (shader) {
       const ts = target.source as TextureTarget;
-      
+
       const f = history ? (typeof history === 'number'
         ? ts?.history?.slice(0, history)
         : ts?.history

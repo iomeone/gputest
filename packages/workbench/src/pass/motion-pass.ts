@@ -50,7 +50,7 @@ export const MotionPass: LC<MotionPassProps> = memo((props: PropsWithChildren<Mo
   } = usePassContext();
 
   const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
-  
+
   const motions = toArray(calls['motion'] as Renderable[]);
 
   const motionPassDescriptor = useOne(() =>

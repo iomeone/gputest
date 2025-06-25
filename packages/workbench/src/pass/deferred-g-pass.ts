@@ -85,7 +85,7 @@ export const DeferredGPass: LC<DeferredGPassProps> = memo((props: DeferredGPassP
       triangles: 0,
     },
   });
-  
+
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const getDepth = useTextureUVToXY(useTextureAccess(renderContext.depth!)).shader;
   const copyDepthBuffer = useCopyDepth(depthCopyContext, getDepth);

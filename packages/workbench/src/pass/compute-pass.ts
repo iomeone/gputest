@@ -55,7 +55,7 @@ export const ComputePass: LC<ComputePassProps> = memo((props: ComputePassProps) 
       samples: 0,
     },
   });
-  
+
   const run = () => {
     let ws = 0;
     let ss = 0;

@@ -100,7 +100,7 @@ export const Inspect: React.FC<InspectProps> = ({
       deps: fiber.host ? Array.from(fiber.host.traceDown(fiber)).map(f => f.id) : [],
       precs: fiber.host ? Array.from(fiber.host.traceUp(fiber)) : [],
       root: fiber.yeeted && fiber.type === YEET ? fiber.yeeted.root : null,
-    };    
+    };
   }, [selectedFiber, hoveredFiber, fibers]);
 
   const [, setVersion] = useState(0);

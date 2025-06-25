@@ -56,7 +56,7 @@ export const Label: LiveComponent<LabelProps> = memo((props) => {
     sources,
     ...flags
   } = parsed;
-  
+
   const z = (zIndex && zBias == null) ? zIndex : zBias;
 
   // Label Y flip

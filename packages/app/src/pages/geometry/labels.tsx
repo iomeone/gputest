@@ -24,7 +24,7 @@ const pointSchema = {
   colors: {format: 'vec4<f32>', prop: 'color'},
   // Use data[n].size as size
   sizes: {format: 'f32', prop: 'size'},
-  
+
   // Note: label strings are not passed as GPU data, but separately as `labelData`
 };
 

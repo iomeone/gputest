@@ -377,9 +377,9 @@ export const splitHistoryTexture = (texture: TextureTarget): TextureSource[] => 
   const {history} = texture;
 
   const mainLabel = notEmptyString(texture?.label) ?? notEmptyString(texture?.view?.label) ?? notEmptyString(texture?.texture?.label);
-  
+
   const rest = history?.map((t, i) => {
-    const historyLabel = `History T-${i + 1}`;  
+    const historyLabel = `History T-${i + 1}`;
     const slotLabel = [mainLabel, historyLabel].filter(s => s != null).join(' – ');
     return proxy(t, {label: slotLabel});
   }) ?? [];

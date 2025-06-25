@@ -58,7 +58,7 @@ export const OverscanBuffer: LC<OverscanBufferProps> = memo((props: OverscanBuff
       viewSize,
       viewResolution,
     } = makeViewUniforms();
-    
+
     return {
       ...viewUniforms,
       projectionMatrix,

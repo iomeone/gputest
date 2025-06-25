@@ -114,7 +114,7 @@ export const makeLightQueue = () => {
 
   const clear = () => {
     queue.length = 0;
-    changed.clear();    
+    changed.clear();
   };
 
   return {enqueue, dispose, flush, clear, lights, maps};

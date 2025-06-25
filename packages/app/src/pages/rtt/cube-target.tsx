@@ -161,7 +161,7 @@ const RTTCubeView: LC<RTTCubeViewProps> = (props: RTTCubeViewProps) => {
         <Camera>
           <Pass lights ssao={1}>
             {scene}
-            
+
             <PrefilteredEnvMap live texture={renderCubeTarget.source}>{
               (cubeMap) =>
                 <Environment map={cubeMap}>

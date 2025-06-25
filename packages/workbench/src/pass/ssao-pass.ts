@@ -155,7 +155,7 @@ export const SSAOPass: LC<SSAOPassProps> = memo((props: PropsWithChildren<SSAOPa
 
       // Resolve SSAO
       calls.forEach(({ssao: f}) => f(commandEncoder));
-    
+
       const command = commandEncoder.finish();
       device.queue.submit([command]);
 

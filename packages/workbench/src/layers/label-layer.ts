@@ -82,7 +82,7 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
     monochrome,
     detail,
 
-    // eslint-disable-next-line  @typescript-eslint/no-unused-vars    
+    // eslint-disable-next-line  @typescript-eslint/no-unused-vars
     count,
     mode = 'opaque',
 

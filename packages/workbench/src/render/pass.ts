@@ -23,7 +23,7 @@ import { PassResources } from '../pass/types';
 export type PassProps = PropsWithChildren<{
   mode?: 'forward' | 'deferred' | 'fullscreen',
   components?: RenderComponents,
-  
+
   debug?: string,
   debugIndex?: number,
 } & PassOptions>;
@@ -134,7 +134,7 @@ export const gatherPassResources = (
       else for (const k in s) d[k] = s[k];
     }
   };
-  
+
   return gather(children, (els: PassResources[]) => {
     const out: PassResources = {
       buffers: {},

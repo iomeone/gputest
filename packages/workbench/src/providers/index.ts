@@ -4,7 +4,6 @@ export * from './debug-provider';
 export * from './device-provider';
 export * from './environment-provider';
 export * from './event-provider';
-export * from './event-provider-2';
 export * from './frame-provider';
 export * from './layout-provider';
 export * from './light-provider';

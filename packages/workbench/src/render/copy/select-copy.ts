@@ -57,7 +57,7 @@ export const useCopySelectDepthSample = (
 
     return [vertexShader, fragmentShader, label];
   }, [getSample, selectDepth, selectSample]);
-  
+
   return useRenderCopy(vertex, fragment, renderContext, true, layout, uv, scale, label);
 };
 

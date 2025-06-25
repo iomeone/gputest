@@ -292,7 +292,7 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
       pipeline,
       renderer: shaded ? 'shaded' : 'solid',
       mode,
-      
+
       label: 'DualContourLayer',
     }),
     /*

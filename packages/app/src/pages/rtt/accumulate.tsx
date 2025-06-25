@@ -10,7 +10,7 @@ import {
   LinearRGB, FullScreen, RenderTarget, AccumulateRender,
   PrintHelper, PrintLayer, ShaderPrinter, On,
 
-  useMouse, useKeyboard,
+  useMouseState, useKeyboardState,
   usePerFrame, useShader, useShaderRef, useRawSource, useViewContext,
 } from '@use-gpu/workbench';
 
@@ -106,9 +106,9 @@ type AccumulateViewProps = {
 const AccumulateView = (props: AccumulateViewProps) => {
   const {target, limit, render, then} = props;
 
-  const {keyboard: {keys}} = useKeyboard();
+  const keyboard = useKeyboardState();
 
-  const keysVersion = useVersion(keys.alt);
+  const keysVersion = useVersion(keyboard.alt);
   const viewVersion = useViewVersion();
 
   const version = keysVersion + viewVersion;
@@ -143,14 +143,14 @@ const defs = {HAS_DEBUG_PICKING: true}
 const PathTrace = (props: PathTraceProps) => {
   const {frame, printHelper} = props;
 
-  const {mouse} = useMouse();
-  const {keyboard: {keys}} = useKeyboard();
+  const mouse = useMouseState();
+  const keyboard = useKeyboardState();
 
   const quadSource = useRawSource(quadData, 'vec4<f32>');
   const sphereSource = useRawSource(sphereData, 'vec4<f32>');
 
   const dpi = window.devicePixelRatio;
-  const pickRef = useShaderRef(!!keys.alt);
+  const pickRef = useShaderRef(!!keyboard.alt);
   const mouseRef = useShaderRef([mouse.x * dpi, mouse.y * dpi]);
 
   const shader = useShader(accumulateShader, [
@@ -172,12 +172,12 @@ const PathTrace = (props: PathTraceProps) => {
 
   // When starting new capture
   useOne(() => {
-    if (keys.alt) { frameCountRef.current = 0 }
-  }, keys.alt);
+    if (keyboard.alt) { frameCountRef.current = 0 }
+  }, keyboard.alt);
 
   // When moving mouse during capture
   useOne(() => {
-    if (keys.alt) frameCountRef.current = 0;
+    if (keyboard.alt) frameCountRef.current = 0;
   }, mouse);
 
   // Avoid trashing render due to mouse move

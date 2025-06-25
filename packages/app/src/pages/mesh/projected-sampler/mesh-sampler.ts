@@ -37,12 +37,12 @@ export const cullMesh = (
       max = Math.max(i3, max);
     }
   });
-  
+
   const ctor = max > 65535 ? Uint32Array : Uint16Array;
   const fmt = max > 65535 ? 'u32' : 'u16';
 
   const count = culledIndices.length;
-  
+
   const indices = new ctor(culledIndices);
   const culled = patch(mesh, {count, attributes: {indices}, formats: {indices: fmt}});
 
@@ -84,11 +84,11 @@ export const sampleMesh = (
       v = 1 - v;
     }
     let w = 1 - u - v;
-    
+
     u = lerp(u, 1/3, .5);
     v = lerp(v, 1/3, .5);
     w = lerp(w, 1/3, .5);
-    
+
     vec3.zero(vs);
     vec3.scaleAndAdd(vs, vs, v1, u);
     vec3.scaleAndAdd(vs, vs, v2, v);
@@ -106,7 +106,7 @@ export const sampleMesh = (
   for (let i = 0; i < sampleCount; ++i) {
     v += step;
     while (summedAreas[j] < v) j++;
-    
+
     const sample = getMeshTriangle(mesh, j, sampleTriangle);
     const i4 = i * 4;
     samples[i4  ] = sample[0];

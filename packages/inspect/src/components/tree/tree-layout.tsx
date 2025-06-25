@@ -132,7 +132,7 @@ export const TreeRowAvoidOverlap: FC<TreeRowAvoidOverlapProps> = ({ indent, chil
   useLayoutEffect(() => {
     const {current: el} = ref;
     if (!el) return;
-    
+
     const parent = el.parentElement;
     if (!parent) return;
 
@@ -147,13 +147,13 @@ export const TreeRowAvoidOverlap: FC<TreeRowAvoidOverlapProps> = ({ indent, chil
     const parentRect = parent.getBoundingClientRect();
     const selfRect = el.getBoundingClientRect();
     const previousRect = previous.getBoundingClientRect();
-    
+
     let maxIndent = indent;
     if (selfRect.top === previousRect.top) {
       maxIndent = Math.max(indent, Math.round(previousRect.right - parentRect.left));
-    }    
+    }
     el.style.marginLeft = `${maxIndent}px`;
   });
-  
+
   return <TreeRowOmittedInner ref={ref} style={{marginLeft: indent}} className="avoidOverlap">{children}</TreeRowOmittedInner>;
 };

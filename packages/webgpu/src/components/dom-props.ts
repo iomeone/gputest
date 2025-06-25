@@ -3,6 +3,7 @@ export const DOM_EVENT_PROPS = [
   'preventDefault',
   'stopPropagation',
   'target',
+  'type',
 
   // KeyboardEvent
   'altKey',
@@ -117,4 +118,4 @@ export type WheelEvent = UIEvent & {
   | 'screenX'
   | 'screenY'
   | 'shiftKey',
-any>;  
+any>;

@@ -526,7 +526,7 @@ impl UseRustText {
             match rgba {
                 Some(rgba) => {
                     let glyph_scale: f32 = rgba.pixels_per_em.into();
-                    
+
                     let s = scale / glyph_scale;
                     let l = rgba.origin.x;
                     let t = lb.min.y / s;

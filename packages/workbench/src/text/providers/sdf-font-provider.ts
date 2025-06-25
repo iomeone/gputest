@@ -339,7 +339,7 @@ export const emitGlyphSpans = (
   let x = left + lead;
   let sx = snapX ? Math.round(x) : x;
 
-  const y = top;  
+  const y = top;
   const sy = snapY ? Math.round(y) : y;
 
   spans.iterate((_a, trim, hard, index) => {

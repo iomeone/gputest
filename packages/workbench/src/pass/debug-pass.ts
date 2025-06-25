@@ -9,7 +9,7 @@ import { useRenderContext } from '../providers/render-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
-import { getMultiViewShader, getDisplayShader } from '../hooks/useDisplayShader'; 
+import { getMultiViewShader, getDisplayShader } from '../hooks/useDisplayShader';
 import { useCopySample } from '../render/copy/value-copy';
 
 import { getRenderPassDescriptor } from './util';

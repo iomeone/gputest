@@ -77,7 +77,7 @@ export const DeferredResolvePass: LC<DeferredResolvePassProps> = memo((props: De
       merge: true,
     }),
     [renderContext, overlay]);
-    
+
   const inspected = inspect({
     output: {
       sources: [renderContext.source, renderContext.depth],
@@ -89,7 +89,7 @@ export const DeferredResolvePass: LC<DeferredResolvePassProps> = memo((props: De
       triangles: 0,
     },
   });
-  
+
   return quote(yeet(() => {
     let vs = 0;
     let ts = 0;

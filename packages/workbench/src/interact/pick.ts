@@ -1,6 +1,6 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import { extend, useMemo, useHooks, useState } from '@use-gpu/live';
-import { useObjectId, usePointerCapture, useCanvasEvents } from '../providers/event-provider-2';
+import { useObjectId, usePointerCapture, useCanvasEvents } from '../providers/event-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
 import { PointerEvent } from './types';
 

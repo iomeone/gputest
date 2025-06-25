@@ -10,9 +10,8 @@ import {
   GeometryData, PBRMaterial, ImageTexture, AmbientLight,
   OrbitCamera, OrbitControls, Environment,
   Cursor, EaseToTarget,
-  DebugProvider, PrintLayer, PrintHelper,
+  DebugProvider, PrintLayer, PrintHelper, useKeyboardState,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
-  useKeyboard,
 } from '@use-gpu/workbench';
 
 import {
@@ -73,7 +72,7 @@ const overscan = 0.05;
 
 export const SceneSSAOPage: LC = () => {
 
-  const {keyboard: {keys}} = useKeyboard();
+  const keyboard = useKeyboardState();
 
   const view = useCallback((applyAO: boolean, showAO: boolean, renderLive: boolean) => (
     <Gather
@@ -168,7 +167,7 @@ export const SceneSSAOPage: LC = () => {
       render={({applyAO, showAO}) =>
         // React doesn't like a useMemo in a render prop, but it's fine in Live
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        useMemo(() => view(applyAO, showAO, keys.alt), [applyAO, showAO, keys.alt])
+        useMemo(() => view(applyAO, showAO, keyboard.alt), [applyAO, showAO, keyboard.alt])
       }
     />
   </>);

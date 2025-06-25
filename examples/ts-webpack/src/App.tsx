@@ -69,7 +69,7 @@ export const App: LC = hot(() => {
                         >{(texture: TextureSource | null) =>
                             <Flex align="center" width="100%" height={150}>
                               <Block
-                                fill="#3090ff" 
+                                fill="#3090ff"
                                 width={150}
                                 height={150}
                                 margin={20}

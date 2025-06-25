@@ -87,7 +87,7 @@ export const RenderCubeTarget: LiveComponent<RenderCubeTargetProps> = (props: Re
       const counter = { current: 0 };
       if (!format) return [null, null, null, null, null, counter];
 
-      const render = 
+      const render =
         makeTargetTexture(
           device,
           width,

@@ -49,7 +49,7 @@ export const getBindGroupLayout = (
 
       ensureLength(allAttributes, index, null);
       ensureLength(allVisibilities, index, null);
-      
+
       allAttributes[index] = attribute;
       allVisibilities[index] = visibility;
       indices.push(index);
@@ -63,7 +63,7 @@ export const getBindGroupLayout = (
 
   const names = allAttributes.map(a => a?.name ?? '<null>');
   const label = match + '::{' + names.join(', ') + '}';
-  
+
   const entries = makeBindGroupLayoutEntries(rawBindings, allVisibilities);
   const layout = makeBindGroupLayout(device, entries, label);
 

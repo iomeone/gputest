@@ -20,7 +20,7 @@ export const makeTranspile = <T extends SymbolTableT = any>(
     types = false,
     typeDef = false,
     sourceMap = false,
-    importRoot = null,    
+    importRoot = null,
   } = options ?? ({} as TranspileOptions);
 
   const maybeStringType = types ? '?: string' : '';
@@ -242,10 +242,10 @@ export const compressString = (
       ))
       .filter(s => typeof s === 'number' || s.length);
   };
-  
+
   for (const [i, s] of symbols.entries()) if (s.length > 3) replace(s, i);
   for (const [i, s] of dvs.entries()) if (s.length > 3) replace(s, -i-1);
-  
+
   const parts = ss.map(s => (
     typeof s === 'string' ? stringify(s) :
     s >= 0 ? s : dks[-s-1]

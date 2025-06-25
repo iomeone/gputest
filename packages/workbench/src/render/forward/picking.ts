@@ -16,7 +16,7 @@ import renderFragmentPicking from '@use-gpu/wgsl/render/fragment/pick.wgsl';
 export type PickingRenderProps = VirtualDraw;
 
 const LABEL = 'PickingRender';
- 
+
 export const PickingRender: LiveComponent<PickingRenderProps> = (props: PickingRenderProps) => {
   const {
     links: {

@@ -42,7 +42,7 @@ const indexToXYMapper = wgsl`
   let m = getModulus();
   let x = i % m;
   let y = i / m;
-  
+
   return vec2<u32>(x, y);
 }
 `;
@@ -55,14 +55,14 @@ type RenderAttributes = {
 export type PointCloudLoaderProps = {
   url: string,
   absolute?: boolean,
-  
+
   render?: (attributes: RenderAttributes) => LiveElement,
   children?: (attributes: RenderAttributes) => LiveElement,
 };
 
 export const PointCloudLoader: LC<PointCloudLoaderProps> = (props: PointCloudLoaderProps) => {
   const {url, absolute} = props;
-  
+
   const base = url.split('/').slice(0, -1).join('/');
   const getURL = (path: string) => `${base}/${path}`;
 
@@ -72,17 +72,17 @@ export const PointCloudLoader: LC<PointCloudLoaderProps> = (props: PointCloudLoa
       type="json"
     >{(data) => {
         const {fields, imageSize, recordCount} = data;
-        
+
         const images: LiveElement[] = [];
         const mappers: ShaderModule[] = [];
         const min: number[] = [];
         const max: number[] = [];
-        
+
         const {width} = imageSize;
 
         for (const k in fields) {
           const {type, precision, range} = fields[k];
-          
+
           if (type === 'DECIMAL') {
             const url = getURL(`${k}.png`);
             images.push(
@@ -114,10 +114,10 @@ export const PointCloudLoader: LC<PointCloudLoaderProps> = (props: PointCloudLoa
               }));
               return intSources.map((source, i) => getShader(mappers[i], [source, absolute ? min[i] : 0]));
             }, [images]);
-            
+
             const valueTexture = useShader(xyzwMapper, sources);
             const indexMapper = useShader(indexToXYMapper, [width]);
-            
+
             const count = recordCount;
             const positions = useMemo(() => chainTo(indexMapper, valueTexture), [indexMapper, valueTexture]);
 

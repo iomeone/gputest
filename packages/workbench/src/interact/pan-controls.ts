@@ -1,8 +1,10 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
 
 import { lerp } from '@use-gpu/core';
-import { useCallback, useContext, useHooks, useOne, useRef, useState } from '@use-gpu/live';
-import { useMouse, useWheel, useKeyboard } from '../providers/event-provider';
+import { useCallback, useContext, useHooks, useMemo, useOne, useRef, useState } from '@use-gpu/live';
+import { matchActionBindings } from '../interact/hdi';
+import { ActionMap, PointerEvent } from '../interact/types';
+import { useCanvasEvents, useKeyboardState } from '../providers/event-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
@@ -14,16 +16,37 @@ const SNAP_WAIT = 66;
 
 const identity = (x: number) => x;
 
+export const PAN_CONTROLS_DEFAULT: ActionMap = {
+  move: [
+    {button: 'left'},
+    {wheel: true, modifiers: ['shift']},
+  ],
+  zoom: [
+    {wheel: true},
+  ],
+};
+
+export const PAN_CONTROLS_SCROLL: ActionMap = {
+  move: [
+    {button: 'left', modifiers: ['shift']},
+    {button: 'left', modifiers: ['alt']},
+  ],
+  rotate: [
+    {button: 'left'},
+  ],
+};
+
 export type PanControlsProps = {
   x?: number,
   y?: number,
   zoom?: number,
   zoomSpeed?: number,
   anchor?: [number, number],
-  scroll?: boolean,
   active?: boolean,
   centered?: boolean,
   version?: number,
+
+  actionBindings?: ActionMap,
 
   soft?: boolean,
   minX?: number,
@@ -36,6 +59,12 @@ export type PanControlsProps = {
 
   render?: (x: number, y: number, zoom: number, ox: number, oy: number) => LiveElement,
   children?: (x: number, y: number, zoom: number, ox: number, oy: number) => LiveElement,
+};
+
+export type PanState = {
+  x?: number,
+  y?: number,
+  zoom?: number,
 };
 
 const DEFAULT_ANCHOR = [0.5, 0.5];
@@ -51,6 +80,8 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     zoomSpeed = 1/120,
     centered = true,
 
+    actionBindings = PAN_CONTROLS_DEFAULT,
+
     minX = null,
     maxX = null,
     minY = null,
@@ -60,18 +91,12 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     snapZoom = null,
 
     soft = false,
-    scroll = false,
     active = true,
     anchor = DEFAULT_ANCHOR,
     version,
   } = props;
 
-  // eslint-disable-next-line prefer-const
-  let [x, setX]       = useState<number>(initialX);
-  // eslint-disable-next-line prefer-const
-  let [y, setY]       = useState<number>(initialY);
-  // eslint-disable-next-line prefer-const
-  let [zoom, setZoom] = useState<number>(initialZoom);
+  const [pos, setPos] = useState<PanState>(() => [initialX, initialY, initialZoom]);
 
   let originX = 0;
   let originY = 0;
@@ -88,37 +113,33 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     offsetY = -h * (anchor[1] - 0.5);
   }
 
-  const { mouse } = useMouse();
-  const { wheel, stop: stopWheel } = useWheel();
-  const { keyboard } = useKeyboard();
+  const keyboard = useKeyboardState();
 
   const now = +new Date();
   const lastZoomRef = useRef(now);
 
   let reset = false;
   useOne(() => {
-    reset = !!(keyboard.modifiers.alt && keyboard.keys.enter);
+    reset = !!(keyboard.alt && keyboard.enter);
   }, keyboard);
 
   useOne(() => {
-    setX(initialX);
-    setY(initialY);
-    setZoom(initialZoom);
+    setPos([initialX, initialY, initialZoom]);
     lastZoomRef.current = now;
   }, reset);
 
   useOne(() => {
-    setX(initialX);
+    setPos(([, y, zoom]) => [initialX, y, zoom]);
     lastZoomRef.current = now;
   }, version ?? initialX);
 
   useOne(() => {
-    setY(initialY);
+    setPos(([x,, zoom]) => [x, initialY, zoom]);
     lastZoomRef.current = now;
   }, version ?? initialY);
 
   useOne(() => {
-    setZoom(initialZoom);
+    setPos(([x, y]) => [x, y, initialZoom]);
     lastZoomRef.current = now;
   }, version ?? initialZoom);
 
@@ -150,6 +171,8 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
 
     return factor ? lerp(zz, z, factor) : z;
   }, [minZoom, maxZoom]);
+
+  const [x, y, zoom] = pos;
 
   const EPS = 1e-3 / zoom;
   const outOfBoundsX = Math.abs(clampX(x, zoom) - x) > EPS;
@@ -206,58 +229,78 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     }
   }, frame);
 
-  useOne(() => {
-    const { moveX, moveY, buttons, stopped } = mouse;
-    if (!active || stopped) return;
+  const handleMove = useCallback((moveX: number, moveY: number) => {
+    setPos(pos => {
+      const [x, y, zoom] = pos;
+      return [
+        limitX(x + moveX / zoom, zoom),
+        limitY(y + moveY / zoom, zoom),
+        zoom,
+      ];
+    });
+  }, [limitX, limitY]);
 
-    if (buttons.left) {
+  const handleZoom = useCallback((mouseX: number, mouseY: number, moveZ: number) => {
+    setPos(pos => {
+      const now = +new Date();
+      const [x, y, zoom] = pos;
+
+      const newZoom = limitZ(zoom * Math.pow(2, -moveZ * zoomSpeed));
+      if (newZoom === zoom) return pos;
+
+      const mx = mouseX - originX;
+      const my = mouseY - originY;
+      lastZoomRef.current = now;
+
+      const absX = (mx / zoom) - x;
+      const relX = (mx / newZoom) - absX;
+      const newX = limitX(relX, newZoom);
+
+      const absY = (my / zoom) - y;
+      const relY = (my / newZoom) - absY;
+      const newY = limitY(relY, newZoom);
+
+      return [newX, newY, newZoom];
+    });
+  }, [limitX, limitY, limitZ, originX, originY, zoomSpeed]);
+
+  const handleEvent = useCallback((event: PointerEvent) => {
+    const { x, y, moveX, moveY } = event;
+
+    if (matchActionBindings(event, actionBindings.move)) {
+      const sign = event.type === 'wheel' ? -1 : 1;
       if (moveX || moveY) {
-        setX(x => limitX(x + moveX / zoom, zoom));
-        setY(y => limitY(y + moveY / zoom, zoom));
+        handleMove(sign * moveX, sign * moveY);
       }
     }
-  }, mouse);
-
-  useOne(() => {
-    const {moveX, moveY, stopped} = wheel;
-    if (!active || stopped) return;
-
-    if (!!scroll !== (keyboard.modifiers.shift || keyboard.modifiers.alt)) {
-      if (moveX || moveY) {
-        setX(x => limitX(x - moveX / zoom, zoom));
-        setY(y => limitY(y - moveY / zoom, zoom));
+    else if (matchActionBindings(event, actionBindings.zoom)) {
+      const moveZ = moveY;
+      if (moveZ) {
+        handleZoom(x, y, moveZ);
       }
     }
-    else if (moveY) {
-      const z = limitZ(zoom * Math.pow(2, -moveY * zoomSpeed));
-
-      if (z !== zoom) {
-        const mx = mouse.x - originX;
-        const my = mouse.y - originY;
-        lastZoomRef.current = now;
-
-        setZoom(z);
-        setX(x => {
-          const px = (mx / zoom) - x;
-          const xx = (mx / z) - px;
-          return limitX(xx, z);
-        });
-        setY(y => {
-          const py = (my / zoom) - y;
-          const yy = (my / z) - py;
-          return limitY(yy, z);
-        });
-      }
+    else {
+      return;
     }
 
-    stopWheel();
-  }, wheel);
+    event.preventDefault();
+    event.stopPropagation();
+  }, [actionBindings, handleMove, handleZoom]);
 
   const panX = centered ? x - originX * (zoom - 1) / zoom + offsetX : x;
   const panY = centered ? y - originY * (zoom - 1) / zoom + offsetY : y;
 
+  const callbacks = useMemo(() => ({
+    pointerMove: handleEvent,
+    wheel: handleEvent,
+  }), [handleEvent]);
+  const handlers = useCanvasEvents(null, callbacks);
+
   const render = getRenderFunc(props);
-  return useHooks(() => render ? render(panX, panY, zoom, x, y) : null, [panX, panY, zoom, x, y, render]);
+  return [
+    active ? handlers : null,
+    useHooks(() => render ? render(panX, panY, zoom, x, y) : null, [panX, panY, zoom, x, y, render]),
+  ];
 };
 
 const adjustRange = (a: number | null, b: number | null, zoom: number, size: number) => {

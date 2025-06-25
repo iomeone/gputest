@@ -39,7 +39,7 @@ export const MeshProjectedSamplerPage: LC = () => {
       <Cursor cursor='move' />
       <Camera>
         <SampleCamera point={point} onChange={setPoint} />
-      
+
         <Gather
           children={[
             <GLTFData url={url} />

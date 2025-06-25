@@ -12,7 +12,7 @@ export type OnProps = {
   compute?: ComputeToPass,
   post?: CommandToBuffer,
   readback?: ArrowFunction,
-  
+
   render?: ArrowFunction,
 };
 

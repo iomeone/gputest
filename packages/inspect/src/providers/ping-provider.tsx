@@ -80,7 +80,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, fibers, api: {
           forceUpdate();
         }
       },
-      version: () => 
+      version: () =>
       map,
       fibers,
       pinned,
@@ -195,7 +195,7 @@ export const usePingTracker = (fiber?: LiveFiber<any>, shouldPin?: boolean): [
 
   useLayoutEffect(() => {
     if (!shouldPin) return;
-    
+
     let parent = fiber;
     let by = fiber?.by;
     while (by) {

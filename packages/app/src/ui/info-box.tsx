@@ -14,7 +14,7 @@ type InfoBoxProps = {
   right?: number | null,
   top?: number | null,
   bottom?: number | null,
-  
+
   children: any,
 };
 

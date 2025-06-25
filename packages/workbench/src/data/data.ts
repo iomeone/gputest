@@ -95,7 +95,7 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     live = false,
     immutable = false,
   } = props;
-  
+
   const schema = useOne(() => normalizeSchema(propSchema), propSchema);
   const data: Record<string, any>[] | null = propData ? Array.isArray(propData) ? propData : [propData] : null;
   const itemCount = Math.max(0, count ?? ((data?.length || 0) - skip));
@@ -215,7 +215,7 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
 
       let base = 0;
       let offset = 0;
- 
+
       for (let i = 0; i < itemCount; ++i) {
         const from = accessor ? accessor(i + skip) : data ? data[i + skip][prop] : 0;
         offset += copyRecursiveNumberArray(from, array, dimsIn, dimsIn, depth, offset, 1);

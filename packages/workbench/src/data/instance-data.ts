@@ -5,7 +5,7 @@ import { capture, useCapture, useMemo, useOne, useRef, useResource, incrementVer
 import {
   makeIdAllocator,
   copyNumberArray,
-  
+
   normalizeSchema,
   makeArrayAggregateBuffer,
   makeStructAggregateBuffer,

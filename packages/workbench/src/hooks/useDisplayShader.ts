@@ -54,7 +54,7 @@ export const getDisplayShader = (texture: TextureSource): LambdaSource => {
   else {
     const bits = getTypedArraysBitCount(a) ?? 1;
     const gain = bits < 32 ? (1 << bits) - 1 : 0xffffffff;
-    
+
     const c = aspect === 'stencil-only' ? castTo(t, 'vec4<u32>') : t;
     const s = chainTo(c, getShader(displayInt, [1/gain]));
     return getLambdaSource(h ? chainTo(s, h) : s, texture);

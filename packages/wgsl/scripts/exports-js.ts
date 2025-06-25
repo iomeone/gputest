@@ -32,7 +32,7 @@ try {
   PKG.main = 'cjs/index.js';
   PKG.module = 'mjs/index.js';
   PKG.exports = {};
-  
+
   const add = (key: string, name: string) => {
     PKG.exports[key] = {
       "types": `./mjs/${name}.d.ts`,

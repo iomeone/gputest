@@ -20,7 +20,7 @@ export const useReadbackStorage = (
     seq(buffers).map(() => getScratchSource(device, format, READBACK_SOURCE)),
     [buffers, device, format]
   );
-  
+
   let requested = -1;
   const mapped = useOne(() => seq(buffers).map(() => false));
 

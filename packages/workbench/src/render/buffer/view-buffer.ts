@@ -13,7 +13,7 @@ export const ViewBuffer: LC = memo(() =>
 export const useViewBuffer = () => {
   const {binding, cull, uniforms} = useViewContext();
   const viewBinding = useViewBufferBinding(binding);
-  
+
   return {
     bindings: {view: viewBinding},
     views: {

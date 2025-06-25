@@ -385,7 +385,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const declarations = getDeclarations();
 
     const externals = declarations
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion    
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       .filter(d => d.func && !functions.find(f => f.func.name === d.func!.name));
 
     const refs = [...functions, ...declarations];

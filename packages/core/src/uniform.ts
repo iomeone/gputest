@@ -276,7 +276,7 @@ export const makeDataBindingsEntries = <T>(
   binding: number = 0,
 ): GPUBindGroupEntry[] => {
   const entries = [] as any[];
-  
+
   for (const b of bindings) {
     if (!b) binding++;
     else if (b.uniform) {

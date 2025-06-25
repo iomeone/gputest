@@ -75,7 +75,7 @@ export const SpotLight: LC<SpotLightProps> = memo((props: SpotLightProps) => {
     const tangent = vec3.create();
     const bitangent = vec3.create();
     vec3.cross(tangent, normal as vec3, up);
-    
+
     if (vec3.length(tangent) < 1e-5) {
       vec3.cross(tangent, normal as vec3, [up[1], up[2], up[0]]);
     }

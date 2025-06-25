@@ -3,7 +3,7 @@ import type { LC } from '@use-gpu/live';
 import React, { hot, into, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
 import { AutoCanvas, FPSCounter, WebGPU } from '@use-gpu/webgpu';
-import { DebugProvider, FontLoader, Router, Routes, useKeyboard } from '@use-gpu/workbench';
+import { DebugProvider, FontLoader, Router, Routes, useKeyboardState } from '@use-gpu/workbench';
 
 import { UseInspect } from '@use-gpu/inspect';
 import { inspectGPU } from '@use-gpu/inspect-gpu';
@@ -44,8 +44,8 @@ const useInspector = () => {
 
 export const FPSToggle = () => {
   const [fps, setFPS] = useState(false);
-  const {keyboard} = useKeyboard();
-  useOne(() => keyboard.keys.f && setFPS(!fps), keyboard.keys.f);
+  const keyboard = useKeyboardState();
+  useOne(() => keyboard.f && setFPS(!fps), keyboard.f);
   return fps ? <FPSCounter container="#use-gpu > .canvas" top={32} /> : null;
 };
 

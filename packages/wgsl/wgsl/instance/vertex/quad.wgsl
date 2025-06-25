@@ -153,6 +153,6 @@ fn getRectangleUV(
     xy = mix(rectangle.xy, rectangle.zw, uvQuad) * pixelScale;
     uv = mix(rectangleUV.xy, rectangleUV.zw, uvQuad);
   }
-  
+
   return vec4<f32>(uv, xy);
 }

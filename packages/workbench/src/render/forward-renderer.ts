@@ -15,11 +15,11 @@ import { ShadowPass } from '../pass/shadow-pass';
 import { SSAOPass } from '../pass/ssao-pass';
 
 import { DebugRender } from './forward/debug';
+import { NormalRender } from './forward/normal';
 import { PickingRender } from './forward/picking';
 import { ShadedRender } from './forward/shaded';
 import { ShadowRender } from './forward/shadow';
 import { SolidRender } from './forward/solid';
-import { NormalRender } from './forward/normal';
 import { UIRender } from './forward/ui';
 
 import { useStandardBindGroups } from '../pass/bindings';
@@ -91,7 +91,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     merge = false,
     overscan = 0,
     debug = null,
-  
+
     lights = false,
     normals = !!buffers.normal,
     motion = !!buffers.motion,
@@ -104,7 +104,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     overlay,
     merge,
     overscan,
-  
+
     lights,
     normals,
     motion,

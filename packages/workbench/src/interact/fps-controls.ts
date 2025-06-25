@@ -3,10 +3,11 @@ import type { VectorLike } from '@use-gpu/core';
 
 import { useProp } from '@use-gpu/traits/live';
 import { parseVec3 } from '@use-gpu/parse';
-import { useContext, useHooks, useOne, useRef, useState } from '@use-gpu/live';
+import { useCallback, useContext, useHooks, useMemo, useOne, useRef, useState } from '@use-gpu/live';
 import { makeOrbitMatrix, clamp } from '@use-gpu/core';
+import { PointerEvent } from '../interact/types';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { useKeyboard, useMouse, useMouseLock } from '../providers/event-provider';
+import { useCanvasEvents, useKeyboardState, usePointerLock } from '../providers/event-provider';
 import { usePerFrame } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { useDerivedState } from '../hooks/useDerivedState';
@@ -55,51 +56,52 @@ export const FPSControls: LiveComponent<FPSControlsProps> = (props) => {
   const layout = useContext(LayoutContext);
   const frame = usePerFrame();
 
-  const { mouse } = useMouse();
-  const { keyboard } = useKeyboard();
-  const { hasLock, beginLock } = useMouseLock();
+  const keyboard = useKeyboardState();
+  const { hasLock, beginLock } = usePointerLock();
 
   const size = Math.min(Math.abs(layout[2] - layout[0]), Math.abs(layout[3] - layout[1]));
 
   const lastTimeRef = useRef(0);
 
-  useOne(() => {
-    const { moveX, moveY, buttons, stopped } = mouse;
-    if (!active || stopped) return;
+  const handlePointerDown = useCallback((event: PointerEvent) => {
+    if (hasLock()) return;
 
-    if (!hasLock) {
-      if (buttons.left) {
-        beginLock();
-      }
+    const { buttons } = event;
+    if (buttons.left) {
+      beginLock();
     }
-    else {
-      const speedX = bearingSpeed / size;
-      const speedY = pitchSpeed   / size;
+  }, [hasLock, beginLock]);
 
-      if (moveX || moveY) {
-        setBearing((phi: number) => phi + moveX * speedX);
-        setPitch((theta: number) => clamp(theta + moveY * speedY, -π/2, π/2));
-      }
+  const handlePointerMove = useCallback((event: PointerEvent) => {
+    if (!hasLock()) return;
+
+    const { moveX, moveY } = event;
+
+    const speedX = bearingSpeed / size;
+    const speedY = pitchSpeed   / size;
+
+    if (moveX || moveY) {
+      setBearing((phi: number) => phi + moveX * speedX);
+      setPitch((theta: number) => clamp(theta + moveY * speedY, -π/2, π/2));
     }
-  }, mouse);
+  }, [hasLock, size, bearingSpeed, pitchSpeed, setBearing, setPitch]);
 
   useOne(() => {
-    const { keys, stopped } = keyboard;
-    if (!active || stopped) return;
+    if (!active) return;
 
     let dx = 0;
     let dy = 0;
     let dz = 0;
 
-    if (keys.a) dx -= 1;
-    if (keys.d) dx += 1;
-    if (keys.w) dy -= 1;
-    if (keys.s) dy += 1;
-    if (keys.e) dz -= 1;
-    if (keys.q) dz += 1;
+    if (keyboard.a) dx -= 1;
+    if (keyboard.d) dx += 1;
+    if (keyboard.w) dy -= 1;
+    if (keyboard.s) dy += 1;
+    if (keyboard.e) dz -= 1;
+    if (keyboard.q) dz += 1;
 
     let dl = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    if (keys.shift) dl /= 4;
+    if (keyboard.shift) dl /= 4;
 
     setVelocity(vec3.fromValues(
       dl ? dx / dl : 0,
@@ -138,6 +140,16 @@ export const FPSControls: LiveComponent<FPSControlsProps> = (props) => {
   if (moving) useAnimationFrame();
   else useNoAnimationFrame();
 
+  const callbacks = useMemo(() => ({
+    pointerDown: handlePointerDown,
+    pointerMove: handlePointerMove,
+  }), [handlePointerDown, handlePointerMove]);
+
+  const handlers = useCanvasEvents(null, callbacks);
+
   const render = getRenderFunc(props);
-  return useHooks(() => render?.(bearing, pitch, position), [render, bearing, pitch, position]);
+  return [
+    active ? handlers : null,
+    useHooks(() => render?.(bearing, pitch, position), [render, bearing, pitch, position]),
+  ];
 };

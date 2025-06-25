@@ -88,7 +88,7 @@ export const drawCall = (props: DrawCallProps) => {
     globalBinding,
     globalDefs,
     globalUniforms,
-    
+
     pipelineKey,
     customLayouts,
 
@@ -100,7 +100,7 @@ export const drawCall = (props: DrawCallProps) => {
     pipeline: propPipeline,
     defines: propDefines,
     mode = 'opaque',
-    
+
     label,
   } = props;
 

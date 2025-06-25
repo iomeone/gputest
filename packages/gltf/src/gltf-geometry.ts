@@ -88,7 +88,7 @@ export const useGLTFGeometry = (
       unwelded,
       side,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...arrays, tangents, fmts, primitive, side]);
 
   const transformed = useMemo(() => {

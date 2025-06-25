@@ -1,4 +1,13 @@
 export type ButtonType = 'left' | 'middle' | 'right';
+export type ModifierType = 'shift' | 'alt' | 'accel';
+
+export type ActionBinding = {
+  wheel?: boolean,
+  button?: ButtonType,
+  modifiers?: ModifierType[],
+};
+
+export type ActionMap = Record<string, ActionBinding[] | null>;
 
 export type MouseState = {
   buttons: Record<ButtonType, boolean>,
@@ -36,7 +45,7 @@ export type CanvasEvent<T = any> = {
   preventDefault: () => void,
   stopPropagation: () => void,
   target: T,
-  
+
   detail: number,
   which: number,
 };

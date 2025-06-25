@@ -30,7 +30,7 @@ export const FPSCounter: LiveComponent<FPSCounterProps> = memo((props: FPSCounte
   } = props;
 
   const time = useTimeContext();
-  
+
   const values: number[] = useOne(() => []);
   if (time.delta) values.push(1000 / time.delta);
   if (values.length > samples) values.shift();

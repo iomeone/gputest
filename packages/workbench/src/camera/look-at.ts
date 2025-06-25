@@ -28,7 +28,7 @@ export const LookAt: LiveComponent<LookAtProps> = (props) => {
   const target = useProp(props.target, parsePosition, DEFAULT_LOOK_AT.target);
 
   const orbit = useMemo(() => {
-    
+
     const delta = vec3.sub(vec3.create(), target, position);
 
     const bearing = -Math.atan2(delta[0], delta[2]) + Math.PI;

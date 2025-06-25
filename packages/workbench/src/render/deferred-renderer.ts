@@ -98,7 +98,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     overlay,
     merge,
     overscan,
-  
+
     lights,
     normals,
     motion,
@@ -117,7 +117,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     use(DeferredGPass, options),
     ssao ? use(SSAOPass, options) : null,
     use(DeferredResolvePass, options),
-    picking ? use(PickingPass, options) : null, 
+    picking ? use(PickingPass, options) : null,
     debug ? use(DebugPass, options) : null,
   ], props);
 

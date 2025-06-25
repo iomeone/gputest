@@ -27,7 +27,7 @@ export const checkStorageType = (
 
   let f = fromName;
   let t = toName;
-  
+
   if (t == null || f === t) return;
 
   // Remove array<atomic<..>>

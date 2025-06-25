@@ -123,13 +123,13 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
     const s = size.join('×');
 
     const parts: string[] = [];
-  
+
     if (t.layout) parts.push(t.layout);
     if (t.format) parts.push(t.format);
     if (t.colorSpace) parts.push(t.colorSpace);
 
     const subtype = parts.join(' ');
-    
+
     const id = t.id ?? getObjectKey(t.view ?? t.texture);
 
     return (
@@ -197,7 +197,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
       })
     )
   };
-  
+
   const makeTextureLabel = (
     texture: TextureTarget | TextureSource,
     suffix: string,
@@ -252,7 +252,7 @@ const TextureViews: LiveComponent<TexturesProps> = memo((props: TexturesProps) =
         const t = getDisplayShader(ts);
         out.push(makeView(t));
       }
-    
+
       if (hasStencil) {
         const label = makeTextureLabel(texture, 'Stencil');
         const ts = proxy(texture, {

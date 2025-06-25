@@ -48,7 +48,7 @@ export const LookAtControls: LC<LookAtControlsProps> = (props: LookAtControlsPro
   const [index, setIndex] = useState(0);
   const position = POSITIONS[index];
   const target = TARGETS[index];
-  
+
   const prev = () => setIndex((index - 1 + POSITIONS.length) % POSITIONS.length);
   const next = () => setIndex((index + 1) % POSITIONS.length);
 

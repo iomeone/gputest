@@ -129,7 +129,7 @@ export const makeBindingAccessors = (
 
     for (const binding of constants) {
       const {attribute: {name, format: type, args}} = binding;
-      
+
       if (typeof type !== 'string') throw new Error(`Cannot make uniform for struct type`);
       program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args as any));
     }
@@ -199,7 +199,7 @@ export const makeBindingAccessors = (
 
     for (const binding of textures) {
       const {attribute: {name, format: formatOut, args}, texture} = binding;
-      
+
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const {volatile, layout, variant, absolute, sampler, filter, format: formatIn, aspect} = texture!;
       const set = volatile ? volatileSet : bindingSet;

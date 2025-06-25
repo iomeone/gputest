@@ -73,7 +73,10 @@ interface Use<F extends ArrowFunction> {
 export const use: Use<any> = <F extends ArrowFunction>(
   f: LiveFunction<F>,
   ...args: UseArgs<F>
-): DeferredCall<F> => ({f, args, key: undefined, by: getCurrentFiberID()} as any);
+): DeferredCall<F> => {
+  if (!f) throw new Error("Invalid JSX component type");
+  return ({f, args, key: undefined, by: getCurrentFiberID()} as any);
+};
 
 /** Use a keyed call to a Live function, reconciled by key. */
 export const keyed = <F extends ArrowFunction>(

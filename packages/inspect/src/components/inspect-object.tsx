@@ -116,7 +116,7 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
     const compact = <Compact>
       {expanded ? formatValue(object[k]) : truncate(formatValue(object[k]), 80)}
     </Compact>
-    
+
     const full = expanded ? (
       <TreeIndent indent={1}>{
         code

@@ -227,7 +227,7 @@ fn xxhash32_3d(p: vec3<u32>) -> u32 {
 fn raytrace(
   origin: vec3<f32>,
   ray: vec3<f32>,
-  
+
   bounce: i32,
   isDebugPickingThis: bool,
 ) -> Surface {

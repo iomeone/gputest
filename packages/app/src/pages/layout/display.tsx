@@ -110,7 +110,7 @@ export const LayoutDisplayPage: LC = () => {
                       (texture: TextureSource | null) =>
                         <Flex align="center" width="100%" height={300}>
                           <Block
-                            fill="#3090ff" 
+                            fill="#3090ff"
                             width={300}
                             height={300}
                             margin={20}

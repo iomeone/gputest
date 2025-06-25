@@ -15,7 +15,7 @@ const shouldIgnore = (s: string) => s.match(/\/pkg\//);
 const map = (from: string, extFrom: string, extTo: string, callback: (s: string) => string) => {
   const filename = path.basename(from).slice(0, -extFrom.length) + extTo;
   const to = path.join(path.dirname(from), filename);
-  
+
   renameSync(from, to);
 
   const data = readFileSync(to, 'utf-8');

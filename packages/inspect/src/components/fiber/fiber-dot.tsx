@@ -35,7 +35,7 @@ export const FiberDot = forwardRef<HTMLDivElement, FiberDotProps>(({
 
   const [version, pinged] = usePingTracker(fiber);
   if (version <= 1) return null;
-  
+
   const classes: string[] = ['pinged'];
 
   if (!pinged) classes.push('cold');

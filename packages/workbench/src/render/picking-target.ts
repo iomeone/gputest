@@ -161,7 +161,7 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
         height,
         samples,
         colorStates,
-        
+
         viewAttachments: [{
           colorAttachments,
           depthStencilAttachment,

@@ -5,7 +5,7 @@ import { yeet, useMemo, useOne, useRef } from '@use-gpu/live';
 import { chainTo } from '@use-gpu/shader/wgsl';
 
 import { usePassContext } from '../../providers/pass-provider';
-import { useKeyboard, useMouse } from '../../providers/event-provider';
+import { useKeyboardState, useMouseState } from '../../providers/event-provider';
 
 import { useTextureAccess, useTextureUVToXY } from '../../hooks/useTextureAccess';
 import { useShader } from '../../hooks/useShader';
@@ -33,7 +33,7 @@ export type SSAODispatchProps = {
   depthRamp: number,
   normalRamp: number,
   temporalBlend: number,
-  
+
   targetContext: UseGPURenderContext,
   descriptor: GPURenderPassDescriptor,
 
@@ -47,7 +47,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const {
     bindPass,
     globalLayout,
-    
+
     mode, // static
     radius,
     depthRamp,
@@ -64,7 +64,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
     buffers: {normal, motion, ssao},
     views: { pre: { uniforms: { overscanMatrix }}},
   } = usePassContext();
-  
+
   const [normalContext] = normal;
   const [motionContext] = motion;
 
@@ -78,7 +78,7 @@ export const SSAODispatch: LiveComponent<SSAODispatchProps> = (props: SSAODispat
   const motionContextXYSource = motionContext.sources![0];
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const motionContextZSource = motionContext.sources![1];
-  
+
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const normalDepth = normalTarget.depth!;
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -289,10 +289,10 @@ export const SSAODebugPicking = (props: SSAODebugPickingProps) => {
   const {swap: clearDebugBuffer} = usePrintContext();
 
   // Pick when holding ALT
-  const {keyboard} = useKeyboard();
-  const {mouse} = useMouse();
+  const keyboard = useKeyboardState();
+  const mouse = useMouseState();
 
-  const shouldPick = keyboard.keys.alt;
+  const shouldPick = keyboard.alt;
   const shouldClearRef = useRef(false);
 
   // Clear when starting picking, or when moving mouse
@@ -311,7 +311,7 @@ export const SSAODebugPicking = (props: SSAODebugPickingProps) => {
   const sy = applyOverscan ? m?.[5] ?? 1 : 1;
   const dx = applyOverscan ? (1 - sx) / 2 : 0;
   const dy = applyOverscan ? (1 - sy) / 2 : 0;
-  
+
   // Snap to even source pixels
   const mx = Math.round((u * sx + dx) * normalTarget.width) * 2;
   const my = Math.round((v * sy + dy) * normalTarget.height) * 2;

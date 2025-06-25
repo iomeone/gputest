@@ -121,7 +121,7 @@ const provideContext = (
   const hasTransform = !!transform;
   const hasMaterial = !!material;
   const hasScissor = !!scissor;
-  
+
   const key = (element as DeferredCall<any>)?.key;
 
   let view = element;

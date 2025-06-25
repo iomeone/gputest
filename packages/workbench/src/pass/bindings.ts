@@ -63,7 +63,7 @@ export const useStandardBindGroup = (
       shadows ? shadowBinding : null,
       ssao ? ssaoBinding : null,
     ];
-    
+
     const pipelineKey = resolvedBindings.reduce(
       (a: number, b: PassBinding | null | undefined, i: number) => (
         a | (b ? (1 << i) : 0)
@@ -86,7 +86,7 @@ export const useApplyPassBindGroup = (
 ): ApplyPass => {
   const {attributes, layout, bind} = passBindGroup;
   if (attributes == null || bind == null || layout == null) return (useNoApplyPassBindGroup(), {dataBindings: []});
-  
+
   const device = useDeviceContext();
 
   const values = useMemo(() =>
@@ -98,7 +98,7 @@ export const useApplyPassBindGroup = (
     }),
     [attributes, bind, env]
   );
-  
+
   const bindPass = useMemo(() => {
     const entries = makeDataBindingsEntries(device, values);
     const bindGroup = makeBindGroup(device, layout, entries, `PassBindGroup/${label ?? 'Apply'}`);
@@ -107,7 +107,7 @@ export const useApplyPassBindGroup = (
       passEncoder.setBindGroup(0, bindGroup);
     };
   }, [device, layout, values, label]);
-  
+
   return {bindPass, dataBindings: values};
 };
 
@@ -122,7 +122,7 @@ export const useDynamicViewBinding = (
   maybeUniforms?: ViewUniforms,
 ) => {
   if (!passBindGroup) throw new Error("Missing bind group");
-  
+
   const {cull, uniforms} = useViewUniforms(maybeUniforms);
 
   const [source, upload] = useUniformSource(ViewUniformsWGSL);
@@ -130,6 +130,6 @@ export const useDynamicViewBinding = (
     ...passBindGroup,
     bind: (env: PassEnv) => [source, ...(passBindGroup.bind?.(env) ?? []).slice(1)],
   }), [passBindGroup, source]);
-  
+
   return {bindGroup, cull, uniforms, upload};
 }

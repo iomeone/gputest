@@ -2,7 +2,7 @@ import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { GPUGeometry, TextureSource } from '@use-gpu/core';
 import type { ShaderSource } from '@use-gpu/shader';
 
-import React, { Gather, useContext, useOne } from '@use-gpu/live';
+import React, { Gather, useOne } from '@use-gpu/live';
 import { seq } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
 
@@ -11,7 +11,7 @@ import {
   GeometryData, PBRMaterial, PrefilteredEnvMap,
   OrbitCamera, OrbitControls, PanControls,
   Cursor, Suspense,
-  KeyboardContext,
+  useKeyboardState,
   makeSphereGeometry,
 } from '@use-gpu/workbench';
 
@@ -31,11 +31,9 @@ const IMAGE_FIT = {fit: 'scale'};
 export const MaterialEnvMapPage: LC = () => {
   const geometry = useOne(() => makeSphereGeometry({ width: 2, uvw: true, detail: [32, 64] }));
 
-  const { useKeyboard } = useContext(KeyboardContext);
-  const { keyboard } = useKeyboard();
-  const {keys} = keyboard;
-  const zooming = !!keys.alt;
-  const panning = !!keys.shift;
+  const keyboard = useKeyboardState();
+  const zooming = !!keyboard.alt;
+  const panning = !!keyboard.shift;
 
   const root = document.querySelector('#use-gpu .canvas');
 

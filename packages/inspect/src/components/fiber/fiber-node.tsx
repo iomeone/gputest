@@ -130,11 +130,11 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   );
 
   const shouldCollapseIntoParent = !wide && isBuiltin && !!fiber.next;
-  
+
   const shouldDisplaySelf = !isBuiltin && isVisible;
   const [,, isPinned] = usePingTracker(fiber, shouldDisplaySelf && !!(filterTags & FiberTag.By));
   const shouldDisplay = shouldDisplaySelf || isPinned;
-  
+
   const isSection = shouldDisplay && !shouldDisplaySelf && ((filterTags & FiberTag.All) != FiberTag.All);
 
   const shouldTerminate = (shouldCollapseIntoParent || fiber.f?.isLiveReconcile || fiber.f?.isLiveQuote || fiber.f?.isLiveContinuation) && isVisible;

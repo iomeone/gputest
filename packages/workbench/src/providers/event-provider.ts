@@ -1,267 +1,262 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
 
-import { memo, provide, makeContext, useContext, useNoContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 import { makeIdAllocator } from '@use-gpu/core';
+import { EventReconciler } from '../reconcilers/index';
 import { PickingContext } from '../providers/picking-provider';
 import { RenderContext } from '../providers/render-provider';
 
+import { PointerCaptureAPI, PointerLockAPI } from './types';
+
+const {reconcile, quote} = EventReconciler;
+
 export const EventContext = makeContext<EventContextProps>(undefined, 'EventContext');
-export const MouseContext = makeContext<MouseContextProps>(undefined, 'MouseContext');
-export const WheelContext = makeContext<WheelContextProps>(undefined, 'WheelContext');
-export const KeyboardContext = makeContext<KeyboardContextProps>(undefined, 'KeyboardContext');
-
-export type EventContextProps = {
-  useId: () => number,
-};
-
-export type MouseContextProps = {
-  mouse: MouseState,
-  target: {
-    captureId: number | null,
-    targetId: number,
-    targetIndex: number,
-  },
-
-  hasLock: boolean,
-  beginLock: () => void,
-  endLock: () => void,
-  beginCapture: (id: number) => void,
-  endCapture: () => void,
-  useMouse: (id?: number | null) => MouseEventState,
-};
-
-export type WheelContextProps = {
-  wheel: WheelState,
-  useWheel: (id?: number | null) => WheelEventState,
-};
-
-export type KeyboardContextProps = {
-  keyboard: KeyboardState,
-  useKeyboard: (id?: number | null) => KeyboardEventState,
-};
+export const MouseContext = makeContext<MouseState>(undefined, 'MouseContext');
+export const WheelContext = makeContext<WheelState>(undefined, 'WheelContext');
+export const KeyboardContext = makeContext<KeyboardState>(undefined, 'KeyboardContext');
 
 export type EventProviderProps = {
-  mouse: MouseState,
-  wheel: WheelState,
-  keyboard: KeyboardState,
+  subscribeEvent: (type: string, handler: ArrowFunction) => void,
   pointerLock: PointerLockAPI,
   children?: LiveElement,
 };
 
-export type PointerLockAPI = {
-  beginLock: () => void,
-  endLock: () => void,
-  hasLock: boolean,
+export type EventStateProviderProps = {
+  subscribeEvent: (type: string, handler: ArrowFunction) => void,
+  children?: LiveElement,
 };
 
-export type MouseState = {
-  buttons: { left: boolean, middle: boolean, right: boolean },
-  button: 'left' | 'middle' | 'right' | null,
-  x: number,
-  y: number,
-  moveX: number,
-  moveY: number,
+export type EventContextProps = {
+  useId: () => number,
+  usePointerCapture: () => PointerCaptureAPI,
+  usePointerLock: () => PointerLockAPI,
 };
 
-export type WheelState = {
-  x: number,
-  y: number,
-  moveX: number,
-  moveY: number,
-  spinX: number,
-  spinY: number,
-};
-
-export type KeyboardState = {
-  modifiers: {
-    ctrl: boolean,
-    alt: boolean,
-    shift: boolean,
-    meta: boolean,
-  },
-  keys: Record<string, boolean>,
-  key: string | null,
-  char: string | null,
-  soft: boolean,
-};
-
-export type Stoppable<T> = T & { stopped: boolean };
-
-export type MouseEventState = {
-  mouse: MouseState & { stopped: boolean },
-
-  index: number,
-  hovered: boolean,
-  captured: boolean,
-  pressed: { left: boolean, middle: boolean, right: boolean },
-  clicks: { left: number, middle: number, right: number },
-  presses: { left: number, middle: number, right: number },
-
-  stop: () => void,
-};
-
-export type WheelEventState = {
-  wheel: WheelState & { stopped: boolean },
-  index: number,
-
-  stop: () => void,
-};
-
-export type KeyboardEventState = {
-  keyboard: KeyboardState & { stopped: boolean },
-
-  stop: () => void,
-};
-
-const makeClickTracker = () => ({
+const INITIAL_MOUSE_STATE = {
   buttons: { left: false, middle: false, right: false },
-  pressed: { left: false, middle: false, right: false },
-  presses: { left: 0, middle: 0, right: 0 },
-  clicks:  { left: 0, middle: 0, right: 0 },
-});
-
-const INITIAL_MOUSE = {
+  button: null,
+  x: 0,
+  y: 0,
   moveX: 0,
   moveY: 0,
 };
 
-const INITIAL_WHEEL = {
+const INITIAL_WHEEL_STATE = {
+  x: 0,
+  y: 0,
   moveX: 0,
   moveY: 0,
+  spinX: 0,
+  spinY: 0,
 };
 
-const makeCaptureRef = () => ({
+const INITIAL_KEYBOARD_STATE = {};
+
+const makeCaptureIdRef = () => ({
   current: null as number | null,
 });
 
+const makePointerEnterIdRef = () => ({
+  current: 0,
+});
+
 export const EventProvider: LiveComponent<EventProviderProps> = memo((props: EventProviderProps) => {
-  const {mouse, wheel, keyboard, pointerLock, children} = props;
+  const {subscribeEvent, pointerLock, children} = props;
 
-  const {pixelRatio} = useContext(RenderContext);
+  // Read ID from picking buffer (callback)
   const pickingContext = useContext(PickingContext);
-  const [captureId, setCaptureId] = useState<number | null>(null);
+  const {pixelRatio} = useContext(RenderContext);
+  const pick = useCallback((x: number, y: number) => {
+    return pickingContext?.sampleTexture(x * pixelRatio, y * pixelRatio) ?? [-1, -1];
+  }, [pickingContext, pixelRatio]);
 
-  const captureRef = useOne(makeCaptureRef);
-  captureRef.current = captureId;
+  // Pointer capturing by ID
+  const captureIdRef = useOne(makeCaptureIdRef);
+  const pointerCapture = useMemo(() => ({
+    hasCapture: () => captureIdRef.current,
+    beginCapture: (id: number) => { captureIdRef.current = id; },
+    endCapture: () => { captureIdRef.current = null; },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), []);
 
+  // Event API for ID allocation
   const allocId = useOne(() => makeIdAllocator());
-
-  let targetId = -1, targetIndex = -1;
-  if (pickingContext) {
-    [targetId, targetIndex] = pickingContext.sampleTexture(mouse.x * pixelRatio, mouse.y * pixelRatio);
-  }
-
   const eventApi = useOne(() => ({
-    useId: () => useResource((dispose) => {
+    useObjectId: () => useResource((dispose) => {
+      const {hasCapture, endCapture} = pointerCapture;
       const id = allocId.obtain();
+
       dispose(() => {
         allocId.release(id);
-        if (captureRef.current === id) setCaptureId(null);
+        if (hasCapture() === id) endCapture();
       });
       return id;
     }),
+
+    usePointerCapture: () => pointerCapture,
+    usePointerLock: () => pointerLock,
   }));
 
-  const m = mouse as Stoppable<MouseState>;
-  const w = wheel as Stoppable<WheelState>;
-  const k = keyboard as Stoppable<KeyboardState>;
+  // Pointer enter/leave tracking by ID
+  const pointerEnterIdRef = useOne(makePointerEnterIdRef);
 
-  const stopMouse    = useOne(() => () => m.stopped = true, mouse);
-  const stopWheel    = useOne(() => () => w.stopped = true, wheel);
-  const stopKeyboard = useOne(() => () => k.stopped = true, keyboard);
+  const annotateEvent = (e: any) => {
+    if (e.x != null && e.y != null && e.pickId === undefined) {
+      [e.pickId, e.pickIndex] = pick(e.x, e.y);
+    }
+  };
 
-  m.stopped = false;
-  w.stopped = false;
-  k.stopped = false;
+  // Gather user event handlers
+  const Resume = (handlers: Record<string, ArrowFunction[]>) => {
 
-  const mouseContext = useMemo(() => ({
-    mouse,
-    target: {
-      captureId,
-      targetId,
-      targetIndex,
-    },
-    ...pointerLock,
-    beginCapture: (id: number) => setCaptureId(id),
-    endCapture: () => setCaptureId(null),
-    useMouse: (id: number | null = null): MouseEventState => {
-      const ref = useOne(() => ({mouse: {...mouse, ...INITIAL_MOUSE}}));
+    // Dispatch enter/leave events before move
+    const {pointerEnter, pointerLeave, ...rest} = handlers;
+    const handlePointerEnterLeave = useCallback((e: any) => {
+      annotateEvent(e);
 
-      const tracker = useOne(makeClickTracker);
-      const {pressed, presses, clicks, buttons: lastButtons} = tracker;
-      const {buttons} = mouse;
-
-      const index    = targetIndex;
-      const captured = captureId === id;
-      const hovered  = (captureId == null || captured) && (targetId === id || id === null);
-
-      if (captured || hovered) {
-        ref.mouse = mouse;
+      const {current: pointerEnterId} = pointerEnterIdRef;
+      if (e.pickId !== pointerEnterId) {
+        for (const handler of pointerLeave) if (handler.id === pointerEnterId) handler.callback(e);
+        for (const handler of pointerEnter) if (handler.id === e.pickId) handler.callback(e);
+        pointerEnterIdRef.current = e.pickId;
       }
+    }, [pointerEnter, pointerLeave]);
+    useHandler(subscribeEvent, 'pointerMove', handlePointerEnterLeave);
 
-      useOne(() => {
-        if (hovered) {
-          if ((buttons.left)   && !(lastButtons.left))   { presses.left++;   pressed.left   = true; }
-          if ((buttons.middle) && !(lastButtons.middle)) { presses.middle++; pressed.middle = true; }
-          if ((buttons.right)  && !(lastButtons.right))  { presses.right++;  pressed.right  = true; }
+    for (const k in rest) {
+      const fn = useMemo(() => {
+        const hs = handlers[k];
+        return (e: any) => {
+          const {current: captureId} = captureIdRef;
 
-          if (!(buttons.left)   && pressed.left)   { clicks.left++;   pressed.left   = false; }
-          if (!(buttons.middle) && pressed.middle) { clicks.middle++; pressed.middle = false; }
-          if (!(buttons.right)  && pressed.right)  { clicks.right++;  pressed.right  = false; }
-        }
-        else {
-          if (pressed.left   && !(buttons.left)   && (lastButtons.left))   pressed.left   = false;
-          if (pressed.middle && !(buttons.middle) && (lastButtons.middle)) pressed.middle = false;
-          if (pressed.right  && !(buttons.right)  && (lastButtons.right))  pressed.right  = false;
-        }
-        tracker.buttons = buttons;
-      }, buttons);
+          let stopped = false;
+          e.stopPropagation = () => {
+            e.nativeEvent.stopPropagation();
+            stopped = true;
+          };
 
-      return {mouse: ref.mouse as any, index, hovered, captured, pressed, presses, clicks, stop: stopMouse};
-    },
-  }), [mouse, targetId, captureId, pointerLock, stopMouse, targetIndex]);
+          annotateEvent(e);
 
-  const wheelContext = useMemo(() => ({
-    wheel,
-    useWheel: (id: number | null = null): WheelEventState => {
-      const ref = useOne(() => ({wheel: {...wheel, ...INITIAL_WHEEL}}));
+          // Dispatch in reverse tree order
+          const n = hs.length;
+          for (let i = n - 1; i >= 0; i--) {
+            const handler = hs[i];
 
-      const index    = targetIndex;
-      const captured = captureId === id;
-      const hovered  = (captureId == null || captured) && (targetId === id || id === null);
+            if (typeof handler === 'object') {
+              if ((captureId == null && handler.id === e.pickId) || handler.id === captureId) handler.callback(e);
+            }
+            else if (captureId == null) {
+              handler(e);
+            }
 
-      if (hovered) {
-        ref.wheel = wheel;
-      }
+            if (stopped) break;
+          }
+        };
+      }, [k, handlers]);
 
-      return {wheel: ref.wheel as any, index, stop: stopWheel};
-    },
-  }), [wheel, targetId, captureId, stopWheel, targetIndex]);
+      useHandler(subscribeEvent, k, fn);
+    }
+  };
 
-  const keyboardContext = useMemo(() => ({
-    keyboard,
-    useKeyboard: (): KeyboardEventState => {
-      return {keyboard: keyboard as any, stop: stopKeyboard};
-    },
-  }), [keyboard, stopKeyboard]);
+  const stack = (
+    provide(EventContext, eventApi,
+      use(EventStateProvider, {subscribeEvent, children})
+    )
+  );
+
+  return reconcile(quote(multiGather(unquote(stack), Resume)));
+}, 'EventProvider');
+
+export const EventStateProvider = (props: EventStateProviderProps) => {
+  const {subscribeEvent, children} = props;
+
+  // Declarative input state
+  const [mouseState, setMouseState] = useState(INITIAL_MOUSE_STATE);
+  const [wheelState, setWheelState] = useState(INITIAL_WHEEL_STATE);
+  const [keyboardState, setKeyboardState] = useState(INITIAL_KEYBOARD_STATE);
+
+  const handlePointerEvent = useCallback((e: any) => {
+    setMouseState(s => ({
+      ...s,
+      x: e.x,
+      y: e.y,
+      moveX: e.moveX,
+      moveY: e.moveY,
+      button: e.button,
+      buttons: e.buttons,
+    }));
+  }, []);
+
+  const handleWheelEvent = useCallback((e: any) => {
+    setWheelState(s => ({
+      ...s,
+      x: e.x,
+      y: e.y,
+      moveX: e.moveX,
+      moveY: e.moveY,
+      spinX: e.spinX,
+      spinY: e.spinY,
+    }));
+  }, []);
+
+  const handleKeyDown = useCallback((e: any) => {
+    setKeyboardState(s => ({
+      ...s,
+      [e.key.toLowerCase()]: true,
+    }));
+  }, []);
+
+  const handleKeyUp = useCallback((e: any) => {
+    setKeyboardState(s => ({
+      ...s,
+      [e.key.toLowerCase()]: false,
+    }));
+  }, []);
+
+  useHandler(subscribeEvent, 'pointerDown', handlePointerEvent);
+  useHandler(subscribeEvent, 'pointerMove', handlePointerEvent);
+  useHandler(subscribeEvent, 'pointerUp', handlePointerEvent);
+  useHandler(subscribeEvent, 'wheel', handleWheelEvent);
+  useHandler(subscribeEvent, 'keyDown', handleKeyDown);
+  useHandler(subscribeEvent, 'keyUp', handleKeyUp);
 
   return (
-    provide(MouseContext, mouseContext,
-      provide(WheelContext, wheelContext,
-        provide(KeyboardContext, keyboardContext,
-          provide(EventContext, eventApi, children)
+    provide(MouseContext, mouseState,
+      provide(WheelContext, wheelState,
+        provide(KeyboardContext, keyboardState,
+          children
         )
       )
     )
   );
-}, 'EventProvider');
+};
 
-export const useKeyboard = (id: number | null = null) => useContext(KeyboardContext).useKeyboard(id);
-export const useMouse = (id: number | null = null) => useContext(MouseContext).useMouse(id);
-export const useWheel = (id: number | null = null) => useContext(WheelContext).useWheel(id);
+const useHandler = (subscribe: ArrowFunction, type: string, handler: ArrowFunction) => {
+  useResource((dispose) => dispose(subscribe(type, handler)), [type, handler]);
+};
 
-export const useNoKeyboard = () => useNoContext(KeyboardContext);
-export const useNoMouse = () => useNoContext(MouseContext);
-export const useNoWheel = () => useNoContext(WheelContext);
+export const useObjectEvents = (callbacks: Record<string, ArrowFunction>) => {
+  const id = useObjectId();
+  const handlers = useCanvasEvents(id, callbacks);
+  return {id, handlers};
+};
 
-export const useMouseLock = () => useContext(MouseContext);
+export const useCanvasEvents = (id: number | null, callbacks: Record<string, ArrowFunction>) => {
+  return useOne(() => {
+    const handlers = id != null ? {} : callbacks;
+    if (id != null) for (const k in callbacks) handlers[k] = { id, callback: callbacks[k] };
+    return quote(yeet(handlers));
+  }, callbacks);
+};
+
+export const useKeyboardState = () => useContext(KeyboardContext);
+export const useMouseState = () => useContext(MouseContext);
+export const useWheelState = () => useContext(WheelContext);
+
+export const useNoKeyboardState = () => useNoContext(KeyboardContext);
+export const useNoMouseState = () => useNoContext(MouseContext);
+export const useNoWheelState = () => useNoContext(WheelContext);
+
+export const useObjectId = () => useContext(EventContext).useObjectId();
+export const usePointerLock = () => useContext(EventContext).usePointerLock();
+export const usePointerCapture = () => useContext(EventContext).usePointerCapture();

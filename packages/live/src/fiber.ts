@@ -930,7 +930,7 @@ const multiGatherMergeInto = <T>(a: Record<string, T[]>, b: Record<string, T | T
       const n = v.length;
       for (let i = 0; i < n; ++i) list.push(v[i] as T);
     }
-    else list.push(v as T);
+    else if (v !== undefined) list.push(v as T);
   }
 }
 // Generalized mounting of reduction-like continuations
@@ -1112,7 +1112,7 @@ export const provideFiber = <F extends ArrowFunction>(
   fiber: LiveFiber<F>,
 ) => {
   if (!fiber.args) return;
-  
+
   const {context: {roots, values}, args: [context, value, calls]} = fiber;
 
   if (roots.get(context) !== fiber.id) {

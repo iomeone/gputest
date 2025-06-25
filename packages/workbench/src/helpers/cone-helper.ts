@@ -78,14 +78,14 @@ export const ConeHelper: LC<ConeHelperProps> = memo((props: ConeHelperProps) => 
       const th = i / detail * Math.PI * 2;
       return [Math.cos(th) * radius, Math.sin(th) * radius, width, 1];
     });
-    
+
     const indices = [
       ...seq(detail + 1, 1),
       1,
       ...seq(4).flatMap(i => [0, 1 + Math.floor(detail / 4 * i)]),
       0, 0,
     ];
-    
+
     const positions = [
       [0, 0, 0, 1],
       ...circle,

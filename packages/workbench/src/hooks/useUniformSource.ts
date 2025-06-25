@@ -32,7 +32,7 @@ export const getUniformSource = (
   const attr = bundleToAttribute(type);
   const defs = attr.format;
   if (!Array.isArray(defs)) throw new Error(`Invalid uniform struct type '${attr.name}'`);
-  
+
   const pipe = makeUniformPipe(defs, n);
   const buffer = makeUniformBuffer(device, pipe.data);
 

@@ -53,7 +53,7 @@ export const EaseToTarget: LC<EaseToTargetProps<Record<string, Numberish>>> = <T
   } = props;
 
   const render = getRenderFunc(props);
-  
+
   // To avoid garbage collection, make a double-buffered value object with copies of all values
   const keys = Object.keys(target);
   const [swapValues] = useDouble(() => mapValues(target, v => makeValueRef(v)), keys);
@@ -72,7 +72,7 @@ export const EaseToTarget: LC<EaseToTargetProps<Record<string, Numberish>>> = <T
   // Pass new target by ref
   const targetRef = useRef(target);
   targetRef.current = target;
-  
+
   // Static continuation callback
   const Run = useCallback(() => {
     const {elapsed, delta} = useTimeContext();

@@ -55,7 +55,7 @@ export const FiberBadge = forwardRef<HTMLDivElement, FiberBadgeProps>(({
   const {id, by, f, __inspect} = fiber;
 
   const tags = getFiberTags(fiber);
-  
+
   const quote = tags & FiberTag.Quote;
   const yeet = tags & FiberTag.Yeet;
   const react = tags & FiberTag.React;

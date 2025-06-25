@@ -302,7 +302,7 @@ export const schemaToAggregate = (
     const hasValues = attributes[key] != null;
     const hasRef = ref && refs && refs[key] != null;
     const hasJs = !!js;
-    
+
     if (hasValues || hasRef) {
       const isArray = isUniformArrayType(format);
 

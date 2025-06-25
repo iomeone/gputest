@@ -234,7 +234,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
       counter.current = (index + 1) % (history + 1);
     } : null;
-    
+
     if (format && targetTexture) {
       const view = targetTexture.createView();
       const volatile = (history > 0) ? history + 1 : 0;
@@ -270,7 +270,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       const volatile = history ? history + 1 : 0;
 
       const layout = samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d';
-      
+
       const makeSource = () => ({
         texture: depthTexture,
         view,
@@ -293,7 +293,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       depth.history = depths;
       if (swap) depth.swap = swap;
     }
-    
+
     swap?.();
 
     return [source, depth];
@@ -315,7 +315,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
     colorStates,
     depthStencilState,
-    
+
     viewType: '2d',
     viewAttachments: [{
       colorAttachments,

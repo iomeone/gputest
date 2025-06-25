@@ -44,7 +44,7 @@ export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: Prop
 
   const bindGroups = useMinimalBindGroups(resources);
 
-  const variants = useMakeUseVariants(COMPONENTS, options);  
+  const variants = useMakeUseVariants(COMPONENTS, options);
 
   const passes = useOne(() => [use(ColorPass, options)], options);
 

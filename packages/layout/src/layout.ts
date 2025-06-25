@@ -9,10 +9,10 @@ import { memo, provide, gather, yeet, keyed, fragment, useContext, useMemo, useO
 import { schemaToArchetype } from '@use-gpu/core';
 
 import {
-  DebugContext, MouseContext, WheelContext, ViewContext,
+  DebugContext, ViewContext,
   LayoutContext, useTransformContext,
   useInspectable, useInspectHoverable, useInspectorSelect, Inspector,
-  useShader,
+  useShader, useMouseState, useWheelState,
   QueueReconciler, LayerReconciler,
   UI_SCHEMA,
 } from '@use-gpu/workbench';
@@ -161,7 +161,6 @@ const screenToView = (projectionMatrix: mat4, x: number, y: number) => {
 };
 
 export const Scroller = (pickers: any[], flip: [number, number], shift: [number, number]) => {
-  const { useWheel } = useContext(WheelContext);
   const { uniforms: viewUniforms } = useContext(ViewContext);
   const {
     viewPixelRatio: { current: dpi },
@@ -169,7 +168,7 @@ export const Scroller = (pickers: any[], flip: [number, number], shift: [number,
     projectionMatrix: { current: matrix },
   } = viewUniforms;
 
-  const { wheel } = useWheel();
+  const wheel = useWheelState();
   const [px, py] = screenToView(matrix, wheel.x / width * dpi * 2.0 - 1.0, 1.0 - wheel.y / height * dpi * 2.0);
 
   const versionRef = useOne(() => ({current: 0}));
@@ -200,7 +199,6 @@ export const Scroller = (pickers: any[], flip: [number, number], shift: [number,
 }
 
 export const Inspect = (pickers: any[], flip: [number, number], shift: [number, number]) => {
-  const { useMouse } = useContext(MouseContext);
   const { uniforms: viewUniforms } = useContext(ViewContext);
   const {
     viewPixelRatio: { current: dpi },
@@ -210,7 +208,7 @@ export const Inspect = (pickers: any[], flip: [number, number], shift: [number, 
 
   const setHighlight = useInspectorSelect();
 
-  const { mouse, pressed } = useMouse();
+  const mouse = useMouseState();
   const [px, py] = screenToView(matrix, mouse.x / width * dpi * 2.0 - 1.0, 1.0 - mouse.y / height * dpi * 2.0);
 
   const picked = useOne(() => {

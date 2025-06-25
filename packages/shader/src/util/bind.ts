@@ -183,7 +183,7 @@ export const makeResolveBindings = (
 
         if (m.virtual) {
           const {uniforms, storages, textures} = m.virtual;
-          
+
           if (uniforms) for (const b of uniforms) addVisibility(b, visibility);
           if (storages) for (const b of storages) addVisibility(b, visibility);
           if (textures) for (const b of textures) addVisibility(b, visibility);

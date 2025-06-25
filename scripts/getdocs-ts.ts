@@ -135,7 +135,7 @@ class Context {
       // Kind given
     } else if (symbol.flags & SymbolFlags.Alias) {
       let aliased = this.tc.getAliasedSymbol(symbol)
-      
+
       const a = this.symbolName(symbol);
       const b = this.symbolName(aliased);
       DEBUG && a !== b && console.log('alias', a, '->', b);
