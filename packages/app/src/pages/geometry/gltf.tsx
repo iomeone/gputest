@@ -7,12 +7,15 @@ import { vec3 } from 'gl-matrix';
 
 import {
   LinearRGB, Pass, LoadingSpinner,
-  OrbitCamera, OrbitControls,
-  Cursor,
+  OrbitCamera,
   PrefilteredEnvMap, Environment,
   PointLight,
   Animate, Suspense,
 } from '@use-gpu/workbench';
+import {
+  Cursor,
+  OrbitControls,
+} from '@use-gpu/interact';
 
 import { GLTFData, GLTFModel } from '@use-gpu/gltf';
 import { Scene, Node } from '@use-gpu/scene';

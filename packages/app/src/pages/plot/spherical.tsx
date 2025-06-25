@@ -5,11 +5,13 @@ import { vec3 } from 'gl-matrix';
 
 import {
   Pass,
-  OrbitCamera, OrbitControls,
-  Cursor,
+  OrbitCamera,
   Animate,
   LinearRGB,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Spherical, Axis, Grid, Label, Line, Sampler, Scale, Tick,
 } from '@use-gpu/plot';

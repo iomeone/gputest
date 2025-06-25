@@ -6,10 +6,13 @@ import React from '@use-gpu/live';
 
 import {
   Pass, LinearRGB,
-  OrbitControls, OrbitCamera, FlatCamera,
-  Cursor, Clock, Fetch,
+  OrbitCamera, FlatCamera,
+  Clock, Fetch,
   Data, ValueShader, PointLayer,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Line, Point, Label, Tensor, Transform,
 } from '@use-gpu/plot';

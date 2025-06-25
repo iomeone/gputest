@@ -8,13 +8,14 @@ import { vec3 } from 'gl-matrix';
 import {
   Pass, Animate, LinearRGB,
   GeometryData, PBRMaterial, ImageTexture,
-  OrbitCamera, OrbitControls,
-  Pick, Cursor,
+  OrbitCamera,
   PointLight, AmbientLight,
 
   makeBoxGeometry,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor, OrbitControls, Pick,
+} from '@use-gpu/interact';
 import {
   Scene, Node, Mesh,
 } from '@use-gpu/scene';

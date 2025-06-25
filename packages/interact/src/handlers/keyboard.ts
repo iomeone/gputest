@@ -1,8 +1,7 @@
 import type { LC, LiveElement } from '@use-gpu/live';
 import type { KeyboardState } from './types';
 
-import { useRenderProp } from '../hooks/useRenderProp';
-import { useKeyboardState } from '../providers/event-provider';
+import { useRenderProp, useKeyboardState } from '@use-gpu/workbench';
 
 export type KeyboardProps = {
   render?: (state: KeyboardState) => LiveElement,

@@ -6,12 +6,15 @@ import { vec3 } from 'gl-matrix';
 
 import {
   Pass,
-  Cursor,
   GeometryData,
-  OrbitCamera, OrbitControls,
+  OrbitCamera,
   RawQuads,
   makeBoxGeometry,
 } from '@use-gpu/workbench';
+import {
+  Cursor,
+  OrbitControls,
+} from '@use-gpu/interact';
 
 import { Scene, Node, Mesh, Primitive } from '@use-gpu/scene';
 import { InfoBox } from '../../ui/info-box';

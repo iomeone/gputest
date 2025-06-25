@@ -7,13 +7,16 @@ import { lerp } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Pass, Cursor,
-  OrbitCamera, OrbitControls,
+  Pass,
+  OrbitCamera,
   Animate, Keyframe,
   LinearRGB, DirectionalLight,
   DataShader,
   Environment, PBRMaterial, PrefilteredEnvMap,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Polar, Axis, Grid, Sampler, ImplicitSurface, Point,
 } from '@use-gpu/plot';

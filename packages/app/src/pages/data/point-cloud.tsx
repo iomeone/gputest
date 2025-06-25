@@ -4,10 +4,11 @@ import React from '@use-gpu/live';
 
 import {
   Pass, LinearRGB, Loop,
-  OrbitControls, OrbitCamera, EaseToTarget,
-  Cursor, PointLayer, PBRMaterial,
+  OrbitCamera, EaseToTarget,
+  PointLayer, PBRMaterial,
   AmbientLight, Environment,
 } from '@use-gpu/workbench';
+import { Cursor, OrbitControls } from '@use-gpu/interact';
 import { Transform } from '@use-gpu/plot';
 import { vec3 } from 'gl-matrix';
 

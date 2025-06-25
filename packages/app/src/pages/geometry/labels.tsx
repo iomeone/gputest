@@ -6,10 +6,13 @@ import { vec3 } from 'gl-matrix';
 
 import {
   Pass,
-  Cursor, LinearRGB,
-  Data, OrbitCamera, OrbitControls,
+  LinearRGB,
+  Data, OrbitCamera,
   PointLayer, LabelLayer,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 
 import { pointData, labelData } from './point-data';
 

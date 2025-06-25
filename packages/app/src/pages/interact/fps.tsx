@@ -4,9 +4,11 @@ import React from '@use-gpu/live';
 
 import {
   Pass,
-  FPSControls, OrbitCamera,
-  Cursor,
+  OrbitCamera,
 } from '@use-gpu/workbench';
+import {
+  Cursor, FPSControls, 
+} from '@use-gpu/interact';
 import {
   Plot, Line,
 } from '@use-gpu/plot';
@@ -49,7 +51,7 @@ const width = seq(20).map(() => Math.random() * 20 + 5);
 // Avoid z-fighting
 const zBias = width.map(w => w / 100);
 
-export const FPSControlsPage: LC = () => {
+export const InteractFPSControlsPage: LC = () => {
 
   return (<>
     <InfoBox>Use &lt;FPSControls&gt; with pointer lock. Move with WASD/QE keys. Hold shift to go fast.</InfoBox>

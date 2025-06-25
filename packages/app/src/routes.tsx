@@ -4,15 +4,16 @@ import { DataPointCloudPage } from './pages/data/point-cloud';
 import { DataSolarSystemPage } from './pages/data/solar';
 import { DebugAtlasPage } from './pages/debug/atlas';
 import { DebugAxesPage } from './pages/debug/axes';
-import { DebugEasePage } from './pages/debug/ease';
-import { DebugLookAtPage } from './pages/debug/look-at';
 import { DebugWireframePage } from './pages/debug/wireframe';
-import { FPSControlsPage } from './pages/controls/fps';
 import { GeometryGLTFPage } from './pages/geometry/gltf';
 import { GeometryLinesPage } from './pages/geometry/lines';
 import { GeometryLabelsPage } from './pages/geometry/labels';
 import { GeometryBinaryPage } from './pages/geometry/binary';
 import { GeometryVoxelPage } from './pages/geometry/voxel';
+import { InteractEasePage } from './pages/interact/ease';
+import { InteractFPSControlsPage } from './pages/interact/fps';
+import { InteractLookAtPage } from './pages/interact/look-at';
+import { InteractGizmoPage } from './pages/interact/gizmo';
 import { LayoutDisplayPage } from './pages/layout/display';
 import { LayoutGlyphPage } from './pages/layout/glyph';
 import { LayoutAlignPage } from './pages/layout/align';
@@ -89,11 +90,12 @@ export const makePages = () => [
   {path: "/present/slides",              title: "Present - Slides",                  element: <PresentSlidesPage />},
   {path: "/mesh/projected-sampler",      title: "Raw Mesh - Projected Sampler",      element: <MeshProjectedSamplerPage />},
   {path: "/mesh/interleaved",            title: "Raw Mesh - Native Components",      element: <MeshInterleavedPage />},
-  {path: "/controls/fps",                title: "Controls - FPS",                    element: <FPSControlsPage />},
+  {path: "/interact/ease",               title: "Interact - Ease To Target",         element: <InteractEasePage />},
+  {path: "/interact/gizmo",              title: "Interact - Gizmo",                  element: <InteractGizmoPage />},
+  {path: "/interact/look-at",            title: "Interact - Look At",                element: <InteractLookAtPage />},
+  {path: "/interact/fps",                title: "Interact - FPS Controls",           element: <InteractFPSControlsPage />},
   {path: "/debug/atlas",                 title: "Debug - Text Atlas",                element: <DebugAtlasPage />},
   {path: "/debug/axes",                  title: "Debug - Axes",                      element: <DebugAxesPage />},
-  {path: "/debug/ease",                  title: "Debug - Ease To Target",            element: <DebugEasePage />},
-  {path: "/debug/look-at",               title: "Debug - Look At",                   element: <DebugLookAtPage />},
   {path: "/debug/wireframe",             title: "Debug - Wireframe",                 element: <DebugWireframePage />},
 
   {path: "/", title: "Index", element: <HomePage container={document.querySelector('#use-gpu')} />},

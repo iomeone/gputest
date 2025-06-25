@@ -5,11 +5,14 @@ import { TensorArray } from '@use-gpu/core';
 
 import {
   Pass,
-  OrbitCamera, OrbitControls,
-  Cursor, Environment,
+  OrbitCamera,
+  Environment,
   Animate,
   LinearRGB,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Cartesian, Axis, Grid, Label, Line, Sampler, Scale, Scissor, Surface, Tick, Transpose,
 } from '@use-gpu/plot';

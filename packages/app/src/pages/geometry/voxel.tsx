@@ -8,13 +8,15 @@ import { vec3 } from 'gl-matrix';
 
 import {
   LinearRGB, Loop, Pass, LoadingSpinner,
-  OrbitCamera, OrbitControls,
-  Cursor,
+  OrbitCamera,
   AmbientLight, PointLight,
   PBRMaterial, GeometryData,
   Animate, DebugProvider, Environment,
   makePlaneGeometry,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 
 import { VoxData, VoxModel } from '@use-gpu/voxel';
 import { Scene, Node, Mesh, Primitive } from '@use-gpu/scene';

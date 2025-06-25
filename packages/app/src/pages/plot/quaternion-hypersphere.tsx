@@ -7,11 +7,14 @@ import { vec3 } from 'gl-matrix';
 
 import {
   Pass,
-  OrbitCamera, OrbitControls,
-  Cursor, Animate,
+  OrbitCamera,
+  Animate,
   LinearRGB, PBRMaterial,
   AmbientLight, DirectionalLight, PointLight,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Stereographic4D, Transform4D, Tensor, Line,
 } from '@use-gpu/plot';

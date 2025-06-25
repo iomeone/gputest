@@ -21,6 +21,7 @@ let packages = [
   'glyph',
   'inspect',
   'inspect-gpu',
+  'interact',
   'layout',
   'live',
   'map',

@@ -3,7 +3,8 @@ import React, { type LC, type PropsWithChildren } from '@use-gpu/live';
 import { HTML } from '@use-gpu/react';
 import { TextureSource } from '@use-gpu/core';
 import { AutoCanvas, WebGPU } from '@use-gpu/webgpu';
-import { DebugProvider, FontLoader, PanControls, FlatCamera, Pass, ImageTexture } from '@use-gpu/workbench';
+import { DebugProvider, FontLoader, FlatCamera, Pass, ImageTexture } from '@use-gpu/workbench';
+import { PanControls } from '@use-gpu/interact';
 import { UI, Layout, Flex, Block, Inline, Text } from '@use-gpu/layout';
 
 import { UseInspect } from '@use-gpu/inspect';

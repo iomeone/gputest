@@ -5,10 +5,11 @@ import React, { Gather } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, FlatCamera, Pass, Mouse,
+  Loop, FlatCamera, Pass,
   TextureBuffer, Compute, Stage, Iterate, Kernel, Suspense, RawFullScreen,
   useShader, useLambdaSource,
 } from '@use-gpu/workbench';
+import { Mouse } from '@use-gpu/interact';
 import {
   UI, Layout, Absolute, Block, Element, Inline, Text,
 } from '@use-gpu/layout';

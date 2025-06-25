@@ -6,11 +6,13 @@ import { vec3 } from 'gl-matrix';
 
 import {
   Pass, InterleavedData, PBRMaterial, RawTexture,
-  OrbitCamera, OrbitControls,
-  Pick, PickState, Cursor, FaceLayer,
+  OrbitCamera,
+  FaceLayer,
   PointLight,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor, OrbitControls, Pick, PickState,
+} from '@use-gpu/interact';
 import { InfoBox } from '../../ui/info-box';
 
 import { meshVertexArray, meshSchema, makeTexture } from '../../meshes/cube';

@@ -1,8 +1,6 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import { extend, useMemo, useHooks, useState } from '@use-gpu/live';
-import { useObjectId, usePointerCapture, useCanvasEvents } from '../providers/event-provider';
-import { getRenderFunc } from '../hooks/useRenderProp';
-import { PointerEvent } from './types';
+import { PointerEvent, useObjectId, usePointerCapture, useCanvasEvents, getRenderFunc } from '@use-gpu/workbench';
 
 export type PickState = {
   id: number,

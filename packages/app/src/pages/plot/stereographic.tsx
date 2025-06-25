@@ -6,10 +6,13 @@ import { vec3 } from 'gl-matrix';
 
 import {
   Pass,
-  OrbitCamera, OrbitControls,
+  OrbitCamera,
   Animate,
   LinearRGB,
 } from '@use-gpu/workbench';
+import {
+  OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Spherical, Stereographic, Axis, Grid, Label, Line, Sampler, Scale, Tick,
 } from '@use-gpu/plot';

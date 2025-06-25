@@ -5,9 +5,11 @@ import React from '@use-gpu/live';
 
 import {
   Pass,
-  OrbitControls, OrbitCamera,
-  Cursor,
+  OrbitCamera,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Point, Line, Tensor, Transform,
 } from '@use-gpu/plot';

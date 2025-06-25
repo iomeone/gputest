@@ -2,11 +2,12 @@ import type { LC } from '@use-gpu/live';
 import React from '@use-gpu/live';
 
 import {
-  LinearRGB, Pass, PanControls, FlatCamera, DebugAtlas, DebugProvider,
+  LinearRGB, Pass, FlatCamera, DebugAtlas, DebugProvider,
 } from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Inline, Text, Embed,
 } from '@use-gpu/layout';
+import { PanControls } from '@use-gpu/interact';
 
 import { GlyphControls } from '../../ui/glyph-controls';
 import { InfoBox } from '../../ui/info-box';

@@ -5,9 +5,9 @@ import React from '@use-gpu/live';
 
 import {
   Pass, FlatCamera,
-  PanControls,
   LinearRGB,
 } from '@use-gpu/workbench';
+import { PanControls } from '@use-gpu/interact';
 import {
   Present, Slide, Overlay, Step, PresentInfo, KeyboardControls,
 } from '@use-gpu/present';

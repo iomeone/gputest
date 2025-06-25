@@ -4,9 +4,10 @@ import type { Keyframe } from '@use-gpu/workbench';
 import React from '@use-gpu/live';
 
 import {
-  Pass, PanControls, FlatCamera,
-  Cursor, Animate, LinearRGB,
+  Pass, FlatCamera,
+  Animate, LinearRGB,
 } from '@use-gpu/workbench';
+import { Cursor, PanControls } from '@use-gpu/interact';
 import {
   Plot, Cartesian, Axis, Point, Line, Arrow, Face, Transform, Polygon, Label,
 } from '@use-gpu/plot';

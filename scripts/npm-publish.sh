@@ -12,6 +12,8 @@ echo '▶︎▶︎ @use-gpu/inspect';
 yarn publish --ignore-scripts --access public build/packages/inspect
 echo '▶︎▶︎ @use-gpu/inspect-gpu';
 yarn publish --ignore-scripts --access public build/packages/inspect-gpu
+echo '▶︎▶︎ @use-gpu/interact';
+yarn publish --ignore-scripts --access public build/packages/interact
 echo '▶︎▶︎ @use-gpu/layout';
 yarn publish --ignore-scripts --access public build/packages/layout
 echo '▶︎▶︎ @use-gpu/live';

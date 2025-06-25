@@ -6,11 +6,14 @@ import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
   Pass, Data, DataShader, LoadingSpinner,
-  OrbitCamera, OrbitControls,
-  Cursor,
+  OrbitCamera,
   PointLayer,
   LinearRGB,
 } from '@use-gpu/workbench';
+import {
+  Cursor,
+  OrbitControls,
+} from '@use-gpu/interact';
 import {
   Cartesian, Grid,
 } from '@use-gpu/plot';

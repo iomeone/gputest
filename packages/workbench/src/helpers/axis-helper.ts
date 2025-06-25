@@ -10,6 +10,10 @@ export type AxisHelperProps = {
   width?: number,
   size?: number,
   depth?: number,
+
+  id?: number,
+  mode?: string,
+  zBias?: number,
 };
 
 const COLORS = new Float32Array([
@@ -21,6 +25,13 @@ const COLORS = new Float32Array([
   0.2, 0.2, 1, 1,
 ]);
 
+const AXES = new Uint8Array([
+  1, 1,
+  2, 2,
+  3, 3,
+  0, 0,
+]);
+
 const CHUNKS = [2, 2, 2];
 const ENDS   = [true, true, true];
 
@@ -30,6 +41,8 @@ export const AxisHelper: LiveComponent<AxisHelperProps> = memo((props: AxisHelpe
     width = 1,
     size = 1,
     depth = 0,
+
+    ...rest
   } = props;
 
   const vertices = useOne(() => new Float32Array([
@@ -43,8 +56,9 @@ export const AxisHelper: LiveComponent<AxisHelperProps> = memo((props: AxisHelpe
 
   const positions = useRawSource(vertices, 'vec4<f32>');
   const colors    = useRawSource(COLORS, 'vec4<f32>');
+  const lookups   = useRawSource(AXES, 'u8');
 
   const {segments, anchors, trims} = useArrowSegmentsSource(CHUNKS, null, null, null, ENDS);
 
-  return use(ArrowLayer, {positions, colors, width, depth, segments, anchors, trims});
+  return use(ArrowLayer, {positions, colors, lookups, width, depth, segments, anchors, trims, ...rest});
 }, 'AxisHelper');

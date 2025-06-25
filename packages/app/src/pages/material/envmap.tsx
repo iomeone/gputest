@@ -9,12 +9,14 @@ import { vec3 } from 'gl-matrix';
 import {
   Pass, FlatCamera, LinearRGB, Environment,
   GeometryData, PBRMaterial, PrefilteredEnvMap,
-  OrbitCamera, OrbitControls, PanControls,
-  Cursor, Suspense,
+  OrbitCamera,
+  Suspense,
   useKeyboardState,
   makeSphereGeometry,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor, OrbitControls, PanControls,
+} from '@use-gpu/interact';
 import {
   Scene, Node, Mesh,
 } from '@use-gpu/scene';

@@ -2,13 +2,17 @@ import type { LiveComponent, LiveElement } from '@use-gpu/live';
 
 import { lerp } from '@use-gpu/core';
 import { useCallback, useContext, useHooks, useMemo, useOne, useRef, useState } from '@use-gpu/live';
-import { matchActionBindings } from '../interact/hdi';
-import { ActionMap, PointerEvent, WheelEvent } from '../interact/types';
-import { useCanvasEvents, useKeyboardState } from '../providers/event-provider';
-import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
-import { LayoutContext } from '../providers/layout-provider';
-import { getRenderFunc } from '../hooks/useRenderProp';
+import { matchActionBindings } from '../util/hdi';
+import { ActionMap } from '../types';
+
+import {
+  getRenderFunc,
+  useCanvasEvents, useKeyboardState,
+  useAnimationFrame, useNoAnimationFrame,
+  usePerFrame, useNoPerFrame,
+  LayoutContext,
+  PointerEvent, WheelEvent,
+} from '@use-gpu/workbench';
 
 const SOFT_LERP = 0.35;
 const EASE_LERP = 0.05;

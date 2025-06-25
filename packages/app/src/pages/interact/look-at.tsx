@@ -7,13 +7,15 @@ import { vec3 } from 'gl-matrix';
 import {
   Pass, LinearRGB,
   GeometryData,
-  OrbitCamera, OrbitControls, EaseToTarget, LookAt, EaseType,
-  Cursor,
+  OrbitCamera, EaseToTarget, LookAt, EaseType,
   AxisHelper, Environment, AmbientLight,
 
   makeBoxGeometry, makePlaneGeometry,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor,
+  OrbitControls,
+} from '@use-gpu/interact';
 import {
   Scene, Node, Mesh,
 } from '@use-gpu/scene';
@@ -25,7 +27,7 @@ import { InfoBox } from '../../ui/info-box';
 const boxGeometry = makeBoxGeometry({ width: 2 });
 const planeGeometry = makePlaneGeometry({ width: 100, height: 100, axes: 'xz' });
 
-export const DebugLookAtPage: LC = () => {
+export const InteractLookAtPage: LC = () => {
   return (<>
     <InfoBox>Easing a target position + camera using &lt;LookAt&gt; combined with &lt;EaseToTarget&gt;.</InfoBox>
     <Gather

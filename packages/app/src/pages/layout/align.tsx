@@ -5,9 +5,10 @@ import React from '@use-gpu/live';
 import { LayoutControls } from '../../ui/layout-controls';
 
 import {
-  LinearRGB, Pass, FlatCamera, PanControls,
+  LinearRGB, Pass, FlatCamera,
   DebugProvider,
 } from '@use-gpu/workbench';
+import { PanControls } from '@use-gpu/interact';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Overflow, Text, Element,
 } from '@use-gpu/layout';

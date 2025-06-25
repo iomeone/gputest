@@ -6,11 +6,13 @@ import { vec3 } from 'gl-matrix';
 
 import {
   Pass,
-  Cursor,
   Data, getLineSegments, getArrowSegments,
-  OrbitCamera, OrbitControls,
+  OrbitCamera,
   LineLayer, ArrowLayer,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 
 import { lineData, zigzagData, arrowData } from './line-data';
 

@@ -5,13 +5,18 @@ import { useProp } from '@use-gpu/traits/live';
 import { parseVec3 } from '@use-gpu/parse';
 import { useContext, useCallback, useMemo, useHooks } from '@use-gpu/live';
 import { makeOrbitMatrix, clamp } from '@use-gpu/core';
-import { useDerivedState } from '../hooks/useDerivedState';
-import { useShaderRef } from '../hooks/useShaderRef';
-import { getRenderFunc } from '../hooks/useRenderProp';
-import { matchActionBindings } from '../interact/hdi';
-import { ActionMap, PointerEvent, WheelEvent } from '../interact/types';
-import { useCanvasEvents } from '../providers/event-provider';
-import { LayoutContext } from '../providers/layout-provider';
+import { 
+  getRenderFunc,
+  useCanvasEvents,
+  useDerivedState,
+  useShaderRef,
+  LayoutContext,
+  PointerEvent,
+  WheelEvent,
+} from '@use-gpu/workbench';
+
+import { matchActionBindings } from '../util/hdi';
+import { ActionMap } from '../types';
 import { mat4, vec3 } from 'gl-matrix';
 
 const π = Math.PI;

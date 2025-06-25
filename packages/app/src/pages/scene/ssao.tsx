@@ -8,12 +8,14 @@ import { seq } from '@use-gpu/core';
 import {
   Loop, Pass, LinearRGB,
   GeometryData, PBRMaterial, ImageTexture, AmbientLight,
-  OrbitCamera, OrbitControls, Environment,
-  Cursor, EaseToTarget,
+  OrbitCamera, Environment,
+  EaseToTarget,
   DebugProvider, PrintLayer, PrintHelper, useKeyboardState,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Scene, Node, Mesh, Instances,
 } from '@use-gpu/scene';

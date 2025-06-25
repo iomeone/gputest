@@ -7,10 +7,12 @@ import { vec3 } from 'gl-matrix';
 import { PickingOverlay } from '../../ui/picking-overlay';
 
 import {
-  Pass, Cursor, Pick, PickState, FlatCamera,
-  OrbitCamera, OrbitControls,
+  Pass, FlatCamera,
+  OrbitCamera,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor, OrbitControls, Pick, PickState,
+} from '@use-gpu/interact';
 import { Plot, Grid, Polygon } from '@use-gpu/plot';
 import { InfoBox } from '../../ui/info-box';
 

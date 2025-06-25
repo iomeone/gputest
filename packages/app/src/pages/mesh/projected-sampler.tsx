@@ -6,13 +6,16 @@ import { Gather, useMemo, useState } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Cursor, Pass, LinearRGB,
-  OrbitCamera, OrbitControls,
+  Pass, LinearRGB,
+  OrbitCamera,
   PointLight, DirectionalLight, Environment,
   GeometryData, FaceLayer,
   useViewContext,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor,
+  OrbitControls,
+} from '@use-gpu/interact';
 import { GLTF, GLTFData, GLTFGeometry, GLTFModel } from '@use-gpu/gltf';
 import { Plot, Point } from '@use-gpu/plot';
 

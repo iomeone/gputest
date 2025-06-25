@@ -4,9 +4,10 @@ import React from '@use-gpu/live';
 import { TextureSource } from '@use-gpu/core';
 
 import {
-  LinearRGB, Pass, FlatCamera, PanControls, ImageTexture,
+  LinearRGB, Pass, FlatCamera, ImageTexture,
   DebugProvider,
 } from '@use-gpu/workbench';
+import { PanControls } from '@use-gpu/interact';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Overflow, Text, Element,
 } from '@use-gpu/layout';

@@ -1,0 +1,25 @@
+{
+  "name": "@use-gpu/interact",
+  "version": "0.15.0",
+  "main": "src/index.ts",
+  "author": "Steven Wittens <steven@acko.net>",
+  "module": true,
+  "license": "MIT",
+  "dependencies": {
+    "@use-gpu/workbench": "^0.15.0",
+    "@use-gpu/plot": "^0.15.0"
+  },
+  "scripts": {
+    "build": "NPM_PACKAGE=interact ../../scripts/build-mjs-cjs.sh",
+    "test": "MODULE_ENV=cjs jest --watch",
+    "lint": "eslint src --ext ts",
+    "coverage": "echo 'jest --collect-coverage' disabled",
+    "types": "tsc --noEmit",
+    "types:watch": "yarn run types -- --watch"
+  },
+  "keywords": [
+    "use-gpu",
+    "use-gpu-components"
+  ],
+  "sideEffects": false
+}

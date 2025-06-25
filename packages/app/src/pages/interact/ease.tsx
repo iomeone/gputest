@@ -7,20 +7,21 @@ import { vec3 } from 'gl-matrix';
 import {
   Pass, LinearRGB,
   GeometryData,
-  OrbitCamera, OrbitControls, EaseToTarget,
-  Cursor,
+  OrbitCamera, EaseToTarget,
   AxisHelper, Environment, AmbientLight,
 
   makeBoxGeometry,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Scene, Mesh,
 } from '@use-gpu/scene';
 
 import { InfoBox } from '../../ui/info-box';
 
-export const DebugEasePage: LC = () => {
+export const InteractEasePage: LC = () => {
   const geometry = useOne(() => makeBoxGeometry({ width: 2 }));
 
   return (<>

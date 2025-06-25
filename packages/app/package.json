@@ -12,6 +12,7 @@
     "@use-gpu/live": "^0.15.0",
     "@use-gpu/map": "^0.15.0",
     "@use-gpu/inspect": "^0.15.0",
+    "@use-gpu/interact": "^0.15.0",
     "@use-gpu/present": "^0.15.0",
     "@use-gpu/plot": "^0.15.0",
     "@use-gpu/scene": "^0.15.0",

@@ -6,13 +6,16 @@ import { seq } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass, OrbitControls, OrbitCamera, Cursor,
+  Loop, Pass, OrbitCamera,
   LinearRGB, FullScreen, RenderTarget, AccumulateRender,
   PrintHelper, PrintLayer, ShaderPrinter, On,
 
   useMouseState, useKeyboardState,
   usePerFrame, useShader, useShaderRef, useRawSource, useViewContext,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 
 import { InfoBox } from '../../ui/info-box';
 

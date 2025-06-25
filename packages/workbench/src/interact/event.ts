@@ -1,16 +1,6 @@
 export type MouseButton = 'left' | 'middle' | 'right';
 export type KeyboardModifier = 'shift' | 'alt' | 'accel';
 
-export type ActionBinding = {
-  wheel?: boolean,
-  button?: MouseButton,
-  modifiers?: KeyboardModifier[],
-  notModifiers?: KeyboardModifier[],
-  exact?: boolean,
-};
-
-export type ActionMap = Record<string, ActionBinding[] | null>;
-
 export type MouseState = {
   buttons: Record<MouseButton, boolean>,
   button: MouseButton | null,

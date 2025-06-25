@@ -10,9 +10,12 @@ import { vec3 } from 'gl-matrix';
 
 import {
   LinearRGB, Pass, FlatCamera, RawTexture,
-  OrbitCamera, OrbitControls, PanControls,
+  OrbitCamera,
   useFontContext, DebugProvider,
 } from '@use-gpu/workbench';
+import {
+  OrbitControls, PanControls,
+} from '@use-gpu/interact';
 import {
   UI, Layout, Block, Inline, Text, Flex, Embed, Element,
 } from '@use-gpu/layout';

@@ -2,8 +2,7 @@ import type { LC, LiveElement } from '@use-gpu/live';
 import type { MouseState } from './types';
 
 import { useVersion } from '@use-gpu/live';
-import { useRenderProp } from '../hooks/useRenderProp';
-import { useMouseState } from '../providers/event-provider';
+import { useRenderProp, useMouseState } from '@use-gpu/workbench';
 
 export type MouseProps = {
   move?: boolean,

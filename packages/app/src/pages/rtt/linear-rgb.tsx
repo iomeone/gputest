@@ -3,12 +3,15 @@ import React from '@use-gpu/live';
 
 import {
   Pass, FlatCamera,
-  OrbitCamera, OrbitControls,
-  Cursor, LinearRGB,
+  OrbitCamera,
+  LinearRGB,
   InterleavedData, FaceLayer,
   AmbientLight, DirectionalLight,
   PBRMaterial,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Text
 } from '@use-gpu/layout';

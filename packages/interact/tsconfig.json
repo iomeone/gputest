@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.pkg.json",
+  "references": [
+    { "path": "../live" },
+    { "path": "../state" },
+    { "path": "../react" },
+  ],
+  "compilerOptions": {
+    "rootDir": "..",
+    "baseUrl": "src",
+    "outDir": "../../build/ts",
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

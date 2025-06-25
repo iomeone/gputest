@@ -7,8 +7,8 @@ import { seq } from '@use-gpu/core';
 
 import {
   Pass,
-  CubeCamera, OrbitCamera, OrbitControls,
-  Cursor, LinearRGB,
+  CubeCamera, OrbitCamera,
+  LinearRGB,
   Animate,
   PrefilteredEnvMap, Environment, DirectionalLight,
   GeometryData, PBRMaterial,
@@ -16,7 +16,9 @@ import {
   makeSphereGeometry,
   makeBoxGeometry,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Scene, Node, Mesh, Instances, InstanceProps,
 } from '@use-gpu/scene';

@@ -5,13 +5,15 @@ import { useProp } from '@use-gpu/traits/live';
 import { parseVec3 } from '@use-gpu/parse';
 import { useCallback, useContext, useHooks, useMemo, useOne, useRef, useState } from '@use-gpu/live';
 import { makeOrbitMatrix, clamp } from '@use-gpu/core';
-import { PointerEvent } from '../interact/types';
-import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { useCanvasEvents, useKeyboardState, usePointerLock } from '../providers/event-provider';
-import { usePerFrame } from '../providers/frame-provider';
-import { LayoutContext } from '../providers/layout-provider';
-import { useDerivedState } from '../hooks/useDerivedState';
-import { getRenderFunc } from '../hooks/useRenderProp';
+import {
+  PointerEvent,
+  useAnimationFrame, useNoAnimationFrame,
+  useCanvasEvents, useKeyboardState, usePointerLock,
+  usePerFrame,
+  LayoutContext,
+  useDerivedState,
+  getRenderFunc,
+} from '@use-gpu/workbench';
 import { mat4, vec3 } from 'gl-matrix';
 
 const π = Math.PI;

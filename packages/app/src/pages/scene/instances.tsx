@@ -9,13 +9,14 @@ import { seq } from '@use-gpu/core';
 import {
   Pass, Animate, LinearRGB,
   GeometryData, PBRMaterial, ImageTexture,
-  OrbitCamera, OrbitControls,
-  Cursor,
+  OrbitCamera,
   PointLight, AmbientLight,
 
   makeBoxGeometry,
 } from '@use-gpu/workbench';
-
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Scene, Node, Instances,
 } from '@use-gpu/scene';

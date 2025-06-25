@@ -1,7 +1,7 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { GPUGeometry, TextureSource } from '@use-gpu/core';
 
-import React, { Gather, useOne } from '@use-gpu/live';
+import React, { Gather, useOne, useState } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 import { vec3 } from 'gl-matrix';
 
@@ -9,19 +9,21 @@ import {
   Pass, LinearRGB,
   GeometryData, ImageCubeTexture,
   OrbitCamera,
-  AxisHelper,
-  ShaderFlatMaterial,
+  PBRMaterial,
 
-  makeSphereGeometry,
+  makeBoxGeometry,
   useShader,
 } from '@use-gpu/workbench';
 import {
-  Cursor, OrbitControls,
+  Cursor,
+  GizmoMatrix,
+  OrbitControls,
 } from '@use-gpu/interact';
-
 import {
-  Scene, Mesh,
+  Scene, Node, Mesh,
 } from '@use-gpu/scene';
+
+import { mat4 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';
 
@@ -37,43 +39,40 @@ const cubeMaterial = wgsl`
 }
 `;
 
-export const DebugAxesPage: LC = () => {
-  const geometry = useOne(() => makeSphereGeometry({ width: 2, uvw: true }));
+export const InteractGizmoPage: LC = () => {
+  const geometry = useOne(() => makeBoxGeometry({ width: 0.2 }));
+
+  const [matrix, setMatrix] = useState(() => mat4.fromValues(
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 1, 0, 1,
+  ));
 
   return (<>
     <InfoBox>Load a cube map using &lt;ImageCubeTexture&gt; and render it on a mesh as a &lt;ShaderFlatMaterial&gt;.</InfoBox>
     <Gather
       children={[
         <GeometryData {...geometry} />,
-        <ImageCubeTexture urls={[
-          "/textures/cube/uv/px.png",
-          "/textures/cube/uv/nx.png",
-          "/textures/cube/uv/py.png",
-          "/textures/cube/uv/ny.png",
-          "/textures/cube/uv/pz.png",
-          "/textures/cube/uv/nz.png",
-        ]} />,
       ]}
       then={([
         mesh,
-        texture,
       ]: [
         GPUGeometry,
-        TextureSource,
       ]) => {
-        const fragment = useShader(cubeMaterial, [texture]);
-
         return (
           <LinearRGB tonemap="aces">
             <Cursor cursor='move' />
             <Camera>
-              <Pass>
-                <AxisHelper size={2} width={3} />
+              <Pass picking>
 
                 <Scene>
-                  <ShaderFlatMaterial fragment={fragment}>
-                    <Mesh mesh={mesh} />
-                  </ShaderFlatMaterial>
+                  <GizmoMatrix value={matrix} onChange={setMatrix} />
+                  <Node matrix={matrix}>
+                    <PBRMaterial>
+                      <Mesh mesh={mesh} />
+                    </PBRMaterial>
+                  </Node>
                 </Scene>
 
               </Pass>

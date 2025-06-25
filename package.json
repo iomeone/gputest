@@ -135,6 +135,7 @@
     "packages/map",
     "packages/layout",
     "packages/plot",
+    "packages/interact",
     "packages/present",
     "packages/voxel",
     "packages/inspect",

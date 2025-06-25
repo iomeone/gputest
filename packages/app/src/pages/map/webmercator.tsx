@@ -5,10 +5,14 @@ import React from '@use-gpu/live';
 
 import {
   Pass,
-  Cursor, OrbitCamera, OrbitControls,
+  OrbitCamera,
   Animate,
   LinearRGB,
 } from '@use-gpu/workbench';
+import {
+  Cursor,
+  OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Axis, Grid, Scale, Tick,
 } from '@use-gpu/plot';

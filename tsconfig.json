@@ -26,6 +26,7 @@
     { "path": "./packages/map" },
     { "path": "./packages/layout" },
     { "path": "./packages/plot" },
+    { "path": "./packages/interact" },
     { "path": "./packages/present" },
     { "path": "./packages/voxel" },
     { "path": "./packages/inspect" },

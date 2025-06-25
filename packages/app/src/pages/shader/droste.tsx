@@ -3,7 +3,8 @@ import type { LC, RefObject, PropsWithChildren } from '@use-gpu/live';
 import React, { useRef } from '@use-gpu/live';
 import { wgsl } from '@use-gpu/shader/wgsl';
 
-import { PanControls, Cursor, Pass, LinearRGB, FullScreen, QueueReconciler } from '@use-gpu/workbench';
+import { Pass, LinearRGB, FullScreen, QueueReconciler } from '@use-gpu/workbench';
+import { Cursor, PanControls } from '@use-gpu/interact';
 
 import { InfoBox } from '../../ui/info-box';
 import { DrosteControls } from '../../ui/droste-controls';

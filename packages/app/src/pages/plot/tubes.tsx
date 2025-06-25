@@ -5,12 +5,14 @@ import React from '@use-gpu/live';
 
 import {
   LinearRGB, Loop, Pass,
-  OrbitControls, OrbitCamera,
-  Cursor,
+  OrbitCamera,
   DirectionalLight, PointLight, AmbientLight,
   PBRMaterial, EaseToTarget,
   GeometryData, makeSphereGeometry,
 } from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Arrow, Transform, Tensor,
 } from '@use-gpu/plot';
