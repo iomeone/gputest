@@ -1,5 +1,6 @@
 import type { XY, Ref, LiveComponent, PropsWithChildren } from '@use-gpu/live';
 
+import { proxy } from '@use-gpu/core';
 import { use, memo, useMemo, useOne, useResource } from '@use-gpu/live';
 import { EventProvider2 } from '@use-gpu/workbench';
 
@@ -145,9 +146,10 @@ const makeSyntheticEvent = (
   const button = toButton(nativeEvent.button);
   const buttons = toButtons(nativeEvent.buttons);
 
+  const mapped: Record<string, any> = {};
   const event: Record<string, any> = {nativeEvent, button, buttons};
   for (const k of DOM_EVENT_PROPS) if (k in nativeEvent) {
-    event[k] = nativeEvent[k];
+    mapped[k] = () => nativeEvent[k];
   }
   for (const k in extra) {
     event[k] = extra[k];
@@ -169,7 +171,7 @@ const makeSyntheticEvent = (
     stop?.();
   };
 
-  return event;
+  return proxy(event, mapped);
 };
 
 const toButton = (button: number) => {
