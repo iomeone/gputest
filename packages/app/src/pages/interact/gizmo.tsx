@@ -46,7 +46,7 @@ export const InteractGizmoPage: LC = () => {
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
-    0, 1, 0, 1,
+    0, 0, 0, 1,
   ));
 
   return (<>
@@ -89,7 +89,7 @@ export const InteractGizmoPage: LC = () => {
 const Camera = ({children}: PropsWithChildren<object>) => (
   <OrbitControls
     radius={5}
-    bearing={0.5}
+    bearing={-0.5}
     pitch={0.3}
     render={(radius: number, phi: number, theta: number, target: vec3) =>
       <OrbitCamera

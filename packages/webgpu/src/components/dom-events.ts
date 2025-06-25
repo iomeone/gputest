@@ -185,13 +185,16 @@ const makeSyntheticEvent = (
 
   if (type != null) {
     const t = type.split(/(?<=(key|pointer))/);
-    event.type = t.length > 1 ? t[0] + t[1].slice(0, 1).toUpperCase() + t[1].slice(1) : type;
+    event.type = t.length > 2 ? t[1] + t[2].slice(0, 1).toUpperCase() + t[2].slice(1) : type;
   }
 
   if (clientX != null && clientY != null) {
-    const {left, top} = element.getBoundingClientRect();
+    const {left, top, width, height} = element.getBoundingClientRect();
     event.x = clientX - left;
     event.y = clientY - top;
+
+    event.u = event.x / width;
+    event.v = event.y / height;
 
     if (move && !('moveX' in event)) {
       event.moveX = move[0];

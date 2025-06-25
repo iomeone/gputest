@@ -5,7 +5,7 @@ import { useProp } from '@use-gpu/traits/live';
 import { parseVec3 } from '@use-gpu/parse';
 import { useContext, useCallback, useMemo, useHooks } from '@use-gpu/live';
 import { makeOrbitMatrix, clamp } from '@use-gpu/core';
-import { 
+import {
   getRenderFunc,
   useCanvasEvents,
   useDerivedState,

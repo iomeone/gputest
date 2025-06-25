@@ -55,7 +55,6 @@ export const makeAggregator = (
 
   const {aggregateBuffers, byRefs, byInstances, byVertices, byIndices, bySelfs, byJss} = aggregate;
   const instances = aggregateBuffers.instances as ArrayAggregateBuffer;
-  console.log({aggregateBuffers, schema})
 
   // CPU-side JS attributes (not uploaded)
   const jsValues = byJss?.values;

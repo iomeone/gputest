@@ -4,6 +4,8 @@ export type KeyboardModifier = 'shift' | 'alt' | 'accel';
 export type MouseState = {
   buttons: Record<MouseButton, boolean>,
   button: MouseButton | null,
+  u: number,
+  v: number,
   x: number,
   y: number,
   moveX: number,

@@ -8,6 +8,7 @@ import { makeViewUniforms } from '@use-gpu/core';
 
 import { useUniformBinding } from '../hooks/useUniformSource';
 import { useFrustumCuller } from '../hooks/useFrustumCuller';
+import { useFrustumPicker } from '../hooks/useFrustumPicker';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { vec3 } from 'gl-matrix';
@@ -48,15 +49,16 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
 
   const inspect = useInspectable();
 
-  const {cull, uniforms} = useViewUniforms(maybeUniforms);
+  const {pick, cull, uniforms} = useViewUniforms(maybeUniforms);
   const {binding, upload} = useViewBinding(uniforms, module, type);
   upload();
 
   const context = useMemo(() => ({
     binding,
     cull,
+    pick,
     uniforms,
-  }), [binding, cull, uniforms]);
+  }), [binding, cull, pick, uniforms]);
 
   inspect({
     view: uniforms,
@@ -81,8 +83,10 @@ export const useViewUniforms = (
   maybeUniforms?: Record<string, any>,
 ) => {
   const uniforms = (maybeUniforms ? (useNoOne(), maybeUniforms) : useOne(makeViewUniforms)) as ViewUniforms;
-  const {viewPosition, projectionViewFrustum} = uniforms;
-  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
+  const {viewPosition, projectionViewFrustum, inverseProjectionViewMatrix} = uniforms;
 
-  return {cull, uniforms};
+  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
+  const pick = useFrustumPicker(inverseProjectionViewMatrix);
+
+  return {pick, cull, uniforms};
 };
