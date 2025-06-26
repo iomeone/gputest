@@ -24,43 +24,43 @@ export const getDragFrame = (m: mat4) => {
 export const lineConstraint = (line: XYZ[]) => {
   const [origin, ray] = lineToRay(line[0], line[1]);
   return (o: XYZ, r: XYZ) => {
-    return intersectRays(origin, ray, o, r)[0];
+    return intersectRays(origin, ray, o, r)?.[0] ?? null;
   };
 };
 
-export const planeConstraint = (plane: XYZW) => (origin: XYZ, ray: XYZ) => intersectRayPlane(origin, ray, plane);
+export const planeConstraint = (plane: XYZW) => (origin: XYZ, ray: XYZ) => intersectRayPlane(origin, ray, plane) as XYZ | null;
 
 export const circleConstraint = (plane: XYZW, center: XYZ, radius: number) => (origin: XYZ, ray: XYZ) => {
   const point = intersectRayPlane(origin, ray, plane);
-  if (!point) return;
+  if (!point) return null;
 
   vec3.sub(point, point, center);
   vec3.normalize(point, point);
   vec3.scale(point, point, radius);
 
-  return point;
+  return point as XYZ;
 };
 
 export const applyCartesianDrag = (axes: number[]) => (snapshot: mat4, anchor: XYZ, hit: XYZ) => {
   const v = vec3.clone(hit);
   vec3.sub(v, v, anchor);
 
-  const d = [0, 0, 0];
+  const d: XYZ = [0, 0, 0];
   for (const i of axes) d[i] = v[i];
 
   const m = mat4.create();
-  mat4.fromTranslation(m, d);
+  mat4.fromTranslation(m, d as vec3);
   mat4.multiply(m, snapshot, m);
 
   return m;
 };
 
 export const applyScaleDrag = (axes: number[]) => (snapshot: mat4, anchor: XYZ, hit: XYZ) => {
-  const d = [1, 1, 1];
+  const d: XYZ = [1, 1, 1];
   for (const i of axes) d[i] = hit[i] / anchor[i];
 
   const m = mat4.create();
-  mat4.fromScaling(m, d);
+  mat4.fromScaling(m, d as vec3);
   mat4.multiply(m, snapshot, m);
 
   return m;
@@ -72,7 +72,7 @@ export const applyPolarDrag = (axis: number) => (snapshot: mat4, anchor: XYZ, hi
   const va = axes.map(i => anchor[i]);
   const vh = axes.map(i => hit[i]);
 
-  const n = [0, 0, 0];
+  const n: XYZ = [0, 0, 0];
   n[axis] = 1;
 
   const th1 = Math.atan2(va[1], va[0]);
@@ -97,10 +97,9 @@ export const applyPolarDrag = (axis: number) => (snapshot: mat4, anchor: XYZ, hi
 };
 
 export const useDrag = (
-  hit: (origin: XYZ, ray: XYZ) => XYZ,
+  hit: (origin: XYZ, ray: XYZ) => XYZ | null,
   applyDrag: (snapshot: mat4, anchor: XYZ, hit: XYZ) => mat4,
 
-  frame: mat4,
   value: mat4,
   onDragMove: (value: mat4) => void,
   onDragState: (dragging: boolean) => void,
@@ -114,11 +113,10 @@ export const useDrag = (
   const i = mat4.invert(mat4.create(), value);
 
   const handlePointerDown = (e: PointerEvent) => {
-    console.log('down', e);
-
     const [origin, ray] = pick(e);
     const [lo, lr] = transformRay(origin, ray, i);
     const dragHit = hit(lo, lr);
+    if (!dragHit) return;
 
     setDragFrame(i);
     setDragSnapshot(value);
@@ -132,14 +130,13 @@ export const useDrag = (
     const [origin, ray] = pick(e);
     const [lo, lr] = transformRay(origin, ray, dragFrame);
     const dragHit = hit(lo, lr);
+    if (!dragHit) return;
 
     const value = applyDrag(dragSnapshot, dragAnchor, dragHit);
     onDragMove(value);
   };
 
-  const handlePointerUp = (e: PointerEvent) => {
-    console.log('up', e);
-
+  const handlePointerUp = () => {
     setDragFrame(null);
     setDragSnapshot(null);
     setDragAnchor(null);

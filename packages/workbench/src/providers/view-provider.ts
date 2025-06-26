@@ -1,6 +1,7 @@
 import type { LiveComponent, PropsWithChildren, Ref } from '@use-gpu/live';
-import type { ViewUniforms } from '@use-gpu/core';
+import type { XYZ, ViewUniforms } from '@use-gpu/core';
 import type { ShaderModule } from '@use-gpu/shader';
+import type { PointerEvent } from '../interact/event';
 import type { PassBinding } from '../pass/types';
 
 import { provide, makeContext, useContext, useNoContext, useMemo, useOne, useNoOne } from '@use-gpu/live';
@@ -21,6 +22,7 @@ const {signal} = QueueReconciler;
 const DEFAULT_VIEW_CONTEXT = {
   uniforms: makeViewUniforms(),
   binding: {module: viewBindingWGSL},
+  pick: () => [[0, 0, 0], [0, 0, -1]] as [XYZ, XYZ],
   cull: () => true,
 } as ViewContextProps;
 
@@ -30,6 +32,7 @@ export type ViewContextProps = {
   uniforms: ViewUniforms,
   binding: PassBinding,
   cull: (center: vec3 | number[], radius: number) => number | boolean,
+  pick: (event: PointerEvent) => [XYZ, XYZ],
 };
 
 export type ViewProviderProps = PropsWithChildren<{

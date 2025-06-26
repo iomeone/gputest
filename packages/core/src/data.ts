@@ -311,7 +311,7 @@ export const offsetNumberArray = (() => {
     mask?: (boolean | number)[],
   ) => {
     argOffset = offset;
-    argMask = mask;
+    if (mask) argMask = mask;
     return (mask ? copyWithOffsetAndMask : copyWithOffset)(from, to, fromDims, toDims, fromIndex, toIndex, count, stride);
   };
 })();

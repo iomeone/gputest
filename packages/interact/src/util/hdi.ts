@@ -1,4 +1,4 @@
-import { ActionBinding } from './types';
+import { ActionBinding } from '../types';
 
 const isMac = navigator.platform.match(/^Mac/);
 

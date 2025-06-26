@@ -1,11 +1,14 @@
 import type { LC } from '@use-gpu/live';
+import type { XYZ, XYZW } from '@use-gpu/core';
 
 import { provide, use, useMemo, useState } from '@use-gpu/live';
 import { seq, lerp } from '@use-gpu/core';
 
 import { AxisHelper, TransformContext, useCombinedMatrixTransform, useMatrixContext, useViewContext, usePerFrame } from '@use-gpu/workbench';
-import { Pick, Cursor } from '@use-gpu/interact';
 import { Plot, Line, Arrow, Polygon, Point } from '@use-gpu/plot';
+
+import { Cursor } from '../handlers/cursor';
+import { Pick, PickState } from '../handlers/pick';
 
 import {
   useDrag,
@@ -31,26 +34,17 @@ export type GizmoMatrixProps = {
 export type GizmoAxisProps = {
   value: mat4,
   onChange: (m: mat4) => void,
+  onDrag: (b: boolean) => void,
 
   axis: number,
+  visible: boolean,
 };
 
-export type GizmoPlaneProps = {
-  value: mat4,
-  onChange: (m: mat4) => void,
-
-  axis: number,
-};
-
-export type GizmoRotateProps = {
-  value: mat4,
-  onChange: (m: mat4) => void,
-
-  axis: number,
+export type GizmoRotateProps = GizmoAxisProps & {
   steps?: number,
 };
 
-const Z = [0, 0, 0];
+const Z: XYZ = [0, 0, 0];
 
 export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
   const {size = 0.1, move, rotate, scale, value, onChange} = props;
@@ -60,7 +54,7 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
 
   // Flip orientation relative to view
   const flipM = useMemo(() => {
-    const v = uniforms.viewPosition.current;
+    const v = vec3.clone(uniforms.viewPosition.current as vec3);
     const vm = uniforms.viewMatrix.current;
 
     const i = mat4.create();
@@ -83,7 +77,7 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
 
   // Get world-space matrix
   const parent = useMatrixContext();
-  const [world, frame] = useMemo(() => {
+  const world = useMemo(() => {
     const m = mat4.create();
     const f = getDragFrame(value);
 
@@ -92,31 +86,31 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
 
     mat4.multiply(m, m, flipM);
 
-    return [m, f];
+    return m;
   }, [parent, value, flipM]);
 
-  const [draggingElement, setDraggingElement] = useState<number>(null);
+  const [draggingElement, setDraggingElement] = useState<number | null>(null);
   const makeOnDrag = (element: number) => (dragging: boolean) => {
     setDraggingElement(dragging ? element : null);
   };
 
   const isDragging = draggingElement != null;
 
-  const moveX = move === true || !!move?.match(/x/);
-  const moveY = move === true || !!move?.match(/y/);
-  const moveZ = move === true || !!move?.match(/z/);
+  const moveX = move === true || (typeof move === 'string' && !!move?.match(/x/));
+  const moveY = move === true || (typeof move === 'string' && !!move?.match(/y/));
+  const moveZ = move === true || (typeof move === 'string' && !!move?.match(/z/));
 
   const moveXY = moveX && moveY;
   const moveYZ = moveY && moveZ;
   const moveZX = moveZ && moveX;
 
-  const rotateX = rotate === true || rotate?.match(/x/);
-  const rotateY = rotate === true || rotate?.match(/y/);
-  const rotateZ = rotate === true || rotate?.match(/z/);
+  const rotateX = rotate === true || (typeof rotate === 'string' && !!rotate?.match(/x/));
+  const rotateY = rotate === true || (typeof rotate === 'string' && !!rotate?.match(/y/));
+  const rotateZ = rotate === true || (typeof rotate === 'string' && !!rotate?.match(/z/));
 
-  const scaleX = scale === true || !!scale?.match(/x/);
-  const scaleY = scale === true || !!scale?.match(/y/);
-  const scaleZ = scale === true || !!scale?.match(/z/);
+  const scaleX = scale === true || (typeof scale === 'string' && !!scale?.match(/x/));
+  const scaleY = scale === true || (typeof scale === 'string' && !!scale?.match(/y/));
+  const scaleZ = scale === true || (typeof scale === 'string' && !!scale?.match(/z/));
 
   // Render gizmo
   const view = (
@@ -125,21 +119,21 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
         draggingElement != null ? use(AxisHelper, {width: 3}) : null,
         draggingElement != null ? use(AxisHelper, {width: 3, opacity: 0.35, mode: 'transparent', depthTest: false}) : null,
 
-        moveX ? use(GizmoAxis,   {axis: 0, frame, value, onChange, onDrag: makeOnDrag(0),  visible: !isDragging }) : null,
-        moveY ? use(GizmoAxis,   {axis: 1, frame, value, onChange, onDrag: makeOnDrag(1),  visible: !isDragging }) : null,
-        moveZ ? use(GizmoAxis,   {axis: 2, frame, value, onChange, onDrag: makeOnDrag(2),  visible: !isDragging }) : null,
+        moveX ? use(GizmoAxis, {axis: 0, value, onChange, onDrag: makeOnDrag(0),  visible: !isDragging }) : null,
+        moveY ? use(GizmoAxis, {axis: 1, value, onChange, onDrag: makeOnDrag(1),  visible: !isDragging }) : null,
+        moveZ ? use(GizmoAxis, {axis: 2, value, onChange, onDrag: makeOnDrag(2),  visible: !isDragging }) : null,
 
-        moveXY ? use(GizmoPlane,  {axis: 0, frame, value, onChange, onDrag: makeOnDrag(3),  visible: !isDragging }) : null,
-        moveYZ ? use(GizmoPlane,  {axis: 1, frame, value, onChange, onDrag: makeOnDrag(4),  visible: !isDragging }) : null,
-        moveZX ? use(GizmoPlane,  {axis: 2, frame, value, onChange, onDrag: makeOnDrag(5),  visible: !isDragging }) : null,
+        moveXY ? use(GizmoPlane, {axis: 0, value, onChange, onDrag: makeOnDrag(3),  visible: !isDragging }) : null,
+        moveYZ ? use(GizmoPlane, {axis: 1, value, onChange, onDrag: makeOnDrag(4),  visible: !isDragging }) : null,
+        moveZX ? use(GizmoPlane, {axis: 2, value, onChange, onDrag: makeOnDrag(5),  visible: !isDragging }) : null,
 
-        rotateX ? use(GizmoRotate, {axis: 0, frame, value, onChange, onDrag: makeOnDrag(6),  visible: !isDragging }) : null,
-        rotateY ? use(GizmoRotate, {axis: 1, frame, value, onChange, onDrag: makeOnDrag(7),  visible: !isDragging }) : null,
-        rotateZ ? use(GizmoRotate, {axis: 2, frame, value, onChange, onDrag: makeOnDrag(8),  visible: !isDragging }) : null,
+        rotateX ? use(GizmoRotate, {axis: 0, value, onChange, onDrag: makeOnDrag(6),  visible: !isDragging }) : null,
+        rotateY ? use(GizmoRotate, {axis: 1, value, onChange, onDrag: makeOnDrag(7),  visible: !isDragging }) : null,
+        rotateZ ? use(GizmoRotate, {axis: 2, value, onChange, onDrag: makeOnDrag(8),  visible: !isDragging }) : null,
 
-        scaleX ? use(GizmoScale,  {axis: 0, frame, value, onChange, onDrag: makeOnDrag(9),  visible: !isDragging }) : null,
-        scaleY ? use(GizmoScale,  {axis: 1, frame, value, onChange, onDrag: makeOnDrag(10), visible: !isDragging }) : null,
-        scaleZ ? use(GizmoScale,  {axis: 2, frame, value, onChange, onDrag: makeOnDrag(11), visible: !isDragging }) : null,
+        scaleX ? use(GizmoScale, {axis: 0, value, onChange, onDrag: makeOnDrag(9),  visible: !isDragging }) : null,
+        scaleY ? use(GizmoScale, {axis: 1, value, onChange, onDrag: makeOnDrag(10), visible: !isDragging }) : null,
+        scaleZ ? use(GizmoScale, {axis: 2, value, onChange, onDrag: makeOnDrag(11), visible: !isDragging }) : null,
       ],
     })
   );
@@ -150,9 +144,9 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
 };
 
 export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
-  const {axis, frame, value, visible, onChange, onDrag} = props;
+  const {axis, value, visible, onChange, onDrag} = props;
 
-  const end = Z.slice();
+  const end = Z.slice() as XYZ;
   const color = [0.2, 0.2, 0.2];
 
   end[axis] = 1;
@@ -166,7 +160,6 @@ export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
   const handlers = useDrag(
     lineConstraint(line),
     applyCartesianDrag([axis]),
-    frame,
     value,
     onChange,
     onDrag,
@@ -175,7 +168,7 @@ export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
   return (
     use(Pick, {
       ...handlers,
-      render: ({id, hovered}) => visible && [
+      render: ({id, hovered}: PickState) => visible && [
         hovered ? use(Cursor, {cursor: 'pointer'}) : null,
         use(Arrow, {
           positions: line,
@@ -201,13 +194,13 @@ export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
   );
 };
 
-export const GizmoPlane: LC<GizmoPlaneProps> = (props: GizmoPlaneProps) => {
-  const {axis, frame, value, visible, onChange, onDrag} = props;
+export const GizmoPlane: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
+  const {axis, value, visible, onChange, onDrag} = props;
   const axes = ORTHO_AXES_XYZ[axis];
 
-  const a = Z.slice();
-  const b = Z.slice();
-  const c = Z.slice();
+  const a = Z.slice() as XYZ;
+  const b = Z.slice() as XYZ;
+  const c = Z.slice() as XYZ;
 
   const color = [0.2, 0.2, 0.2];
   for (const i of axes) color[i] = 1;
@@ -219,13 +212,12 @@ export const GizmoPlane: LC<GizmoPlaneProps> = (props: GizmoPlaneProps) => {
   color[0] += color[2] * .2;
   color[1] += color[2] * .3;
 
-  const plane = [0, 0, 0, 0];
+  const plane: XYZW = [0, 0, 0, 0];
   plane[axis] = 1;
 
   const handlers = useDrag(
     planeConstraint(plane),
     applyCartesianDrag(axes),
-    frame,
     value,
     onChange,
     onDrag,
@@ -234,7 +226,7 @@ export const GizmoPlane: LC<GizmoPlaneProps> = (props: GizmoPlaneProps) => {
   return (
     use(Pick, {
       ...handlers,
-      render: ({id, hovered}) => visible && [
+      render: ({id, hovered}: PickState) => visible && [
         hovered ? use(Cursor, {cursor: 'pointer'}) : null,
         use(Polygon, {
           positions: [Z, a, b, c],
@@ -260,13 +252,13 @@ export const GizmoPlane: LC<GizmoPlaneProps> = (props: GizmoPlaneProps) => {
 };
 
 export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
-  const {axis, frame, value, visible, steps = 16, onChange, onDrag} = props;
+  const {axis, value, visible, steps = 16, onChange, onDrag} = props;
   const axes = ORTHO_AXES_XYZ[axis];
 
   const arc = useMemo(() => {
     return seq(steps + 1).map(i => {
       const th = lerp(i / steps * Math.PI / 2, Math.PI / 4, 0.2);
-      const p = Z.slice();
+      const p = Z.slice() as XYZW;
 
       p[axes[0]] = Math.cos(th) * 0.85;
       p[axes[1]] = Math.sin(th) * 0.85;
@@ -280,13 +272,12 @@ export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
   color[0] += color[2] * .2;
   color[1] += color[2] * .3;
 
-  const plane = [0, 0, 0, 0];
+  const plane: XYZW = [0, 0, 0, 0];
   plane[axis] = 1;
 
   const handlers = useDrag(
     circleConstraint(plane, [0, 0, 0], 0.5),
     applyPolarDrag(axis),
-    frame,
     value,
     onChange,
     onDrag,
@@ -295,7 +286,7 @@ export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
   return (
     use(Pick, {
       ...handlers,
-      render: ({id, hovered}) => visible && [
+      render: ({id, hovered}: PickState) => visible && [
         hovered ? use(Cursor, {cursor: 'pointer'}) : null,
         use(Line, {
           positions: arc,
@@ -318,10 +309,10 @@ export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
   );
 };
 
-export const GizmoScale: LC<GizmoScaleProps> = (props: GizmoScaleProps) => {
-  const {axis, frame, value, visible, onChange, onDrag} = props;
+export const GizmoScale: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
+  const {axis, value, visible, onChange, onDrag} = props;
 
-  const end = Z.slice();
+  const end = Z.slice() as XYZ;
   const color = [0.2, 0.2, 0.2];
 
   end[axis] = 1;
@@ -335,7 +326,6 @@ export const GizmoScale: LC<GizmoScaleProps> = (props: GizmoScaleProps) => {
   const handlers = useDrag(
     lineConstraint(line),
     applyScaleDrag([axis]),
-    frame,
     value,
     onChange,
     onDrag,
@@ -344,7 +334,7 @@ export const GizmoScale: LC<GizmoScaleProps> = (props: GizmoScaleProps) => {
   return (
     use(Pick, {
       ...handlers,
-      render: ({id, hovered}) => visible && [
+      render: ({id, hovered}: PickState) => visible && [
         hovered ? use(Cursor, {cursor: 'pointer'}) : null,
         use(Point, {
           position: end,

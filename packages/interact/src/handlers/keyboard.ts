@@ -1,5 +1,5 @@
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { KeyboardState } from './types';
+import type { KeyboardState } from '@use-gpu/workbench';
 
 import { useRenderProp, useKeyboardState } from '@use-gpu/workbench';
 

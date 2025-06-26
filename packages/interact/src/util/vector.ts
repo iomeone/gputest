@@ -9,7 +9,7 @@ export const binary = (f: (a: number, b: number) => number) => (a: number[], b: 
 }
 
 // Unary reduction operator
-export const reduce = (f: (a: number, b: number) => number) => (v: number[], accum: number = 0) => {
+export const reduce = (f: (a: number, b: number, i: number) => number) => (v: number[], accum: number = 0) => {
   const {length} = v;
   for (let i = 0; i < length; ++i) {
     accum = f(accum, v[i], i);
@@ -18,7 +18,7 @@ export const reduce = (f: (a: number, b: number) => number) => (v: number[], acc
 }
 
 // Binary reduction operator
-export const reduce2 = (f: (a: number, b: number, c: number) => number) => (a: number[], b: number[], accum: number = 0) => {
+export const reduce2 = (f: (a: number, b: number, c: number, i: number) => number) => (a: number[], b: number[], accum: number = 0) => {
   const {length} = a;
   for (let i = 0; i < length; ++i) {
     accum = f(accum, a[i], b[i], i);
@@ -71,7 +71,7 @@ export const clamp  = (vector: number[], a: number = 0, b: number = 1) => vector
 export const mins   = (a: number[], b: number) => a.map((_, i) => Math.min(a[i], b));
 export const maxs   = (a: number[], b: number) => a.map((_, i) => Math.max(a[i], b));
 
-export const lerp    = (a: number[], b: number[], t: number[]) => add(a, scale(sub(b, a), t));
+export const lerp    = (a: number[], b: number[], t: number) => add(a, scale(sub(b, a), t));
 export const project = (a: number[], n: number[]) => sub(a, scale(n, dot(a, n)));
 export const select  = (a: number[], b: number[], m: number[]) => m.map((s, i) => s ? b[i] : a[i]);
 

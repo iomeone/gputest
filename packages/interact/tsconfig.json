@@ -3,7 +3,9 @@
   "references": [
     { "path": "../live" },
     { "path": "../state" },
-    { "path": "../react" },
+    { "path": "../parse" },
+    { "path": "../traits" },
+    { "path": "../workbench" },
   ],
   "compilerOptions": {
     "rootDir": "..",

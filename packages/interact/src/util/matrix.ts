@@ -14,7 +14,7 @@ const size = ([a, b]: number[]) => `${a}x${b}`;
 //const mat = (m: number[][]) => m.map(r => `[${r.map(num).join(', ')}]`).join("\n")+"\n";
 
 // Fill an NxM matrix using a given expression
-export const fill2d = (n: number, m: number, f: number = () => 0) => {
+export const fill2d = (n: number, m: number, f: (i: number, j: number) => number = () => 0) => {
   const out = [];
   for (let j = 0; j < n; ++j) {
     const row = [];
@@ -34,7 +34,7 @@ export const mul = (a: number[][], b: number[][]) => {
   const [na, ma] = dims(a);
   const [nb, mb] = dims(b);
   if (ma != nb) {
-    console.error("Incompatible matrices", a, b, size(a), size(b));
+    console.error("Incompatible matrices", a, b, size(dims(a)), size(dims(b)));
     throw "Matrix error";
   }
   return fill2d(na, mb, (i, j) => dot(a[j], b.map(r => r[i])));
@@ -45,7 +45,7 @@ export const mulT = (a: number[][], b: number[][]) => {
   const [na, ma] = dims(a);
   const [mb, nb] = dims(b);
   if (ma != nb) {
-    console.error("Incompatible matrices", a, b, size(a), size(b));
+    console.error("Incompatible matrices", a, b, size(dims(a)), size(dims(b)));
     throw "Matrix error";
   }
   return fill2d(na, mb, (i, j) => dot(a[j], b[i]));
@@ -58,11 +58,11 @@ export const transpose = (x: number[][]) => {
 }
 
 // Concatenate two matrices horizontally
-export const concat = (a: number[][], b: number[][]) => {
+export const concat = (a: number[][], b: number[] | number[][]) => {
   const [na] = dims(a);
-  const [nb] = dims(b);
+  const nb = b.length;
   if (na != nb) {
-    console.error("Incompatible matrices", a, b, size(a), size(b));
+    console.error("Incompatible matrices", a, b, size(dims(a)), nb);
     throw "Matrix error";
   }
   return a.map((_,i) => a[i].concat(b[i]));
@@ -274,8 +274,10 @@ export const jordanNormal = (x: number[][]) => {
 // Verify if matrix has uninterrupted non-zero diagonal
 export const getDiagonalRank = (x: number[][]) => {
   const [n, m] = dims(x);
-  const  l = Math.min(n, m);
-  for (let i = 0; i < l; ++i) {
+  const l = Math.min(n, m);
+
+  let i = 0;
+  for (; i < l; ++i) {
     if (x[i][i] == 0) break;
   }
   return i;
@@ -285,6 +287,7 @@ export const getDiagonalRank = (x: number[][]) => {
 export const isJordanNormalDiagonal = (x: number[][]) => {
   const [n, m] = dims(x);
   const l = Math.min(n, m);
+
   for (let i = 0; i < l; ++i) {
     if (Math.abs(x[i][i] - 1) > 1e-2) return false;
   }

@@ -10,6 +10,7 @@ export type AxisHelperProps = {
   width?: number,
   size?: number,
   depth?: number,
+  opacity?: number,
 
   id?: number,
   mode?: string,

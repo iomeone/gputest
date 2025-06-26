@@ -2,7 +2,7 @@ import type { TypedArray, VectorLike } from '@use-gpu/core';
 
 import { useMemo } from '@use-gpu/live';
 import { accumulateChunks, generateChunkSegments, generateChunkAnchors, alignSizeTo } from '@use-gpu/core';
-import { useRawSource } from '../hooks/useRawSource';
+import { useRawSource, useNoRawSource } from '../hooks/useRawSource';
 import { ARROW_SEGMENTS_SCHEMA } from './schemas';
 
 export type ArrowSegmentsData = {
@@ -36,7 +36,7 @@ export const getArrowSegments = ({
   const trims = hasTrim ? new Uint32Array(count * 4) : undefined;
 
   generateChunkSegments(segments, slices, unwelds, chunks, groups, loops, starts, ends);
-  const sparse = hasTrim ? generateChunkAnchors(anchors, trims, chunks, loops, starts, ends) : undefined;
+  const sparse = anchors && trims ? generateChunkAnchors(anchors, trims, chunks, loops, starts, ends) : undefined;
 
   return {
     count,
@@ -64,11 +64,13 @@ export const useArrowSegmentsSource = (
 
   // Bind as shader storage
   const s = useRawSource(segments, 'i8');
-  const a = useRawSource(anchors, 'vec4<u32>');
-  const t = useRawSource(trims, 'vec4<u32>');
+  const a = anchors ? useRawSource(anchors, 'vec4<u32>') : useNoRawSource();
+  const t = trims ? useRawSource(trims, 'vec4<u32>') : useNoRawSource();
 
-  a.length = sparse;
-  a.size[0] = sparse;
+  if (a) {
+    a.length = sparse || 0;
+    a.size[0] = sparse || 0;
+  }
 
   return {
     count,

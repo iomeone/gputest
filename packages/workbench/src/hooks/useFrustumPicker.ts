@@ -1,9 +1,10 @@
 import type { Ref } from '@use-gpu/live';
+import type { XYZ } from '@use-gpu/core';
 
 import { useCallback } from '@use-gpu/live';
 import { mat4, vec3 } from 'gl-matrix';
 
-import { PointerEvent } from '../interact/types';
+import { PointerEvent } from '../interact/event';
 
 export const useFrustumPicker = (inverseProjectionViewMatrixRef: Ref<mat4>) =>
   useCallback((event: PointerEvent) => {
@@ -18,5 +19,5 @@ export const useFrustumPicker = (inverseProjectionViewMatrixRef: Ref<mat4>) =>
 
     vec3.sub(v2, v2, v1);
 
-    return [v1, v2];
+    return [v1, v2] as [XYZ, XYZ];
   }, [inverseProjectionViewMatrixRef]);

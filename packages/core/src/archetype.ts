@@ -511,7 +511,7 @@ export const updateAggregateFromSchema = (
     const name = n ?? k;
     const o = index ? indexOffsets : undefined;
     const m = Array.isArray(index) ? index : undefined;
-    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o, m);
+    updateAggregateArray(aggregateBuffers[name], items, k, !!index || unwelded, false, o, m);
   }
 
   if (bySelfs) for (const [k] of bySelfs.keys) {
@@ -519,7 +519,7 @@ export const updateAggregateFromSchema = (
     const name = n ?? k;
     const o = index ? indexOffsets : undefined;
     const m = Array.isArray(index) ? index : undefined;
-    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o, m);
+    updateAggregateArray(aggregateBuffers[name], items, k, !!index || unwelded, false, o, m);
   }
 
   if (byJss) for (const [k] of byJss.keys) {
@@ -529,7 +529,7 @@ export const updateAggregateFromSchema = (
     const m = Array.isArray(index) ? index : undefined;
 
     (aggregateBuffers[name].array as any).length = 0;
-    updateAggregateArray(aggregateBuffers[name], items, k, index || unwelded, false, o, m);
+    updateAggregateArray(aggregateBuffers[name], items, k, !!index || unwelded, false, o, m);
 
     if ('values' in byJss) {
       const front = aggregateBuffers[name].array;

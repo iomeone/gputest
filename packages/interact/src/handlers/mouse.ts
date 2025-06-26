@@ -1,5 +1,5 @@
 import type { LC, LiveElement } from '@use-gpu/live';
-import type { MouseState } from './types';
+import type { MouseState } from '@use-gpu/workbench';
 
 import { useVersion } from '@use-gpu/live';
 import { useRenderProp, useMouseState } from '@use-gpu/workbench';

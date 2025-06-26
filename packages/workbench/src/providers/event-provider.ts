@@ -2,7 +2,7 @@ import type { LiveComponent, LiveElement, ArrowFunction } from '@use-gpu/live';
 
 import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 import { proxy, makeIdAllocator } from '@use-gpu/core';
-import { EventHandler, EventBinding, MouseState, WheelState, KeyboardState, PointerCaptureAPI, PointerLockAPI } from '../interact/types';
+import { EventHandler, EventBinding, MouseState, WheelState, KeyboardState, PointerCaptureAPI, PointerLockAPI } from '../interact/event';
 import { PickingContext } from '../providers/picking-provider';
 import { RenderContext } from '../providers/render-provider';
 import { EventReconciler } from '../reconcilers/index';
@@ -36,6 +36,8 @@ const INITIAL_MOUSE_STATE = {
   button: null,
   x: 0,
   y: 0,
+  u: 0,
+  v: 0,
   moveX: 0,
   moveY: 0,
 };
@@ -43,6 +45,8 @@ const INITIAL_MOUSE_STATE = {
 const INITIAL_WHEEL_STATE = {
   x: 0,
   y: 0,
+  u: 0,
+  v: 0,
   moveX: 0,
   moveY: 0,
   spinX: 0,

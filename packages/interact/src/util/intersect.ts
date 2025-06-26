@@ -10,12 +10,12 @@ export const transformRay = (o: XYZ, r: XYZ, matrix: mat4) => {
 };
 
 export const lineToRay = (a: XYZ, b: XYZ) => {
-  const ray = vec3.sub(vec3.create(), b, a);
+  const ray = vec3.sub(vec3.create(), b, a) as XYZ;
   return [a, ray];
 };
 
 export const rayToLine = (origin: XYZ, ray: XYZ) => {
-  const b = vec3.add(vec3.create(), origin, ray);
+  const b = vec3.add(vec3.create(), origin, ray) as XYZ;
   return [origin, b];
 };
 
@@ -37,13 +37,13 @@ export const intersectRays = (
   const B = [-c1, -c2];
 
   const s = solveLinear(A, B);
-  if (!s) return [null, null];
+  if (!s) return null;
 
   const [t1, t2] = s;
   const p1 = vec3.scaleAndAdd(vec3.create(), origin1, ray1, t1);
   const p2 = vec3.scaleAndAdd(vec3.create(), origin2, ray2, t2);
 
-  return [p1, p2];
+  return [p1, p2] as [XYZ, XYZ];
 };
 
 export const intersectRayPlane = (
@@ -55,9 +55,9 @@ export const intersectRayPlane = (
   const n = vec3.clone(ray);
   vec3.normalize(n, n);
 
-  const nr = vec3.dot(plane, n);
+  const nr = vec3.dot(plane as any, n);
   if (!nr) return null;
 
-  const t = -(vec3.dot(plane, origin) - o) / nr;
+  const t = -(vec3.dot(plane as any, origin) - o) / nr;
   return vec3.scaleAndAdd(vec3.create(), origin, n, t);
 };
