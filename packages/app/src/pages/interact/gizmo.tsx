@@ -62,8 +62,6 @@ export const InteractGizmoPage: LC = () => {
                         </PBRMaterial>
                       </Node>
                       <GizmoMatrix
-                        nonUniform
-                        absolute
                         move
                         rotate
                         scale
