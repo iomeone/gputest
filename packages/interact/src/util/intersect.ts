@@ -1,6 +1,13 @@
 import type { XYZ, XYZW } from '@use-gpu/core';
 import { solveLinear } from './matrix';
-import { vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
+
+export const transformRay = (o: XYZ, r: XYZ, matrix: mat4) => {
+  const [a, b] = rayToLine(o, r);
+  vec3.transformMat4(a, a, matrix);
+  vec3.transformMat4(b, b, matrix);
+  return lineToRay(a, b);
+};
 
 export const lineToRay = (a: XYZ, b: XYZ) => {
   const ray = vec3.sub(vec3.create(), b, a);

@@ -1,9 +1,6 @@
 import { seq, dot } from './vector';
 import { clone } from './clone';
 
-// Fill an array of length n with a value v
-const fill   = (n: number, v = 0) => seq(n).map(_ => v);
-
 // Fill an array of length n with all zeros except a single v at index i
 const select = (n: number, i = n - 1, v = 1) => seq(n).map(j => i == j ? v : 0);
 
@@ -12,15 +9,15 @@ export const dims = (m: number[][]) => [m.length, m[0].length];
 
 // Pretty printing for debugging
 const size = ([a, b]: number[]) => `${a}x${b}`;
-const num = (x: number) => x == Math.round(x) ? (x|0) : (+x).toFixed(3);
-const vec = (v: number[]) => `(${v.map(num).join(', ')})`;
-const mat = (m: number[][]) => m.map(r => `[${r.map(num).join(', ')}]`).join("\n")+"\n";
+//const num = (x: number) => x == Math.round(x) ? (x|0) : (+x).toFixed(3);
+//const vec = (v: number[]) => `(${v.map(num).join(', ')})`;
+//const mat = (m: number[][]) => m.map(r => `[${r.map(num).join(', ')}]`).join("\n")+"\n";
 
 // Fill an NxM matrix using a given expression
-export const fill2d = (n: number, m: number, f: number = _ => 0) => {
-  let out = [];
+export const fill2d = (n: number, m: number, f: number = () => 0) => {
+  const out = [];
   for (let j = 0; j < n; ++j) {
-    let row = [];
+    const row = [];
     for (let i = 0; i < m; ++i) {
       row[i] = f(i, j);
     }
@@ -34,8 +31,8 @@ export const identity = (n: number) => fill2d(n, n, (i, j) => +(i == j));
 
 // Multiply two matrices
 export const mul = (a: number[][], b: number[][]) => {
-  let [na, ma] = dims(a);
-  let [nb, mb] = dims(b);
+  const [na, ma] = dims(a);
+  const [nb, mb] = dims(b);
   if (ma != nb) {
     console.error("Incompatible matrices", a, b, size(a), size(b));
     throw "Matrix error";
@@ -45,8 +42,8 @@ export const mul = (a: number[][], b: number[][]) => {
 
 // Multiply two matrices while transposing the second
 export const mulT = (a: number[][], b: number[][]) => {
-  let [na, ma] = dims(a);
-  let [mb, nb] = dims(b);
+  const [na, ma] = dims(a);
+  const [mb, nb] = dims(b);
   if (ma != nb) {
     console.error("Incompatible matrices", a, b, size(a), size(b));
     throw "Matrix error";
@@ -56,14 +53,14 @@ export const mulT = (a: number[][], b: number[][]) => {
 
 // Transpose a matrix
 export const transpose = (x: number[][]) => {
-  let [n, m] = dims(x);
+  const [n, m] = dims(x);
   return fill2d(m, n, (i, j) => x[i][j]);
 }
 
 // Concatenate two matrices horizontally
 export const concat = (a: number[][], b: number[][]) => {
-  let [na, ma] = dims(a);
-  let [nb, mb] = dims(b);
+  const [na] = dims(a);
+  const [nb] = dims(b);
   if (na != nb) {
     console.error("Incompatible matrices", a, b, size(a), size(b));
     throw "Matrix error";
@@ -73,7 +70,7 @@ export const concat = (a: number[][], b: number[][]) => {
 
 // Extract a submatrix from index (a,b) to (c,d) exclusive
 export const submatrix = (M: number[][], a: number, b: number, c: number, d: number) => {
-  let [n, m] = dims(M);
+  const [n, m] = dims(M);
 
   a = Math.min(a, m);
   b = Math.min(b, n);
@@ -89,12 +86,13 @@ export const submatrix = (M: number[][], a: number, b: number, c: number, d: num
 
 // Get matrix rank
 export const rank = (A: number[][]) => {
-  let G = jordanNormal(A);
+  const G = jordanNormal(A);
   return getDiagonalRank(G);
 }
 
 // Solve linear system of equations A X = B
 export const solveLinear = (A: number[][], B: number[]) => {
+  // eslint-disable-next-line
   let [n, m] = dims(A);
 
   // Diagonalize system of equations
@@ -116,7 +114,7 @@ export const solveLinear = (A: number[][], B: number[]) => {
 
   if (n == m) {
     // Extract exact solution
-    let v = seq(m).map(i => G[i][m]);
+    const v = seq(m).map(i => G[i][m]);
     return v;
   }
 
@@ -125,46 +123,45 @@ export const solveLinear = (A: number[][], B: number[]) => {
 
 // Use lagrange multipliers to minimize distance to P subject to A X = B
 export const lagrangeMinimumTo = (A: number[][], B: number[], P: number[]) => {
-  let [n, m] = dims(A);
+  const [n, m] = dims(A);
 
-  let M = concat(A, fill2d(n, n));
-  let T = seq(m).map(i => [
+  const M = concat(A, fill2d(n, n));
+  const T = seq(m).map(i => [
     ...select(m, i, 2), ...seq(n).map(j => -A[j][i]),
   ]);
 
-  let AL = [...M, ...T];
-  let BL = [...B, ...P.map(v => 2*v)];
+  const AL = [...M, ...T];
+  const BL = [...B, ...P.map(v => 2*v)];
 
   return [AL, BL];
 }
 
 // Solve overdetermined system with least squares
 export const leastSquares = (A: number[][], B: number[]) => {
-  let AT = transpose(A);
+  const AT = transpose(A);
 
-  let ATA = mul(AT, A);
-  let ATB = mulT(AT, [B]);
+  const ATA = mul(AT, A);
+  const ATB = mulT(AT, [B]);
 
   return [ATA, ATB];
 }
 
 // Solve overdetermined system with least squares
 export const leastSquaresClosest = (A: number[][], B: number[], P: number[]) => {
-  let [n, m] = dims(A);
-  let d = P.length;
+  const d = P.length;
 
-  let AP = A.concat(seq(d).map(i => select(d, i)));
-  let BP = B.concat(P);
+  const AP = A.concat(seq(d).map(i => select(d, i)));
+  const BP = B.concat(P);
 
   return leastSquares(AP, BP);
 }
 
 // Swap a later row to make (i,j) non-zero
 const swapZero = (x: number[][], i: number, j: number) => {
-  let [n, m] = dims(x);
+  const [n] = dims(x);
   for (let k = j + 1; k < n; ++k) {
     if (x[k][i] != 0) {
-      [x[k],x[j]] = [x[j],x[k]];
+      [x[k], x[j]] = [x[j], x[k]];
       return true;
     }
   }
@@ -203,7 +200,7 @@ export const determinant = (x: number[][]) => {
 
   for (let i = 0; i < Math.min(n, m); ++i) {
     // Find next pivot element
-    let pivot = x[i][i + offset];
+    const pivot = x[i][i + offset];
 
     if (pivot == 0) {
       // Unsuitable, find other row to swap with
@@ -227,7 +224,7 @@ export const determinant = (x: number[][]) => {
 
     // Subtract from other rows
     for (let j = 0; j < n; ++j) if (i != j) {
-      let pivot = x[j][i + offset];
+      const pivot = x[j][i + offset];
       madRow(x[j], x[i], -pivot);
     }
   }
@@ -276,8 +273,8 @@ export const jordanNormal = (x: number[][]) => {
 
 // Verify if matrix has uninterrupted non-zero diagonal
 export const getDiagonalRank = (x: number[][]) => {
-  let [n, m] = dims(x);
-  let l = Math.min(n, m);
+  const [n, m] = dims(x);
+  const  l = Math.min(n, m);
   for (let i = 0; i < l; ++i) {
     if (x[i][i] == 0) break;
   }
@@ -286,8 +283,8 @@ export const getDiagonalRank = (x: number[][]) => {
 
 // Verify if matrix is jordan normal on the diagonal
 export const isJordanNormalDiagonal = (x: number[][]) => {
-  let [n, m] = dims(x);
-  let l = Math.min(n, m);
+  const [n, m] = dims(x);
+  const l = Math.min(n, m);
   for (let i = 0; i < l; ++i) {
     if (Math.abs(x[i][i] - 1) > 1e-2) return false;
   }

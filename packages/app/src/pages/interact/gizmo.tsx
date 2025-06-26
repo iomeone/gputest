@@ -1,18 +1,17 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, TextureSource } from '@use-gpu/core';
+import type { GPUGeometry } from '@use-gpu/core';
 
 import React, { Gather, useOne, useState } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
-import { vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 
 import {
   Pass, LinearRGB,
-  GeometryData, ImageCubeTexture,
+  GeometryData,
   OrbitCamera,
+  Environment,
   PBRMaterial,
 
   makeBoxGeometry,
-  useShader,
 } from '@use-gpu/workbench';
 import {
   Cursor,
@@ -23,24 +22,10 @@ import {
   Scene, Node, Mesh,
 } from '@use-gpu/scene';
 
-import { mat4 } from 'gl-matrix';
-
 import { InfoBox } from '../../ui/info-box';
 
-const cubeMaterial = wgsl`
-@optional @link fn getCubeMap(uvw: vec3<f32>) -> vec4<f32> { return vec4<f32>(0.0); };
-
-@export fn main(
-  inColor: vec4<f32>,
-  mapUV: vec4<f32>,
-  mapST: vec4<f32>,
-) -> vec4<f32> {
-  return getCubeMap(mapUV.xyz);
-}
-`;
-
 export const InteractGizmoPage: LC = () => {
-  const geometry = useOne(() => makeBoxGeometry({ width: 0.2 }));
+  const geometry = useOne(() => makeBoxGeometry({ width: 2 }));
 
   const [matrix, setMatrix] = useState(() => mat4.fromValues(
     1, 0, 0, 0,
@@ -64,18 +49,26 @@ export const InteractGizmoPage: LC = () => {
           <LinearRGB tonemap="aces">
             <Cursor cursor='move' />
             <Camera>
-              <Pass picking>
+              <Pass picking lights>
 
-                <Scene>
-                  <GizmoMatrix value={matrix} onChange={setMatrix} />
-                  <Node matrix={matrix}>
-                    {/*
-                    <PBRMaterial>
-                      <Mesh mesh={mesh} />
-                    </PBRMaterial>
-                    */}
-                  </Node>
-                </Scene>
+                <Environment preset="park">
+
+                  <Scene>
+                    <Node matrix={matrix}>
+                      <PBRMaterial>
+                        <Mesh mesh={mesh} shaded />
+                      </PBRMaterial>
+                    </Node>
+                    <GizmoMatrix
+                      move
+                      rotate
+                      scale
+                      value={matrix}
+                      onChange={setMatrix}
+                    />
+                  </Scene>
+
+                </Environment>
 
               </Pass>
             </Camera>

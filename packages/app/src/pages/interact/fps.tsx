@@ -7,7 +7,7 @@ import {
   OrbitCamera,
 } from '@use-gpu/workbench';
 import {
-  Cursor, FPSControls, 
+  Cursor, FPSControls,
 } from '@use-gpu/interact';
 import {
   Plot, Line,

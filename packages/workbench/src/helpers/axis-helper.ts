@@ -16,14 +16,6 @@ export type AxisHelperProps = {
   zBias?: number,
 };
 
-const COLORS = new Float32Array([
-  1, 0.2, 0.2, 1,
-  1, 0.2, 0.2, 1,
-  0.2, 1, 0.2, 1,
-  0.2, 1, 0.2, 1,
-  0.2, 0.2, 1, 1,
-  0.2, 0.2, 1, 1,
-]);
 
 const AXES = new Uint8Array([
   1, 1,
@@ -41,6 +33,7 @@ export const AxisHelper: LiveComponent<AxisHelperProps> = memo((props: AxisHelpe
     width = 1,
     size = 1,
     depth = 0,
+    opacity = 1,
 
     ...rest
   } = props;
@@ -54,8 +47,17 @@ export const AxisHelper: LiveComponent<AxisHelperProps> = memo((props: AxisHelpe
        0,    0, size, 1,
   ]), size);
 
+  const rgba = useOne(() => new Float32Array([
+    1, 0.2, 0.2, opacity,
+    1, 0.2, 0.2, opacity,
+    0.2, 1, 0.2, opacity,
+    0.2, 1, 0.2, opacity,
+    0.2, 0.2, 1, opacity,
+    0.2, 0.2, 1, opacity,
+  ]), opacity);
+
   const positions = useRawSource(vertices, 'vec4<f32>');
-  const colors    = useRawSource(COLORS, 'vec4<f32>');
+  const colors    = useRawSource(rgba, 'vec4<f32>');
   const lookups   = useRawSource(AXES, 'u8');
 
   const {segments, anchors, trims} = useArrowSegmentsSource(CHUNKS, null, null, null, ENDS);
