@@ -12,9 +12,9 @@ import { Pick, PickState } from '../handlers/pick';
 
 import {
   useDrag,
-  lineConstraint, planeConstraint, circleConstraint,
+  lineConstraint, planeConstraint, polarTangentConstraint,
   applyCartesianDrag, applyPolarDrag, applyScaleDrag,
-  getDragFrame,
+  getDragFrame, getAbsoluteFrame,
   ORTHO_AXES_XYZ,
 } from '../drag/useDrag';
 
@@ -25,6 +25,10 @@ export type GizmoMatrixProps = {
   onChange: (m: mat4) => void,
 
   size?: number,
+
+  absolute?: boolean,
+  nonUniform?: boolean,
+  negative?: boolean,
 
   move?: boolean | string,
   rotate?: boolean | string,
@@ -38,56 +42,84 @@ export type GizmoAxisProps = {
 
   axis: number,
   visible: boolean,
+
+  absolute?: boolean,
+
+  xformUniform: mat4,
+  xformNonUniform: mat4,
 };
 
 export type GizmoRotateProps = GizmoAxisProps & {
   steps?: number,
 };
 
+export type GizmoScaleProps = GizmoAxisProps & {
+  negative?: boolean,
+  nonUniform?: boolean,
+};
+
 const Z: XYZ = [0, 0, 0];
 
 export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
-  const {size = 0.1, move, rotate, scale, value, onChange} = props;
+  const {
+    value,
+    onChange,
 
+    move,
+    rotate,
+    scale,
+
+    absolute,
+    negative,
+    nonUniform = typeof scale === 'object',
+
+    size = .1,
+  } = props;
+  
   const {uniforms} = useViewContext();
   const frameCount = usePerFrame();
 
   // Flip orientation relative to view
-  const flipM = useMemo(() => {
-    const v = vec3.clone(uniforms.viewPosition.current as vec3);
+  const parent = useMatrixContext();
+  const [flipM, frame, xformUniform, xformNonUniform] = useMemo(() => {
     const vm = uniforms.viewMatrix.current;
 
-    const i = mat4.create();
-    mat4.invert(i, value);
-    vec3.transformMat4(v, v, i);
-
+    // Distance of gizmo to view (for absolute size)
     const p = vec3.create();
     mat4.getTranslation(p, value);
+    if (parent) vec3.transformMat4(p, p, parent);
     vec3.transformMat4(p, p, vm);
+
     const vz = -p[2];
     const s = size * vz;
+
+    // Orientation flipping relative to view
+    const v = vec3.clone(uniforms.viewPosition.current as vec3);
+    const i = mat4.create();
+
+    const fu = (absolute ? getAbsoluteFrame : getDragFrame)(value);
+    const fnu = (absolute ? fu : value);
+
+    const xfu = parent ? mat4.multiply(mat4.create(), parent, fu) : fu;
+    const xfnu = parent ? mat4.multiply(mat4.create(), parent, fnu) : fnu;
+    mat4.invert(i, xfu);
+    vec3.transformMat4(v, v, i);
 
     const x = Math.sign(v[0]) * s;
     const y = Math.sign(v[1]) * s;
     const z = Math.sign(v[2]) * s;
 
-    return mat4.fromScaling(mat4.create(), [x, y, z]);
+    const flip = mat4.fromScaling(mat4.create(), [x, y, z]);
+    return [flip, fu, xfu, xfnu];
     // eslint-disable-next-line
-  }, [uniforms, frameCount, value, size]);
+  }, [uniforms, frameCount, parent, value, size]);
 
-  // Get world-space matrix
-  const parent = useMatrixContext();
-  const world = useMemo(() => {
+  // Get local matrix for gizmo itself
+  const local = useMemo(() => {
     const m = mat4.create();
-    const f = getDragFrame(value);
-
-    if (parent) mat4.multiply(m, parent, f);
-    else mat4.copy(m, f);
-
-    mat4.multiply(m, m, flipM);
-
+    mat4.multiply(m, frame, flipM);
     return m;
-  }, [parent, value, flipM]);
+  }, [frame, flipM]);
 
   const [draggingElement, setDraggingElement] = useState<number | null>(null);
   const makeOnDrag = (element: number) => (dragging: boolean) => {
@@ -113,38 +145,51 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
   const scaleZ = scale === true || (typeof scale === 'string' && !!scale?.match(/z/));
 
   // Render gizmo
+  const gizmoProps = (element: number) => ({
+    axis: element % 3,
+    absolute,
+    negative,
+    nonUniform,
+    xformUniform,
+    xformNonUniform,
+    value,
+    onChange,
+    onDrag: makeOnDrag(element),
+    visible: !isDragging,
+  });
+  
   const view = (
     use(Plot, {
       children: [
         draggingElement != null ? use(AxisHelper, {width: 3}) : null,
         draggingElement != null ? use(AxisHelper, {width: 3, opacity: 0.35, mode: 'transparent', depthTest: false}) : null,
 
-        moveX ? use(GizmoAxis, {axis: 0, value, onChange, onDrag: makeOnDrag(0),  visible: !isDragging }) : null,
-        moveY ? use(GizmoAxis, {axis: 1, value, onChange, onDrag: makeOnDrag(1),  visible: !isDragging }) : null,
-        moveZ ? use(GizmoAxis, {axis: 2, value, onChange, onDrag: makeOnDrag(2),  visible: !isDragging }) : null,
+        moveX ? use(GizmoAxis, gizmoProps(0)) : null,
+        moveY ? use(GizmoAxis, gizmoProps(1)) : null,
+        moveZ ? use(GizmoAxis, gizmoProps(2)) : null,
 
-        moveXY ? use(GizmoPlane, {axis: 0, value, onChange, onDrag: makeOnDrag(3),  visible: !isDragging }) : null,
-        moveYZ ? use(GizmoPlane, {axis: 1, value, onChange, onDrag: makeOnDrag(4),  visible: !isDragging }) : null,
-        moveZX ? use(GizmoPlane, {axis: 2, value, onChange, onDrag: makeOnDrag(5),  visible: !isDragging }) : null,
+        moveXY ? use(GizmoPlane, gizmoProps(3)) : null,
+        moveYZ ? use(GizmoPlane, gizmoProps(4)) : null,
+        moveZX ? use(GizmoPlane, gizmoProps(5)) : null,
 
-        rotateX ? use(GizmoRotate, {axis: 0, value, onChange, onDrag: makeOnDrag(6),  visible: !isDragging }) : null,
-        rotateY ? use(GizmoRotate, {axis: 1, value, onChange, onDrag: makeOnDrag(7),  visible: !isDragging }) : null,
-        rotateZ ? use(GizmoRotate, {axis: 2, value, onChange, onDrag: makeOnDrag(8),  visible: !isDragging }) : null,
+        rotateX ? use(GizmoRotate, gizmoProps(6)) : null,
+        rotateY ? use(GizmoRotate, gizmoProps(7)) : null,
+        rotateZ ? use(GizmoRotate, gizmoProps(8)) : null,
 
-        scaleX ? use(GizmoScale, {axis: 0, value, onChange, onDrag: makeOnDrag(9),  visible: !isDragging }) : null,
-        scaleY ? use(GizmoScale, {axis: 1, value, onChange, onDrag: makeOnDrag(10), visible: !isDragging }) : null,
-        scaleZ ? use(GizmoScale, {axis: 2, value, onChange, onDrag: makeOnDrag(11), visible: !isDragging }) : null,
+        scaleX ? use(GizmoScale, gizmoProps(9)) : null,
+        scaleY ? use(GizmoScale, gizmoProps(10)) : null,
+        scaleZ ? use(GizmoScale, gizmoProps(11)) : null,
       ],
     })
   );
 
-  const [context] = useCombinedMatrixTransform(world);
+  const [context] = useCombinedMatrixTransform(local);
 
   return provide(TransformContext, context, view);
 };
 
 export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
-  const {axis, value, visible, onChange, onDrag} = props;
+  const {axis, absolute, xformNonUniform, value, visible, onChange, onDrag} = props;
 
   const end = Z.slice() as XYZ;
   const color = [0.2, 0.2, 0.2];
@@ -159,7 +204,8 @@ export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
 
   const handlers = useDrag(
     lineConstraint(line),
-    applyCartesianDrag([axis]),
+    () => ({apply: applyCartesianDrag([axis], absolute) }),
+    xformNonUniform,
     value,
     onChange,
     onDrag,
@@ -195,7 +241,7 @@ export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
 };
 
 export const GizmoPlane: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
-  const {axis, value, visible, onChange, onDrag} = props;
+  const {axis, absolute, xformNonUniform, value, visible, onChange, onDrag} = props;
   const axes = ORTHO_AXES_XYZ[axis];
 
   const a = Z.slice() as XYZ;
@@ -217,7 +263,8 @@ export const GizmoPlane: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
 
   const handlers = useDrag(
     planeConstraint(plane),
-    applyCartesianDrag(axes),
+    () => ({ apply: applyCartesianDrag(axes, absolute) }),
+    xformNonUniform,
     value,
     onChange,
     onDrag,
@@ -252,7 +299,7 @@ export const GizmoPlane: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
 };
 
 export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
-  const {axis, value, visible, steps = 16, onChange, onDrag} = props;
+  const {axis, absolute, xformUniform, value, visible, steps = 16, onChange, onDrag} = props;
   const axes = ORTHO_AXES_XYZ[axis];
 
   const arc = useMemo(() => {
@@ -276,8 +323,13 @@ export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
   plane[axis] = 1;
 
   const handlers = useDrag(
-    circleConstraint(plane, [0, 0, 0], 0.5),
-    applyPolarDrag(axis),
+    planeConstraint(plane),
+    (hit: XYZ) => ({
+      hit: polarTangentConstraint(axis, hit),
+      apply: applyPolarDrag(axis, absolute),
+    }),
+
+    xformUniform,
     value,
     onChange,
     onDrag,
@@ -309,8 +361,8 @@ export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
   );
 };
 
-export const GizmoScale: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
-  const {axis, value, visible, onChange, onDrag} = props;
+export const GizmoScale: LC<GizmoScaleProps> = (props: GizmoScaleProps) => {
+  const {axis, absolute, xformUniform, nonUniform, negative, value, visible, onChange, onDrag} = props;
 
   const end = Z.slice() as XYZ;
   const color = [0.2, 0.2, 0.2];
@@ -325,7 +377,8 @@ export const GizmoScale: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
 
   const handlers = useDrag(
     lineConstraint(line),
-    applyScaleDrag([axis]),
+    () => ({ apply: applyScaleDrag(axis, absolute, negative, nonUniform) }),
+    xformUniform,
     value,
     onChange,
     onDrag,

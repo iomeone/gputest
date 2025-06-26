@@ -35,7 +35,7 @@ export const InteractGizmoPage: LC = () => {
   ));
 
   return (<>
-    <InfoBox>Load a cube map using &lt;ImageCubeTexture&gt; and render it on a mesh as a &lt;ShaderFlatMaterial&gt;.</InfoBox>
+    <InfoBox>Manipulate an object transform using &lt;GizmoMatrix&gt;.</InfoBox>
     <Gather
       children={[
         <GeometryData {...geometry} />,
@@ -54,18 +54,24 @@ export const InteractGizmoPage: LC = () => {
                 <Environment preset="park">
 
                   <Scene>
-                    <Node matrix={matrix}>
-                      <PBRMaterial>
-                        <Mesh mesh={mesh} shaded />
-                      </PBRMaterial>
+                    <Node position={[1, 1, 1]}>
+
+                      <Node matrix={matrix}>
+                        <PBRMaterial>
+                          <Mesh mesh={mesh} shaded />
+                        </PBRMaterial>
+                      </Node>
+                      <GizmoMatrix
+                        nonUniform
+                        absolute
+                        move
+                        rotate
+                        scale
+                        value={matrix}
+                        onChange={setMatrix}
+                      />
+
                     </Node>
-                    <GizmoMatrix
-                      move
-                      rotate
-                      scale
-                      value={matrix}
-                      onChange={setMatrix}
-                    />
                   </Scene>
 
                 </Environment>
@@ -81,9 +87,9 @@ export const InteractGizmoPage: LC = () => {
 
 const Camera = ({children}: PropsWithChildren<object>) => (
   <OrbitControls
-    radius={5}
-    bearing={-0.5}
-    pitch={0.3}
+    radius={10}
+    bearing={-0.7}
+    pitch={0.5}
     render={(radius: number, phi: number, theta: number, target: vec3) =>
       <OrbitCamera
         radius={radius}
