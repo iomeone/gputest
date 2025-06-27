@@ -168,9 +168,9 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
         moveY ? use(GizmoAxis, gizmoProps(1)) : null,
         moveZ ? use(GizmoAxis, gizmoProps(2)) : null,
 
-        moveXY ? use(GizmoPlane, gizmoProps(3)) : null,
-        moveYZ ? use(GizmoPlane, gizmoProps(4)) : null,
-        moveZX ? use(GizmoPlane, gizmoProps(5)) : null,
+        moveYZ ? use(GizmoPlane, gizmoProps(3)) : null,
+        moveZX ? use(GizmoPlane, gizmoProps(4)) : null,
+        moveXY ? use(GizmoPlane, gizmoProps(5)) : null,
 
         rotateX ? use(GizmoRotate, gizmoProps(6)) : null,
         rotateY ? use(GizmoRotate, gizmoProps(7)) : null,
