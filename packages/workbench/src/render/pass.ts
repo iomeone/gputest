@@ -13,6 +13,7 @@ import { LightBuffer } from './buffer/light-buffer';
 import { MotionBuffer } from './buffer/motion-buffer';
 import { NormalBuffer } from './buffer/normal-buffer';
 import { OverscanBuffer, parseOverscanOptions } from './buffer/overscan-buffer';
+import { OutlineBuffer, parseOutlineOptions } from './buffer/outline-buffer';
 import { PickingBuffer } from './buffer/picking-buffer';
 import { ShadowBuffer } from './buffer/shadow-buffer';
 import { SSAOBuffer, parseSSAOOptions } from './buffer/ssao-buffer';
@@ -36,6 +37,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     shadows = false,
     picking = false,
     ssao = false,
+    outline = false,
 
     overscan = 0,
 
@@ -55,6 +57,10 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     picking,
     ssao: ssao ? parseSSAOOptions(ssao) : undefined,
     overscan: overscan ? parseOverscanOptions(overscan) : undefined,
+    outline: outline ? parseOutlineOptions(outline) : undefined,
+
+    motion: !!ssao,
+    normal: !!ssao || !!outline,
 
     overlay,
     merge,
@@ -83,10 +89,9 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
       shadows ? use(ShadowBuffer, options) : null,
       picking ? use(PickingBuffer, options) : null,
       overscan ? use(OverscanBuffer, options) : null,
-      ...(ssao ? [
-        use(NormalBuffer, options),
-        use(MotionBuffer, options),
-      ] : []),
+      options.normal ? use(NormalBuffer, options) : null,
+      options.motion ? use(MotionBuffer, options) : null,
+      outline ? use(OutlineBuffer, options) : null,
       ssao ? use(SSAOBuffer, options) : null,
     ], optionsKey);
 
@@ -104,9 +109,8 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
       ssao ? use(SSAOBuffer, options) : null,
       shadows ? use(ShadowBuffer, options) : null,
       picking ? use(PickingBuffer, options) : null,
-      ...(ssao ? [
-        use(MotionBuffer, options),
-      ] : []),
+      options.motion ? use(MotionBuffer, options) : null,
+      outline ? use(OutlineBuffer, options) : null,
     ], optionsKey);
 
     return gatherPassResources(resources, (resources: PassResources) =>

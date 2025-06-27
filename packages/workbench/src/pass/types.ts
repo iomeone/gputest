@@ -8,6 +8,7 @@ import { vec3 } from 'gl-matrix';
 export type PassOptions = {
   ssao?: boolean | number | Partial<SSAOOptions>,
   overscan?: number | Partial<OverscanOptions>,
+  outline?: boolean | number | Partial<OutlineOptions>,
 } & Pick<PassFlags, 'lights' | 'shadows' | 'picking' | 'overlay' | 'merge'>;
 
 export type PassFlags = {
@@ -16,6 +17,7 @@ export type PassFlags = {
   picking?: boolean,
   ssao?: SSAOOptions,
   overscan?: OverscanOptions,
+  outline?: OutlineOptions,
 
   overlay?: boolean,
   merge?: boolean,
@@ -39,6 +41,15 @@ export type SSAOOptions = {
 export type OverscanOptions = {
   range: number,
   all: boolean,
+};
+
+export type OutlineOptions = {
+  inner: number,
+  outer: number,
+  color: VectorLike,
+
+  depthRamp: number,
+  normalRamp: number,
 };
 
 // Env

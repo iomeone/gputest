@@ -6,6 +6,7 @@ export * from './deferred-resolve-pass';
 export * from './dispatch-pass';
 export * from './motion-pass';
 export * from './normal-pass';
+export * from './outline-pass';
 export * from './picking-pass';
 export * from './readback-pass';
 export * from './shadow-pass';

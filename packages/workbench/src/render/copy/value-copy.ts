@@ -20,6 +20,7 @@ export const useCopySample = (
   getSample: ShaderModule,
 
   layout?: GPUBindGroupLayout | null,
+  blend?: GPUBlendState | null,
 
   uv?: TypedArray | number[],
   scale: number = 1,
@@ -32,7 +33,7 @@ export const useCopySample = (
     return [vertexShader, fragmentShader, label];
   }, [getSample]);
 
-  return useRenderCopy(vertex, fragment, renderContext, false, layout, uv, scale, label);
+  return useRenderCopy(vertex, fragment, renderContext, false, layout, blend, uv, scale, label);
 };
 
 export const useCopyDepth = (
@@ -53,7 +54,7 @@ export const useCopyDepth = (
     return [vertexShader, fragmentShader, label];
   }, [getDepth]);
 
-  return useRenderCopy(vertex, fragment, renderContext, true, layout, uv, scale, label);
+  return useRenderCopy(vertex, fragment, renderContext, true, layout, null, uv, scale, label);
 };
 
 export const useCopyDepthSample = (
@@ -63,6 +64,7 @@ export const useCopyDepthSample = (
   getSample: ShaderModule,
 
   layout?: GPUBindGroupLayout | null,
+  blend?: GPUBlendState | null,
 
   uv?: TypedArray | number[],
   scale: number = 1,
@@ -75,5 +77,5 @@ export const useCopyDepthSample = (
     return [vertexShader, fragmentShader, label];
   }, [getDepth, getSample]);
 
-  return useRenderCopy(vertex, fragment, renderContext, true, layout, uv, scale, label);
+  return useRenderCopy(vertex, fragment, renderContext, true, layout, blend, uv, scale, label);
 };
