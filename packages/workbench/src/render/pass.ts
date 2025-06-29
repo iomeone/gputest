@@ -104,11 +104,12 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
 
     const resources = useOne(() => [
       use(GBuffer, options),
-      !(overscan as any)?.all ? use(ViewBuffer, options) : null,
+      /*!(overscan as any)?.all ?*/ use(ViewBuffer, options), // : null,
       lights ? use(LightBuffer, options) : null,
       ssao ? use(SSAOBuffer, options) : null,
       shadows ? use(ShadowBuffer, options) : null,
       picking ? use(PickingBuffer, options) : null,
+      //overscan ? use(OverscanBuffer, options) : null,
       options.motion ? use(MotionBuffer, options) : null,
       outline ? use(OutlineBuffer, options) : null,
     ], optionsKey);

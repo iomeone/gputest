@@ -10,7 +10,7 @@ import { drawCall } from '../../queue/draw-call';
 
 const countGeometry = () => {};
 
-const getCopyPipeline = (depth: boolean, blend: GPUBlendState) => {
+const getCopyPipeline = (depth: boolean, blend?: Partial<GPUBlendState> | null) => {
   if (depth) return {
     depthStencil: {
       depthWriteEnabled: true,
@@ -46,7 +46,7 @@ export const useRenderCopy = (
   depth?: boolean,
 
   layout?: GPUBindGroupLayout | null,
-  blend?: GPUBlendState | null,
+  blend?: Partial<GPUBlendState> | null,
 
   uv?: TypedArray | number[],
   scale: number = 1,
@@ -61,7 +61,7 @@ export const useRenderCopy = (
     renderContext,
     globalLayout: layout,
     mode: null,
-    pipeline: getCopyPipeline(depth, blend),
+    pipeline: getCopyPipeline(!!depth, blend),
     label,
   }) as (Renderable | undefined);
 

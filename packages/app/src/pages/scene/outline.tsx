@@ -1,7 +1,7 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { GPUGeometry } from '@use-gpu/core';
 
-import React, { Gather, useCallback, useMemo } from '@use-gpu/live';
+import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 import { seq } from '@use-gpu/core';
 
@@ -20,11 +20,6 @@ import {
 } from '@use-gpu/scene';
 
 import { InfoBox } from '../../ui/info-box';
-
-const sampler = {
-  addressModeU: 'repeat',
-  addressModeV: 'repeat',
-} as GPUSamplerDescriptor;
 
 const boxGeometry = makeBoxGeometry({ width: 2 });
 const planeGeometry = makePlaneGeometry({ width: 100, height: 100, axes: 'xz' });
@@ -95,16 +90,16 @@ export const SceneOutlinePage: LC = () => {
             {/* Ensure at least 64 frames for SSAO noise to converge */}
             <Loop converge={64}>
 
-              <Pass
-                lights
-                ssao={ssaoOptions}
-                outline={outlineOptions}
-                overscan={overscan}
-                debugIndex={4}
-              >
+              <Environment preset="pisa" gain={4}>
+                <Pass
+                  lights
+                  ssao={ssaoOptions}
+                  outline={outlineOptions}
+                  overscan={overscan}
+                  debugIndex={4}
+                >
 
-                <AmbientLight intensity={0.05} />
-                <Environment preset="pisa" gain={4}>
+                  <AmbientLight intensity={0.05} />
                   <Scene>
 
                     <Node position={[0, -2.001, 0]}>
@@ -127,8 +122,8 @@ export const SceneOutlinePage: LC = () => {
                     </PBRMaterial>
 
                   </Scene>
-                </Environment>
-              </Pass>
+                </Pass>
+              </Environment>
 
             </Loop>
           </Camera>
@@ -137,10 +132,8 @@ export const SceneOutlinePage: LC = () => {
     />
   );
 
-  const root = document.querySelector('#use-gpu .canvas');
-
   return (<>
-    <InfoBox>Rendering outlines with &lt;OutlinePass&gt;, combined with SSAO.</InfoBox>
+    <InfoBox>Rendering anti-aliased outlines with &lt;OutlinePass&gt;, combined with SSAO.</InfoBox>
     {view}
   </>);
 };

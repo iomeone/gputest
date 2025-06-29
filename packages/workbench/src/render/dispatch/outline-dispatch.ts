@@ -1,27 +1,23 @@
-import type { LiveComponent, Ref } from '@use-gpu/live';
+import type { LiveComponent } from '@use-gpu/live';
 import type { OffscreenTarget, UseGPURenderContext, VectorLike } from '@use-gpu/core';
 
-import { yeet, useMemo, useOne, useRef } from '@use-gpu/live';
+import { yeet, useMemo, useRef } from '@use-gpu/live';
 import { chainTo } from '@use-gpu/shader/wgsl';
 
 import { usePassContext } from '../../providers/pass-provider';
-import { useKeyboardState, useMouseState } from '../../providers/event-provider';
 
-import { useTextureAccess, useTextureUVToXY } from '../../hooks/useTextureAccess';
+import { useTextureAccess } from '../../hooks/useTextureAccess';
 import { useShader } from '../../hooks/useShader';
 import { useShaderRef } from '../../hooks/useShaderRef';
 
-import { useDebugContext } from '../../providers/debug-provider';
-import { usePrintContext, useNoPrintContext } from '../../providers/print-provider';
+import { useRenderContext } from '../../providers/render-provider';
 
-import { useCopySample, useCopyDepthSample } from '../copy/value-copy';
-
-import { downsampleExact2 } from '@use-gpu/wgsl/texture/downsample.wgsl';
+import { useCopySample } from '../copy/value-copy';
 
 import { getOutlineSample } from '@use-gpu/wgsl/outline/outline-sample.wgsl';
 import { getOutlineResolve } from '@use-gpu/wgsl/outline/outline-resolve.wgsl';
 
-import { decodeNormal16, octaToNormal, octaToNormal16 } from '@use-gpu/wgsl/codec/normal16.wgsl';
+import { octaToNormal16 } from '@use-gpu/wgsl/codec/normal16.wgsl';
 
 export type OutlineDispatchProps = {
   bindPass?: (r: GPURenderPassEncoder) => void,
@@ -63,6 +59,7 @@ export const OutlineDispatch: LiveComponent<OutlineDispatchProps> = (props: Outl
     views: { pre: { uniforms: { overscanMatrix }}},
   } = usePassContext();
 
+  const {samples: msaaSamples, pixelRatio} = useRenderContext();
   const [normalContext] = normal;
 
   const [edgeTarget] = outline as OffscreenTarget[];
@@ -80,27 +77,28 @@ export const OutlineDispatch: LiveComponent<OutlineDispatchProps> = (props: Outl
   const m = overscanMatrix?.current;
   const overscanScale = useShaderRef([m?.[0] ?? 1, m?.[5] ?? 1]);
 
-  const {current: os} = overscanSize;
-
-  const innerRadius = useShaderRef(inner);
-  const outerRadius = useShaderRef(outer);
+  const innerRadius = useShaderRef(inner * pixelRatio);
+  const outerRadius = useShaderRef(outer * pixelRatio);
   const outlineColor = useShaderRef(color);
 
-  const edgeWeights = useMemo(() => ({DEPTH_RAMP: depthRamp, NORMAL_RAMP: normalRamp}), [depthRamp, normalRamp]);
+  const defs = useMemo(() => ({
+    DEPTH_RAMP: depthRamp,
+    NORMAL_RAMP: normalRamp,
+    MSAA_SAMPLES: msaaSamples,
+  }), [depthRamp, normalRamp, msaaSamples]);
 
   type Draw = (r: GPURenderPassEncoder) => void;
   let draw: Draw | null = null;
   if (mode === 'edge') {
-    const loadSourceDepth = useTextureAccess(normalContextDepth);
+    const loadSourceDepth = useTextureAccess(normalContextDepth, 'u32').shader;
 
     const {format} = normalContextSource;
-    const loadSourceNormal = useTextureAccess(normalContextSource).shader;
+    const loadSourceNormal = useTextureAccess(normalContextSource, 'u32').shader;
     const loadSourceNormal16 = useMemo(() => {
       if (format.match(/uint/)) return loadSourceNormal;
       return chainTo(loadSourceNormal, octaToNormal16);
     }, [format, loadSourceNormal]);
 
-    const defs = edgeWeights;
     const getSample = useShader(getOutlineSample, [
       loadSourceNormal16,
       loadSourceDepth,

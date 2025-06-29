@@ -1,10 +1,8 @@
 import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { XY } from '@use-gpu/core';
 import { OutlineOptions } from '../pass/types';
 
-import { use, yeet, memo, gather, useOne, useRef } from '@use-gpu/live';
+import { use, yeet, memo, gather, useOne } from '@use-gpu/live';
 
-import { useDebugContext } from '../providers/debug-provider';
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
 import { useRenderContext } from '../providers/render-provider';
@@ -30,12 +28,11 @@ export type OutlinePassProps = {
   outline: OutlineOptions,
 };
 
-const ZERO: XY = [0, 0];
-
 const label = '<OutlinePass>';
 
 /** Outline render pass.
 
+Renders outer/inner edge mask to offscreen target, then applies variable sized outlines via convolution.
 */
 export const OutlinePass: LC<OutlinePassProps> = memo((props: PropsWithChildren<OutlinePassProps>) => {
   const {

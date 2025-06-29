@@ -13,10 +13,8 @@ const LIMIT = 5;
 
 @export fn getOutlineResolve(targetUV: vec2<f32>) -> vec4<f32> {
 
-  // Convert overscan UV to full size UV
+  // Convert to full size UV (overscan is already trimmed off)
   let sampleXY = vec2<i32>(targetUV * getSize());
-
-  let ec = loadEdge(vec2<u32>(sampleXY));
 
   let inner = getInner();
   let outer = getOuter();
@@ -27,8 +25,12 @@ const LIMIT = 5;
 
   let n = min(LIMIT, i32(max(inner, outer)));
 
-  var accum = ec.r + ec.g;
+  let ec = loadEdge(vec2<u32>(sampleXY));
+  let edge = vec3<f32>(ec.xy, 0.0);
+  //return vec4<f32>(edge, 1.0);
 
+  var accum = max(ec.r, ec.g);
+  
   for (var i = 1; i < n; i++) {
     let el = loadEdge(vec2<u32>(sampleXY + vec2<i32>(-i, 0)));
     let er = loadEdge(vec2<u32>(sampleXY + vec2<i32>( i, 0)));
@@ -38,9 +40,9 @@ const LIMIT = 5;
     let e = max(max(el, er), max(et, eb));
 
     let f = f32(i);
-    let ir = clamp(inner * e.r - f, 0.0, 1.0) * e.r;
-    let or = clamp(outer * e.g - f, 0.0, 1.0) * e.g;
-    accum += ir + or;
+    let ir = clamp(inner - f, 0.0, 1.0) * e.r;
+    let or = clamp(outer - f, 0.0, 1.0) * e.g;
+    accum += max(ir, or);
   }
 
   let a = clamp(accum, 0.0, 1.0);

@@ -28,8 +28,8 @@ export const OverscanBuffer: LC<OverscanBufferProps> = memo((props: OverscanBuff
     const w1 = width;
     const h1 = height;
 
-    const w2 = width * (1 + range * 2);
-    const h2 = height * (1 + range * 2);
+    const w2 = width  + 2 * Math.ceil(width  * range);
+    const h2 = height + 2 * Math.ceil(height * range);
 
     const sx = w1 / w2;
     const sy = h1 / h2;

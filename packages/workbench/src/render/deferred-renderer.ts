@@ -84,28 +84,30 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   const {
     overlay = false,
     merge = false,
-    overscan = 0,
+    //overscan = 0,
     debug = null,
 
     lights = true,
-    normals = !!buffers.normal,
     motion = !!buffers.motion,
-    ssao = buffers.ssao ? {} : undefined,
-    shadows = !!buffers.shadow,
+    normals = !!buffers.normal,
+    outline = buffers.outline ? {} : undefined,
     picking = !!buffers.picking,
+    shadows = !!buffers.shadow,
+    ssao = buffers.ssao ? {} : undefined,
   } = options as Record<string, any>;
 
   const extendedFlags = useMemo(() => ({
     overlay,
     merge,
-    overscan,
+    //overscan,
 
     lights,
-    normals,
     motion,
-    ssao,
-    shadows,
+    normals,
+    outline,
     picking,
+    shadows,
+    ssao,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [options, buffers]);
 

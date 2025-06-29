@@ -16,17 +16,17 @@ import { textureUVToXYOffset } from '@use-gpu/wgsl/texture/raw-offset.wgsl';
 
 export const useTextureAccess = (
   texture: TextureSource,
-  level?: Lazy<number> | ShaderModule | null,
-  index?: Lazy<number> | ShaderModule | null,
+  level?: Lazy<number> | ShaderModule | null | string,
+  index?: Lazy<number> | ShaderModule | null | string,
 ): LambdaSource => useMemo(() => getTextureAccess(texture, level, index), [texture, level, index]);
 
 export const getTextureAccess = (
   texture: TextureSource,
-  level?: Lazy<number> | ShaderModule | null,
-  index?: Lazy<number> | ShaderModule | null,
+  level?: Lazy<number> | ShaderModule | null | string,
+  index?: Lazy<number> | ShaderModule | null | string,
 ): LambdaSource => {
-  const l = level ? getSource({ name: 'level', format: 'u32', args: [] }, level) : null;
-  const i = index ? getSource({ name: 'index', format: 'u32', args: [] }, index) : null;
+  const l = typeof level === 'string' ? null : level ? getSource({ name: 'level', format: 'u32', args: [] }, level) : null;
+  const i = typeof index === 'string' ? null : index ? getSource({ name: 'index', format: 'u32', args: [] }, index) : null;
   const t = proxy(texture, { variant: 'textureLoad', sampler: null });
 
   const {layout, format, aspect} = texture;
@@ -35,11 +35,13 @@ export const getTextureAccess = (
   const f = format.match(/depth/) ? type : `vec4<${type}>` as UniformType;
   const isArray = !!layout.match(/array/);
 
-  const args = (isArray ? ['vec2<u32>', 'u32', 'u32'] : ['vec2<u32>', 'u32']) as UniformType[];
+  const iType = typeof index === 'string' ? index : 'u32';
+  const lType = typeof level === 'string' ? level : 'u32';
+  const args = (isArray ? ['vec2<u32>', lType, iType] : ['vec2<u32>', lType]) as UniformType[];
 
   let load = getSource({ name: 'textureAccess', format: f, args }, t);
-  if (isArray) load = getShader(loadTextureIndexLevel, [load, i]);
-  load = getShader(loadTextureLevel, [load, l]);
+  if (isArray && typeof index !== 'string') load = getShader(loadTextureIndexLevel, [load, i]);
+  else if (typeof level !== 'string') load = getShader(loadTextureLevel, [load, l]);
 
   return getLambdaSource(load, texture);
 };

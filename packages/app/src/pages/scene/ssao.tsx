@@ -104,7 +104,6 @@ export const SceneSSAOPage: LC = () => {
                   <Pass
                     lights
                     ssao={applyAO ? ssaoOptions : undefined}
-                    outline={{inner: 1, outer: 2}}
                     overscan={overscan}
                     debug={showAO ? 'ssao' : undefined}
                     debugIndex={4}

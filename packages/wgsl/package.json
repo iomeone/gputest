@@ -87,6 +87,7 @@
     "./geometry/trim.wgsl": "./src/geometry/trim.wgsl.ts",
     "./geometry/tube.wgsl": "./src/geometry/tube.wgsl.ts",
     "./instance/fragment/deferred-emissive.wgsl": "./src/instance/fragment/deferred-emissive.wgsl.ts",
+    "./instance/fragment/deferred-environment.wgsl": "./src/instance/fragment/deferred-environment.wgsl.ts",
     "./instance/fragment/deferred-light.wgsl": "./src/instance/fragment/deferred-light.wgsl.ts",
     "./instance/fragment/lit.wgsl": "./src/instance/fragment/lit.wgsl.ts",
     "./instance/fragment/sdf-rectangle.wgsl": "./src/instance/fragment/sdf-rectangle.wgsl.ts",

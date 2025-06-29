@@ -57,7 +57,7 @@ export const Environment: LC<EnvironmentProps> = (props: EnvironmentProps) => {
 
   const g = useShaderRef(gain);
 
-  const exposure = useMemo(() => {
+  const adjusted = useMemo(() => {
     if (!environment) return environment;
     const env = getSource(ENV_ATTR, environment);
     return chainTo(env, getShader(gainColor, [g], {IS_OPAQUE: true}));
@@ -67,13 +67,13 @@ export const Environment: LC<EnvironmentProps> = (props: EnvironmentProps) => {
   const context = useMemo(() => {
     return patch(parent, {
       shaded: {
-        applyEnvironment: $set(exposure ? getShader(applyPBREnvironment, [exposure]) : null as ShaderModule | null | undefined),
+        applyEnvironment: $set(adjusted ? getShader(applyPBREnvironment, [adjusted]) : null as ShaderModule | null | undefined),
       },
     });
-  }, [exposure, parent])
+  }, [adjusted, parent])
 
   return (
-    provide(EnvironmentContext, exposure,
+    provide(EnvironmentContext, adjusted,
       provide(MaterialContext, context, children)
     )
   );

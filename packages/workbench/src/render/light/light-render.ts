@@ -12,12 +12,14 @@ import { $delete } from '@use-gpu/state';
 import { drawCall } from '../../queue/draw-call';
 
 import { getShader } from '../../hooks/useShader';
+import { useEnvironmentContext } from '../../providers/environment-provider';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
 import { AMBIENT_LIGHT, DOME_LIGHT, DIRECTIONAL_LIGHT, POINT_LIGHT, HEMI_LIGHT, SPOT_LIGHT } from '../../light/types';
 import { SHADOW_PAGE } from './light-data';
 
+import { EnvironmentLightRender } from './environment-light-render';
 import { EmissiveLightRender } from './emissive-light-render';
 import { FullScreenLightRender } from './full-screen-light-render';
 import { PointLightRender } from './point-light-render';
@@ -34,6 +36,7 @@ import { sampleSSAO } from '@use-gpu/wgsl/use/ssao.wgsl';
 
 import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl';
 import { applyPBRMaterial as applyMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { applyPBREnvironment as applyEnvironment } from '@use-gpu/wgsl/material/pbr-environment.wgsl';
 import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '@use-gpu/wgsl/shadow/directional.wgsl';
 import { applyPointShadow as applyPointShadowWGSL } from '@use-gpu/wgsl/shadow/point.wgsl';
 import { applyHemiShadow as applyHemiShadowWGSL } from '@use-gpu/wgsl/shadow/hemi.wgsl';
@@ -175,10 +178,12 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
   } = props;
 
   const {
-    buffers: {gBuffer: [gBuffer], shadow: [shadow], ssao},
+    buffers: {gBuffer: [gBuffer], shadow, ssao},
     options: {ssao: ssaoOptions},
   } = usePassContext();
   const {depthStencilState, sources} = gBuffer;
+
+  const environment = useEnvironmentContext();
 
   const shadows = !!shadow;
   const stencil = !!depthStencilState?.format.match(/stencil/);
@@ -216,6 +221,15 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   out.push(keyed(EmissiveLightRender, -1, {gBuffer: sources!, getLight}));
+
+  if (environment) {
+    out.push(keyed(EnvironmentLightRender, -2, {
+      getSurface,
+      getLight,
+      environment,
+      apply: applyEnvironment,
+    }));
+  }
 
   return out;
 }, 'LightRender');

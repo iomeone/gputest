@@ -1,4 +1,4 @@
-import type { DataBounds, Lazy, RenderPassMode, StorageSource, TextureSource, UniformAttribute, UseGPURenderContext } from '@use-gpu/core';
+import type { DataBounds, Lazy, RenderPassMode, StorageSource, TextureSource, UniformAttribute, UseGPURenderContext, VectorLike } from '@use-gpu/core';
 import type { LiveComponent, ArrowFunction, Ref } from '@use-gpu/live';
 import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 import type { Update } from '@use-gpu/state';

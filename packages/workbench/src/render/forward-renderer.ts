@@ -152,7 +152,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
 
   // Pass bindings
   const bindGroups = useStandardBindGroups(resources, extendedFlags);
-
+  
   // Render variants
   const variants = useMakeUseVariants(components, extendedFlags);
 

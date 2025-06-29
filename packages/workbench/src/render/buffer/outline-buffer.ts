@@ -1,33 +1,23 @@
 import type { LC } from '@use-gpu/live';
 import type { OffscreenRenderContext } from '@use-gpu/core';
-import type { OverscanOptions, PassBinding, OutlineOptions } from '../../pass/types';
+import type { OutlineOptions } from '../../pass/types';
 
 import { use, gather, yeet, memo } from '@use-gpu/live';
 
 //import { useRenderContext } from '../providers/render-provider';
 import { RenderTarget } from '../render-target';
 
-export type OutlineBufferProps = {
-  overscan?: OverscanOptions,
-  outline?: OutlineOptions,
-};
-
 export const OUTLINE_EDGE_FORMAT = 'rg8unorm';
-export const OUTLINE_RESOLVE_FORMAT = 'rgba8unorm';
+export const OUTLINE_SHIFT_FORMAT = 'rg8unorm';
+export const OUTLINE_EXPAND_FORMAT = 'rgba8unorm';
 
-export const OutlineBuffer: LC = memo((props: OutlineBufferProps) => {
-  const {
-    overscan: overscanProp,
-  } = props;
-
-  const overscan = overscanProp?.range || 0;
-  const edgeFormat = OUTLINE_EDGE_FORMAT;
+export const OutlineBuffer: LC = memo(() => {
 
   const targets = [
     use(RenderTarget, {
       label: 'Outline/Edges',
       sampler: null,
-      format: edgeFormat,
+      format: OUTLINE_EDGE_FORMAT,
       depthStencil: null,
       colorSpace: 'linear',
     }),
@@ -45,8 +35,8 @@ export const DEFAULT_OUTLINE_OPTIONS = {
   outer: 2,
   color: [0, 0, 0, 1],
 
-  depthRamp: 30,
-  normalRamp: 15,
+  depthRamp: 50,
+  normalRamp: 20,
 };
 
 export const parseOutlineOptions = (opt: boolean | number | Partial<OutlineOptions>) => ({

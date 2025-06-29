@@ -20,7 +20,7 @@ export const useCopySample = (
   getSample: ShaderModule,
 
   layout?: GPUBindGroupLayout | null,
-  blend?: GPUBlendState | null,
+  blend?: Partial<GPUBlendState> | null,
 
   uv?: TypedArray | number[],
   scale: number = 1,
@@ -64,7 +64,7 @@ export const useCopyDepthSample = (
   getSample: ShaderModule,
 
   layout?: GPUBindGroupLayout | null,
-  blend?: GPUBlendState | null,
+  blend?: Partial<GPUBlendState> | null,
 
   uv?: TypedArray | number[],
   scale: number = 1,
