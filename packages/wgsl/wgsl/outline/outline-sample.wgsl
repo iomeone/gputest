@@ -10,8 +10,7 @@ use './outline-weight'::{ depthWeightPlus, normalWeight };
 
 @export fn getOutlineSample(targetUV: vec2<f32>) -> vec4<f32> {
 
-  //let overscanUV = mix(vec2<f32>(0.5), targetUV, getOverscanScale());
-  let overscanUV = targetUV * getOverscanScale() + (1.0 - getOverscanScale()) * .5;
+  let overscanUV = mix(vec2<f32>(0.5), targetUV, getOverscanScale());
 
   // Convert overscan UV to full size UV
   let sampleXY = vec2<i32>(overscanUV * getOverscanSize());

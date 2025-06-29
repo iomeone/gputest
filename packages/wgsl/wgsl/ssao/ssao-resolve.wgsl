@@ -17,7 +17,7 @@ const EPS = 1e-6;
 
 @export fn getSSAOResolve(targetUV: vec2<f32>) -> vec4<f32> {
 
-  let overscanUV = targetUV * getOverscanScale() + (1.0 - getOverscanScale()) * .5;
+  let overscanUV = mix(vec2<f32>(0.5), targetUV, getOverscanScale());
 
   let targetDepth = getTargetDepth(overscanUV);
   let targetNormal = getTargetNormal(overscanUV);
