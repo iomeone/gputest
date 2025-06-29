@@ -8,6 +8,8 @@ import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
+import { useTextureAccess, useTextureUVToXY } from '../hooks/useTextureAccess';
+import { useCopySample } from '../render/copy/value-copy';
 
 import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
@@ -25,7 +27,6 @@ const NO_OPS: any[] = [];
 const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 
 const label = "<NormalPass>";
-const LABEL = {label};
 
 /** Normal (+depth) render pass.
 
@@ -42,21 +43,26 @@ export const NormalPass: LC<NormalPassProps> = memo((props: PropsWithChildren<No
   const device = useDeviceContext();
   const {
     bindGroups: {pre: bindGroup},
-    buffers: {normal: [renderContext]},
+    buffers: {normal: [renderContext, resolveContext]},
     views: {pre: {cull, uniforms}},
   } = usePassContext();
 
   const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
+  const {layout: globalLayout} = bindGroup;
 
   const normals = toArray(calls['normal'] as Renderable[]);
 
   const normalDepthPassDescriptor = useOne(() =>
-    getRenderPassDescriptor(renderContext, LABEL),
+    getRenderPassDescriptor(renderContext, {label: label + '/Render'}),
     renderContext);
+
+  const resolvePassDescriptor = useOne(() =>
+    resolveContext && getRenderPassDescriptor(resolveContext, {label: label + '/Resolve'}),
+    resolveContext);
 
   const inspected = inspect({
     output: {
-      sources: [renderContext.source, renderContext.depth],
+      sources: [renderContext.source, resolveContext?.source, renderContext.depth],
     },
     pass: uniforms,
     bindings: dataBindings,
@@ -65,6 +71,10 @@ export const NormalPass: LC<NormalPassProps> = memo((props: PropsWithChildren<No
       triangles: 0,
     },
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const getSample = useTextureUVToXY(useTextureAccess(renderContext.source!)).shader;
+  const resolveMSAA = useCopySample(resolveContext ?? renderContext, getSample, globalLayout);
 
   return quote(yeet(() => {
     let vs = 0;
@@ -76,10 +86,20 @@ export const NormalPass: LC<NormalPassProps> = memo((props: PropsWithChildren<No
     renderContext.swap?.();
 
     // Render normal buffer with depth
-    const passEncoder = commandEncoder.beginRenderPass(normalDepthPassDescriptor);
-    bindPass?.(passEncoder);
-    drawToPass(cull, normals, passEncoder, countGeometry, uniforms);
-    passEncoder.end();
+    {
+      const passEncoder = commandEncoder.beginRenderPass(normalDepthPassDescriptor);
+      bindPass?.(passEncoder);
+      drawToPass(cull, normals, passEncoder, countGeometry, uniforms);
+      passEncoder.end();
+    }
+
+    // Resolve MSAA target without blending samples
+    if (resolveContext) {
+      const passEncoder = commandEncoder.beginRenderPass(resolvePassDescriptor);
+      bindPass?.(passEncoder);
+      resolveMSAA(passEncoder);
+      passEncoder.end();
+    }
 
     const command = commandEncoder.finish();
     device.queue.submit([command]);

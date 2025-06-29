@@ -81,6 +81,13 @@
   return z / w;
 }
 
+@export fn depthToView(depth: f32) -> f32 {
+  let pm = viewUniforms.inverseProjectionMatrix;
+  let z = dot(vec2<f32>(pm[2][2], pm[3][2]), vec2<f32>(depth, 1.0));
+  let w = dot(vec2<f32>(pm[2][3], pm[3][3]), vec2<f32>(depth, 1.0));
+  return z / w;
+}
+
 @export fn clipToWorld3D(position: vec4<f32>) -> vec3<f32> {
   return to3D(clipToWorld(position));
 }

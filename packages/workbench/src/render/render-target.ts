@@ -37,6 +37,7 @@ export type RenderTargetProps = {
   sampler?: Partial<GPUSamplerDescriptor>,
   variant?: string,
   absolute?: boolean,
+  unresolved?: boolean,
 
   backgroundColor?: GPUColor,
   blend?: Blending | GPUBlendState | null,
@@ -61,11 +62,13 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
   const inspect = useInspectable();
 
+  const {width: rw, height: rh} = renderContext;
+
   const {
     resolution = 1,
     overscan = 0,
-    width = Math.ceil((renderContext.width * (1 + overscan * 2)) * resolution),
-    height = Math.ceil((renderContext.height * (1 + overscan * 2)) * resolution),
+    width  = Math.ceil(rw * resolution) + 2 * Math.ceil(rw * overscan * resolution),
+    height = Math.ceil(rh * resolution) + 2 * Math.ceil(rh * overscan * resolution),
     samples = renderContext.samples,
     format = PRESENTATION_FORMAT,
     history = 0,
@@ -78,6 +81,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     colorInput = COLOR_SPACE,
     variant = 'textureSample',
     absolute = false,
+    unresolved = false,
     label,
     hint,
     children,
@@ -100,7 +104,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
           samples,
         );
 
-      const resolve = samples > 1 ?
+      const resolve = samples > 1 && !unresolved ?
         makeTargetTexture(
           device,
           width,
@@ -131,7 +135,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
       return [render, resolve, buffers, views, counter];
     },
-    [device, width, height, format, samples, history, label]
+    [device, width, height, format, samples, unresolved, history, label]
   );
 
   const targetTexture = resolveTexture ?? renderTexture;
@@ -240,7 +244,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
       const volatile = (history > 0) ? history + 1 : 0;
 
       const type = getTextureSampleType(format);
-      const layout = `texture_2d<${type}>`;
+      const layout = samples > 1 && unresolved ? `texture_multisampled_2d<${type}>` : `texture_2d<${type}>`;
 
       const makeSource = () => ({
         texture: targetTexture,
@@ -299,7 +303,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     return [source, depth];
   }, [
     targetTexture, depthTexture,
-    width, height, format, variant, absolute, samples, history, sampler, hint,
+    width, height, format, variant, absolute, unresolved, samples, history, sampler, hint,
     bufferTextures, bufferViews, colorAttachments, colorSpace, counter, resolveTexture,
     depthHistory, depthStencil, depthStencilAttachment, depthTextures, depthViews,
   ]);

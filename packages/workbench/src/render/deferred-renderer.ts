@@ -5,6 +5,15 @@ import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 
 import { PassReconciler } from '../reconcilers/index';
 
+import { DebugPass } from '../pass/debug-pass';
+import { DeferredGPass } from '../pass/deferred-g-pass';
+import { DeferredResolvePass } from '../pass/deferred-resolve-pass';
+import { MotionPass } from '../pass/motion-pass';
+import { OutlinePass } from '../pass/outline-pass';
+import { PickingPass } from '../pass/picking-pass';
+import { ShadowPass } from '../pass/shadow-pass';
+import { SSAOPass } from '../pass/ssao-pass';
+
 import { DebugRender } from './forward/debug';
 import { PickingRender } from './forward/picking';
 import { ShadedRender } from './forward/shaded';
@@ -14,14 +23,6 @@ import { UIRender } from './forward/ui';
 
 import { useStandardBindGroups } from '../pass/bindings';
 import { useMakeUseVariants } from '../pass/variants';
-
-import { DebugPass } from '../pass/debug-pass';
-import { DeferredGPass } from '../pass/deferred-g-pass';
-import { DeferredResolvePass } from '../pass/deferred-resolve-pass';
-import { MotionPass } from '../pass/motion-pass';
-import { PickingPass } from '../pass/picking-pass';
-import { ShadowPass } from '../pass/shadow-pass';
-import { SSAOPass } from '../pass/ssao-pass';
 
 import { DeferredShadedRender } from './deferred/deferred-shaded';
 import { DeferredSolidRender } from './deferred/deferred-solid';
@@ -83,28 +84,30 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
   const {
     overlay = false,
     merge = false,
-    overscan = 0,
+    //overscan = 0,
     debug = null,
 
     lights = true,
-    normals = !!buffers.normal,
     motion = !!buffers.motion,
-    ssao = buffers.ssao ? {} : undefined,
-    shadows = !!buffers.shadow,
+    normals = !!buffers.normal,
+    outline = buffers.outline ? {} : undefined,
     picking = !!buffers.picking,
+    shadows = !!buffers.shadow,
+    ssao = buffers.ssao ? {} : undefined,
   } = options as Record<string, any>;
 
   const extendedFlags = useMemo(() => ({
     overlay,
     merge,
-    overscan,
+    //overscan,
 
     lights,
-    normals,
     motion,
-    ssao,
-    shadows,
+    normals,
+    outline,
     picking,
+    shadows,
+    ssao,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [options, buffers]);
 
@@ -117,6 +120,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     use(DeferredGPass, options),
     ssao ? use(SSAOPass, options) : null,
     use(DeferredResolvePass, options),
+    outline ? use(OutlinePass, options) : null,
     picking ? use(PickingPass, options) : null,
     debug ? use(DebugPass, options) : null,
   ], props);

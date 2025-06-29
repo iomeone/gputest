@@ -30,8 +30,8 @@ export const useStandardBindGroups = (
 ): Record<string, PassBindGroup> => {
   const {overscan, lights, shadows, ssao} = flags;
 
-  const view = useStandardBindGroup(resources, {});
   const pre = useStandardBindGroup(resources, {overscan});
+  const view = useStandardBindGroup(resources, {});
   const color = useStandardBindGroup(resources, {lights, shadows, ssao});
 
   return useMemo(() => ({view, pre, color}), [view, pre, color]);

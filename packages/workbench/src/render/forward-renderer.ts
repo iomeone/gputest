@@ -10,6 +10,7 @@ import { useRenderContext } from '../providers/render-provider';
 import { DebugPass } from '../pass/debug-pass';
 import { MotionPass } from '../pass/motion-pass';
 import { NormalPass } from '../pass/normal-pass';
+import { OutlinePass } from '../pass/outline-pass';
 import { PickingPass } from '../pass/picking-pass';
 import { ShadowPass } from '../pass/shadow-pass';
 import { SSAOPass } from '../pass/ssao-pass';
@@ -93,11 +94,12 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     debug = null,
 
     lights = false,
-    normals = !!buffers.normal,
     motion = !!buffers.motion,
-    ssao = buffers.ssao ? {} : undefined,
-    shadows = !!buffers.shadow,
+    normals = !!buffers.normal,
+    outline = buffers.outline ? {} : undefined,
     picking = !!buffers.picking,
+    shadows = !!buffers.shadow,
+    ssao = buffers.ssao ? {} : undefined,
   } = options as Record<string, any>;
 
   const extendedFlags = useMemo(() => ({
@@ -106,11 +108,12 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     overscan,
 
     lights,
-    normals,
     motion,
-    ssao,
-    shadows,
+    normals,
+    outline,
     picking,
+    shadows,
+    ssao,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [options, buffers]);
 
@@ -126,6 +129,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     ssao ? use(SSAOPass, options) : null,
     shadows ? use(ShadowPass, options) : null,
     use(DEFAULT_PASS[viewType], options),
+    outline ? use(OutlinePass, options) : null,
     picking ? use(PickingPass, options) : null,
     debug ? use(DebugPass, options) : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -148,7 +152,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
 
   // Pass bindings
   const bindGroups = useStandardBindGroups(resources, extendedFlags);
-
+  
   // Render variants
   const variants = useMakeUseVariants(components, extendedFlags);
 

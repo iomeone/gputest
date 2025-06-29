@@ -4,6 +4,7 @@ import type { OverscanOptions } from '../../pass/types';
 
 import { use, gather, yeet, memo } from '@use-gpu/live';
 import { RenderTarget } from '../render-target';
+import { useRenderContext } from '../../providers/render-provider';
 
 export type NormalBufferProps = {
   resolution?: number,
@@ -22,25 +23,41 @@ export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
   const overscan = overscanProp?.range || 0;
 
   // Normal render target
-  const samples = 1;
+  const {samples} = useRenderContext();
   const depthStencil = NORMAL_DEPTH_FORMAT;
   const renderFormat = NORMAL_RENDER_FORMAT;
 
-  const target = (
+  const msaa = samples > 1;
+
+  const targets = [
     use(RenderTarget, {
-      label: 'NormalBuffer',
+      label: 'NormalBuffer/Render',
       resolution,
       overscan,
       samples,
+      unresolved: true,
       sampler: null,
       format: renderFormat,
       variant: 'textureLoad',
       depthStencil,
       colorSpace: 'linear',
-    })
-  );
+    }),
+    msaa ? use(RenderTarget, {
+      label: 'NormalBuffer/Resolve',
+      resolution,
+      overscan,
+      samples: 1,
+      sampler: null,
+      format: renderFormat,
+      variant: 'textureLoad',
+      depthStencil: null,
+      colorSpace: 'linear',
+    }) : null,
+  ];
 
-  return gather(target, (targets: OffscreenRenderContext[]) => {
+  return gather(targets, (targets: OffscreenRenderContext[]) => {
+    if (targets.length > 1) targets[1].depth = targets[0].depth;
+
     return yeet({
       buffers: { normal: targets },
     });

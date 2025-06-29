@@ -10,31 +10,33 @@ import { drawCall } from '../../queue/draw-call';
 
 const countGeometry = () => {};
 
-const PIPELINE_DEPTH = {
-  depthStencil: {
-    depthWriteEnabled: true,
-    depthCompare: 'always',
-  },
-  fragment: {
-    targets: $patch(ts => [...ts].reduce((op, _, i) => {
-      op[i] = {blend: $delete()};
-      return op;
-    }, {} as Record<number, Update<any>>)),
-  },
-} as Update<GPURenderPipelineDescriptor>;
+const getCopyPipeline = (depth: boolean, blend?: Partial<GPUBlendState> | null) => {
+  if (depth) return {
+    depthStencil: {
+      depthWriteEnabled: true,
+      depthCompare: 'always',
+    },
+    fragment: {
+      targets: $patch(ts => [...ts].reduce((op, _, i) => {
+        op[i] = {blend: blend ?? $delete()};
+        return op;
+      }, {} as Record<number, Update<any>>)),
+    },
+  } as Update<GPURenderPipelineDescriptor>;
 
-const PIPELINE_NO_DEPTH = {
-  depthStencil: {
-    depthWriteEnabled: false,
-    depthCompare: 'always',
-  },
-  fragment: {
-    targets: $patch(ts => [...ts].reduce((op, _, i) => {
-      op[i] = {blend: $delete()};
-      return op;
-    }, {} as Record<number, Update<any>>)),
-  },
-} as Update<GPURenderPipelineDescriptor>;
+  return {
+    depthStencil: {
+      depthWriteEnabled: false,
+      depthCompare: 'always',
+    },
+    fragment: {
+      targets: $patch(ts => [...ts].reduce((op, _, i) => {
+        op[i] = {blend: blend ?? $delete()};
+        return op;
+      }, {} as Record<number, Update<any>>)),
+    },
+  } as Update<GPURenderPipelineDescriptor>;
+};
 
 export const useRenderCopy = (
   vertex: ShaderModule,
@@ -44,6 +46,7 @@ export const useRenderCopy = (
   depth?: boolean,
 
   layout?: GPUBindGroupLayout | null,
+  blend?: Partial<GPUBlendState> | null,
 
   uv?: TypedArray | number[],
   scale: number = 1,
@@ -58,7 +61,7 @@ export const useRenderCopy = (
     renderContext,
     globalLayout: layout,
     mode: null,
-    pipeline: depth ? PIPELINE_DEPTH : PIPELINE_NO_DEPTH,
+    pipeline: getCopyPipeline(!!depth, blend),
     label,
   }) as (Renderable | undefined);
 

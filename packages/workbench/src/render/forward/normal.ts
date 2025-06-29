@@ -40,7 +40,7 @@ export const NormalRender: LiveComponent<NormalRenderProps> = (props: NormalRend
   const hasScissor = defines?.HAS_SCISSOR;
 
   const pipeline = useOne(() => patch(propPipeline, {
-    multisample: { count: 1, alphaToCoverageEnabled: false },
+    //multisample: { count: 1, alphaToCoverageEnabled: false },
   }), propPipeline);
 
   // Binds links into shader

@@ -1,12 +1,13 @@
 0.16.0-dev
 - `@use-gpu/app`: Add Binet plot example
-- `@use-gpu/interact`: New package for camera controls and gizmos (e.g. `OrbitControls`).
+- `@use-gpu/interact`: New package for camera controls and gizmos (e.g. `OrbitControls`)
 - `@use-gpu/live`: Improved reporting of undefined component fns
 - `@use-gpu/live`: Allow `false` as element everywhere
 - `@use-gpu/live`: Multigather ignores `undefined` values
 - `@use-gpu/webgpu`: New `<DOMEvents>` layer modeled after React synthetic events
-- `@use-gpu/workbench`: Refactor `EventProvider` to use reconciled event handlers
+- `@use-gpu/workbench`: Refactor `<EventProvider>` to use reconciled event handlers
 - `@use-gpu/workbench`: Fix unshaded surface layer in a pass with shadows
+- `@use-gpu/workbench`: Add `<OutlinePass>` to render outlines based on depth/normal
 
 0.15.0
 - `@use-gpu/app`: Add shaded lines and point cloud examples

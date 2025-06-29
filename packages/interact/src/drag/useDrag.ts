@@ -3,7 +3,7 @@ import { useState } from '@use-gpu/live';
 import { PointerEvent, useViewContext } from '@use-gpu/workbench';
 
 import { transformRay, lineToRay, intersectRays, intersectRayPlane } from '../util/intersect';
-import { mat4, vec2, vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 
 export const ORTHO_AXES_XYZ = [
   [1, 2],
