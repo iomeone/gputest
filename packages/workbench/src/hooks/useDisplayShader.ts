@@ -17,6 +17,7 @@ import { displayDepth } from '@use-gpu/wgsl/display/depth.wgsl';
 import { displayMotionXY } from '@use-gpu/wgsl/display/motion-xy.wgsl';
 import { displayMotionZ } from '@use-gpu/wgsl/display/motion-z.wgsl';
 import { displayPicking } from '@use-gpu/wgsl/display/picking.wgsl';
+import { displayRGB } from '@use-gpu/wgsl/display/rgb.wgsl';
 import { displayStencil } from '@use-gpu/wgsl/display/stencil.wgsl';
 
 import { getMultiViewSample } from '@use-gpu/wgsl/display/multiview.wgsl';
@@ -27,6 +28,7 @@ const HINT_SHADERS = {
   'motion/xy': displayMotionXY,
   'motion/z': displayMotionZ,
   'picking': displayPicking,
+  'rgb': displayRGB,
   'stencil': displayStencil,
 };
 
@@ -45,7 +47,7 @@ export const getDisplayShader = (texture: TextureSource): LambdaSource => {
 
   const f = getTextureSampleType(format, aspect);
   const a = getTextureArrayType(format, aspect);
-  const h = (HINT_SHADERS as any)[hint as string] ?? inferTextureHint(texture);
+  const h = (HINT_SHADERS as any)[hint as string] ?? HINT_SHADERS[inferTextureHint(texture)];
 
   const t = getTextureUVToXY(getTextureAccess(texture), size).shader;
   if (f === 'f32') {
@@ -67,5 +69,5 @@ const inferTextureHint = (texture: TextureSource) => {
   if (format?.match(/depth/)) return 'depth';
   if (aspect?.match(/stencil/)) return 'stencil';
 
-  return null;
+  return 'rgb';
 };

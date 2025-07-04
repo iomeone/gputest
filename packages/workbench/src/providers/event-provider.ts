@@ -1,7 +1,7 @@
 import type { LiveComponent, LiveElement, ArrowFunction } from '@use-gpu/live';
 
 import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
-import { proxy, makeIdAllocator } from '@use-gpu/core';
+import { seq, proxy, makeIdAllocator } from '@use-gpu/core';
 import { EventHandler, EventBinding, MouseState, WheelState, KeyboardState, PointerCaptureAPI, PointerLockAPI } from '../interact/event';
 import { PickingContext } from '../providers/picking-provider';
 import { RenderContext } from '../providers/render-provider';
@@ -27,6 +27,7 @@ export type EventStateProviderProps = {
 
 export type EventContextProps = {
   useObjectId: () => number,
+  useObjectIds: (n: number) => number[],
   usePointerCapture: () => PointerCaptureAPI,
   usePointerLock: () => PointerLockAPI,
 };
@@ -95,6 +96,18 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
       });
       return id;
     }),
+    useObjectIds: (n: number) => useResource((dispose) => {
+      const {hasCapture, endCapture} = pointerCapture;
+      const ids = seq(n).map(allocId.obtain);
+
+      dispose(() => {
+        for (const id of ids) {
+          allocId.release(id);
+          if (hasCapture() === id) endCapture();
+        }
+      });
+      return ids;
+    }, [n]),
 
     usePointerCapture: () => pointerCapture,
     usePointerLock: () => pointerLock,
@@ -303,5 +316,6 @@ export const useNoMouseState = () => useNoContext(MouseContext);
 export const useNoWheelState = () => useNoContext(WheelContext);
 
 export const useObjectId = () => useContext(EventContext).useObjectId();
+export const useObjectIds = (n: number) => useContext(EventContext).useObjectIds(n);
 export const usePointerLock = () => useContext(EventContext).usePointerLock();
 export const usePointerCapture = () => useContext(EventContext).usePointerCapture();

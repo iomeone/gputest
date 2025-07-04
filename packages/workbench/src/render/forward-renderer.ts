@@ -93,6 +93,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     overscan = 0,
     debug = null,
 
+    facets = false,
     lights = false,
     motion = !!buffers.motion,
     normals = !!buffers.normal,
@@ -107,6 +108,7 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRen
     merge,
     overscan,
 
+    facets,
     lights,
     motion,
     normals,

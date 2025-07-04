@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/normal16'::{ encodeNormal16 };
+use '@use-gpu/wgsl/codec/normal16'::{ encodeNormal16, encodeNormal16Plus };
 
 @infer type T;
 
@@ -25,6 +25,7 @@ fn main(
   @location(4) fragTangent: vec4<f32>,
   @location(5) fragPosition: vec4<f32>,
   @location(6) fragScissor: vec4<f32>,
+  @location(7) @interpolate(flat) fragFacetId: u32,
 ) -> @location(0) vec4<u32> {
 
   var normal = fragNormal;
@@ -37,8 +38,12 @@ fn main(
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
   if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
-
-  return encodeNormal16(surface.normal.xyz);
+  if (HAS_FACET) {
+    return encodeNormal16Plus(surface.normal.xyz, fragFacetId);
+  }
+  else {
+    return encodeNormal16(surface.normal.xyz);
+  }
 }
 
 struct WithDepth {
@@ -57,6 +62,7 @@ struct WithDepth {
   @location(4) fragTangent: vec4<f32>,
   @location(5) fragPosition: vec4<f32>,
   @location(6) fragScissor: vec4<f32>,
+  @location(7) @interpolate(flat) fragFacetId: u32,
 ) -> WithDepth {
 
   var normal = fragNormal;
@@ -70,8 +76,16 @@ struct WithDepth {
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
   if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
 
-  return WithDepth(
-    surface.depth,
-    encodeNormal16(surface.normal.xyz),
-  );
+  if (HAS_FACET) {
+    return WithDepth(
+      surface.depth,
+      encodeNormal16Plus(surface.normal.xyz, fragFacetId),
+    );
+  }
+  else {
+    return WithDepth(
+      surface.depth,
+      encodeNormal16(surface.normal.xyz),
+    );
+  }
 }

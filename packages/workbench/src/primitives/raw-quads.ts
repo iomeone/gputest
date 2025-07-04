@@ -7,8 +7,10 @@ import { useDraw } from '../hooks/useDraw';
 import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
 import { chainTo } from '@use-gpu/shader/wgsl';
 
+import { FacetSource, useFacetShader } from './hooks/facets';
+import { PickingSource, usePickingShader } from './hooks/picking';
+
 import { useMaterialContext } from '../providers/material-provider';
-import { PickingSource, usePickingShader } from '../providers/picking-provider';
 import { TransformContextProps } from '../providers/transform-provider';
 
 import { useApplyTransform } from '../hooks/useApplyTransform';
@@ -56,7 +58,7 @@ export type RawQuadsProps = {
   transform?: TransformContextProps,
 
   count?: Lazy<number>,
-} & PickingSource & RawQuadsFlags;
+} & FacetSource & PickingSource & RawQuadsFlags;
 
 export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps) => {
   const {
@@ -113,6 +115,7 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
   ]);
   const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount);
   const getPicking = usePickingShader(props);
+  const getFacet = useFacetShader(props);
 
   // Shape mask (2D)
   const applyFragmentMask = m && material.getFragment ? useShader(getMaskedColor, [m]) : useNoShader();
@@ -126,10 +129,11 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
   const links = useMemo(() => ({
     getVertex: shadow && !shaded ? chainTo(getVertex, solidToShaded) : getVertex,
     getPicking,
+    getFacet,
     ...material,
     getSurface: getSurfaceRT ?? (material.getSurface && applySurfaceMask ? chainTo(applySurfaceMask, material.getSurface) : material.getSurface),
     getFragment: material.getFragment && applyFragmentMask ? chainTo(applyFragmentMask, material.getFragment) : material.getFragment,
-  }), [getVertex, getPicking, getSurfaceRT, applyFragmentMask, applySurfaceMask, shadow, shaded, material]);
+  }), [getVertex, getPicking, getFacet, getSurfaceRT, applyFragmentMask, applySurfaceMask, shadow, shaded, material]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,

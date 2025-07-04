@@ -15,3 +15,7 @@
 @export fn normalWeight(a: vec3<f32>, b: vec3<f32>) -> f32 {
   return clamp(dot(a, b) * NORMAL_RAMP - (NORMAL_RAMP - 1.0), 0.0, 1.0);
 }
+
+@export fn facetWeight(a: u32, b: u32) -> f32 {
+  return select(1.0, 0.0, a != b);
+}

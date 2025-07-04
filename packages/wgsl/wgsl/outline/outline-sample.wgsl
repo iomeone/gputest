@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16 };
+use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16, decodeNormal16Plus };
 use '@use-gpu/wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getViewPixelRatio };
-use './outline-weight'::{ depthWeightPlus, normalWeight };
+use './outline-weight'::{ depthWeightPlus, normalWeight, facetWeight };
 
 @link fn loadNormal16(xy: vec2<u32>, sample: u32) -> vec4<u32>;
 @link fn loadDepth(xy: vec2<u32>, sample: u32) -> f32;
@@ -19,11 +19,50 @@ use './outline-weight'::{ depthWeightPlus, normalWeight };
 
   for (var i = 0u; i < MSAA_SAMPLES; i++) {
     // Load normals
-    let nc = decodeNormal16(loadNormal16(vec2<u32>(sampleXY), i));
-    let nl = decodeNormal16(loadNormal16(vec2<u32>(sampleXY + vec2<i32>(-1, 0)), i));
-    let nr = decodeNormal16(loadNormal16(vec2<u32>(sampleXY + vec2<i32>( 1, 0)), i));
-    let nt = decodeNormal16(loadNormal16(vec2<u32>(sampleXY + vec2<i32>(0, -1)), i));
-    let nb = decodeNormal16(loadNormal16(vec2<u32>(sampleXY + vec2<i32>(0,  1)), i));
+    var nc: vec3<f32>;
+    var nl: vec3<f32>;
+    var nr: vec3<f32>;
+    var nt: vec3<f32>;
+    var nb: vec3<f32>;
+
+    let snc = loadNormal16(vec2<u32>(sampleXY), i);
+    let snl = loadNormal16(vec2<u32>(sampleXY + vec2<i32>(-1, 0)), i);
+    let snr = loadNormal16(vec2<u32>(sampleXY + vec2<i32>( 1, 0)), i);
+    let snt = loadNormal16(vec2<u32>(sampleXY + vec2<i32>(0, -1)), i);
+    let snb = loadNormal16(vec2<u32>(sampleXY + vec2<i32>(0,  1)), i);
+
+    var fw = 1.0;
+    if (HAS_FACET) {
+      let npc = decodeNormal16Plus(snc);
+      let npl = decodeNormal16Plus(snl);
+      let npr = decodeNormal16Plus(snr);
+      let npt = decodeNormal16Plus(snt);
+      let npb = decodeNormal16Plus(snb);
+
+      fw = min(
+        min(
+          facetWeight(npl.index, npc.index),
+          facetWeight(npr.index, npc.index),
+        ),
+        min(
+          facetWeight(npt.index, npc.index),
+          facetWeight(npb.index, npc.index),
+        ),
+      );
+
+      nc = npc.normal;
+      nl = npl.normal;
+      nr = npr.normal;
+      nt = npt.normal;
+      nb = npb.normal;
+    }
+    else {
+      nc = decodeNormal16(snc);
+      nl = decodeNormal16(snl);
+      nr = decodeNormal16(snr);
+      nt = decodeNormal16(snt);
+      nb = decodeNormal16(snb);
+    }
 
     // Load depths
     let dc = loadDepth(vec2<u32>(sampleXY), i);
@@ -38,7 +77,7 @@ use './outline-weight'::{ depthWeightPlus, normalWeight };
     let nwt = normalWeight(nt, nc);
     let nwb = normalWeight(nb, nc);
 
-    let nw = min(min(nwl, nwr), min(nwt, nwb));
+    let nw = min(min(min(nwl, nwr), min(nwt, nwb)), fw);
     let dw = depthWeightPlus(dc, dl, dr, dt, db);
 
     s += vec2<f32>(1.0 - nw, 1.0 - dw);

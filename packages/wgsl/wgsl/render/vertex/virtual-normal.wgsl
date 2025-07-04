@@ -2,6 +2,8 @@
 
 @link fn getVertex(v: u32, i: u32) -> @infer(T) T {};
 
+@optional @link fn getFacet(index: u32) -> u32 { return 0; };
+
 struct VertexOutput {
   @builtin(position) position: vec4<f32>,
   @location(0) fragAlpha: f32,
@@ -11,6 +13,7 @@ struct VertexOutput {
   @location(4) fragTangent: vec4<f32>,
   @location(5) fragPosition: vec4<f32>,
   @location(6) fragScissor: vec4<f32>,
+  @location(7) @interpolate(flat) fragFacetId: u32,
 };
 
 @vertex
@@ -29,5 +32,6 @@ fn main(
     v.tangent,
     v.world,
     v.scissor,
+    getFacet(v.index),
   );
 }

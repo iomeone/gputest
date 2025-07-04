@@ -7,8 +7,10 @@ import { useDraw } from '../hooks/useDraw';
 import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
 import { resolve } from '@use-gpu/core';
 
+import { FacetSource, useFacetShader } from './hooks/facets';
+import { PickingSource, usePickingShader } from './hooks/picking';
+
 import { useMaterialContext } from '../providers/material-provider';
-import { PickingSource, usePickingShader } from '../providers/picking-provider';
 import { useScissorContext } from '../providers/scissor-provider';
 import { TransformContextProps } from '../providers/transform-provider';
 
@@ -28,7 +30,12 @@ export type RawFacesFlags = {
   flat?: boolean,
   shaded?: boolean,
   fragDepth?: boolean,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>
+  
+  zBias?: number,
+} 
+  & Pick<PickingSource, 'id' | 'lookup'>
+  & Pick<FacetSource, 'facet'>
+  & Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>
 
 export type RawFacesProps = {
   position?: VectorLike,
@@ -67,7 +74,7 @@ export type RawFacesProps = {
 
   shouldDispatch?: (u: Record<string, any>) => boolean | number | null | undefined,
   onDispatch?: (u: Record<string, any>) => void,
-} & PickingSource & RawFacesFlags;
+} & FacetSource & PickingSource & RawFacesFlags;
 
 export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps) => {
   const {
@@ -156,21 +163,16 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
     instanceCount,
     !props.segments ? getInstancedFaceIndex : undefined,
   );
-  const getPicking = usePickingShader(attr);
 
-  const links = useMemo(() => {
-    return shaded
-      ? {
-        getVertex,
-        getPicking,
-        ...material,
-      }
-      : {
-        getVertex,
-        getPicking,
-        ...material,
-      }
-  }, [getVertex, getPicking, material, shaded]);
+  const getPicking = usePickingShader(attr);
+  const getFacet = useFacetShader(attr);
+
+  const links = useMemo(() => ({
+    getVertex,
+    getPicking,
+    getFacet,
+    ...material,
+  }), [getVertex, getPicking, getFacet, material]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,

@@ -6,7 +6,9 @@ import { useDraw } from '../hooks/useDraw';
 
 import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
 
-import { PickingSource, usePickingShader } from '../providers/picking-provider';
+import { FacetSource, useFacetShader } from './hooks/facets';
+import { PickingSource, usePickingShader } from './hooks/picking';
+
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { TransformContextProps } from '../providers/transform-provider';
@@ -27,7 +29,7 @@ const INDICES: UniformAttribute = { format: 'u32', name: 'getIndex' };
 
 export type RawLabelsFlags = {
   flip?: [number, number],
-} & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'depthTest' | 'depthWrite' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 export type RawLabelsProps = {
   index?: number,
@@ -70,7 +72,7 @@ export type RawLabelsProps = {
   texture?: TextureSource | LambdaSource | ShaderModule,
 
   count?: Lazy<number>,
-} & RawLabelsFlags;
+} & FacetSource & PickingSource & RawLabelsFlags;
 
 export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsProps) => {
   const {
@@ -124,7 +126,9 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
   const ind = i ? useShader(getInstanceLookupIndex, [i]) : (useNoShader(), undefined);
   const boundVertex = useShader(getLabelVertex, [i, r, u, s, l, a, positions, c, o, w, d, z, f, e, q]);
   const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount, ind);
+
   const getPicking = usePickingShader(props);
+  const getFacet = useFacetShader(props);
 
   const t = props.texture;
   const getFragment = useShader(getSDFRectangleFragment, [t], DEFINES);
@@ -133,7 +137,8 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
     getVertex,
     getFragment,
     getPicking,
-  }), [getVertex, getFragment, getPicking]);
+    getFacet,
+  }), [getVertex, getFragment, getPicking, getFacet]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,

@@ -24,6 +24,7 @@ export type OutlineDispatchProps = {
   globalLayout?: GPUBindGroupLayout,
 
   mode: 'edge' | 'resolve',
+  facets: boolean,
 
   inner: number,
   outer: number,
@@ -42,6 +43,7 @@ export const OutlineDispatch: LiveComponent<OutlineDispatchProps> = (props: Outl
     globalLayout,
 
     mode, // static
+    facets,
 
     inner,
     outer,
@@ -85,7 +87,8 @@ export const OutlineDispatch: LiveComponent<OutlineDispatchProps> = (props: Outl
     DEPTH_RAMP: depthRamp,
     NORMAL_RAMP: normalRamp,
     MSAA_SAMPLES: msaaSamples,
-  }), [depthRamp, normalRamp, msaaSamples]);
+    HAS_FACET: !!facets,
+  }), [depthRamp, normalRamp, msaaSamples, facets]);
 
   type Draw = (r: GPURenderPassEncoder) => void;
   let draw: Draw | null = null;

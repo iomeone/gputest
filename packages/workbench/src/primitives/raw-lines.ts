@@ -7,8 +7,10 @@ import { useDraw } from '../hooks/useDraw';
 import { memo, useCallback, useMemo, useOne, useNoCallback } from '@use-gpu/live';
 import { chainTo } from '@use-gpu/shader/wgsl';
 
+import { FacetSource, useFacetShader } from './hooks/facets';
+import { PickingSource, usePickingShader } from './hooks/picking';
+
 import { useMaterialContext } from '../providers/material-provider';
-import { PickingSource, usePickingShader } from '../providers/picking-provider';
 import { TransformContextProps } from '../providers/transform-provider';
 
 import { useApplyTransform } from '../hooks/useApplyTransform';
@@ -60,7 +62,7 @@ export type RawLinesProps = {
   transform?: TransformContextProps | ShaderModule,
 
   count?: Lazy<number>,
-} & PickingSource & RawLinesFlags;
+} & FacetSource & PickingSource & RawLinesFlags;
 
 const LINE_JOIN_SIZE = {
   'tangent': 0,
@@ -150,12 +152,14 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
   ]);
   const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount);
   const getPicking = usePickingShader(props);
+  const getFacet = useFacetShader(props);
 
   const links = useMemo(() => ({
     getVertex: shadow && !shaded ? chainTo(getVertex, solidToShaded) : getVertex,
     getPicking,
+    getFacet,
     ...material,
-  }), [getVertex, getPicking, shadow, shaded, material]);
+  }), [getVertex, getPicking, getFacet, shadow, shaded, material]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,

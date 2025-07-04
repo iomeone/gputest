@@ -6,6 +6,9 @@ export * from './geometry/plane';
 export * from './geometry/sphere';
 export * from './geometry/util';
 
+export * from './hooks/facets';
+export * from './hooks/picking';
+
 export * from './raw-arrows';
 export * from './raw-faces';
 export * from './raw-full-screen';

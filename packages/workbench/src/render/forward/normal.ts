@@ -24,6 +24,7 @@ export const NormalRender: LiveComponent<NormalRenderProps> = (props: NormalRend
     links: {
       getVertex,
       getSurface,
+      getFacet,
     },
     defines,
     pipeline: propPipeline,
@@ -48,12 +49,14 @@ export const NormalRender: LiveComponent<NormalRenderProps> = (props: NormalRend
     const links = {
       getVertex,
       getSurface,
+      getFacet,
       getScissor: hasScissor ? getScissorColor : null,
     };
+    const d = { HAS_FACET: !!getFacet };
     const v = bindBundle(vertexShader, links);
-    const f = bindBundle(fragmentShader, links);
+    const f = bindBundle(fragmentShader, links, d);
     return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getSurface, hasScissor]);
+  }, [vertexShader, fragmentShader, getVertex, getSurface, getFacet, hasScissor]);
 
   // Inline the render fiber
   const call = {

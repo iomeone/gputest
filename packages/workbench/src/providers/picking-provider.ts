@@ -1,9 +1,5 @@
 import type { OffscreenRenderContext } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
-import { makeContext, useOne, useContext, useNoContext } from '@use-gpu/live';
-import { useShader, useNoShader } from '../hooks/useShader';
-
-import { getPickingID } from '@use-gpu/wgsl/render/pick.wgsl';
+import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 
 export type PickingContextProps = {
   renderContext: OffscreenRenderContext,
@@ -15,16 +11,3 @@ export const PickingContext = makeContext<PickingContextProps>(undefined, 'Picki
 
 export const usePickingContext = () => useContext<PickingContextProps>(PickingContext);
 export const useNoPickingContext = () => useNoContext(PickingContext);
-
-export type PickingSource = {
-  id?: number,
-  lookup?: number,
-  ids?: ShaderSource,
-  lookups?: ShaderSource,
-  uvPicking?: boolean,
-};
-
-export const usePickingShader = ({id, ids, lookup, lookups, uvPicking}: PickingSource) => {
-  const defs = useOne(() => ({UV_PICKING: !!uvPicking}), uvPicking);
-  return ids ?? id ? useShader(getPickingID, [ids ?? id, lookup ?? lookups], defs) : (useNoShader(), undefined);
-};

@@ -87,6 +87,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     //overscan = 0,
     debug = null,
 
+    facets = false,
     lights = true,
     motion = !!buffers.motion,
     normals = !!buffers.normal,
@@ -101,6 +102,7 @@ export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: Deferred
     merge,
     //overscan,
 
+    facets,
     lights,
     motion,
     normals,

@@ -25,6 +25,7 @@ export type OutlinePassProps = {
   env: {
     light: any,
   },
+  facets: boolean,
   outline: OutlineOptions,
 };
 
@@ -37,6 +38,7 @@ Renders outer/inner edge mask to offscreen target, then applies variable sized o
 export const OutlinePass: LC<OutlinePassProps> = memo((props: PropsWithChildren<OutlinePassProps>) => {
   const {
     env,
+    facets,
     outline: outlineOptions,
   } = props;
 
@@ -68,6 +70,7 @@ export const OutlinePass: LC<OutlinePassProps> = memo((props: PropsWithChildren<
     use(OutlineDispatch, {
       ...outlineOptions,
       mode: 'edge',
+      facets,
 
       targetContext: edgeContext,
       descriptor: edgePassDescriptor,

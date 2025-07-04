@@ -38,6 +38,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
     picking = false,
     ssao = false,
     outline = false,
+    facets = false,
 
     overscan = 0,
 
@@ -52,6 +53,7 @@ export const Pass: LC<PassProps> = memo((props: PassProps) => {
   } = props;
 
   const liveOptions = {
+    facets,
     lights,
     shadows,
     picking,

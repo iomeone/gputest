@@ -639,6 +639,9 @@ export const VerticesTrait = trait({
   ids: bindable(optional(parseScalarArray)),
   lookup: optional(parseNumber),
   lookups: bindable(optional(parseScalarArray)),
+
+  facet: optional(parseNumber),
+  facets: bindable(optional(parseScalarArray)),
 });
 
 export const CompositeVerticesTrait = trait({
@@ -652,19 +655,9 @@ export const CompositeVerticesTrait = trait({
   ids: bindable(optional(parseMultiScalarArray)),
   lookup: optional(parseScalarArrayLike),
   lookups: bindable(optional(parseMultiScalarArray)),
-});
 
-export const FacetedVerticesTrait = trait({
-  positions: bindable(optional(parsePositionMultiMultiArray)),
-  depth: optional(parseScalarArrayLike),
-  depths: bindable(optional(parseMultiScalarArray)),
-  zBias: optional(parseScalarArrayLike),
-  zBiases: bindable(optional(parseMultiScalarArray)),
-
-  id: optional(parseScalarArrayLike),
-  ids: bindable(optional(parseMultiScalarArray)),
-  lookup: optional(parseScalarArrayLike),
-  lookups: bindable(optional(parseMultiScalarArray)),
+  facet: optional(parseScalarArrayLike),
+  facets: bindable(optional(parseMultiScalarArray)),
 });
 
 export const PointTraits = combine(
@@ -724,7 +717,7 @@ export const ArrowTraits = combine(
 
 export const FaceTraits = combine(
   CompositeColorsTrait(),
-  FacetedVerticesTrait,
+  CompositeVerticesTrait,
   DataTrait(['positions', 'colors', 'depths', 'zBiases', 'ids', 'lookups']),
   FaceSegmentsTrait,
 

@@ -92,6 +92,7 @@ export const SceneOutlinePage: LC = () => {
 
               <Environment preset="pisa" gain={4}>
                 <Pass
+                  facets
                   lights
                   ssao={ssaoOptions}
                   outline={outlineOptions}
@@ -105,10 +106,22 @@ export const SceneOutlinePage: LC = () => {
                     <Node position={[0, -2.001, 0]}>
                       <PBRMaterial albedo={'#505050'} roughness={0.7}>
                         <Mesh
+                          facet={30}
                           mesh={planeMesh}
                           side="both"
                           shaded
+                          zBias={-100}
                         />
+                        <Node scale={[0.5, 1, 0.5]}>
+                          <Mesh
+                            // Use `facet` to distinguish co-planar faces (for outlines)
+                            facet={10}
+                            mesh={planeMesh}
+                            side="both"
+                            shaded
+                            zBias={100}
+                          />
+                        </Node>
                       </PBRMaterial>
                     </Node>
 

@@ -7,15 +7,18 @@ import { RenderTarget } from '../render-target';
 import { useRenderContext } from '../../providers/render-provider';
 
 export type NormalBufferProps = {
+  facets?: boolean,
   resolution?: number,
   overscan?: OverscanOptions,
 };
 
 export const NORMAL_DEPTH_FORMAT = 'depth32float';
-export const NORMAL_RENDER_FORMAT = 'rg8uint';
+export const NORMAL_RENDER_FORMAT_THIN = 'rg8uint';
+export const NORMAL_RENDER_FORMAT_FAT = 'rgba8uint';
 
 export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
   const {
+    facets = false,
     resolution = 1,
     overscan: overscanProp,
   } = props;
@@ -25,9 +28,7 @@ export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
   // Normal render target
   const {samples} = useRenderContext();
   const depthStencil = NORMAL_DEPTH_FORMAT;
-  const renderFormat = NORMAL_RENDER_FORMAT;
-
-  const msaa = samples > 1;
+  const renderFormat = facets ? NORMAL_RENDER_FORMAT_FAT : NORMAL_RENDER_FORMAT_THIN;
 
   const targets = [
     use(RenderTarget, {
@@ -42,22 +43,9 @@ export const NormalBuffer: LC = memo((props: NormalBufferProps) => {
       depthStencil,
       colorSpace: 'linear',
     }),
-    msaa ? use(RenderTarget, {
-      label: 'NormalBuffer/Resolve',
-      resolution,
-      overscan,
-      samples: 1,
-      sampler: null,
-      format: renderFormat,
-      variant: 'textureLoad',
-      depthStencil: null,
-      colorSpace: 'linear',
-    }) : null,
   ];
 
   return gather(targets, (targets: OffscreenRenderContext[]) => {
-    if (targets.length > 1) targets[1].depth = targets[0].depth;
-
     return yeet({
       buffers: { normal: targets },
     });

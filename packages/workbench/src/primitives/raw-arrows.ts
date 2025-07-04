@@ -7,8 +7,10 @@ import { useDraw } from '../hooks/useDraw';
 import { memo, useCallback, useOne, useMemo, useNoCallback } from '@use-gpu/live';
 import { chainTo } from '@use-gpu/shader/wgsl';
 
+import { FacetSource, useFacetShader } from './hooks/facets';
+import { PickingSource, usePickingShader } from './hooks/picking';
+
 import { useMaterialContext } from '../providers/material-provider';
-import { PickingSource, usePickingShader } from '../providers/picking-provider';
 import { TransformContextProps } from '../providers/transform-provider';
 
 import { useRawSource, useNoRawSource } from '../hooks/useRawSource';
@@ -61,7 +63,7 @@ export type RawArrowsProps = {
   transform?: TransformContextProps | ShaderModule,
 
   count?: number,
-} & PickingSource & RawArrowsFlags;
+} & FacetSource & PickingSource & RawArrowsFlags;
 
 export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsProps) => {
   const {
@@ -129,12 +131,14 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
   const anchorIndex = useShader(getAnchorIndex, [a]);
   const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, anchorCount, anchorIndex);
   const getPicking = usePickingShader(props);
+  const getFacet = useFacetShader(props);
 
   const links = useOne(() => ({
     getVertex: shadow && !shaded ? chainTo(getVertex, solidToShaded) : getVertex,
     getPicking,
+    getFacet,
     ...material,
-  }), [getVertex, getPicking, shadow, shaded, material]);
+  }), [getVertex, getPicking, getFacet, shadow, shaded, material]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,

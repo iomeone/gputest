@@ -9,12 +9,13 @@ export type PassOptions = {
   ssao?: boolean | number | Partial<SSAOOptions>,
   overscan?: number | Partial<OverscanOptions>,
   outline?: boolean | number | Partial<OutlineOptions>,
-} & Pick<PassFlags, 'lights' | 'shadows' | 'picking' | 'overlay' | 'merge'>;
+} & Pick<PassFlags, 'facets' | 'lights' | 'shadows' | 'picking' | 'overlay' | 'merge'>;
 
 export type PassFlags = {
   lights?: boolean,
   shadows?: boolean,
   picking?: boolean,
+  facets?: boolean,
   ssao?: SSAOOptions,
   overscan?: OverscanOptions,
   outline?: OutlineOptions,

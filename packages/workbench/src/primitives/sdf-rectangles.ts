@@ -6,13 +6,16 @@ import type { TransformContextProps } from '@use-gpu/workbench';
 import { useDraw } from '../hooks/useDraw';
 
 import { memo, useMemo, useOne } from '@use-gpu/live';
+
+import { FacetSource, useFacetShader } from './hooks/facets';
+import { PickingSource, usePickingShader } from './hooks/picking';
+
 import { useCombinedTransform } from '../hooks/useCombinedTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useShader } from '../hooks/useShader';
 import { useDataLength } from '../hooks/useDataBinding';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
-import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { getSDFRectangleVertex } from '@use-gpu/wgsl/instance/vertex/sdf-rectangle.wgsl';
@@ -51,7 +54,7 @@ export type SDFRectanglesProps = {
 
   count?: Lazy<number>,
   id?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
+} & FacetSource & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export const SDFRectangles: LiveComponent<SDFRectanglesProps> = memo((props: SDFRectanglesProps) => {
   const {
@@ -91,10 +94,12 @@ export const SDFRectangles: LiveComponent<SDFRectanglesProps> = memo((props: SDF
 
   const boundVertex = useShader(getSDFRectangleVertex, [r, a, b, s, f, u, v, p, d, xf, c]);
   const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, props.instance, props.instances, instanceCount);
-  const getPicking = usePickingShader(props);
   const getFragment = useShader(getSDFRectangleFragment, [t, m]);
 
-  const links = useOne(() => ({getVertex, getFragment, getPicking}), [getVertex, getFragment, getPicking]);
+  const getPicking = usePickingShader(props);
+  const getFacet = useFacetShader(props);
+
+  const links = useOne(() => ({getVertex, getFragment, getPicking, getFacet}), [getVertex, getFragment, getPicking, getFacet]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,
