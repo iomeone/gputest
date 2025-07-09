@@ -64,8 +64,8 @@ export const useArrowSegmentsSource = (
 
   // Bind as shader storage
   const s = useRawSource(segments, 'i8');
-  const a = anchors ? useRawSource(anchors, 'vec4<u32>') : useNoRawSource();
-  const t = trims ? useRawSource(trims, 'vec4<u32>') : useNoRawSource();
+  const a = anchors ? useRawSource(anchors, 'vec4<u32>') : (useNoRawSource(), undefined);
+  const t = trims ? useRawSource(trims, 'vec4<u32>') : (useNoRawSource(), undefined);
 
   if (a) {
     a.length = sparse || 0;
