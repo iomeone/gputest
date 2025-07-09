@@ -27,7 +27,7 @@ for (const file of files) {
           value = value.replace(/(\.d)?\.ts$/, '.js');
 
           return {
-            types: value.replace('./src/', './mjs/').replace(/\.js$/, '.d.ts'),
+            types: value.replace('./src/', './mjs/').replace(/\.js$/, '.d.mts'),
             import: value.replace('./src/', './mjs/').replace(/\.js$/, '.mjs'),
             require: value.replace('./src/', './cjs/').replace(/\.js$/, '.cjs'),
           };
