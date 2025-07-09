@@ -23,7 +23,7 @@ import { mat4, vec3 } from 'gl-matrix';
 export type GizmoMatrixProps = {
   value: mat4,
   onChange: (m: mat4) => void,
-  onDrag: (b: boolean) => void,
+  onDrag?: (b: boolean) => void,
 
   size?: number,
 
