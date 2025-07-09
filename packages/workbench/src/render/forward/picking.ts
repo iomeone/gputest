@@ -29,9 +29,12 @@ export const PickingRender: LiveComponent<PickingRenderProps> = (props: PickingR
   } = props;
 
   const {
-    buffers: {picking: [renderContext]},
+    buffers: {picking},
     bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
   } = usePassContext();
+
+  if (!picking) throw new Error("Picking renders used in a <Pass> without picking=true");
+  const [renderContext] = picking;
 
   const vertexShader = renderVirtualPicking;
   const fragmentShader = renderFragmentPicking;

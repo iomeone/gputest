@@ -23,6 +23,7 @@ import { mat4, vec3 } from 'gl-matrix';
 export type GizmoMatrixProps = {
   value: mat4,
   onChange: (m: mat4) => void,
+  onDrag: (b: boolean) => void,
 
   size?: number,
 
@@ -64,6 +65,7 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
   const {
     value,
     onChange,
+    onDrag,
 
     move,
     rotate,
@@ -75,7 +77,7 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
 
     size = .1,
   } = props;
-  
+
   const {uniforms} = useViewContext();
   const frameCount = usePerFrame();
 
@@ -105,9 +107,11 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
     mat4.invert(i, xfu);
     vec3.transformMat4(v, v, i);
 
-    const x = Math.sign(v[0]) * s;
-    const y = Math.sign(v[1]) * s;
-    const z = Math.sign(v[2]) * s;
+    const sign = (x: number) => x ? Math.sign(x) : 1;
+
+    const x = sign(v[0]) * s;
+    const y = sign(v[1]) * s;
+    const z = sign(v[2]) * s;
 
     const flip = mat4.fromScaling(mat4.create(), [x, y, z]);
     return [flip, fu, xfu, xfnu];
@@ -124,6 +128,7 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
   const [draggingElement, setDraggingElement] = useState<number | null>(null);
   const makeOnDrag = (element: number) => (dragging: boolean) => {
     setDraggingElement(dragging ? element : null);
+    onDrag?.(dragging);
   };
 
   const isDragging = draggingElement != null;
@@ -157,7 +162,7 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
     onDrag: makeOnDrag(element),
     visible: !isDragging,
   });
-  
+
   const view = (
     use(Plot, {
       children: [
