@@ -4,7 +4,7 @@ import type { XYZ, XYZW } from '@use-gpu/core';
 import { provide, use, useMemo, useState } from '@use-gpu/live';
 import { seq, lerp } from '@use-gpu/core';
 
-import { AxisHelper, TransformContext, useCombinedMatrixTransform, useMatrixContext, useViewContext, usePerFrame } from '@use-gpu/workbench';
+import { AxisHelper, TransformContext, useCombinedMatrixTransform } from '@use-gpu/workbench';
 import { Plot, Line, Arrow, Polygon, Point } from '@use-gpu/plot';
 
 import { Cursor } from '../handlers/cursor';
@@ -16,9 +16,12 @@ import {
   applyCartesianDrag, applyPolarDrag, applyScaleDrag,
   getDragFrame, getAbsoluteFrame,
   ORTHO_AXES_XYZ,
-} from '../drag/useDrag';
+} from '../hooks/useDrag';
+import {
+  useGizmoMatrix
+} from '../hooks/useGizmoMatrix';
 
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 
 export type GizmoMatrixProps = {
   value: mat4,
@@ -78,52 +81,13 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
     size = .1,
   } = props;
 
-  const {uniforms} = useViewContext();
-  const frameCount = usePerFrame();
+  // Gizmo frame
+  const uniformFrame = useMemo(() => (absolute ? getAbsoluteFrame : getDragFrame)(value), [absolute, value]);
+  const nonUniformFrame = useMemo(() => absolute ? getAbsoluteFrame(value) : value, [absolute, value]);
 
   // Flip orientation relative to view
-  const parent = useMatrixContext();
-  const [flipM, frame, xformUniform, xformNonUniform] = useMemo(() => {
-    const vm = uniforms.viewMatrix.current;
-
-    // Distance of gizmo to view (for absolute size)
-    const p = vec3.create();
-    mat4.getTranslation(p, value);
-    if (parent) vec3.transformMat4(p, p, parent);
-    vec3.transformMat4(p, p, vm);
-
-    const vz = -p[2];
-    const s = size * vz;
-
-    // Orientation flipping relative to view
-    const v = vec3.clone(uniforms.viewPosition.current as vec3);
-    const i = mat4.create();
-
-    const fu = (absolute ? getAbsoluteFrame : getDragFrame)(value);
-    const fnu = (absolute ? fu : value);
-
-    const xfu = parent ? mat4.multiply(mat4.create(), parent, fu) : fu;
-    const xfnu = parent ? mat4.multiply(mat4.create(), parent, fnu) : fnu;
-    mat4.invert(i, xfu);
-    vec3.transformMat4(v, v, i);
-
-    const sign = (x: number) => x ? Math.sign(x) : 1;
-
-    const x = sign(v[0]) * s;
-    const y = sign(v[1]) * s;
-    const z = sign(v[2]) * s;
-
-    const flip = mat4.fromScaling(mat4.create(), [x, y, z]);
-    return [flip, fu, xfu, xfnu];
-    // eslint-disable-next-line
-  }, [uniforms, frameCount, parent, value, size]);
-
-  // Get local matrix for gizmo itself
-  const local = useMemo(() => {
-    const m = mat4.create();
-    mat4.multiply(m, frame, flipM);
-    return m;
-  }, [frame, flipM]);
+  const [local, xformUniform] = useGizmoMatrix({matrix: uniformFrame, size, flip: true});
+  const [, xformNonUniform] = useGizmoMatrix({matrix: nonUniformFrame, size, flip: true});
 
   const [draggingElement, setDraggingElement] = useState<number | null>(null);
   const makeOnDrag = (element: number) => (dragging: boolean) => {

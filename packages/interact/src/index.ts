@@ -3,6 +3,9 @@ export * from './controls/gizmo';
 export * from './controls/orbit-controls';
 export * from './controls/pan-controls';
 
+export * from './hooks/useDrag';
+export * from './hooks/useGizmoMatrix';
+
 export * from './handlers/cursor';
 export * from './handlers/keyboard';
 export * from './handlers/mouse';
