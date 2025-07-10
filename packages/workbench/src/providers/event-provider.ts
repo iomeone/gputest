@@ -2,12 +2,14 @@ import type { LiveComponent, LiveElement, ArrowFunction } from '@use-gpu/live';
 
 import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 import { seq, proxy, makeIdAllocator } from '@use-gpu/core';
-import { EventHandler, EventBinding, MouseState, WheelState, KeyboardState, PointerCaptureAPI, PointerLockAPI } from '../interact/event';
+import { EventHandler, EventBinding, MouseState, WheelState, KeyboardState, PickRef, PointerCaptureAPI, PointerLockAPI } from '../interact/event';
 import { PickingContext } from '../providers/picking-provider';
 import { RenderContext } from '../providers/render-provider';
 import { EventReconciler } from '../reconcilers/index';
 
 const {reconcile, quote} = EventReconciler;
+
+const DEBUG_CAPTURE = false;
 
 export const EventContext = makeContext<EventContextProps>(undefined, 'EventContext');
 export const MouseContext = makeContext<MouseState>(undefined, 'MouseContext');
@@ -26,8 +28,8 @@ export type EventStateProviderProps = {
 };
 
 export type EventContextProps = {
-  useObjectId: () => number,
-  useObjectIds: (n: number) => number[],
+  usePickingId: () => number,
+  usePickingIds: (n: number) => number[],
   usePointerCapture: () => PointerCaptureAPI,
   usePointerLock: () => PointerLockAPI,
 };
@@ -56,8 +58,8 @@ const INITIAL_WHEEL_STATE = {
 
 const INITIAL_KEYBOARD_STATE = {};
 
-const makeCaptureIdRef = () => ({
-  current: null as number | null,
+const makeCaptureRef = () => ({
+  current: null as PickRef | null,
 });
 
 const makeIdRef = () => ({
@@ -75,35 +77,41 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
   }, [pickingContext, pixelRatio]);
 
   // Pointer capturing by ID
-  const captureIdRef = useOne(makeCaptureIdRef);
+  const captureRef = useOne(makeCaptureRef);
   const pointerCapture = useMemo(() => ({
-    hasCapture: () => captureIdRef.current,
-    beginCapture: (id: number) => { captureIdRef.current = id; },
-    endCapture: () => { captureIdRef.current = null; },
+    hasCapture: () => captureRef.current,
+    beginCapture: (ref: PickRef) => {
+      DEBUG_CAPTURE && console.warn('beginCapture', ref.pickId, ref.pickIndex);
+      captureRef.current = ref;
+    },
+    endCapture: () => {
+      DEBUG_CAPTURE && console.warn('endCapture');
+      captureRef.current = null;
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
 
   // Event API for ID allocation
   const allocId = useOne(() => makeIdAllocator());
   const eventApi = useOne(() => ({
-    useObjectId: () => useResource((dispose) => {
+    usePickingId: () => useResource((dispose) => {
       const {hasCapture, endCapture} = pointerCapture;
       const id = allocId.obtain();
 
       dispose(() => {
         allocId.release(id);
-        if (hasCapture() === id) endCapture();
+        if (hasCapture()?.pickId === id) endCapture();
       });
       return id;
     }),
-    useObjectIds: (n: number) => useResource((dispose) => {
+    usePickingIds: (n: number) => useResource((dispose) => {
       const {hasCapture, endCapture} = pointerCapture;
       const ids = seq(n).map(allocId.obtain);
 
       dispose(() => {
         for (const id of ids) {
           allocId.release(id);
-          if (hasCapture() === id) endCapture();
+          if (hasCapture()?.pickId === id) endCapture();
         }
       });
       return ids;
@@ -120,6 +128,20 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
   const annotateEvent = (e: any) => {
     if (e.x != null && e.y != null && e.pickId === undefined) {
       [e.pickId, e.pickIndex] = pick(e.x, e.y);
+
+      const {beginCapture, hasCapture} = pointerCapture;
+      const capture = hasCapture();
+      if (capture != null) {
+        if (e.pickId !== capture.pickId) {
+          // Stick to original picked pixel
+          e.pickId = capture.pickId;
+          e.pickIndex = capture.pickIndex;
+        }
+        else {
+          // Remember last picked index
+          beginCapture(e);
+        }
+      }
     }
   };
 
@@ -177,19 +199,16 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
     }, [pointerEnter, pointerLeave, pointerOver, pointerOut]);
     useHandler(subscribeEvent, 'pointerMove', handlePointerEnterLeave);
 
+    const {hasCapture, endCapture} = pointerCapture;
+    useHandler(subscribeEvent, 'pointerUp', () => setTimeout(endCapture));
+
     for (const k in rest) {
       if (k.match(/^mouse/)) throw new Error("Mouse events are unsupported, use Pointer events instead.");
 
       const fn = useMemo(() => {
         const hs = handlers[k];
         return (e: any) => {
-          const {current: captureId} = captureIdRef;
-
-          let stopped = false;
-          e.stopPropagation = () => {
-            e.nativeEvent.stopPropagation();
-            stopped = true;
-          };
+          const capture = hasCapture();
 
           annotateEvent(e);
 
@@ -199,16 +218,22 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
             const handler = hs[i];
 
             if (typeof handler === 'object') {
-              if ((captureId == null && handler.id === e.pickId) || handler.id === captureId) handler.callback(e);
+              // Dispatch to targeted handler
+              if (handler.id === e.pickId) handler.callback(e);
+
+              // Dispatch to fallback handler
+              else if (handler.id < 0 && capture == null) {
+                handler.callback(proxy(e, {pickId: handler.id, pickIndex: 0}));
+              }
             }
-            else if (captureId == null) {
+            else if (!capture) {
               handler(e);
             }
 
-            if (stopped) break;
+            if (e.propagationStopped) break;
           }
         };
-      }, [k, handlers]);
+      }, [k, handlers, hasCapture]);
 
       useHandler(subscribeEvent, k, fn);
     }
@@ -294,7 +319,7 @@ const useHandler = (subscribe: ArrowFunction, type: string, handler: ArrowFuncti
 };
 
 export const useObjectEvents = (callbacks: Record<string, ArrowFunction>) => {
-  const id = useObjectId();
+  const id = usePickingId();
   const handlers = useCanvasEvents(id, callbacks);
   return {id, handlers};
 };
@@ -315,7 +340,7 @@ export const useNoKeyboardState = () => useNoContext(KeyboardContext);
 export const useNoMouseState = () => useNoContext(MouseContext);
 export const useNoWheelState = () => useNoContext(WheelContext);
 
-export const useObjectId = () => useContext(EventContext).useObjectId();
-export const useObjectIds = (n: number) => useContext(EventContext).useObjectIds(n);
+export const usePickingId = () => useContext(EventContext).usePickingId();
+export const usePickingIds = (n: number) => useContext(EventContext).usePickingIds(n);
 export const usePointerLock = () => useContext(EventContext).usePointerLock();
 export const usePointerCapture = () => useContext(EventContext).usePointerCapture();

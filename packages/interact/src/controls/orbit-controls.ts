@@ -8,6 +8,8 @@ import { makeOrbitMatrix, clamp } from '@use-gpu/core';
 import {
   getRenderFunc,
   useCanvasEvents,
+  usePickingId,
+  usePointerCapture,
   useDerivedState,
   useShaderRef,
   LayoutContext,
@@ -97,6 +99,7 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
   const [target, setTarget]   = useDerivedState<vec3>(initialTarget, version);
 
   const layout = useContext(LayoutContext);
+  const {beginCapture} = usePointerCapture();
 
   const size = Math.min(Math.abs(layout[2] - layout[0]), Math.abs(layout[3] - layout[1]));
   const radiusRef = useShaderRef(radius);
@@ -162,11 +165,24 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
     event.stopPropagation();
   }, [actionBindings, handleMove, handleRotate, handleZoom]);
 
+  const handleDown = useCallback((event: PointerEvent | WheelEvent) => {
+    if (
+      matchActionBindings(event, actionBindings.move) ||
+      matchActionBindings(event, actionBindings.rotate) ||
+      matchActionBindings(event, actionBindings.zoom)
+    ) {
+      if (event.type.match(/^pointer/)) beginCapture(event);
+    }
+  }, [actionBindings, beginCapture]);
+
   const callbacks = useMemo(() => ({
+    pointerDown: handleDown,
     pointerMove: handleEvent,
     wheel: handleEvent,
-  }), [handleEvent]);
-  const handlers = useCanvasEvents(null, callbacks);
+  }), [handleDown, handleEvent]);
+  
+  const id = usePickingId();
+  const handlers = useCanvasEvents(-id, callbacks);
 
   const render = getRenderFunc(props);
   return [

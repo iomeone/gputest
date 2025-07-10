@@ -125,7 +125,7 @@ const makeDOMSubscriber = (
     const decorate = type === 'wheel' ? harmonizeWheelProps : undefined;
     const extra = decorate?.(e);
 
-    const ev = makeSyntheticEvent(el, e, extra, stop, move);
+    const ev = makeSyntheticEvent(el, e, extra, move);
     handler(ev);
   };
 
@@ -160,7 +160,6 @@ const makeSyntheticEvent = (
   element: HTMLElement,
   nativeEvent: any,
   extra?: Record<string, any>,
-  stop?: ArrowFunction,
   move?: XY,
 ) => {
   const {key, type, clientX, clientY} = nativeEvent;
@@ -168,8 +167,27 @@ const makeSyntheticEvent = (
   const button = toButton(nativeEvent.button);
   const buttons = toButtons(nativeEvent.buttons);
 
+  const preventDefault = () => {
+    nativeEvent.preventDefault();
+    event.defaultPrevented = true;
+  };
+
+  const stopPropagation = () => {
+    nativeEvent.stopPropagation();
+    event.propagationStopped = true;
+  };
+
   const mapped: Record<string, any> = {};
-  const event: Record<string, any> = {nativeEvent, button, buttons};
+  const event: Record<string, any> = {
+    nativeEvent,
+    button,
+    buttons,
+    preventDefault,
+    stopPropagation,
+    defaultPrevented: false,
+    propagationStopped: false,
+  };
+
   for (const k of DOM_EVENT_PROPS) if (k in nativeEvent) {
     let v = nativeEvent[k];
     if (typeof v === 'function') v = v.bind(nativeEvent);
@@ -201,11 +219,6 @@ const makeSyntheticEvent = (
       event.moveY = move[1];
     }
   }
-
-  event.stopPropagation = () => {
-    nativeEvent.stopPropagation();
-    stop?.();
-  };
 
   return proxy(event, mapped);
 };

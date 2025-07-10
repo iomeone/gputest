@@ -23,9 +23,14 @@ export type WheelState = {
 
 export type KeyboardState = Record<string, boolean>;
 
+export type PickRef = {
+  pickId: number,
+  pickIndex: number,
+};
+
 export type PointerCaptureAPI = {
-  hasCapture: () => number | null,
-  beginCapture: (id: number) => void,
+  hasCapture: () => PickRef | null,
+  beginCapture: (ref: PickRef) => void,
   endCapture: () => void,
 };
 
@@ -49,6 +54,9 @@ export type CanvasEvent<T = any> = {
   preventDefault: () => void,
   stopPropagation: () => void,
 
+  defaultPrevented: boolean,
+  propagationStopped: boolean,
+
   detail: number,
   which: number,
 };
@@ -66,7 +74,7 @@ export type KeyboardEvent<T = any> = CanvasEvent<T> & {
   shiftKey: boolean,
 };
 
-export type PointerEvent<T = any> = CanvasEvent<T> & MouseState & {
+export type PointerEvent<T = any> = CanvasEvent<T> & MouseState & PickRef & {
   //coalescedEvents?: PointerEvent[];
   //predictedEvents?: PointerEvent[];
 
@@ -93,7 +101,7 @@ export type PointerEvent<T = any> = CanvasEvent<T> & MouseState & {
   shiftKey: boolean,
 };
 
-export type WheelEvent<T = any> = CanvasEvent<T> & WheelState & {
+export type WheelEvent<T = any> = CanvasEvent<T> & WheelState & PickRef & {
   clientX: number;
   clientY: number;
   relatedTarget: EventTarget | null;

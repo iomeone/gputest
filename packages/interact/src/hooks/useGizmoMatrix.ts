@@ -51,5 +51,5 @@ export const useGizmoMatrix = (opts: GizmoMatrixOptions) => {
 
     return [local, xform];
     // eslint-disable-next-line
-  }, [uniforms, frameCount, parent, matrix, size]);
+  }, [uniforms, frameCount, parent, matrix, size, flip]);
 };

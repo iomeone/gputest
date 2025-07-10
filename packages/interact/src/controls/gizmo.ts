@@ -1,5 +1,5 @@
 import type { LC } from '@use-gpu/live';
-import type { XYZ, XYZW } from '@use-gpu/core';
+import type { VectorLike, XYZ, XYZW } from '@use-gpu/core';
 
 import { provide, use, useMemo, useState } from '@use-gpu/live';
 import { seq, lerp } from '@use-gpu/core';
@@ -33,10 +33,26 @@ export type GizmoMatrixProps = {
   absolute?: boolean,
   nonUniform?: boolean,
   negative?: boolean,
+  axes?: boolean,
 
   move?: boolean | string,
   rotate?: boolean | string,
   scale?: boolean | string,
+  
+  style?: GizmoMatrixStyles,
+};
+
+export type GizmoMatrixStyles = Record<string, Partial<GizmoMatrixStyle>>;
+
+export type GizmoMatrixStyle = {
+  color: VectorLike,
+  stroke: VectorLike,
+  fill: VectorLike,
+  range: number,
+  width: number,
+  size: number,
+  depth: number,
+  zBias: number,
 };
 
 export type GizmoAxisProps = {
@@ -51,6 +67,9 @@ export type GizmoAxisProps = {
 
   xformUniform: mat4,
   xformNonUniform: mat4,
+  
+  element: string,
+  style: GizmoMatrixStyles,
 };
 
 export type GizmoRotateProps = GizmoAxisProps & {
@@ -64,6 +83,135 @@ export type GizmoScaleProps = GizmoAxisProps & {
 
 const Z: XYZ = [0, 0, 0];
 
+const GIZMO_ELEMENTS = [
+  'moveX',
+  'moveY',
+  'moveZ',
+  'moveYZ',
+  'moveZX',
+  'moveXY',
+  'rotateX',
+  'rotateY',
+  'rotateZ',
+  'scaleX',
+  'scaleY',
+  'scaleZ',
+];
+
+export const DEFAULT_GIZMO_STYLE = {
+  'moveX': {
+    color: [1.0, 0.2, 0.3],
+    width: 5,
+    range: 15,
+    zBias: 1,
+  },
+  'moveY': {
+    color: [0.2, 1.0, 0.3],
+    width: 5,
+    range: 15,
+    zBias: 1,
+  },
+  'moveZ': {
+    color: [0.2, 0.4, 1.0],
+    width: 5,
+    range: 15,
+    zBias: 1,
+  },
+  'moveX:hover': {
+    width: 10,
+  },
+  'moveY:hover': {
+    width: 10,
+  },
+  'moveZ:hover': {
+    width: 10,
+  },
+
+  'moveXY': {
+    stroke: [1.0, 1.0, 0.3, 0.5],
+    fill: [1.0, 1.0, 0.3, 0.25],
+    width: 2,
+  },
+  'moveYZ': {
+    stroke: [0.2, 1.0, 1.0, 0.5],
+    fill: [0.2, 1.0, 1.0, 0.25],
+    width: 2,
+  },
+  'moveZX': {
+    stroke: [1.0, 0.2, 1.0, 0.5],
+    fill: [1.0, 0.2, 1.0, 0.25],
+    width: 2,
+  },
+  'moveXY:hover': {
+    stroke: [1.0, 1.0, 0.3, 1.0],
+    fill: [1.0, 1.0, 0.3, 0.5],
+  },
+  'moveYZ:hover': {
+    stroke: [0.2, 1.0, 1.0, 1.0],
+    fill: [0.2, 1.0, 1.0, 0.5],
+  },
+  'moveZX:hover': {
+    stroke: [1.0, 0.2, 1.0, 1.0],
+    fill: [1.0, 0.2, 1.0, 0.5],
+  },
+
+  'rotateX': {
+    color: [0.2, 1.0, 1.0, 0.5],
+    width: 10,
+    range: 20,
+  },
+  'rotateY': {
+    color: [1.0, 0.2, 1.0, 0.5],
+    width: 10,
+    range: 20,
+  },
+  'rotateZ': {
+    color: [1.0, 1.0, 0.2, 0.5],
+    width: 10,
+    range: 20,
+  },
+  'rotateX:hover': {
+    color: [0.2, 1.0, 1.0, 1.0],
+    width: 15,
+  },
+  'rotateY:hover': {
+    color: [1.0, 0.2, 1.0, 1.0],
+    width: 15,
+  },
+  'rotateZ:hover': {
+    color: [1.0, 1.0, 0.2, 1.0],
+    width: 15,
+  },
+
+  'scaleX': {
+    color: [1.0, 0.2, 0.3],
+    size: 10,
+    range: 30,
+    zBias: 3,
+  },
+  'scaleY': {
+    color: [0.2, 1.0, 0.3],
+    size: 10,
+    range: 30,
+    zBias: 3,
+  },
+  'scaleZ': {
+    color: [0.2, 0.4, 1.0],
+    size: 10,
+    range: 30,
+    zBias: 3,
+  },
+  'scaleX:hover': {
+    size: 20,
+  },
+  'scaleY:hover': {
+    size: 20,
+  },
+  'scaleZ:hover': {
+    size: 20,
+  },
+};
+
 export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
   const {
     value,
@@ -74,10 +222,12 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
     rotate,
     scale,
 
+    axes,
     absolute,
     negative,
     nonUniform = typeof scale === 'object',
 
+    style = DEFAULT_GIZMO_STYLE,
     size = .1,
   } = props;
 
@@ -125,13 +275,16 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
     onChange,
     onDrag: makeOnDrag(element),
     visible: !isDragging,
+
+    element: GIZMO_ELEMENTS[element],
+    style,
   });
 
   const view = (
     use(Plot, {
       children: [
-        draggingElement != null ? use(AxisHelper, {width: 3}) : null,
-        draggingElement != null ? use(AxisHelper, {width: 3, opacity: 0.35, mode: 'transparent', depthTest: false}) : null,
+        axes && draggingElement != null ? use(AxisHelper, {width: 3}) : null,
+        axes && draggingElement != null ? use(AxisHelper, {width: 3, opacity: 0.35, mode: 'transparent', depthTest: false}) : null,
 
         moveX ? use(GizmoAxis, gizmoProps(0)) : null,
         moveY ? use(GizmoAxis, gizmoProps(1)) : null,
@@ -157,17 +310,20 @@ export const GizmoMatrix: LC<GizmoMatrixProps> = (props: GizmoMatrixProps) => {
   return provide(TransformContext, context, view);
 };
 
+const useElementStyle = (elementName: string, style: GizmoMatrixStyles) => {
+  return useMemo(() => {
+    const element = style[elementName];
+    const hovered = {...element, ...style[elementName + ':hover']};
+    return {element, hovered};
+  }, [elementName, style]);
+};
+
 export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
-  const {axis, absolute, xformNonUniform, value, visible, onChange, onDrag} = props;
+  const {element, style, axis, absolute, xformNonUniform, value, visible, onChange, onDrag} = props;
+  const styled = useElementStyle(element, style);
 
   const end = Z.slice() as XYZ;
-  const color = [0.2, 0.2, 0.2];
-
   end[axis] = 1;
-  color[axis] = 1;
-
-  color[0] += color[2] * .2;
-  color[1] += color[2] * .3;
 
   const line = [Z, end];
 
@@ -183,49 +339,49 @@ export const GizmoAxis: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
   return (
     use(Pick, {
       ...handlers,
-      render: ({id, hovered}: PickState) => visible && [
-        hovered ? use(Cursor, {cursor: 'pointer'}) : null,
-        use(Arrow, {
-          positions: line,
-          color,
-          width: hovered ? 10 : 5,
-          end: true,
-          zBias: 1,
+      render: ({id, hovered}: PickState) => {
+        if (!visible) return null;
+        
+        const props = hovered ? styled.hovered : styled.element;
 
-          depthTest: false,
-          depthWrite: false,
-          mode: 'transparent'
-        }),
-        use(Line, {
-          id,
-          positions: line,
-          color,
-          width: 15,
-          mode: 'picking',
-          zBias: 1,
-        }),
-      ],
+        return [
+          hovered ? use(Cursor, {cursor: 'pointer'}) : null,
+          use(Arrow, {
+            positions: line,
+            ...props,
+            end: true,
+
+            depthTest: false,
+            depthWrite: false,
+            mode: 'transparent'
+          }),
+          use(Line, {
+            id,
+            positions: line,
+            ...props,
+            width: props.range,
+            mode: 'picking',
+          }),
+        ];
+      }
     })
   );
 };
 
 export const GizmoPlane: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
-  const {axis, absolute, xformNonUniform, value, visible, onChange, onDrag} = props;
+  const {element, style, axis, absolute, xformNonUniform, value, visible, onChange, onDrag} = props;
+  const styled = useElementStyle(element, style);
+
   const axes = ORTHO_AXES_XYZ[axis];
 
   const a = Z.slice() as XYZ;
   const b = Z.slice() as XYZ;
   const c = Z.slice() as XYZ;
 
-  const color = [0.2, 0.2, 0.2];
-  for (const i of axes) color[i] = 1;
   for (const [j, i] of axes.entries()) {
     b[i] = 0.5;
     (j ? c : a)[i] = 0.5;
   }
-
-  color[0] += color[2] * .2;
-  color[1] += color[2] * .3;
 
   const plane: XYZW = [0, 0, 0, 0];
   plane[axis] = 1;
@@ -242,33 +398,38 @@ export const GizmoPlane: LC<GizmoAxisProps> = (props: GizmoAxisProps) => {
   return (
     use(Pick, {
       ...handlers,
-      render: ({id, hovered}: PickState) => visible && [
-        hovered ? use(Cursor, {cursor: 'pointer'}) : null,
-        use(Polygon, {
-          positions: [Z, a, b, c],
-          width: 2,
-          stroke: [...color, hovered ? 1 : 0.5],
-          fill: [...color, hovered ? 0.5 : 0.25],
+      render: ({id, hovered}: PickState) => {
+        if (!visible) return null;
+      
+        const props = hovered ? styled.hovered : styled.element;
+        
+        return [
+          hovered ? use(Cursor, {cursor: 'pointer'}) : null,
+          use(Polygon, {
+            positions: [Z, a, b, c],
+            ...props,
 
-          depthTest: false,
-          depthWrite: false,
-          mode: 'transparent'
-        }),
-        use(Polygon, {
-          id,
-          positions: [Z, a, b, c],
-          width: 2,
-          stroke: [...color, hovered ? 1 : 0.5],
-          fill: [...color, hovered ? 0.5 : 0.25],
-          mode: 'picking',
-        }),
-      ],
+            depthTest: false,
+            depthWrite: false,
+            mode: 'transparent'
+          }),
+          use(Polygon, {
+            id,
+            positions: [Z, a, b, c],
+            ...props,
+            width: props.range,
+            mode: 'picking',
+          }),
+        ];
+      }
     })
   );
 };
 
 export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
-  const {axis, absolute, xformUniform, value, visible, steps = 16, onChange, onDrag} = props;
+  const {element, style, axis, absolute, xformUniform, value, visible, steps = 16, onChange, onDrag} = props;
+  const styled = useElementStyle(element, style);
+
   const axes = ORTHO_AXES_XYZ[axis];
 
   const arc = useMemo(() => {
@@ -281,12 +442,6 @@ export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
       return p;
     });
   }, [axes, steps]);
-
-  const color = [0.2, 0.2, 0.2];
-  for (const i of axes) color[i] = 1;
-
-  color[0] += color[2] * .2;
-  color[1] += color[2] * .3;
 
   const plane: XYZW = [0, 0, 0, 0];
   plane[axis] = 1;
@@ -307,31 +462,37 @@ export const GizmoRotate: LC<GizmoRotateProps> = (props: GizmoRotateProps) => {
   return (
     use(Pick, {
       ...handlers,
-      render: ({id, hovered}: PickState) => visible && [
-        hovered ? use(Cursor, {cursor: 'pointer'}) : null,
-        use(Line, {
-          positions: arc,
-          color,
-          width: hovered ? 15 : 10,
+      render: ({id, hovered}: PickState) => {
+        if (!visible) return null;
 
-          depthTest: false,
-          depthWrite: false,
-          mode: 'transparent'
-        }),
-        use(Line, {
-          id,
-          positions: arc,
-          color,
-          width: 20,
-          mode: 'picking',
-        }),
-      ],
+        const props = hovered ? styled.hovered : styled.element;
+
+        return [
+          hovered ? use(Cursor, {cursor: 'pointer'}) : null,
+          use(Line, {
+            positions: arc,
+            ...props,
+
+            depthTest: false,
+            depthWrite: false,
+            mode: 'transparent'
+          }),
+          use(Line, {
+            id,
+            positions: arc,
+            ...props,
+            width: props.range,
+            mode: 'picking',
+          }),
+        ];
+      },
     })
   );
 };
 
 export const GizmoScale: LC<GizmoScaleProps> = (props: GizmoScaleProps) => {
-  const {axis, absolute, xformUniform, nonUniform, negative, value, visible, onChange, onDrag} = props;
+  const {element, style, axis, absolute, xformUniform, nonUniform, negative, value, visible, onChange, onDrag} = props;
+  const styled = useElementStyle(element, style);
 
   const end = Z.slice() as XYZ;
   const color = [0.2, 0.2, 0.2];
@@ -356,27 +517,29 @@ export const GizmoScale: LC<GizmoScaleProps> = (props: GizmoScaleProps) => {
   return (
     use(Pick, {
       ...handlers,
-      render: ({id, hovered}: PickState) => visible && [
-        hovered ? use(Cursor, {cursor: 'pointer'}) : null,
-        use(Point, {
-          position: end,
-          color,
-          size: hovered ? 20 : 10,
-          zBias: 2,
+      render: ({id, hovered}: PickState) => {
+        if (!visible) return null;
 
-          depthTest: false,
-          depthWrite: false,
-          mode: 'transparent'
-        }),
-        use(Point, {
-          id,
-          position: end,
-          color,
-          size: 30,
-          zBias: 3,
-          mode: 'picking',
-        }),
-      ],
+        const props = hovered ? styled.hovered : styled.element;
+
+        return [
+          hovered ? use(Cursor, {cursor: 'pointer'}) : null,
+          use(Point, {
+            position: end,
+            ...props,
+
+            depthTest: false,
+            depthWrite: false,
+            mode: 'transparent'
+          }),
+          use(Point, {
+            id,
+            position: end,
+            ...props,
+            mode: 'picking',
+          }),
+        ];
+      },
     })
   );
 };

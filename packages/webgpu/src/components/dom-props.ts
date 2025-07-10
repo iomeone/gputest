@@ -2,8 +2,6 @@ import type { MouseButton, CanvasEvent } from '@use-gpu/workbench';
 
 export const DOM_EVENT_PROPS = [
   // Event
-  'preventDefault',
-  'stopPropagation',
   'target',
 
   // KeyboardEvent

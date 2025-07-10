@@ -7,7 +7,10 @@ import { ActionMap } from '../types';
 
 import {
   getRenderFunc,
-  useCanvasEvents, useKeyboardState,
+  useCanvasEvents,
+  usePickingId,
+  usePointerCapture,
+  useKeyboardState,
   useAnimationFrame, useNoAnimationFrame,
   usePerFrame, useNoPerFrame,
   LayoutContext,
@@ -68,7 +71,9 @@ export type PanControlsProps = {
 const DEFAULT_ANCHOR = [0.5, 0.5];
 
 export const PanControls: LiveComponent<PanControlsProps> = (props) => {
+  const {beginCapture} = usePointerCapture();
   const layout = useContext(LayoutContext);
+
   const [l, t, r, b] = layout;
 
   const {
@@ -289,14 +294,26 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     event.stopPropagation();
   }, [actionBindings, handleMove, handleZoom]);
 
+  const handleDown = useCallback((event: PointerEvent | WheelEvent) => {
+    if (
+      matchActionBindings(event, actionBindings.move) ||
+      matchActionBindings(event, actionBindings.zoom)
+    ) {
+      beginCapture(event);
+    }
+  }, [actionBindings, beginCapture]);
+
   const panX = centered ? x - originX * (zoom - 1) / zoom + offsetX : x;
   const panY = centered ? y - originY * (zoom - 1) / zoom + offsetY : y;
 
   const callbacks = useMemo(() => ({
+    pointerDown: handleDown,
     pointerMove: handleEvent,
     wheel: handleEvent,
-  }), [handleEvent]);
-  const handlers = useCanvasEvents(null, callbacks);
+  }), [handleDown, handleEvent]);
+
+  const id = usePickingId();
+  const handlers = useCanvasEvents(-id, callbacks);
 
   const render = getRenderFunc(props);
   return [
