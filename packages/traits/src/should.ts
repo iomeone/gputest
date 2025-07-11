@@ -46,15 +46,14 @@ const compareArray = (a: any[], b: any[], same?: MemoCompare) => {
   const bn = b.length;
 
   if (an !== bn) return false;
-  if (same) for (let i = 0; i < an; ++i) if (!same(a[i], b[i])) return false;
-  else for (let i = 0; i < an; ++i) if (a[i] !== b[i]) return false;
+  if (same) { for (let i = 0; i < an; ++i) if (!same(a[i], b[i])) return false; }
+  else { for (let i = 0; i < an; ++i) if (a[i] !== b[i]) return false; }
   return true;
 };
 
 const compareObject = (a: Props, b: Props, same?: MemoCompare) => {
   for (const k in b) if (!Object.hasOwn(a, k)) return false;
-  if (same) for (const k in a) if (!same(a[k], b[k])) return false;
-  else for (const k in a) if (a[k] !== b[k]) return false;
+  if (same) { for (const k in a) if (!same(a[k], b[k])) return false; }
+  else { for (const k in a) if (a[k] !== b[k]) return false; }
   return true;
-}
-
+};
