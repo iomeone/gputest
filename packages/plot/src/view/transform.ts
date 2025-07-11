@@ -55,7 +55,7 @@ export const Transform: LiveComponent<TransformProps> = (props: TransformProps) 
   }, [a, p, r, q, s, m, composed, swapMatrix]);
 
   const isArray = Array.isArray(children);
-  const nested = isArray ? !children.find(c => (c as DeferredCall<any>).f !== Transform) : (children as DeferredCall<any>).f === Transform;
+  const nested = children ? (isArray ? !children.find(c => (c as DeferredCall<any>).f !== Transform) : (children as DeferredCall<any>).f === Transform) : false;
 
   if (nested) {
     const combined = useCombinedMatrix(matrix);

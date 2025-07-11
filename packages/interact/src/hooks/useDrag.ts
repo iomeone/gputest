@@ -179,9 +179,9 @@ export const useDrag = (
   const [dragSnapshot, setDragSnapshot] = useState<mat4 | null>(null);
   const [dragAnchor, setDragAnchor] = useState<XYZ | null>(null);
 
-  const i = mat4.invert(mat4.create(), frame);
-
   const handlePointerDown = useCallback((e: PointerEvent) => {
+    const i = mat4.invert(mat4.create(), frame);
+
     const [origin, ray] = pick(e);
     const [lo, lr] = transformRay(origin, ray, i);
     const dragHit = hit(lo, lr);
@@ -194,7 +194,7 @@ export const useDrag = (
     setDragAnchor(dragHit);
     setDragGesture(dragGesture);
     onDragState(true);
-  }, [pick, hit, value]);
+  }, [pick, hit, get, frame, value, onDragState]);
 
   const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!dragFrame || !dragSnapshot || !dragAnchor || !dragGesture) return;
@@ -206,7 +206,7 @@ export const useDrag = (
 
     const value = dragGesture.apply(dragSnapshot, dragAnchor, dragHit);
     onDragMove(value);
-  }, [pick, dragFrame, dragSnapshot, dragAnchor, dragGesture]);
+  }, [pick, hit, dragFrame, dragSnapshot, dragAnchor, dragGesture, onDragMove]);
 
   const handlePointerUp = useCallback(() => {
     setDragFrame(null);
@@ -214,7 +214,7 @@ export const useDrag = (
     setDragAnchor(null);
     setDragGesture(null);
     onDragState(false);
-  }, []);
+  }, [onDragState]);
 
   return {
     onPointerDown: handlePointerDown,
