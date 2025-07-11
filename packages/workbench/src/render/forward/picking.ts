@@ -2,7 +2,7 @@ import type { LiveComponent } from '@use-gpu/live';
 import type { VirtualDraw } from '../../pass/types';
 
 import { yeet, useMemo, useOne } from '@use-gpu/live';
-import { patch } from '@use-gpu/state';
+import { patch, $delete } from '@use-gpu/state';
 import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
@@ -41,6 +41,7 @@ export const PickingRender: LiveComponent<PickingRenderProps> = (props: PickingR
 
   const pipeline = useOne(() => patch(propPipeline, {
     multisample: { count: 1, alphaToCoverageEnabled: false },
+    fragment: {targets: {0: {blend: $delete()}} as any},
   }), propPipeline);
 
   // Binds links into shader
