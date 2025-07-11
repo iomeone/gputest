@@ -12,5 +12,6 @@ export * from './handlers/mouse';
 export * from './handlers/pick';
 
 export * from './util/hdi';
+export * from './util/intersect';
 
 export * from './types';

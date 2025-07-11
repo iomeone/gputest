@@ -171,7 +171,7 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
       matchActionBindings(event, actionBindings.rotate) ||
       matchActionBindings(event, actionBindings.zoom)
     ) {
-      if (event.type.match(/^pointer/)) beginCapture(event);
+      if (event.type.match(/^pointer/) && (event.noveX || event.moveY)) beginCapture(event);
     }
   }, [actionBindings, beginCapture]);
 

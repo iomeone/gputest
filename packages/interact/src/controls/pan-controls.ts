@@ -299,7 +299,7 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
       matchActionBindings(event, actionBindings.move) ||
       matchActionBindings(event, actionBindings.zoom)
     ) {
-      beginCapture(event);
+      if (event.type.match(/^pointer/) && (event.noveX || event.moveY)) beginCapture(event);
     }
   }, [actionBindings, beginCapture]);
 

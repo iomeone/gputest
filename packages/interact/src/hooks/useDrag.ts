@@ -1,5 +1,5 @@
 import type { XYZ, XYZW } from '@use-gpu/core';
-import { useState } from '@use-gpu/live';
+import { useCallback, useState } from '@use-gpu/live';
 import { PointerEvent, useViewContext } from '@use-gpu/workbench';
 
 import { transformRay, lineToRay, intersectRays, intersectRayPlane } from '../util/intersect';
@@ -181,7 +181,7 @@ export const useDrag = (
 
   const i = mat4.invert(mat4.create(), frame);
 
-  const handlePointerDown = (e: PointerEvent) => {
+  const handlePointerDown = useCallback((e: PointerEvent) => {
     const [origin, ray] = pick(e);
     const [lo, lr] = transformRay(origin, ray, i);
     const dragHit = hit(lo, lr);
@@ -194,9 +194,9 @@ export const useDrag = (
     setDragAnchor(dragHit);
     setDragGesture(dragGesture);
     onDragState(true);
-  };
+  }, [pick, hit, value]);
 
-  const handlePointerMove = (e: PointerEvent) => {
+  const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!dragFrame || !dragSnapshot || !dragAnchor || !dragGesture) return;
 
     const [origin, ray] = pick(e);
@@ -206,15 +206,15 @@ export const useDrag = (
 
     const value = dragGesture.apply(dragSnapshot, dragAnchor, dragHit);
     onDragMove(value);
-  };
+  }, [pick, dragFrame, dragSnapshot, dragAnchor, dragGesture]);
 
-  const handlePointerUp = () => {
+  const handlePointerUp = useCallback(() => {
     setDragFrame(null);
     setDragSnapshot(null);
     setDragAnchor(null);
     setDragGesture(null);
     onDragState(false);
-  };
+  }, []);
 
   return {
     onPointerDown: handlePointerDown,

@@ -53,10 +53,12 @@ export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
 
   const callbacks = useMemo(() => ({
     pointerDown: (e: any) => {
-      if (!all) beginCapture(e);
+      if (!all) {
+        beginCapture(e);
+        e.stopPropagation();
+      }
       onPointerDown?.(e, e.pickIndex);
       setPressed(e.buttons);
-      e.stopPropagation();
     },
     pointerUp: (e: any) => {
       onPointerUp?.(e, e.pickIndex);
