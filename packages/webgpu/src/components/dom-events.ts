@@ -214,9 +214,15 @@ const makeSyntheticEvent = (
     event.u = event.x / width;
     event.v = event.y / height;
 
-    if (move && !('moveX' in event)) {
-      event.moveX = move[0];
-      event.moveY = move[1];
+    if (!('moveX' in event)) {
+      if (move && type === 'pointermove') {
+        event.moveX = move[0];
+        event.moveY = move[1];
+      }
+      else {
+        event.moveX = 0;
+        event.moveY = 0;
+      }
     }
   }
 

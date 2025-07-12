@@ -11,12 +11,12 @@ export const transformRay = (o: XYZ, r: XYZ, matrix: mat4) => {
 
 export const lineToRay = (a: XYZ, b: XYZ) => {
   const ray = vec3.sub(vec3.create(), b, a) as XYZ;
-  return [a, ray];
+  return [vec3.clone(a) as XYZ, ray];
 };
 
 export const rayToLine = (origin: XYZ, ray: XYZ) => {
   const b = vec3.add(vec3.create(), origin, ray) as XYZ;
-  return [origin, b];
+  return [vec3.clone(origin) as XYZ, b];
 };
 
 export const intersectRays = (

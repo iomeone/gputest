@@ -495,13 +495,7 @@ export const GizmoScale: LC<GizmoScaleProps> = (props: GizmoScaleProps) => {
   const styled = useElementStyle(element, style);
 
   const end = Z.slice() as XYZ;
-  const color = [0.2, 0.2, 0.2];
-
   end[axis] = 1;
-  color[axis] = 1;
-
-  color[0] += color[2] * .2;
-  color[1] += color[2] * .3;
 
   const line = [Z, end];
 
