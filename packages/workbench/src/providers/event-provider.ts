@@ -4,7 +4,6 @@ import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallbac
 import { seq, proxy, makeIdAllocator } from '@use-gpu/core';
 import { EventHandler, EventBinding, MouseState, WheelState, KeyboardState, PickRef, PointerCaptureAPI, PointerLockAPI } from '../interact/event';
 import { PickingContext } from '../providers/picking-provider';
-import { RenderContext } from '../providers/render-provider';
 import { EventReconciler } from '../reconcilers/index';
 
 const {reconcile, quote} = EventReconciler;
@@ -71,10 +70,9 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
 
   // Read ID from picking buffer (callback)
   const pickingContext = useContext(PickingContext);
-  const {pixelRatio} = useContext(RenderContext);
   const pick = useCallback((x: number, y: number) => {
-    return pickingContext?.sampleTexture(x * pixelRatio, y * pixelRatio) ?? [-1, -1];
-  }, [pickingContext, pixelRatio]);
+    return pickingContext?.samplePoint(x, y) ?? [-1, -1];
+  }, [pickingContext]);
 
   // Pointer capturing by ID
   const captureRef = useOne(makeCaptureRef);

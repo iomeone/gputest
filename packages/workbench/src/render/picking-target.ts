@@ -81,7 +81,8 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
     let updated = false;
     let waiting = false;
     let captured = null as TypedArray | null;
-    const captureTexture = async () => {
+
+    const captureData = async () => {
       DEBUG && console.log('captureTexture', {waiting, updated})
       if (waiting) return;
       if (!updated) {
@@ -118,17 +119,52 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
       depth.version = incrementVersion(depth.version);
     };
 
-    const sampleTexture = (x: number, y: number): number[] => {
+    const samplePoint = (x: number, y: number): number[] => {
       if (!captured) return seq(itemDims).map(() => 0);
 
-      const xs = Math.round(x * resolution / dpi);
-      const ys = Math.round(y * resolution / dpi);
+      const xs = Math.round(x * resolution);
+      const ys = Math.round(y * resolution);
 
       const offset = (itemsPerRow * ys + xs) * itemDims;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const index = seq(itemDims).map(i => captured![offset + i]);
+
+      const index = seq(itemDims).map(i => (captured as TypedArray)[offset + i]);
       return index;
-    }
+    };
+
+    const sampleRectangle = (
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+    ) => {
+      const xmin = Math.round(Math.min(x1, x2) * resolution);
+      const ymin = Math.round(Math.min(y1, y2) * resolution);
+      const xmax = Math.round(Math.max(x1, x2) * resolution);
+      const ymax = Math.round(Math.max(y1, y2) * resolution);
+
+      const seen = new Map();
+      if (!captured) return seen;
+
+      for (let ys = ymin; ys <= ymax; ++ys) {
+        for (let xs = xmin; xs <= xmax; ++xs) {
+          const offset = (itemsPerRow * ys + xs) * itemDims;
+
+          let m: Set<any> | Map<number, any> = seen;
+          for (let i = 0; i < itemDims; ++i) {
+            const value = captured[offset + i];
+
+            if (i === itemDims - 1) (m as Set<number>).add(value);
+            else {
+              let s = (m as Map<number, any>).get(value);
+              if (!s) (m as Map<number, any>).set(value, s = (i === itemDims - 2 ? new Set() : new Map()));
+              m = s;
+            }
+          }
+        }
+      }
+
+      return seen;
+    };
 
     const source = {
       texture: pickingTexture,
@@ -171,8 +207,11 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
         source,
         depth,
       } as OffscreenRenderContext,
-      captureTexture,
-      sampleTexture,
+
+      captureData,
+
+      samplePoint,
+      sampleRectangle,
     };
 
     return context;
@@ -182,7 +221,7 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) 
   return [
     provide(PickingContext, pickingContext, children),
     quote(yeet(() => {
-      pickingContext.captureTexture();
+      pickingContext.captureData();
     })),
   ];
 };

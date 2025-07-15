@@ -3,8 +3,10 @@ import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 
 export type PickingContextProps = {
   renderContext: OffscreenRenderContext,
-  captureTexture: () => void,
-  sampleTexture: (x: number, y: number) => number[],
+  captureData: () => void,
+
+  samplePoint: (x: number, y: number) => number[],
+  sampleRectangle: (x1: number, y1: number, x2: number, y2: number) => Map<number, Set<number>>,
 };
 
 export const PickingContext = makeContext<PickingContextProps>(undefined, 'PickingContext');

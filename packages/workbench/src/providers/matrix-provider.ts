@@ -1,7 +1,7 @@
 import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 import { mat4 } from 'gl-matrix';
 
-export type MatrixContextProps = mat4;
+export type MatrixContextProps = mat4 | null;
 
 export const MatrixContext = makeContext<MatrixContextProps>(null, 'MatrixContext');
 
