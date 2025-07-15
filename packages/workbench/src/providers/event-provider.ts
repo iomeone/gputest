@@ -206,13 +206,12 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo((props: Eve
       const fn = useMemo(() => {
         const hs = handlers[k];
         return (e: any) => {
-          const capture = hasCapture();
-
           annotateEvent(e);
 
           // Dispatch in reverse tree order
           const n = hs.length;
           for (let i = n - 1; i >= 0; i--) {
+            const capture = hasCapture();
             const handler = hs[i];
 
             if (typeof handler === 'object') {
