@@ -292,25 +292,17 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
 
     event.preventDefault();
     event.stopPropagation();
-  }, [actionBindings, handleMove, handleZoom]);
 
-  const handleDown = useCallback((event: PointerEvent | WheelEvent) => {
-    if (
-      matchActionBindings(event, actionBindings.move) ||
-      matchActionBindings(event, actionBindings.zoom)
-    ) {
-      if (event.type.match(/^pointer/) && (event.moveX || event.moveY)) beginCapture(event);
-    }
-  }, [actionBindings, beginCapture]);
+    if (event.type.match(/^pointer/) && (event.moveX || event.moveY)) beginCapture(event);
+  }, [actionBindings, handleMove, handleZoom, beginCapture]);
 
   const panX = centered ? x - originX * (zoom - 1) / zoom + offsetX : x;
   const panY = centered ? y - originY * (zoom - 1) / zoom + offsetY : y;
 
   const callbacks = useMemo(() => ({
-    pointerDown: handleDown,
     pointerMove: handleEvent,
     wheel: handleEvent,
-  }), [handleDown, handleEvent]);
+  }), [handleEvent]);
 
   const id = usePickingId();
   const handlers = useCanvasEvents(-id, callbacks);

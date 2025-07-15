@@ -163,23 +163,14 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
 
     event.preventDefault();
     event.stopPropagation();
-  }, [actionBindings, handleMove, handleRotate, handleZoom]);
 
-  const handleDown = useCallback((event: PointerEvent | WheelEvent) => {
-    if (
-      matchActionBindings(event, actionBindings.move) ||
-      matchActionBindings(event, actionBindings.rotate) ||
-      matchActionBindings(event, actionBindings.zoom)
-    ) {
-      if (event.type.match(/^pointer/) && (event.moveX || event.moveY)) beginCapture(event);
-    }
-  }, [actionBindings, beginCapture]);
+    if (event.type.match(/^pointer/) && (event.moveX || event.moveY)) beginCapture(event);
+  }, [actionBindings, handleMove, handleRotate, handleZoom, beginCapture]);
 
   const callbacks = useMemo(() => ({
-    pointerDown: handleDown,
     pointerMove: handleEvent,
     wheel: handleEvent,
-  }), [handleDown, handleEvent]);
+  }), [handleEvent]);
   
   const id = usePickingId();
   const handlers = useCanvasEvents(-id, callbacks);
