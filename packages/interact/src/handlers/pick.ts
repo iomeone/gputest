@@ -1,6 +1,6 @@
 import type { LiveComponent, LiveElement } from '@use-gpu/live';
 import { extend, useMemo, useHooks, useState } from '@use-gpu/live';
-import { PointerEvent, usePickingId, usePointerCapture, useCanvasEvents, getRenderFunc } from '@use-gpu/workbench';
+import { PointerEvent, usePickingId, useNoPickingId, usePointerCapture, useCanvasEvents, getRenderFunc } from '@use-gpu/workbench';
 
 export type PickState = {
   id: number,
@@ -14,6 +14,7 @@ export type PickState = {
 };
 
 export type PickProps = {
+  id?: number,
   all?: boolean,
 
   onPointerEnter?: (e: PointerEvent) => void,
@@ -96,7 +97,7 @@ export const Pick: LiveComponent<PickProps> = (props: PickProps) => {
     beginCapture,
   ]);
 
-  const id = usePickingId();
+  const id = props.id == null ? usePickingId() : (useNoPickingId(), props.id);
   const handlers = useCanvasEvents(all ? -id : id, callbacks);
 
   const value = useMemo(

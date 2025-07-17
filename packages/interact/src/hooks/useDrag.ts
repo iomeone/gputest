@@ -170,7 +170,7 @@ export const useDrag = (
   frame: mat4,
   value: mat4,
   onDragMove: (value: mat4) => void,
-  onDragState: (dragging: boolean) => void,
+  onDragState?: (dragging: boolean) => void,
 ) => {
   const {pick} = useViewContext();
 
@@ -193,7 +193,7 @@ export const useDrag = (
     setDragSnapshot(value);
     setDragAnchor(dragHit);
     setDragGesture(dragGesture);
-    onDragState(true);
+    onDragState?.(true);
   }, [pick, hit, get, frame, value, onDragState]);
 
   const handlePointerMove = useCallback((e: PointerEvent) => {
@@ -213,7 +213,7 @@ export const useDrag = (
     setDragSnapshot(null);
     setDragAnchor(null);
     setDragGesture(null);
-    onDragState(false);
+    onDragState?.(false);
   }, [onDragState]);
 
   return {

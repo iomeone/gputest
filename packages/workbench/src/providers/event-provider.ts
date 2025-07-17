@@ -1,6 +1,6 @@
 import type { LiveComponent, LiveElement, ArrowFunction } from '@use-gpu/live';
 
-import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useResource, useNoResource, useState } from '@use-gpu/live';
 import { seq, proxy, makeIdAllocator } from '@use-gpu/core';
 import { EventHandler, EventBinding, MouseState, WheelState, KeyboardState, PickRef, PointerCaptureAPI, PointerLockAPI } from '../interact/event';
 import { PickingContext } from '../providers/picking-provider';
@@ -339,5 +339,7 @@ export const useNoWheelState = () => useNoContext(WheelContext);
 
 export const usePickingId = () => useContext(EventContext).usePickingId();
 export const usePickingIds = (n: number) => useContext(EventContext).usePickingIds(n);
+export const useNoPickingId = () => { useNoContext(EventContext); useNoResource(); };
+export const useNoPickingIds = () => { useNoContext(EventContext); useNoResource(); };
 export const usePointerLock = () => useContext(EventContext).usePointerLock();
 export const usePointerCapture = () => useContext(EventContext).usePointerCapture();
