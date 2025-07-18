@@ -143,6 +143,7 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
     const { moveX, moveY, spinY } = event as WheelEvent;
 
     if (event.type === 'pointerMove' && !dragging) return;
+    if (event.type === 'pointerUp') setDragging(false);
 
     if (matchActionBindings(event, actionBindings.move)) {
       const sign = event.type === 'wheel' ? 1 : -1;
@@ -169,7 +170,7 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
     event.stopPropagation();
 
     if (event.type.match(/^pointer/) && (event.moveX || event.moveY)) beginCapture(event);
-    setDragging(event.type === 'pointerDown' || event.type === 'pointerMove');
+    if (event.type === 'pointerDown') setDragging(true);
   }, [actionBindings, handleMove, handleRotate, handleZoom, beginCapture, dragging]);
 
   const callbacks = useMemo(() => ({

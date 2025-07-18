@@ -277,6 +277,7 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     const { x, y, moveX, moveY } = event;
 
     if (event.type === 'pointerMove' && !dragging) return;
+    if (event.type === 'pointerUp') setDragging(false);
 
     if (matchActionBindings(event, actionBindings.move)) {
       const sign = event.type === 'wheel' ? -1 : 1;
@@ -298,7 +299,7 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     event.stopPropagation();
 
     if (event.type.match(/^pointer/) && (event.moveX || event.moveY)) beginCapture(event);
-    setDragging(event.type === 'pointerDown' || event.type === 'pointerMove');
+    if (event.type === 'pointerDown') setDragging(true);
   }, [actionBindings, handleMove, handleZoom, beginCapture, dragging]);
 
   const panX = centered ? x - originX * (zoom - 1) / zoom + offsetX : x;
