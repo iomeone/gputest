@@ -3,7 +3,7 @@ import type { VectorLike } from '@use-gpu/core';
 
 import { useProp } from '@use-gpu/traits/live';
 import { parseVec3 } from '@use-gpu/parse';
-import { useContext, useCallback, useMemo, useHooks } from '@use-gpu/live';
+import { useContext, useCallback, useMemo, useHooks, useState } from '@use-gpu/live';
 import { makeOrbitMatrix, clamp } from '@use-gpu/core';
 import {
   getRenderFunc,
@@ -101,6 +101,8 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
   const layout = useContext(LayoutContext);
   const {beginCapture} = usePointerCapture();
 
+  const [dragging, setDragging] = useState(false);
+
   const size = Math.min(Math.abs(layout[2] - layout[0]), Math.abs(layout[3] - layout[1]));
   const radiusRef = useShaderRef(radius);
 
@@ -140,6 +142,8 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
   const handleEvent = useCallback((event: PointerEvent | WheelEvent) => {
     const { moveX, moveY, spinY } = event as WheelEvent;
 
+    if (event.type === 'pointerMove' && !dragging) return;
+
     if (matchActionBindings(event, actionBindings.move)) {
       const sign = event.type === 'wheel' ? 1 : -1;
       if (moveX || moveY) {
@@ -165,10 +169,13 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
     event.stopPropagation();
 
     if (event.type.match(/^pointer/) && (event.moveX || event.moveY)) beginCapture(event);
-  }, [actionBindings, handleMove, handleRotate, handleZoom, beginCapture]);
+    setDragging(event.type === 'pointerDown' || event.type === 'pointerMove');
+  }, [actionBindings, handleMove, handleRotate, handleZoom, beginCapture, dragging]);
 
   const callbacks = useMemo(() => ({
+    pointerDown: handleEvent,
     pointerMove: handleEvent,
+    pointerUp: handleEvent,
     wheel: handleEvent,
   }), [handleEvent]);
   

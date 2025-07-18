@@ -85,6 +85,9 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
     count = null,
   } = props;
 
+  const a = useShaderRef(props.anchor, props.anchors);
+  if (!a) return null;
+
   const det = Math.max(4, detail);
   const geometry = useMemo(() => flat ? makeArrowFlatGeometry() : makeArrowGeometry(det), [flat, det]);
 
@@ -94,7 +97,6 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
   const positionCount = useDataLength(count, props.positions);
 
   const p = useSource(POSITIONS, useShaderRef(props.position, props.positions));
-  const a = useShaderRef(props.anchor, props.anchors);
   const u = useShaderRef(props.uv, props.uvs);
   const s = useShaderRef(props.st, props.sts ?? p);
   const c = useShaderRef(props.color, props.colors);

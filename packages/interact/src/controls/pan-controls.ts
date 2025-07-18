@@ -116,6 +116,8 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     offsetY = -h * (anchor[1] - 0.5);
   }
 
+  const [dragging, setDragging] = useState(false);
+
   const keyboard = useKeyboardState();
 
   const now = +new Date();
@@ -274,6 +276,8 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
   const handleEvent = useCallback((event: PointerEvent | WheelEvent) => {
     const { x, y, moveX, moveY } = event;
 
+    if (event.type === 'pointerMove' && !dragging) return;
+
     if (matchActionBindings(event, actionBindings.move)) {
       const sign = event.type === 'wheel' ? -1 : 1;
       if (moveX || moveY) {
@@ -294,13 +298,16 @@ export const PanControls: LiveComponent<PanControlsProps> = (props) => {
     event.stopPropagation();
 
     if (event.type.match(/^pointer/) && (event.moveX || event.moveY)) beginCapture(event);
-  }, [actionBindings, handleMove, handleZoom, beginCapture]);
+    setDragging(event.type === 'pointerDown' || event.type === 'pointerMove');
+  }, [actionBindings, handleMove, handleZoom, beginCapture, dragging]);
 
   const panX = centered ? x - originX * (zoom - 1) / zoom + offsetX : x;
   const panY = centered ? y - originY * (zoom - 1) / zoom + offsetY : y;
 
   const callbacks = useMemo(() => ({
+    pointerDown: handleEvent,
     pointerMove: handleEvent,
+    pointerUp: handleEvent,
     wheel: handleEvent,
   }), [handleEvent]);
 
