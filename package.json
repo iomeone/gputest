@@ -32,7 +32,7 @@
   },
   "scripts": {
     "build": "yarn lerna run build",
-    "start": "NODE_ENV=development webpack serve",
+    "start": "webpack serve",
     "test": "jest --watch",
     "lint": "eslint packages/**/src --ext ts",
     "types": "yarn lerna run types",
