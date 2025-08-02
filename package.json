@@ -39,13 +39,16 @@
   ],
   "scripts": {
     "build": "yarn lerna run build --concurrency 1",
-    "start": "NODE_ENV=development webpack serve",
+    "start": " webpack serve",
     "test": "jest --watch",
     "lint": "eslint packages/**/src --ext ts",
     "types": "yarn lerna run types",
     "coverage": "yarn lerna run coverage"
   },
-  "dependencies": {},
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
   "jest": {
     "modulePaths": [
       "<rootDir>/src"
