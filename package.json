@@ -39,7 +39,7 @@
   ],
   "scripts": {
     "build": "yarn lerna run build; node scripts/to-index-js.mjs",
-    "start": "NODE_ENV=development webpack serve",
+    "start": "webpack serve",
     "test": "jest --watch",
     "lint": "eslint packages/**/src --ext ts",
     "types": "yarn lerna run types",
