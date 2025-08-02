@@ -17,7 +17,7 @@
     "@types/jest": "^26.0.19",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
-    "@webgpu/types": "^0.1.7",    
+    "@webgpu/types": "^0.1.7",
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.2.2",
     "css-loader": "^6.5.1",
@@ -39,7 +39,7 @@
   ],
   "scripts": {
     "build": "yarn lerna run build; node scripts/to-index-js.mjs",
-    "start": "NODE_ENV=development webpack serve",
+    "start": " webpack serve",
     "test": "jest --watch",
     "lint": "eslint packages/**/src --ext ts",
     "types": "yarn lerna run types",
@@ -90,5 +90,9 @@
     "packages/components",
     "packages/inspect",
     "packages/app"
-  ]
+  ],
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  }
 }
