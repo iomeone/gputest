@@ -22,6 +22,7 @@ function glslLoader(this: any, source: string) {
     baseDataPath: 'options'
   });
 
+  console.log("glslLoader:", source);
   const esModule = typeof options.esModule !== 'undefined' ? options.esModule : true;
   const makeImport = (symbol: string, from: string) => esModule
     ? `import {${symbol}} from ${stringify(from)};`
