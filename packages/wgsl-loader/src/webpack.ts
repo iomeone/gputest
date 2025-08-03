@@ -1,5 +1,5 @@
 import { getOptions } from 'loader-utils';
-import { validate } from 'schema-utils';
+// import { validate } from 'schema-utils';
 import { transpileWGSL } from '@use-gpu/shader/wgsl';
 
 const LOADER_NAME = 'WGSL Loader';
@@ -14,10 +14,10 @@ function wgslLoader(this: any, source: string) {
 
   // Parse options
   const options = this.getOptions();
-  validate(schema, options, {
-    name: LOADER_NAME,
-    baseDataPath: 'options'
-  });
+  // validate(schema, options, {
+  //   name: LOADER_NAME,
+  //   baseDataPath: 'options'
+  // });
 
   const esModule = typeof options.esModule !== 'undefined' ? options.esModule : true;
   const {resourcePath} = this;
