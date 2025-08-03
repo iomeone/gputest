@@ -25,7 +25,7 @@
     "types:watch": "yarn run types -- --watch",
     "build": "yarn run build:grammar && yarn run build:types && yarn run build:js && yarn run build:pkg",
     "build:grammar": "mkdir -p src/grammar; yarn run lezer-generator grammar/glsl.grammar -o src/grammar/glsl.js",
-    "build:types": "rm tsconfig.tsbuildinfo; tsc --emitDeclarationOnly",
+    "build:types": "rimraf tsconfig.tsbuildinfo && tsc --emitDeclarationOnly",
     "build:js": "babel src --out-dir ../../build/packages/shader/src --extensions \".ts\" --ignore \"src/**/__mocks__/**/*.js\" --ignore \"src/**/*.test.ts\"",
     "build:pkg": "cp package.json ../../build/packages/shader"
   }
