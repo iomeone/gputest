@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node12",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "skipLibCheck": true,
   },

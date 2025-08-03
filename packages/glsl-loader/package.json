@@ -20,7 +20,7 @@
     "types": "tsc --noEmit",
     "types:watch": "yarn run types -- --watch",
     "build": "yarn run build:types && yarn run build:js && yarn run build:bin && yarn run build:pkg",
-    "build:types": "rm tsconfig.tsbuildinfo; tsc --emitDeclarationOnly",
+    "build:types": "rimraf tsconfig.tsbuildinfo && tsc --emitDeclarationOnly",
     "build:js": "babel src --out-dir ../../build/packages/glsl-loader/src --extensions \".ts\" --ignore \"src/**/__mocks__/**/*.js\" --ignore \"src/**/*.test.ts\"; babel scripts --out-dir ../../build/packages/glsl-loader/scripts --extensions \".ts\"; babel node.ts --out-dir ../../build/packages/glsl-loader --extensions \".ts\"",
     "build:bin": "mkdir ../../build/packages/glsl-loader/bin 2>/dev/null; cp bin/glsl-tsgen ../../build/packages/glsl-loader/bin",
     "build:pkg": "cp package.json ../../build/packages/glsl-loader"

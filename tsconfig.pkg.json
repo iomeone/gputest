@@ -3,7 +3,7 @@
     "composite": true,
     "incremental": true,
     "target": "esnext",
-    "module": "node12",
+    "module": "nodenext",
     "lib": ["esnext", "dom"],
     "allowJs": true,
     "checkJs": false,
@@ -14,7 +14,7 @@
     "rootDir": "./",
     "isolatedModules": true,
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "baseUrl": "./",
     "paths": {
       "@use-gpu/*": ["./packages/*", "../../*"]
