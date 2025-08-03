@@ -36,6 +36,8 @@ export const makeBoundStorageShader = (
   cache: any,
   base: number = 0,
 ) => {
+
+  console.log("running: makeBoundStorageShader");
   const [attributes, constants] = partition(uniforms, ({name}) => !!(dataBindings.links as any)[name]);
 
   const constantAccessors = makeUniformBlockAccessor(constants, base);

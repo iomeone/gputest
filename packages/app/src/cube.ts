@@ -30,7 +30,7 @@ export const Cube: LiveComponent<CubeProps> = memo((fiber) => (props) => {
   const renderContext = useContext(RenderContext);
   const {device, colorStates, depthStencilState, samples, languages} = renderContext;
   const {glsl: {compile}} = languages;
-
+  console.log("running: cube");
   // Blink state, flips every second
   const [blink, setBlink] = useState(0);
   useResource((dispose) => {

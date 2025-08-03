@@ -42,6 +42,10 @@ export const Mesh: LiveComponent<MeshProps> = memo((fiber) => (props) => {
     if (blink) blinkState.state = !blinkState.state
   }, blink);
 
+
+  console.log("running: Mesh");
+
+
   const {viewUniforms, viewDefs} = useContext(ViewContext);
   const renderContext = useContext(RenderContext);
 
