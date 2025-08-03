@@ -13,7 +13,7 @@
     "typeRoots": ["../../node_modules/@types"],
     "outDir": "../../build/packages",
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "moduleResolution": "node12"
+    "moduleResolution": "nodenext"
   },
   "include": ["src/**/*.ts", "../glsl/**/*.glsl"]
 }
