@@ -13,11 +13,11 @@ import {
   InspectContainer, InspectToggle,
   SplitRow, RowPanel, Panel, PanelFull, PanelScrollable, Inset, InsetColumnFull,
 } from './layout';
-import { Button, Tab, Grid } from 'semantic-ui-react'
+// import { Button } from 'semantic-ui-react'
 import "../theme.css";
 
-const { Row, Column } = Grid;
-const { Pane } = Tab;
+
+
 
 const ICON = (s: string) => <span className="m-icon">{s}</span>
 
@@ -87,7 +87,7 @@ export const Inspect: React.FC<InspectProps> = ({fiber}) => {
 
   const props = (
     <Inset>
-      <Tab menu={TAB_STYLE} panes={panes} />
+ 
     </Inset>
   );
 
@@ -117,9 +117,9 @@ export const Inspect: React.FC<InspectProps> = ({fiber}) => {
         </SplitRow>
       </InspectContainer>
     ) : null}
-    <InspectToggle onClick={toggleOpen}>
-      <Button>{open ? ICON("close") : ICON("bug_report")}</Button>
-    </InspectToggle>
+   <InspectToggle onClick={toggleOpen}>
+     <button>{open ? ICON("close") : ICON("bug_report")}</button>
+   </InspectToggle>
   </>);
 }
 
