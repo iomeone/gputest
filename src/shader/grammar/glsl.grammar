@@ -1,6 +1,7 @@
-@top Program { unit+ }
+@top Program { unit }
 @skip { space | Comment }
-@external tokens untilEOL from "./tokens" { UntilEOL, UntilCommentClose }
+@external tokens untilEOL from "./tokens" { UntilEOL }
+@external tokens untilCommentClose from "./tokens" { UntilCommentClose }
 @precedence {
   else @right,
   if @right,
@@ -21,7 +22,9 @@
   conditional @right,
   assign @right,
   statement @cut,
-	import
+	import,
+	export,
+	last
 }
 
 k<term> { @specialize[@name={term}]<Identifier, term> }
@@ -34,46 +37,61 @@ externalDeclaration { FunctionDefinition | Declaration | Preprocessor }
 
 Comment { CommentLine | CommentOpen UntilCommentClose }
 Preprocessor {
-	hash Directive UntilEOL |
-	hash d<'import'> ImportDeclarationList 'from' String UntilEOL
+	hash (
+	  d<'pragma'> (
+			!import d<'import'> ImportDeclarationList 'from' String |
+			!export d<'export'> |
+			d<'optimize'> |
+			d<'debug'>
+			d<'STDGL'>
+		) |
+	  Directive
+	)
+	UntilEOL
 }
 ImportDeclarationList { '{' (ImportDeclaration comma)* (ImportDeclaration comma?) '}' }
 ImportDeclaration { Identifier ('as' Identifier)? }
 
 FunctionDefinition { FunctionPrototype compoundStatement }
 FunctionPrototype { QualifiedType Identifier '(' (ParameterDeclaration (comma ParameterDeclaration)*)? ')' }
-ParameterDeclaration { TypeQualifier? typeSpecifier (Identifier ArraySpecifier?)? }
+ParameterDeclaration { TypeQualifier? TypeSpecifier (Identifier ArraySpecifier?)? }
 
 Declaration {
   (
     FunctionPrototype |
     VariableDeclaration |
-    k<"precision"> PrecisionQualifier typeSpecifier |
-    TypeQualifier (
-      Identifier (
-        '{' StructDeclarationList '}' DeclarationSpecifier?
-      )?
-    )? |
-    TypeQualifier (
-      Identifier (comma Identifier)*
-    )?
+    k<"precision"> PrecisionQualifier TypeSpecifier |
+		QualifiedStructDeclaration |
+		QualifiedDeclaration
   ) semicolon
 }
 
-typeSpecifier { (basicType | Struct) ArraySpecifier? }
+TypeSpecifier { (basicType | Struct | Identifier ~qualified) ArraySpecifier? }
 ArraySpecifier { (LeftBracket constantExpression RightBracket)* EmptyBrackets | (LeftBracket constantExpression RightBracket)+ EmptyBrackets? }
 TypeNameList { TypeName (comma TypeName)* }
 TypeName { Identifier }
-QualifiedType { TypeQualifier? typeSpecifier }
+QualifiedType { TypeQualifier? TypeSpecifier }
 
 Struct { k<'struct'> Identifier? '{' StructDeclarationList '}' }
 StructDeclarationList { StructDeclaration* }
-StructDeclaration { TypeQualifier? typeSpecifier structDeclaratorList semicolon }
+StructDeclaration { TypeQualifier? TypeSpecifier structDeclaratorList semicolon }
 structDeclaratorList { DeclarationSpecifier (comma DeclarationSpecifier)* }
 
-DeclarationSpecifier { Identifier ArraySpecifier? }
-VariableDeclaration { QualifiedType SingleDeclaration (comma SingleDeclaration)* }
+VariableDeclaration { QualifiedType (SingleDeclaration (comma SingleDeclaration)*)? }
 SingleDeclaration { DeclarationSpecifier (!assign assign initializer)? }
+DeclarationSpecifier { Identifier ~qualified ArraySpecifier? }
+QualifiedStructDeclaration {
+  TypeQualifier ~qualified (
+    Identifier ~qualified (
+      '{' StructDeclarationList '}' DeclarationSpecifier?
+    )?
+  )?
+}
+QualifiedDeclaration {
+  TypeQualifier ~qualified (
+    Identifier ~qualified (comma Identifier)*
+  )?
+}
 
 initializer {
   assignmentExpression |
@@ -118,7 +136,7 @@ fieldSelection { Identifier }
 expression { assignmentExpression (comma assignmentExpression)* }
 
 primaryExpression {
-  Reserved? (Identifier | Number | Parens ) 
+  Reserved? (Identifier ~qualified | Number | Parens ) 
 }
 Parens { '(' expression ')' }
 assignmentExpression { conditionalExpression | Assignment }
@@ -306,7 +324,6 @@ Directive {
   d<"elif"> |
   d<"endif"> |
   d<"error"> |
-  d<"pragma"> |
   d<"extension"> |
   d<"version"> |
   d<"line">

@@ -22,7 +22,7 @@ export const main = async (): Promise<void> => {
       use(App)({adapter, device, canvas, languages})
     );
   
-  } catch (e) {
+  } catch (e: any) {
 
     // Display exception if no WebGPU support
     console.error(e);

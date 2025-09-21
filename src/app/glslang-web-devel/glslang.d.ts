@@ -11,4 +11,6 @@ declare interface Glslang {
     compileGLSL(glsl: string, shader_type: ShaderStage, gen_debug: boolean, spirv_version?: SpirvVersion): Uint32Array;
 }
 
-export default function(): Promise<Glslang>;
+declare const make: () => Promise<Glslang>;
+export default make;
+

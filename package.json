@@ -1,7 +1,7 @@
 {
   "name": "use.gpu",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "index.ts",
   "author": "Steven Wittens <steven@acko.net>",
   "license": "MIT",
   "private": true,

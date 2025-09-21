@@ -59,7 +59,7 @@ it("mounts a subfiber", () => {
   expect(result.f).toBe(Root);
 
   expect(result.mount).toBeTruthy();
-  expect(result.mount!.mount).toBeTruthy();
+  expect(result.mount!.next).toBeTruthy();
 
   expect(captureSubFiber).toBeTruthy();
   if (captureSubFiber != null) {

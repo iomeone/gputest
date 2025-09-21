@@ -421,7 +421,7 @@ export const detachFiber = <F extends Function>(
   next.args = call.args;
 
   const roots = [next];
-  callback(() => renderFibers(roots));
+  callback(() => renderFibers(roots), fiber.next);
 }
 
 // Dispose of a fiber's resources and all its mounted sub-fibers

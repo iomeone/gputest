@@ -20,7 +20,7 @@ export const untilCommentClose = new ExternalTokenizer(
       // */
       const v = input.next;
       if (v === 42 && input.peek(1) === 47) {
-        return input.acceptToken(UntilCommentClose, 1);
+        return input.acceptToken(UntilCommentClose, 2);
       }
       input.advance();
     }

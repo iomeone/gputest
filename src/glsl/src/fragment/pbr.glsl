@@ -62,7 +62,8 @@ float geometricGGX(float dotNL, float dotNV, float alpha) {
 }
 
 // N, L, V must be normalized
-export vec3 PBR(vec3 N, vec3 L, vec3 V, vec3 albedo, float metalness, float roughness) {
+#pragma export
+vec3 PBR(vec3 N, vec3 L, vec3 V, vec3 albedo, float metalness, float roughness) {
 
 	vec3 diffuseColor = albedo * (1.0 - metalness);
 	vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);

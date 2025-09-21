@@ -1,0 +1,84 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`link links quad vertex 1`] = `
+"#version 450
+
+struct _qg_MeshVertex {
+  vec4 position;
+  vec4 color;
+  vec2 uv;
+};
+
+
+const ivec2 _f7_QUAD[] = {
+  ivec2(0, 0),
+  ivec2(1, 0),
+  ivec2(0, 1),
+  ivec2(1, 1),
+};
+
+
+ivec2 _f7_getQuadIndex(int vertex) {
+  return _f7_QUAD[vertex];
+}
+
+
+vec2 _f7_getQuadUV(int vertex) {
+  return vec2(_f7_getQuadIndex(vertex));
+}
+
+
+_qg_MeshVertex _f7_getQuad(int vertex) {
+  vec2 uv = _f7_getQuadUV(vertex);
+  vec4 position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
+  vec4 color = vec4(1.0, 0.0, 1.0, 1.0);
+  return _qg_MeshVertex(position, color, uv);
+}
+
+
+layout(set = 0, binding = 0) uniform ViewUniforms {
+  mat4 projectionMatrix;
+  mat4 viewMatrix;
+  vec4 viewPosition;
+  vec2 viewResolution;
+} _ei_viewUniforms;
+
+
+vec4 _ei_worldToView(vec4 position) {
+  return _ei_viewUniforms.viewMatrix * position;
+}
+
+
+vec4 _ei_viewToClip(vec4 position) {
+  return _ei_viewUniforms.projectionMatrix * position;
+}
+
+
+vec4 _ei_worldToClip(vec4 position) {
+  return _ei_viewToClip(_ei_worldToView(position));
+}
+
+
+
+
+vec3 getPosition(int);
+
+layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec2 fragUV;
+
+void main() {
+  int vertexIndex = gl_VertexIndex;
+  int instanceIndex = gl_InstanceIndex;
+
+  vec4 instancePosition = vec4(getPosition(instanceIndex), 1.0);
+  vec4 position = _ei_worldToClip(instancePosition);
+
+  vec2 uv = _f7_getQuadUV(vertexIndex);
+  vec2 xy = uv * 2.0 - 1.0;
+  position.xy += xy * _ei_viewUniforms.viewResolution * (50.0 * position.w);
+
+  gl_Position = position;
+  fragColor = vec4(abs(instancePosition.xyz), 1.0);
+  fragUV = uv;
+}"
+`;

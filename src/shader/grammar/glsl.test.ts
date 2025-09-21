@@ -1,15 +1,9 @@
 import { Tree } from '@lezer/common';
 import { parser } from './glsl';
-import { formatAST, formatASTNode } from '../ast';
+import { formatAST, formatASTNode } from '../transform/ast';
+import { addASTSerializer } from '../test/snapshot';
 
-expect.addSnapshotSerializer({
-  print(val: any) {
-    return formatAST(val.topNode, val.text);
-  },
-  test(val: any) {
-    return val && val.hasOwnProperty('type') && val.hasOwnProperty('children') && val.hasOwnProperty('positions');
-  },
-});
+addASTSerializer(expect);
 
 describe("GLSL grammar snapshots", () => {
   
@@ -52,6 +46,11 @@ struct light {
  float intensity;
  vec3 position;
 } lightVar;
+
+struct light2 {
+ float intensity;
+ vec3 position;
+};
 `,
 
 //////////////////////////////////////////////////////////////////////
@@ -86,11 +85,36 @@ void main() {
 //////////////////////////////////////////////////////////////////////
 
 `
-#import {MeshVertex} from 'use/types'
-#import {viewUniforms as view, worldToClip} from 'use/view'
-#import {getQuadUV} from 'geometry/quad'
+void main() {
+  int x = 1;
+  /*
+  int y = 2;
+  if (x) if (y) { } else { }
+  */
+  wat();
+}
+`,
 
+//////////////////////////////////////////////////////////////////////
+
+`
+#pragma import {MeshVertex} from 'use/types'
+#pragma import {viewUniforms as view, worldToClip} from 'use/view'
+#pragma import {getQuadUV} from 'geometry/quad'
+
+#pragma export
 void main();
+`,
+
+//////////////////////////////////////////////////////////////////////
+
+`
+MeshVertex getQuad(int vertex) {
+  vec2 uv = getQuadUV(vertex);
+  vec4 position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
+  vec4 color = vec4(1.0, 0.0, 1.0, 1.0);
+  return MeshVertex(position, color, uv);
+}
 `,
 
 //////////////////////////////////////////////////////////////////////

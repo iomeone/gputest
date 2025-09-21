@@ -1,3 +1,4 @@
+#pragma export
 struct MeshVertex {
   vec4 position;
   vec4 color;
