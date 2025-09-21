@@ -1,8 +1,7 @@
 import { LiveComponent, LiveElement } from '../live/types';
 
-import { UniformAttribute } from '../core/types';
-import { CameraUniforms } from '../camera/types';
-import { PROJECTION_UNIFORMS, VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix } from '../camera/camera';
+import { CameraUniforms, UniformAttribute } from '../core/types';
+import { PROJECTION_UNIFORMS, VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix } from '../core';
 
 const DEFAULT_ORBIT_CAMERA = {
   phi: 0,
