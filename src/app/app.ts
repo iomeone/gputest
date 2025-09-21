@@ -1,13 +1,12 @@
 import { LiveComponent } from '../live/types';
 import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { UniformAttribute } from '../core/types';
-import { CameraUniforms } from '../camera/types';
+import { CameraUniforms, UniformAttribute } from '../core/types';
 
-import { defer } from '../live/live';
+import { defer } from '../live';
 
 import {
   AutoCanvas,
-  Loop, Pass,
+  Loop, Draw, Pass,
   OrbitCamera, OrbitControls,
 } from '../components';
 import { Cube } from './cube';
@@ -18,8 +17,6 @@ export type AppProps = {
   canvas: HTMLCanvasElement,
   compileGLSL: (s: string, t: string) => string,
 };
-
-
 
 export const App: LiveComponent<AppProps> = () => (props) => {
   const {canvas, device, adapter, compileGLSL} = props;
@@ -41,7 +38,8 @@ export const App: LiveComponent<AppProps> = () => (props) => {
             radius, phi, theta,
             render: (defs: UniformAttribute[], uniforms: CameraUniforms) =>
 
-              defer(Loop)({
+              //defer(Loop)({
+              defer(Draw)({
                 device, gpuContext, colorAttachments,
                 render: () =>
 

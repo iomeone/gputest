@@ -6,9 +6,12 @@ export const formatTree = (root: LiveContext<any>, prefix: string = ''): string 
   const {mounts} = root;
   let out = [];
   out.push(prefix + formatNode(root));
-  if (mounts) for (const key of mounts.keys()) {
-    const sub = mounts.get(key);
-    if (sub) out.push(formatTree(sub, prefix + '  '));
+  if (mounts) {
+    const p = mounts.size > 1 ? prefix + '  ' : prefix;
+    for (const key of mounts.keys()) {
+      const sub = mounts.get(key);
+      if (sub) out.push(formatTree(sub, p));
+    }
   }
   return out.join("\n");
 }
