@@ -3,7 +3,8 @@ import { useResource, useState } from '../live';
 
 export type AutoSizeProps = {
   canvas: HTMLCanvasElement,
-  render: (width: number, height: number) => LiveElement<any>,
+  render?: (width: number, height: number) => LiveElement<any>,
+  children?: LiveElement<any>,
 }
 
 export const getCanvasSize = (window: Window, canvas: HTMLCanvasElement): [number, number] => {
@@ -13,15 +14,15 @@ export const getCanvasSize = (window: Window, canvas: HTMLCanvasElement): [numbe
 }
 
 export const AutoSize: LiveComponent<AutoSizeProps> = (fiber) => (props) => {
-  const {canvas, render} = props;
+  const {canvas, render, children} = props;
 
-	useResource(() => {
-		canvas.style.position = 'absolute';
-		canvas.style.left = '0';
-		canvas.style.top = '0';
-		canvas.style.width = '100%';
-		canvas.style.height = '100%';
-	}, [canvas]);
+  useResource(() => {
+    canvas.style.position = 'absolute';
+    canvas.style.left = '0';
+    canvas.style.top = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+  }, [canvas]);
  
   const [[width, height], setSize] = useState(() => getCanvasSize(window, canvas));
   if (canvas.width  !==  width) canvas.width  = width;
@@ -33,5 +34,5 @@ export const AutoSize: LiveComponent<AutoSizeProps> = (fiber) => (props) => {
     dispose(() => window.removeEventListener('resize', resize));
   }, [canvas]);
 
-  return render(width, height);
+  return render ? render(width, height) : (children ?? null);
 };

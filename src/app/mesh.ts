@@ -31,7 +31,7 @@ export const Mesh: LiveComponent<MeshProps> = memoProps((fiber) => (props) => {
 
   const {compileGLSL} = useContext(GLSLContext);
   const {uniforms, defs} = useContext(ViewContext);
-  const {device, colorStates, depthStencilState} = useContext(RenderContext);
+  const {device, samples, colorStates, depthStencilState} = useContext(RenderContext);
 
   const vertexBuffers = useMemo(() =>
     makeVertexBuffers(device, mesh.vertices), [device, mesh]);
@@ -47,6 +47,11 @@ export const Mesh: LiveComponent<MeshProps> = memoProps((fiber) => (props) => {
       vertex:   makeShaderStage(device, makeShader(compileGLSL(vertexShader, 'vertex')), {buffers: mesh.attributes}),
       // @ts-ignore
       fragment: makeShaderStage(device, makeShader(compileGLSL(fragmentShader, 'fragment')), {targets: colorStates}),
+      multisample: {
+        count: samples,
+        mask: 0xffffffff,
+        alphaToCoverageEnabled: false,
+      },
       depthStencil: depthStencilState,
     };
     return device.createRenderPipeline(pipelineDesc);

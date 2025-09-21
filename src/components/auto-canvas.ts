@@ -21,5 +21,5 @@ export type AutoCanvasProps = {
 export const AutoCanvas: LiveComponent<AutoCanvasProps> = () => (props) =>
   use(AutoSize)({
     canvas: props.canvas,
-    render: () => use(Canvas)({...props})
+    children: use(Canvas)({...props}),
   });

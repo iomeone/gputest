@@ -1249,6 +1249,26 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@lezer/common@^0.15.0", "@lezer/common@^0.15.8":
+  "integrity" "sha512-edfwCxNLnzq5pBA/yaIhwJ3U3Kz8VAUOTRg0hhxaizaI1N+qxV7EXDv/kLCkLeq2RzSFvxexlaj5Mzfn2kY0Ig=="
+  "resolved" "https://registry.npmjs.org/@lezer/common/-/common-0.15.12.tgz"
+  "version" "0.15.12"
+
+"@lezer/generator@^0.15.2":
+  "integrity" "sha512-9bBwU2TzKMBQ6OCEDevuMNWGOBKlkq5YIGEhjrz9pb3MLb+oYYR4dVFZ7ehwLcDoSecsSA7PdlAy0thJO5pt2w=="
+  "resolved" "https://registry.npmjs.org/@lezer/generator/-/generator-0.15.4.tgz"
+  "version" "0.15.4"
+  dependencies:
+    "@lezer/common" "^0.15.0"
+    "@lezer/lr" "^0.15.0"
+
+"@lezer/lr@^0.15.0", "@lezer/lr@^0.15.4":
+  "integrity" "sha512-bM6oE6VQZ6hIFxDNKk8bKPa14hqFrV07J/vHGOeiAbJReIaQXmkVb6xQu4MR+JBTLa5arGRyAAjJe1qaQt3Uvg=="
+  "resolved" "https://registry.npmjs.org/@lezer/lr/-/lr-0.15.8.tgz"
+  "version" "0.15.8"
+  dependencies:
+    "@lezer/common" "^0.15.0"
+
 "@nicolo-ribaudo/chokidar-2@2.1.8-no-fsevents":
   "integrity" "sha512-+nb9vWloHNNMFHjGofEam3wopE3m1yuambrrd/fnPc+lFOMB9ROTqQlche9ByFWNkdNqfSgR/kkQtQ8DzEWt2w=="
   "resolved" "https://registry.npmjs.org/@nicolo-ribaudo/chokidar-2/-/chokidar-2-2.1.8-no-fsevents.tgz"
@@ -1545,6 +1565,21 @@
   dependencies:
     "@typescript-eslint/types" "4.22.0"
     "eslint-visitor-keys" "^2.0.0"
+
+"@use-gpu/core@*":
+  "integrity" "sha512-DRGzbiH+ozgmxsQDbR6BhbCVCr68ElO11cbVuCc2nXuDE9D7HowO5h7CKpatj16NycDGOVxEI4T+eim+VnoC/A=="
+  "resolved" "https://registry.npmjs.org/@use-gpu/core/-/core-0.17.0.tgz"
+  "version" "0.17.0"
+  dependencies:
+    "@use-gpu/state" "^0.17.0"
+    "earcut" "^2.2.4"
+    "gl-matrix" "^3.3.0"
+    "lodash" "^4.17.21"
+
+"@use-gpu/state@^0.17.0":
+  "integrity" "sha512-YRr18CsXldYl5zd03GFft4aVxrpRhn3IBTRDYxXVuqRq/ZGiXoVYXDprVwJoMKd6HmwkxCGKPqI5vmwfio6MoQ=="
+  "resolved" "https://registry.npmjs.org/@use-gpu/state/-/state-0.17.0.tgz"
+  "version" "0.17.0"
 
 "@webassemblyjs/ast@1.9.1":
   "integrity" "sha512-uMu1nCWn2Wxyy126LlGqRVlhdTOsO/bsBRI4dNq3+6SiSuRKRQX6ejjKgh82LoGAPSq72lDUiQ4FWVaf0PecYw=="
@@ -2884,6 +2919,11 @@
   "version" "2.0.1"
   dependencies:
     "webidl-conversions" "^5.0.0"
+
+"earcut@^2.2.4":
+  "integrity" "sha512-/pjZsA1b4RPHbeWZQn66SWS8nZZWLQQ23oE3Eam7aroEFGEvwKAsJfZ9ytiEMycfzXWpca4FA9QIOehf7PocBQ=="
+  "resolved" "https://registry.npmjs.org/earcut/-/earcut-2.2.4.tgz"
+  "version" "2.2.4"
 
 "ecc-jsbn@~0.1.1":
   "integrity" "sha1-OoOpBOVDUyh4dMVkt1SThoSamMk= sha512-eh9O+hwRHNbG4BLTjEl3nw044CkGm5X6LoaCf7LPp7UU8Qrt47JYNi6nPX8xjW97TKGKm1ouctg0QSpZe9qrnw=="

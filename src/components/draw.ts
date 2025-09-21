@@ -9,13 +9,16 @@ export type DrawProps = {
 };
 
 const Done = (fiber: LiveFiber<any>) => (ts: Task[]) => {
-  const {gpuContext, colorAttachments} = useContext(RenderContext);
+  const {gpuContext, colorAttachments, samples} = useContext(RenderContext);
 
-  // @ts-ignore
-  colorAttachments[0].view = gpuContext
+  const view = gpuContext
   // @ts-ignore
     .getCurrentTexture()
     .createView();
+
+  // @ts-ignore
+  if (samples > 1) colorAttachments[0].resolveTarget = view; 
+  else colorAttachments[0].view = view;
 
   for (let task of ts) task();
 };

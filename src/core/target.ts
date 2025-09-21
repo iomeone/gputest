@@ -1,7 +1,14 @@
-export const makeRenderTexture = (device: GPUDevice, width: number, height: number, format: GPUTextureFormat): GPUTexture => {
+export const makeRenderTexture = (
+  device: GPUDevice,
+  width: number,
+  height: number,
+  format: GPUTextureFormat,
+  samples: number = 1
+): GPUTexture => {
   const renderTexture = device.createTexture({
     // @ts-ignore
     size: { width, height, depthOrArrayLayers: 1 },
+    sampleCount: samples,
     format,
     // @ts-ignore
     usage: GPUTextureUsage.RENDER_ATTACHMENT,

@@ -1,7 +1,13 @@
 import { makeRenderTexture } from './target';
 
-export const makeDepthTexture = (device: GPUDevice, width: number, height: number, format: GPUTextureFormat): GPUTexture =>
-	makeRenderTexture(device, width, height, format);
+export const makeDepthTexture = (
+  device: GPUDevice,
+  width: number,
+  height: number,
+  format: GPUTextureFormat,
+  samples: number = 1,
+): GPUTexture =>
+	makeRenderTexture(device, width, height, format, samples);
 
 export const makeDepthStencilState = (format: GPUTextureFormat): GPUDepthStencilStateDescriptor => ({
   depthWriteEnabled: true,

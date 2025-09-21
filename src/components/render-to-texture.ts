@@ -36,21 +36,29 @@ export const RenderToTexture: LiveComponent<RenderToTextureProps> = (fiber) => (
     backgroundColor = EMPTY_COLOR,
     children,
   } = props;
-  
-  const renderTexture = useMemo(() =>
-    makeRenderTexture(
-      device,
-      width,
-      height,
-      presentationFormat
-    ),
-    [device, width, height, presentationFormat]
+
+  const [renderTexture, resolveTexture] = useMemo(() => [
+      makeRenderTexture(
+        device,
+        width,
+        height,
+        presentationFormat,
+        samples,
+      ),
+      samples > 1 ? makeRenderTexture(
+        device,
+        width,
+        height,
+        presentationFormat,
+      ) : null,
+    ] as [GPUTexture, GPUTexture | null],
+    [device, width, height, presentationFormat, samples]
   );
 
   const colorStates      = useOne(() => [makeColorState(presentationFormat)], presentationFormat);
   const colorAttachments = useMemo(() =>
-    [makeColorAttachment(renderTexture, backgroundColor)],
-    [renderTexture, backgroundColor]
+    [makeColorAttachment(renderTexture, resolveTexture, backgroundColor)],
+    [renderTexture, resolveTexture, backgroundColor]
   );
 
   const [
@@ -60,12 +68,12 @@ export const RenderToTexture: LiveComponent<RenderToTextureProps> = (fiber) => (
   ] = useMemo(() => {
       if (!depthStencilFormat) return [];
 
-      const texture = makeDepthTexture(device, width, height, depthStencilFormat);
+      const texture = makeDepthTexture(device, width, height, depthStencilFormat, samples);
       const state = makeDepthStencilState(depthStencilFormat);
       const attachment = makeDepthStencilAttachment(texture);
       return [texture, state, attachment];
     },
-    [device, width, height, depthStencilFormat]
+    [device, width, height, depthStencilFormat, samples]
   );
 
   const rttContext = useMemo(() => ({

@@ -8,6 +8,7 @@ import { makePresentationContext } from '../webgpu';
 import {
   makeColorState,
   makeColorAttachment,
+  makeRenderTexture,
   makeDepthTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
@@ -21,8 +22,9 @@ export type CanvasProps = {
   presentationFormat?: GPUTextureFormat,
   depthStencilFormat?: GPUTextureFormat,
   backgroundColor?: GPUColor,
+  samples?: number,
 
-  children: LiveElement<any>,
+  children?: LiveElement<any>,
 }
 
 export const Canvas: LiveComponent<CanvasProps> = (fiber) => (props) => {
@@ -33,24 +35,41 @@ export const Canvas: LiveComponent<CanvasProps> = (fiber) => (props) => {
     presentationFormat = PRESENTATION_FORMAT,
     depthStencilFormat = DEPTH_STENCIL_FORMAT,
     backgroundColor = BACKGROUND_COLOR,
+    samples = 1
   } = props;
 
   const {width, height} = canvas;
 
+  const renderTexture = useMemo(() =>
+    samples
+    ? makeRenderTexture(
+        device,
+        width,
+        height,
+        presentationFormat,
+        samples,
+      )
+    : null,
+    [samples]
+  );
+
   const colorStates      = useOne(() => [makeColorState(presentationFormat)], presentationFormat);
-  const colorAttachments = useOne(() => [makeColorAttachment(null, backgroundColor)], backgroundColor);
+  const colorAttachments = useMemo(() =>
+    [makeColorAttachment(renderTexture, null, backgroundColor)],
+    [backgroundColor, renderTexture]
+  );
 
   const [
     depthTexture,
     depthStencilState,
     depthStencilAttachment,
   ] = useMemo(() => {
-      const texture = makeDepthTexture(device, width, height, depthStencilFormat);
+      const texture = makeDepthTexture(device, width, height, depthStencilFormat, samples);
       const state = makeDepthStencilState(depthStencilFormat);
       const attachment = makeDepthStencilAttachment(texture);
       return [texture, state, attachment];
     },
-    [device, width, height, depthStencilFormat]
+    [device, width, height, depthStencilFormat, samples]
   );
 
   const gpuContext = useMemo(() =>
@@ -61,6 +80,7 @@ export const Canvas: LiveComponent<CanvasProps> = (fiber) => (props) => {
   const renderContext = {
     width,
     height,
+    samples,
     device,
     gpuContext,
     colorStates,
