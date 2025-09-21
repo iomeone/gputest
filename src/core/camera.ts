@@ -1,6 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 
-import { UniformAttribute, UniformType } from '../core/types';
+import { UniformAttribute, UniformType } from './types';
 
 export const PROJECTION_UNIFORMS: UniformAttribute[] = [{
   name: 'projectionMatrix',

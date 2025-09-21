@@ -1,3 +1,5 @@
+import { mat4 } from 'gl-matrix'
+
 export type TypedArray =
   Int8Array |
   Uint8Array |
@@ -133,4 +135,10 @@ export type ShaderModuleDescriptor = {
 export type ShaderStageDescriptor = {
   module: GPUShaderModule,
   entryPoint: string,
+};
+
+// Camera
+export type CameraUniforms = {
+  projectionMatrix: mat4,
+  viewMatrix: mat4,
 };

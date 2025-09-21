@@ -10,7 +10,7 @@ import {
   makeDepthTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
-} from '@use-gpu/core';
+} from '../core';
 
 export type CanvasProps = {
   device: GPUDevice,

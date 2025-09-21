@@ -1,6 +1,6 @@
 import GLSL from './glsl';
 
-import { mountGPU } from '../webgpu/mount';
+import { mountGPU } from '../webgpu';
 import { defer, render, formatTree } from '../live';
 
 import { App } from './app';
