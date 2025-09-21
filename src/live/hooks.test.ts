@@ -1,7 +1,7 @@
 import { LiveContext, LiveComponent, Live, DeferredCall } from './types';
 
 import { bind, defer } from './live';
-import { prepareHostContext } from './tree';
+import { makeHostContext } from './tree';
 import { useCallback, useMemo, useOne, useResource, useState, memoFunction } from './hooks';
 
 type NullReturner = () => null;
@@ -171,7 +171,7 @@ it('manages a dependent resource (hook)', () => {
     allocated = 0;
     disposed = 0;
 
-    const {context, tracker} = prepareHostContext(defer(F)());
+    const {context, tracker} = makeHostContext(defer(F)());
     context.bound();
 
     expect(allocated).toBe(1);
@@ -193,7 +193,7 @@ it('manages a dependent resource (hook)', () => {
     allocated = 0;
     disposed = 0;
 
-    const {context, tracker} = prepareHostContext(defer(G)());
+    const {context, tracker} = makeHostContext(defer(G)());
     context.bound();
 
     expect(allocated).toBe(1);
@@ -215,7 +215,7 @@ it('manages a dependent resource (hook)', () => {
     allocated = 0;
     disposed = 0;
 
-    const {context, tracker} = prepareHostContext(defer(H)());
+    const {context, tracker} = makeHostContext(defer(H)());
     context.bound();
 
     expect(allocated).toBe(1);

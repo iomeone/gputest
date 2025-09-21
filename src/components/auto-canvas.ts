@@ -11,7 +11,7 @@ export type AutoCanvasProps = {
   adapter: GPUAdapter,
   canvas: HTMLCanvasElement,
 
-  swapChainFormat?: GPUTextureFormat,
+  presentationFormat?: GPUTextureFormat,
   depthStencilFormat?: GPUTextureFormat,
   backgroundColor?: GPUColor,
 

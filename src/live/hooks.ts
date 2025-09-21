@@ -4,7 +4,7 @@ import {
   DeferredCall, HostInterface,
 } from './types';
 
-import { bind, makeContext } from './live';
+import { bind, makeContext, makeSubContext } from './live';
 
 export const NOP = () => {};
 export const NO_DEPS = [] as any[];
@@ -52,8 +52,9 @@ export const memoComponent = <F extends Function>(
 ) => {
   const subContext = makeContext(f, null, context);
   const bound = bind(f, context);
-  return (props: Object) => {
-    const args = [];
+
+  return (props: Record<string, any>) => {
+    const args = [] as any[];
     for (let k in props) {
       args.push(k);
       args.push(props[k]);
@@ -102,7 +103,7 @@ export const useMemo = <S, F extends Function = any>(context: LiveContext<F>, in
   const i = index * STATE_SLOTS;
 
   let value = state[i];
-  const deps  = state[i + 1];
+  const deps = state[i + 1];
 
   if (!isSameDependencies(deps, dependencies)) {
     value = initialState();
@@ -123,7 +124,7 @@ export const useOne = <S, F extends Function = any>(context: LiveContext<F>, ind
   const i = index * STATE_SLOTS;
 
   let value = state[i];
-  const dep   = state[i + 1];
+  const dep = state[i + 1];
 
   if (dep !== dependency) {
     value = initialState();
@@ -144,7 +145,7 @@ export const useCallback = <F extends Function>(context: LiveContext<F>, index: 
   const i = index * STATE_SLOTS;
 
   let value = state[i];
-  const deps  = state[i + 1];
+  const deps = state[i + 1];
 
   if (!isSameDependencies(deps, dependencies)) {
     value = initialValue;
@@ -191,6 +192,30 @@ export const useResource = <F extends Function>(
 
   // Assume if return type is used, it's T's
   return (undefined as unknown as R);
+}
+
+// Use a new context for forked rendering
+export const useSubContext = <F extends Function>(
+  context: LiveContext<F>,
+  index: number
+) => <T extends Function>(
+  node: DeferredCall<T>
+): LiveContext<T> => {
+  const {state, host} = context;
+  const i = index * STATE_SLOTS;
+
+  let ctx = state[i];
+
+  if (!ctx || ctx.f !== node.f) {
+    ctx = makeSubContext(context, node);
+
+    state[i] = ctx;
+  }
+  else {
+    ctx.args = node.args;
+  }
+
+  return ctx;
 }
 
 // Cleanup effect tracker

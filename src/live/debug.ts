@@ -1,8 +1,8 @@
-import { DeferredCall } from './types';
+import { DeferredCall, LiveContext } from './types';
 
 const {prototype: {hasOwnProperty}} = Object;
 
-export const formatTree = (root: LiveContext<any>, prefix: string = '') => {
+export const formatTree = (root: LiveContext<any>, prefix: string = ''): string => {
   const {mounts} = root;
   let out = [];
   out.push(prefix + formatNode(root));

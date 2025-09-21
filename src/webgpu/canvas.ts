@@ -1,4 +1,4 @@
-import {GPUMount, GPUDeviceMount} from './types';
+import { GPUMount, GPUDeviceMount, GPUPresentationContext } from './types';
 
 export const mountGPU = async (selector: string): Promise<GPUMount> => {
  
@@ -33,17 +33,24 @@ export const mountCanvas = (selector: string): HTMLCanvasElement => {
   return canvas;
 }
 
-export const makeSwapChain = (
+export const makePresentationContext = (
   device: GPUDevice,
   canvas: HTMLCanvasElement,
   format: GPUTextureFormat,
-): GPUSwapChain => {
+): GPUPresentationContext => {
   const gpuContext = canvas.getContext("gpupresent") as unknown as GPUCanvasContext | null;
   if (!gpuContext) throw new Error("Cannot get WebGPU Canvas context");
 
-  const swapChainDescriptor = { device, format };
-  // @ts-ignore
-  const swapChain = gpuContext.configureSwapChain(swapChainDescriptor);
+  const descriptor = {
+    device,
+    format,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    compositingAlphaMode: "opaque",
+  };
 
-  return swapChain;
+  // @ts-ignore
+  gpuContext.configure(descriptor);
+
+  // @ts-ignore
+  return gpuContext;
 }

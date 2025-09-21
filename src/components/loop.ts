@@ -1,20 +1,11 @@
 import { LiveComponent, LiveElement } from '../live/types';
+import { GPUPresentationContext } from '../webgpu/types';
 import {
-  useResource,
+  defer, fork, useCallback, useOne, useResource, useSubContext, renderContext,
+} from '../live';
 
-} from '../live/hooks';
-
-import {
-  defer,
-} from '../live/live'
-
-import {
-  useCallback, useOne,
-} from '../live/hooks';
-
-import {prepareSubContext, renderContext} from '../live/tree'
 export type LoopProps = {
-  swapChain: GPUSwapChain,
+  gpuContext: GPUPresentationContext,
   colorAttachments: GPURenderPassColorAttachmentDescriptor[],
   update: () => void,
   render: () => LiveElement<any>,
@@ -25,15 +16,16 @@ export type LoopRef = {
   render: () => LiveElement<any>,
 };
 
+const Paint = () => (ref: LoopRef) => ref.render();
+
 export const Loop: LiveComponent<LoopProps> = (context) => (props) => {
-  const {swapChain, colorAttachments, update, render} = props;
+  const {gpuContext, colorAttachments, update, render} = props;
 
   const ref: LoopRef = useOne(context, 0)(() => ({update, render}));
   ref.update = update;
   ref.render = render;
 
-  const paint = useCallback(context, 1)(() => (ref: LoopRef) => ref.render());
-  const subContext = useOne(context, 2)(() => prepareSubContext(context, defer(paint)(ref)));
+  const subContext = useSubContext(context, 2)(defer(Paint)(ref));
 
   useResource(context, 3)((dispose) => {
     let running = true;
@@ -41,7 +33,9 @@ export const Loop: LiveComponent<LoopProps> = (context) => (props) => {
     const loop = () => {
       if (ref.update) ref.update();
 
-      colorAttachments[0].attachment = swapChain
+      // @ts-ignore
+      colorAttachments[0].view = gpuContext
+      // @ts-ignore
         .getCurrentTexture()
         .createView();
 
@@ -51,11 +45,8 @@ export const Loop: LiveComponent<LoopProps> = (context) => (props) => {
     }
 
     requestAnimationFrame(loop);
-    dispose(() => {
-      running = false;
-      if (subContext?.host) subContext.host.dispose(subContext);
-    });
+    dispose(() => running = false);
   });
 
-  return null;
+  return fork(subContext);
 }

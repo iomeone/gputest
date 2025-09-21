@@ -17,7 +17,7 @@ export const makeDepthStencilState = (format: GPUTextureFormat): GPUDepthStencil
 });
 
 export const makeDepthStencilAttachment = (depthTexture: GPUTexture): GPURenderPassDepthStencilAttachmentDescriptor => ({
-  attachment: depthTexture.createView(),
+  view: depthTexture.createView(),
   depthLoadValue: 1.0,
   depthStoreOp: "store" as GPUStoreOp,
   stencilLoadValue: 0,

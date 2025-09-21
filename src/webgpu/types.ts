@@ -1,3 +1,7 @@
+export type GPUPresentationContext = {
+  configure: (descriptor: any) => {},
+};
+
 export type GPUDeviceMount = {
   adapter: GPUAdapter,
   device: GPUDevice,
@@ -11,7 +15,7 @@ export type CanvasRenderingContextGPU = {
   width: number,
   height: number,
 
-  swapChain: GPUSwapChain,
+  gpuContext: GPUPresentationContext,
   colorStates: GPUColorStateDescriptor[],
   colorAttachments: GPURenderPassColorAttachmentDescriptor[],
   depthTexture: GPUTexture,

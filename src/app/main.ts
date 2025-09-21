@@ -1,6 +1,6 @@
 import GLSL from './glsl';
 
-import { mountGPU } from '../canvas/mount';
+import { mountGPU } from '../webgpu/mount';
 import { defer, render, formatTree } from '../live';
 
 import { App } from './app';
@@ -15,5 +15,6 @@ export const main = async (): Promise<void> => {
     defer(App)({adapter, device, canvas, compileGLSL})
   );
   
-  console.log(formatTree(root))
+  const log = () => console.log(formatTree(root))
+  setTimeout(() => log(), 2000);
 }

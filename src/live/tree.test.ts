@@ -1,7 +1,7 @@
 import { LiveContext, Mounts, Task } from './types';
-import { defer } from './live';
+import { defer, fork, makeSubContext } from './live';
 import { useState } from './hooks';
-import { renderSync, prepareSubContext, renderContext } from './tree';
+import { renderSync, renderContext } from './tree';
 
 it("mounts", () => {
   
@@ -44,10 +44,10 @@ it("mounts a subcontext", () => {
 
   let subContext: LiveContext<any> | null = null;
   const Root = (context: LiveContext<any>) => {
-    subContext = prepareSubContext(context, defer(Sub)());
+    subContext = makeSubContext(context, defer(Sub)());
     return () => {
-      if (subContext) renderContext(subContext);
-      return null;
+      renderContext(subContext!);
+      return fork(subContext!);
     };
   }
   const Sub = () => () => defer(Node)();
@@ -55,6 +55,9 @@ it("mounts a subcontext", () => {
   
   const result = renderSync(defer(Root)());
   expect(result.f).toBe(Root);
+
+  expect(result.mounts!.size).toBe(1);
+  expect(result.mounts!.get(0)!.mounts!.size).toBe(1);
 
   expect(subContext).toBeTruthy();
   if (subContext != null) {
