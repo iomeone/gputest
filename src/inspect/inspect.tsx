@@ -7,24 +7,44 @@ import React, { useEffect, useState } from 'react';
 import { Node } from './node';
 import { Fiber } from './fiber';
 import { Props } from './props';
-import { InspectContainer, SplitRow, RowPanel, Scrollable, Inset } from './layout';
-import { Grid } from 'semantic-ui-react'
+import { Call } from './call';
+import { InspectContainer, InspectToggle, SplitRow, RowPanel, Scrollable, Inset } from './layout';
+import { Button, Tab, Grid } from 'semantic-ui-react'
 
 const { Row, Column } = Grid;
+const { Pane } = Tab;
+
+const ICON = (s: string) => <span className="m-icon">{s}</span>
 
 type InspectProps = {
 	fiber: LiveFiber<any>,
 }
 
+const TAB_STYLE = { secondary: true, pointing: true };
+
 export const Inspect: React.FC<InspectProps> = ({fiber}) => {
 	const expandCursor = useUpdateState<ExpandState>({});
 	const selectedCursor = useUpdateState<SelectState>(null);
 
+	const [open, updateOpen] = useUpdateState<boolean>(false);
+	const toggleOpen = () => updateOpen(!open);
+
 	const [selectedFiber] = selectedCursor;
 	const ping = usePingTracker(fiber);
 
-	return (
-		<InspectContainer>
+	const panes = selectedFiber ? [
+		{
+			menuItem: 'Props',
+			render: () => <Props fiber={selectedFiber} />
+		},
+		{
+			menuItem: 'Fiber',
+			render: () => <Call fiber={selectedFiber} />
+		},
+	] : [];
+
+	return (<>
+		{open  ? <InspectContainer>
 			<SplitRow>
 				<RowPanel style={{width: '33%'}}>
 					<Scrollable>
@@ -36,14 +56,19 @@ export const Inspect: React.FC<InspectProps> = ({fiber}) => {
 				<RowPanel style={{width: '67%'}}>
 					<Scrollable>
 						<Inset>
-							{selectedFiber ? <Props fiber={selectedFiber} /> : null}
+							<Tab menu={TAB_STYLE} panes={panes} />
 						</Inset>
 					</Scrollable>
 				</RowPanel>
 			</SplitRow>
-		</InspectContainer>
-	);
+		</InspectContainer> : null}
+		<InspectToggle onClick={toggleOpen}>
+			<Button>{open ? ICON("close") : ICON("bug_report")}</Button>
+		</InspectToggle>
+	</>);
 }
+
+type Timer = ReturnType<typeof setTimeout>;
 
 const usePingTracker = (fiber: LiveFiber<any>) => {
 	const [ping, setPing] = useState<PingState>({});
@@ -52,11 +77,11 @@ const usePingTracker = (fiber: LiveFiber<any>) => {
 	ref.ping = ping;
 
 	useEffect(() => {
-		let uTimer = null;
-		let rTimer = null;
+		let uTimer: Timer | null = null;
+		let rTimer: Timer | null = null;
 
-		let update = {};
-		let reset = {};
+		let update: Record<string, number> = {};
+		let reset: Record<string, number> = {};
 
 		const flush = () => {
 			const u = update;
@@ -73,12 +98,14 @@ const usePingTracker = (fiber: LiveFiber<any>) => {
 			}, 500);
 		}
 
+		if (!fiber.host) return;
+		
 		fiber.host.__ping = (fiber: LiveFiber<any>) => {
 			reset[fiber.id] = update[fiber.id] = ((ref.ping[fiber.id] || 0) % 256) + 1;			
 			if (!uTimer) uTimer = setTimeout(flush, 0);
 		};
 		return () => {
-			fiber.host.__ping = () => {};
+			if (fiber.host) fiber.host.__ping = () => {};
 		};
 	}, [ref]);
 

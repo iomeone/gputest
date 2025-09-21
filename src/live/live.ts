@@ -60,7 +60,7 @@ export const enterFiber = <F extends Function>(fiber: LiveFiber<F>, base: number
   fiber.pointer = base;
 
   // Reset yeet state
-  const {yeeted} = fiber;
+  const {yeeted, next} = fiber;
   if (yeeted) yeeted.reduced = yeeted.value = undefined;
 }
 export const exitFiber  = () => CURRENT_FIBER = null;
@@ -125,6 +125,6 @@ export const makeFunctionCall = <F extends Function>(
 ): FunctionCall<F> => ({f, args});
 
 // Make live context for holding shared data for child nodes
-export const makeContext = <T>(initialValue?: T): LiveContext<T> => ({initialValue});
+export const makeContext = <T>(initialValue?: T, displayName?: string): LiveContext<T> => ({initialValue, displayName});
 export const createContext = makeContext;
 

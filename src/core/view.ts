@@ -11,6 +11,10 @@ export const VIEW_UNIFORMS: UniformAttribute[] = [
     name: 'viewMatrix',
     format: UniformType.mat4,
   },
+  {
+    name: 'viewPosition',
+    format: UniformType.vec4
+  },
 ];
 
 export const makeProjectionMatrix = (
@@ -39,3 +43,13 @@ export const makeOrbitMatrix = (radius: number, phi: number, theta: number): mat
   mat4.rotate(matrix, matrix, phi, vec3.fromValues(0, 1, 0));
   return matrix;
 }
+
+export const makeOrbitPosition = (radius: number, phi: number, theta: number): number[] => {
+  const ct = Math.cos(theta);
+  return [
+    -Math.sin(phi) * ct * radius,
+    Math.sin(theta) * radius,
+    Math.cos(phi) * ct * radius,
+  ];
+}
+

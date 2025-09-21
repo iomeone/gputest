@@ -5,7 +5,7 @@ import {
 } from './types';
 
 import { bind, CURRENT_FIBER } from './live';
-import { makeFiber, makeSubFiber, bustCaches } from './fiber';
+import { makeFiber, makeSubFiber, bustFiberCaches, scheduleYeetRoots } from './fiber';
 import { isSameDependencies } from './util';
 import { formatNode } from './debug';
 
@@ -38,7 +38,10 @@ export const memoArgs = <F extends Function>(
     return (...args: any[]) => {
       args.push(fiber.version);
 
-      const value = useMemo(() => bound(args), args);
+      const value = useMemo(() => {
+        fiber.memo = -1;
+        return bound(args);
+      }, args);
       return value;
     };
   }) as any as LiveFunction<F>;
@@ -63,7 +66,11 @@ export const memoProps = <F extends Function>(
         deps.push(props[k]);
       }
 
-      const value = useMemo(() => bound(props), deps);
+      const value = useMemo(() => {
+        fiber.memo = -1;
+        return bound(props);
+      }, deps);
+
       return value;
     };
   }) as any as LiveFunction<F>;
@@ -97,7 +104,8 @@ export const useState = <T>(
           host!.schedule(fiber, () => {
             if (value instanceof Function) state[i] = value(state[i]);
             else state[i] = value;
-            bustCaches(fiber);
+            bustFiberCaches(fiber);
+            scheduleYeetRoots(fiber);
           });
         }
       : NOP;
@@ -232,7 +240,7 @@ export const useContext = <C>(
     host.track(fiber, () => host.undepend(fiber, root));
   }
 
-  return values.get(context) ?? context.initialValue;
+  return values.get(context).current ?? context.initialValue;
 }
 
 // Cleanup effect tracker

@@ -25,7 +25,7 @@ export type OnFiber = (fiber: LiveFiber<any>) => void;
 export type FiberSetter<T> = (fiber: LiveFiber<any>, t: T) => void;
 
 // User=defined context
-export type LiveContext<T> = { initialValue?: T };
+export type LiveContext<T> = { initialValue?: T, displayName?: string };
 
 // Fiber context
 export type LiveFiber<F extends Function> = FunctionCall<F> & {
@@ -73,6 +73,7 @@ export type ContextValues = Map<LiveContext<any>, any>;
 export type ContextRoots = Map<LiveContext<any>, LiveFiber<any>>;
 
 export type FiberYeet<T> = {
+  id: number,
   emit: FiberSetter<any>,
   value?: T,
   reduced?: T,
@@ -86,17 +87,17 @@ export type GroupedFibers = {
 };
 
 // Deferred function calls
-export type FunctionCall<F extends Function> = {
+export type FunctionCall<F extends Function = Function> = {
   f: LiveFunction<F>,
   args?: any[],
   arg?: any
 };
 
-export type DeferredCall<F extends Function> = FunctionCall<F> & {
+export type DeferredCall<F extends Function = Function> = FunctionCall<F> & {
   key?: Key,
 };
 
-export type LiveElement<F extends Function> = null | DeferredCall<F> | DeferredCall<any>[];
+export type LiveElement<F = any> = null | DeferredCall<any> | LiveElement<any>[];
 
 // Live host interface
 export type HostInterface = {
@@ -116,5 +117,5 @@ export type HostInterface = {
 
   __stats: {mounts: number, unmounts: number, updates: number, dispatch: number},
   __flush: () => void,
-  __ping: () => void,
+  __ping: (fiber: LiveFiber<any>) => void,
 };

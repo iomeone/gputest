@@ -2,15 +2,18 @@ import { LiveComponent } from '../live/types';
 import { CanvasRenderingContextGPU } from '../webgpu/types';
 import { ViewUniforms, UniformAttribute } from '../core/types';
 
-import { use, useOne } from '../live';
+import { use, useMemo, useOne, useResource, useState } from '../live';
 
 import {
-  AutoCanvas,
+  AutoCanvas, GLSLProvider,
   Loop, Draw, Pass,
   OrbitCamera, OrbitControls,
   RenderToTexture,
+  ViewProvider,
 } from '../components';
 import { Cube } from './cube';
+import { Mesh } from './mesh';
+import { makeMesh } from './meshes/mesh';
 import { UseInspect } from '../inspect';
 
 export type AppProps = {
@@ -23,69 +26,70 @@ export type AppProps = {
 export const App: LiveComponent<AppProps> = (fiber) => (props) => {
   const {canvas, device, adapter, compileGLSL} = props;
 
+  const inspect = useInspector();
+  const mesh = makeMesh();
+
+  const view = (
+    use(Pass)({
+      children: [
+        use(Mesh)({ mesh }),
+      ]
+    })
+  );
+
   return [
-    use(AutoCanvas)({
-      canvas, device, adapter,
-      render: (renderContext: CanvasRenderingContextGPU) => {
-    
-        const {
-          width, height, gpuContext,
-          colorStates, colorAttachments,
-          depthStencilState, depthStencilAttachment,
-        } = renderContext;
+    use(GLSLProvider)({
+      compileGLSL,
+      children:
 
-        return use(OrbitControls)({
-          canvas,
-          render: (radius: number, phi: number, theta: number) =>
+        use(AutoCanvas)({
+          canvas, device, adapter,
+          children:
 
-            use(OrbitCamera)({
-              canvas, width, height,
-              radius, phi, theta,
-              render: (defs: UniformAttribute[], uniforms: ViewUniforms) => [
-              
-              /*
-                use(RenderToTexture)({
-                  device, width, height,
-                  render: (renderContext: CanvasRenderingContextGPU) => {
-                    const {
-                      colorStates, colorAttachments,
-                      depthStencilState, depthStencilAttachment,
-                    } = renderContext;
+            use(OrbitControls)({
+              canvas,
+              render: (radius: number, phi: number, theta: number) =>
 
-                    return use(Pass)({
-                      device, colorAttachments, depthStencilAttachment,
-                      children: [
+                use(OrbitCamera)({
+                  canvas, radius, phi, theta,
+                  render: (defs: UniformAttribute[], uniforms: ViewUniforms) =>
 
-                        use(Cube)({device, colorStates, depthStencilState, compileGLSL, defs, uniforms}),
+                    use(ViewProvider)({
+                      defs, uniforms, children:
 
-                      ]
-                    });
-                  },
-                }),
-              */
+                        use(Loop)({
+                          children: [
 
-                use(Draw)({
-                  device, gpuContext, colorAttachments,
-                  children: [
+                            use(RenderToTexture)({
+                              children: view,
+                            }),
+                      
+                            use(Draw)({
+                              children: view,
+                            }),
 
-                    use(Pass)({
-                      device, colorAttachments, depthStencilAttachment,
-                      children: [
-
-                        use(Cube)({device, colorStates, depthStencilState, compileGLSL, defs, uniforms}),
-
-                      ]
+                          ],
+                        })
+                      
                     })
-
-                  ],
-                }),
-
-              ],
+                })
             })
-        });
-      }
+        })
     }),
-    use(UseInspect)({fiber, canvas}),
+    inspect ? use(UseInspect)({fiber, canvas}) : null,
   ];
 };
 
+const useInspector = () => {
+  const [inspect, setInspect] = useState<boolean>(false);
+  useResource((dispose) => {
+    const keydown = (e: KeyboardEvent) => {
+      if (e.metaKey && e.key === 'i') setInspect((s) => !s);
+    }
+
+    window.addEventListener('keydown', keydown);
+    dispose(() => window.addEventListener('keydown', keydown));
+  });
+
+  return inspect;
+}

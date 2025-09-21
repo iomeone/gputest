@@ -16,6 +16,7 @@ const selectedAnimation = keyframes`
 `
 
 export const NodeNormal = styled.div`
+	white-space: nowrap;
 	margin: -2px -5px;
 	padding: 2px 5px;
 	&.selected {
@@ -41,12 +42,20 @@ type NodeProps = {
 };
 
 export const Node: React.FC<NodeProps> = ({fiber, pinged, selected, onClick}) => {
-	const {id, f} = fiber;
+	const {id, f, args} = fiber;
 	const Wrapper = pinged ? NodeHighlight : NodeNormal;
 	const className = selected ? 'selected' : '';
 
   // @ts-ignore
-  const name = (f?.displayName ?? f?.name) || 'Node';
+  let name = (f?.displayName ?? f?.name) || 'Node';
+  if (name === 'PROVIDE' && args) {
+    const [context] = args;
+    name = `Provide(${formatValue(context.displayName)})`;
+  }
+  else if (name === 'DETACH' && args) {
+    const [call] = args;
+    name = `Detach(${formatValue(call.f)})`;
+  }
 
   return <Wrapper key={pinged} className={className} onClick={onClick}>{name}</Wrapper>;
 }

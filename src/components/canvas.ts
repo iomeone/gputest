@@ -2,8 +2,8 @@ import { LiveComponent, LiveElement } from '../live/types';
 import { GPUPresentationContext, CanvasRenderingContextGPU } from '../webgpu/types';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, BACKGROUND_COLOR } from './constants';
 
-import { useMemo, useOne } from '../live';
-
+import { RenderProvider } from './render-provider';
+import { use, useMemo, useOne } from '../live';
 import { makePresentationContext } from '../webgpu';
 import {
   makeColorState,
@@ -22,14 +22,14 @@ export type CanvasProps = {
   depthStencilFormat?: GPUTextureFormat,
   backgroundColor?: GPUColor,
 
-  render: (context: CanvasRenderingContextGPU) => LiveElement<any>,
+  children: LiveElement<any>,
 }
 
 export const Canvas: LiveComponent<CanvasProps> = (fiber) => (props) => {
   const {
     device,
     canvas,
-    render,
+    children,
     presentationFormat = PRESENTATION_FORMAT,
     depthStencilFormat = DEPTH_STENCIL_FORMAT,
     backgroundColor = BACKGROUND_COLOR,
@@ -58,16 +58,17 @@ export const Canvas: LiveComponent<CanvasProps> = (fiber) => (props) => {
     [device, canvas, presentationFormat, width, height],
   );
 
-  const deferred = render({
+  const renderContext = {
     width,
     height,
+    device,
     gpuContext,
     colorStates,
     colorAttachments,
     depthTexture,
     depthStencilState,
     depthStencilAttachment,
-  } as CanvasRenderingContextGPU);
+  } as CanvasRenderingContextGPU;
 
-  return deferred;
+  return use(RenderProvider)({ renderContext, children });
 }

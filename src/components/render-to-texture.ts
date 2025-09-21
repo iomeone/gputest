@@ -1,7 +1,8 @@
 import { LiveFiber, LiveComponent, LiveElement, Task } from '../live/types';
 import { GPUPresentationContext, CanvasRenderingContextGPU } from '../webgpu/types';
-import { gatherReduce, useMemo, useOne } from '../live';
+import { use, gatherReduce, useContext, useMemo, useOne } from '../live';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, EMPTY_COLOR } from './constants';
+import { RenderProvider, RenderContext } from './render-provider';
 
 import {
   makeColorState,
@@ -13,7 +14,6 @@ import {
 } from '../core';
 
 export type RenderToTextureProps = {
-  device: GPUDevice,
   width: number,
   height: number,
 
@@ -21,19 +21,19 @@ export type RenderToTextureProps = {
   depthStencilFormat?: GPUTextureFormat | null,
   backgroundColor?: GPUColor,
 
-  render: (context: CanvasRenderingContextGPU) => LiveElement<any>,
+  children?: LiveElement<any>, 
 };
 
 export const RenderToTexture: LiveComponent<RenderToTextureProps> = (fiber) => (props) => {
+  const renderContext = useContext(RenderContext);
+  const {device} = renderContext;
+
   const {
-    device,
-    gpuContext,
-    width = 1024,
-    height = 1024,
+    width = renderContext.width,
+    height = renderContext.height,
     presentationFormat = PRESENTATION_FORMAT,
     depthStencilFormat = DEPTH_STENCIL_FORMAT,
     backgroundColor = EMPTY_COLOR,
-    render,
     children,
   } = props;
   
@@ -68,16 +68,18 @@ export const RenderToTexture: LiveComponent<RenderToTextureProps> = (fiber) => (
     [device, width, height, depthStencilFormat]
   );
 
-  const deferred = render({
+  const rttContext = useMemo(() => ({
+    ...renderContext,
     width,
     height,
-    gpuContext,
     colorStates,
     colorAttachments,
     depthTexture,
     depthStencilState,
     depthStencilAttachment,
-  } as CanvasRenderingContextGPU);
+  }), [renderContext, width, height, colorStates, colorAttachments, depthTexture, depthStencilState, depthStencilAttachment]);
+
+  const view = use(RenderProvider)({ renderContext: rttContext, children });
 
   const Done = useMemo(() =>
     (fiber: LiveFiber<any>) => (ts: Task[]) => {
@@ -88,5 +90,5 @@ export const RenderToTexture: LiveComponent<RenderToTextureProps> = (fiber) => (
   // @ts-ignore
   if (!Done.displayName) Done.displayName = '[RenderToTexture]';
 
-  return gatherReduce(deferred, Done);
+  return gatherReduce(view, Done);
 }

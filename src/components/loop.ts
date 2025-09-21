@@ -14,39 +14,32 @@ export type LoopRef = {
   children?: LiveElement<any>,
   update?: () => void,
   render?: () => LiveElement<any>,
+  dispatch?: () => void,
 };
 
-const Paint = () => (ref: LoopRef) => ref.children ?? (ref.render ? ref.render() : null);
+const Dispatch = () => (props: LoopRef) => props.children ?? (props.render ? props.render() : null);
 
 export const Loop: LiveComponent<LoopProps> = (fiber) => (props) => {
-  const {gpuContext, colorAttachments, children, update, render} = props;
+  const {children, update, render} = props;
 
   const ref: LoopRef = useOne(() => ({children, update, render}));
   ref.children = children;
   ref.update = update;
   ref.render = render;
 
-  const fork = useOne(() => use(Paint)(ref));
-  return detach(fork, (render: Task) => {
-    useResource((dispose) => {
-      let running = true;
+  useResource((dispose) => {
+    let running = true;
 
-      const loop = () => {
-        if (ref.update) ref.update();
+    const loop = () => {
+      if (ref.update) ref.update();
+      if (ref.dispatch) ref.dispatch();
+      if (running) requestAnimationFrame(loop);
+    }
 
-        // @ts-ignore
-        colorAttachments[0].view = gpuContext
-        // @ts-ignore
-          .getCurrentTexture()
-          .createView();
-
-        render();
-
-        if (running) requestAnimationFrame(loop);
-      }
-
-      requestAnimationFrame(loop);
-      dispose(() => running = false);
-    });
+    requestAnimationFrame(loop);
+    dispose(() => running = false);
   });
+
+  const fork = useOne(() => use(Dispatch)(ref));
+  return detach(fork, (render: Task) => ref.dispatch = render);
 }

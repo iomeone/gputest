@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix'
+import { vec3, mat4 } from 'gl-matrix';
 
 export type TypedArray =
   Int8Array |
@@ -141,4 +141,5 @@ export type ShaderStageDescriptor = {
 export type ViewUniforms = {
   projectionMatrix: { value: mat4 },
   viewMatrix: { value: mat4 },
+  viewPosition: { value: vec3 | [number, number, number] | number[] },
 };

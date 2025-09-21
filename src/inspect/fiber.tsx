@@ -3,9 +3,9 @@ import { useResource, formatValue } from '../live';
 
 import React from 'react';
 
-import { useRefineCursor } from './cursor';
+import { useRefineCursor, Cursor } from './cursor';
 import { Node } from './node';
-import { ExpandState, SelectState, Action } from './types';
+import { PingState, ExpandState, SelectState, Action } from './types';
 import { ExpandRow, NotExpandRow, IndentTree } from './layout';
 
 type FiberProps = {
@@ -13,9 +13,10 @@ type FiberProps = {
 	ping: PingState,
 	expandCursor: Cursor<ExpandState>,
 	selectedCursor: Cursor<SelectState>,
+	compact?: boolean,
 }
 
-export const Fiber: React.FC<FiberProps> = ({fiber, ping, expandCursor, selectedCursor}) => {
+export const Fiber: React.FC<FiberProps> = ({fiber, ping, compact, expandCursor, selectedCursor}) => {
   const {id, mount, mounts, next} = fiber;
 	const [selectState, updateSelectState] = selectedCursor;
 	
@@ -36,6 +37,7 @@ export const Fiber: React.FC<FiberProps> = ({fiber, ping, expandCursor, selected
 				ping={ping}
 				expandCursor={expandCursor}
 				selectedCursor={selectedCursor}
+				compact
 			/>
 		);
 	}
@@ -67,9 +69,10 @@ export const Fiber: React.FC<FiberProps> = ({fiber, ping, expandCursor, selected
   }
 
 	if (out.length) {
+		const hasIndent = !compact || mounts || next;
 		return (<>
 			<Expand id={id.toString()} expandCursor={expandCursor} label={node}>
-				<IndentTree>{out}</IndentTree>
+				{hasIndent ? <IndentTree>{out}</IndentTree> : out}
 			</Expand>
 		</>);
 	}
@@ -86,7 +89,7 @@ type ExpandProps = {
 const ICON = (s: string) => <span className="m-icon">{s}</span>
 
 export const Expand: React.FC<ExpandProps> = ({id, label, expandCursor, children}) => {
-	const [expand, updateExpand] = useRefineCursor(expandCursor)(id);
+	const [expand, updateExpand] = useRefineCursor<boolean>(expandCursor)(id);
 
 	const onClick = (e: any) => {
 		updateExpand(expand === false);

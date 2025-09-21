@@ -29,7 +29,7 @@ export const formatTree = (root: LiveFiber<any>, depth: number = 0): string => {
 
 export const formatNode = <F extends Function>(node: DeferredCall<F>): string => {
   // @ts-ignore
-  const name = (node.f?.displayName ?? node.f?.name) || 'Node';
+  let name = (node.f?.displayName ?? node.f?.name) || 'Node';
   const args = [] as string[];
   if (node.arg !== undefined) {
     args.push(formatValue(node.arg));
@@ -38,6 +38,11 @@ export const formatNode = <F extends Function>(node: DeferredCall<F>): string =>
     if (name === 'REDUCE') {
       const [, reduce, initial] = node.args;
       args.push(formatValue({reduce, initial}));
+    }
+    else if (name === 'PROVIDE') {
+      const [context] = node.args;
+      name = 'Provide';
+      args.push(formatValue(context));
     }
     else {
       args.push(...node.args?.map(x => formatValue(x)));
@@ -70,7 +75,11 @@ export const formatShortValue = (x: any, seen: WeakMap<object, boolean> = new We
   if (typeof x === 'number') return '' + x;
   if (typeof x === 'symbol') return '(symbol)';
   if (typeof x === 'string') return x;
-  if (typeof x === 'function') return x.name != '' ? `${x.name}(…)` : `(…)=>{…}`;
+  if (typeof x === 'function') {
+    if (x.name === '' && !x.displayName) x.displayName = Math.round(Math.random() * 1000);
+    const name = x.displayName ?? x.name;
+    return `${name}(…)`;
+  }
   if (typeof x === 'object') {
     return '{...}';
   }

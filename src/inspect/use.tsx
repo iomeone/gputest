@@ -16,14 +16,19 @@ export const UseInspect: LiveComponent<UseInspectProps> = () => ({fiber, canvas}
 
 		const div = document.createElement('div');
 		div.style.position = 'absolute';
-		div.style.inset = '0';
+		(div.style as any).inset = '0';
 		div.style.pointerEvents = 'none';
-		parent.appendChild(div);
+		if (parent) parent.appendChild(div);
 		
-		dispose(() => parent.removeChild(div));
+		dispose(() => {
+			ReactDOM.unmountComponentAtNode(container);
+			if (parent) parent.removeChild(div);
+		});
 
 		return div;
 	}, [canvas])
 
 	ReactDOM.render(<Inspect fiber={fiber} />, container);
+
+	return null;
 };

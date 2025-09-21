@@ -1,5 +1,11 @@
 #version 450
 
+layout(set = 0, binding = 0) uniform ViewUniforms {
+  mat4 projectionMatrix;
+  mat4 viewMatrix;
+  float blink;
+} view;
+
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragUV;
 
@@ -11,5 +17,5 @@ float getGrid(vec2 uv) {
 }
 
 void main() {
-  outColor = vec4(fragColor.xyz * getGrid(fragUV), fragColor.w);
+  outColor = vec4(fragColor.xyz * getGrid(fragUV) * mix(0.5, 1.0, view.blink), fragColor.w);
 }

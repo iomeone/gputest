@@ -46,7 +46,7 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (fiber) => (prop
       const speedX = bearingSpeed / size;
       const speedY = pitchSpeed   / size;
 
-      if (buttons & 1) {
+      if ((buttons & 1) && (movementX || movementY))  {
         setBearing((phi: number) => phi + movementX * speedX);
         setPitch((theta: number) => clamp(theta + movementY * speedY, -π/2, π/2));
         e.preventDefault();
