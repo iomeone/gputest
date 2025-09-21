@@ -1,52 +1,52 @@
-import { LiveComponent, LiveElement } from '../live/types';
+import { LiveComponent, LiveElement, Task } from '../live/types';
 import { GPUPresentationContext } from '../webgpu/types';
-import {
-  defer, fork, useCallback, useOne, useResource, useSubContext, renderContext,
-} from '../live';
+import { use, detach, useCallback, useOne, useResource } from '../live';
 
 export type LoopProps = {
   gpuContext: GPUPresentationContext,
   colorAttachments: GPURenderPassColorAttachmentDescriptor[],
-  update: () => void,
-  render: () => LiveElement<any>,
+  children?: LiveElement<any>,
+  update?: () => void,
+  render?: () => LiveElement<any>,
 };
 
 export type LoopRef = {
-  update: () => void,
-  render: () => LiveElement<any>,
+  children?: LiveElement<any>,
+  update?: () => void,
+  render?: () => LiveElement<any>,
 };
 
-const Paint = () => (ref: LoopRef) => ref.render();
+const Paint = () => (ref: LoopRef) => ref.children ?? (ref.render ? ref.render() : null);
 
-export const Loop: LiveComponent<LoopProps> = (context) => (props) => {
-  const {gpuContext, colorAttachments, update, render} = props;
+export const Loop: LiveComponent<LoopProps> = (fiber) => (props) => {
+  const {gpuContext, colorAttachments, children, update, render} = props;
 
-  const ref: LoopRef = useOne(context, 0)(() => ({update, render}));
+  const ref: LoopRef = useOne(() => ({children, update, render}));
+  ref.children = children;
   ref.update = update;
   ref.render = render;
 
-  const subContext = useSubContext(context, 2)(defer(Paint)(ref));
+  const fork = useOne(() => use(Paint)(ref));
+  return detach(fork, (render: Task) => {
+    useResource((dispose) => {
+      let running = true;
 
-  useResource(context, 3)((dispose) => {
-    let running = true;
+      const loop = () => {
+        if (ref.update) ref.update();
 
-    const loop = () => {
-      if (ref.update) ref.update();
+        // @ts-ignore
+        colorAttachments[0].view = gpuContext
+        // @ts-ignore
+          .getCurrentTexture()
+          .createView();
 
-      // @ts-ignore
-      colorAttachments[0].view = gpuContext
-      // @ts-ignore
-        .getCurrentTexture()
-        .createView();
+        render();
 
-      renderContext(subContext);
+        if (running) requestAnimationFrame(loop);
+      }
 
-      if (running) requestAnimationFrame(loop);
-    }
-
-    requestAnimationFrame(loop);
-    dispose(() => running = false);
+      requestAnimationFrame(loop);
+      dispose(() => running = false);
+    });
   });
-
-  return fork(subContext);
 }

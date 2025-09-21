@@ -1,36 +1,34 @@
-import { LiveComponent, LiveElement } from '../live/types';
+import { LiveFiber, LiveComponent, LiveElement, Task } from '../live/types';
 import { GPUPresentationContext } from '../webgpu/types';
-import {
-  defer, fork, useCallback, useOne, useResource, useSubContext, renderContext,
-} from '../live';
+import { yeet, gatherReduce, useMemo } from '../live';
 
 export type DrawProps = {
   gpuContext: GPUPresentationContext,
   colorAttachments: GPURenderPassColorAttachmentDescriptor[],
-  render: () => LiveElement<any>,
+  children?: LiveElement<any>,
+  render?: () => LiveElement<any>,
 };
 
-export type DrawRef = {
-  render: () => LiveElement<any>,
-};
+const mapper = (t: Task) => [t];
+const reducer = (a: Task[], b: Task[]) => [...a, ...b];
 
-const Paint = () => (ref: DrawRef) => ref.render();
+export const Draw: LiveComponent<DrawProps> = (fiber) => (props) => {
+  const {gpuContext, colorAttachments, children, render} = props;
 
-export const Draw: LiveComponent<DrawProps> = (context) => (props) => {
-  const {gpuContext, colorAttachments, render} = props;
-
-  const ref: DrawRef = useOne(context, 0)(() => ({render}));
-  ref.render = render;
-
-  const subContext = useSubContext(context, 1)(defer(Paint)(ref));
+  const Done = useMemo(() =>
+    (fiber: LiveFiber<any>) => (ts: Task[]) => {
+      // @ts-ignore
+      colorAttachments[0].view = gpuContext
+      // @ts-ignore
+        .getCurrentTexture()
+        .createView();
+    
+      for (let task of ts) task();
+    },
+    [gpuContext, colorAttachments]);
 
   // @ts-ignore
-  colorAttachments[0].view = gpuContext
-  // @ts-ignore
-    .getCurrentTexture()
-    .createView();
+  if (!Done.displayName) Done.displayName = '[Draw]';
 
-  renderContext(subContext);
-
-  return fork(subContext);
+  return gatherReduce(children ?? (render ? render() : null), Done);
 }

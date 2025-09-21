@@ -42,27 +42,27 @@ export const setFloat64N = (n: number) => (view: DataView, offset: number, data:
 };
 
 export const UNIFORM_BYTE_SETTERS = {
-  "bool":        setUint8N(1),
+  "bool":        setUint8,
   "bvec2":       setUint8N(2),
   "bvec3":       setUint8N(3),
   "bvec4":       setUint8N(4),
 
-  "uint":        setUint32N(1),
+  "uint":        setUint32,
   "uvec2":       setUint32N(2),
   "uvec3":       setUint32N(3),
   "uvec4":       setUint32N(4),
 
-  "int":         setInt32N(1),
+  "int":         setInt32,
   "ivec2":       setInt32N(2),
   "ivec3":       setInt32N(3),
   "ivec4":       setInt32N(4),
 
-  "float":       setFloat32N(1),
+  "float":       setFloat32,
   "vec2":        setFloat32N(2),
   "vec3":        setFloat32N(3),
   "vec4":        setFloat32N(4),
 
-  "double":      setFloat64N(1),
+  "double":      setFloat64,
   "dvec2":       setFloat64N(2),
   "dvec3":       setFloat64N(3),
   "dvec4":       setFloat64N(4),

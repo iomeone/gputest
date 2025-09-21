@@ -2,15 +2,16 @@ import { mat4, vec3 } from 'gl-matrix';
 
 import { UniformAttribute, UniformType } from './types';
 
-export const PROJECTION_UNIFORMS: UniformAttribute[] = [{
-  name: 'projectionMatrix',
-  format: UniformType.mat4,
-}];
-
-export const VIEW_UNIFORMS: UniformAttribute[] = [{
-  name: 'viewMatrix',
-  format: UniformType.mat4,
-}];
+export const VIEW_UNIFORMS: UniformAttribute[] = [
+  {
+    name: 'projectionMatrix',
+    format: UniformType.mat4,
+  },
+  {
+    name: 'viewMatrix',
+    format: UniformType.mat4,
+  },
+];
 
 export const makeProjectionMatrix = (
   width: number,

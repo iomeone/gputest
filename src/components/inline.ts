@@ -1,0 +1,14 @@
+import { LiveFiber, LiveFunction, LiveElement } from '../live/types';
+import { GPUPresentationContext } from '../webgpu/types';
+
+import { enterFiber, exitFiber } from '../live'; 
+
+export type RawFiber = (fiber: LiveFiber<any>) => LiveElement<any>;
+export type LiveReturner = (fiber: RawFiber) => LiveElement<any>;
+
+export const Inline: LiveFunction<LiveReturner> = (fiber) => (f: RawFiber) => {
+  enterFiber(fiber, 0);
+  const v = f(fiber);
+  exitFiber();
+  return v;
+}

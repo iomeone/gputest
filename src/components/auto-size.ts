@@ -1,5 +1,5 @@
 import { LiveComponent, LiveElement } from '../live/types';
-import { useResource, useState } from '../live/hooks';
+import { useResource, useState } from '../live';
 
 export type AutoSizeProps = {
   canvas: HTMLCanvasElement,
@@ -12,14 +12,14 @@ export const getCanvasSize = (window: Window, canvas: HTMLCanvasElement): [numbe
   return [dpi * offsetWidth, dpi * offsetHeight];
 }
 
-export const AutoSize: LiveComponent<AutoSizeProps> = (context) => (props) => {
+export const AutoSize: LiveComponent<AutoSizeProps> = (fiber) => (props) => {
   const {canvas, render} = props;
   
-  const [[width, height], setSize] = useState(context, 0)(() => getCanvasSize(window, canvas));
+  const [[width, height], setSize] = useState(() => getCanvasSize(window, canvas));
   if (canvas.width  !==  width) canvas.width  = width;
   if (canvas.height !== height) canvas.height = height;
 
-  useResource(context, 1)((dispose) => {
+  useResource((dispose) => {
     const resize = () => setSize(getCanvasSize(window, canvas))
     window.addEventListener('resize', resize);
     dispose(() => window.removeEventListener('resize', resize));

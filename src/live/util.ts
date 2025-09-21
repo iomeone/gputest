@@ -1,26 +1,28 @@
-import { LiveContext, Task, Action, Dispatcher } from './types';
+import { LiveFiber, Task, Action, Dispatcher, Key } from './types';
 
+const NO_DEPS = [] as any[];
+
+// Schedules actions to be run immediately after the current thread completes
 export const makeActionScheduler = () => {
-  const queue = [] as Action[];
+  const queue = [] as Action<any>[];
 
   let timer = null as any;
   let onUpdate = null as any;
 
   const bind = (f: Dispatcher) => onUpdate = f;
 
-  const schedule = (context: LiveContext<any>, task: Task) => {
-    queue.push({context, task});
+  const schedule = (fiber: LiveFiber<any>, task: Task) => {
+    queue.push({fiber, task});
     if (!timer) timer = setTimeout(flush, 0);
   };
 
   const flush = () => {
+    const q = queue.slice();
+    queue.length = 0;
     timer = null;
-    queue.sort((a: Action, b: Action) => a.context.depth - b.context.depth);
-    for (const {task} of queue) task();
-    if (onUpdate) {
-      const q = queue.slice();
-      queue.length = 0;
 
+    for (const {task} of q) task();
+    if (onUpdate) {
       onUpdate(q);
     }
   };
@@ -28,19 +30,47 @@ export const makeActionScheduler = () => {
   return {bind, schedule, flush};
 }
 
-export const makeDisposalTracker = () => {
-  const disposal = new WeakMap<LiveContext<any>, Task[]>();
+// Tracks long-range dependencies for contexts
+export const makeDependencyTracker = () => {
+  const dependencies = new WeakMap<LiveFiber<any>, Set<LiveFiber<any>>>();
 
-  const track = (context: LiveContext<any>, t: Task) => {
-    let list = disposal.get(context);
-    if (!list) disposal.set(context, list = []);
+  const depend = (fiber: LiveFiber<any>, root: LiveFiber<any>) => {
+    let list = dependencies.get(root);
+    if (!list) dependencies.set(root, list = new Set());
+
+    let exist = list.has(fiber);
+    if (!exist) list.add(fiber);
+    return !exist;
+  }
+
+  const undepend = (fiber: LiveFiber<any>, root: LiveFiber<any>) => {
+    let list = dependencies.get(root);
+    if (list) list.delete(fiber);
+  }
+
+  const invalidate = (fiber: LiveFiber<any>) => {
+    const fibers = dependencies.get(fiber);
+    return fibers ? Array.from(fibers.values()) : NO_DEPS;
+  }
+
+  return {depend, undepend, invalidate};
+}
+
+
+// Schedules actions to be run when an object is disposed of
+export const makeDisposalTracker = () => {
+  const disposal = new WeakMap<LiveFiber<any>, Task[]>();
+
+  const track = (fiber: LiveFiber<any>, t: Task) => {
+    let list = disposal.get(fiber);
+    if (!list) disposal.set(fiber, list = []);
     list.push(t);
   }
 
-  const dispose = (context: LiveContext<any>) => {
-    const tasks = disposal.get(context);
+  const dispose = (fiber: LiveFiber<any>) => {
+    const tasks = disposal.get(fiber);
     if (tasks) {
-      disposal.delete(context);
+      disposal.delete(fiber);
       for (const task of tasks) task();
     }
   }
@@ -48,7 +78,8 @@ export const makeDisposalTracker = () => {
   return {track, dispose};
 }
 
-export const makePaintRequester = () => {
+// Schedules callback(s) on next paint
+export const makePaintRequester = (raf: any = requestAnimationFrame) => {
   let pending = false;
   const queue: Task[] = [];
 
@@ -63,8 +94,43 @@ export const makePaintRequester = () => {
   return (t: Task) => {
     if (!pending) {
       pending = true;
-      requestAnimationFrame(flush);
+      raf(flush);
     }
     queue.push(t);
   }
+}
+
+// Compares dependency arrays
+export const isSameDependencies = (
+  prev: any[] | undefined,
+  next: any[] | undefined,
+) => {
+  let valid = true;
+  if (next === undefined && prev === undefined) return true;
+  if (prev === undefined) valid = false;
+  if (next != null && prev != null) {
+    const n = prev.length || 0;
+    if (n !== next.length || 0) valid = false;
+    else for (let i = 0; i < n; ++i) if (prev[i] !== next[i]) {
+      valid = false;
+      break;
+    }
+  }
+  return valid;
+}
+
+// Checks if one path is a subpath of another
+export const isSubPath = (a: Key[], b: Key[]) => {
+  if (b.length <= a.length) return false;
+  const n = a.length;
+  for (let i = 0; i < n; ++i) if (a[i] !== b[i]) return false;
+  return true;
+}
+
+// Checks if one path is a subpath of another
+export const isSubOrSamePath = (a: Key[], b: Key[]) => {
+  if (b.length < a.length) return false;
+  const n = a.length;
+  for (let i = 0; i < n; ++i) if (a[i] !== b[i]) return false;
+  return true;
 }

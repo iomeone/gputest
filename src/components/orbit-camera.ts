@@ -1,7 +1,8 @@
 import { LiveComponent, LiveElement } from '../live/types';
 
-import { CameraUniforms, UniformAttribute } from '../core/types';
-import { PROJECTION_UNIFORMS, VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix } from '../core';
+import { useOne } from '../live';
+import { ViewUniforms, UniformAttribute } from '../core/types';
+import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix } from '../core';
 
 const DEFAULT_ORBIT_CAMERA = {
   phi: 0,
@@ -11,11 +12,6 @@ const DEFAULT_ORBIT_CAMERA = {
   near: 0.01,
   far: 100,
 };
-
-const UNIFORMS: UniformAttribute[] = [
-  ...PROJECTION_UNIFORMS,
-  ...VIEW_UNIFORMS,
-];
 
 export type OrbitCameraProps = {
   width: number,
@@ -27,10 +23,10 @@ export type OrbitCameraProps = {
   fov?: number,
   near?: number,
   far?: number,
-  render: (defs: UniformAttribute[], uniforms: CameraUniforms) => LiveElement<any>,
+  render: (defs: UniformAttribute[], uniforms: ViewUniforms) => LiveElement<any>,
 };
 
-export const OrbitCamera: LiveComponent<OrbitCameraProps> = () => (props) => {
+export const OrbitCamera: LiveComponent<OrbitCameraProps> = (fiber) => (props) => {
   const {
     width,
     height,
@@ -43,10 +39,13 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = () => (props) => {
     render,
   } = props;
   
-  const uniforms = {
-    projectionMatrix: makeProjectionMatrix(width, height, fov, near, far),
-    viewMatrix: makeOrbitMatrix(radius, phi, theta),
-  };
+  const uniforms = useOne(() => ({
+    projectionMatrix: { value: null },
+    viewMatrix: { value: null },
+  })) as any as ViewUniforms;
 
-  return render(UNIFORMS, uniforms);
+  uniforms.projectionMatrix.value = makeProjectionMatrix(width, height, fov, near, far);
+  uniforms.viewMatrix.value = makeOrbitMatrix(radius, phi, theta);
+
+  return render(VIEW_UNIFORMS, uniforms);
 };

@@ -66,7 +66,7 @@ export const makeLayoutFiller = (
     const base = index * length;
     for (const {name, offset, format} of attributes) {
       const setter = getUniformByteSetter(format);
-      setter(dataView, base + offset, item[name]);
+      setter(dataView, base + offset, item[name].value);
     }
   }
 

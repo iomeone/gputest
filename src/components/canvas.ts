@@ -1,4 +1,4 @@
-import { LiveComponent, LiveElement } from '../live';
+import { LiveComponent, LiveElement } from '../live/types';
 import { GPUPresentationContext, CanvasRenderingContextGPU } from '../webgpu/types';
 
 import { useMemo, useOne, useResource } from '../live';
@@ -28,7 +28,7 @@ export const PRESENTATION_FORMAT = "bgra8unorm" as GPUTextureFormat;
 export const DEPTH_STENCIL_FORMAT = "depth24plus-stencil8" as GPUTextureFormat;
 export const BACKGROUND_COLOR = [0.1, 0.2, 0.3, 1.0] as GPUColor;
 
-export const Canvas: LiveComponent<CanvasProps> = (context) => (props) => {
+export const Canvas: LiveComponent<CanvasProps> = (fiber) => (props) => {
   const {
     device,
     canvas,
@@ -40,14 +40,14 @@ export const Canvas: LiveComponent<CanvasProps> = (context) => (props) => {
 
   const {width, height} = canvas;
 
-  const colorStates      = useOne(context, 0)(() => [makeColorState(presentationFormat)], presentationFormat);
-  const colorAttachments = useOne(context, 1)(() => [makeColorAttachment(backgroundColor)], backgroundColor);
+  const colorStates      = useOne(() => [makeColorState(presentationFormat)], presentationFormat);
+  const colorAttachments = useOne(() => [makeColorAttachment(backgroundColor)], backgroundColor);
 
   const [
     depthTexture,
     depthStencilState,
     depthStencilAttachment,
-  ] = useResource(context, 2)(() => {
+  ] = useResource(() => {
       const texture = makeDepthTexture(device, width, height, depthStencilFormat);
       const state = makeDepthStencilState(depthStencilFormat);
       const attachment = makeDepthStencilAttachment(texture);
@@ -56,7 +56,7 @@ export const Canvas: LiveComponent<CanvasProps> = (context) => (props) => {
     [device, width, height, depthStencilFormat]
   );
 
-  const gpuContext = useMemo(context, 3)(() =>
+  const gpuContext = useMemo(() =>
     makePresentationContext(device, canvas, presentationFormat),
     [device, canvas, presentationFormat, width, height],
   );

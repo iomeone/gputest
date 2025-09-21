@@ -1,36 +1,55 @@
-import { LiveComponent,  useMemo, useOne } from '../live';
-import { UniformAttribute } from '../core/types';
-import { CameraUniforms } from '../camera/types';
+import { LiveComponent } from '../live/types';
+import { ViewUniforms, UniformDefinition, UniformAttribute, UniformType } from '../core/types';
 
+import { yeet, memoProps, useMemo, useOne, useState, useResource } from '../live';
+import {
+  makeVertexBuffers, makeUniformBuffer, uploadBuffer,
+  makeUniforms, makeUniformBindings,
+  makeShader, makeShaderStage,
+} from '../core';
 
 import vertexShader from './glsl/vertex.glsl';
 import fragmentShader from './glsl/fragment.glsl';
 
+export const CUBE_UNIFORM_DEFS: UniformAttribute[] = [
+  {
+    name: 'blink',
+    format: UniformType.float,
+  },
+];
+
 import { makeCube } from './meshes/cube';
-import { makeVertexBuffers, makeUniformBuffer, uploadBuffer } from '../core/buffer';
-import { makeUniforms, makeUniformBindings } from '../core/uniform';
-import { makeShader, makeShaderStage } from '../core/pipeline';
 
 export type CubeProps = {
   device: GPUDevice,
   colorStates: GPUColorStateDescriptor,
   depthStencilState: GPUDepthStencilStateDescriptor,
-  passEncoder: GPURenderPassEncoder,
   defs: UniformAttribute[]
-  uniforms: CameraUniforms,
+  uniforms: ViewUniforms,
   compileGLSL: (s: string, t: string) => any,
 };
 
+export const Cube: LiveComponent<CubeProps> = memoProps((fiber) => (props) => {
+  const {device, colorStates, depthStencilState, defs, uniforms, compileGLSL} = props;
 
+  // Blink state, flips every second
+  const [blink, setBlink] = useState(0);
+  const blinkUniform = {value: blink};
+  useResource((dispose) => {
+    const timer = setInterval(() => {
+      setBlink(b => 1 - b);
+    }, 1000);
+    setTimeout(() => clearInterval(timer), 5500);
+    dispose(() => clearInterval(timer));
+  });
 
-export const Cube: LiveComponent<CubeProps> = (context) => (props) => {
-  const {device, colorStates, depthStencilState, passEncoder, defs, uniforms, compileGLSL} = props;
-
-  const cube = useOne(context, 0)(makeCube);
-  const vertexBuffers = useMemo(context, 1)(() =>
+  // Cube vertex data
+  const cube = useOne(makeCube);
+  const vertexBuffers = useMemo(() =>
     makeVertexBuffers(device, cube.vertices), [device]);
 
-  const pipeline = useMemo(context, 2)(() => {
+  // Rendering pipeline
+  const pipeline = useMemo(() => {
     const pipelineDesc: GPURenderPipelineDescriptor = {
       // @ts-ignore
       primitive: {
@@ -45,8 +64,9 @@ export const Cube: LiveComponent<CubeProps> = (context) => (props) => {
     return device.createRenderPipeline(pipelineDesc);
   }, [device, colorStates, depthStencilState]);
 
-  const [uniformBuffer, uniformPipe, uniformBindGroup] = useMemo(context, 3)(() => {
-    const uniformPipe = makeUniforms(defs);
+  // Uniforms
+  const [uniformBuffer, uniformPipe, uniformBindGroup] = useMemo(() => {
+    const uniformPipe = makeUniforms([...defs, ...CUBE_UNIFORM_DEFS]);
     const uniformBuffer = makeUniformBuffer(device, uniformPipe.data);
     const entries = makeUniformBindings([{resource: {buffer: uniformBuffer}}]);
     const uniformBindGroup = device.createBindGroup({
@@ -56,13 +76,14 @@ export const Cube: LiveComponent<CubeProps> = (context) => (props) => {
     return [uniformBuffer, uniformPipe, uniformBindGroup] as [GPUBuffer, UniformDefinition, GPUBindGroup];
   }, [device, defs, pipeline]);
 
-  uniformPipe.fill(uniforms);
-  uploadBuffer(device, uniformBuffer, uniformPipe.data);
+  // Return a lambda back to parent(s)
+  return yeet((passEncoder: GPURenderPassEncoder) => {
+    uniformPipe.fill({...uniforms, blink: blinkUniform});
+    uploadBuffer(device, uniformBuffer, uniformPipe.data);
 
-  passEncoder.setPipeline(pipeline);
-  passEncoder.setBindGroup(0, uniformBindGroup);
-  passEncoder.setVertexBuffer(0, vertexBuffers[0]);
-  passEncoder.draw(cube.count, 1, 0, 0);
-  
-  return null;
-}
+    passEncoder.setPipeline(pipeline);
+    passEncoder.setBindGroup(0, uniformBindGroup);
+    passEncoder.setVertexBuffer(0, vertexBuffers[0]);
+    passEncoder.draw(cube.count, 1, 0, 0);
+  }); 
+}, 'Cube');

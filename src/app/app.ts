@@ -1,8 +1,8 @@
 import { LiveComponent } from '../live/types';
 import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { CameraUniforms, UniformAttribute } from '../core/types';
+import { ViewUniforms, UniformAttribute } from '../core/types';
 
-import { defer } from '../live';
+import { use, useOne } from '../live';
 
 import {
   AutoCanvas,
@@ -21,39 +21,43 @@ export type AppProps = {
 export const App: LiveComponent<AppProps> = () => (props) => {
   const {canvas, device, adapter, compileGLSL} = props;
 
-  return defer(AutoCanvas)({
+  return use(AutoCanvas)({
     canvas, device, adapter,
-    render: ({
-      width, height, gpuContext,
-      colorStates, colorAttachments,
-      depthStencilState, depthStencilAttachment,
-    }: CanvasRenderingContextGPU) =>
+    render: (renderContext: CanvasRenderingContextGPU) => {
+    
+      const {
+        width, height, gpuContext,
+        colorStates, colorAttachments,
+        depthStencilState, depthStencilAttachment,
+      } = renderContext;
 
-      defer(OrbitControls)({
+      return use(OrbitControls)({
         canvas,
         render: (radius: number, phi: number, theta: number) =>
 
-          defer(OrbitCamera)({
+          use(OrbitCamera)({
             canvas, width, height,
             radius, phi, theta,
-            render: (defs: UniformAttribute[], uniforms: CameraUniforms) =>
+            render: (defs: UniformAttribute[], uniforms: ViewUniforms) =>
 
-              //defer(Loop)({
-              defer(Draw)({
+              use(Draw)({
                 device, gpuContext, colorAttachments,
-                render: () =>
+                children: [
 
-                  defer(Pass)({
+                  use(Pass)({
                     device, colorAttachments, depthStencilAttachment,
-                    render: (passEncoder: GPURenderPassEncoder) => [
+                    children: [
 
-                      defer(Cube, 'cube')({device, colorStates, depthStencilState, compileGLSL, defs, uniforms, passEncoder}),
+                      use(Cube)({device, colorStates, depthStencilState, compileGLSL, defs, uniforms}),
 
                     ]
                   })
+
+                ],
               })
           })
-      })
+      });
+    }
   });
 };
 
