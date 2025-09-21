@@ -9,17 +9,46 @@
       margin: 0;
       padding: 0;
       height: 100%;
+      font: 16px/24px sans-serif;
     }
     #use-gpu {
       position: relative;
       height: 100%;
     }
-    #use-gpu > canvas {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
+    .error {
+      background: rgba(255, 100, 100, .2);
+      color: #500;
+      padding: 40px;
+    }
+    @font-face {
+      font-family: 'Material Icons';
+      font-style: normal;
+      font-weight: 400;
+      src: url(./MaterialIcons-Regular.ttf) format('truetype');
+    }
+    .m-icon {
+      font-family: 'Material Icons';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;  /* Preferred icon size */
+      line-height: 1;
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+
+      /* Support for all WebKit browsers. */
+      -webkit-font-smoothing: antialiased;
+      /* Support for Safari and Chrome. */
+      text-rendering: optimizeLegibility;
+
+      /* Support for Firefox. */
+      -moz-osx-font-smoothing: grayscale;
+
+      /* Support for IE. */
+      font-feature-settings: 'liga';
     }
   </style>
   <body>

@@ -7,3 +7,4 @@ export * from './loop';
 export * from './orbit-camera';
 export * from './orbit-controls';
 export * from './pass';
+export * from './render-to-texture';

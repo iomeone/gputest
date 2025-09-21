@@ -32,6 +32,7 @@ export type LiveFiber<F extends Function> = FunctionCall<F> & {
   host?: HostInterface,
   path: Key[],
   depth: number,
+	id: number,
 
   // Instance of F bound to self
   bound?: F,
@@ -115,4 +116,5 @@ export type HostInterface = {
 
   __stats: {mounts: number, unmounts: number, updates: number, dispatch: number},
   __flush: () => void,
+  __ping: () => void,
 };

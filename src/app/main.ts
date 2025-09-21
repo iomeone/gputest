@@ -5,6 +5,8 @@ import { use, render, formatTree } from '../live';
 
 import { App } from './app';
 
+import 'semantic-ui-css/semantic.min.css'
+
 const ROOT_SELECTOR = '#use-gpu';
 
 export const main = async (): Promise<void> => {
@@ -16,10 +18,6 @@ export const main = async (): Promise<void> => {
       use(App)({adapter, device, canvas, compileGLSL})
     );
   
-    // @ts-ignore
-    const log = () => console.log(formatTree(root))
-    setTimeout(() => log(), 2000);
-
   } catch (e) {
 
     // Display exception if no WebGPU support

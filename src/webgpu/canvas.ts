@@ -38,7 +38,7 @@ export const makePresentationContext = (
   canvas: HTMLCanvasElement,
   format: GPUTextureFormat,
 ): GPUPresentationContext => {
-  const gpuContext = canvas.getContext("gpupresent") as unknown as GPUCanvasContext | null;
+  const gpuContext = canvas.getContext("webgpu") as unknown as GPUCanvasContext | null;
   if (!gpuContext) throw new Error("Cannot get WebGPU Canvas context");
 
   const descriptor = {

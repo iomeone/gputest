@@ -1,6 +1,6 @@
 import { LiveComponent, LiveFiber, LiveElement } from '../live/types';
 import {
-  use, yeet, gatherReduce, useMemo,
+  use, yeet, memo, gatherReduce, useMemo,
 } from '../live';
 
 export type PassProps = {
@@ -13,7 +13,7 @@ export type PassProps = {
 
 export type RenderToPass = (passEncoder: GPURenderPassEncoder) => void;
 
-export const Pass: LiveComponent<PassProps> = (fiber) => (props) => {
+export const Pass: LiveComponent<PassProps> = memo((fiber) => (props) => {
   const {device, colorAttachments, depthStencilAttachment, children, render} = props;
 
   const Done = useMemo(() => (fiber: LiveFiber<any>) => (rs: RenderToPass[]) =>
@@ -37,4 +37,4 @@ export const Pass: LiveComponent<PassProps> = (fiber) => (props) => {
   if (!Done.displayName) Done.displayName = '[Pass]';
 
   return gatherReduce(children ?? (render ? render() : null), Done);
-}
+}, 'Pass');

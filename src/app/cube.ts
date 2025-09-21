@@ -31,6 +31,7 @@ export type CubeProps = {
 
 export const Cube: LiveComponent<CubeProps> = memoProps((fiber) => (props) => {
   const {device, colorStates, depthStencilState, defs, uniforms, compileGLSL} = props;
+  const start = +new Date();
 
   // Blink state, flips every second
   const [blink, setBlink] = useState(0);

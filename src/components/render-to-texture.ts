@@ -1,61 +1,71 @@
-import { LiveComponent, LiveElement } from '../live/types';
+import { LiveFiber, LiveComponent, LiveElement, Task } from '../live/types';
 import { GPUPresentationContext, CanvasRenderingContextGPU } from '../webgpu/types';
-import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, BACKGROUND_COLOR } from './constants';
+import { gatherReduce, useMemo, useOne } from '../live';
+import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, EMPTY_COLOR } from './constants';
 
-import { useMemo, useOne } from '../live';
-
-import { makePresentationContext } from '../webgpu';
 import {
   makeColorState,
   makeColorAttachment,
+  makeRenderTexture,
   makeDepthTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
 } from '../core';
 
-export type CanvasProps = {
+export type RenderToTextureProps = {
   device: GPUDevice,
-  adapter: GPUAdapter,
-  canvas: HTMLCanvasElement,
+  width: number,
+  height: number,
 
   presentationFormat?: GPUTextureFormat,
-  depthStencilFormat?: GPUTextureFormat,
+  depthStencilFormat?: GPUTextureFormat | null,
   backgroundColor?: GPUColor,
 
   render: (context: CanvasRenderingContextGPU) => LiveElement<any>,
-}
+};
 
-export const Canvas: LiveComponent<CanvasProps> = (fiber) => (props) => {
+export const RenderToTexture: LiveComponent<RenderToTextureProps> = (fiber) => (props) => {
   const {
     device,
-    canvas,
-    render,
+    gpuContext,
+    width = 1024,
+    height = 1024,
     presentationFormat = PRESENTATION_FORMAT,
     depthStencilFormat = DEPTH_STENCIL_FORMAT,
-    backgroundColor = BACKGROUND_COLOR,
+    backgroundColor = EMPTY_COLOR,
+    render,
+    children,
   } = props;
-
-  const {width, height} = canvas;
+  
+  const renderTexture = useMemo(() =>
+    makeRenderTexture(
+      device,
+      width,
+      height,
+      presentationFormat
+    ),
+    [device, width, height, presentationFormat]
+  );
 
   const colorStates      = useOne(() => [makeColorState(presentationFormat)], presentationFormat);
-  const colorAttachments = useOne(() => [makeColorAttachment(null, backgroundColor)], backgroundColor);
+  const colorAttachments = useMemo(() =>
+    [makeColorAttachment(renderTexture, backgroundColor)],
+    [renderTexture, backgroundColor]
+  );
 
   const [
     depthTexture,
     depthStencilState,
     depthStencilAttachment,
   ] = useMemo(() => {
+      if (!depthStencilFormat) return [];
+
       const texture = makeDepthTexture(device, width, height, depthStencilFormat);
       const state = makeDepthStencilState(depthStencilFormat);
       const attachment = makeDepthStencilAttachment(texture);
       return [texture, state, attachment];
     },
     [device, width, height, depthStencilFormat]
-  );
-
-  const gpuContext = useMemo(() =>
-    makePresentationContext(device, canvas, presentationFormat),
-    [device, canvas, presentationFormat, width, height],
   );
 
   const deferred = render({
@@ -69,5 +79,14 @@ export const Canvas: LiveComponent<CanvasProps> = (fiber) => (props) => {
     depthStencilAttachment,
   } as CanvasRenderingContextGPU);
 
-  return deferred;
+  const Done = useMemo(() =>
+    (fiber: LiveFiber<any>) => (ts: Task[]) => {
+      for (let task of ts) task();
+    },
+  );
+
+  // @ts-ignore
+  if (!Done.displayName) Done.displayName = '[RenderToTexture]';
+
+  return gatherReduce(deferred, Done);
 }

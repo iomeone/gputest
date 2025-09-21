@@ -50,6 +50,21 @@ export const formatNode = <F extends Function>(node: DeferredCall<F>): string =>
 
 export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap()): string => {
   if (!x) return x;
+  if (typeof x === 'object') {
+    if (seen.get(x)) return '[Circular]';
+    seen.set(x, true);
+
+    const out = [];
+    for (const k in x) if (hasOwnProperty.call(x, k)) {
+      out.push(`${k}: ${formatShortValue(x[k], seen)}`);
+    }
+    return '{' + out.join(', ') + '}';
+  }
+  return formatShortValue(x, seen);
+}
+
+export const formatShortValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap()): string => {
+  if (!x) return x;
   if (Array.isArray(x)) return '[' + x.map((x) => formatValue(x, seen)).join(', ') + ']';
   if (typeof x === 'boolean') return x ? 'true' : 'false';
   if (typeof x === 'number') return '' + x;
@@ -57,14 +72,7 @@ export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap
   if (typeof x === 'string') return x;
   if (typeof x === 'function') return x.name != '' ? `${x.name}(…)` : `(…)=>{…}`;
   if (typeof x === 'object') {
-    if (seen.get(x)) return '[Circular]';
-    seen.set(x, true);
-
-    const out = [];
-    for (const k in x) if (hasOwnProperty.call(x, k)) {
-      out.push(`${k}: ${formatValue(x[k], seen)}`);
-    }
-    return '{' + out.join(', ') + '}';
+    return '{...}';
   }
   return '' + x;
 }

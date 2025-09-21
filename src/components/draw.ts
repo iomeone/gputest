@@ -9,9 +9,6 @@ export type DrawProps = {
   render?: () => LiveElement<any>,
 };
 
-const mapper = (t: Task) => [t];
-const reducer = (a: Task[], b: Task[]) => [...a, ...b];
-
 export const Draw: LiveComponent<DrawProps> = (fiber) => (props) => {
   const {gpuContext, colorAttachments, children, render} = props;
 

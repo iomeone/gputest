@@ -8,7 +8,8 @@ import { use, bind, reconcile, DETACH, RECONCILE, MAP_REDUCE, GATHER, YEET, PROV
 import { isSameDependencies } from './util';
 import { formatNode } from './debug';
 
-let DEBUG = false;
+let ID = 0;
+let DEBUG = true;
 //setTimeout((() => DEBUG = false), 900);
 
 const NOP = () => {};
@@ -42,7 +43,7 @@ export const makeFiber = <F extends Function>(
     yeeted, context,
     state: null, pointer: 0, version: null, memo: null,
     mount: null, mounts: null, next: null, seen: null,
-    type: null,
+    type: null, id: ++ID,
   } as any as LiveFiber<F>;
 
   self.bound = bind(f, self) as any as F;
@@ -111,7 +112,7 @@ export const renderFiber = <F extends Function>(
   else out = bound.apply(null, args ?? EMPTY_ARRAY);
 
   // Early exit if memoized
-  if (fiber.version && fiber.type !== YEET) {
+  if (fiber.version && fiber.type !== YEET && !fiber.next) {
     if (fiber.version === fiber.memo) return fiber;
     fiber.memo = fiber.version;
   }
@@ -202,6 +203,8 @@ export const reconcileFiberCalls = <F extends Function>(
   if (!mounts) mounts = fiber.mounts = new Map();
   if (!order)  order  = fiber.order  = [];
   if (!seen)   seen   = fiber.seen   = new Set();
+
+  if (!Array.isArray(calls)) calls = [calls];
 
   order.length = 0;
   let i = 0, j = 0;
@@ -338,7 +341,7 @@ export const gatherFiberValues = <F extends Function, T>(
     }
   }
   else if (mount) return yeeted.reduced = gatherFiberValues(mount);
-  return undefined;
+  return [];
 }
 
 // Provide a value for a context on a fiber

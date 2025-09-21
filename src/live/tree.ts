@@ -20,6 +20,7 @@ export const makeHost = () => {
     depend: dependency.depend,
     undepend: dependency.undepend,
     invalidate: dependency.invalidate,
+		__ping: () => {},
     __stats: {mounts: 0, unmounts: 0, updates: 0, dispatch: 0},
     __flush: scheduler.flush,
   };
@@ -120,6 +121,9 @@ const makeOnRender = (visit: Set<LiveFiber<any>>) => (fiber: LiveFiber<any>) => 
     visit.add(sub);
     bustCaches(sub);
   }
+
+	// Notify host / dev tool of render
+	host.__ping(fiber);
 };
 
 export const renderPaint = (() => {
