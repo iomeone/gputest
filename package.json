@@ -8,6 +8,7 @@
   "devDependencies": {
     "@babel/cli": "^7.8.3",
     "@babel/core": "^7.12.10",
+     "@babel/eslint-parser": "^7.13.14",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.10",
@@ -17,17 +18,20 @@
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "@webgpu/glslang": "^0.0.15",
-    "@webgpu/types": "^0.0.32",
+    "@webgpu/types": "^0.1.7",
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.2.2",
+    "css-loader": "^6.5.1",
     "eslint": "^7.5.0",
     "gl-matrix": "^3.3.0",
     "jest": "^26.6.3",
     "raw-loader": "^4.0.2",
+    "style-loader": "^3.3.1",
     "ts-node": "^9.1.1",
     "typescript": "^3.7.5",
     "webpack": "^5.10.1",
     "webpack-cli": "^4.2.0",
+    "webpack-dev-server": "^3.11.0",
 
 
     "@babel/preset-react": "^7.16.0",
@@ -43,7 +47,7 @@
     "@lezer/common": "^0.15.8",
     "@lezer/generator": "^0.15.2",
     "@lezer/lr": "^0.15.4",
-    "@use-gpu/core": "*"
+    "../core": "*"
 
 
 
@@ -61,10 +65,7 @@
     "build:js": "babel src --out-dir lib --extensions \".ts,.tsx\" --source-maps inline"
   },
   "dependencies": {
-    "@babel/eslint-parser": "^7.13.14",
-    "webpack-dev-server": "^3.11.0",
-    "css-loader": "^6.5.1",
-    "style-loader": "^3.3.1"
+
   },
   "jest": {
     "modulePaths": [

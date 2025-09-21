@@ -1,4 +1,4 @@
-import { GPUMount, GPUDeviceMount, GPUPresentationContext } from './types';
+import { GPUMount, GPUDeviceMount } from './types';
 
 export const mountGPU = async (selector: string): Promise<GPUMount> => {
  
@@ -37,7 +37,7 @@ export const makePresentationContext = (
   device: GPUDevice,
   canvas: HTMLCanvasElement,
   format: GPUTextureFormat,
-): GPUPresentationContext => {
+): GPUCanvasContext => {
   const gpuContext = canvas.getContext("webgpu") as unknown as GPUCanvasContext | null;
   if (!gpuContext) throw new Error("Cannot get WebGPU Canvas context");
 

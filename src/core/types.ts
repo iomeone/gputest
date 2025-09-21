@@ -1,4 +1,24 @@
-import { vec3, mat4 } from 'gl-matrix';
+import { vec2, vec3, mat4 } from 'gl-matrix';
+
+export type DeepPartial<T> = {
+  [P in keyof T]?: DeepPartial<T[P]>;
+};
+
+export type UseRenderingContextGPU = {
+  width: number,
+  height: number,
+  samples: number,
+
+  device: GPUDevice,
+  languages: ShaderLanguages,
+
+  gpuContext: GPUCanvasContext,
+  colorStates: GPUColorTargetState[],
+  colorAttachments: GPURenderPassColorAttachment[],
+  depthTexture: GPUTexture,
+  depthStencilState: GPUDepthStencilState,
+  depthStencilAttachment: GPURenderPassDepthStencilAttachment,
+};
 
 export type TypedArray =
   Int8Array |
@@ -79,7 +99,7 @@ export enum UniformType {
 export type VertexData = {
   count: number,
   vertices: TypedArray[],
-  attributes: GPUVertexBufferLayoutDescriptor[],
+  attributes: GPUVertexBufferLayout[],
   index?: TypedArray,
   indexFormat?: GPUIndexFormat,
 };
@@ -125,10 +145,16 @@ export enum ShaderLanguage {
   GLSL = 'glsl',
 };
 
-export type ShaderLanguages = {[k in ShaderLanguage]: any};
+export type ShaderStage = 'vertex' | 'fragment';
+export type ShaderCompiler = (code: string, stage: ShaderStage) => TypedArray;
+
+export type ShaderLanguages = {[k in ShaderLanguage]: ShaderLanguageAPI};
+export type ShaderLanguageAPI = {
+  compile: ShaderCompiler,
+};
 
 export type ShaderModuleDescriptor = {
-  code: string,
+  code: TypedArray | string,
   entryPoint: string,
 };
 
@@ -142,4 +168,5 @@ export type ViewUniforms = {
   projectionMatrix: { value: mat4 },
   viewMatrix: { value: mat4 },
   viewPosition: { value: vec3 | [number, number, number] | number[] },
+  viewResolution: { value: vec2 | [number, number] | number[] }
 };

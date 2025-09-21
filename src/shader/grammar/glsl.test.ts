@@ -1,11 +1,12 @@
+import { Tree } from '@lezer/common';
 import { parser } from './glsl';
 import { formatAST, formatASTNode } from '../ast';
 
 expect.addSnapshotSerializer({
-  print(val) {
+  print(val: any) {
     return formatAST(val.topNode, val.text);
   },
-  test(val) {
+  test(val: any) {
     return val && val.hasOwnProperty('type') && val.hasOwnProperty('children') && val.hasOwnProperty('positions');
   },
 });

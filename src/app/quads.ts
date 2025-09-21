@@ -4,35 +4,33 @@ import { ViewContext, RenderContext } from '../components';
 import { yeet, memoProps, useContext, useMemo, useOne, useState, useResource } from '../live';
 import {
   makeVertexBuffers, makeUniformBuffer, uploadBuffer,
-  makeUniforms, makeUniformBindings,  
+  makeUniforms, makeUniformBindings,
+  
   makeGLSLRenderPipeline,
 } from '../core';
 
-import vertexShader from './glsl/mesh-vertex.glsl';
-import fragmentShader from './glsl/mesh-fragment.glsl';
+import vertexShader from './glsl/quads-vertex.glsl';
+import fragmentShader from './glsl/quads-fragment.glsl';
 
 export const MESH_UNIFORM_DEFS: UniformAttribute[] = [
+/*
   {
     name: 'lightPosition',
     format: UniformType.vec4,
   },
+*/
 ];
 
 const LIGHT = [0.5, 3, 2, 1];
 
-export type MeshProps = {
-  mesh: VertexData,
+export type QuadsProps = {
 };
 
-export const Mesh: LiveComponent<MeshProps> = memoProps((fiber) => (props) => {
-  const {mesh} = props;
+export const Quads: LiveComponent<QuadsProps> = memoProps((fiber) => (props) => {
 
   const {uniforms, defs} = useContext(ViewContext);
   const renderContext = useContext(RenderContext);
   const {device, colorStates, depthStencilState, samples, languages} = renderContext;
-
-  const vertexBuffers = useMemo(() =>
-    makeVertexBuffers(device, mesh.vertices), [device, mesh]);
 
   // Rendering pipeline
   const pipeline = useMemo(() =>
@@ -42,11 +40,11 @@ export const Mesh: LiveComponent<MeshProps> = memoProps((fiber) => (props) => {
       fragmentShader,
       {
         primitive: {
-          topology: "triangle-list",
-          cullMode: "back",
+          topology: "triangle-strip",
+          stripIndexFormat: 'uint16',
         },
-        vertex:   {buffers: mesh.attributes},
-        fragment: {targets: colorStates},
+        vertex:   {},
+        fragment: {},
       }
     ),
     [device, colorStates, depthStencilState, samples, languages]
@@ -67,17 +65,11 @@ export const Mesh: LiveComponent<MeshProps> = memoProps((fiber) => (props) => {
 
   // Return a lambda back to parent(s)
   return yeet((passEncoder: GPURenderPassEncoder) => {
-    const t = +new Date() / 1000;
-    const light = [Math.cos(t) * 5, 4, Math.sin(t) * 5, 1];
-    uniformPipe.fill({
-      ...uniforms,
-      lightPosition: { value: light }
-    });
+    uniformPipe.fill(uniforms);
     uploadBuffer(device, uniformBuffer, uniformPipe.data);
 
     passEncoder.setPipeline(pipeline);
     passEncoder.setBindGroup(0, uniformBindGroup);
-    passEncoder.setVertexBuffer(0, vertexBuffers[0]);
-    passEncoder.draw(mesh.count, 1, 0, 0);
+    passEncoder.draw(4, 4, 0, 0);
   }); 
-}, 'Mesh');
+}, 'Quads');

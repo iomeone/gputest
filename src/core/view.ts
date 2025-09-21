@@ -15,6 +15,10 @@ export const VIEW_UNIFORMS: UniformAttribute[] = [
     name: 'viewPosition',
     format: UniformType.vec4
   },
+  {
+    name: 'viewResolution',
+    format: UniformType.vec2
+  },
 ];
 
 export const makeProjectionMatrix = (

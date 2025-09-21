@@ -9,13 +9,13 @@ export const makeDepthTexture = (
 ): GPUTexture =>
 	makeRenderTexture(device, width, height, format, samples);
 
-export const makeDepthStencilState = (format: GPUTextureFormat): GPUDepthStencilStateDescriptor => ({
+export const makeDepthStencilState = (format: GPUTextureFormat): GPUDepthStencilState => ({
   depthWriteEnabled: true,
   depthCompare: "less" as GPUCompareFunction,
   format,
 });
 
-export const makeDepthStencilAttachment = (depthTexture: GPUTexture): GPURenderPassDepthStencilAttachmentDescriptor => ({
+export const makeDepthStencilAttachment = (depthTexture: GPUTexture): GPURenderPassDepthStencilAttachment => ({
   view: depthTexture.createView(),
   depthLoadValue: 1.0,
   depthStoreOp: "store" as GPUStoreOp,

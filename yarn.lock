@@ -1566,19 +1566,19 @@
     "@typescript-eslint/types" "4.22.0"
     "eslint-visitor-keys" "^2.0.0"
 
-"@use-gpu/core@*":
+"../core@*":
   "integrity" "sha512-DRGzbiH+ozgmxsQDbR6BhbCVCr68ElO11cbVuCc2nXuDE9D7HowO5h7CKpatj16NycDGOVxEI4T+eim+VnoC/A=="
-  "resolved" "https://registry.npmjs.org/@use-gpu/core/-/core-0.17.0.tgz"
+  "resolved" "https://registry.npmjs.org/../core/-/core-0.17.0.tgz"
   "version" "0.17.0"
   dependencies:
-    "@use-gpu/state" "^0.17.0"
+    "../state" "^0.17.0"
     "earcut" "^2.2.4"
     "gl-matrix" "^3.3.0"
     "lodash" "^4.17.21"
 
-"@use-gpu/state@^0.17.0":
+"../state@^0.17.0":
   "integrity" "sha512-YRr18CsXldYl5zd03GFft4aVxrpRhn3IBTRDYxXVuqRq/ZGiXoVYXDprVwJoMKd6HmwkxCGKPqI5vmwfio6MoQ=="
-  "resolved" "https://registry.npmjs.org/@use-gpu/state/-/state-0.17.0.tgz"
+  "resolved" "https://registry.npmjs.org/../state/-/state-0.17.0.tgz"
   "version" "0.17.0"
 
 "@webassemblyjs/ast@1.9.1":

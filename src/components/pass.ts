@@ -4,8 +4,8 @@ import { RenderContext } from './render-provider';
 
 export type PassProps = {
   device: GPUDevice,
-  colorAttachments: GPURenderPassColorAttachmentDescriptor[],
-  depthStencilAttachment: GPURenderPassDepthStencilAttachmentDescriptor,
+  colorAttachments: GPURenderPassColorAttachment[],
+  depthStencilAttachment: GPURenderPassDepthStencilAttachment,
   children: LiveElement<any>,
   render: () => LiveElement<any>,
 };

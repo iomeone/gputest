@@ -1,12 +1,12 @@
 import { LiveComponent } from '../live/types';
 import { ViewUniforms, UniformDefinition, UniformAttribute, UniformType } from '../core/types';
 
-import { ViewContext, RenderContext, GLSLContext } from '../components';
+import { ViewContext, RenderContext } from '../components';
 import { yeet, memoProps, useContext, useMemo, useOne, useState, useResource } from '../live';
 import {
   makeVertexBuffers, makeUniformBuffer, uploadBuffer,
   makeUniforms, makeUniformBindings,
-  makeShader, makeShaderStage,
+  makeShaderModule, makeShaderStage,
 } from '../core';
 
 import vertexShader from './glsl/cube-vertex.glsl';
@@ -25,9 +25,9 @@ export type CubeProps = {
 };
 
 export const Cube: LiveComponent<CubeProps> = memoProps((fiber) => (props) => {
-  const {compileGLSL} = useContext(GLSLContext);
   const {uniforms, defs} = useContext(ViewContext);
-  const {width, device, colorStates, depthStencilState} = useContext(RenderContext);
+  const {width, device, colorStates, depthStencilState, languages} = useContext(RenderContext);
+  const {glsl: {compile}} = languages;
 
   // Blink state, flips every second
   const [blink, setBlink] = useState(0);
@@ -53,9 +53,9 @@ export const Cube: LiveComponent<CubeProps> = memoProps((fiber) => (props) => {
         topology: "triangle-list",
         cullMode: "back",
       },
-      vertex:   makeShaderStage(device, makeShader(compileGLSL(vertexShader, 'vertex')), {buffers: cube.attributes}),
+      vertex:   makeShaderStage(device, makeShaderModule(compile(vertexShader, 'vertex')), {buffers: cube.attributes}),
       // @ts-ignore
-      fragment: makeShaderStage(device, makeShader(compileGLSL(fragmentShader, 'fragment')), {targets: colorStates}),
+      fragment: makeShaderStage(device, makeShaderModule(compile(fragmentShader, 'fragment')), {targets: colorStates}),
       depthStencil: depthStencilState,
     };
     return device.createRenderPipeline(pipelineDesc);

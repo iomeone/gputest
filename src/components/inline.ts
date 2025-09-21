@@ -1,5 +1,4 @@
 import { LiveFiber, LiveFunction, LiveElement } from '../live/types';
-import { GPUPresentationContext } from '../webgpu/types';
 
 import { enterFiber, exitFiber } from '../live'; 
 

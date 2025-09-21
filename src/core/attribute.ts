@@ -7,8 +7,8 @@ export const getVertexAttributeSize = (format: GPUVertexFormat): number =>
 export const makeVertexAttributeLayout = (
   attributes: VertexAttribute[],
   shaderLocation = 0
-): GPUVertexBufferLayoutDescriptor => {
-  const out = [] as GPUVertexAttributeDescriptor[];
+): GPUVertexBufferLayout => {
+  const out = [] as GPUVertexAttribute[];
 
   let offset = 0;
   for (const {format} of attributes) {
