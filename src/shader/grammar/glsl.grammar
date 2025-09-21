@@ -1,4 +1,4 @@
-@top Program { unit }
+@top Program { unit+ }
 @skip { space | Comment }
 @external tokens untilEOL from "./tokens" { UntilEOL, UntilCommentClose }
 @precedence {
@@ -20,20 +20,25 @@
   oror @left,
   conditional @right,
   assign @right,
-  statement @cut
+  statement @cut,
+	import
 }
-
-unit { externalDeclaration }
 
 k<term> { @specialize[@name={term}]<Identifier, term> }
 d<term> { @specialize[@name={term}]<Identifier, term> }
 t<term> { @specialize[@name={term}]<Identifier, term> }
 r<term> { @specialize[@name={term}]<Identifier, term> }
 
-Comment { CommentLine | CommentOpen UntilCommentClose }
-Preprocessor { Hash Directive UntilEOL }
-
+unit { externalDeclaration }
 externalDeclaration { FunctionDefinition | Declaration | Preprocessor }
+
+Comment { CommentLine | CommentOpen UntilCommentClose }
+Preprocessor {
+	hash Directive UntilEOL |
+	hash d<'import'> ImportDeclarationList 'from' String UntilEOL
+}
+ImportDeclarationList { '{' (ImportDeclaration comma)* (ImportDeclaration comma?) '}' }
+ImportDeclaration { Identifier ('as' Identifier)? }
 
 FunctionDefinition { FunctionPrototype compoundStatement }
 FunctionPrototype { QualifiedType Identifier '(' (ParameterDeclaration (comma ParameterDeclaration)*)? ')' }
@@ -68,7 +73,7 @@ structDeclaratorList { DeclarationSpecifier (comma DeclarationSpecifier)* }
 
 DeclarationSpecifier { Identifier ArraySpecifier? }
 VariableDeclaration { QualifiedType SingleDeclaration (comma SingleDeclaration)* }
-SingleDeclaration { DeclarationSpecifier (!assign Assign initializer)? }
+SingleDeclaration { DeclarationSpecifier (!assign assign initializer)? }
 
 initializer {
   assignmentExpression |
@@ -94,7 +99,7 @@ simpleStatement {
 DeclarationStatement { Declaration }
 ExpressionStatement { expression? semicolon }
 SelectionStatement { k<'if'> '(' expression ')' Statement (!else k<"else"> Statement)? }
-Condition { expression | QualifiedType Identifier !assign Assign initializer }
+Condition { expression | QualifiedType Identifier !assign assign initializer }
 SwitchStatement { k<"switch"> '(' expression ')' '{' StatementList '}' }
 CaseLabel { (k<"default"> | k<"case"> expression) ':' }
 IterationStatement {
@@ -113,9 +118,10 @@ fieldSelection { Identifier }
 expression { assignmentExpression (comma assignmentExpression)* }
 
 primaryExpression {
-  Reserved? (Identifier | Number | '(' expression ')') 
+  Reserved? (Identifier | Number | Parens ) 
 }
-assignmentExpression { conditionalExpression | unaryExpression !assign Assign assignmentExpression }
+Parens { '(' expression ')' }
+assignmentExpression { conditionalExpression | Assignment }
 constantExpression { conditionalExpression }
 integerExpression { expression }
 conditionalExpression {
@@ -139,10 +145,11 @@ Unary { (Inc | Dec | Add | Sub | Bang | Tilde) unaryExpression }
 Binary {
   conditionalExpression !mul Mul conditionalExpression |
   conditionalExpression !mul Div conditionalExpression |
+  conditionalExpression !mul Mod conditionalExpression |
   conditionalExpression !add Add conditionalExpression |
   conditionalExpression !add Sub conditionalExpression |
-  conditionalExpression !shift ShiftLeft conditionalExpression |
-  conditionalExpression !shift ShiftRight conditionalExpression |
+  conditionalExpression !shift Left conditionalExpression |
+  conditionalExpression !shift Right conditionalExpression |
   conditionalExpression !compare Lt conditionalExpression |
   conditionalExpression !compare Lte conditionalExpression |
   conditionalExpression !compare Gt conditionalExpression |
@@ -157,6 +164,23 @@ Binary {
   conditionalExpression !xorxor XorXor conditionalExpression
 }
 Conditional { conditionalExpression !conditional '?' expression ':' assignmentExpression }
+Assignment {
+  unaryExpression (
+	  !assign (
+			MulAssign |
+ 			DivAssign |
+ 			ModAssign |
+ 			AddAssign |
+ 			SubAssign |
+ 			LeftAssign |
+ 			RightAssign |
+ 			AndAssign |
+ 			XorAssign |
+ 			OrAssign |
+ 			assign
+		)
+	) conditionalExpression
+}
 
 FunctionCall {
   (Identifier | basicType) '(' (k<'void'>? | assignmentExpression (comma assignmentExpression)*) ')'
@@ -194,7 +218,7 @@ StorageQualifier {
 InvariantQualifier { k<'invariant'> }
 InterpolationQualifier { ( k<'smooth'> | k<'flat'> | k<'noperspective'> ) }
 LayoutQualifier { ( k<'layout'> '(' LayoutQualifierId (comma LayoutQualifierId)* ')' ) }
-LayoutQualifierId { Identifier (!assign Assign constantExpression)? | k<'shared'> }
+LayoutQualifierId { Identifier (!assign assign constantExpression)? | k<'shared'> }
 PreciseQualifier { k<'precise'> }
 PrecisionQualifier { ( k<'highp'> | k<'medp'> | k<'lowp'> ) }
 
@@ -205,6 +229,7 @@ PrecisionQualifier { ( k<'highp'> | k<'medp'> | k<'lowp'> ) }
   CommentOpen { "/*" }
   
   Identifier { $[A-Za-z_] $[A-Za-z0-9_]* }
+	String { '"' ( !["]+ | '\\"' )* '"' | "'" ( ![']+ | "\\'" )* "'" }
 
   Number {
     (
@@ -216,30 +241,42 @@ PrecisionQualifier { ( k<'highp'> | k<'medp'> | k<'lowp'> ) }
     "0x" (std.digit | $[a-fA-F])+ $[uU]?
   }
 
-  Hash { "#" }
+  hash { "#" }
+
   Add { "+" }
   Sub { "-" }
   Mul { "*" }
   Div { "/" }
+	Mod { "%" }
+  Left { "<<" }
+  Right { ">>" }
+  And { "&" }
+  Xor { "^" }
+  Or { "|" }
+
+	assign { '=' }
+  AddAssign { "+=" }
+  SubAssign { "-=" }
+  MulAssign { "*=" }
+  DivAssign { "/=" }
+	ModAssign { "%=" }
+  LeftAssign { "<<=" }
+  RightAssign { ">>=" }
+  AndAssign { "&=" }
+  XorAssign { "^=" }
+  OrAssign { "|=" }
+	
   Inc { "++" }
   Dec { "--" }
   Bang { "!" }
   Tilde { '~' }
-
-  Assign { '=' }
+  
   Eq { '==' }
   Neq { '!=' }
   Lt { '<' }
   Lte { '<=' }
   Gt { '>' }
   Gte { '>=' }
-
-  ShiftLeft { "<<" }
-  ShiftRight { ">>" }
-
-  And { "&" }
-  Xor { "^" }
-  Or { "|" }
 
   AndAnd { "&&" }
   XorXor { "^^" }

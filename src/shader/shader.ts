@@ -1,8 +1,8 @@
-import { parser } from './grammar/glsl';
-import { formatAST, formatASTNode } from './ast';
+import { Tree, SyntaxNode } from '@lezer/common';
 
-export const parseGLSL = (code: string) => {
+import { parser } from './grammar/glsl';
+
+export const parseGLSL = (code: string): Tree => {
   const parsed = parser.parse(code);
-  console.log(formatAST(parsed.topNode, code));
   return parsed;
 }

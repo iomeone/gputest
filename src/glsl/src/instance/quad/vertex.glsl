@@ -1,6 +1,6 @@
-#import {MeshVertex} from 'use/types';
-#import {viewUniforms, worldToClip} from 'use/view';
-#import {getQuadUV} from 'geometry/quad';
+#import {MeshVertex} from 'use/types'
+#import {viewUniforms, worldToClip} from 'use/view'
+#import {getQuadUV} from 'geometry/quad'
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragUV;
