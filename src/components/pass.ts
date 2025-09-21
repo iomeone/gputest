@@ -1,6 +1,15 @@
 import { LiveComponent } from '../live/types';
-import { defer, useCallback, useOne } from '../live/live';
-import { prepareSubContext, renderContext } from '../live/tree';
+import {
+  useCallback, useOne,
+} from '../live/hooks';
+
+import {
+  defer,
+} from '../live/live'
+
+
+import {prepareSubContext, renderContext} from '../live/tree'
+
 
 export type PassProps = {
   device: GPUDevice,
@@ -26,10 +35,11 @@ export const Pass: LiveComponent<PassProps> = (context) => (props) => {
   const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 
   const ref: PassRef = useOne(context, 0)(() => ({passEncoder, render}));
+  const paint = useCallback(context, 1)(() => (ref: PassRef) => ref.render(ref.passEncoder));
+
   ref.render = render;
   ref.passEncoder = passEncoder;
 
-  const paint = useCallback(context, 1)(() => (ref: PassRef) => ref.render(ref.passEncoder));
   const subContext = useOne(context, 2)(() => prepareSubContext(context, defer(paint)(ref)));
 
   renderContext(subContext);

@@ -26,12 +26,6 @@ export const prepareHostContext = <F extends Function>(node: DeferredCall<F>) =>
   return {context, host, scheduler, tracker};
 }
 
-export const prepareSubContext = <F extends Function>(parent: LiveContext<any>, node: DeferredCall<F>) => {
-  const {host} = parent;
-  const context = makeContext(node.f, host, parent, node.args);
-  return context;
-}
-
 export const renderWithDispatch = <T>(
   dispatch: (t: Task) => T,
 ) => <F extends Function>(node: DeferredCall<F>) => {
@@ -53,13 +47,13 @@ export const renderWithDispatch = <T>(
         const top = ctxs.filter(({depth}) => depth === min);
         const uniq = top.filter((c, i) => top.indexOf(c) === i);
         for (const ctx of uniq) {
-          DEBUG && console.log('Updating Sub-Root', formatNode(ctx.call));
+          DEBUG && console.log('Updating Sub-Root', formatNode(ctx));
           if (host) host.__stats.updates++;
           renderContext(ctx, generation);
         }
       }
       else {
-        DEBUG && console.log('Updating Root', formatNode(context.call));
+        DEBUG && console.log('Updating Root', formatNode(context));
         if (host) host.__stats.updates++;
         renderContext(context, generation);
       }
@@ -88,20 +82,33 @@ export const render = renderPaint;
 export const renderContext = <F extends Function>(context: LiveContext<F>, generation?: number) => {
   if (generation !== undefined) context.generation = generation;
 
-  const out = context.bound(...(context.call.args ?? NO_ARGS));
-  const nodes = (out ? (!Array.isArray(out) ? [out] : out) : []) as DeferredCall<any>[];
+  const out = context.bound.apply(null, context.args ?? NO_ARGS);
+
+  const isArray = !!out && Array.isArray(out);
+  const node  = !isArray ? out as DeferredCall<any> : null;
+  const nodes =  isArray ? out as DeferredCall<any>[] : null; 
+  const n = isArray ? nodes.length : +!!node;
 
   let {mounts} = context;
-  if (!mounts && nodes.length) mounts = context.mounts = new Map();
+  if (!mounts && n) mounts = context.mounts = new Map();
 
   if (mounts) {
-    let index = 0;
-    for (const node of nodes) {
-      // Insert/update rendered nodes
-      const key = node.key ?? index++;
+    if (node) {
+      const key = node.key ?? 0;
       const prev = mounts.get(key) ?? null;
       updateNode(context, key, prev, node);
     }
+    else if (nodes) {
+      let index = 0;
+      for (const node of nodes) {
+        // Insert/update rendered nodes
+        const key = node.key ?? index++;
+        const prev = mounts.get(key) ?? null;
+        updateNode(context, key, prev, node);
+      }
+    }
+
+    if (mounts.size === n) return context;
     for (const key of mounts.keys()) {
       // Unmount unrendered nodes
       const prev = mounts.get(key);
@@ -128,13 +135,13 @@ export const updateNode = <P extends Function, F extends Function>(
   node: DeferredCall<F> | null,
 ) => {
   const {mounts, host} = context;
-  const from = prev?.call.f;
+  const from = prev?.f;
   const to = node?.f;
 
   const replace = from && to && from !== to;
 
   if ((!to && from) || replace) if (prev) {
-    DEBUG && console.log('Unmounting', key, formatNode(prev?.call));
+    DEBUG && console.log('Unmounting', key, formatNode(prev));
     if (host) host.__stats.unmounts++;
 
     if (mounts) mounts.delete(key);
@@ -155,8 +162,42 @@ export const updateNode = <P extends Function, F extends Function>(
     if (host) host.__stats.updates++;
 
     prev.generation = context.generation;
-    prev.call.args = node?.args;
+    prev.args = node?.args;
 
     renderContext(prev);
   }
+}
+
+// Prepare a new context for forked rendering
+export const prepareSubContext = <F extends Function>(
+  parent: LiveContext<any>,
+  node: DeferredCall<F>,
+): LiveContext<F> => {
+  const {host} = parent;
+  const context = makeContext(node.f, host, parent, node.args);
+  return context;
+}
+
+// Use a new context for forked rendering
+export const useSubContext = <F extends Function>(
+  context: LiveContext<F>,
+  index: number
+) => <H extends Function>(
+  hook: Live<H>,
+): T => {
+  const {state, host} = context;
+  const i = index * STATE_SLOTS;
+
+  let bound = state[i];
+  let ctx = state[i + 1];
+
+  if (!bound) {
+    ctx = makeContext(f, host, context);
+    bound = hook(ctx);
+
+    state[i] = bound;
+    state[i + 1] = ctx;
+  }
+
+  return bound;
 }

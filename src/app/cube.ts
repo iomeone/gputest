@@ -1,7 +1,7 @@
 import { LiveComponent } from '../live/types';
 import { UniformAttribute } from '../core/types';
 import { CameraUniforms } from '../camera/types';
-import { useMemo, useOne } from '../live/live';
+import { useMemo, useOne } from '../live/hooks';
 
 import vertexShader from './glsl/vertex.glsl';
 import fragmentShader from './glsl/fragment.glsl';

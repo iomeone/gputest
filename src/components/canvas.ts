@@ -1,11 +1,18 @@
 import { LiveComponent, LiveElement } from '../live/types';
 import { CanvasRenderingContextGPU } from '../canvas/types';
-
-import { useMemo, useOne, useResource } from '../live/live';
-
+import { useMemo, useOne, useResource } from '../live/hooks';
 import { makeSwapChain } from '../canvas/mount';
-import { makeColorState, makeColorAttachment } from '../core/color';
-import { makeDepthTexture, makeDepthStencilState, makeDepthStencilAttachment } from '../core/depth';
+import {
+  makeColorState,
+  makeColorAttachment,
+  makeDepthTexture,
+} from '../core/color';
+
+
+import {
+  makeDepthStencilState,
+  makeDepthStencilAttachment,
+} from '../core/depth';
 
 export type CanvasProps = {
   device: GPUDevice,
@@ -46,7 +53,7 @@ export const Canvas: LiveComponent<CanvasProps> = (context) => (props) => {
       const texture = makeDepthTexture(device, width, height, depthStencilFormat);
       const state = makeDepthStencilState(depthStencilFormat);
       const attachment = makeDepthStencilAttachment(texture);
-      return [[texture, state, attachment]];
+      return [texture, state, attachment];
     },
     [device, width, height, depthStencilFormat]
   );

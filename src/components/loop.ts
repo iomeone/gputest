@@ -1,7 +1,18 @@
 import { LiveComponent, LiveElement } from '../live/types';
-import { defer, useCallback, useOne, useResource } from '../live/live';
-import { prepareSubContext, renderContext } from '../live/tree';
+import {
+  useResource,
 
+} from '../live/hooks';
+
+import {
+  defer,
+} from '../live/live'
+
+import {
+  useCallback, useOne,
+} from '../live/hooks';
+
+import {prepareSubContext, renderContext} from '../live/tree'
 export type LoopProps = {
   swapChain: GPUSwapChain,
   colorAttachments: GPURenderPassColorAttachmentDescriptor[],
@@ -24,7 +35,7 @@ export const Loop: LiveComponent<LoopProps> = (context) => (props) => {
   const paint = useCallback(context, 1)(() => (ref: LoopRef) => ref.render());
   const subContext = useOne(context, 2)(() => prepareSubContext(context, defer(paint)(ref)));
 
-  useResource(context, 3)(() => {
+  useResource(context, 3)((dispose) => {
     let running = true;
 
     const loop = () => {
@@ -40,10 +51,10 @@ export const Loop: LiveComponent<LoopProps> = (context) => (props) => {
     }
 
     requestAnimationFrame(loop);
-    return () => {
+    dispose(() => {
       running = false;
       if (subContext?.host) subContext.host.dispose(subContext);
-    }
+    });
   });
 
   return null;

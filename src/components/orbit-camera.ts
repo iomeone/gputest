@@ -2,10 +2,9 @@ import { LiveComponent, LiveElement } from '../live/types';
 
 import { UniformAttribute } from '../core/types';
 import { CameraUniforms } from '../camera/types';
-
 import { PROJECTION_UNIFORMS, VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix } from '../camera/camera';
 
-const DEFAULT_CAMERA = {
+const DEFAULT_ORBIT_CAMERA = {
   phi: 0,
   theta: 0,
   radius: 5,
@@ -32,16 +31,16 @@ export type OrbitCameraProps = {
   render: (defs: UniformAttribute[], uniforms: CameraUniforms) => LiveElement<any>,
 };
 
-export const OrbitCamera: LiveComponent<OrbitCameraProps> = (context) => (props) => {
+export const OrbitCamera: LiveComponent<OrbitCameraProps> = () => (props) => {
   const {
     width,
     height,
-    phi    = DEFAULT_CAMERA.phi,
-    theta  = DEFAULT_CAMERA.theta,
-    radius = DEFAULT_CAMERA.radius,
-    fov    = DEFAULT_CAMERA.fov,
-    near   = DEFAULT_CAMERA.near,
-    far    = DEFAULT_CAMERA.far,
+    phi    = DEFAULT_ORBIT_CAMERA.phi,
+    theta  = DEFAULT_ORBIT_CAMERA.theta,
+    radius = DEFAULT_ORBIT_CAMERA.radius,
+    fov    = DEFAULT_ORBIT_CAMERA.fov,
+    near   = DEFAULT_ORBIT_CAMERA.near,
+    far    = DEFAULT_ORBIT_CAMERA.far,
     render,
   } = props;
   

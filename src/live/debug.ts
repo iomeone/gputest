@@ -2,6 +2,17 @@ import { DeferredCall } from './types';
 
 const {prototype: {hasOwnProperty}} = Object;
 
+export const formatTree = (root: LiveContext<any>, prefix: string = '') => {
+  const {mounts} = root;
+  let out = [];
+  out.push(prefix + formatNode(root));
+  if (mounts) for (const key of mounts.keys()) {
+    const sub = mounts.get(key);
+    if (sub) out.push(formatTree(sub, prefix + '  '));
+  }
+  return out.join("\n");
+}
+
 export const formatNode = <F extends Function>(node: DeferredCall<F>): string => {
   const name = node.f?.name || 'Node';
   const args = node.args?.map(x => formatValue(x));
