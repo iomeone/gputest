@@ -1,38 +1,69 @@
 import { Tree, SyntaxNode } from '@lezer/common';
 import LRU from 'lru-cache';
 
-export type ParsedModuleCache = LRU<string, {tree: Tree, table: SymbolTable}>;
+export type ParsedModuleCache = LRU<string, ParsedModule>;
+
+export type ShaderModule = ParsedBundle | ParsedModule;
+
+export type ParsedBundle = {
+  module: ParsedModule,
+  libs?: Record<string, ShaderModule>,
+  entry?: string,
+  virtual?: ParsedModule[],
+};
 
 export type ParsedModule = {
   name: string,
   code: string,
-  tree: Tree,
   table: SymbolTable,
+  tree?: Tree,
+  shake?: ShakeTable,
+  virtual?: VirtualTable,
+  entry?: string,
 };
+
 export type ComboRef = ModuleRef | FunctionRef | DeclarationRef;
 
 export type CompressedNode = [string, number, number];
 
 export type SymbolTable = {
   hash: string,
-  refs: ComboRef[],
-  symbols: SymbolRef[],
-  visibles: SymbolRef[],
-  modules: ModuleRef[],
-  functions: FunctionRef[],
-  declarations: DeclarationRef[],
-  externals: DeclarationRef[],
+  symbols?: SymbolRef[],
+  visibles?: SymbolRef[],
+  globals?: SymbolRef[],
+  modules?: ModuleRef[],
+  functions?: FunctionRef[],
+  declarations?: DeclarationRef[],
+  externals?: DeclarationRef[],
+};
+
+export type ShakeTable = ShakeOp[];
+export type ShakeOp = [number, string[]];
+
+export type VirtualTable = {
+  render: VirtualRender,
+  uniforms?: DataBinding[],
+  bindings?: DataBinding[],
+  base?: number,
+  namespace?: string,
+};
+
+export enum RefFlags {
+  Exported = 1,
+  Optional = 1 << 1,
+  Global   = 1 << 2,
 };
 
 export type SymbolRef = string;
 
-export type SymbolsRef = {
-  symbols: SymbolRef[],
-}
-
 export type ImportRef = {
   name: string,
   imported: string,
+}
+
+export type SymbolsRef = {
+  at: number,
+  symbols: SymbolRef[],
 }
 
 export type ModuleRef = SymbolsRef & {
@@ -42,14 +73,16 @@ export type ModuleRef = SymbolsRef & {
 
 export type FunctionRef = SymbolsRef & {
   prototype: PrototypeRef,
-  exported: boolean,
+  identifiers?: string[],
+  flags: RefFlags,
 }
 
 export type DeclarationRef = SymbolsRef & {
   prototype?: PrototypeRef,
   variable?: VariableRef,
   struct?: QualifiedStructRef,
-  exported: boolean,
+  identifiers?: string[],
+  flags: RefFlags,
 }
 
 export type TypeRef = {
@@ -88,3 +121,31 @@ export type QualifiedStructRef = {
 export type StructRef = {
   members: MemberRef[],
 }
+
+export type ShaderDefine = string | number | boolean | null | undefined;
+export type ShaderCompiler = (code: string, stage: string) => Uint8Array | Uint32Array;
+
+export type StorageSource = {
+  buffer: GPUBuffer,
+  format: string,
+  length: number,
+};
+
+export type UniformAttribute = {
+  name: string,
+  format: string,
+  args?: string[],
+};
+
+export type UniformAttributeValue = UniformAttribute & {
+  value: any,
+};
+
+export type DataBinding = {
+  uniform: UniformAttributeValue,
+  storage?: StorageSource,
+  lambda?: ParsedBundle | ParsedModule,
+  constant?: any,
+};
+
+export type VirtualRender = (namespace: string, rename: Map<string, string>, base: number) => string;

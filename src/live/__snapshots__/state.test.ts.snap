@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`patch patches primitives 1`] = `
+Object {
+  "foo": Object {
+    "a": true,
+    "b": true,
+    "c": Array [
+      "y",
+    ],
+  },
+  "n": 2,
+  "s": "world",
+  "x": "x",
+}
+`;
+
+exports[`patch patches with $ops 1`] = `
+Object {
+  "foo": Object {
+    "d": true,
+  },
+  "n": 1,
+  "s": "hello world",
+  "x": "xy",
+}
+`;

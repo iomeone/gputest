@@ -1,12 +1,15 @@
 import { vec2, vec3, mat4 } from 'gl-matrix';
 
-export type DeepPartial<T> = {
+export type Dictionary<T = string> = Record<string, T>;
+
+export type DeepPartial<T> = T | {
   [P in keyof T]?: DeepPartial<T[P]>;
 };
 
 export type UseRenderingContextGPU = {
   width: number,
   height: number,
+  pixelRatio: number,
   samples: number,
 
   device: GPUDevice,
@@ -112,7 +115,12 @@ export type VertexAttribute = {
 // Uniform buffers
 export type UniformAttribute = {
   name: string,
-  format: UniformType
+  format: UniformType,
+  args?: UniformType[],
+};
+
+export type UniformAttributeValue = UniformAttribute & {
+  value: any,
 };
 
 export type UniformAttributeDescriptor = {
@@ -124,6 +132,7 @@ export type UniformAttributeDescriptor = {
 export type UniformLayout = {
   length: number,
   attributes: UniformAttributeDescriptor[],
+  offsets: number[],
 };
 
 // Uniform bindings
@@ -143,6 +152,16 @@ export type UniformAllocation = {
   bindGroup: GPUBindGroup,
 };
 
+export type ResourceAllocation = {
+  bindGroup: GPUBindGroup,
+};
+
+export type VirtualAllocation = {
+  pipe?: UniformPipe,
+  buffer?: GPUBuffer,
+  bindGroup?: GPUBindGroup,
+};
+
 export type UniformFiller = (items: any) => void;
 export type UniformByteSetter = (view: DataView, offset: number, data: any) => void;
 
@@ -151,26 +170,36 @@ export type StorageSource = {
   buffer: GPUBuffer,
   format: string,
   length: number,
+  version: number,
+};
+
+export type TextureSource = {
+  view: GPUTextureView,
+  format: string,
+  size: [number, number] | [number, number, number],
+  version: number,
+};
+
+export type DataTexture = {
+  data: TypedArray,
+  format: string,
+  size: [number, number] | [number, number, number],
 };
 
 // Shaders
-export enum ShaderLanguage {
-  GLSL = 'glsl',
-};
+export type ShaderStage = string;
+export type ShaderCompiler = (code: string, stage: ShaderStage) => [TypedArray, number | string];
 
-export type ShaderStage = 'vertex' | 'fragment';
-export type ShaderCompiler = (code: string, stage: ShaderStage) => TypedArray;
-
-export type ShaderLanguages = {[k in ShaderLanguage]: ShaderLanguageAPI};
+export type ShaderLanguages = {[k: string]: ShaderLanguageAPI};
 export type ShaderLanguageAPI = {
   compile: ShaderCompiler,
-  modules: Record<string, string>,
   cache: any,
 };
 
 export type ShaderModuleDescriptor = {
   code: TypedArray | string,
   entryPoint: string,
+  hash: string | number,
 };
 
 export type ShaderStageDescriptor = {
@@ -183,7 +212,14 @@ export type ViewUniforms = {
   projectionMatrix: { value: mat4 },
   viewMatrix: { value: mat4 },
   viewPosition: { value: vec3 | [number, number, number] | number[] },
-  viewResolution: { value: vec2 | [number, number] | number[] }
+  viewResolution: { value: vec2 | [number, number] | number[] },
+  viewSize: { value: vec2 | [number, number] | number[] },
+  viewFocus: { value: number },
+  viewPixelRatio: { value: number },
+};
+
+export type PickingUniforms = {
+  pickingId: { value: number },
 };
 
 // Data
@@ -191,4 +227,24 @@ export type ViewUniforms = {
 export type Emitter = (...args: number[]) => void;
 export type Accessor = (o: any) => any;
 export type EmitterExpression = (emit: Emitter, ...args: any[]) => any;
-export type DataField = [string, string | Accessor];
+
+export type ArrayLike = any[] | TypedArray;
+
+export type AccessorSpec = string | Accessor | ArrayLike;
+export type DataField = [string, AccessorSpec];
+export type DataBinding<T> = {
+  uniform: UniformAttributeValue,
+  storage?: StorageSource,
+  texture?: TextureSource,
+  constant?: any,
+  lambda?: T,
+};
+
+// Passes
+
+export enum RenderPassMode {
+  Opaque = 'o',
+  Transparent = 't',
+  Picking = 'p',
+  Debug = 'd',
+};

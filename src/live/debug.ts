@@ -27,21 +27,62 @@ export const formatTree = (root: LiveFiber<any>, depth: number = 0): string => {
   return out.join("\n");
 }
 
-export const formatNode = <F extends Function>(node: DeferredCall<F>): string => {
+export const formatNodeName = <F extends Function>(node: DeferredCall<F>): string => {
+  const {f, arg, args} = node;
+
   // @ts-ignore
-  let name = (node.f?.displayName ?? node.f?.name) || 'Node';
+  let name = (f?.displayName ?? f?.name) || 'Node';
+  if (name === 'PROVIDE' && args) {
+    const [context,,, isMemo] = args;
+    const value = formatValue(context.displayName);
+    return isMemo ? `Memo(Provide(${value}))` : `Provide(${value})`;
+  }
+  else if (name === 'CONSUME' && args) {
+    const [context] = args;
+    const value = formatValue(context.displayName);
+    return `Consume(${value})`;
+  }
+  else if (name === 'DETACH' && args) {
+    const [call] = args;
+    // @ts-ignore
+    name = `Detach(${(call.f?.displayName ?? call.f?.name) || 'Node'})`;
+  }
+  else if (name === 'GATHER') {
+    name = `Gather`;
+  }
+  else if (name === 'MULTI_GATHER') {
+    name = `MultiGather`;
+  }
+  else if (name === 'RECONCILE') {
+    name = `Reconcile`;
+  }
+  else if (name === 'MAP_REDUCE') {
+    name = `MapReduce`;
+  }
+  else if (name === 'YEET') {
+    name = `Yeet`;
+  }
+  else if (name === 'MORPH') {
+    name = `Morph`;
+  }
+
+  return name;
+}
+
+export const formatNode = <F extends Function>(node: DeferredCall<F>): string => {
+  const name = formatNodeName(node);
+
   const args = [] as string[];
   if (node.arg !== undefined) {
     args.push(formatValue(node.arg));
   }
   if (node.args !== undefined) {
-    if (name === 'REDUCE') {
+    if (node.f.name === 'REDUCE') {
       const [, reduce, initial] = node.args;
       args.push(formatValue({reduce, initial}));
     }
-    else if (name === 'PROVIDE') {
-      const [context] = node.args;
-      name = 'Provide';
+    else if (node.f.name === 'PROVIDE') {
+      const [context,,, isMemo] = node.args;
       args.push(formatValue(context));
     }
     else {
@@ -54,34 +95,60 @@ export const formatNode = <F extends Function>(node: DeferredCall<F>): string =>
 }
 
 export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap()): string => {
-  if (!x) return x;
-  if (typeof x === 'object') {
-    if (seen.get(x)) return '[Circular]';
+  if (!x) return '' + x;
+  if (Array.isArray(x)) {
+    if (seen.get(x)) return '[Repeated]';
     seen.set(x, true);
+
+    const out = [];
+    for (const k in x) if (hasOwnProperty.call(x, k)) {
+      out.push(`${formatShortValue(x[k], seen)}`);
+    }
+    return '[' + out.join(', ') + ']';
+  }
+  if (typeof x === 'object') {
+    if (seen.get(x)) return '[Repeated]';
+    seen.set(x, true);
+
+    const signature = Object.keys(x).join('/');
+    if (signature === 'f/args/key/by' || signature === 'f/arg/key/by') return formatNode(x);
 
     const out = [];
     for (const k in x) if (hasOwnProperty.call(x, k)) {
       out.push(`${k}: ${formatShortValue(x[k], seen)}`);
     }
-    return '{' + out.join(', ') + '}';
+    
+    const proto = x.__proto__ !== Object.prototype ? x.__proto__.constructor.name : '';
+    return proto + '{' + out.join(', ') + '}';
   }
   return formatShortValue(x, seen);
 }
 
 export const formatShortValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap()): string => {
-  if (!x) return x;
-  if (Array.isArray(x)) return '[' + x.map((x) => formatValue(x, seen)).join(', ') + ']';
+  if (!x) return '' + x;
+  if (Array.isArray(x)) return '[' + x.map((x) => formatShortValue(x, seen)).join(', ') + ']';
   if (typeof x === 'boolean') return x ? 'true' : 'false';
   if (typeof x === 'number') return '' + x;
   if (typeof x === 'symbol') return '(symbol)';
   if (typeof x === 'string') return x;
   if (typeof x === 'function') {
-    if (x.name === '' && !x.displayName) x.displayName = Math.round(Math.random() * 1000);
+    if (x.name === '' && !x.displayName) x.displayName = Math.round(Math.random() * 10000);
     const name = x.displayName ?? x.name;
-    return `${name}(…)`;
+    const body = x.toString().split(/=>/)[1];
+    return `${name}(…) ` + truncate(body, 40);
   }
   if (typeof x === 'object') {
+    const signature = Object.keys(x).join('/');
+    if (signature === 'f/args/key' || signature === 'f/arg/key') return `<${formatNodeName(x)} …/>`;
+
     return '{...}';
   }
   return '' + x;
+}
+
+const truncate = (s: string, n: number) => {
+  if (typeof s !== 'string') return '' + s;
+  s = s.replace(/\s+/g, ' ');
+  if (s.length < n) return s;
+  return s.slice(0, n) + '…';
 }

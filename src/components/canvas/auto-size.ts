@@ -1,19 +1,19 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { useResource, useState } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { useResource, useState } from '@use-gpu/live';
 
 export type AutoSizeProps = {
   canvas: HTMLCanvasElement,
-  render?: (width: number, height: number) => LiveElement<any>,
+  render?: (width: number, height: number, pixelRatio: number) => LiveElement<any>,
   children?: LiveElement<any>,
 }
 
-export const getCanvasSize = (window: Window, canvas: HTMLCanvasElement): [number, number] => {
-  const dpi = window.devicePixelRatio;
-  const {offsetWidth, offsetHeight} = canvas;
-  return [dpi * offsetWidth, dpi * offsetHeight];
+export const getCanvasSize = (window: Window, canvas: HTMLCanvasElement): [number, number, number] => {
+  const pixelRatio = window?.devicePixelRatio ?? 1;
+  const {offsetWidth, offsetHeight} = canvas.parentNode;
+  return [pixelRatio * offsetWidth, pixelRatio * offsetHeight, pixelRatio];
 }
 
-export const AutoSize: LiveComponent<AutoSizeProps> = (fiber) => (props) => {
+export const AutoSize: LiveComponent<AutoSizeProps> = (props) => {
   const {canvas, render, children} = props;
 
   useResource(() => {
@@ -24,9 +24,15 @@ export const AutoSize: LiveComponent<AutoSizeProps> = (fiber) => (props) => {
     canvas.style.height = '100%';
   }, [canvas]);
  
-  const [[width, height], setSize] = useState(() => getCanvasSize(window, canvas));
-  if (canvas.width  !==  width) canvas.width  = width;
-  if (canvas.height !== height) canvas.height = height;
+  const [[width, height, pixelRatio], setSize] = useState(() => getCanvasSize(window, canvas));
+  if (canvas.width  !==  width) {
+    canvas.width  = width;
+    canvas.style.width = `${width / pixelRatio}px`;
+  }
+  if (canvas.height !== height) {
+    canvas.height = height;
+    canvas.style.height = `${height / pixelRatio}px`;
+  }
 
   useResource((dispose) => {
     const resize = () => setSize(getCanvasSize(window, canvas))
@@ -34,5 +40,5 @@ export const AutoSize: LiveComponent<AutoSizeProps> = (fiber) => (props) => {
     dispose(() => window.removeEventListener('resize', resize));
   }, [canvas]);
 
-  return render ? render(width, height) : (children ?? null);
+  return render ? render(width, height, pixelRatio) : (children ?? null);
 };

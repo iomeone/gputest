@@ -1,5 +1,6 @@
-export const makeColorState = (format: GPUTextureFormat): GPUColorTargetState => ({
+export const makeColorState = (format: GPUTextureFormat, blend?: GPUBlendState): GPUColorTargetState => ({
   format,
+  blend,
 });
 
 export const makeColorAttachment = (

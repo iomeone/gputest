@@ -1,98 +1,166 @@
-import { LiveFiber } from '../../live/types';
-import { formatValue } from '../../live';
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatValue, formatNodeName } from '@use-gpu/live';
 import styled, { keyframes } from "styled-components";
 
-import React, { useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { Action } from './types';
 
+const ICON = (s: string) => <span className="m-icon">{s}</span>
+const ICONSMALL = (s: string) => <span className="m-icon m-icon-small">{s}</span>
+
 const pingAnimation = keyframes`
- 0% { background: rgba(255, 230, 0, 1); }
- 100% { background: rgba(255, 230, 0, 0); }
+ 0% { background: rgba(10, 170, 85, 1.0); }
+ 100% { background: rgba(0, 0, 0, 1.0); }
+`
+
+const mountAnimation = keyframes`
+ 0% { background: rgba(120, 120, 120, 1.0); }
+ 100% { background: rgba(0, 0, 0, 1.0); }
 `
 
 const selectedAnimation = keyframes`
- 0% { background: rgba(210, 190, 128, 1); }
- 100% { background: rgba(210, 210, 255, 1); }
+ 0% { background: rgba(10, 170, 85, 1.0); }
+ 100% { background: rgba(50, 130, 200, 0.85); }
 `
 
 export const StyledNode = styled.div`
-	white-space: nowrap;
-	margin: -2px -5px;
-	padding: 2px 5px;
-	&.selected {
-		background: rgba(210, 210, 255, 1);
-	}
+  white-space: nowrap;
+  margin: -2px -5px;
+  padding: 2px 5px;
+  position: relative;
 
-	&.pinged {
-		animation-name: ${pingAnimation};
-		animation-duration: 0.5s;
-		animation-iteration-count: 1;
+  &.selected {
+    background: rgba(50, 130, 200, 0.85);
+  }
 
-		&.selected {
-			animation-name: ${selectedAnimation};
-		}
-	}
+  &.hovered {
+    background: rgba(50, 180, 200, 1.0);
+  }
 
-	&.repinged {
-		animation-name: none;
-		background: rgba(255, 230, 0, 1);
-		
-		&.selected {
-			background: rgba(210, 190, 128, 1);
-		}
-	}
+  &.by {
+    background: rgba(30, 140, 160, 1.0);
+  }
+
+  &.depended {
+    background: rgba(80, 60, 200, 1.0);
+  }
+
+  &.staticMount {
+    background: rgba(120, 120, 120, 1.0);
+  }
+
+  &.staticPing {
+    background: rgba(10, 170, 85, 1.0);
+  }
+
+  &.builtin {
+    color: var(--colorTextMuted);
+  }
+
+  &.mounted {
+    animation-name: ${mountAnimation};
+    animation-duration: 1.0s;
+    animation-iteration-count: 1;
+
+    &.selected {
+      animation-name: ${selectedAnimation};
+    }
+  }
+
+  &.pinged {
+    animation-name: ${pingAnimation};
+    animation-duration: 1.0s;
+    animation-iteration-count: 1;
+
+    &.selected {
+      animation-name: ${selectedAnimation};
+    }
+  }
+
+  &.repinged {
+    animation-name: none;
+    background: rgba(10, 150, 75, 1.0);
+
+    &.selected {
+      background: rgba(20, 100, 200, 0.75);
+    }
+  }
 `;
 
 type NodeProps = {
-	fiber: LiveFiber<any>,
-	pinged: number,
-	selected: boolean,
-	onClick?: Action,
+  fiber: LiveFiber<any>,
+  pinged?: number,
+  staticPing?: boolean,
+  staticMount?: boolean,
+  selected?: boolean,
+  hovered?: number,
+  depended?: boolean,
+  onClick?: Action,
+  onMouseEnter?: Action,
+  onMouseLeave?: Action,
 };
 
-export const Node: React.FC<NodeProps> = ({fiber, pinged, selected, onClick}) => {
-	const {id, f, args} = fiber;
+export const Node: React.FC<NodeProps> = ({
+  fiber,
+  pinged,
+  staticPing,
+  staticMount,
+  selected,
+  hovered,
+  depended,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+}) => {
+  const {id, by, f, args, yeeted} = fiber;
 
-	const classes = [] as string[];
-	if (selected) classes.push('selected');
-	if (pinged) classes.push('pinged');
-	const className = classes.join(' ');
+  const yeet = yeeted?.value !== undefined;
+  const suffix = yeet ? ICONSMALL("switch_left") : null;
 
-	const elRef = useRef<HTMLDivElement | null>(null);
-	const {current: el} = elRef;
-	const lastPinged = el && el.classList.contains('pinged');
+  const newRef = useRef<boolean>(true);
 
-	useEffect(() => {
-		if (lastPinged && el) {
-			el.classList.add('repinged');
-			el.offsetHeight;
-			el.classList.remove('repinged');
-		}
-	});
-	
-  // @ts-ignore
-  let name = (f?.displayName ?? f?.name) || 'Node';
-  if (name === 'PROVIDE' && args) {
-    const [context] = args;
-    name = `Provide(${formatValue(context.displayName)})`;
-  }
-  else if (name === 'DETACH' && args) {
-    const [call] = args;
-    name = `Detach(${formatValue(call.f)})`;
-  }
-  else if (name === 'GATHER' && args) {
-    name = `[Gather]`;
-  }
-  else if (name === 'RECONCILE' && args) {
-    name = `[Reconcile]`;
-  }
-  else if (name === 'MAP_REDUCE' && args) {
-    name = `[MapReduce]`;
-  }
-  else if (name === 'YEET' && args) {
-    name = `[Yeet]`;
-  }
+  const classes = [] as string[];
+  if (pinged) classes.push(newRef.current ? 'mounted' : 'pinged');
+  if (selected) classes.push('selected');
+  if (staticPing) classes.push('staticPing');
+  if (staticMount) classes.push('staticMount');
+  if (depended) classes.push('depended');
+  if (hovered === id) classes.push('hovered');
+  if (hovered === by) classes.push('by');
+  if (f.isLiveBuiltin) classes.push('builtin');
+  const className = classes.join(' ');
 
-  return <StyledNode ref={elRef} className={className} onClick={onClick}>{name}</StyledNode>;
+  newRef.current = false;
+
+  const elRef = useRef<HTMLDivElement | null>(null);
+  const {current: el} = elRef;
+  const lastPinged = el && el.classList.contains('pinged');
+
+  const handleClick = useCallback((e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onClick && onClick();
+  }, [onClick]);
+
+  useEffect(() => {
+    if (lastPinged && el) {
+      el.classList.add('repinged');
+      el.offsetHeight;
+      el.classList.remove('repinged');
+    }
+  });
+
+  const name = formatNodeName(fiber);
+
+  return (
+    <StyledNode
+      ref={elRef}
+      className={className}
+      onClick={handleClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {name}{suffix}
+    </StyledNode>
+  );
 }
-

@@ -1,7 +1,7 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { UntilEOL, UntilCommentClose } from './glsl.terms';
+import { UntilEOL, untilCommentClose } from './glsl.terms';
 
-export const untilEOL = new ExternalTokenizer(
+export const untilEOLToken = new ExternalTokenizer(
   (input, stack) => {
     while (true) {
       const v = input.next;
@@ -14,13 +14,13 @@ export const untilEOL = new ExternalTokenizer(
   },
 );
 
-export const untilCommentClose = new ExternalTokenizer(
+export const untilCommentCloseToken = new ExternalTokenizer(
   (input, stack) => {
     while (true) {
       // */
       const v = input.next;
       if (v === 42 && input.peek(1) === 47) {
-        return input.acceptToken(UntilCommentClose, 2);
+        return input.acceptToken(untilCommentClose, 2);
       }
       input.advance();
     }

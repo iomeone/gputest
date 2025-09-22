@@ -1,36 +1,32 @@
-import { LiveComponent, LiveElement, Task } from '../../live/types';
-import { use, detach, useCallback, useOne, useResource } from '../../live';
+import { LiveComponent, LiveElement, Task } from '@use-gpu/live/types';
+import { use, detach, useCallback, useOne, useResource } from '@use-gpu/live';
 
 export type LoopProps = {
   gpuContext: GPUCanvasContext,
   colorAttachments: GPURenderPassColorAttachment[],
   children?: LiveElement<any>,
-  update?: () => void,
   render?: () => LiveElement<any>,
 };
 
 export type LoopRef = {
   children?: LiveElement<any>,
-  update?: () => void,
   render?: () => LiveElement<any>,
   dispatch?: () => void,
 };
 
 const Dispatch = () => (props: LoopRef) => props.children ?? (props.render ? props.render() : null);
 
-export const Loop: LiveComponent<LoopProps> = (fiber) => (props) => {
-  const {children, update, render} = props;
+export const Loop: LiveComponent<LoopProps> = (props) => {
+  const {children, render} = props;
 
-  const ref: LoopRef = useOne(() => ({children, update, render}));
+  const ref: LoopRef = useOne(() => ({children, render}));
   ref.children = children;
-  ref.update = update;
   ref.render = render;
 
   useResource((dispose) => {
     let running = true;
 
     const loop = () => {
-      if (ref.update) ref.update();
       if (ref.dispatch) ref.dispatch();
       if (running) requestAnimationFrame(loop);
     }

@@ -1,4 +1,4 @@
-import { StorageSource, UniformAttribute } from './types';
+import { StorageSource, UniformAttribute, DataBinding } from './types';
 
 export const makeStorage = (
   device: GPUDevice,
@@ -32,14 +32,39 @@ export const makeStorageBindings = (
   return entries;
 };
 
+export const makeStorageForDataBindings = <T>(
+  bindings: DataBinding<T>[],
+  binding: number = 0,
+): GPUBindGroupEntry[] => {
+  const entries = [] as any[];
+
+  for (const b of bindings) {
+    if (b.storage) {
+      const {storage} = b;
+      entries.push({binding, resource: {buffer: storage.buffer}});
+      binding++;
+    }
+  }
+
+  return entries;
+};
+
 export const checkStorageTypes = (
   uniforms: UniformAttribute[],
   links: Record<string, StorageSource | null | undefined>,
 ) => {
-  for (const {name, format} of uniforms) {
-    const link = links[name];
-    if (link && link.format !== format) throw new Error(`Invalid format ${link.format} bound for ${format} "${name}"`);
+  for (const u of uniforms) {
+    const link = links[u.name];
+    checkStorageType(u, link)
   }
+} 
+
+export const checkStorageType = (
+  uniform: UniformAttribute,
+  link: StorageSource | null | undefined,
+) => {
+  const {name, format} = uniform;
+  if (link && link.format !== format) throw new Error(`Invalid format ${link.format} bound for ${format} "${name}"`);
 } 
 
 export const makeStorageAccessors = (

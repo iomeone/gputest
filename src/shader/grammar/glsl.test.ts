@@ -1,6 +1,6 @@
 import { Tree } from '@lezer/common';
 import { parser } from './glsl';
-import { formatAST, formatASTNode } from '../transform/ast';
+import { formatAST, formatASTNode } from '../util/tree';
 import { addASTSerializer } from '../test/snapshot';
 
 addASTSerializer(expect);
@@ -62,6 +62,14 @@ void main();
 //////////////////////////////////////////////////////////////////////
 
 `
+layout(location = 0) in wat;
+layout(location = 0) in wat1, wat2;
+layout(location = 1) in vec2;
+`,
+
+//////////////////////////////////////////////////////////////////////
+
+`
 float foo = 1.0;
 #define WAT
 void main() {
@@ -103,6 +111,11 @@ void main() {
 #pragma import {getQuadUV} from 'geometry/quad'
 
 #pragma import 'test'
+
+#ifdef DEF
+#pragma optional
+int getInt();
+#endif
 
 #pragma export
 void main();
@@ -222,7 +235,7 @@ float fdBurley(float dotNL, float dotNV, float dotLH, float alpha) {
 
 // G - Geometric attenuation term
 float G1X(float dotNX, float k) {
-	return 1.0f / (dotNX * (1.0f - k) + k);
+  return 1.0f / (dotNX * (1.0f - k) + k);
 }
 
 float smithGGXCorrelated(float dotNL, float dotNV, float alpha) {
@@ -233,24 +246,24 @@ float smithGGXCorrelated(float dotNL, float dotNV, float alpha) {
 }
 
 float geometricGGX(float dotNL, float dotNV, float alpha) {
-	float k = alpha / 2.0f;
-	return G1X(dotNL, k) * G1X(dotNV, k);
+  float k = alpha / 2.0f;
+  return G1X(dotNL, k) * G1X(dotNV, k);
 }
 
 vec3 PBR(vec3 N, vec3 L, vec3 V, vec3 albedo, float metalness, float roughness) {
 
-	vec3 diffuseColor = albedo * (1.0 - metalness);
-	vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);
+  vec3 diffuseColor = albedo * (1.0 - metalness);
+  vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);
 
   float alpha = roughness * roughness;
-	float dotNV = saturate(dot(N, V));
+  float dotNV = saturate(dot(N, V));
 
   float radiance = 3.1415;
 
   vec3 H = normalize(V + L);
-	float dotNL = saturate(dot(N, L));
-	float dotNH = saturate(dot(N, H));
-	float dotLH = saturate(dot(L, H));
+  float dotNL = saturate(dot(N, L));
+  float dotNH = saturate(dot(N, H));
+  float dotLH = saturate(dot(L, H));
 
   vec3 F = fresnelSchlick(dotLH, F0);
   float D = ndfGGX(dotNH, alpha);

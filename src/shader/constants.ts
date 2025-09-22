@@ -1,4 +1,9 @@
-export const HASH_KEY = new Uint32Array([0x11111111,0x22222222,0x33333333,0x44444444]);
+export const HASH_KEY = 0x12345678;
+
+export const PREFIX_CAST = '_CT_';
+export const PREFIX_CLOSURE = '_CL_';
+export const PREFIX_VIRTUAL = '_VT_';
+export const VIRTUAL_BINDGROUP = 'VIRTUAL_BINDGROUP';
 
 export const GLSL_VERSION = '450';
 export const GLSL_NATIVE_TYPES = new Set([
