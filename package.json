@@ -8,14 +8,22 @@
   "devDependencies": {
     "@babel/cli": "^7.8.3",
     "@babel/core": "^7.12.10",
-     "@babel/eslint-parser": "^7.13.14",
+    "@babel/eslint-parser": "^7.13.14",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-transform-modules-commonjs": "^7.16.0",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.12.10",
+    "@babel/preset-react": "^7.16.0",
     "@babel/preset-typescript": "^7.8.3",
     "@babel/register": "^7.12.10",
+    "@lezer/common": "^0.15.8",
+    "@lezer/generator": "^0.15.2",
+    "@lezer/lr": "^0.15.4",
     "@types/jest": "^27.5.2",
+    "@types/lodash": "^4.17.20",
+    "@types/lru-cache": "^5.1.1",
+    "@types/react": "^17.0.34",
+    "@types/react-dom": "^17.0.11",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "@webgpu/glslang": "^0.0.15",
@@ -26,30 +34,20 @@
     "eslint": "^7.5.0",
     "gl-matrix": "^3.3.0",
     "jest": "^27.2.0",
+    "lru-cache": "^5.1.1",
     "raw-loader": "^4.0.2",
-    "style-loader": "^3.3.1",
-    "ts-jest": "^27.0.0",
-    "ts-node": "^9.1.1",
-    "typescript": "^3.7.5",
-    "webpack": "^5.10.1",
-    "webpack-cli": "^4.2.0",
-    "webpack-dev-server": "^3.11.0",
-
-
-    "@babel/preset-react": "^7.16.0",
-    "@types/react": "^17.0.34",
-    "@types/react-dom": "^17.0.11",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^2.0.4",
+    "style-loader": "^3.3.1",
     "styled-components": "^5.3.3",
-
-
-    "@lezer/common": "^0.15.8",
-    "@lezer/generator": "^0.15.2",
-    "@lezer/lr": "^0.15.4"
-
+    "ts-jest": "^27.0.0",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.2",
+    "webpack": "^5.10.1",
+    "webpack-cli": "^4.2.0",
+    "webpack-dev-server": "^3.11.0"
   },
   "scripts": {
     "start": "NODE_ENV=development webpack serve",
@@ -58,13 +56,13 @@
     "coverage": "jest",
     "types": "tsc --noEmit",
     "types:watch": "yarn run types -- --watch",
-    "build": "yarn run build:types && yarn run build:bundle",
+    "build": "yarn run build && yarn run build:bundle",
     "build:types": "tsc --emitDeclarationOnly",
     "build:bundle": "webpack",
     "build:js": "babel src --out-dir lib --extensions \".ts,.tsx\" --source-maps inline"
   },
   "dependencies": {
-
+    "yarn": "^1.22.22"
   },
   "jest": {
     "preset": "ts-jest",
@@ -72,7 +70,6 @@
       "\\.jsx?$": "babel-jest",
       "\\.glsl$": "<rootDir>/test/fileTransformer.mjs"
     },
-
     "modulePaths": [
       "<rootDir>/src"
     ],
@@ -82,5 +79,29 @@
     "setupFiles": [
       "./test/setup.ts"
     ]
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./glsl/fragment/pbr.glsl": "./src/glsl/fragment/pbr.glsl",
+    "./glsl/geometry/line.glsl": "./src/glsl/geometry/line.glsl",
+    "./glsl/geometry/quad.glsl": "./src/glsl/geometry/quad.glsl",
+    "./glsl/geometry/strip.glsl": "./src/glsl/geometry/strip.glsl",
+    "./glsl/instance/draw/mesh.glsl": "./src/glsl/instance/draw/mesh.glsl",
+    "./glsl/instance/draw/virtual.glsl": "./src/glsl/instance/draw/virtual.glsl",
+    "./glsl/instance/draw/wireframe-strip.glsl": "./src/glsl/instance/draw/wireframe-strip.glsl",
+    "./glsl/instance/fragment/mesh.glsl": "./src/glsl/instance/fragment/mesh.glsl",
+    "./glsl/instance/fragment/solid.glsl": "./src/glsl/instance/fragment/solid.glsl",
+    "./glsl/instance/geometry/line.glsl": "./src/glsl/instance/geometry/line.glsl",
+    "./glsl/instance/geometry/quad.glsl": "./src/glsl/instance/geometry/quad.glsl",
+    "./glsl/instance/geometry/strip.glsl": "./src/glsl/instance/geometry/strip.glsl",
+    "./glsl/instance/vertex/line.glsl": "./src/glsl/instance/vertex/line.glsl",
+    "./glsl/instance/vertex/quad.glsl": "./src/glsl/instance/vertex/quad.glsl",
+    "./glsl/mask/point.glsl": "./src/glsl/mask/point.glsl",
+    "./glsl/use/light.glsl": "./src/glsl/use/light.glsl",
+    "./glsl/use/picking.glsl": "./src/glsl/use/picking.glsl",
+    "./glsl/use/types.glsl": "./src/glsl/use/types.glsl",
+    "./glsl/use/view.glsl": "./src/glsl/use/view.glsl",
+    "./glsl/vertex/line.glsl": "./src/glsl/vertex/line.glsl",
+    "./glsl/vertex/quad.glsl": "./src/glsl/vertex/quad.glsl"
   }
 }
