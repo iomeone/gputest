@@ -7,9 +7,6 @@
 layout(location = 0) in flat uint fragIndex;
 layout(location = 0) out uvec4 outColor;
 #else
-layout(set = 1, binding = 0) uniform sampler s;
-layout(set = 1, binding = 1) uniform texture2D t;
-
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragUV;
 
@@ -32,17 +29,12 @@ void main() {
   vec3 L = normalize(fragLight);
   vec3 V = normalize(fragView);
 
-  vec4 texColor = texture(sampler2D(t, s), fragUV);
-  vec4 inColor = fragColor * texColor;
-  if (inColor.a <= 0.0) discard;
-
-  vec3 albedo = inColor.rgb;
+  vec3 albedo = fragColor.rgb;
   float metalness = 0.2;
   float roughness = 0.8;
 
   vec3 color = PBR(N, L, V, albedo, metalness, roughness) * lightUniforms.lightColor.xyz;
-  outColor = vec4(color, inColor.a);
-
+  outColor = vec4(color, fragColor.a);
 }
 #endif
 

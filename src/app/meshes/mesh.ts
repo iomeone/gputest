@@ -1,5 +1,5 @@
-import { VertexData, RawTexture } from '../../core/types';
-import { makeVertexAttributeLayout } from '../../core';
+import { VertexData } from '@use-gpu/core/types';
+import { makeVertexAttributeLayout } from '@use-gpu/core';
 
 export const makeMesh = (): VertexData => {
   const vertices   = [meshVertexArray]
@@ -7,25 +7,6 @@ export const makeMesh = (): VertexData => {
 
   return {vertices, attributes, count: 36};
 }
-
-export const makeTexture = (): RawTexture => {
-  return rawTextureRGBA;
-}
-
-export const rawTextureRGBA: RawTexture = {
-  data: new Uint8Array([
-    0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
-    0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
-    0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
-    0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255,
-  ]),
-  format: "rgba8unorm",
-  size: [8, 8],
-};
 
 export const meshAttributes = makeVertexAttributeLayout([
   // @ts-ignore

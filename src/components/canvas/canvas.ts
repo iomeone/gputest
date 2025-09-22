@@ -1,11 +1,11 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { ShaderLanguages } from '../../core/types';
-import { CanvasRenderingContextGPU } from '../../webgpu/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { ShaderLanguages } from '@use-gpu/core/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, BACKGROUND_COLOR } from '../constants';
 
-import { EventProvider, RenderContext, DeviceContext } from '../providers';
-import { provide, provideMemo, use, useMemo, useOne } from '../../live';
-import { makePresentationContext } from '../../webgpu';
+import { EventProvider, RenderContext } from '../providers';
+import { use, useMemo, useOne, provide } from '@use-gpu/live';
+import { makePresentationContext } from '@use-gpu/webgpu';
 import {
   makeColorState,
   makeColorAttachment,
@@ -14,7 +14,7 @@ import {
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLIED,
-} from '../../core';
+} from '@use-gpu/core';
 
 export type CanvasProps = {
   device: GPUDevice,
@@ -26,20 +26,16 @@ export type CanvasProps = {
   depthStencilFormat?: GPUTextureFormat,
   backgroundColor?: GPUColor,
   samples?: number,
-  pixelRatio?: number,
 
   children?: LiveElement<any>,
 }
 
-const getPixelRatio = () => typeof window !== 'undefined' ? window.devicePixelRatio : 1;
-
-export const Canvas: LiveComponent<CanvasProps> = (props) => {
+export const Canvas: LiveComponent<CanvasProps> = (fiber) => (props) => {
   const {
     device,
     canvas,
     children,
     languages,
-    pixelRatio = getPixelRatio(),
     presentationFormat = PRESENTATION_FORMAT,
     depthStencilFormat = DEPTH_STENCIL_FORMAT,
     backgroundColor = BACKGROUND_COLOR,
@@ -87,7 +83,6 @@ export const Canvas: LiveComponent<CanvasProps> = (props) => {
   const renderContext = {
     width,
     height,
-    pixelRatio,
     samples,
     device,
     languages,
@@ -99,5 +94,5 @@ export const Canvas: LiveComponent<CanvasProps> = (props) => {
     depthStencilAttachment,
   } as CanvasRenderingContextGPU;
 
-  return provide(RenderContext, renderContext, provideMemo(DeviceContext, device, children));
+  return provide(RenderContext, renderContext, children);
 }

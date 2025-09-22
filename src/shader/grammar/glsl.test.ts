@@ -1,6 +1,6 @@
 import { Tree } from '@lezer/common';
 import { parser } from './glsl';
-import { formatAST, formatASTNode } from '../util/tree';
+import { formatAST, formatASTNode } from '../transform/ast';
 import { addASTSerializer } from '../test/snapshot';
 
 addASTSerializer(expect);
@@ -57,14 +57,6 @@ struct light2 {
 
 `
 void main();
-`,
-
-//////////////////////////////////////////////////////////////////////
-
-`
-layout(location = 0) in wat;
-layout(location = 0) in wat1, wat2;
-layout(location = 1) in vec2;
 `,
 
 //////////////////////////////////////////////////////////////////////

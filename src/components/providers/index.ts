@@ -1,5 +1,4 @@
-export * from './device-provider';
 export * from './event-provider';
-export * from './frame-provider';
+export * from './frame-context';
 export * from './render-provider';
 export * from './view-provider';

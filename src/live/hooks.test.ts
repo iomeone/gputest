@@ -1,44 +1,39 @@
 import { LiveFiber, LiveComponent, LiveFunction, DeferredCall } from './types';
 
-import { bind } from './fiber';
-import { use, provide, makeContext } from './builtin';
+import { bind, use, provide, makeContext } from './live';
 import { makeHostFiber, renderSync } from './tree';
 import { useCallback, useContext, useMemo, useOne, useResource, useState, memoArgs, memoProps } from './hooks';
 
 type NullReturner = () => null;
 type NumberReturner = () => number;
 type FunctionReturner = () => () => any;
-type PropNumberReturner = (x: number) => number;
 
 it('memoizes a function', () => {
 
-  const F: LiveFunction<PropNumberReturner> = memoArgs((x: number): number => {
+  const F: LiveFunction<NumberReturner> = memoArgs(() => (): number => {
     return Math.random();
   });
 
   {
-    const result1 = bind(F)(1);
-    const result2 = bind(F)(1);
+    const result1 = bind(F)();
+    const result2 = bind(F)();
 
     expect(result1).not.toBe(result2);
   }
 
   {
     const bound = bind(F);
+    const result1 = bound();
+    const result2 = bound();
 
-    const result1 = bound(1);
-    const result2 = bound(1);
-    const result3 = bound(2);
-
-    expect(result2).toBe(result1);
-    expect(result3).not.toBe(result2);
+    expect(result1).toBe(result2);
   }
 })
 
 it('memoizes a component', () => {
 
   // @ts-ignore
-  const F: LiveFunction<NumberReturner> = memoProps((props): number => {
+  const F: LiveFunction<NumberReturner> = memoProps(() => (props): number => {
     return Math.random();
   });
 
@@ -61,7 +56,7 @@ it('memoizes a component', () => {
 
 it('holds state (hook)', () => {
 
-  const F: NumberReturner = (): number => {
+  const F: LiveFunction<NumberReturner> = (fiber: LiveFiber<NumberReturner>) => (): number => {
     const [foo] = useState(() => Math.random());
     return foo;
   };
@@ -86,7 +81,7 @@ it('holds memoized value (hook)', () => {
 
   const dep = 'static';
 
-  const F: NumberReturner = (): number => {
+  const F: LiveFunction<NumberReturner> = (fiber: LiveFiber<NumberReturner>) => (): number => {
 
     const foo = useMemo(() => Math.random(), [dep]);
 
@@ -113,7 +108,7 @@ it('holds memoized value with one dep (hook)', () => {
 
   const dep = 'static';
 
-  const F: NumberReturner = (): number => {
+  const F: LiveFunction<NumberReturner> = (fiber: LiveFiber<NumberReturner>) => (): number => {
 
     const foo = useOne(() => Math.random(), dep);
 
@@ -140,7 +135,7 @@ it('holds memoized callback (hook)', () => {
 
   const dep = 'static';
 
-  const F: FunctionReturner = (): () => number => {
+  const F: LiveFunction<FunctionReturner> = (fiber: LiveFiber<FunctionReturner>) => (): () => number => {
 
     const x = Math.random();
     const foo = useCallback(() => x, [dep]);
@@ -164,48 +159,13 @@ it('holds memoized callback (hook)', () => {
   }
 });
 
-it('holds state in memoized component (hook)', () => {
-
-  let i: number;
-  const F: PropNumberReturner = memoArgs((x: number): number => {
-    const [foo] = useState(() => Math.random());
-    return foo + (i++);
-  });
-
-  {
-
-    i = 0;
-    const result1 = bind(F)(1);
-    i = 0;
-    const result2 = bind(F)(1);
-
-    expect(result1).not.toBe(result2);
-  }
-
-  {
-    i = 0;
-
-    const bound = bind(F);
-    const result1 = bound(1);
-    const result2 = bound(1);
-    const result3 = bound(2);
-    const result4 = bound(2);
-    const result5 = bound(3);
-
-    expect(result2).toBe(result1);
-    expect(result3).toBe(result1 + 1);
-    expect(result4).toBe(result1 + 1);
-    expect(result5).toBe(result1 + 2);
-  }
-})
-
 it('manages a dependent resource (hook)', () => {
 
   const dep = 'static';
   let allocated: number;
   let disposed: number;
 
-  const F: NullReturner = () => {
+  const F: LiveFunction<NullReturner> = (fiber: LiveFiber<NullReturner>): NullReturner => () => {
 
     useResource((dispose) => {
       allocated++;
@@ -215,7 +175,7 @@ it('manages a dependent resource (hook)', () => {
     return null;
   };
 
-  const G: NullReturner = () => {
+  const G: LiveFunction<NullReturner> = (fiber: LiveFiber<NullReturner>): NullReturner => () => {
 
     const x = Math.random();
     useResource((dispose) => {
@@ -226,7 +186,7 @@ it('manages a dependent resource (hook)', () => {
     return null;
   };
 
-  const H: NullReturner = () => {
+  const H: LiveFunction<NullReturner> = (fiber: LiveFiber<NullReturner>): NullReturner => () => {
 
     const x = Math.random();
     useResource((dispose) => {
@@ -311,16 +271,16 @@ it("provides a context", () => {
   let value1 = null;
   let value2 = null;
 
-  const Root = () =>
+  const Root = (fiber: LiveFiber<any>) => () =>
     provide(Context, 123, [
       use(Sub)()
     ]);
 
-  const Sub = () => {
+  const Sub = () => () => {
     value1 = useContext(Context);
     return use(Node)();
   }
-  const Node = () => {
+  const Node = () => () => {
     value2 = useContext(Context);
   };
 
@@ -342,7 +302,7 @@ it("provides a changing context value", () => {
 
   let trigger = null as Function | null;
 
-  const Root = () => {
+  const Root = (fiber: LiveFiber<any>) => () => {
     const [state, setState] = useState<number>(123);
     trigger = () => setState(456);
     return provide(Context, state, [
@@ -350,11 +310,11 @@ it("provides a changing context value", () => {
     ]);
   }
 
-  const Sub = () => {
+  const Sub = () => () => {
     value1 = useContext(Context);
     return use(Node)();
   }
-  const Node = () => {
+  const Node = () => () => {
     value2 = useContext(Context);
   };
 
@@ -362,7 +322,7 @@ it("provides a changing context value", () => {
   expect(result.f).toBe(Root);
   if (!result.host) return;
 
-  const {host: {flush}} = result;
+  const {host: {__flush: flush}} = result;
 
   expect(result.mount).toBeTruthy();
   expect(result.mount!.mounts).toBeTruthy();
@@ -385,7 +345,7 @@ it("provides a changing context value on a memoized component", () => {
 
   let trigger = null as Function | null;
 
-  const Root = () => {
+  const Root = (fiber: LiveFiber<any>) => () => {
     const [state, setState] = useState<number>(123);
     trigger = () => setState(456);
     return provide(Context, state, [
@@ -393,12 +353,12 @@ it("provides a changing context value on a memoized component", () => {
     ]);
   }
 
-  const Sub = () => {
+  const Sub = () => () => {
     // @ts-ignore
     return use(Node)();
   };
 
-  const Node = memoProps(() => {
+  const Node = memoProps(() => () => {
     value = useContext(Context);
   });
 
@@ -406,7 +366,7 @@ it("provides a changing context value on a memoized component", () => {
   expect(result.f).toBe(Root);
   if (!result.host) return;
 
-  const {host: {flush}} = result;
+  const {host: {__flush: flush}} = result;
 
   expect(result.mount).toBeTruthy();
   expect(result.mount!.mounts).toBeTruthy();
@@ -426,7 +386,7 @@ it("provides a changing context value with a memoized component in the way", () 
 
   let trigger = null as Function | null;
 
-  const Root = () => {
+  const Root = (fiber: LiveFiber<any>) => () => {
     const [state, setState] = useState<number>(123);
     trigger = () => setState(456);
     return provide(Context, state, [
@@ -434,11 +394,11 @@ it("provides a changing context value with a memoized component in the way", () 
     ]);
   }
 
-  const Sub = memoProps(() => {
+  const Sub = memoProps(() => () => {
     return use(Node)();
   });
 
-  const Node = () => {
+  const Node = () => () => {
     value = useContext(Context);
   };
 
@@ -446,7 +406,7 @@ it("provides a changing context value with a memoized component in the way", () 
   expect(result.f).toBe(Root);
   if (!result.host) return;
 
-  const {host: {flush}} = result;
+  const {host: {__flush: flush}} = result;
 
   expect(result.mount).toBeTruthy();
   expect(result.mount!.mounts).toBeTruthy();

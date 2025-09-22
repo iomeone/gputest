@@ -1,6 +1,14 @@
 #pragma import {getPickingColor} from '@use-gpu/glsl/use/picking';
 
-vec4 getFragment(vec4, vec2);
+#ifdef HAS_MASK
+#pragma optional
+float getMask(vec2);
+#endif
+
+#ifdef HAS_TEXTURE
+#pragma optional
+vec4 getTexture(vec2);
+#endif
 
 #ifdef IS_PICKING
 layout(location = 0) in flat uint fragIndex;
@@ -19,9 +27,13 @@ void main() {
 #else
 void main() {
   outColor = fragColor;
-  outColor.xyz *= outColor.a;
 
-  outColor = getFragment(outColor, fragUV);
+  #ifdef HAS_MASK
+  outColor *= getMask(fragUV);
+  #endif
+  #ifdef HAS_TEXTURE
+  outColor *= getTexture(fragUV);
+  #endif
 
   if (outColor.a <= 0.0) discard;
 }

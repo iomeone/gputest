@@ -1,19 +1,36 @@
 import {
-  UniformAllocation, VirtualAllocation, ResourceAllocation,
-  UniformAttribute, UniformAttributeDescriptor,
+  UniformAllocation, UniformAttribute, UniformAttributeDescriptor,
   UniformBinding, UniformLayout, UniformType,
   UniformPipe, UniformByteSetter, UniformFiller,
-  DataBinding,
   StorageSource,
 } from './types';
 import { UNIFORM_ATTRIBUTE_SIZES } from './constants';
 import { UNIFORM_BYTE_SETTERS } from './bytes';
 import { makeUniformBuffer } from './buffer';
-import { makeStorageForDataBindings, makeStorageBindings } from './storage';
-import { makeTextureView } from './texture';
+import { makeStorageBindings } from './storage';
 
 export const getUniformAttributeSize = (format: UniformType): number => UNIFORM_ATTRIBUTE_SIZES[format];
 export const getUniformByteSetter = (format: UniformType): UniformByteSetter => UNIFORM_BYTE_SETTERS[format];
+
+export const makeUniformsWithStorage = (
+  device: GPUDevice,
+  pipeline: GPURenderPipeline | GPUComputePipeline,
+  uniforms: UniformAttribute[],
+  links: Record<string, StorageSource | null | undefined>,
+  set: number = 0,
+): UniformAllocation => {
+  const pipe = makeUniformPipe(uniforms);
+  const buffer = makeUniformBuffer(device, pipe.data);
+  const uniformEntries = makeUniformBindings([{resource: {buffer}}]);
+  const storageEntries = makeStorageBindings(links, 1);
+
+  const entries = [...uniformEntries, ...storageEntries];
+  const bindGroup = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(set),
+    entries,
+  });
+  return {pipe, buffer, bindGroup};
+}
 
 export const makeUniforms = (
   device: GPUDevice,
@@ -52,81 +69,6 @@ export const makeMultiUniforms = (
   return {pipe, buffer, bindGroup};
 }
 
-export const makeBoundUniforms = <T>(
-  device: GPUDevice,
-  pipeline: GPURenderPipeline | GPUComputePipeline,
-  uniforms: DataBinding<T>[],
-  bindings: DataBinding<T>[],
-  set: number = 0,
-): VirtualAllocation => {
-  const entries = [] as GPUBindGroupEntry[];
-
-  let pipe, buffer, bindGroup;
-
-  const hasBindings = !!bindings.length;
-  const hasUniforms = !!uniforms.length;
-
-  if (!hasBindings && !hasUniforms) return {};
-
-  if (hasBindings) {
-    const storageEntries = bindings.length ? makeStorageForDataBindings(bindings, 0) : [];
-    entries.push(...storageEntries);
-  }
-
-  if (hasUniforms) {
-    const struct = uniforms.map(({uniform}) => uniform);
-    pipe = makeUniformPipe(struct);
-    buffer = makeUniformBuffer(device, pipe.data);
-
-    const uniformEntries = makeUniformBindings([{resource: {buffer}}], bindings.length);
-    entries.push(...uniformEntries);
-  }
-
-  if (entries.length) bindGroup = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(set),
-    entries,
-  });
-
-  return {pipe, buffer, bindGroup};
-}
-
-export const makeTextureUniforms = (
-  device: GPUDevice,
-  pipeline: GPURenderPipeline | GPUComputePipeline,
-  sampler: GPUSampler,
-  texture: GPUTexture,
-  set: number = 0,
-): ResourceAllocation => {
-  if (texture instanceof GPUTexture) texture = makeTextureView(texture);
-
-  const entries = makeUniformBindings([{resource: sampler}, {resource: texture}]);
-  const bindGroup = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(set),
-    entries,
-  });
-  return {bindGroup};
-}
-
-export const makeMultiTextureUniforms = (
-  device: GPUDevice,
-  pipeline: GPURenderPipeline | GPUComputePipeline,
-  textures: [GPUSampler, GPUTexture | GPUTextureView][],
-  set: number = 0,
-): ResourceAllocation => {
-
-  const bindings = textures.flatMap(([sampler, texture]) => {
-    if (texture instanceof GPUTexture) texture = makeTextureView(texture);
-    return [{resource: sampler}, {resource: texture}];
-  });
-
-  const entries = makeUniformBindings(bindings);
-  const bindGroup = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(set),
-    entries,
-  });
-  return {bindGroup};
-}
-
 export const makeUniformPipe = (
   uniforms: UniformAttribute[],
   count: number = 1,
@@ -151,7 +93,7 @@ export const makeMultiUniformPipe = (
 
 export const makeUniformBindings = (
   bindings: UniformBinding[],
-  binding: number = 0,
+  binding: number = 0
 ): GPUBindGroupEntry[] => {
   const entries = [] as any[];
 
@@ -186,7 +128,6 @@ export const makeUniformLayout = (
 export const makeMultiUniformLayout = (
   uniformGroups: UniformAttribute[][],
   base: number = 0,
-  alignment: number = 256,
 ): UniformLayout => {
   const out = [] as any[];
   const offsets = [];
@@ -198,8 +139,8 @@ export const makeMultiUniformLayout = (
     offsets.push(offset);
     offset += length;
     
-    const d = offset % alignment;
-    offset += d ? alignment - d : 0;
+    const d = offset % 256;
+    offset += d ? 256 - d : 0;
   }
 
   return {length: offset - base, attributes: out, offsets};
@@ -249,3 +190,38 @@ export const makeLayoutFiller = (
     }
   }
 }
+
+export const makeUniformBlockAccessor = (
+  uniforms: UniformAttribute[],
+  set: number = 0,
+  binding: number = 0,
+  ubo: string = 'UBO',
+): Record<string, string> => {
+  const modules = {} as Record<string, string>;
+
+  const members = uniforms.map(({name, format}) => `${format} ${name}`);
+  modules[`#${ubo}`] = makeUniformBlock(set, binding, ubo, members);
+
+  for (const {name, format, args} of uniforms) {
+    modules[name] = makeUniformGetter(format, ubo, name, args);
+  }
+
+  return modules;
+};
+
+export const makeUniformBlock = (set: number, binding: number, ubo: string, members: string[]) => `
+#pragma export
+layout (set = ${set}, binding = ${binding}) uniform ${ubo}Type {
+  ${members.map(m => `${m};`).join('\n  ')}
+} ${ubo}Uniform;
+`;
+
+const intArg = ['int'];
+export const makeUniformGetter = (type: string, ubo: string, name: string, args: string[] = intArg) => `
+#pragma import { ${ubo}Uniform } from '#${ubo}'
+
+#pragma export
+${type} ${name}(${args.join(', ')}) {
+  return ${ubo}Uniform.${name};
+}
+`;

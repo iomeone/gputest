@@ -1,30 +1,42 @@
-import { LiveComponent } from '../../live/types';
-import { RenderPassMode, DeepPartial } from '../../core/types';
-import { ShaderModule, ParsedBundle, ParsedModule } from '../../shader/types';
-import { memo, use, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource, useConsoleLog } from '../../live';
+import { LiveComponent } from '@use-gpu/live/types';
+import {
+  TypedArray, ViewUniforms, UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
+  VertexData, StorageSource, RenderPassMode, ShaderLib,
+} from '@use-gpu/core/types';
+import { ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
+import { ViewContext, RenderContext, PickingContext, useNoPicking } from '@use-gpu/components';
+import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import {
+  makeMultiUniforms, makeUniformsWithStorage,
+  makeRenderPipeline,
+  extractDataBindings, extractCodeBindings,
+  uploadBuffer,
+} from '@use-gpu/core';
+import { useBoundStorage } from '../hooks/useBoundStorage';
+import { useBoundShader } from '../hooks/useBoundShader';
+import { loadModule } from '@use-gpu/shader';
 
-import { bindBundle, bindingsToLinks } from '../../shader/glsl';
-import { useRenderPipeline } from '../hooks/useRenderPipeline';
-
-import instanceDrawVirtual from '../../glsl/instance/draw/virtual.glsl';
-import instanceDrawWireframeStrip from '../../glsl/instance/draw/wireframe-strip.glsl';
-import instanceFragmentSolid from '../../glsl/instance/fragment/solid.glsl';
-
-import { render } from './render';
+import instanceDrawVirtual from '@use-gpu/glsl/instance/draw/virtual.glsl';
+import instanceDrawWireframeStrip from '@use-gpu/glsl/instance/draw/wireframe-strip.glsl';
+import instanceFragmentSolid from '@use-gpu/glsl/instance/fragment/solid.glsl';
 
 export type VirtualProps = {
-  pipeline: DeepPartial<GPURenderPipelineDescriptor>,
-  mode?: RenderPassMode | string,
-  id?: number,
-
+  topology: GPUPrimitiveTopology,
   vertexCount: number,
   instanceCount: number,
 
-  getVertex: ShaderModule,
-  getFragment: ShaderModule,
+  attributes: UniformAttributeValue[],
+  lambdas: UniformAttributeValue[],
 
+  attrBindings: any[],
+  lambdaBindings: any[],
+
+  links: ShaderLib<ParsedBundle | ParsedModule>
   defines: Record<string, any>,
   deps: any[],
+
+  mode?: RenderPassMode | string,
+  id?: number,
 };
 
 const getDebugShader = (topology: GPUPrimitiveTopology) => {
@@ -34,64 +46,134 @@ const getDebugShader = (topology: GPUPrimitiveTopology) => {
   return instanceDrawWireframeStrip;
 }
 
-export const Virtual: LiveComponent<VirtualProps> = memo((props) => {
+export const Virtual: LiveComponent<VirtualProps> = memo((fiber) => (props) => {
   const {
-    getVertex,
-    getFragment,
+    topology,
+    attributes: propAttributes,
+    lambdas: propLambdas,
+    links: propLinks,
+    defines: propDefines,
 
-    pipeline,
-    defines,
+    attrBindings,
+    lambdaBindings,
+
+    vertexCount,
+    instanceCount,
     deps = null,
-    mode = RenderPassMode.Opaque,
+    mode = RenderPassMode.Render,
     id = 0,
   } = props;
 
-  const isDebug = mode === RenderPassMode.Debug;
+  // Render set up
+  const {viewUniforms, viewDefs} = useContext(ViewContext);
+  const renderContext = useContext(RenderContext);
 
+  const isDebug = mode === RenderPassMode.Debug;
+  const isPicking = mode === RenderPassMode.Picking;
+  const pickingContext = isPicking ? useSomeContext(PickingContext) : useNoContext(PickingContext);  
+  const {pickingDefs, pickingUniforms} = pickingContext?.usePicking(id) ?? useNoPicking();
+
+  const resolvedContext = pickingContext?.renderContext ?? renderContext;
+  const {device, colorStates, depthStencilState, samples, languages} = resolvedContext;
+
+  // External bindings
+  const dataBindings = useOne(() => extractDataBindings(propAttributes, attrBindings), attrBindings);
+  const codeBindings = useOne(() => extractCodeBindings(propLambdas, lambdaBindings), lambdaBindings);
+
+  // Render shader
+  const {glsl: {modules}} = languages;
   // TODO: non-strip topology
-  const topology = pipeline.primitive?.topology ?? 'triangle-list';
   const vertexShader = !isDebug ? instanceDrawVirtual : getDebugShader(topology);
   const fragmentShader = instanceFragmentSolid;
 
-  // Binds links into shader
-  const key = useFiber().id;
-  const [v, f] = useMemo(() => {
-    const links = { getVertex, getFragment };
-    const v = bindBundle(vertexShader, links, defines, key);
-    const f = bindBundle(fragmentShader, links, defines, key);
-    return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getFragment]);
+  const defines = useMemo(() => ({
+    ...propDefines,
+    IS_PICKING: isPicking,
+    VIEW_BINDING: 0,
+    PICKING_BINDING: 1,
+  }), [isPicking, propDefines]);
 
-  // Debug wireframe
-  let {
-    vertexCount,
-    instanceCount,
-  } = props;
-  if (isDebug) {
-    if (topology === 'triangle-strip') {
-      const tris = vertexCount - 2;
-      const edges = tris * 2 + 1;
-      
-      vertexCount = 4;
-      instanceCount = edges * instanceCount;
-    }
-    if (topology === 'triangle-list') {
-      vertexCount = 4;
-      instanceCount = vertexCount * instanceCount;
-    }
-  }
+  const links = useMemo(() => ({
+    ...propLinks,
+    ...codeBindings.links,
+  }), [codeBindings, propLinks]);
 
-  // Inline the render fiber to avoid another memo()
-  return render({
-    vertexCount,
-    instanceCount,
-    vertex: v,
-    fragment: f,
+  // Shader data bindings
+  const {accessors, attributes, lambdas, constants} = useBoundStorage(
+    propAttributes,
+    propLambdas,
+    dataBindings,
+    codeBindings,
+    1,
+  );
+
+  // Shaders
+  const [vertex, fragment] = useBoundShader(
+    vertexShader,
+    fragmentShader,
+    links as any,
+    accessors,
     defines,
+    languages,
     deps,
+    1,
+  );
 
-    pipeline,
-    mode,
-    id,
-  });
-}, "Virtual");
+  // Rendering pipeline
+  const pipeline = useMemo(() =>
+    makeRenderPipeline(
+      resolvedContext,
+      vertex,
+      fragment,
+      {
+        primitive: {
+          topology,
+          stripIndexFormat: 'uint16',
+        },
+        vertex:   {},
+        fragment: {},
+      }
+    ),
+    [device, vertex, fragment, topology, colorStates, depthStencilState, samples, languages]
+  );
+
+  // Uniforms
+  const [
+    uniform,
+    storage,
+  ] = useMemo(() => {
+    const defs = isPicking ? [viewDefs, pickingDefs] : [viewDefs];
+    const uniform = makeMultiUniforms(device, pipeline, defs, 0);
+    const storage = makeUniformsWithStorage(device, pipeline, constants, dataBindings.links, 1);
+    return [uniform, storage];
+  }, [device, viewDefs, constants, attributes, pipeline, dataBindings]);
+
+  // Return a lambda back to parent(s)
+  return yeet({
+    [mode]: (passEncoder: GPURenderPassEncoder) => {
+      uniform.pipe.fill(viewUniforms);
+      if (isPicking) uniform.pipe.fill(pickingUniforms);
+      uploadBuffer(device, uniform.buffer, uniform.pipe.data);
+
+      storage.pipe.fill(dataBindings.constants);
+      storage.pipe.fill(codeBindings.constants);
+      uploadBuffer(device, storage.buffer, storage.pipe.data);
+
+      passEncoder.setPipeline(pipeline);
+      passEncoder.setBindGroup(0, uniform.bindGroup);
+      passEncoder.setBindGroup(1, storage.bindGroup);
+
+      if (!isDebug) passEncoder.draw(vertexCount, instanceCount, 0, 0);
+      else {
+        if (topology === 'triangle-strip') {
+          const tris = vertexCount - 2;
+          const edges = tris * 2 + 1;
+          passEncoder.draw(4, edges * instanceCount, 0, 0);
+        }
+        if (topology === 'triangle-list') {
+          passEncoder.draw(4, vertexCount * instanceCount, 0, 0);
+        }
+      }
+    },
+  }); 
+}, 'Virtual');

@@ -1,6 +1,6 @@
-import { LiveComponent, LiveElement } from '../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 
-import { useResource, useState } from '../../live';
+import { useResource, useState } from '@use-gpu/live';
 
 const CAPTURE_EVENT = {capture: true};
 
@@ -19,7 +19,7 @@ export type OrbitControlsProps = {
   render: (phi: number, theta: number, radius: number) => LiveElement<any>,
 };
 
-export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
+export const OrbitControls: LiveComponent<OrbitControlsProps> = (fiber) => (props) => {
   const {
     bearingSpeed = DEFAULT_OPTIONS.bearingSpeed,
     pitchSpeed   = DEFAULT_OPTIONS.pitchSpeed, 

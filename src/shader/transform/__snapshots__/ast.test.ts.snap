@@ -1,0 +1,1551 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ast gets geometry quad symbol table 1`] = `
+Object {
+  "declarations": Array [
+    Object {
+      "at": 0,
+      "flags": 0,
+      "identifiers": Array [],
+      "symbols": Array [
+        "QUAD",
+      ],
+      "variable": Object {
+        "locals": Array [
+          Object {
+            "expr": "ivec2(0, 0)",
+            "name": "QUAD",
+          },
+        ],
+        "type": Object {
+          "name": "ivec2",
+          "qualifiers": Array [
+            "const",
+          ],
+        },
+      },
+    },
+  ],
+  "externals": Array [],
+  "functions": Array [
+    Object {
+      "at": 102,
+      "flags": 1,
+      "identifiers": Array [
+        "QUAD",
+      ],
+      "prototype": Object {
+        "name": "getQuadIndex",
+        "parameters": Array [
+          "int",
+          "vertex",
+        ],
+        "type": Object {
+          "name": "ivec2",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "getQuadIndex",
+      ],
+    },
+    Object {
+      "at": 176,
+      "flags": 1,
+      "identifiers": Array [
+        "getQuadIndex",
+      ],
+      "prototype": Object {
+        "name": "getQuadUV",
+        "parameters": Array [
+          "int",
+          "vertex",
+        ],
+        "type": Object {
+          "name": "vec2",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "getQuadUV",
+      ],
+    },
+  ],
+  "globals": Array [],
+  "hash": "vz5280ybh9",
+  "modules": Array [],
+  "symbols": Array [
+    "getQuadIndex",
+    "getQuadUV",
+    "QUAD",
+  ],
+  "visibles": Array [
+    "getQuadIndex",
+    "getQuadUV",
+  ],
+}
+`;
+
+exports[`ast gets quad vertex declarations 1`] = `
+Array [
+  Object {
+    "at": 196,
+    "flags": 0,
+    "identifiers": Array [],
+    "prototype": Object {
+      "name": "getPosition",
+      "parameters": Array [
+        "int",
+      ],
+      "type": Object {
+        "name": "vec4",
+        "qualifiers": Array [],
+      },
+    },
+    "symbols": Array [
+      "getPosition",
+    ],
+  },
+  Object {
+    "at": 219,
+    "flags": 0,
+    "identifiers": Array [],
+    "prototype": Object {
+      "name": "getColor",
+      "parameters": Array [
+        "int",
+      ],
+      "type": Object {
+        "name": "vec4",
+        "qualifiers": Array [],
+      },
+    },
+    "symbols": Array [
+      "getColor",
+    ],
+  },
+  Object {
+    "at": 239,
+    "flags": 0,
+    "identifiers": Array [],
+    "prototype": Object {
+      "name": "getSize",
+      "parameters": Array [
+        "int",
+      ],
+      "type": Object {
+        "name": "float",
+        "qualifiers": Array [],
+      },
+    },
+    "symbols": Array [
+      "getSize",
+    ],
+  },
+]
+`;
+
+exports[`ast gets quad vertex functions 1`] = `
+Array [
+  Object {
+    "at": 275,
+    "flags": 1,
+    "identifiers": Array [
+      "instancePosition",
+      "getPosition",
+      "instanceIndex",
+      "instanceColor",
+      "getColor",
+      "instanceSize",
+      "getSize",
+      "position",
+      "worldToClip",
+      "uv",
+      "getQuadUV",
+      "vertexIndex",
+      "xy",
+      "viewUniforms",
+      "SolidVertex",
+    ],
+    "prototype": Object {
+      "name": "getQuadVertex",
+      "parameters": Array [
+        "int",
+        "vertexIndex",
+      ],
+      "type": Object {
+        "name": "SolidVertex",
+        "qualifiers": Array [],
+      },
+    },
+    "symbols": Array [
+      "getQuadVertex",
+    ],
+  },
+]
+`;
+
+exports[`ast gets quad vertex imports 1`] = `
+Array [
+  Object {
+    "at": 0,
+    "imports": Array [
+      Object {
+        "imported": "SolidVertex",
+        "name": "SolidVertex",
+      },
+    ],
+    "name": "@use-gpu/glsl/use/types",
+    "symbols": Array [
+      "SolidVertex",
+    ],
+  },
+  Object {
+    "at": 0,
+    "imports": Array [
+      Object {
+        "imported": "viewUniforms",
+        "name": "viewUniforms",
+      },
+      Object {
+        "imported": "worldToClip",
+        "name": "worldToClip",
+      },
+    ],
+    "name": "@use-gpu/glsl/use/view",
+    "symbols": Array [
+      "viewUniforms",
+      "worldToClip",
+    ],
+  },
+  Object {
+    "at": 0,
+    "imports": Array [
+      Object {
+        "imported": "getQuadUV",
+        "name": "getQuadUV",
+      },
+    ],
+    "name": "@use-gpu/glsl/geometry/quad",
+    "symbols": Array [
+      "getQuadUV",
+    ],
+  },
+]
+`;
+
+exports[`ast gets quad vertex symbol table 1`] = `
+Object {
+  "declarations": Array [
+    Object {
+      "at": 196,
+      "flags": 0,
+      "identifiers": Array [],
+      "prototype": Object {
+        "name": "getPosition",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "getPosition",
+      ],
+    },
+    Object {
+      "at": 219,
+      "flags": 0,
+      "identifiers": Array [],
+      "prototype": Object {
+        "name": "getColor",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "getColor",
+      ],
+    },
+    Object {
+      "at": 239,
+      "flags": 0,
+      "identifiers": Array [],
+      "prototype": Object {
+        "name": "getSize",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "float",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "getSize",
+      ],
+    },
+  ],
+  "externals": Array [
+    Object {
+      "at": 196,
+      "flags": 0,
+      "identifiers": Array [],
+      "prototype": Object {
+        "name": "getPosition",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "getPosition",
+      ],
+    },
+    Object {
+      "at": 219,
+      "flags": 0,
+      "identifiers": Array [],
+      "prototype": Object {
+        "name": "getColor",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "getColor",
+      ],
+    },
+    Object {
+      "at": 239,
+      "flags": 0,
+      "identifiers": Array [],
+      "prototype": Object {
+        "name": "getSize",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "float",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "getSize",
+      ],
+    },
+  ],
+  "functions": Array [
+    Object {
+      "at": 275,
+      "flags": 1,
+      "identifiers": Array [
+        "getPosition",
+        "getColor",
+        "getSize",
+      ],
+      "prototype": Object {
+        "name": "getQuadVertex",
+        "parameters": Array [
+          "int",
+          "vertexIndex",
+        ],
+        "type": Object {
+          "name": "SolidVertex",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "getQuadVertex",
+      ],
+    },
+  ],
+  "globals": Array [],
+  "hash": "i8bdssda5g",
+  "modules": Array [
+    Object {
+      "at": 0,
+      "imports": Array [
+        Object {
+          "imported": "SolidVertex",
+          "name": "SolidVertex",
+        },
+      ],
+      "name": "@use-gpu/glsl/use/types",
+      "symbols": Array [
+        "SolidVertex",
+      ],
+    },
+    Object {
+      "at": 0,
+      "imports": Array [
+        Object {
+          "imported": "viewUniforms",
+          "name": "viewUniforms",
+        },
+        Object {
+          "imported": "worldToClip",
+          "name": "worldToClip",
+        },
+      ],
+      "name": "@use-gpu/glsl/use/view",
+      "symbols": Array [
+        "viewUniforms",
+        "worldToClip",
+      ],
+    },
+    Object {
+      "at": 0,
+      "imports": Array [
+        Object {
+          "imported": "getQuadUV",
+          "name": "getQuadUV",
+        },
+      ],
+      "name": "@use-gpu/glsl/geometry/quad",
+      "symbols": Array [
+        "getQuadUV",
+      ],
+    },
+  ],
+  "symbols": Array [
+    "getQuadVertex",
+    "getPosition",
+    "getColor",
+    "getSize",
+  ],
+  "visibles": Array [
+    "getQuadVertex",
+  ],
+}
+`;
+
+exports[`ast gets shake information for geometry/quad AST 1`] = `
+Array [
+  Array [
+    0,
+    Array [
+      "QUAD",
+      "getQuadIndex",
+      "getQuadUV",
+    ],
+  ],
+  Array [
+    102,
+    Array [
+      "getQuadIndex",
+      "getQuadUV",
+    ],
+  ],
+  Array [
+    176,
+    Array [
+      "getQuadUV",
+    ],
+  ],
+]
+`;
+
+exports[`ast gets shake information for instance/vertex/quad AST 1`] = `
+Array [
+  Array [
+    196,
+    Array [
+      "getPosition",
+      "getQuadVertex",
+    ],
+  ],
+  Array [
+    219,
+    Array [
+      "getColor",
+      "getQuadVertex",
+    ],
+  ],
+  Array [
+    239,
+    Array [
+      "getSize",
+      "getQuadVertex",
+    ],
+  ],
+  Array [
+    275,
+    Array [
+      "getQuadVertex",
+    ],
+  ],
+]
+`;
+
+exports[`ast gets shake information for use/types AST 1`] = `
+Array [
+  Array [
+    15,
+    Array [
+      "SolidVertex",
+    ],
+  ],
+  Array [
+    97,
+    Array [
+      "MeshVertex",
+    ],
+  ],
+]
+`;
+
+exports[`ast gets solid fragment declarations 1`] = `
+Array [
+  Object {
+    "at": 101,
+    "flags": 2,
+    "identifiers": Array [],
+    "prototype": Object {
+      "name": "getMask",
+      "parameters": Array [
+        "vec2",
+      ],
+      "type": Object {
+        "name": "float",
+        "qualifiers": Array [],
+      },
+    },
+    "symbols": Array [
+      "getMask",
+    ],
+  },
+  Object {
+    "at": 166,
+    "flags": 2,
+    "identifiers": Array [],
+    "prototype": Object {
+      "name": "getTexture",
+      "parameters": Array [
+        "vec2",
+      ],
+      "type": Object {
+        "name": "vec4",
+        "qualifiers": Array [],
+      },
+    },
+    "symbols": Array [
+      "getTexture",
+    ],
+  },
+  Object {
+    "at": 215,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [
+      "fragIndex",
+    ],
+    "variable": Object {
+      "locals": Array [
+        Object {
+          "expr": null,
+          "name": "fragIndex",
+        },
+      ],
+      "type": Object {
+        "name": "uint",
+        "qualifiers": Array [
+          "layout(location = 0)",
+          "in",
+          "flat",
+        ],
+      },
+    },
+  },
+  Object {
+    "at": 260,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [
+      "outColor",
+    ],
+    "variable": Object {
+      "locals": Array [
+        Object {
+          "expr": null,
+          "name": "outColor",
+        },
+      ],
+      "type": Object {
+        "name": "uvec4",
+        "qualifiers": Array [
+          "layout(location = 0)",
+          "out",
+        ],
+      },
+    },
+  },
+  Object {
+    "at": 307,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [
+      "fragColor",
+    ],
+    "variable": Object {
+      "locals": Array [
+        Object {
+          "expr": null,
+          "name": "fragColor",
+        },
+      ],
+      "type": Object {
+        "name": "vec4",
+        "qualifiers": Array [
+          "layout(location = 0)",
+          "in",
+        ],
+      },
+    },
+  },
+  Object {
+    "at": 347,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [
+      "fragUV",
+    ],
+    "variable": Object {
+      "locals": Array [
+        Object {
+          "expr": null,
+          "name": "fragUV",
+        },
+      ],
+      "type": Object {
+        "name": "vec2",
+        "qualifiers": Array [
+          "layout(location = 1)",
+          "in",
+        ],
+      },
+    },
+  },
+  Object {
+    "at": 385,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [
+      "outColor",
+    ],
+    "variable": Object {
+      "locals": Array [
+        Object {
+          "expr": null,
+          "name": "outColor",
+        },
+      ],
+      "type": Object {
+        "name": "vec4",
+        "qualifiers": Array [
+          "layout(location = 0)",
+          "out",
+        ],
+      },
+    },
+  },
+]
+`;
+
+exports[`ast gets test declarations 1`] = `
+Array [
+  Object {
+    "at": 7,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [
+      "x",
+      "y",
+    ],
+    "variable": Object {
+      "locals": Array [
+        Object {
+          "expr": null,
+          "name": "x",
+        },
+        Object {
+          "expr": null,
+          "name": "y",
+        },
+      ],
+      "type": Object {
+        "name": "float",
+        "qualifiers": Array [],
+      },
+    },
+  },
+  Object {
+    "at": 25,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [
+      "a",
+      "b",
+      "c",
+      "d",
+    ],
+    "variable": Object {
+      "locals": Array [
+        Object {
+          "expr": "3",
+          "name": "a",
+        },
+        Object {
+          "expr": "1",
+          "name": "b",
+        },
+        Object {
+          "expr": null,
+          "name": "c",
+        },
+        Object {
+          "expr": null,
+          "name": "d",
+        },
+      ],
+      "type": Object {
+        "name": "int",
+        "qualifiers": Array [],
+      },
+    },
+  },
+]
+`;
+
+exports[`ast gets test declarations with array 1`] = `
+Array [
+  Object {
+    "at": 7,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [
+      "QUAD",
+    ],
+    "variable": Object {
+      "locals": Array [
+        Object {
+          "expr": "ivec2(0, 0)",
+          "name": "QUAD",
+        },
+      ],
+      "type": Object {
+        "name": "ivec2",
+        "qualifiers": Array [
+          "const",
+        ],
+      },
+    },
+  },
+]
+`;
+
+exports[`ast gets use types symbol table 1`] = `
+Object {
+  "declarations": Array [
+    Object {
+      "at": 15,
+      "flags": 1,
+      "identifiers": Array [],
+      "symbols": Array [
+        "SolidVertex",
+      ],
+      "variable": Object {
+        "locals": Array [],
+        "type": Object {
+          "members": Array [
+            Object {
+              "name": "position",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "color",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "uv",
+              "type": Object {
+                "name": "vec2",
+              },
+            },
+          ],
+          "name": "SolidVertex",
+          "qualifiers": Array [],
+        },
+      },
+    },
+    Object {
+      "at": 97,
+      "flags": 1,
+      "identifiers": Array [],
+      "symbols": Array [
+        "MeshVertex",
+      ],
+      "variable": Object {
+        "locals": Array [],
+        "type": Object {
+          "members": Array [
+            Object {
+              "name": "position",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "normal",
+              "type": Object {
+                "name": "vec3",
+              },
+            },
+            Object {
+              "name": "color",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "uv",
+              "type": Object {
+                "name": "vec2",
+              },
+            },
+          ],
+          "name": "MeshVertex",
+          "qualifiers": Array [],
+        },
+      },
+    },
+  ],
+  "externals": Array [],
+  "functions": Array [],
+  "globals": Array [],
+  "hash": "3wmin9gcu9",
+  "modules": Array [],
+  "symbols": Array [
+    "SolidVertex",
+    "MeshVertex",
+  ],
+  "visibles": Array [
+    "SolidVertex",
+    "MeshVertex",
+  ],
+}
+`;
+
+exports[`ast gets use view declarations 1`] = `
+Array [
+  Object {
+    "at": 15,
+    "flags": 1,
+    "identifiers": Array [
+      "VIEW_BINDING",
+      "projectionMatrix",
+      "viewMatrix",
+      "viewPosition",
+      "viewResolution",
+      "viewSize",
+    ],
+    "struct": Object {
+      "name": "viewUniforms",
+      "struct": Object {
+        "members": Array [
+          Object {
+            "name": "projectionMatrix",
+            "type": Object {
+              "name": "mat4",
+            },
+          },
+          Object {
+            "name": "viewMatrix",
+            "type": Object {
+              "name": "mat4",
+            },
+          },
+          Object {
+            "name": "viewPosition",
+            "type": Object {
+              "name": "vec4",
+            },
+          },
+          Object {
+            "name": "viewResolution",
+            "type": Object {
+              "name": "vec2",
+            },
+          },
+          Object {
+            "name": "viewSize",
+            "type": Object {
+              "name": "vec2",
+            },
+          },
+        ],
+      },
+      "type": Object {
+        "name": "ViewUniforms",
+        "qualifiers": Array [
+          "layout(set = 0, binding = VIEW_BINDING)",
+          "uniform",
+        ],
+      },
+    },
+    "symbols": Array [
+      "viewUniforms",
+      "ViewUniforms",
+    ],
+  },
+]
+`;
+
+exports[`ast gets use view symbol table 1`] = `
+Object {
+  "declarations": Array [
+    Object {
+      "at": 15,
+      "flags": 1,
+      "identifiers": Array [],
+      "struct": Object {
+        "name": "viewUniforms",
+        "struct": Object {
+          "members": Array [
+            Object {
+              "name": "projectionMatrix",
+              "type": Object {
+                "name": "mat4",
+              },
+            },
+            Object {
+              "name": "viewMatrix",
+              "type": Object {
+                "name": "mat4",
+              },
+            },
+            Object {
+              "name": "viewPosition",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "viewResolution",
+              "type": Object {
+                "name": "vec2",
+              },
+            },
+            Object {
+              "name": "viewSize",
+              "type": Object {
+                "name": "vec2",
+              },
+            },
+          ],
+        },
+        "type": Object {
+          "name": "ViewUniforms",
+          "qualifiers": Array [
+            "layout(set = 0, binding = VIEW_BINDING)",
+            "uniform",
+          ],
+        },
+      },
+      "symbols": Array [
+        "viewUniforms",
+        "ViewUniforms",
+      ],
+    },
+  ],
+  "externals": Array [],
+  "functions": Array [
+    Object {
+      "at": 215,
+      "flags": 1,
+      "identifiers": Array [
+        "viewUniforms",
+      ],
+      "prototype": Object {
+        "name": "worldToView",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "worldToView",
+      ],
+    },
+    Object {
+      "at": 312,
+      "flags": 1,
+      "identifiers": Array [
+        "viewUniforms",
+      ],
+      "prototype": Object {
+        "name": "viewToClip",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "viewToClip",
+      ],
+    },
+    Object {
+      "at": 414,
+      "flags": 1,
+      "identifiers": Array [
+        "viewToClip",
+        "worldToView",
+      ],
+      "prototype": Object {
+        "name": "worldToClip",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "worldToClip",
+      ],
+    },
+    Object {
+      "at": 510,
+      "flags": 1,
+      "identifiers": Array [
+        "viewUniforms",
+      ],
+      "prototype": Object {
+        "name": "clipToScreen3D",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec3",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "clipToScreen3D",
+      ],
+    },
+    Object {
+      "at": 629,
+      "flags": 1,
+      "identifiers": Array [
+        "viewUniforms",
+      ],
+      "prototype": Object {
+        "name": "screenToClip3D",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec3",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "screenToClip3D",
+      ],
+    },
+    Object {
+      "at": 754,
+      "flags": 1,
+      "identifiers": Array [
+        "viewToClip",
+        "worldToView",
+      ],
+      "prototype": Object {
+        "name": "worldToClip3D",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec3",
+          "qualifiers": Array [],
+        },
+      },
+      "symbols": Array [
+        "worldToClip3D",
+      ],
+    },
+  ],
+  "globals": Array [],
+  "hash": "e624uz4crh",
+  "modules": Array [],
+  "symbols": Array [
+    "worldToView",
+    "viewToClip",
+    "worldToClip",
+    "clipToScreen3D",
+    "screenToClip3D",
+    "worldToClip3D",
+    "viewUniforms",
+    "ViewUniforms",
+  ],
+  "visibles": Array [
+    "worldToView",
+    "viewToClip",
+    "worldToClip",
+    "clipToScreen3D",
+    "screenToClip3D",
+    "worldToClip3D",
+    "viewUniforms",
+    "ViewUniforms",
+  ],
+}
+`;
+
+exports[`ast rewrites a lot of code using the compressed AST 1`] = `
+Array [
+  Array [
+    "Skip",
+    1,
+    46,
+  ],
+  Array [
+    "Shake",
+    48,
+    80,
+  ],
+  Array [
+    "Id",
+    48,
+    59,
+  ],
+  Array [
+    "Id",
+    60,
+    69,
+  ],
+  Array [
+    "Shake",
+    100,
+    145,
+  ],
+  Array [
+    "Id",
+    107,
+    115,
+  ],
+  Array [
+    "Id",
+    135,
+    144,
+  ],
+  Array [
+    "Shake",
+    152,
+    192,
+  ],
+  Array [
+    "Id",
+    159,
+    167,
+  ],
+  Array [
+    "Id",
+    182,
+    191,
+  ],
+  Array [
+    "Shake",
+    193,
+    230,
+  ],
+  Array [
+    "Id",
+    200,
+    208,
+  ],
+  Array [
+    "Id",
+    223,
+    229,
+  ],
+  Array [
+    "Shake",
+    239,
+    523,
+  ],
+  Array [
+    "Id",
+    244,
+    248,
+  ],
+  Array [
+    "Id",
+    259,
+    270,
+  ],
+  Array [
+    "Id",
+    273,
+    287,
+  ],
+  Array [
+    "Id",
+    295,
+    308,
+  ],
+  Array [
+    "Id",
+    311,
+    327,
+  ],
+  Array [
+    "Id",
+    332,
+    343,
+  ],
+  Array [
+    "Id",
+    344,
+    345,
+  ],
+  Array [
+    "Id",
+    348,
+    357,
+  ],
+  Array [
+    "Id",
+    358,
+    369,
+  ],
+  Array [
+    "Id",
+    371,
+    384,
+  ],
+  Array [
+    "Id",
+    390,
+    401,
+  ],
+  Array [
+    "Id",
+    404,
+    405,
+  ],
+  Array [
+    "Id",
+    436,
+    445,
+  ],
+  Array [
+    "Id",
+    453,
+    466,
+  ],
+  Array [
+    "Id",
+    477,
+    486,
+  ],
+  Array [
+    "Id",
+    489,
+    490,
+  ],
+  Array [
+    "Id",
+    500,
+    506,
+  ],
+  Array [
+    "Id",
+    509,
+    510,
+  ],
+]
+`;
+
+exports[`ast rewrites a lot of code using the compressed AST 2`] = `
+Object {
+  "cursor": [Function],
+}
+`;
+
+exports[`ast rewrites code using the AST 1`] = `
+"
+    float _zz_getValue(int index);
+    void entryPoint() {
+      float x = 3.0;
+      float y = _zz_getValue(2);
+    }
+    "
+`;
+
+exports[`ast rewrites code using the compressed AST 1`] = `
+Array [
+  Array [
+    "Shake",
+    5,
+    31,
+  ],
+  Array [
+    "Id",
+    11,
+    19,
+  ],
+  Array [
+    "Id",
+    24,
+    29,
+  ],
+  Array [
+    "Shake",
+    36,
+    132,
+  ],
+  Array [
+    "Id",
+    41,
+    45,
+  ],
+  Array [
+    "Id",
+    62,
+    63,
+  ],
+  Array [
+    "Id",
+    83,
+    84,
+  ],
+  Array [
+    "Id",
+    87,
+    95,
+  ],
+  Array [
+    "Id",
+    111,
+    112,
+  ],
+  Array [
+    "Id",
+    120,
+    121,
+  ],
+]
+`;
+
+exports[`ast rewrites code using the compressed AST 2`] = `
+Object {
+  "cursor": [Function],
+}
+`;
+
+exports[`ast shakes simple program 1`] = `
+Array [
+  Array [
+    1,
+    Array [
+      "x",
+      "getA",
+      "getB",
+    ],
+  ],
+  Array [
+    38,
+    Array [
+      "getA",
+    ],
+  ],
+  Array [
+    83,
+    Array [
+      "getB",
+    ],
+  ],
+]
+`;
+
+exports[`ast shakes simple program 2`] = `
+"
+const float x = 1.0;
+
+float getA() {
+  return x;
+}
+
+"
+`;
+
+exports[`ast shakes use/view AST 1`] = `
+Array [
+  Array [
+    15,
+    Array [
+      "viewUniforms",
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+      "viewToClip",
+      "clipToScreen3D",
+      "screenToClip3D",
+      "ViewUniforms",
+    ],
+  ],
+  Array [
+    215,
+    Array [
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    312,
+    Array [
+      "viewToClip",
+      "worldToClip",
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    414,
+    Array [
+      "worldToClip",
+    ],
+  ],
+  Array [
+    510,
+    Array [
+      "clipToScreen3D",
+    ],
+  ],
+  Array [
+    629,
+    Array [
+      "screenToClip3D",
+    ],
+  ],
+  Array [
+    754,
+    Array [
+      "worldToClip3D",
+    ],
+  ],
+]
+`;
+
+exports[`ast shakes use/view AST 2`] = `
+"layout(set = 0, binding = VIEW_BINDING) uniform ViewUniforms {
+  mat4 projectionMatrix;
+  mat4 viewMatrix;
+  vec4 viewPosition;
+  vec2 viewResolution;
+  vec2 viewSize;
+} viewUniforms;
+
+vec4 worldToView(vec4 position) {
+  return viewUniforms.viewMatrix * position;
+}
+
+vec4 viewToClip(vec4 position) {
+  return viewUniforms.projectionMatrix * position;
+}
+
+vec4 worldToClip(vec4 position) {
+  return viewToClip(worldToView(position));
+}
+
+"
+`;
+
+exports[`ast shakes use/view AST using compressed AST 1`] = `
+Array [
+  Array [
+    15,
+    Array [
+      "viewUniforms",
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+      "viewToClip",
+      "clipToScreen3D",
+      "screenToClip3D",
+      "ViewUniforms",
+    ],
+  ],
+  Array [
+    215,
+    Array [
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    312,
+    Array [
+      "viewToClip",
+      "worldToClip",
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    414,
+    Array [
+      "worldToClip",
+    ],
+  ],
+  Array [
+    510,
+    Array [
+      "clipToScreen3D",
+    ],
+  ],
+  Array [
+    629,
+    Array [
+      "screenToClip3D",
+    ],
+  ],
+  Array [
+    754,
+    Array [
+      "worldToClip3D",
+    ],
+  ],
+]
+`;

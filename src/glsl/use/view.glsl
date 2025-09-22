@@ -1,12 +1,10 @@
 #pragma export
-layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING) uniform ViewUniforms {
+layout(set = 0, binding = VIEW_BINDING) uniform ViewUniforms {
   mat4 projectionMatrix;
   mat4 viewMatrix;
   vec4 viewPosition;
   vec2 viewResolution;
   vec2 viewSize;
-  float viewWorldUnit;
-  float viewPixelRatio;
 } viewUniforms;
 
 #pragma export
@@ -38,13 +36,4 @@ vec3 screenToClip3D(vec4 position) {
 vec3 worldToClip3D(vec4 position) {
   position = viewToClip(worldToView(position));
   return position.xyz / position.w;
-}
-
-#pragma export
-float getPerspectiveScale(float w, float f) {
-  mat4 m = viewUniforms.projectionMatrix;
-  float worldScale = m[1][1] * viewUniforms.viewWorldUnit;
-  float clipScale = mix(1.0, worldScale / w, f);
-  float pixelScale = clipScale * viewUniforms.viewPixelRatio;
-  return pixelScale;
 }

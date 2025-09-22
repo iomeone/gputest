@@ -1,4 +1,4 @@
-import { makeRenderTexture } from './texture';
+import { makeRenderTexture } from './target';
 
 export const makeDepthTexture = (
   device: GPUDevice,

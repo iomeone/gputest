@@ -1,30 +1,30 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, StorageSource, UniformType, Emitter } from '../../core/types';
-import { DeviceContext, FrameContext } from '../providers';
-import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, StorageSource, UniformType, Emitter } from '@use-gpu/core/types';
+import { RenderContext, FrameContext } from '../providers';
+import { yeet, useMemo, useSomeMemo, useNoMemo, useContext, useSomeContext, useNoContext } from '@use-gpu/live';
 import {
   makeDataEmitter, makeDataArray, copyNumberArray, emitIntoNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '../../core';
+} from '@use-gpu/core';
 
 export type RawDataProps = {
   length?: number,
   data?: number[] | TypedArray,
   expr?: (emit: Emitter, i: number, n: number) => void,
   format?: string,
-  live?: boolean,
+  live: boolean,
 
   render?: (source: StorageSource) => LiveElement<any>,
 };
 
-export const RawData: LiveComponent<RawDataProps> = (props) => {
-  const device = useContext(DeviceContext);
+export const RawData: LiveComponent<RawDataProps> = (fiber) => (props) => {
+  const {device} = useContext(RenderContext);
 
   const {
     format, length,
     data, expr,
+    live,
     render,
-    live = false,
   } = props;
 
   // Make data buffer
@@ -40,30 +40,25 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
       buffer,
       format: f,
       length: l,
-      version: 0,
     };
 
     return [buffer, array, source, dims] as [GPUBuffer, TypedArray, StorageSource, number];
-  }, [device, format, length, live]);
-
-  // Refresh and upload data
-  const refresh = () => {
-    if (data) copyNumberArray(data, array);
-    if (expr) emitIntoNumberArray(expr, array, dims);
-    if (data || expr) {
-      uploadBuffer(device, buffer, array.buffer);
-      source.version = incrementVersion(source.version);
-    }
-  };
+  }, [device, format, length]);
 
   if (!live) {
     useNoContext(FrameContext);
-    useMemo(refresh, [device, buffer, array, data, expr, dims]);
+    useSomeMemo(() => {
+      if (data) copyNumberArray(data, array);
+      if (expr) emitIntoNumberArray(expr, array, dims);
+      if (data || expr) uploadBuffer(device, buffer, array.buffer);
+    }, [device, buffer, array, data, expr, dims]);
   }
   else {
-    useContext(FrameContext);
+    useSomeContext(FrameContext);
     useNoMemo();
-    refresh();
+    if (data) copyNumberArray(data, array);
+    if (expr) emitIntoNumberArray(expr, array, dims);
+    if (data || expr) uploadBuffer(device, buffer, array.buffer);
   }
 
   return useMemo(() => render ? render(source) : yeet(source), [render, source]);

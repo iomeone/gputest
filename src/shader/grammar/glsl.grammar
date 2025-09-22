@@ -22,7 +22,7 @@
   conditional @right,
   assign @right,
   statement @cut,
-  last
+	last
 }
 
 k<term> { @specialize[@name={term}]<Identifier, term> }
@@ -35,19 +35,19 @@ externalDeclaration { FunctionDefinition | Declaration | Preprocessor }
 
 comment { commentLine | commentOpen untilCommentClose }
 Preprocessor {
-  hash (
-    d<'pragma'> (
-      d<'import'> (ImportDeclarationList 'from')? String |
-      d<'export'> |
-      d<'optional'> |
-      d<'global'> |
-      d<'optimize'> |
-      d<'debug'>
-      d<'STDGL'>
-    ) |
-    Directive
-  )
-  UntilEOL
+	hash (
+	  d<'pragma'> (
+			d<'import'> (ImportDeclarationList 'from')? String |
+			d<'export'> |
+			d<'optional'> |
+			d<'global'> |
+			d<'optimize'> |
+			d<'debug'>
+			d<'STDGL'>
+		) |
+	  Directive
+	)
+	UntilEOL
 }
 ImportDeclarationList { '{' (ImportDeclaration comma)* (ImportDeclaration comma?) '}' }
 ImportDeclaration { Identifier ('as' Identifier)? }
@@ -61,8 +61,8 @@ Declaration {
     FunctionPrototype |
     VariableDeclaration |
     k<"precision"> PrecisionQualifier TypeSpecifier |
-    QualifiedStructDeclaration |
-    QualifiedDeclaration
+		QualifiedStructDeclaration |
+		QualifiedDeclaration
   ) semicolon
 }
 
@@ -184,20 +184,20 @@ Binary {
 Conditional { conditionalExpression !conditional '?' expression ':' assignmentExpression }
 Assignment {
   unaryExpression (
-    !assign (
-      MulAssign |
-       DivAssign |
-       ModAssign |
-       AddAssign |
-       SubAssign |
-       LeftAssign |
-       RightAssign |
-       AndAssign |
-       XorAssign |
-       OrAssign |
-       assign
-    )
-  ) conditionalExpression
+	  !assign (
+			MulAssign |
+ 			DivAssign |
+ 			ModAssign |
+ 			AddAssign |
+ 			SubAssign |
+ 			LeftAssign |
+ 			RightAssign |
+ 			AndAssign |
+ 			XorAssign |
+ 			OrAssign |
+ 			assign
+		)
+	) conditionalExpression
 }
 
 FunctionCall {
@@ -247,7 +247,7 @@ PrecisionQualifier { ( k<'highp'> | k<'medp'> | k<'lowp'> ) }
   commentOpen { "/*" }
   
   Identifier { $[A-Za-z_] $[A-Za-z0-9_]* }
-  String { '"' ( !["]+ | '\\"' )* '"' | "'" ( ![']+ | "\\'" )* "'" }
+	String { '"' ( !["]+ | '\\"' )* '"' | "'" ( ![']+ | "\\'" )* "'" }
 
   Number {
     (
@@ -265,25 +265,25 @@ PrecisionQualifier { ( k<'highp'> | k<'medp'> | k<'lowp'> ) }
   Sub { "-" }
   Mul { "*" }
   Div { "/" }
-  Mod { "%" }
+	Mod { "%" }
   Left { "<<" }
   Right { ">>" }
   And { "&" }
   Xor { "^" }
   Or { "|" }
 
-  assign { '=' }
+	assign { '=' }
   AddAssign { "+=" }
   SubAssign { "-=" }
   MulAssign { "*=" }
   DivAssign { "/=" }
-  ModAssign { "%=" }
+	ModAssign { "%=" }
   LeftAssign { "<<=" }
   RightAssign { ">>=" }
   AndAssign { "&=" }
   XorAssign { "^=" }
   OrAssign { "|=" }
-  
+	
   Inc { "++" }
   Dec { "--" }
   Bang { "!" }
@@ -449,46 +449,46 @@ basicType {
   t<"uimage2DMSArray">
 }
 
-//Keyword {
-//  k<"attribute"> |
-//  k<"const"> |
-//  k<"uniform"> |
-//  k<"varying"> |
-//  k<"buffer"> |
-//  k<"shared"> |
-//  k<"coherent"> |
-//  k<"volatile"> |
-//  k<"restrict"> |
-//  k<"readonly"> |
-//  k<"writeonly"> |
-//  k<"layout"> |
-//  k<"centroid"> |
-//  k<"flat"> |
-//  k<"smooth"> |
-//  k<"noperspective"> |
-//  k<"patch"> |
-//  k<"sample"> |
-//  k<"break"> |
-//  k<"continue"> |
-//  k<"do"> |
-//  k<"for"> |
-//  k<"while"> |
-//  k<"switch"> |
-//  k<"case"> |
-//  k<"default"> |
-//  k<"if"> |
-//  k<"else"> |
-//  k<"subroutine"> |
-//  k<"in"> |
-//  k<"out"> |
-//  k<"inout"> |
-//  k<"true"> |
-//  k<"false"> |
-//  k<"invariant"> |
-//  k<"precise"> |
-//  k<"discard"> |
-//  k<"return">
-//}
+Keyword {
+  k<"attribute"> |
+  k<"const"> |
+  k<"uniform"> |
+  k<"varying"> |
+  k<"buffer"> |
+  k<"shared"> |
+  k<"coherent"> |
+  k<"volatile"> |
+  k<"restrict"> |
+  k<"readonly"> |
+  k<"writeonly"> |
+  k<"layout"> |
+  k<"centroid"> |
+  k<"flat"> |
+  k<"smooth"> |
+  k<"noperspective"> |
+  k<"patch"> |
+  k<"sample"> |
+  k<"break"> |
+  k<"continue"> |
+  k<"do"> |
+  k<"for"> |
+  k<"while"> |
+  k<"switch"> |
+  k<"case"> |
+  k<"default"> |
+  k<"if"> |
+  k<"else"> |
+  k<"subroutine"> |
+  k<"in"> |
+  k<"out"> |
+  k<"inout"> |
+  k<"true"> |
+  k<"false"> |
+  k<"invariant"> |
+  k<"precise"> |
+  k<"discard"> |
+  k<"return">
+}
 
 Reserved {
   r<"common"> |
