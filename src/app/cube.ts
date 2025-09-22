@@ -6,6 +6,7 @@ import { yeet, memoProps, useContext, useMemo, useOne, useState, useResource } f
 import {
   makeVertexBuffers, makeUniformBuffer, uploadBuffer,
   makeUniforms, makeUniformBindings,
+  makeRenderPipeline,
   makeShaderModule, makeShaderStage,
 } from '../core';
 
@@ -26,7 +27,8 @@ export type CubeProps = {
 
 export const Cube: LiveComponent<CubeProps> = memoProps((fiber) => (props) => {
   const {uniforms, defs} = useContext(ViewContext);
-  const {width, device, colorStates, depthStencilState, languages} = useContext(RenderContext);
+  const renderContext = useContext(RenderContext);
+  const {device, colorStates, depthStencilState, samples, languages} = renderContext;
   const {glsl: {compile}} = languages;
 
   // Blink state, flips every second
@@ -47,19 +49,23 @@ export const Cube: LiveComponent<CubeProps> = memoProps((fiber) => (props) => {
 
   // Rendering pipeline
   const pipeline = useMemo(() => {
-    const pipelineDesc: GPURenderPipelineDescriptor = {
-      // @ts-ignore
-      primitive: {
-        topology: "triangle-list",
-        cullMode: "back",
-      },
-      vertex:   makeShaderStage(device, makeShaderModule(compile(vertexShader, 'vertex')), {buffers: cube.attributes}),
-      // @ts-ignore
-      fragment: makeShaderStage(device, makeShaderModule(compile(fragmentShader, 'fragment')), {targets: colorStates}),
-      depthStencil: depthStencilState,
-    };
-    return device.createRenderPipeline(pipelineDesc);
-  }, [device, colorStates, depthStencilState]);
+    const vertex = makeShaderModule(compile(vertexShader, 'vertex'));
+    const fragment = makeShaderModule(compile(fragmentShader, 'fragment'));
+
+    return makeRenderPipeline(
+      renderContext,
+      vertex,
+      fragment,
+      {
+        primitive: {
+          topology: "triangle-list",
+          cullMode: "back",
+        },
+        vertex:   {buffers: cube.attributes},
+        fragment: {targets: colorStates},
+      }
+    );
+  }, [device, colorStates, depthStencilState, samples, languages]);
 
   // Uniforms
   const [uniformBuffer, uniformPipe, uniformBindGroup] = useMemo(() => {

@@ -6,7 +6,7 @@ import React from 'react';
 import { useRefineCursor, Cursor } from './cursor';
 import { Node } from './node';
 import { PingState, ExpandState, SelectState, Action } from './types';
-import { ExpandRow, NotExpandRow, IndentTree } from './layout';
+import { ExpandRow, NotExpandRow, IndentTree, UnindentTree, IndentMini } from './layout';
 
 type FiberProps = {
 	fiber: LiveFiber<any>,
@@ -58,13 +58,14 @@ export const Fiber: React.FC<FiberProps> = ({fiber, ping, compact, expandCursor,
 
   if (next) {
     out.push(
-			<Fiber
-				key="next"
-				fiber={next}
-				ping={ping}
-				expandCursor={expandCursor}
-				selectedCursor={selectedCursor}
-			/>
+			<UnindentTree key="next">
+				<Fiber
+					fiber={next}
+					ping={ping}
+					expandCursor={expandCursor}
+					selectedCursor={selectedCursor}
+				/>
+			</UnindentTree>
 		);
   }
 
@@ -72,7 +73,7 @@ export const Fiber: React.FC<FiberProps> = ({fiber, ping, compact, expandCursor,
 		const hasIndent = !compact || mounts || next;
 		return (<>
 			<Expand id={id.toString()} expandCursor={expandCursor} label={node}>
-				{hasIndent ? <IndentTree>{out}</IndentTree> : out}
+				{hasIndent ? <IndentTree>{out}</IndentTree> : <IndentMini>{out}</IndentMini>}
 			</Expand>
 		</>);
 	}

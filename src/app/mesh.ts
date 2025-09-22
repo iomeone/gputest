@@ -4,8 +4,8 @@ import { ViewContext, RenderContext } from '../components';
 import { yeet, memoProps, useContext, useMemo, useOne, useState, useResource } from '../live';
 import {
   makeVertexBuffers, makeUniformBuffer, uploadBuffer,
-  makeUniforms, makeUniformBindings,  
-  makeGLSLRenderPipeline,
+  makeUniforms, makeUniformBindings, 
+  makeRenderPipeline, makeShaderModule,
 } from '../core';
 
 import vertexShader from './glsl/mesh-vertex.glsl';
@@ -30,16 +30,21 @@ export const Mesh: LiveComponent<MeshProps> = memoProps((fiber) => (props) => {
   const {uniforms, defs} = useContext(ViewContext);
   const renderContext = useContext(RenderContext);
   const {device, colorStates, depthStencilState, samples, languages} = renderContext;
+  const {glsl: {compile}} = languages;
+
 
   const vertexBuffers = useMemo(() =>
     makeVertexBuffers(device, mesh.vertices), [device, mesh]);
 
   // Rendering pipeline
-  const pipeline = useMemo(() =>
-    makeGLSLRenderPipeline(
+  const pipeline = useMemo(() => {
+    const vertex = makeShaderModule(compile(vertexShader, 'vertex'));
+    const fragment = makeShaderModule(compile(fragmentShader, 'fragment'));
+    
+    return makeRenderPipeline(
       renderContext,
-      vertexShader,
-      fragmentShader,
+      vertex,
+      fragment,
       {
         primitive: {
           topology: "triangle-list",
@@ -48,14 +53,12 @@ export const Mesh: LiveComponent<MeshProps> = memoProps((fiber) => (props) => {
         vertex:   {buffers: mesh.attributes},
         fragment: {targets: colorStates},
       }
-    ),
-    [device, colorStates, depthStencilState, samples, languages]
-  );
+    );
+  }, [device, colorStates, depthStencilState, samples, languages]);
 
   // Uniforms
   const [uniformBuffer, uniformPipe, uniformBindGroup] = useMemo(() => {
     const uniformPipe = makeUniforms([...defs, ...MESH_UNIFORM_DEFS]);
-
     const uniformBuffer = makeUniformBuffer(device, uniformPipe.data);
     const entries = makeUniformBindings([{resource: {buffer: uniformBuffer}}]);
     const uniformBindGroup = device.createBindGroup({

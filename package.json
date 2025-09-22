@@ -15,12 +15,12 @@
     "@babel/preset-env": "^7.12.10",
     "@babel/preset-typescript": "^7.8.3",
     "@babel/register": "^7.12.10",
-    "@types/jest": "^26.0.19",
+    "@types/jest": "^27.5.2",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "@webgpu/glslang": "^0.0.15",
     "@webgpu/types": "^0.1.7",
-    "babel-jest": "^26.6.3",
+    "babel-jest": "^27.0.0",
     "babel-loader": "^8.2.2",
     "css-loader": "^6.5.1",
     "eslint": "^7.5.0",
@@ -48,10 +48,7 @@
 
     "@lezer/common": "^0.15.8",
     "@lezer/generator": "^0.15.2",
-    "@lezer/lr": "^0.15.4",
-    "../core": "*"
-
-
+    "@lezer/lr": "^0.15.4"
 
   },
   "scripts": {

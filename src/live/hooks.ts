@@ -81,6 +81,20 @@ export const memoProps = <F extends Function>(
 // Shorthand
 export const memo = memoProps;
 
+// Dud hooks for control flow
+const useNoHook = () => {
+  const fiber = CURRENT_FIBER;
+  if (!fiber) throw new Error("Calling a hook outside a bound function");
+  const i = pushState(fiber);
+};
+
+export const useNoState = useNoHook;
+export const useNoMemo = useNoHook;
+export const useNoOne = useNoHook;
+export const useNoCallback = useNoHook;
+export const useNoResource = useNoHook;
+export const useNoContext = () => {};
+
 // Allocate state value and a setter for it, initializing with the given value or function
 export const useState = <T>(
   initialState: Initial<T>,

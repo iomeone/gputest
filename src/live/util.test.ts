@@ -1,4 +1,4 @@
-import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, makePaintRequester } from './util';
+import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, makePaintRequester, comparePaths } from './util';
 
 it("schedules actions", () => {
   let run = {a: 0, b: 0} as Record<string, number>;
@@ -87,4 +87,10 @@ it("requests paints", (done) => {
     expect(run.b).toBe(1);
     done();
   }, 30);
+});
+
+it("sorts fibers", () => {
+  expect(comparePaths([0, 0], [0, 0])).toBe(0);
+  expect(comparePaths([0, 0, 0], [0, 0, 1])).toBe(-1);
+  expect(comparePaths([0, 0, 1], [0, 0, 0, 0, 1])).toBe(1);
 });

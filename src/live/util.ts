@@ -145,13 +145,19 @@ export const comparePaths = (a: Key[], b: Key[]) => {
 
     const an = typeof ai === 'number';
     const bn = typeof bi === 'number';
-    if (an && bn) return (ai as number) - (bi as number);
+    if (an && bn) {
+      const v = (ai as number) - (bi as number);
+      if (v) return v;
+      continue;
+    }
 
     const at = typeof ai === 'string';
     const bt = typeof bi === 'string';
-    if (at && bt) return (ai as string) < (bi as string) ? -1 : 1;
-
-    return +bn - +an;
+    if (at && bt) {
+      const v = (ai as string) < (bi as string) ? -1 : 1;
+      if (v) return v;
+      continue;
+    }
   }
   return a.length - b.length;
 }

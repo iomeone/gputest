@@ -5,6 +5,7 @@ export * from './color';
 export * from './constants';
 export * from './depth';
 export * from './pipeline';
+export * from './storage';
 export * from './target';
 export * from './types';
 export * from './uniform';

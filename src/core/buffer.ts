@@ -1,6 +1,11 @@
 import {TYPED_ARRAYS} from './constants';
 import {TypedArrayConstructor, TypedArray} from './types';
 
+export const getByteSize = (data: TypedArray | number): number => {
+  if (+data === data) return +data;
+  return (data as any).byteLength as number;
+}
+
 export const getTypedArrayConstructor = (t: TypedArray): TypedArrayConstructor => {
   for (const constructor of TYPED_ARRAYS) if (t instanceof constructor) return constructor;
   throw new Error("Unknown typed array");
@@ -11,7 +16,7 @@ export const makeVertexBuffers = (device: GPUDevice, datas: TypedArray[]): GPUBu
 
 export const makeVertexBuffer = (device: GPUDevice, data: TypedArray): GPUBuffer => {
   const vertices = device.createBuffer({
-    size: data.byteLength,
+    size: getByteSize(data),
     usage: GPUBufferUsage.VERTEX,
     mappedAtCreation: true,
   });
@@ -24,10 +29,16 @@ export const makeVertexBuffer = (device: GPUDevice, data: TypedArray): GPUBuffer
   return vertices;
 }
 
-export const makeUniformBuffer = (device: GPUDevice, data: ArrayBuffer): GPUBuffer =>
+export const makeUniformBuffer = (device: GPUDevice, data: TypedArray | number): GPUBuffer =>
   device.createBuffer({
-    size: data.byteLength,
+    size: getByteSize(data),
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+export const makeStorageBuffer = (device: GPUDevice, data: TypedArray | number): GPUBuffer =>
+  device.createBuffer({
+    size: getByteSize(data),
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
   });
 
 export const uploadBuffer = (

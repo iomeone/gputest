@@ -15,6 +15,7 @@ import {
 import { Cube } from './cube';
 import { Mesh } from './mesh';
 import { Quads } from './quads';
+import { RawData } from './raw-data';
 import { makeMesh } from './meshes/mesh';
 import { UseInspect } from '../inspect';
 
@@ -25,20 +26,28 @@ export type AppProps = {
   languages: ShaderLanguages,
 };
 
+const seq = (n: number, s: number, d: number) => Array.from({ length: n }).map((_, i: number) => s + d * i);
+
 export const App: LiveComponent<AppProps> = (fiber) => (props) => {
   const {canvas, device, adapter, languages} = props;
 
   const inspect = useInspector();
   const mesh = makeMesh();
 
-  const view = (
+  const view = [
     use(Pass)({
       children: [
+        use(RawData)({
+          type: 'vec4',
+          data: seq(8).flatMap(() => [Math.random(), Math.random(), Math.random(), 1]),
+          render: (positions) => 
+            use(Quads)({ positions }),
+        }),
         //use(Mesh)({ mesh }),
-        use(Quads)(),
+        //use(Cube)(),
       ]
-    })
-  );
+    }),
+  ];
 
   return [
     use(AutoCanvas)({

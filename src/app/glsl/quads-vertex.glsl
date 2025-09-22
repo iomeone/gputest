@@ -62,7 +62,7 @@ void main() {
   int instanceIndex = gl_InstanceIndex;
 
   float r = float(instanceIndex);
-  vec4 instancePosition = vec4(cos(r), sin(r * 1.341 + r * r), cos(r + cos(r)*1.173), 1.0);
+  vec4 instancePosition = vec4(cos(r), sin(r * 1.341 + r * r), cos(r*1.281 + cos(r)*1.173), 1.0);
 
   vec4 position = worldToClip(instancePosition);
 
@@ -71,6 +71,6 @@ void main() {
   position.xy += xy * view.viewResolution * (50.0 * position.w);
 
   gl_Position = position;
-  fragColor = vec4(1.0, 0.0, 1.0, 1.0);
+  fragColor = vec4(abs(instancePosition.xyz), 1.0);
   fragUV = uv;
 }

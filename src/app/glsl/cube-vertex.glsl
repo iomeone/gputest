@@ -3,6 +3,9 @@
 layout(set = 0, binding = 0) uniform ViewUniforms {
   mat4 projectionMatrix;
   mat4 viewMatrix;
+  vec4 viewPosition;
+  vec2 viewResolution;
+
   float blink;
 } view;
 

@@ -4,16 +4,19 @@ import Glslang from './glslang-web-devel/glslang';
 
 export type Compiler = (code: string, stage: ShaderStage) => Uint32Array;
 
-const DBG = true;
+const DEBUG = false;
 
 const init = async (): Promise<ShaderCompiler> => {
   const glslang = await Glslang();
   return (code: string, stage: ShaderStage) => {
-    if (DBG) {
+    try {
+      return glslang.compileGLSL(code, stage, false);
+    }
+    catch (e) {
       const lines = code.split("\n").map((line, i) => `${i+1}: ${line}`);
       console.info(lines.join("\n"));
+      throw new Error("Could not compile shader: " + e.message);
     }
-    return glslang.compileGLSL(code, stage, false);
   }
 };
 

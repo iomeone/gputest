@@ -38,8 +38,13 @@ export const makeUniformLayout = (
 
   let offset = base;
   for (const {name, format} of attributes) {
+    const s = getUniformAttributeSize(format);
+
+    const o = offset % s;
+    if (o) offset += s - o;
     out.push({name, offset, format});
-    offset += getUniformAttributeSize(format);
+
+    offset += s;
   }
 
   return {length: offset - base, attributes: out};

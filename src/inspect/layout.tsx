@@ -23,8 +23,16 @@ export const NotExpandRow = styled(ExpandRow)`
 	padding-left: 20px;
 `;
 
+export const IndentMini = styled.div`
+	padding-left: 2px;
+`;
+
 export const IndentTree = styled.div`
 	padding-left: 20px;
+`;
+
+export const UnindentTree = styled.div`
+	margin-left: -18px;
 `;
 
 export const SplitRow = styled.div`

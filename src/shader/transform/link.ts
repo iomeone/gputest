@@ -21,11 +21,11 @@ export const makeProgram = () => ({});
 
 export const linkModule = (
   code: string,
-  library: Record<string, string>,
+  libraries: Record<string, string> = {},
+  links: Record<string, string> = {},
   cache: Map<string, Module> | null = null,
 ) => {
-
-  const modules = loadModules(code, library);
+  const modules = loadModules(code, libraries, links);
 
   const program = [`#version ${GLSL_VERSION}`] as string[];
   const namespaces = new Map<string, string>();
@@ -34,9 +34,11 @@ export const linkModule = (
   const exists = new Set<string>();
   const visible = new Set<string>();
 
+  const unlinked = [];
+
   for (const module of modules) {
     const {name, code, tree, table} = module;
-    const {symbols, visibles, modules} = table;
+    const {symbols, visibles, externals, modules} = table;
 
     const namespace = reserveNamespace(module, namespaces, used);
 
@@ -61,13 +63,34 @@ export const linkModule = (
       }
     }
 
+    for (const {prototype} of externals) {
+      const {name} = prototype;
+      const namespace = namespaces.get(name);
+      const imp = namespace + name;
+
+      if (!exists.has(imp)) console.warn(`Link ${name} does not exist`);
+      else if (!visible.has(imp)) console.warn(`Link ${name} is private`);
+      rename.set(name, imp);
+    }
+
     program.push(rewriteAST(code, tree, rename));
+    unlinked.push(...externals);
+  }
+
+  for (const {prototype} of unlinked) if (prototype) {
+    const {name} = prototype;
+    const target = links[name];
+    if (!target) throw new Error(`Unlinked function ${name}`);
   }
 
   return program.join("\n");
 }
 
-export const loadModules = (code: string, library: Record<string, string>) => {
+export const loadModules = (
+  code: string,
+  libraries: Record<string, string>,
+  links: Record<string, string>,
+) => {
   const seen = new Map<string, number>();
   const out = [];
 
@@ -79,13 +102,21 @@ export const loadModules = (code: string, library: Record<string, string>) => {
 
     const tree = parseGLSL(code);
     const table = makeASTParser(code, tree).extractSymbolTable();
-
     out.push({name, code, tree, table});
 
-    const {modules} = table;
-    for (const {name} of modules) {      
-      const code = library[name];
+    const {modules, externals} = table;
+    for (const {name} of modules) {
+      const code = libraries[name];
       if (!code) throw new Error(`Unknown module '${name}'`);
+      
+      if (!seen.has(name)) queue.push({name, code, depth: depth + 1});
+      seen.set(name, depth + 1);
+    }
+
+    for (const {prototype} of externals) {
+      const {name} = prototype;
+      const code = links[name];
+      if (!code) throw new Error(`Unlinked function '${name}'`);
       
       if (!seen.has(name)) queue.push({name, code, depth: depth + 1});
       seen.set(name, depth + 1);

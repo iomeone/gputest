@@ -5,8 +5,9 @@ import {
   ShaderModuleDescriptor, ShaderStageDescriptor,
 } from './types';
 
-export const makeLanguages = ({glsl}: {glsl: ShaderCompiler}): ShaderLanguages => ({
+export const makeLanguages = ({glsl}: {glsl: ShaderCompiler}, modules?: Record<string, string>): ShaderLanguages => ({
   [ShaderLanguage.GLSL]: {
+    modules: modules ?? {},
     compile: (code: string, stage: any) => glsl(code, stage),
   },
 });
@@ -22,17 +23,13 @@ export const makeShaderStage = (device: GPUDevice, descriptor: ShaderModuleDescr
   return {module, entryPoint, ...extra};
 }
 
-export const makeGLSLRenderPipeline = (
+export const makeRenderPipeline = (
   renderContext: UseRenderingContextGPU,
   vertexShader: string,
   fragmentShader: string,
   descriptor: DeepPartial<GPURenderPipelineDescriptor> = {},
 ) => {
   const {device, colorStates, depthStencilState, samples, languages} = renderContext;
-  const {glsl: {compile}} = languages;
-
-  const vertex = makeShaderModule(compile(vertexShader, 'vertex'));
-  const fragment = makeShaderModule(compile(fragmentShader, 'fragment'));
 
   const pipelineDescriptor: GPURenderPipelineDescriptor = {
     depthStencil: depthStencilState,
@@ -41,10 +38,10 @@ export const makeGLSLRenderPipeline = (
       count: samples,
       ...descriptor.multisample,
     },
-    vertex: makeShaderStage(device, vertex, {
+    vertex: makeShaderStage(device, vertexShader, {
       ...descriptor.vertex,
     }),
-    fragment: makeShaderStage(device, fragment, {
+    fragment: makeShaderStage(device, fragmentShader, {
       targets: colorStates,
       ...descriptor.fragment,
     }),

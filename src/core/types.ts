@@ -140,6 +140,13 @@ export type UniformDefinition = {
 export type UniformFiller = (items: any) => void;
 export type UniformByteSetter = (view: DataView, offset: number, data: any) => void;
 
+// Storage bindings
+export type StorageSource = {
+  buffer: GPUBuffer,
+  type: string,
+  length: number,
+};
+
 // Shaders
 export enum ShaderLanguage {
   GLSL = 'glsl',
@@ -151,6 +158,7 @@ export type ShaderCompiler = (code: string, stage: ShaderStage) => TypedArray;
 export type ShaderLanguages = {[k in ShaderLanguage]: ShaderLanguageAPI};
 export type ShaderLanguageAPI = {
   compile: ShaderCompiler,
+  modules: Record<string, string>,
 };
 
 export type ShaderModuleDescriptor = {

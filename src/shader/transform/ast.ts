@@ -231,8 +231,24 @@ export const makeASTParser = (code: string, tree: Tree) => {
     }
     if (a.type.id === T.QualifiedStructDeclaration) {
       const struct = getQualifiedStruct(a);
-      const {name} = struct;
+      const {name, type} = struct;
+
       const symbols = [{ node, name }];
+      if (type.name === name) {
+        // Struct is anonymous, members are global
+        for (const {node, name, type} of struct.struct.members) {
+          console.log('anon', name, type)
+          symbols.push({node, name});
+          if (!GLSL_NATIVE_TYPES.has(type.name)) symbols.push({node: type.node, name: type.name});
+        }
+      }
+      else if (
+        !GLSL_NATIVE_TYPES.has(type.name)
+      ) {
+        // Custom type
+        symbols.push({node: type.node, name: type.name});
+      }
+
       return {node, symbols, struct};
     }
     if (a.type.id === T.QualifiedDeclaration) {
@@ -334,6 +350,13 @@ export const rewriteAST = (code: string, tree: Tree, rename: Map<string, string>
   const cursor = tree.cursor();
   do {
     const {type, from, to} = cursor;
+    if (type.name === 'version') {
+      cursor.parent();
+      cursor.parent();
+      const {from, to} = cursor;
+      skip(from, to, '');
+      cursor.lastChild();
+    }
     if (type.name === 'import' || type.name === 'export') {
       cursor.parent();
       const {from, to} = cursor;

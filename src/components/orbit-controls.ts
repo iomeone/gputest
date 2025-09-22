@@ -2,6 +2,8 @@ import { LiveComponent, LiveElement } from '../live/types';
 
 import { useResource, useState } from '../live';
 
+const CAPTURE_EVENT = {capture: true};
+
 const π = Math.PI;
 const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 
@@ -50,13 +52,24 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (fiber) => (prop
         setBearing((phi: number) => phi + movementX * speedX);
         setPitch((theta: number) => clamp(theta + movementY * speedY, -π/2, π/2));
         e.preventDefault();
+        e.stopPropagation();
       }
     };
+    
+    const onMouseDown = (e: MouseEvent) => {
+      document.addEventListener('mousemove', onMouseMove, CAPTURE_EVENT);
+      document.addEventListener('mouseup', onMouseUp, CAPTURE_EVENT);
+    }
 
-    canvas.addEventListener('mousemove', onMouseMove);
+    const onMouseUp = (e: MouseEvent) => {
+      document.removeEventListener('mousemove', onMouseMove, CAPTURE_EVENT);
+      document.removeEventListener('mouseup', onMouseUp, CAPTURE_EVENT);
+    }
+
+    canvas.addEventListener("mousedown", onMouseDown, CAPTURE_EVENT);
     canvas.addEventListener('wheel', onWheel);
     dispose(() => {
-      canvas.removeEventListener('mousemove', onMouseMove);
+      canvas.removeEventListener("mousedown", onMouseDown, CAPTURE_EVENT);
       canvas.removeEventListener('wheel', onWheel);
     });
   }, [canvas]);
