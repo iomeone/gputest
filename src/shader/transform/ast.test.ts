@@ -1,4 +1,4 @@
-import { GLSLModules } from '@use-gpu/glsl';
+import { GLSLModules } from '../../glsl';
 import { parseGLSL } from './shader';
 import { makeASTParser, formatAST, rewriteUsingAST, resolveShakeOps, compressAST, decompressAST, hasErrorNode } from './ast';
 import { addASTSerializer } from '../test/snapshot';

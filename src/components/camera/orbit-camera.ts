@@ -1,8 +1,8 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../live/types';
 
-import { useContext, useOne } from '@use-gpu/live';
-import { ViewUniforms, UniformAttribute } from '@use-gpu/core/types';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition } from '@use-gpu/core';
+import { useContext, useOne } from '../../live';
+import { ViewUniforms, UniformAttribute } from '../../core/types';
+import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition } from '../../core';
 import { RenderContext } from '../providers/render-provider';
 
 const DEFAULT_ORBIT_CAMERA = {

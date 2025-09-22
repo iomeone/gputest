@@ -1,5 +1,5 @@
 import { ShaderStage } from '@webgpu/glslang';
-import { ShaderCompiler } from '@use-gpu/core/types';
+import { ShaderCompiler } from '../core/types';
 import Glslang from './glslang-web-devel/glslang';
 
 export type Compiler = (code: string, stage: ShaderStage) => Uint32Array;

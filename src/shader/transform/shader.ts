@@ -1,4 +1,4 @@
-import { ShaderLanguages, ShaderCompiler } from '@use-gpu/core/types';
+import { ShaderLanguages, ShaderCompiler } from '../../core/types';
 import { ParsedModule, ParsedModuleCache, ShaderDefine } from '../types';
 import { Tree, SyntaxNode } from '@lezer/common';
 

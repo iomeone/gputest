@@ -5,14 +5,14 @@ declare module '@use-gpu/glsl' {
 }
   
 declare module "@use-gpu/glsl/fragment/pbr.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const PBR: ParsedBundle;
   export default __module;
 }
 
 declare module "@use-gpu/glsl/geometry/line.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const lineJoinBevel: ParsedBundle;
   export const lineJoinMiter: ParsedBundle;
@@ -22,7 +22,7 @@ declare module "@use-gpu/glsl/geometry/line.glsl" {
 }
 
 declare module "@use-gpu/glsl/geometry/quad.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getQuadIndex: ParsedBundle;
   export const getQuadUV: ParsedBundle;
@@ -30,7 +30,7 @@ declare module "@use-gpu/glsl/geometry/quad.glsl" {
 }
 
 declare module "@use-gpu/glsl/geometry/strip.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getStripIndex: ParsedBundle;
   export const getStripUV: ParsedBundle;
@@ -38,42 +38,42 @@ declare module "@use-gpu/glsl/geometry/strip.glsl" {
 }
 
 declare module "@use-gpu/glsl/instance/draw/mesh.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   
   export default __module;
 }
 
 declare module "@use-gpu/glsl/instance/draw/virtual.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   
   export default __module;
 }
 
 declare module "@use-gpu/glsl/instance/draw/wireframe-strip.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   
   export default __module;
 }
 
 declare module "@use-gpu/glsl/instance/fragment/mesh.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   
   export default __module;
 }
 
 declare module "@use-gpu/glsl/instance/fragment/solid.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   
   export default __module;
 }
 
 declare module "@use-gpu/glsl/instance/geometry/line.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const lineJoinBevel: ParsedBundle;
   export const lineJoinMiter: ParsedBundle;
@@ -83,7 +83,7 @@ declare module "@use-gpu/glsl/instance/geometry/line.glsl" {
 }
 
 declare module "@use-gpu/glsl/instance/geometry/quad.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getQuadIndex: ParsedBundle;
   export const getQuadUV: ParsedBundle;
@@ -91,7 +91,7 @@ declare module "@use-gpu/glsl/instance/geometry/quad.glsl" {
 }
 
 declare module "@use-gpu/glsl/instance/geometry/strip.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getStripIndex: ParsedBundle;
   export const getStripUV: ParsedBundle;
@@ -99,21 +99,21 @@ declare module "@use-gpu/glsl/instance/geometry/strip.glsl" {
 }
 
 declare module "@use-gpu/glsl/instance/vertex/line.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getLineVertex: ParsedBundle;
   export default __module;
 }
 
 declare module "@use-gpu/glsl/instance/vertex/quad.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getQuadVertex: ParsedBundle;
   export default __module;
 }
 
 declare module "@use-gpu/glsl/mask/point.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const circle: ParsedBundle;
   export const diamond: ParsedBundle;
@@ -125,7 +125,7 @@ declare module "@use-gpu/glsl/mask/point.glsl" {
 }
 
 declare module "@use-gpu/glsl/use/light.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const lightUniforms: ParsedBundle;
   export const LightUniforms: ParsedBundle;
@@ -133,7 +133,7 @@ declare module "@use-gpu/glsl/use/light.glsl" {
 }
 
 declare module "@use-gpu/glsl/use/picking.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getPickingColor: ParsedBundle;
   export const pickingUniforms: ParsedBundle;
@@ -142,7 +142,7 @@ declare module "@use-gpu/glsl/use/picking.glsl" {
 }
 
 declare module "@use-gpu/glsl/use/types.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const SolidVertex: ParsedBundle;
   export const MeshVertex: ParsedBundle;
@@ -150,7 +150,7 @@ declare module "@use-gpu/glsl/use/types.glsl" {
 }
 
 declare module "@use-gpu/glsl/use/view.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const worldToView: ParsedBundle;
   export const viewToClip: ParsedBundle;
@@ -164,21 +164,21 @@ declare module "@use-gpu/glsl/use/view.glsl" {
 }
 
 declare module "@use-gpu/glsl/vertex/line.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getLineVertex: ParsedBundle;
   export default __module;
 }
 
 declare module "@use-gpu/glsl/vertex/quad.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getQuadVertex: ParsedBundle;
   export default __module;
 }
 
 declare module "./use/light.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const lightUniforms: ParsedBundle;
   export const LightUniforms: ParsedBundle;
@@ -186,7 +186,7 @@ declare module "./use/light.glsl" {
 }
 
 declare module "./use/picking.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const getPickingColor: ParsedBundle;
   export const pickingUniforms: ParsedBundle;
@@ -195,7 +195,7 @@ declare module "./use/picking.glsl" {
 }
 
 declare module "./use/types.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const SolidVertex: ParsedBundle;
   export const MeshVertex: ParsedBundle;
@@ -203,7 +203,7 @@ declare module "./use/types.glsl" {
 }
 
 declare module "./use/view.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const worldToView: ParsedBundle;
   export const viewToClip: ParsedBundle;

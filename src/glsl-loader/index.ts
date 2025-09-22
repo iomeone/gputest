@@ -1,6 +1,6 @@
 import { getOptions } from 'loader-utils';
 import { validate } from 'schema-utils';
-import { loadModule, compressAST } from '@use-gpu/shader';
+import { loadModule, compressAST } from '../shader';
 
 const LOADER_NAME = 'GLSL Loader';
 

@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { useContext, useMemo, useOne, useResource, useSomeResource, useNoResource } from '@use-gpu/live';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { useContext, useMemo, useOne, useResource, useSomeResource, useNoResource } from '../../live';
 import { EventContext, MouseContext, MouseEventState } from '../providers/event-provider';
 
 type PickState = {id: number, hovered: boolean, clicked: boolean, index: number};

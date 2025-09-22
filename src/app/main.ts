@@ -1,8 +1,8 @@
 import GLSL from './glsl';
 
-import { makeShaderLanguages } from '@use-gpu/shader';
-import { mountGPU } from '@use-gpu/webgpu';
-import { use, render, formatTree } from '@use-gpu/live';
+import { makeShaderLanguages } from '../shader';
+import { mountGPU } from '../webgpu';
+import { use, render, formatTree } from '../live';
 
 import { App } from './app';
 

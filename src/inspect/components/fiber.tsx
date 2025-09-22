@@ -1,5 +1,5 @@
-import { LiveFiber } from '@use-gpu/live/types';
-import { useResource, formatValue } from '@use-gpu/live';
+import { LiveFiber } from '../../live/types';
+import { useResource, formatValue } from '../../live';
 
 import React from 'react';
 
