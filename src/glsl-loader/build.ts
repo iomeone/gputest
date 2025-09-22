@@ -48,8 +48,10 @@ const SRC_DIR  = path.join(ROOT, 'src');
 const GLSL_DIR = path.join(SRC_DIR, 'glsl');
 
 const PACKAGE_JSON = path.join(ROOT, 'package.json');
-const INDEX_TS     = path.join(SRC_DIR, 'index.ts');
-const TYPEDEF_TS   = path.join(SRC_DIR, 'glsl.d.ts');
+
+const INDEX_TS     = path.join(GLSL_DIR, 'index.ts');
+const TYPEDEF_TS   = path.join(GLSL_DIR, 'glsl.d.ts');
+
 const TARGET       = path.join(ROOT, 'build', 'packages', 'glsl');
 
 banner('环境与路径');
