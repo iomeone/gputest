@@ -14,8 +14,8 @@ import { use, yeet, memo, patch, useFiber, useMemo, useOne, useState, useResourc
 import { bindBundle, bindingsToLinks } from '../../shader/glsl';
 import { makeShaderBindings } from '../../core';
 
-import { getLineVertex } from '../../glsl/instance/vertex/line.glsl';
-import { getPassThruFragment } from '../../glsl/mask/passthru.glsl';
+import { getLineVertex } from 'glsl/instance/vertex/line.glsl';
+import { getPassThruFragment } from 'glsl/mask/passthru.glsl';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,
