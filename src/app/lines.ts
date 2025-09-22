@@ -5,7 +5,9 @@ import { use, yeet, memo, useMemo, useOne, useState, useResource } from '../live
 import { makeMultiUniforms, makeUniformsWithStorage, makeRenderPipeline, extractPropBindings, uploadBuffer } from '../core';
 import { useBoundStorageShader } from '../components';
 
-import { getLineVertex } from '../glsl/instance/vertex/line.glsl';
+// import { getLineVertex } from '../glsl/instance/vertex/line.glsl';
+import { getLineVertex } from '../gen-glsl/instance/vertex/line';
+
 
 export type LinesProps = {
   position?: number[] | TypedArray,

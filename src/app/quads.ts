@@ -9,7 +9,9 @@ import { use, memo, useMemo, useOne, useState, useResource } from '../live';
 import { makeMultiUniforms, makeUniformsWithStorage, makeRenderPipeline, extractPropBindings, uploadBuffer } from '../core';
 import { useBoundStorageShader } from '../components';
 
-import { getQuadVertex } from '../glsl/instance/vertex/quad.glsl';
+// import { getQuadVertex } from '../glsl/instance/vertex/quad.glsl';
+
+import { getQuadVertex } from '../gen-glsl/instance/vertex/quad';
 
 export type QuadsProps = {
   position?: number[] | TypedArray,
