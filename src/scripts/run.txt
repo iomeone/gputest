@@ -1,0 +1,1 @@
+npx ts-node src/scripts/glsl-codegen.ts
