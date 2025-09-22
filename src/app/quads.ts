@@ -35,10 +35,21 @@ export const Quads: LiveComponent<QuadsProps> = memoProps((fiber) => (props) => 
     const accessors = makeStorageAccessors(links, 1);
     const vertexShader = modules['instance/quad/vertex'];
     //const vertexShader = modules['instance/quad/vertex'];
+
+    console.log("vertexShader is:", vertexShader);
+    console.log("modules is:", modules);
+    console.log("accessors is:", accessors);
+
+    console.log("---------------------------------\n");
     console.log(linkModule(vertexShader, modules, accessors))
+    console.log("---------------------------------\n");
 
     const vertex = makeShaderModule(compile(linkModule(vertexShader, modules, accessors), 'vertex'));
     const fragment = makeShaderModule(compile(linkModule(fragmentShader, modules, accessors), 'fragment'));
+
+
+    console.log("vertex is:", vertex);
+    console.log("fragment is:", fragment);
 
     return [vertex, fragment];
   }, [links]);
