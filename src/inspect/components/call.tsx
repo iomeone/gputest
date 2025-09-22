@@ -1,5 +1,5 @@
-import { LiveFiber, Hook } from '@use-gpu/live/types';
-import { formatNode, formatValue, STATE_SLOTS } from '@use-gpu/live';
+import { LiveFiber, Hook } from '../../live/types';
+import { formatNode, formatValue, STATE_SLOTS } from '../../live';
 import styled, { keyframes } from "styled-components";
 
 import React, { useState } from 'react';

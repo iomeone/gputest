@@ -1,8 +1,8 @@
-import { LiveFiber, LiveComponent, LiveElement, Task } from '@use-gpu/live/types';
+import { LiveFiber, LiveComponent, LiveElement, Task } from '../../live/types';
 import {
   gather, provide, resume,
   makeContext, useContext, useOptionalContext, useNoContext,
-} from '@use-gpu/live';
+} from '../../live';
 import { RenderContext } from '../providers/render-provider';
 import { FrameContext } from '../providers/frame-provider';
 import { PickingContext } from './picking';

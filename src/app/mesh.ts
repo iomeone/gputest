@@ -1,17 +1,17 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode } from '@use-gpu/core/types';
-import { ViewContext, RenderContext, PickingContext, usePickingContext } from '@use-gpu/components';
-import { yeet, memo, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource, tagFunction } from '@use-gpu/live';
+import { LiveComponent } from '../live/types';
+import { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode } from '../core/types';
+import { ViewContext, RenderContext, PickingContext, usePickingContext } from '../components';
+import { yeet, memo, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource, tagFunction } from '../live';
 import {
   makeVertexBuffers, makeRawSourceTexture, makeMultiUniforms,
   makeRenderPipeline, makeShaderModule, makeSampler, makeTextureUniforms,
   uploadBuffer, uploadRawTexture,
-} from '@use-gpu/core';
-import { linkBundle } from '@use-gpu/shader/glsl';
+} from '../core';
+import { linkBundle } from '../shader/glsl';
 
-import instanceDrawMesh from '@use-gpu/glsl/instance/draw/mesh.glsl';
-import instanceFragmentMesh from '@use-gpu/glsl/instance/fragment/mesh.glsl';
-import instanceFragmentSolid from '@use-gpu/glsl/instance/fragment/solid.glsl';
+import instanceDrawMesh from '../glsl/instance/draw/mesh.glsl';
+import instanceFragmentMesh from '../glsl/instance/fragment/mesh.glsl';
+import instanceFragmentSolid from '../glsl/instance/fragment/solid.glsl';
 //import instanceVirtualWireframeMesh from 'instance/virtual/wireframe-mesh.glsl';
 
 export const MESH_UNIFORM_DEFS: UniformAttribute[] = [

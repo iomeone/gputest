@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../live/types';
 import { ElementStyle, LayoutState, LayoutResult, Margin, Rectangle, Point } from './types';
 
-import { use, yeet, useFiber, useMemo } from '@use-gpu/live';
+import { use, yeet, useFiber, useMemo } from '../../live';
 import { parseDimension, normalizeMargin } from './lib/util';
 
 import { Surface } from './surface';

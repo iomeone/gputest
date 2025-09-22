@@ -1,3 +1,3 @@
-import { makeContext } from '@use-gpu/live';
+import { makeContext } from '../../live';
 
 export const RenderContext = makeContext(null, 'RenderContext');

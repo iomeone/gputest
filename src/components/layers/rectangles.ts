@@ -1,18 +1,18 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '@use-gpu/core/types';
-import { ShaderModule } from '@use-gpu/shader/types';
+} from '../../core/types';
+import { ShaderModule } from '../../shader/types';
 
 import { UIRectangles } from '../geometry/ui-rectangles';
 
-import { use, memo, patch, useContext, useMemo, useOne, useState, useResource } from '@use-gpu/live';
-import { linkBundle, bindBundle, bindingToModule, bindingsToLinks, resolveBindings, castTo } from '@use-gpu/shader/glsl';
-import { makeShaderBinding, makeShaderBindings, makeDataArray, makeStorageBuffer } from '@use-gpu/core';
+import { use, memo, patch, useContext, useMemo, useOne, useState, useResource } from '../../live';
+import { linkBundle, bindBundle, bindingToModule, bindingsToLinks, resolveBindings, castTo } from '../../shader/glsl';
+import { makeShaderBinding, makeShaderBindings, makeDataArray, makeStorageBuffer } from '../../core';
 
-import { RenderContext } from '@use-gpu/components';
+import { RenderContext } from '../../components';
 
 /*
 export type RectanglesProps = {

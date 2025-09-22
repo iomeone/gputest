@@ -1,14 +1,14 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { RenderPassMode, DeepPartial } from '@use-gpu/core/types';
-import { ShaderModule, ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
-import { memo, use, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource, useConsoleLog } from '@use-gpu/live';
+import { LiveComponent } from '../../live/types';
+import { RenderPassMode, DeepPartial } from '../../core/types';
+import { ShaderModule, ParsedBundle, ParsedModule } from '../../shader/types';
+import { memo, use, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource, useConsoleLog } from '../../live';
 
-import { bindBundle, bindingsToLinks } from '@use-gpu/shader/glsl';
+import { bindBundle, bindingsToLinks } from '../../shader/glsl';
 import { useRenderPipeline } from '../hooks/useRenderPipeline';
 
-import instanceDrawVirtual from '@use-gpu/glsl/instance/draw/virtual.glsl';
-import instanceDrawWireframeStrip from '@use-gpu/glsl/instance/draw/wireframe-strip.glsl';
-import instanceFragmentSolid from '@use-gpu/glsl/instance/fragment/solid.glsl';
+import instanceDrawVirtual from '../../glsl/instance/draw/virtual.glsl';
+import instanceDrawWireframeStrip from '../../glsl/instance/draw/wireframe-strip.glsl';
+import instanceFragmentSolid from '../../glsl/instance/fragment/solid.glsl';
 
 import { render } from './render';
 

@@ -1,6 +1,6 @@
 import { ShaderStage } from '@webgpu/glslang';
-import { ShaderCompiler } from '@use-gpu/core/types';
-import { getProgramHash } from '@use-gpu/shader';
+import { ShaderCompiler } from '../core/types';
+import { getProgramHash } from '../shader';
 import Glslang from './glslang-web-devel/glslang';
 import LRU from 'lru-cache';
 

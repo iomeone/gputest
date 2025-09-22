@@ -1,22 +1,22 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, TextureSource, RenderPassMode,
-} from '@use-gpu/core/types';
-import { ShaderModule } from '@use-gpu/shader/types';
+} from '../../core/types';
+import { ShaderModule } from '../../shader/types';
 
 import { ViewContext } from '../providers/view-provider';
 import { PickingContext, useNoPicking } from '../render/picking';
 import { LayoutContext } from '../providers/layout-provider';
 import { render } from './render';
 
-import { use, memo, patch, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
-import { bindBundle, bindingsToLinks } from '@use-gpu/shader/glsl';
-import { makeShaderBindings } from '@use-gpu/core';
+import { use, memo, patch, useFiber, useMemo, useOne, useState, useResource } from '../../live';
+import { bindBundle, bindingsToLinks } from '../../shader/glsl';
+import { makeShaderBindings } from '../../core';
 
-import rectangleVertex from '@use-gpu/glsl/instance/ui/vertex.glsl';
-import rectangleFragment from '@use-gpu/glsl/instance/ui/fragment.glsl';
+import rectangleVertex from '../../glsl/instance/ui/vertex.glsl';
+import rectangleFragment from '../../glsl/instance/ui/fragment.glsl';
 
 export type UIRectanglesProps = {
   rectangle?: number[] | TypedArray,

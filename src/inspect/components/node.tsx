@@ -1,5 +1,5 @@
-import { LiveFiber } from '@use-gpu/live/types';
-import { formatValue, formatNodeName } from '@use-gpu/live';
+import { LiveFiber } from '../../live/types';
+import { formatValue, formatNodeName } from '../../live';
 import styled, { keyframes } from "styled-components";
 
 import React, { useCallback, useRef, useEffect } from 'react';

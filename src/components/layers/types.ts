@@ -1,4 +1,4 @@
-import { TextureSource } from '@use-gpu/core/types';
+import { TextureSource } from '../../core/types';
 
 export enum LayerType {
   Point = 'point',

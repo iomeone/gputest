@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
 import { Margin } from './types';
 
-import { memo, gather, resume, yeet, useFiber, useOne } from '@use-gpu/live';
+import { memo, gather, resume, yeet, useFiber, useOne } from '../../../live';
 import { getStackMinMax, getStackMargin, fitStack } from '../lib/stack';
 import { normalizeMargin, makeBoxLayout } from '../lib/util';
 

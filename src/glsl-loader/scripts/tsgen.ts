@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { readFileSync, statSync } from 'fs';
 import glob from 'glob';
-import { loadModule } from '@use-gpu/shader/glsl';
+import { loadModule } from '../../shader/glsl';
 
 type Glob = { arg: string, pattern: string };
 
@@ -42,7 +42,7 @@ for (const {pattern, arg} of globs) {
     const name = abs.replace(prefix, '').replace(/^\//, '');
 
     out.push(`declare module '${name}' {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   ${symbols.join("\n  ")}
   export default __module;

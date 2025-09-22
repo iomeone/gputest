@@ -1,5 +1,5 @@
 declare module "@use-gpu/glsl/use/view.glsl" {
-  type ParsedBundle = import('@use-gpu/shader/types').ParsedBundle;
+  type ParsedBundle = import('../../shader/types').ParsedBundle;
   const __module: ParsedBundle;
   export const worldToView: ParsedBundle;
   export const viewToClip: ParsedBundle;
