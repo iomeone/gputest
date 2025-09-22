@@ -131,10 +131,16 @@ export type UniformBinding = {
   resource: GPUBindingResource
 };
 
-export type UniformDefinition = {
+export type UniformPipe = {
   layout: UniformLayout,
   data: ArrayBuffer,
   fill: UniformFiller,
+};
+
+export type UniformAllocation = {
+  pipe: UniformPipe,
+  buffer: GPUBuffer,
+  bindGroup: GPUBindGroup,
 };
 
 export type UniformFiller = (items: any) => void;
@@ -143,7 +149,7 @@ export type UniformByteSetter = (view: DataView, offset: number, data: any) => v
 // Storage bindings
 export type StorageSource = {
   buffer: GPUBuffer,
-  type: string,
+  format: string,
   length: number,
 };
 
@@ -159,6 +165,7 @@ export type ShaderLanguages = {[k in ShaderLanguage]: ShaderLanguageAPI};
 export type ShaderLanguageAPI = {
   compile: ShaderCompiler,
   modules: Record<string, string>,
+  cache: any,
 };
 
 export type ShaderModuleDescriptor = {
@@ -178,3 +185,10 @@ export type ViewUniforms = {
   viewPosition: { value: vec3 | [number, number, number] | number[] },
   viewResolution: { value: vec2 | [number, number] | number[] }
 };
+
+// Data
+
+export type Emitter = (...args: number[]) => void;
+export type Accessor = (o: any) => any;
+export type EmitterExpression = (emit: Emitter, ...args: any[]) => any;
+export type DataField = [string, string | Accessor];

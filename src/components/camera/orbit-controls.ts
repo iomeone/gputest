@@ -1,6 +1,6 @@
-import { LiveComponent, LiveElement } from '../live/types';
+import { LiveComponent, LiveElement } from '../../live/types';
 
-import { useResource, useState } from '../live';
+import { useResource, useState } from '../../live';
 
 const CAPTURE_EVENT = {capture: true};
 

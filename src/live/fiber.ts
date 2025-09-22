@@ -1,7 +1,7 @@
 import {
   HostInterface, LiveFiber, LiveFunction, LiveContext, LiveElement,
   FiberYeet, FiberContext, ContextValues, ContextRoots,
-  OnFiber, DeferredCall, Key,
+  OnFiber, DeferredCall, Key, RenderCallbacks,
 } from './types';
 
 import { use, bind, reconcile, DETACH, RECONCILE, MAP_REDUCE, GATHER, YEET, PROVIDE } from './live';
@@ -120,32 +120,50 @@ export const makeContextState = <F extends Function>(
 // Render a fiber
 export const renderFiber = <F extends Function>(
   fiber: LiveFiber<F>,
-  onRender?: OnFiber,
-  onFence?: OnFiber,
+  callbacks?: RenderCallbacks,
 ) => {
   const {f, bound, args, yeeted} = fiber;
 
   // Let host do its thing
-  if (onRender) onRender(fiber);
+  if (callbacks) {
+    callbacks.onRender(fiber);
+  }
 
   // Disposed fiber, ignore
   if (!bound) return;
 
-  let out: LiveElement<any>;
+  let element: LiveElement<any>;
   // Passthrough built-ins
-  if ((f as any).isLiveBuiltin) out = fiber as any as DeferredCall<any>;
+  if ((f as any).isLiveBuiltin) element = fiber as any as DeferredCall<any>;
   // Render live function
-  else out = bound.apply(null, args ?? EMPTY_ARRAY);
+  else element = bound.apply(null, args ?? EMPTY_ARRAY);
 
-  // Early exit if memoized
-  if (fiber.version && !fiber.next) {
+  // Early exit if memoized and same result
+  if (fiber.version && !fiber.next && fiber.type !== YEET) {
     if (fiber.version === fiber.memo) return fiber;
     fiber.memo = fiber.version;
   }
 
+  // Apply rendered result
+  updateFiber(fiber, element, callbacks);
+}
+
+// Update a fiber with rendered result
+export const updateFiber = <F extends Function>(
+  fiber: LiveFiber<F>,
+  element: LiveElement<any>,
+  callbacks?: RenderCallbacks,
+) => {
+  const {f, bound, args, yeeted} = fiber;
+
+  // Let host do its thing
+  if (callbacks) {
+    callbacks.onUpdate(fiber);
+  }
+
   // Handle call and call[]
-  let call = out as DeferredCall<any> | null;
-  const isArray = !!out && Array.isArray(out);
+  let call = element as DeferredCall<any> | null;
+  const isArray = !!element && Array.isArray(element);
   const fiberType = isArray ? Array : call?.f;
 
   // If fiber type changed, remount everything
@@ -154,23 +172,23 @@ export const renderFiber = <F extends Function>(
 
   // Reconcile literal array
   if (isArray) {
-    const calls = out as DeferredCall<any>[];
-    reconcileFiberCalls(fiber, calls, onRender, onFence);
+    const calls = element as DeferredCall<any>[];
+    reconcileFiberCalls(fiber, calls, callbacks);
   }
   // Reconcile wrapped array
   else if (fiberType === RECONCILE) {
     const calls = call!.args ?? EMPTY_ARRAY;
-    reconcileFiberCalls(fiber, calls, onRender, onFence);
+    reconcileFiberCalls(fiber, calls, callbacks);
   }
   // Map reduce
   else if (fiberType === MAP_REDUCE) {
     const [calls, map, reduce, done] = call!.args ?? EMPTY_ARRAY;
-    mapReduceFiberCalls(fiber, calls, map, reduce, done, onRender, onFence);
+    mapReduceFiberCalls(fiber, calls, map, reduce, done, callbacks);
   }
   // Gather reduce
   else if (fiberType === GATHER) {
     const [calls, done] = call!.args ?? EMPTY_ARRAY;
-    gatherFiberCalls(fiber, calls, done, onRender, onFence);
+    gatherFiberCalls(fiber, calls, done, callbacks);
   }
   // Yeet value upstream
   else if (fiberType === YEET) {
@@ -179,7 +197,7 @@ export const renderFiber = <F extends Function>(
   }
   // Mount normal node (may still be built-in)
   else {
-    mountFiberCall(fiber, call, onRender, onFence);
+    mountFiberCall(fiber, call, callbacks);
   }
 
   return fiber;
@@ -189,15 +207,14 @@ export const renderFiber = <F extends Function>(
 export const mountFiberCall = <F extends Function>(
   fiber: LiveFiber<F>,
   call?: DeferredCall<any> | null,
-  onRender?: OnFiber,
-  onFence?: OnFiber,
+  callbacks?: RenderCallbacks,
 ) => {
   const {mount} = fiber;
 
   const nextMount = updateMount(fiber, mount, call);
   if (nextMount !== false) {
     fiber.mount = nextMount;
-    flushMount(nextMount, mount, onRender, onFence);
+    flushMount(nextMount, mount, callbacks);
   }
 }
 
@@ -206,14 +223,13 @@ export const mountFiberContinuation = <F extends Function>(
   fiber: LiveFiber<F>,
   call: DeferredCall<any> | null,
   key?: Key,
-  onRender?: OnFiber,
-  onFence?: OnFiber,
+  callbacks?: RenderCallbacks,
 ) => {
   const {next} = fiber;
   const nextMount = updateMount(fiber, next, call, key);
   if (nextMount !== false) {
     fiber.next = nextMount;
-    flushMount(nextMount, next, onRender, onFence);
+    flushMount(nextMount, next, callbacks);
   }
 }
 
@@ -221,8 +237,7 @@ export const mountFiberContinuation = <F extends Function>(
 export const reconcileFiberCalls = <F extends Function>(
   fiber: LiveFiber<F>,
   calls: DeferredCall<any>[],
-  onRender?: OnFiber,
-  onFence?: OnFiber,
+  callbacks?: RenderCallbacks,
 ) => {
   let {mounts, order, seen} = fiber;
 
@@ -231,6 +246,8 @@ export const reconcileFiberCalls = <F extends Function>(
   if (!seen)   seen   = fiber.seen   = new Set();
 
   if (!Array.isArray(calls)) calls = [calls];
+
+  seen.clear();
 
   order.length = 0;
   let i = 0;
@@ -249,7 +266,7 @@ export const reconcileFiberCalls = <F extends Function>(
     if (nextMount !== false) {
       if (nextMount) mounts.set(key, nextMount);
       else mounts.delete(key);
-      flushMount(nextMount, mount, onRender, onFence);
+      flushMount(nextMount, mount, callbacks);
     }
   }
 
@@ -257,10 +274,9 @@ export const reconcileFiberCalls = <F extends Function>(
     const mount = mounts.get(key);
     updateMount(fiber, mount, null);
     mounts.delete(key);
-    flushMount(null, mount, onRender, onFence);
+    flushMount(null, mount, callbacks);
   }
 
-  seen.clear();
 }
 
 // Map-reduce a fiber
@@ -270,8 +286,7 @@ export const mapReduceFiberCalls = <F extends Function, R, T>(
   mapper: (t: T) => R,
   reducer: (a: R, b: R) => R,
   next?: LiveFunction<any>,
-  onRender?: OnFiber,
-  onFence?: OnFiber,
+  callbacks?: RenderCallbacks,
 ) => {
   const {yeeted} = fiber;
   if (!fiber.next) {
@@ -286,11 +301,11 @@ export const mapReduceFiberCalls = <F extends Function, R, T>(
     fiber.path.push(0);
   }
 
-  reconcileFiberCalls(fiber, calls, onRender, onFence);
-  if (onFence) onFence(fiber);
+  reconcileFiberCalls(fiber, calls, callbacks);
+  if (callbacks) callbacks.onFence(fiber);
 
   const Resume = fiber.next.f;
-  mountFiberContinuation(fiber, use(Resume)(next), 1, onRender, onFence);
+  mountFiberContinuation(fiber, use(Resume)(next), 1, callbacks);
 }
 
 // Gather-reduce a fiber
@@ -298,8 +313,7 @@ export const gatherFiberCalls = <F extends Function, R, T>(
   fiber: LiveFiber<F>,
   calls: DeferredCall<any>[],
   next?: LiveFunction<any>,
-  onRender?: OnFiber,
-  onFence?: OnFiber,
+  callbacks?: RenderCallbacks,
 ) => {
   const {yeeted} = fiber;
   if (!fiber.next) {
@@ -314,11 +328,11 @@ export const gatherFiberCalls = <F extends Function, R, T>(
     fiber.path.push(0);
   }
 
-  reconcileFiberCalls(fiber, calls, onRender, onFence);
-  if (onFence) onFence(fiber);
+  reconcileFiberCalls(fiber, calls, callbacks);
+  if (callbacks) callbacks.onFence(fiber);
 
   const Resume = fiber.next.f;
-  mountFiberContinuation(fiber, use(Resume)(next), 1, onRender, onFence);
+  mountFiberContinuation(fiber, use(Resume)(next), 1, callbacks);
 }
 
 // Reduce yeeted values on a tree of fibers
@@ -389,30 +403,40 @@ export const gatherFiberValues = <F extends Function, T>(
 // Provide a value for a context on a fiber
 export const provideFiber = <F extends Function>(
   fiber: LiveFiber<F>,
-  onRender?: OnFiber,
-  onFence?: OnFiber,
+  callbacks?: RenderCallbacks,
 ) => {
   if (!fiber.args) return;
   let {args: [context, value, calls]} = fiber;
+
+  if (callbacks) callbacks.onRender(fiber);
 
   if (fiber.context.roots.get(context) !== fiber) {
     fiber.context = makeContextState(fiber, fiber.context, context, value);
   }
   else {
-    fiber.context.values.get(context).current = value;
+    const lastValue = fiber.context.values.get(context).current;
+    if (value !== lastValue) {
+      fiber.context.values.get(context).current = value;
+      if (callbacks) callbacks.onUpdate(fiber);
+    }
   }
 
-  if (onRender) onRender(fiber);
-
-  if (Array.isArray(calls)) reconcileFiberCalls(fiber, calls, onRender, onFence);
-  else mountFiberCall(fiber, calls, onRender, onFence);
+  if (Array.isArray(calls)) reconcileFiberCalls(fiber, calls, callbacks);
+  else {
+    const call = calls;
+    if (call.f === GATHER || call.f === MAP_REDUCE || call.f === RECONCILE) {
+      updateFiber(fiber, call, callbacks);
+    }
+    else {
+      mountFiberCall(fiber, calls, callbacks);
+    }
+  }
 }
 
 // Detach a fiber by mounting a subcontext manually and delegating its execution
 export const detachFiber = <F extends Function>(
   fiber: LiveFiber<F>,
-  onRender?: OnFiber,
-  onFence?: OnFiber,
+  callbacks?: RenderCallbacks,
 ) => {
   if (!fiber.args) return;
   let {next, args: [call, callback]} = fiber;
@@ -420,8 +444,15 @@ export const detachFiber = <F extends Function>(
   if (!next || (next.f !== call.f)) next = fiber.next = makeSubFiber(fiber, call);
   next.args = call.args;
 
+  if (callbacks) {
+    callbacks.onRender(fiber);
+  }
+
   const roots = [next];
-  callback(() => renderFibers(roots), fiber.next);
+  callback(() => {
+    if (callbacks) callbacks.onUpdate(fiber);
+    return renderFibers(roots);
+  }, fiber.next);
 }
 
 // Dispose of a fiber's resources and all its mounted sub-fibers
@@ -493,18 +524,17 @@ export const updateMount = <P extends Function>(
 export const flushMount = <F extends Function>(
   mount?: LiveFiber<F> | null,
   mounted?: LiveFiber<any> | null,
-  onRender?: OnFiber,
-  onFence?: OnFiber,
+  callbacks?: RenderCallbacks,
 ) => {
   if (mounted && mounted !== mount) {
     disposeFiber(mounted);
   }
   if (mount) { 
     // @ts-ignore
-    if (mount.f === DETACH) detachFiber(mount, onRender, onFence);
+    if (mount.f === PROVIDE) provideFiber(mount, callbacks);
     // @ts-ignore
-    else if (mount.f === PROVIDE) provideFiber(mount, onRender, onFence);
-    else renderFiber(mount, onRender, onFence);
+    else if (mount.f === DETACH) detachFiber(mount, callbacks);
+    else renderFiber(mount, callbacks);
   }
 }
 

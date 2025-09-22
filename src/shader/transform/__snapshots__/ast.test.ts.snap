@@ -4,25 +4,19 @@ exports[`ast extracts geometry quad symbol table 1`] = `
 Object {
   "declarations": Array [
     Object {
-      "node": "[Declaration]",
+      "exported": false,
       "symbols": Array [
-        Object {
-          "name": "QUAD",
-          "node": "[SingleDeclaration]",
-        },
+        "QUAD",
       ],
       "variable": Object {
         "locals": Array [
           Object {
             "expr": "ivec2(0, 0)",
             "name": "QUAD",
-            "node": "[SingleDeclaration]",
           },
         ],
-        "node": "[VariableDeclaration]",
         "type": Object {
           "name": "ivec2",
-          "node": "[QualifiedType]",
           "qualifiers": Array [
             "const",
           ],
@@ -33,88 +27,69 @@ Object {
   "externals": Array [],
   "functions": Array [
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "getQuadIndex",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "int",
           "vertex",
         ],
         "type": Object {
           "name": "ivec2",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "getQuadIndex",
-          "node": "[FunctionDefinition]",
-        },
+        "getQuadIndex",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "getQuadUV",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "int",
           "vertex",
         ],
         "type": Object {
           "name": "vec2",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "getQuadUV",
-          "node": "[FunctionDefinition]",
-        },
+        "getQuadUV",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "getQuad",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "int",
           "vertex",
         ],
         "type": Object {
           "name": "MeshVertex",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "getQuad",
-          "node": "[FunctionDefinition]",
-        },
+        "getQuad",
       ],
     },
   ],
-  "hash": "f7kbgdle",
+  "hash": "apf7kbgdle",
   "modules": Array [
     Object {
       "imports": Array [
         Object {
           "imported": "MeshVertex",
           "name": "MeshVertex",
-          "node": "[ImportDeclaration]",
         },
       ],
       "name": "use/types",
       "symbols": Array [
-        Object {
-          "name": "MeshVertex",
-          "node": "[ImportDeclaration]",
-        },
+        "MeshVertex",
       ],
     },
   ],
@@ -124,103 +99,78 @@ Object {
         Object {
           "imported": "MeshVertex",
           "name": "MeshVertex",
-          "node": "[ImportDeclaration]",
         },
       ],
       "name": "use/types",
       "symbols": Array [
-        Object {
-          "name": "MeshVertex",
-          "node": "[ImportDeclaration]",
-        },
+        "MeshVertex",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "getQuadIndex",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "int",
           "vertex",
         ],
         "type": Object {
           "name": "ivec2",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "getQuadIndex",
-          "node": "[FunctionDefinition]",
-        },
+        "getQuadIndex",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "getQuadUV",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "int",
           "vertex",
         ],
         "type": Object {
           "name": "vec2",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "getQuadUV",
-          "node": "[FunctionDefinition]",
-        },
+        "getQuadUV",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "getQuad",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "int",
           "vertex",
         ],
         "type": Object {
           "name": "MeshVertex",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "getQuad",
-          "node": "[FunctionDefinition]",
-        },
+        "getQuad",
       ],
     },
     Object {
-      "node": "[Declaration]",
+      "exported": false,
       "symbols": Array [
-        Object {
-          "name": "QUAD",
-          "node": "[SingleDeclaration]",
-        },
+        "QUAD",
       ],
       "variable": Object {
         "locals": Array [
           Object {
             "expr": "ivec2(0, 0)",
             "name": "QUAD",
-            "node": "[SingleDeclaration]",
           },
         ],
-        "node": "[VariableDeclaration]",
         "type": Object {
           "name": "ivec2",
-          "node": "[QualifiedType]",
           "qualifiers": Array [
             "const",
           ],
@@ -229,40 +179,16 @@ Object {
     },
   ],
   "symbols": Array [
-    Object {
-      "name": "MeshVertex",
-      "node": "[ImportDeclaration]",
-    },
-    Object {
-      "name": "getQuadIndex",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "getQuadUV",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "getQuad",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "QUAD",
-      "node": "[SingleDeclaration]",
-    },
+    "MeshVertex",
+    "getQuadIndex",
+    "getQuadUV",
+    "getQuad",
+    "QUAD",
   ],
   "visibles": Array [
-    Object {
-      "name": "getQuadIndex",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "getQuadUV",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "getQuad",
-      "node": "[FunctionDefinition]",
-    },
+    "getQuadIndex",
+    "getQuadUV",
+    "getQuad",
   ],
 }
 `;
@@ -270,25 +196,19 @@ Object {
 exports[`ast extracts quad fragment declarations 1`] = `
 Array [
   Object {
-    "node": "[Declaration]",
+    "exported": false,
     "symbols": Array [
-      Object {
-        "name": "fragColor",
-        "node": "[SingleDeclaration]",
-      },
+      "fragColor",
     ],
     "variable": Object {
       "locals": Array [
         Object {
           "expr": null,
           "name": "fragColor",
-          "node": "[SingleDeclaration]",
         },
       ],
-      "node": "[VariableDeclaration]",
       "type": Object {
         "name": "vec4",
-        "node": "[QualifiedType]",
         "qualifiers": Array [
           "layout(location = 0)",
           "in",
@@ -297,25 +217,19 @@ Array [
     },
   },
   Object {
-    "node": "[Declaration]",
+    "exported": false,
     "symbols": Array [
-      Object {
-        "name": "fragUV",
-        "node": "[SingleDeclaration]",
-      },
+      "fragUV",
     ],
     "variable": Object {
       "locals": Array [
         Object {
           "expr": null,
           "name": "fragUV",
-          "node": "[SingleDeclaration]",
         },
       ],
-      "node": "[VariableDeclaration]",
       "type": Object {
         "name": "vec2",
-        "node": "[QualifiedType]",
         "qualifiers": Array [
           "layout(location = 1)",
           "in",
@@ -324,25 +238,19 @@ Array [
     },
   },
   Object {
-    "node": "[Declaration]",
+    "exported": false,
     "symbols": Array [
-      Object {
-        "name": "outColor",
-        "node": "[SingleDeclaration]",
-      },
+      "outColor",
     ],
     "variable": Object {
       "locals": Array [
         Object {
           "expr": null,
           "name": "outColor",
-          "node": "[SingleDeclaration]",
         },
       ],
-      "node": "[VariableDeclaration]",
       "type": Object {
         "name": "vec4",
-        "node": "[QualifiedType]",
         "qualifiers": Array [
           "layout(location = 0)",
           "out",
@@ -356,46 +264,51 @@ Array [
 exports[`ast extracts quad vertex declarations 1`] = `
 Array [
   Object {
-    "node": "[Declaration]",
+    "exported": false,
     "prototype": Object {
       "name": "getPosition",
-      "node": "[FunctionPrototype]",
       "parameters": Array [
         "int",
       ],
       "type": Object {
-        "name": "vec3",
-        "node": "[QualifiedType]",
+        "name": "vec4",
         "qualifiers": Array [],
       },
     },
     "symbols": Array [
-      Object {
-        "name": "getPosition",
-        "node": "[Declaration]",
-      },
+      "getPosition",
     ],
   },
   Object {
-    "node": "[Declaration]",
-    "symbols": Array [
-      Object {
-        "name": "fragColor",
-        "node": "[SingleDeclaration]",
+    "exported": false,
+    "prototype": Object {
+      "name": "getSize",
+      "parameters": Array [
+        "int",
+      ],
+      "type": Object {
+        "name": "float",
+        "qualifiers": Array [],
       },
+    },
+    "symbols": Array [
+      "getSize",
+    ],
+  },
+  Object {
+    "exported": false,
+    "symbols": Array [
+      "fragColor",
     ],
     "variable": Object {
       "locals": Array [
         Object {
           "expr": null,
           "name": "fragColor",
-          "node": "[SingleDeclaration]",
         },
       ],
-      "node": "[VariableDeclaration]",
       "type": Object {
         "name": "vec4",
-        "node": "[QualifiedType]",
         "qualifiers": Array [
           "layout(location = 0)",
           "out",
@@ -404,25 +317,19 @@ Array [
     },
   },
   Object {
-    "node": "[Declaration]",
+    "exported": false,
     "symbols": Array [
-      Object {
-        "name": "fragUV",
-        "node": "[SingleDeclaration]",
-      },
+      "fragUV",
     ],
     "variable": Object {
       "locals": Array [
         Object {
           "expr": null,
           "name": "fragUV",
-          "node": "[SingleDeclaration]",
         },
       ],
-      "node": "[VariableDeclaration]",
       "type": Object {
         "name": "vec2",
-        "node": "[QualifiedType]",
         "qualifiers": Array [
           "layout(location = 1)",
           "out",
@@ -436,22 +343,17 @@ Array [
 exports[`ast extracts quad vertex functions 1`] = `
 Array [
   Object {
-    "node": "[FunctionDefinition]",
+    "exported": false,
     "prototype": Object {
       "name": "main",
-      "node": "[FunctionPrototype]",
       "parameters": Array [],
       "type": Object {
         "name": "void",
-        "node": "[QualifiedType]",
         "qualifiers": Array [],
       },
     },
     "symbols": Array [
-      Object {
-        "name": "main",
-        "node": "[FunctionDefinition]",
-      },
+      "main",
     ],
   },
 ]
@@ -464,15 +366,11 @@ Array [
       Object {
         "imported": "MeshVertex",
         "name": "MeshVertex",
-        "node": "[ImportDeclaration]",
       },
     ],
     "name": "use/types",
     "symbols": Array [
-      Object {
-        "name": "MeshVertex",
-        "node": "[ImportDeclaration]",
-      },
+      "MeshVertex",
     ],
   },
   Object {
@@ -480,24 +378,16 @@ Array [
       Object {
         "imported": "viewUniforms",
         "name": "viewUniforms",
-        "node": "[ImportDeclaration]",
       },
       Object {
         "imported": "worldToClip",
         "name": "worldToClip",
-        "node": "[ImportDeclaration]",
       },
     ],
     "name": "use/view",
     "symbols": Array [
-      Object {
-        "name": "viewUniforms",
-        "node": "[ImportDeclaration]",
-      },
-      Object {
-        "name": "worldToClip",
-        "node": "[ImportDeclaration]",
-      },
+      "viewUniforms",
+      "worldToClip",
     ],
   },
   Object {
@@ -505,15 +395,11 @@ Array [
       Object {
         "imported": "getQuadUV",
         "name": "getQuadUV",
-        "node": "[ImportDeclaration]",
       },
     ],
     "name": "geometry/quad",
     "symbols": Array [
-      Object {
-        "name": "getQuadUV",
-        "node": "[ImportDeclaration]",
-      },
+      "getQuadUV",
     ],
   },
 ]
@@ -523,46 +409,51 @@ exports[`ast extracts quad vertex symbol table 1`] = `
 Object {
   "declarations": Array [
     Object {
-      "node": "[Declaration]",
+      "exported": false,
       "prototype": Object {
         "name": "getPosition",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "int",
         ],
         "type": Object {
-          "name": "vec3",
-          "node": "[QualifiedType]",
+          "name": "vec4",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "getPosition",
-          "node": "[Declaration]",
-        },
+        "getPosition",
       ],
     },
     Object {
-      "node": "[Declaration]",
-      "symbols": Array [
-        Object {
-          "name": "fragColor",
-          "node": "[SingleDeclaration]",
+      "exported": false,
+      "prototype": Object {
+        "name": "getSize",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "float",
+          "qualifiers": Array [],
         },
+      },
+      "symbols": Array [
+        "getSize",
+      ],
+    },
+    Object {
+      "exported": false,
+      "symbols": Array [
+        "fragColor",
       ],
       "variable": Object {
         "locals": Array [
           Object {
             "expr": null,
             "name": "fragColor",
-            "node": "[SingleDeclaration]",
           },
         ],
-        "node": "[VariableDeclaration]",
         "type": Object {
           "name": "vec4",
-          "node": "[QualifiedType]",
           "qualifiers": Array [
             "layout(location = 0)",
             "out",
@@ -571,25 +462,19 @@ Object {
       },
     },
     Object {
-      "node": "[Declaration]",
+      "exported": false,
       "symbols": Array [
-        Object {
-          "name": "fragUV",
-          "node": "[SingleDeclaration]",
-        },
+        "fragUV",
       ],
       "variable": Object {
         "locals": Array [
           Object {
             "expr": null,
             "name": "fragUV",
-            "node": "[SingleDeclaration]",
           },
         ],
-        "node": "[VariableDeclaration]",
         "type": Object {
           "name": "vec2",
-          "node": "[QualifiedType]",
           "qualifiers": Array [
             "layout(location = 1)",
             "out",
@@ -600,64 +485,66 @@ Object {
   ],
   "externals": Array [
     Object {
-      "node": "[Declaration]",
+      "exported": false,
       "prototype": Object {
         "name": "getPosition",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "int",
         ],
         "type": Object {
-          "name": "vec3",
-          "node": "[QualifiedType]",
+          "name": "vec4",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "getPosition",
-          "node": "[Declaration]",
+        "getPosition",
+      ],
+    },
+    Object {
+      "exported": false,
+      "prototype": Object {
+        "name": "getSize",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "float",
+          "qualifiers": Array [],
         },
+      },
+      "symbols": Array [
+        "getSize",
       ],
     },
   ],
   "functions": Array [
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": false,
       "prototype": Object {
         "name": "main",
-        "node": "[FunctionPrototype]",
         "parameters": Array [],
         "type": Object {
           "name": "void",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "main",
-          "node": "[FunctionDefinition]",
-        },
+        "main",
       ],
     },
   ],
-  "hash": "mbnubp0l",
+  "hash": "81l7mnms8t",
   "modules": Array [
     Object {
       "imports": Array [
         Object {
           "imported": "MeshVertex",
           "name": "MeshVertex",
-          "node": "[ImportDeclaration]",
         },
       ],
       "name": "use/types",
       "symbols": Array [
-        Object {
-          "name": "MeshVertex",
-          "node": "[ImportDeclaration]",
-        },
+        "MeshVertex",
       ],
     },
     Object {
@@ -665,24 +552,16 @@ Object {
         Object {
           "imported": "viewUniforms",
           "name": "viewUniforms",
-          "node": "[ImportDeclaration]",
         },
         Object {
           "imported": "worldToClip",
           "name": "worldToClip",
-          "node": "[ImportDeclaration]",
         },
       ],
       "name": "use/view",
       "symbols": Array [
-        Object {
-          "name": "viewUniforms",
-          "node": "[ImportDeclaration]",
-        },
-        Object {
-          "name": "worldToClip",
-          "node": "[ImportDeclaration]",
-        },
+        "viewUniforms",
+        "worldToClip",
       ],
     },
     Object {
@@ -690,15 +569,11 @@ Object {
         Object {
           "imported": "getQuadUV",
           "name": "getQuadUV",
-          "node": "[ImportDeclaration]",
         },
       ],
       "name": "geometry/quad",
       "symbols": Array [
-        Object {
-          "name": "getQuadUV",
-          "node": "[ImportDeclaration]",
-        },
+        "getQuadUV",
       ],
     },
   ],
@@ -708,15 +583,11 @@ Object {
         Object {
           "imported": "MeshVertex",
           "name": "MeshVertex",
-          "node": "[ImportDeclaration]",
         },
       ],
       "name": "use/types",
       "symbols": Array [
-        Object {
-          "name": "MeshVertex",
-          "node": "[ImportDeclaration]",
-        },
+        "MeshVertex",
       ],
     },
     Object {
@@ -724,24 +595,16 @@ Object {
         Object {
           "imported": "viewUniforms",
           "name": "viewUniforms",
-          "node": "[ImportDeclaration]",
         },
         Object {
           "imported": "worldToClip",
           "name": "worldToClip",
-          "node": "[ImportDeclaration]",
         },
       ],
       "name": "use/view",
       "symbols": Array [
-        Object {
-          "name": "viewUniforms",
-          "node": "[ImportDeclaration]",
-        },
-        Object {
-          "name": "worldToClip",
-          "node": "[ImportDeclaration]",
-        },
+        "viewUniforms",
+        "worldToClip",
       ],
     },
     Object {
@@ -749,77 +612,73 @@ Object {
         Object {
           "imported": "getQuadUV",
           "name": "getQuadUV",
-          "node": "[ImportDeclaration]",
         },
       ],
       "name": "geometry/quad",
       "symbols": Array [
-        Object {
-          "name": "getQuadUV",
-          "node": "[ImportDeclaration]",
-        },
+        "getQuadUV",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": false,
       "prototype": Object {
         "name": "main",
-        "node": "[FunctionPrototype]",
         "parameters": Array [],
         "type": Object {
           "name": "void",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "main",
-          "node": "[FunctionDefinition]",
-        },
+        "main",
       ],
     },
     Object {
-      "node": "[Declaration]",
+      "exported": false,
       "prototype": Object {
         "name": "getPosition",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "int",
         ],
         "type": Object {
-          "name": "vec3",
-          "node": "[QualifiedType]",
+          "name": "vec4",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "getPosition",
-          "node": "[Declaration]",
-        },
+        "getPosition",
       ],
     },
     Object {
-      "node": "[Declaration]",
-      "symbols": Array [
-        Object {
-          "name": "fragColor",
-          "node": "[SingleDeclaration]",
+      "exported": false,
+      "prototype": Object {
+        "name": "getSize",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "float",
+          "qualifiers": Array [],
         },
+      },
+      "symbols": Array [
+        "getSize",
+      ],
+    },
+    Object {
+      "exported": false,
+      "symbols": Array [
+        "fragColor",
       ],
       "variable": Object {
         "locals": Array [
           Object {
             "expr": null,
             "name": "fragColor",
-            "node": "[SingleDeclaration]",
           },
         ],
-        "node": "[VariableDeclaration]",
         "type": Object {
           "name": "vec4",
-          "node": "[QualifiedType]",
           "qualifiers": Array [
             "layout(location = 0)",
             "out",
@@ -828,25 +687,19 @@ Object {
       },
     },
     Object {
-      "node": "[Declaration]",
+      "exported": false,
       "symbols": Array [
-        Object {
-          "name": "fragUV",
-          "node": "[SingleDeclaration]",
-        },
+        "fragUV",
       ],
       "variable": Object {
         "locals": Array [
           Object {
             "expr": null,
             "name": "fragUV",
-            "node": "[SingleDeclaration]",
           },
         ],
-        "node": "[VariableDeclaration]",
         "type": Object {
           "name": "vec2",
-          "node": "[QualifiedType]",
           "qualifiers": Array [
             "layout(location = 1)",
             "out",
@@ -856,38 +709,15 @@ Object {
     },
   ],
   "symbols": Array [
-    Object {
-      "name": "MeshVertex",
-      "node": "[ImportDeclaration]",
-    },
-    Object {
-      "name": "viewUniforms",
-      "node": "[ImportDeclaration]",
-    },
-    Object {
-      "name": "worldToClip",
-      "node": "[ImportDeclaration]",
-    },
-    Object {
-      "name": "getQuadUV",
-      "node": "[ImportDeclaration]",
-    },
-    Object {
-      "name": "main",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "getPosition",
-      "node": "[Declaration]",
-    },
-    Object {
-      "name": "fragColor",
-      "node": "[SingleDeclaration]",
-    },
-    Object {
-      "name": "fragUV",
-      "node": "[SingleDeclaration]",
-    },
+    "MeshVertex",
+    "viewUniforms",
+    "worldToClip",
+    "getQuadUV",
+    "main",
+    "getPosition",
+    "getSize",
+    "fragColor",
+    "fragUV",
   ],
   "visibles": Array [],
 }
@@ -896,85 +726,57 @@ Object {
 exports[`ast extracts test declarations 1`] = `
 Array [
   Object {
-    "node": "[Declaration]",
+    "exported": false,
     "symbols": Array [
-      Object {
-        "name": "x",
-        "node": "[SingleDeclaration]",
-      },
-      Object {
-        "name": "y",
-        "node": "[SingleDeclaration]",
-      },
+      "x",
+      "y",
     ],
     "variable": Object {
       "locals": Array [
         Object {
           "expr": null,
           "name": "x",
-          "node": "[SingleDeclaration]",
         },
         Object {
           "expr": null,
           "name": "y",
-          "node": "[SingleDeclaration]",
         },
       ],
-      "node": "[VariableDeclaration]",
       "type": Object {
         "name": "float",
-        "node": "[QualifiedType]",
         "qualifiers": Array [],
       },
     },
   },
   Object {
-    "node": "[Declaration]",
+    "exported": false,
     "symbols": Array [
-      Object {
-        "name": "a",
-        "node": "[SingleDeclaration]",
-      },
-      Object {
-        "name": "b",
-        "node": "[SingleDeclaration]",
-      },
-      Object {
-        "name": "c",
-        "node": "[SingleDeclaration]",
-      },
-      Object {
-        "name": "d",
-        "node": "[SingleDeclaration]",
-      },
+      "a",
+      "b",
+      "c",
+      "d",
     ],
     "variable": Object {
       "locals": Array [
         Object {
           "expr": "3",
           "name": "a",
-          "node": "[SingleDeclaration]",
         },
         Object {
           "expr": "1",
           "name": "b",
-          "node": "[SingleDeclaration]",
         },
         Object {
           "expr": null,
           "name": "c",
-          "node": "[SingleDeclaration]",
         },
         Object {
           "expr": null,
           "name": "d",
-          "node": "[SingleDeclaration]",
         },
       ],
-      "node": "[VariableDeclaration]",
       "type": Object {
         "name": "int",
-        "node": "[QualifiedType]",
         "qualifiers": Array [],
       },
     },
@@ -985,25 +787,19 @@ Array [
 exports[`ast extracts test declarations with array 1`] = `
 Array [
   Object {
-    "node": "[Declaration]",
+    "exported": false,
     "symbols": Array [
-      Object {
-        "name": "QUAD",
-        "node": "[SingleDeclaration]",
-      },
+      "QUAD",
     ],
     "variable": Object {
       "locals": Array [
         Object {
           "expr": "ivec2(0, 0)",
           "name": "QUAD",
-          "node": "[SingleDeclaration]",
         },
       ],
-      "node": "[VariableDeclaration]",
       "type": Object {
         "name": "ivec2",
-        "node": "[QualifiedType]",
         "qualifiers": Array [
           "const",
         ],
@@ -1017,45 +813,34 @@ exports[`ast extracts use types symbol table 1`] = `
 Object {
   "declarations": Array [
     Object {
-      "node": "[Declaration]",
+      "exported": true,
       "symbols": Array [
-        Object {
-          "name": "MeshVertex",
-          "node": "[QualifiedType]",
-        },
+        "MeshVertex",
       ],
       "variable": Object {
         "locals": Array [],
-        "node": "[VariableDeclaration]",
         "type": Object {
           "members": Array [
             Object {
               "name": "position",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "color",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "uv",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec2",
-                "node": "[TypeSpecifier]",
               },
             },
           ],
           "name": "MeshVertex",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
@@ -1063,65 +848,48 @@ Object {
   ],
   "externals": Array [],
   "functions": Array [],
-  "hash": "qg47iyqm",
+  "hash": "4qg47iyqm",
   "modules": Array [],
   "refs": Array [
     Object {
-      "node": "[Declaration]",
+      "exported": true,
       "symbols": Array [
-        Object {
-          "name": "MeshVertex",
-          "node": "[QualifiedType]",
-        },
+        "MeshVertex",
       ],
       "variable": Object {
         "locals": Array [],
-        "node": "[VariableDeclaration]",
         "type": Object {
           "members": Array [
             Object {
               "name": "position",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "color",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "uv",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec2",
-                "node": "[TypeSpecifier]",
               },
             },
           ],
           "name": "MeshVertex",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
     },
   ],
   "symbols": Array [
-    Object {
-      "name": "MeshVertex",
-      "node": "[QualifiedType]",
-    },
+    "MeshVertex",
   ],
   "visibles": Array [
-    Object {
-      "name": "MeshVertex",
-      "node": "[QualifiedType]",
-    },
+    "MeshVertex",
   ],
 }
 `;
@@ -1129,50 +897,39 @@ Object {
 exports[`ast extracts use view declarations 1`] = `
 Array [
   Object {
-    "node": "[Declaration]",
+    "exported": true,
     "struct": Object {
       "name": "viewUniforms",
-      "node": "[QualifiedStructDeclaration]",
       "struct": Object {
         "members": Array [
           Object {
             "name": "projectionMatrix",
-            "node": "[StructDeclaration]",
             "type": Object {
               "name": "mat4",
-              "node": "[TypeSpecifier]",
             },
           },
           Object {
             "name": "viewMatrix",
-            "node": "[StructDeclaration]",
             "type": Object {
               "name": "mat4",
-              "node": "[TypeSpecifier]",
             },
           },
           Object {
             "name": "viewPosition",
-            "node": "[StructDeclaration]",
             "type": Object {
               "name": "vec4",
-              "node": "[TypeSpecifier]",
             },
           },
           Object {
             "name": "viewResolution",
-            "node": "[StructDeclaration]",
             "type": Object {
               "name": "vec2",
-              "node": "[TypeSpecifier]",
             },
           },
         ],
-        "node": "[StructDeclarationList]",
       },
       "type": Object {
         "name": "ViewUniforms",
-        "node": "[QualifiedStructDeclaration]",
         "qualifiers": Array [
           "layout(set = 0, binding = 0)",
           "uniform",
@@ -1180,10 +937,8 @@ Array [
       },
     },
     "symbols": Array [
-      Object {
-        "name": "viewUniforms",
-        "node": "[Declaration]",
-      },
+      "viewUniforms",
+      "ViewUniforms",
     ],
   },
 ]
@@ -1193,50 +948,39 @@ exports[`ast extracts use view symbol table 1`] = `
 Object {
   "declarations": Array [
     Object {
-      "node": "[Declaration]",
+      "exported": true,
       "struct": Object {
         "name": "viewUniforms",
-        "node": "[QualifiedStructDeclaration]",
         "struct": Object {
           "members": Array [
             Object {
               "name": "projectionMatrix",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "mat4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "viewMatrix",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "mat4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "viewPosition",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "viewResolution",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec2",
-                "node": "[TypeSpecifier]",
               },
             },
           ],
-          "node": "[StructDeclarationList]",
         },
         "type": Object {
           "name": "ViewUniforms",
-          "node": "[QualifiedStructDeclaration]",
           "qualifiers": Array [
             "layout(set = 0, binding = 0)",
             "uniform",
@@ -1244,196 +988,153 @@ Object {
         },
       },
       "symbols": Array [
-        Object {
-          "name": "viewUniforms",
-          "node": "[Declaration]",
-        },
+        "viewUniforms",
+        "ViewUniforms",
       ],
     },
   ],
   "externals": Array [],
   "functions": Array [
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "worldToView",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "vec4",
           "position",
         ],
         "type": Object {
           "name": "vec4",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "worldToView",
-          "node": "[FunctionDefinition]",
-        },
+        "worldToView",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "viewToClip",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "vec4",
           "position",
         ],
         "type": Object {
           "name": "vec4",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "viewToClip",
-          "node": "[FunctionDefinition]",
-        },
+        "viewToClip",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "worldToClip",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "vec4",
           "position",
         ],
         "type": Object {
           "name": "vec4",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "worldToClip",
-          "node": "[FunctionDefinition]",
-        },
+        "worldToClip",
       ],
     },
   ],
-  "hash": "ei1rzda7",
+  "hash": "mbei1rzda7",
   "modules": Array [],
   "refs": Array [
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "worldToView",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "vec4",
           "position",
         ],
         "type": Object {
           "name": "vec4",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "worldToView",
-          "node": "[FunctionDefinition]",
-        },
+        "worldToView",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "viewToClip",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "vec4",
           "position",
         ],
         "type": Object {
           "name": "vec4",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "viewToClip",
-          "node": "[FunctionDefinition]",
-        },
+        "viewToClip",
       ],
     },
     Object {
-      "node": "[FunctionDefinition]",
+      "exported": true,
       "prototype": Object {
         "name": "worldToClip",
-        "node": "[FunctionPrototype]",
         "parameters": Array [
           "vec4",
           "position",
         ],
         "type": Object {
           "name": "vec4",
-          "node": "[QualifiedType]",
           "qualifiers": Array [],
         },
       },
       "symbols": Array [
-        Object {
-          "name": "worldToClip",
-          "node": "[FunctionDefinition]",
-        },
+        "worldToClip",
       ],
     },
     Object {
-      "node": "[Declaration]",
+      "exported": true,
       "struct": Object {
         "name": "viewUniforms",
-        "node": "[QualifiedStructDeclaration]",
         "struct": Object {
           "members": Array [
             Object {
               "name": "projectionMatrix",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "mat4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "viewMatrix",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "mat4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "viewPosition",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec4",
-                "node": "[TypeSpecifier]",
               },
             },
             Object {
               "name": "viewResolution",
-              "node": "[StructDeclaration]",
               "type": Object {
                 "name": "vec2",
-                "node": "[TypeSpecifier]",
               },
             },
           ],
-          "node": "[StructDeclarationList]",
         },
         "type": Object {
           "name": "ViewUniforms",
-          "node": "[QualifiedStructDeclaration]",
           "qualifiers": Array [
             "layout(set = 0, binding = 0)",
             "uniform",
@@ -1441,48 +1142,85 @@ Object {
         },
       },
       "symbols": Array [
-        Object {
-          "name": "viewUniforms",
-          "node": "[Declaration]",
-        },
+        "viewUniforms",
+        "ViewUniforms",
       ],
     },
   ],
   "symbols": Array [
-    Object {
-      "name": "worldToView",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "viewToClip",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "worldToClip",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "viewUniforms",
-      "node": "[Declaration]",
-    },
+    "worldToView",
+    "viewToClip",
+    "worldToClip",
+    "viewUniforms",
+    "ViewUniforms",
   ],
   "visibles": Array [
-    Object {
-      "name": "worldToView",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "viewToClip",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "worldToClip",
-      "node": "[FunctionDefinition]",
-    },
-    Object {
-      "name": "viewUniforms",
-      "node": "[Declaration]",
-    },
+    "worldToView",
+    "viewToClip",
+    "worldToClip",
+    "viewUniforms",
+    "ViewUniforms",
   ],
+}
+`;
+
+exports[`ast rewrites code using the AST 1`] = `
+"
+    float _zz_getValue(int index);
+    void entryPoint() {
+      float x = 3.0;
+      float y = _zz_getValue(2);
+    }
+    "
+`;
+
+exports[`ast rewrites code using the compressed AST 1`] = `
+Array [
+  Array [
+    "Identifier",
+    11,
+    19,
+  ],
+  Array [
+    "Identifier",
+    24,
+    29,
+  ],
+  Array [
+    "Identifier",
+    41,
+    45,
+  ],
+  Array [
+    "Identifier",
+    62,
+    63,
+  ],
+  Array [
+    "Identifier",
+    83,
+    84,
+  ],
+  Array [
+    "Identifier",
+    87,
+    95,
+  ],
+  Array [
+    "Identifier",
+    111,
+    112,
+  ],
+  Array [
+    "Identifier",
+    120,
+    121,
+  ],
+]
+`;
+
+exports[`ast rewrites code using the compressed AST 2`] = `
+Object {
+  "cursor": [Function],
 }
 `;

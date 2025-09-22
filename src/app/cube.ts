@@ -1,11 +1,11 @@
 import { LiveComponent } from '../live/types';
-import { ViewUniforms, UniformDefinition, UniformAttribute, UniformType } from '../core/types';
+import { ViewUniforms, UniformPipe, UniformAttribute, UniformType } from '../core/types';
 
 import { ViewContext, RenderContext } from '../components';
 import { yeet, memoProps, useContext, useMemo, useOne, useState, useResource } from '../live';
 import {
   makeVertexBuffers, makeUniformBuffer, uploadBuffer,
-  makeUniforms, makeUniformBindings,
+  makeUniformPipe, makeUniformBindings,
   makeRenderPipeline,
   makeShaderModule, makeShaderStage,
 } from '../core';
@@ -69,14 +69,14 @@ export const Cube: LiveComponent<CubeProps> = memoProps((fiber) => (props) => {
 
   // Uniforms
   const [uniformBuffer, uniformPipe, uniformBindGroup] = useMemo(() => {
-    const uniformPipe = makeUniforms([...defs, ...CUBE_UNIFORM_DEFS]);
+    const uniformPipe = makeUniformPipe([...defs, ...CUBE_UNIFORM_DEFS]);
     const uniformBuffer = makeUniformBuffer(device, uniformPipe.data);
     const entries = makeUniformBindings([{resource: {buffer: uniformBuffer}}]);
     const uniformBindGroup = device.createBindGroup({
       layout: pipeline.getBindGroupLayout(0),
       entries,
     });
-    return [uniformBuffer, uniformPipe, uniformBindGroup] as [GPUBuffer, UniformDefinition, GPUBindGroup];
+    return [uniformBuffer, uniformPipe, uniformBindGroup] as [GPUBuffer, UniformPipe, GPUBindGroup];
   }, [device, defs, pipeline]);
 
   // Return a lambda back to parent(s)

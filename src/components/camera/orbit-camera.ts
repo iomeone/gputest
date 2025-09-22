@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '../live/types';
+import { LiveComponent, LiveElement } from '../../live/types';
 
-import { useContext, useOne } from '../live';
-import { ViewUniforms, UniformAttribute } from '../core/types';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition } from '../core';
-import { RenderContext } from './render-provider';
+import { useContext, useOne } from '../../live';
+import { ViewUniforms, UniformAttribute } from '../../core/types';
+import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition } from '../../core';
+import { RenderContext } from '../providers/render-provider';
 
 const DEFAULT_ORBIT_CAMERA = {
   phi: 0,

@@ -102,6 +102,8 @@ void main() {
 #pragma import {viewUniforms as view, worldToClip} from 'use/view'
 #pragma import {getQuadUV} from 'geometry/quad'
 
+#pragma import 'test'
+
 #pragma export
 void main();
 `,

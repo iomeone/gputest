@@ -1,17 +1,17 @@
-import { LiveComponent, LiveElement } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
 import {
   PICKING_FORMAT,
   PICKING_COLOR,
-} from './constants';
+} from '../constants';
 
-import { RenderContext, RenderProvider } from './render-provider';
-import { memo, use, provide, useContext, useMemo, makeContext } from '../live';
+import { RenderContext, RenderProvider } from '../providers/render-provider';
+import { memo, use, provide, useContext, useMemo, makeContext } from '../../live';
 import {
   makeColorState,
   makeColorAttachment,
   makeRenderTexture,
-} from '../core';
+} from '../../core';
 
 type PickingContextType = {
   renderContext: CanvasRenderingContextGPU,

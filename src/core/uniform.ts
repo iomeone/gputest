@@ -1,14 +1,31 @@
-import { UniformLayout, UniformAttribute, UniformBinding, UniformType, UniformDefinition, UniformByteSetter, UniformFiller } from './types';
+import { UniformAllocation, UniformLayout, UniformAttribute, UniformBinding, UniformType, UniformPipe, UniformByteSetter, UniformFiller } from './types';
 import { UNIFORM_ATTRIBUTE_SIZES } from './constants';
 import { UNIFORM_BYTE_SETTERS } from './bytes';
+import { makeUniformBuffer } from './buffer';
 
 export const getUniformAttributeSize = (format: UniformType): number => UNIFORM_ATTRIBUTE_SIZES[format];
 export const getUniformByteSetter = (format: UniformType): UniformByteSetter => UNIFORM_BYTE_SETTERS[format];
 
 export const makeUniforms = (
+  device: GPUDevice,
+  pipeline: GPURenderPipeline | GPUComputePipeline,
+  uniforms: UniformAttribute[],
+  set: number = 0,
+): UniformAllocation => {
+  const pipe = makeUniformPipe(uniforms);
+  const buffer = makeUniformBuffer(device, pipe.data);
+  const entries = makeUniformBindings([{resource: {buffer}}]);
+  const bindGroup = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(set),
+    entries,
+  });
+  return {pipe, buffer, bindGroup};
+}
+
+export const makeUniformPipe = (
   uniforms: UniformAttribute[],
   count: number = 1,
-): UniformDefinition => {
+): UniformPipe => {
   const layout = makeUniformLayout(uniforms);
   const data = makeLayoutData(layout, count);
   const fill = makeLayoutFiller(layout, data);
@@ -71,7 +88,10 @@ export const makeLayoutFiller = (
     const base = index * length;
     for (const {name, offset, format} of attributes) {
       const setter = getUniformByteSetter(format);
-      setter(dataView, base + offset, item[name].value);
+      const o = item[name];
+      const v = (o && typeof o === 'object' && o.hasOwnProperty('value'))
+        ? o.value : o;
+      setter(dataView, base + offset, v);
     }
   }
 
@@ -83,3 +103,42 @@ export const makeLayoutFiller = (
     }
   }
 }
+
+export const makeUniformBlockAccessor = (
+  uniforms: UniformAttribute[],
+  set: number = 0,
+  binding: number = 0,
+  ubo: string = 'UBO',
+): Record<string, string> => {
+  const modules = {} as Record<string, string>;
+
+  const members = uniforms.map(({name, format}) => `${format} ${name}`);
+  modules[ubo] = makeUniformBlock(set, binding, ubo, members);
+
+  for (const {name, format} of uniforms) {
+    modules[name] = makeUniformGetter(format, ubo, name);
+  }
+
+  return modules;
+};
+
+export const makeUniformBlock = (set: number, binding: number, ubo: string, members: string[]) => `
+#pragma export
+layout (set = ${set}, binding = ${binding}) uniform ${ubo}Type {
+  ${members.map(m => `${m};`).join('\n  ')}
+} ${ubo}Uniform;
+`;
+
+export const makeUniformGetter = (type: string, ubo: string, name: string) => `
+#pragma import { ${ubo}Uniform } from '#${ubo}'
+
+#pragma export
+${type} ${name}() {
+  return ${ubo}Uniform.${name};
+}
+
+#pragma export
+${type} ${name}(int) {
+  return ${ubo}Uniform.${name};
+}
+`;

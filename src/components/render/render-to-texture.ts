@@ -1,8 +1,9 @@
-import { LiveFiber, LiveComponent, LiveElement, Task } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { use, gatherReduce, useContext, useMemo, useOne } from '../live';
-import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, EMPTY_COLOR } from './constants';
-import { RenderProvider, RenderContext } from './render-provider';
+import { LiveFiber, LiveComponent, LiveElement, Task } from '../../live/types';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
+import { use, provide, gatherReduce, useContext, useMemo, useOne } from '../../live';
+import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, EMPTY_COLOR } from '../constants';
+import { RenderProvider, RenderContext } from '../providers/render-provider';
+import { FrameContext } from './frame-context';
 
 import {
   makeColorState,
@@ -11,7 +12,7 @@ import {
   makeDepthTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
-} from '../core';
+} from '../../core';
 
 export type RenderToTextureProps = {
   width: number,
@@ -100,5 +101,8 @@ export const RenderToTexture: LiveComponent<RenderToTextureProps> = (fiber) => (
   // @ts-ignore
   if (!Done.displayName) Done.displayName = '[RenderToTexture]';
 
-  return gatherReduce(view, Done);
+  const frame = useOne(() => ({current: 0}));
+  frame.current++;
+
+  return provide(FrameContext, frame.current, gatherReduce(view, Done));
 }

@@ -12,7 +12,7 @@ const init = async (): Promise<ShaderCompiler> => {
     try {
       return glslang.compileGLSL(code, stage, false);
     }
-    catch (e) {
+    catch (e: any) {
       const lines = code.split("\n").map((line, i) => `${i+1}: ${line}`);
       console.info(lines.join("\n"));
       throw new Error("Could not compile shader: " + e.message);

@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../live/types';
+import { LiveComponent, LiveElement } from '../../live/types';
 
-import { memo, provide, makeContext, useMemo } from '../live';
-import { ViewUniforms, UniformAttribute } from '../core/types';
+import { memo, provide, makeContext, useMemo } from '../../live';
+import { ViewUniforms, UniformAttribute } from '../../core/types';
 
 export const ViewContext = makeContext(null, 'ViewContext');
 

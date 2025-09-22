@@ -2,6 +2,7 @@ import GLSL from './glsl';
 
 import { GLSLModules } from '../glsl';
 import { makeLanguages } from '../core';
+import { makeModuleCache } from '../shader';
 import { mountGPU } from '../webgpu';
 import { use, render, formatTree } from '../live';
 
@@ -15,7 +16,8 @@ export const main = async (): Promise<void> => {
 
   const glsl = await GLSL();
   const modules = GLSLModules;
-  const languages = makeLanguages({glsl}, modules);
+  const cache = makeModuleCache();
+  const languages = makeLanguages([{glsl, modules, cache}]);
 
   try {
     const {adapter, device, canvas} = await mountGPU(ROOT_SELECTOR);

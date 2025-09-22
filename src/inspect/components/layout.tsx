@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const InspectContainer = styled.div`
 	pointer-events: auto;
-	background: #fff;
+	background: rgba(255, 255, 255, 0.9);
 	color: #000;
 	cursor: default;
 `;

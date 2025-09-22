@@ -1,5 +1,6 @@
 import { SyntaxNode, Tree } from '@lezer/common';
 import {
+  CompressedNode,
   SymbolTable,
   SymbolRef,
   ModuleRef,
@@ -21,6 +22,11 @@ import siphash from "../siphash13";
 const unescape = (s: string) => s.slice(1, -1).replace(/\\(.)/g, '$1');
 
 function nodeToString(this: SyntaxNode) { return `[${this.type.name}]`; }
+
+export const getProgramHash = (code: string) => {
+  const uint = siphash.hash_uint(HASH_KEY, code);
+  return uint.toString(36).slice(-10);
+}
 
 export const hasErrorNode = (tree: Tree) => {
   const cursor = tree.cursor();
@@ -106,25 +112,25 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const def = b ?? a;
 
     const {name, members} = getTypeSpecifier(def);
-    if (members) return {node, name, qualifiers, members};
+    if (members) return {name, qualifiers, members};
 
-    return {node, name, qualifiers};
+    return {name, qualifiers};
   }
   
   const getTypeSpecifier = (node: SyntaxNode): TypeRef => {
     if (node.type.id === T.Identifier) {
       const name = getText(node);
-      return {node, name};
+      return {name};
     }
     if (node.type.id === T.TypeSpecifier) {
       const [def] = getNodes(node, 1);
       if (def.type.id === T.Struct) {
         const {name, members} = getStructType(def);
-        return {node, name, members};
+        return {name, members};
       }
       else {
         const name = getText(def);
-        return {node, name};
+        return {name};
       }
     }
     
@@ -135,7 +141,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const [, b, c] = getNodes(node, 3);
     const name = getText(b);
     const {members} = getStructMembers(c);
-    return {node, name, members};
+    return {name, members};
   }
 
   const getArrayName = (node: SyntaxNode): string => {
@@ -147,20 +153,20 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const [a, b] = getNodes(node, 1);
     const name = getArrayName(a);
     const expr = b ? getText(b) : null;
-    return {node, name, expr};
+    return {name, expr};
   }
 
   const getMember = (node: SyntaxNode): MemberRef => {
     const [a, b] = getNodes(node, 2);
     const type = getTypeSpecifier(a);
     const name = getArrayName(b);
-    return {node, name, type};
+    return {name, type};
   }
 
   const getStructMembers = (node: SyntaxNode): StructRef => {
     const nodes = getNodes(node);
     const members = nodes.map(getMember);
-    return {node, members};
+    return {members};
   }
 
   const getImport = (node: SyntaxNode): ImportRef => {
@@ -169,9 +175,8 @@ export const makeASTParser = (code: string, tree: Tree) => {
 
     const imported = getText(a);
     const name = hasAlias ? getText(b) : imported;
-    const symbol = { node, name };
 
-    return {node, name, imported};
+    return {name, imported};
   };
 
   const getPrototype = (node: SyntaxNode): PrototypeRef => {
@@ -180,9 +185,9 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const type = getQualifiedType(a);
     const name = getText(b);
     const parameters = c ? getNodes(c).map(getText) : [];
-    const symbols = [{ node, name }];
+    const symbols = [{name}];
 
-    return {node, name, type, parameters};
+    return {name, type, parameters};
   };
   
   const getVariable = (node: SyntaxNode): VariableRef => {
@@ -190,7 +195,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const type = getQualifiedType(a);
     const locals = rest.map(getLocal);
 
-    return {node, type, locals};
+    return {type, locals};
   }
   
   const getQualifiedStruct = (node: SyntaxNode): QualifiedStructRef => {
@@ -200,66 +205,67 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const name = getText(d ?? b);
     const struct = getStructMembers(c);
 
-    return {node, name, type, struct};
+    return {name, type, struct};
   }
   
   const getFunction = (node: SyntaxNode): FunctionRef => {
     const [a] = getNodes(node, 1);
+    const exported = isExported(node);
     const prototype = getPrototype(a);
-    const symbols = [{node, name: prototype.name}];
+    const symbols = [prototype.name];
 
-    return {node, prototype, symbols};
+    return {prototype, symbols, exported};
   };
 
   const getDeclaration = (node: SyntaxNode): DeclarationRef => {
     const [a] = getNodes(node);
+    const exported = isExported(node);
 
     if (a.type.id === T.FunctionPrototype) {
       const prototype = getPrototype(a);
       const {name} = prototype;
-      const symbols = [{ node, name }];
-      return {node, symbols, prototype};
+      const symbols = [name];
+      return {symbols, prototype, exported};
     }
     if (a.type.id === T.VariableDeclaration) {
       const variable = getVariable(a);
-      const symbols = variable.locals.map(({node, name}) => ({node, name}));
+      const symbols = variable.locals.map(({name}) => name);
 
       const {type} = variable;
-      if (!GLSL_NATIVE_TYPES.has(type.name)) symbols.push({node: type.node, name: type.name});
+      if (!GLSL_NATIVE_TYPES.has(type.name)) symbols.push(type.name);
 
-      return {node, symbols, variable};
+      return {symbols, variable, exported};
     }
     if (a.type.id === T.QualifiedStructDeclaration) {
       const struct = getQualifiedStruct(a);
       const {name, type} = struct;
 
-      const symbols = [{ node, name }];
+      const symbols = [name];
       if (type.name === name) {
         // Struct is anonymous, members are global
-        for (const {node, name, type} of struct.struct.members) {
-          console.log('anon', name, type)
-          symbols.push({node, name});
-          if (!GLSL_NATIVE_TYPES.has(type.name)) symbols.push({node: type.node, name: type.name});
+        for (const {name, type} of struct.struct.members) {
+          symbols.push(name);
+          if (!GLSL_NATIVE_TYPES.has(type.name)) symbols.push(type.name);
         }
       }
       else if (
         !GLSL_NATIVE_TYPES.has(type.name)
       ) {
         // Custom type
-        symbols.push({node: type.node, name: type.name});
+        symbols.push(type.name);
       }
 
-      return {node, symbols, struct};
+      return {symbols, struct, exported};
     }
     if (a.type.id === T.QualifiedDeclaration) {
-      return {node, symbols: []};
+      // TODO: are members global symbols?
+      return {symbols: [], exported};
     }
     
     throw throwError('declaration', node);
   };
 
-  const isExported = (ref: FunctionRef | DeclarationRef): boolean => {  
-    const {node} = ref;
+  const isExported = (node: SyntaxNode): boolean => {  
     const pragma = node.prevSibling;
 
     if (!pragma || pragma.type.id !== T.Preprocessor) return false;
@@ -284,8 +290,16 @@ export const makeASTParser = (code: string, tree: Tree) => {
       const verb = getText(b);
       if (verb !== 'import') continue;
 
-      const refs = getNodes(c).map(getImport);
-      const module = unescape(getText(d));
+      let module: string;
+      let refs: ImportRef[];
+      if (c.type.id === T.String) {
+        refs = [];
+        module = unescape(getText(c));
+      } 
+      else {
+        refs = getNodes(c).map(getImport);
+        module = unescape(getText(d));
+      }
 
       let items = modules[module];
       if (!items) items = modules[module] = [];
@@ -296,7 +310,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const out = [] as ModuleRef[];
     for (const k in modules) out.push({
       name: k,
-      symbols: modules[k].map(({node, name}) => ({node, name})),
+      symbols: modules[k].map(({name}) => name),
       imports: modules[k],
     });
     return out;
@@ -313,8 +327,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
   };
 
   const extractSymbolTable = (): SymbolTable => {
-    const uint = siphash.hash_uint(HASH_KEY, code);
-    const hash = uint.toString(36).slice(-8);
+    const hash = getProgramHash(code);
 
     const modules = extractImports();
     const functions = extractFunctions();
@@ -325,7 +338,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
       .filter(d => !functions.find(f => f.prototype.name === d.prototype!.name));
 
     const refs = [...modules, ...functions, ...declarations];
-    const exported = [...functions, ...declarations].filter(isExported);
+    const exported = [...functions, ...declarations].filter(d => d.exported);
     
     const visibles = exported.flatMap(r => r.symbols);
     const symbols = refs.flatMap(r => r.symbols);
@@ -336,7 +349,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
   return {extractImports, extractFunctions, extractDeclarations, extractSymbolTable};
 }
 
-export const rewriteAST = (code: string, tree: Tree, rename: Map<string, string>) => {
+export const rewriteUsingAST = (code: string, tree: Tree, rename: Map<string, string>) => {
   let out = '';
   let pos = 0;
 
@@ -350,20 +363,33 @@ export const rewriteAST = (code: string, tree: Tree, rename: Map<string, string>
   const cursor = tree.cursor();
   do {
     const {type, from, to} = cursor;
-    if (type.name === 'version') {
+    if (type.name === 'skip') {
+      skip(from, to, '');
+    }
+    else if (type.name === 'version') {
       cursor.parent();
       cursor.parent();
       const {from, to} = cursor;
       skip(from, to, '');
       cursor.lastChild();
     }
-    if (type.name === 'import' || type.name === 'export') {
+    else if (type.name === 'import' || type.name === 'export') {
       cursor.parent();
       const {from, to} = cursor;
       skip(from, to, '');
       cursor.lastChild();
     }
-    else if (type.id === T.Identifier) {
+    else if (type.name === 'Field') {
+      const sub = cursor.node.cursor;
+      do {} while (sub.firstChild());
+
+      const name = code.slice(sub.from, sub.to);
+      const replace = rename.get(name);
+
+      if (replace) skip(sub.from, sub.to, replace);
+      cursor.lastChild();
+    }
+    else if (type.name === 'Identifier') {
       const name = code.slice(from, to);
       const replace = rename.get(name);
 
@@ -375,4 +401,71 @@ export const rewriteAST = (code: string, tree: Tree, rename: Map<string, string>
   skip(n, n);
 
   return out;
+}
+
+export const compressAST = (tree: Tree): CompressedNode[] => {
+  const out = [] as any[]
+
+  const skip = (from: number, to: number) => out.push(["skip", from, to]);
+  const ident = (from: number, to: number) => out.push(["Identifier", from, to]);
+
+  const cursor = tree.cursor();
+  do {
+    const {type, from, to} = cursor;
+    if (type.name === 'version') {
+      cursor.parent();
+      cursor.parent();
+      const {from, to} = cursor;
+      skip(from, to);
+      cursor.lastChild();
+    }
+    if (type.name === 'import' || type.name === 'export') {
+      cursor.parent();
+      const {from, to} = cursor;
+      skip(from, to);
+      cursor.lastChild();
+    }
+    else if (type.name === 'Field') {
+      const sub = cursor.node.cursor;
+      do {} while (sub.firstChild());
+      ident(sub.from, sub.to);
+      cursor.lastChild();
+    }
+    else if (type.id === T.Identifier) {
+      const {from, to} = cursor;
+      ident(from, to);
+    }
+  } while (cursor.next());
+
+  return out;
+}
+
+export const decompressAST = (nodes: CompressedNode[]) => {
+  const tree = {
+    cursor: () => {
+      let i = -1;
+      const n = nodes.length;
+      const next = () => {
+        const hasNext = ++i < n;
+        if (!hasNext) return false;
+        
+        const node = nodes[i];
+        [self.type.name, self.from, self.to] = node;
+
+        return true;
+      };
+        
+      const self = {
+        type: {name: ''},
+        from: 0,
+        to: 0,
+        next,
+      } as any;
+
+      next();
+
+      return self;
+    },
+  } as any as Tree;
+  return tree;
 }

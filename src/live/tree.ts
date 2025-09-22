@@ -1,4 +1,4 @@
-import { Key, Action, Task, LiveFiber, DeferredCall, GroupedFibers, HostInterface } from './types';
+import { Key, Action, Task, LiveFiber, DeferredCall, GroupedFibers, HostInterface, RenderCallbacks } from './types';
 
 import { makeFiber, renderFiber, bustFiberCaches, visitYeetRoots } from './fiber';
 import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, makePaintRequester, isSubOrSamePath, isSubPath, comparePaths } from './util';
@@ -77,18 +77,17 @@ export const renderSubRoot = (
   const {host} = root;
   if (host) host.__stats.dispatch++;
 
-  const onRender = makeOnRender(subs);
-  const onFence = makeOnFence(subs);
+  const callbacks = makeRenderCallbacks(subs);
 
   // Update from the root down
   DEBUG && console.log('Updating Sub-Root', formatNode(root));
-  renderFiber(root, onRender, onFence);
+  renderFiber(root, callbacks);
 
   // Update any remaining shielded nodes
   while (subs.size) {
     const next = subs.values().next().value;
     DEBUG && console.log('Updating Memoized Sub-Node', formatNode(next));
-    renderFiber(next, onRender, onFence);
+    renderFiber(next, callbacks);
   }
 }
 
@@ -110,38 +109,44 @@ export const groupFibers = (fibers: LiveFiber<any>[]) => {
   return roots;
 }
 
-const makeOnRender = (visit: Set<LiveFiber<any>>) => (fiber: LiveFiber<any>) => {
-  // Remove from to-visit set
-  if (visit) visit.delete(fiber);
+const makeRenderCallbacks = (visit: Set<LiveFiber<any>>): RenderCallbacks => {
+  const onRender = (fiber: LiveFiber<any>) => {
+    // Remove from to-visit set
+    if (visit) visit.delete(fiber);
+  };
 
-  // Bust far caches
-  const {host} = fiber;
-  if (host) for (let sub of host.invalidate(fiber)) {
-    DEBUG && console.log('Invalidating Node', formatNode(sub));
-    visit.add(sub);
-    bustFiberCaches(sub);
-    visitYeetRoots(visit, sub);
+  const onUpdate = (fiber: LiveFiber<any>) => {
+    // Bust far caches
+    const {host} = fiber;
+    if (host) for (let sub of host.invalidate(fiber)) {
+      DEBUG && console.log('Invalidating Node', formatNode(sub));
+      visit.add(sub);
+      bustFiberCaches(sub);
+      visitYeetRoots(visit, sub);
+    }
+
+  	// Notify host / dev tool of update
+  	if (host?.__ping) host.__ping(fiber);
+  };
+
+  const onFence = (fiber: LiveFiber<any>) => {
+    if (!visit.size) return;
+
+    // Continuation fence
+    // Ensure all child nodes of the fiber are rendered,
+    // before calling/resuming its continuation.
+    DEBUG && console.log('Fencing Sub-Root', formatNode(fiber));
+    const nodes = [];
+    const {path} = fiber;
+    const before = [...path, 0];
+    for (let f of visit.values()) if (isSubPath(before, f.path)) nodes.push(f);
+    if (nodes.length) {
+      renderFibers(nodes);
+      for (let n of nodes) visit.delete(n);
+    }
   }
 
-	// Notify host / dev tool of render
-	if (host?.__ping) host.__ping(fiber);
-};
-
-const makeOnFence = (visit: Set<LiveFiber<any>>) => (fiber: LiveFiber<any>) => {
-  if (!visit.size) return;
-
-  // Continuation fence
-  // Ensure all child nodes of the fiber are rendered,
-  // before calling/resuming its continuation.
-  DEBUG && console.log('Fencing Sub-Root', formatNode(fiber));
-  const nodes = [];
-  const {path} = fiber;
-  const before = [...path, 0];
-  for (let f of visit.values()) if (isSubPath(before, f.path)) nodes.push(f);
-  if (nodes.length) {
-    renderFibers(nodes);
-    for (let n of nodes) visit.delete(n);
-  }
+  return {onRender, onUpdate, onFence};
 }
 
 export const renderPaint = (() => {

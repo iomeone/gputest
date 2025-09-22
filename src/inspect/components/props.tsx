@@ -1,5 +1,5 @@
-import { LiveFiber } from '../live/types';
-import { useResource, formatNode, formatValue } from '../live';
+import { LiveFiber } from '../../live/types';
+import { useResource, formatNode, formatValue } from '../../live';
 import styled, { keyframes } from "styled-components";
 
 import React from 'react';

@@ -1,16 +1,32 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`link links an external 1`] = `
+"#version 450
+
+    
+    vec4 _za_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
+    
+
+    vec4 _za_getColor();
+    void main() {
+      vec4 v;
+      v.xyz = vec3(1.0, 0.0, 0.0);
+      gl_FragColor = _za_getColor();
+    }
+    "
+`;
+
 exports[`link links quad vertex 1`] = `
 "#version 450
 
-struct _qg_MeshVertex {
+struct _4q_MeshVertex {
   vec4 position;
   vec4 color;
   vec2 uv;
 };
 
 
-const ivec2 _f7_QUAD[] = {
+const ivec2 _ap_QUAD[] = {
   ivec2(0, 0),
   ivec2(1, 0),
   ivec2(0, 1),
@@ -18,50 +34,59 @@ const ivec2 _f7_QUAD[] = {
 };
 
 
-ivec2 _f7_getQuadIndex(int vertex) {
-  return _f7_QUAD[vertex];
+ivec2 _ap_getQuadIndex(int vertex) {
+  return _ap_QUAD[vertex];
 }
 
 
-vec2 _f7_getQuadUV(int vertex) {
-  return vec2(_f7_getQuadIndex(vertex));
+vec2 _ap_getQuadUV(int vertex) {
+  return vec2(_ap_getQuadIndex(vertex));
 }
 
 
-_qg_MeshVertex _f7_getQuad(int vertex) {
-  vec2 uv = _f7_getQuadUV(vertex);
+_4q_MeshVertex _ap_getQuad(int vertex) {
+  vec2 uv = _ap_getQuadUV(vertex);
   vec4 position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
   vec4 color = vec4(1.0, 0.0, 1.0, 1.0);
-  return _qg_MeshVertex(position, color, uv);
+  return _4q_MeshVertex(position, color, uv);
 }
 
 
-layout(set = 0, binding = 0) uniform ViewUniforms {
+    
+    vec4 _8u_getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
+    
+
+    
+    float _i1_getSize(int index) { return 1.0; }
+    
+
+layout(set = 0, binding = 0) uniform _mb_ViewUniforms {
   mat4 projectionMatrix;
   mat4 viewMatrix;
   vec4 viewPosition;
   vec2 viewResolution;
-} _ei_viewUniforms;
+} _mb_viewUniforms;
 
 
-vec4 _ei_worldToView(vec4 position) {
-  return _ei_viewUniforms.viewMatrix * position;
+vec4 _mb_worldToView(vec4 position) {
+  return _mb_viewUniforms.viewMatrix * position;
 }
 
 
-vec4 _ei_viewToClip(vec4 position) {
-  return _ei_viewUniforms.projectionMatrix * position;
+vec4 _mb_viewToClip(vec4 position) {
+  return _mb_viewUniforms.projectionMatrix * position;
 }
 
 
-vec4 _ei_worldToClip(vec4 position) {
-  return _ei_viewToClip(_ei_worldToView(position));
+vec4 _mb_worldToClip(vec4 position) {
+  return _mb_viewToClip(_mb_worldToView(position));
 }
 
 
 
 
-vec3 getPosition(int);
+vec4 _8u_getPosition(int);
+float _i1_getSize(int);
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragUV;
@@ -70,12 +95,14 @@ void main() {
   int vertexIndex = gl_VertexIndex;
   int instanceIndex = gl_InstanceIndex;
 
-  vec4 instancePosition = vec4(getPosition(instanceIndex), 1.0);
-  vec4 position = _ei_worldToClip(instancePosition);
+  vec4 instancePosition = _8u_getPosition(instanceIndex);
+  float instanceSize = _i1_getSize(instanceIndex);
 
-  vec2 uv = _f7_getQuadUV(vertexIndex);
+  vec4 position = _mb_worldToClip(instancePosition);
+
+  vec2 uv = _ap_getQuadUV(vertexIndex);
   vec2 xy = uv * 2.0 - 1.0;
-  position.xy += xy * _ei_viewUniforms.viewResolution * (50.0 * position.w);
+  position.xy += xy * _mb_viewUniforms.viewResolution * (instanceSize * position.w);
 
   gl_Position = position;
   fragColor = vec4(abs(instancePosition.xyz), 1.0);

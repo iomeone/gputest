@@ -230,7 +230,7 @@ Program                                                     ⮐ void main() {⮐
 `;
 
 exports[`GLSL grammar snapshots parses a test program 8`] = `
-Program                                                     ⮐ #pragma import {MeshVertex} from 'use/types'⮐ #pragma import {viewUniforms as view, worldToClip} from 'use/view'⮐ #pragma import {getQuadUV} from 'geometry/quad'⮐ ⮐ #pragma export⮐ void main();⮐ 
+Program                                                     ⮐ #pragma import {MeshVertex} from 'use/types'⮐ #pragma import {viewUniforms as view, worldToClip} from 'use/view'⮐ #pragma import {getQuadUV} from 'geometry/quad'⮐ ⮐ #pragma import 'test'⮐ ⮐ #pragma export⮐ void main();⮐ 
   Preprocessor                                              #pragma import {MeshVertex} from 'use/types'
     pragma                                                  pragma
     import                                                  import
@@ -257,6 +257,11 @@ Program                                                     ⮐ #pragma import {
       ImportDeclaration                                     getQuadUV
         Identifier                                          getQuadUV
     String                                                  'geometry/quad'
+    UntilEOL                                                
+  Preprocessor                                              #pragma import 'test'
+    pragma                                                  pragma
+    import                                                  import
+    String                                                  'test'
     UntilEOL                                                
   Preprocessor                                              #pragma export
     pragma                                                  pragma

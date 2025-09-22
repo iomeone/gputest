@@ -1,5 +1,27 @@
 import {TypedArrayConstructor, UniformType} from './types';
 
+export const VALUE_TYPES = {
+  'float': Float32Array,
+  'double': Float64Array,
+  'int': Int32Array,
+  'uint': Uint32Array,
+};
+
+export const GLSL_TYPE_ALIASES = {
+  'float2': 'vec2',
+  'float3': 'vec3',
+  'float4': 'vec4',
+  'double2': 'dvec2',
+  'double3': 'dvec3',
+  'double4': 'dvec4',
+  'int2': 'ivec4',
+  'int3': 'ivec4',
+  'int4': 'ivec4',
+  'uint2': 'uvec4',
+  'uint3': 'uvec4',
+  'uint4': 'uvec4',
+};
+
 export const TYPED_ARRAYS: TypedArrayConstructor[] = [
   Int8Array, Uint8Array,
   Int16Array, Uint16Array,
@@ -92,6 +114,112 @@ export const UNIFORM_SIZES = {
   "dmat4x3": 96,
   "dmat4":   128,
   "dmat4x4": 128,
+};
+
+export const UNIFORM_DIMS = {
+  "bool":    1,
+  "bvec2":   2,
+  "bvec3":   3,
+  "bvec4":   4,
+
+  "uint":    1,
+  "uvec2":   2,
+  "uvec3":   3,
+  "uvec4":   4,
+
+  "int":     1,
+  "ivec2":   2,
+  "ivec3":   3,
+  "ivec4":   4,
+
+  "float":   1,
+  "vec2":    2,
+  "vec3":    3,
+  "vec4":    4,
+
+  "double":  1,
+  "dvec2":   2,
+  "dvec3":   3,
+  "dvec4":   4,
+
+  "mat2":    4,
+  "mat2x2":  4,
+  "mat3x2":  6,
+  "mat2x3":  6,
+  "mat2x4":  8,
+  "mat4x2":  8,
+  "mat3":    9,
+  "mat3x3":  9,
+  "mat3x4":  12,
+  "mat4x3":  12,
+  "mat4":    16,
+  "mat4x4":  16,
+
+  "dmat2":    4,
+  "dmat2x2":  4,
+  "dmat3x2":  6,
+  "dmat2x3":  6,
+  "dmat2x4":  8,
+  "dmat4x2":  8,
+  "dmat3":    9,
+  "dmat3x3":  9,
+  "dmat3x4":  12,
+  "dmat4x3":  12,
+  "dmat4":    16,
+  "dmat4x4":  16,
+};
+
+export const UNIFORM_ARRAY_TYPE = {
+  "bool":    Uint32Array,
+  "bvec2":   Uint32Array,
+  "bvec3":   Uint32Array,
+  "bvec4":   Uint32Array,
+
+  "uint":    Uint32Array,
+  "uvec2":   Uint32Array,
+  "uvec3":   Uint32Array,
+  "uvec4":   Uint32Array,
+
+  "int":     Int32Array,
+  "ivec2":   Int32Array,
+  "ivec3":   Int32Array,
+  "ivec4":   Int32Array,
+
+  "float":   Float32Array,
+  "vec2":    Float32Array,
+  "vec3":    Float32Array,
+  "vec4":    Float32Array,
+
+  "double":  Float64Array,
+  "dvec2":   Float64Array,
+  "dvec3":   Float64Array,
+  "dvec4":   Float64Array,
+
+  "mat2":    Float32Array,
+  "mat2x2":  Float32Array,
+  "mat3x2":  Float32Array,
+  "mat2x3":  Float32Array,
+  "mat2x4":  Float32Array,
+  "mat4x2":  Float32Array,
+  "mat3":    Float32Array,
+  "mat3x3":  Float32Array,
+  "mat3x4":  Float32Array,
+  "mat4x3":  Float32Array,
+  "mat4":    Float32Array,
+  "mat4x4":  Float32Array,
+
+  "dmat2":   Float64Array,
+  "dmat2x2": Float64Array,
+  "dmat3x2": Float64Array,
+  "dmat2x3": Float64Array,
+  "dmat2x4": Float64Array,
+  "dmat4x2": Float64Array,
+  "dmat3":   Float64Array,
+  "dmat3x3": Float64Array,
+  "dmat3x4": Float64Array,
+  "dmat4x3": Float64Array,
+  "dmat4":   Float64Array,
+  "dmat4x4": Float64Array,
 };
 
 // @ts-ignore

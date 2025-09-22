@@ -39,7 +39,7 @@ Comment { CommentLine | CommentOpen UntilCommentClose }
 Preprocessor {
 	hash (
 	  d<'pragma'> (
-			!import d<'import'> ImportDeclarationList 'from' String |
+			!import d<'import'> (ImportDeclarationList 'from')? String |
 			!export d<'export'> |
 			d<'optimize'> |
 			d<'debug'>

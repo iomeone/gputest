@@ -3,7 +3,7 @@ import { useResource } from '../live';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Inspect } from './inspect';
+import { Inspect } from './components/inspect';
 
 export type UseInspectProps = {
 	fiber: LiveFiber<any>,

@@ -1,6 +1,6 @@
 import { GLSLModules } from '../glsl';
 import { parseGLSL } from './shader';
-import { makeASTParser, formatAST, hasErrorNode } from './ast';
+import { makeASTParser, formatAST, rewriteUsingAST, compressAST, decompressAST, hasErrorNode } from './ast';
 import { addASTSerializer } from '../test/snapshot';
 
 addASTSerializer(expect);
@@ -136,5 +136,49 @@ describe('ast', () => {
 
     const symbolTable = extractSymbolTable();
     expect(symbolTable).toMatchSnapshot();
+  });
+
+  it('rewrites code using the AST', () => {
+    const code = `
+    float getValue(int index);
+    void main() {
+      float x = 3.0;
+      float y = getValue(2);
+    }
+    `;
+
+    const tree = parseGLSL(code);
+    const rename = new Map<string, string>();
+    rename.set('main', 'entryPoint');
+    rename.set('getValue', '_zz_getValue');
+    
+    const output = rewriteUsingAST(code, tree, rename);
+    expect(output).toMatchSnapshot();
+  });
+
+  it('rewrites code using the compressed AST', () => {
+    const code = `
+    float getValue(int index);
+    void main() {
+      float x = 3.0;
+      float y = getValue(2);
+      vec3 v;
+      v.xyz;
+    }
+    `;
+
+    const tree = parseGLSL(code);
+    const rename = new Map<string, string>();
+    rename.set('main', 'entryPoint');
+    rename.set('getValue', '_zz_getValue');
+    
+    const compressed = compressAST(tree);
+    const decompressed = decompressAST(compressed);
+    expect(compressed).toMatchSnapshot();
+    expect(decompressed).toMatchSnapshot();
+
+    const output1 = rewriteUsingAST(code, tree, rename);
+    const output2 = rewriteUsingAST(code, decompressed, rename);
+    expect(output2).toEqual(output1);
   });
 });

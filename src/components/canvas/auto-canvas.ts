@@ -1,10 +1,10 @@
-import { LiveComponent, LiveElement } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
 
 import { AutoSize } from './auto-size';
 import { Canvas } from './canvas';
 
-import { use } from '../live';
+import { use } from '../../live';
 
 export type AutoCanvasProps = {
   device: GPUDevice,

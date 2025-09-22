@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../live/types';
+import { LiveComponent, LiveElement } from '../../live/types';
 
-import { memo, provide, makeContext, useMemo } from '../live';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
+import { memo, provide, makeContext, useMemo } from '../../live';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
 
 export const RenderContext = makeContext(null, 'RenderContext');
 

@@ -1,31 +1,35 @@
 import { Tree } from '@lezer/common';
-import { SymbolTable } from '../types';
+import { SymbolTable, ParsedModule, ParsedModuleCache } from '../types';
 import { parseGLSL } from './shader';
-import { makeASTParser, rewriteAST } from './ast';
+import { makeASTParser, rewriteUsingAST, compressAST, decompressAST, getProgramHash } from './ast';
 import { GLSL_VERSION } from '../constants';
 import * as T from '../grammar/glsl.terms';
+import LRU from 'lru-cache';
 
-type Program = {
-  entry: null,
-  code: string[],
-};
+const TIMED = false;
 
-type Module = {
-  name: string,
-  code: string,
-  tree: Tree,
-  table: SymbolTable,
-};
+const timed = (name: string, f: any) => {
+  if (!TIMED) return f;
+  return (...args: any[]) => {
+    const t = +new Date();
+    const v = f(...args);
+    console.log(name, (+new Date() - t).toFixed(2), 'ms');
+    return v;
+  }
+}
 
-export const makeProgram = () => ({});
+export const makeModuleCache = (options: Record<string, any> = {}) => new LRU({
+  max: 100,
+  ...options,
+});
 
-export const linkModule = (
+export const linkModule = timed('linkModule', (
   code: string,
   libraries: Record<string, string> = {},
   links: Record<string, string> = {},
-  cache: Map<string, Module> | null = null,
+  cache: ParsedModuleCache | null = null,
 ) => {
-  const modules = loadModules(code, libraries, links);
+  const modules = loadModules(code, libraries, links, cache);
 
   const program = [`#version ${GLSL_VERSION}`] as string[];
   const namespaces = new Map<string, string>();
@@ -35,7 +39,6 @@ export const linkModule = (
   const visible = new Set<string>();
 
   const unlinked = [];
-
   for (const module of modules) {
     const {name, code, tree, table} = module;
     const {symbols, visibles, externals, modules} = table;
@@ -44,11 +47,11 @@ export const linkModule = (
 
     const rename = new Map<string, string>();
     if (name !== 'main') {
-      for (const {name} of symbols) {
+      for (const name of symbols) {
         rename.set(name, namespace + name);
         exists.add(namespace + name);
       }
-      for (const {name} of visibles) {
+      for (const name of visibles) {
         visible.add(namespace + name);
       }
     }
@@ -63,7 +66,7 @@ export const linkModule = (
       }
     }
 
-    for (const {prototype} of externals) {
+    for (const {prototype} of externals) if (prototype) {
       const {name} = prototype;
       const namespace = namespaces.get(name);
       const imp = namespace + name;
@@ -73,7 +76,7 @@ export const linkModule = (
       rename.set(name, imp);
     }
 
-    program.push(rewriteAST(code, tree, rename));
+    program.push(rewriteUsingAST(code, tree, rename));
     unlinked.push(...externals);
   }
 
@@ -83,13 +86,15 @@ export const linkModule = (
     if (!target) throw new Error(`Unlinked function ${name}`);
   }
 
-  return program.join("\n");
-}
+  const result = program.join("\n");
+  return result;
+})
 
-export const loadModules = (
+export const loadModules = timed('loadModules', (
   code: string,
   libraries: Record<string, string>,
   links: Record<string, string>,
+  cache: ParsedModuleCache | null = null,
 ) => {
   const seen = new Map<string, number>();
   const out = [];
@@ -100,20 +105,33 @@ export const loadModules = (
   while (queue.length) {
     const {name, code, depth} = queue.shift()!;
 
-    const tree = parseGLSL(code);
-    const table = makeASTParser(code, tree).extractSymbolTable();
+    let tree, table;
+    if (cache) {
+      const hash = getProgramHash(code);
+      const entry = cache.get(hash);
+      if (entry) ({tree, table} = entry);
+    }
+    if (!tree || !table) {
+      tree = parseGLSL(code);
+      table = makeASTParser(code, tree).extractSymbolTable();
+      if (cache) {
+        tree = decompressAST(compressAST(tree));
+        cache.set(table.hash, { tree, table });
+      }
+    }
+
     out.push({name, code, tree, table});
 
     const {modules, externals} = table;
     for (const {name} of modules) {
-      const code = libraries[name];
+      const code = name.match(/^#/) ? links[name.slice(1)] : libraries[name];
       if (!code) throw new Error(`Unknown module '${name}'`);
       
       if (!seen.has(name)) queue.push({name, code, depth: depth + 1});
       seen.set(name, depth + 1);
     }
 
-    for (const {prototype} of externals) {
+    for (const {prototype} of externals) if (prototype) {
       const {name} = prototype;
       const code = links[name];
       if (!code) throw new Error(`Unlinked function '${name}'`);
@@ -126,10 +144,10 @@ export const loadModules = (
   out.sort((a, b) => seen.get(b.name)! - seen.get(a.name)! || a.name.localeCompare(b.name));
 
   return out;
-}
+})
 
 export const reserveNamespace = (
-  module: Module,
+  module: ParsedModule,
   namespaces: Map<string, string>,
   used: Set<string>,
 ) => {

@@ -1,6 +1,7 @@
-import { LiveFiber, LiveComponent, LiveElement, Task } from '../live/types';
-import { gatherReduce, useContext, useMemo } from '../live';
-import { RenderContext } from './render-provider';
+import { LiveFiber, LiveComponent, LiveElement, Task } from '../../live/types';
+import { gatherReduce, makeContext, useContext, useOne, useMemo, provide } from '../../live';
+import { RenderContext } from '../providers/render-provider';
+import { FrameContext } from './frame-context';
 
 export type DrawProps = {
   children?: LiveElement<any>,
@@ -28,5 +29,10 @@ if (!Done.displayName) Done.displayName = '[Draw]';
 export const Draw: LiveComponent<DrawProps> = (fiber) => (props) => {
   const {children, render} = props;
 
-  return gatherReduce(children ?? (render ? render() : null), Done);
+  const frame = useOne(() => ({current: 0}));
+  frame.current++;
+
+  return provide(FrameContext, frame.current,
+    gatherReduce(children ?? (render ? render() : null), Done)
+  );
 };

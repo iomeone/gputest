@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement } from '../live/types';
-import { useResource, useState } from '../live';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { useResource, useState } from '../../live';
 
 export type AutoSizeProps = {
   canvas: HTMLCanvasElement,

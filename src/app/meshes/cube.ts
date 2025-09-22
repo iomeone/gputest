@@ -1,5 +1,5 @@
-import { VertexData } from '../core/types';
-import { makeVertexAttributeLayout } from '../core';
+import { VertexData } from '../../core/types';
+import { makeVertexAttributeLayout } from '../../core';
 
 export const makeCube = (): VertexData => {
   const vertices   = [cubeVertexArray]

@@ -23,6 +23,11 @@ export type Action<F extends Function> = {
 export type Dispatcher = (as: Action<any>[]) => void;
 export type OnFiber = (fiber: LiveFiber<any>) => void;
 export type FiberSetter<T> = (fiber: LiveFiber<any>, t: T) => void;
+export type RenderCallbacks = {
+  onRender: OnFiber,
+  onUpdate: OnFiber,
+  onFence: OnFiber,
+};
 
 // User=defined context
 export type LiveContext<T> = { initialValue?: T, displayName?: string };
