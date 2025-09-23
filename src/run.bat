@@ -1,1 +1,1 @@
-node fix-imports.mjs
+node src/fix-imports.mjs

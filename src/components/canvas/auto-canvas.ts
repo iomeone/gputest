@@ -1,12 +1,12 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { ShaderLanguages } from '@use-gpu/core/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { ShaderLanguages } from '../../core/types';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
 
 import { AutoSize } from './auto-size';
 import { Canvas } from './canvas';
 import { CursorConsumer } from '../consumers/cursor-consumer';
 
-import { use } from '@use-gpu/live';
+import { use } from '../../live';
 
 export type AutoCanvasProps = {
   device: GPUDevice,
