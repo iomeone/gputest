@@ -20,7 +20,7 @@ import { Lines } from './lines';
 import { makeMesh } from './meshes/mesh';
 import { UseInspect } from '../inspect';
 
-import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '../glsl/mask/point.glsl';
+import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '../gen-glsl/mask/point';
 
 export type AppProps = {
   device: GPUDevice,

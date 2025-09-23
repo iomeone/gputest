@@ -9,7 +9,7 @@ import { ParsedBundle, ParsedModule } from '../shader/types';
 import { ViewContext, PickingContext, useNoPicking, Virtual } from '../components';
 import { use, memo, patch, useMemo, useOne, useState, useResource } from '../live';
 
-import { getQuadVertex } from '../glsl/instance/vertex/quad.glsl';
+import { getQuadVertex } from '../gen-glsl/instance/vertex/quad';
 
 export type QuadsProps = {
   position?: number[] | TypedArray,

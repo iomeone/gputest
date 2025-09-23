@@ -7,7 +7,7 @@ import {
 import { ViewContext, PickingContext, useNoPicking, Virtual } from '../components';
 import { use, yeet, memo, patch, useMemo, useOne, useState, useResource } from '../live';
 
-import { getLineVertex } from '../glsl/instance/vertex/line.glsl';
+import { getLineVertex } from '../gen-glsl/instance/vertex/line';
 
 export type LinesProps = {
   position?: number[] | TypedArray,
