@@ -1,4 +1,4 @@
-#pragma import {SolidVertex} from '../../../glsl/use/types'
+#pragma import {SolidVertex} from '@use-gpu/glsl/use/types'
 
 SolidVertex getVertex(int, int);
 

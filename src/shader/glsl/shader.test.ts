@@ -1,4 +1,4 @@
-import { GLSLModules } from '../../glsl';
+import { GLSLModules } from '@use-gpu/glsl';
 import { parseShader } from './shader';
 import { makeASTParser } from './ast';
 import { formatAST, formatASTNode } from '../util/tree';

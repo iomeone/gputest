@@ -449,46 +449,46 @@ basicType {
   t<"uimage2DMSArray">
 }
 
-Keyword {
-  k<"attribute"> |
-  k<"const"> |
-  k<"uniform"> |
-  k<"varying"> |
-  k<"buffer"> |
-  k<"shared"> |
-  k<"coherent"> |
-  k<"volatile"> |
-  k<"restrict"> |
-  k<"readonly"> |
-  k<"writeonly"> |
-  k<"layout"> |
-  k<"centroid"> |
-  k<"flat"> |
-  k<"smooth"> |
-  k<"noperspective"> |
-  k<"patch"> |
-  k<"sample"> |
-  k<"break"> |
-  k<"continue"> |
-  k<"do"> |
-  k<"for"> |
-  k<"while"> |
-  k<"switch"> |
-  k<"case"> |
-  k<"default"> |
-  k<"if"> |
-  k<"else"> |
-  k<"subroutine"> |
-  k<"in"> |
-  k<"out"> |
-  k<"inout"> |
-  k<"true"> |
-  k<"false"> |
-  k<"invariant"> |
-  k<"precise"> |
-  k<"discard"> |
-  k<"return">
-}
+//Keyword {
+//  k<"attribute"> |
+//  k<"const"> |
+//  k<"uniform"> |
+//  k<"varying"> |
+//  k<"buffer"> |
+//  k<"shared"> |
+//  k<"coherent"> |
+//  k<"volatile"> |
+//  k<"restrict"> |
+//  k<"readonly"> |
+//  k<"writeonly"> |
+//  k<"layout"> |
+//  k<"centroid"> |
+//  k<"flat"> |
+//  k<"smooth"> |
+//  k<"noperspective"> |
+//  k<"patch"> |
+//  k<"sample"> |
+//  k<"break"> |
+//  k<"continue"> |
+//  k<"do"> |
+//  k<"for"> |
+//  k<"while"> |
+//  k<"switch"> |
+//  k<"case"> |
+//  k<"default"> |
+//  k<"if"> |
+//  k<"else"> |
+//  k<"subroutine"> |
+//  k<"in"> |
+//  k<"out"> |
+//  k<"inout"> |
+//  k<"true"> |
+//  k<"false"> |
+//  k<"invariant"> |
+//  k<"precise"> |
+//  k<"discard"> |
+//  k<"return">
+//}
 
 Reserved {
   r<"common"> |

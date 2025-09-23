@@ -1,4 +1,4 @@
-#pragma import {getPickingColor} from '../../../glsl/use/picking';
+#pragma import {getPickingColor} from '@use-gpu/glsl/use/picking';
 
 #ifdef HAS_MASK
 #pragma optional

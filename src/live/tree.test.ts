@@ -88,7 +88,7 @@ it("reacts on the root (setter form)", () => {
     return use(Node)(Math.random());
   };
 
-  const Node = () => () => {
+  const Node = () => (x?: number) => {
     rendered.node++;
   };
 
@@ -137,7 +137,7 @@ it("reacts on the root (reducer form)", () => {
     return use(Node)(Math.random());
   };
 
-  const Node = () => () => {
+  const Node = () => (x?: number) => {
     rendered.node++;
   };
 
@@ -189,7 +189,7 @@ it("reacts and remounts on the root", () => {
     ];
   };
 
-  const Node = () => () => {
+  const Node = () => (x?: number) => {
     rendered.node++;
   };
 
@@ -275,7 +275,7 @@ it("reacts and remounts a sub tree", () => {
     ];
   };
 
-  const Node = () => () => {
+  const Node = () => (x?: number) => {
     rendered.node++;
     return;
   };
@@ -347,7 +347,7 @@ it("coalesces updates", () => {
     return use(Node)(Math.random());
   };
 
-  const Node = (fiber: LiveFiber<any>) => () => {
+  const Node = (fiber: LiveFiber<any>) => (x?: number) => {
     rendered.node++;
 
     const [, setValue] = useState(0);
@@ -409,7 +409,7 @@ it("updates with memo in the way", () => {
     return use(Node)(Math.random());
   });
 
-  const Node = (fiber: LiveFiber<any>) => () => {
+  const Node = (fiber: LiveFiber<any>) => (x?: number) => {
     rendered.node++;
 
     const [, setValue] = useState(0);

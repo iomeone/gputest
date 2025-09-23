@@ -1,6 +1,6 @@
-#pragma import {SolidVertex} from '../../glsl/use/types'
-#pragma import {viewUniforms, worldToClip} from '../../glsl/use/view'
-#pragma import {getQuadUV} from '../../glsl/geometry/quad'
+#pragma import {SolidVertex} from '@use-gpu/glsl/use/types'
+#pragma import {viewUniforms, worldToClip} from '@use-gpu/glsl/use/view'
+#pragma import {getQuadUV} from '@use-gpu/glsl/geometry/quad'
 
 vec4 getPosition(int);
 vec4 getColor(int);

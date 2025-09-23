@@ -1,5 +1,6 @@
 import { LiveFiber, Task, Action, Dispatcher, Key } from './types';
 
+const RAF = typeof window !== 'undefined' ? window.requestAnimationFrame : setTimeout;
 const NO_DEPS = [] as any[];
 
 // Schedules actions to be run immediately after the current thread completes
@@ -79,7 +80,7 @@ export const makeDisposalTracker = () => {
 }
 
 // Schedules callback(s) on next paint
-export const makePaintRequester = (raf: any = requestAnimationFrame) => {
+export const makePaintRequester = (raf: any = RAF) => {
   let pending = false;
   const queue: Task[] = [];
 
