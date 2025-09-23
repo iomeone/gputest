@@ -16,7 +16,7 @@ const IGNORED_DIRS = new Set([
 
 const HANDLED_EXTS = new Set([
   '.ts', '.tsx', '.js', '.jsx', '.mts', '.mjs', '.cts', '.cjs',
-  '.d.ts', '.d.mts', '.d.cts'
+  '.d.ts', '.d.mts', '.d.cts', '.glsl'
 ]);
 
 const args = new Set(process.argv.slice(2));

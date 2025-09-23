@@ -1,4 +1,4 @@
-#pragma import {viewUniforms} from '@use-gpu/glsl/use/view'
+#pragma import {viewUniforms} from '../../../glsl/use/view'
 
 // segments
 //
