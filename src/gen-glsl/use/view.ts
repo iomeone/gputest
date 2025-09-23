@@ -1,4 +1,4 @@
-import {decompressAST} from "../shader/glsl";
+import {decompressAST} from "../../shader/glsl";
 const data = {
     "name": "view",
     "code": "#pragma export\r\nlayout(set = 0, binding = VIEW_BINDING) uniform ViewUniforms {\r\n  mat4 projectionMatrix;\r\n  mat4 viewMatrix;\r\n  vec4 viewPosition;\r\n  vec2 viewResolution;\r\n  vec2 viewSize;\r\n} viewUniforms;\r\n\r\n#pragma export\r\nvec4 worldToView(vec4 position) {\r\n  return viewUniforms.viewMatrix * position;\r\n}\r\n\r\n#pragma export\r\nvec4 viewToClip(vec4 position) {\r\n  return viewUniforms.projectionMatrix * position;\r\n}\r\n\r\n#pragma export\r\nvec4 worldToClip(vec4 position) {\r\n  return viewToClip(worldToView(position));\r\n}\r\n\r\n#pragma export\r\nvec3 clipToScreen3D(vec4 position) {\r\n  return vec3(position.xy * viewUniforms.viewSize, position.z);\r\n}\r\n\r\n#pragma export\r\nvec3 screenToClip3D(vec4 position) {\r\n  return vec3(position.xy * viewUniforms.viewResolution, position.z);\r\n}\r\n\r\n#pragma export\r\nvec3 worldToClip3D(vec4 position) {\r\n  position = viewToClip(worldToView(position));\r\n  return position.xyz / position.w;\r\n}\r\n",

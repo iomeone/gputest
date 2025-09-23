@@ -1,4 +1,4 @@
-import {decompressAST} from "../shader/glsl";
+import {decompressAST} from "../../../shader/glsl";
 import m0 from "../../../glsl/use/types.glsl";
 const data = {
     "name": "virtual",

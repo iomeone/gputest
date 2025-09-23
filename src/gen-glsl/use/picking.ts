@@ -1,4 +1,4 @@
-import {decompressAST} from "../shader/glsl";
+import {decompressAST} from "../../shader/glsl";
 const data = {
     "name": "picking",
     "code": "#ifdef IS_PICKING\r\n#pragma export\r\nlayout(set = 0, binding = PICKING_BINDING) uniform PickingUniforms {\r\n  uint pickingId;\r\n} pickingUniforms;\r\n\r\n#pragma export\r\nuvec4 getPickingColor(uint fragIndex) {\r\n  uint r = pickingUniforms.pickingId;\r\n  uint g = fragIndex;\r\n  return uvec4(r, g, 0, 0);\r\n}\r\n#endif\r\n",

@@ -1,4 +1,4 @@
-import {decompressAST} from "../shader/glsl";
+import {decompressAST} from "../../../shader/glsl";
 import m0 from "../../../glsl/use/picking.glsl";
 const data = {
     "name": "solid",

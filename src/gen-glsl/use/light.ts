@@ -1,4 +1,4 @@
-import {decompressAST} from "../shader/glsl";
+import {decompressAST} from "../../shader/glsl";
 const data = {
     "name": "light",
     "code": "//#pragma export\r\n//struct Light {\r\n//  vec4 position;\r\n//  vec4 color;\r\n//};\r\n\r\n#pragma export\r\nlayout(set = 0, binding = LIGHT_BINDING) uniform LightUniforms {\r\n  vec4 lightPosition;\r\n  vec4 lightColor;\r\n} lightUniforms;\r\n",

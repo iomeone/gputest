@@ -1,4 +1,4 @@
-import {decompressAST} from "../shader/glsl";
+import {decompressAST} from "../../shader/glsl";
 const data = {
     "name": "types",
     "code": "#pragma export\r\nstruct SolidVertex {\r\n  vec4 position;\r\n  vec4 color;\r\n  vec2 uv;\r\n};\r\n\r\n#pragma export\r\nstruct MeshVertex {\r\n  vec4 position;\r\n  vec3 normal;\r\n  vec4 color;\r\n  vec2 uv;\r\n};",

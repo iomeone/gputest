@@ -1,4 +1,4 @@
-import {decompressAST} from "../shader/glsl";
+import {decompressAST} from "../../../shader/glsl";
 const data = {
     "name": "strip",
     "code": "#pragma export\r\nivec2 getStripIndex(int vertex) {\r\n  int x = vertex >> 1;\r\n  int y = vertex & 1;\r\n  return ivec2(x, y);\r\n}\r\n\r\n#pragma export\r\nvec2 getStripUV(int vertex) {\r\n  return vec2(getStripIndex(vertex));\r\n}\r\n",

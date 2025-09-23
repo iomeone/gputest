@@ -1,4 +1,4 @@
-import {decompressAST} from "../shader/glsl";
+import {decompressAST} from "../../shader/glsl";
 const data = {
     "name": "quad",
     "code": "const ivec2 QUAD[] = {\r\n  ivec2(0, 0),\r\n  ivec2(1, 0),\r\n  ivec2(0, 1),\r\n  ivec2(1, 1),\r\n};\r\n\r\n#pragma export\r\nivec2 getQuadIndex(int vertex) {\r\n  return QUAD[vertex];\r\n}\r\n\r\n#pragma export\r\nvec2 getQuadUV(int vertex) {\r\n  return vec2(getQuadIndex(vertex));\r\n}\r\n",

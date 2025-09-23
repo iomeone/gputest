@@ -1,5 +1,12 @@
 import { loadModule, compressAST } from '../shader/glsl';
 
+
+import path from 'path';
+
+// + 新增：统一分隔符
+const toPosix = (p: string) => p.replace(/\\/g, '/');
+
+
 const stringify = (s: any) => JSON.stringify(s);
 
 export const transpileGLSL = (source: string, resourcePath: string, esModule: boolean = true) => {
@@ -7,7 +14,95 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
   const makeImport = (symbol: string, from: string) => esModule
     ? `import ${symbol} from ${stringify(from)};`
     : `const ${symbol} = require(${stringify(from)});`;
-  const preamble = makeImport('{decompressAST}', '../shader/glsl');
+  // const preamble = makeImport('{decompressAST}', '../shader/glsl');
+
+
+
+
+
+
+
+
+
+
+
+
+
+      const toPosix = (p: string) => p.replace(/\\/g, '/');
+      const log = (...args: any[]) => console.log('[transpileGLSL:preamble]', ...args);
+
+      const rpRaw = resourcePath;
+      const rp = toPosix(rpRaw);
+
+      // 目标始终是以 “src 为根”的 'shader/glsl'
+      const TARGET_IN_SRC = 'shader/glsl';
+
+      // 计算：以 “src 为根” 的当前 .glsl 所在目录（dirRelToSrc）
+      let dirRelToSrc: string | null = null;
+      let mode = '';
+
+      // 情形 A：resourcePath 是绝对路径并且包含 /src/glsl/...
+      let m = rp.match(/\/src\/glsl\/(.+)\/[^/]+\.glsl$/);
+      if (m) {
+        dirRelToSrc = `glsl/${m[1]}`;       // e.g. glsl/geometry
+        mode = 'abs->src/glsl/subdir';
+      } else {
+        // 情形 B：resourcePath 是相对路径 'glsl/xxx/.../file.glsl'
+        m = rp.match(/^glsl\/(.+)\/[^/]+\.glsl$/);
+        if (m) {
+          dirRelToSrc = `glsl/${m[1]}`;
+          mode = 'rel glsl/subdir';
+        } else {
+          // 情形 C：文件直接在 glsl 根目录
+          if (/\/src\/glsl\/[^/]+\.glsl$/.test(rp)) {
+            dirRelToSrc = 'glsl';
+            mode = 'abs->src/glsl/root';
+          } else if (/^glsl\/[^/]+\.glsl$/.test(rp)) {
+            dirRelToSrc = 'glsl';
+            mode = 'rel glsl/root';
+          }
+        }
+      }
+
+      let decompressFrom: string;
+      if (dirRelToSrc) {
+        // 用「以 src 为根」的相对目录，计算到 TARGET_IN_SRC 的相对导入
+        let rel = path.posix.relative(dirRelToSrc, TARGET_IN_SRC);  // e.g. ../../shader/glsl
+        if (!rel.startsWith('.')) rel = './' + rel;
+        decompressFrom = rel;
+        log({ mode, resourcePath: rp, dirRelToSrc, target: TARGET_IN_SRC, decompressFrom });
+      } else {
+        // 兜底：直接用当前文件所在目录去算（不依赖 src 结构）
+        const dir = rp.includes('/') ? rp.slice(0, rp.lastIndexOf('/')) : '.';
+        let rel = path.posix.relative(dir, TARGET_IN_SRC);
+        if (!rel.startsWith('.')) rel = './' + rel;
+        decompressFrom = rel;
+        log({ mode: 'fallback', resourcePath: rp, dir, target: TARGET_IN_SRC, decompressFrom });
+      }
+
+      const preamble = makeImport('{decompressAST}', decompressFrom);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Parse module source code
   const name = resourcePath.split('/').pop()!.replace(/\.glsl$/, '');

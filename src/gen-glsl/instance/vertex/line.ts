@@ -1,4 +1,4 @@
-import {decompressAST} from "../shader/glsl";
+import {decompressAST} from "../../../shader/glsl";
 import m0 from "../../../glsl/use/types.glsl";
 import m1 from "../../../glsl/use/view.glsl";
 import m2 from "../../../glsl/geometry/strip.glsl";
