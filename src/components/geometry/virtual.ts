@@ -15,9 +15,9 @@ import {
 import { useBoundStorage } from '../hooks/useBoundStorage';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import instanceDrawVirtual from '../../glsl/instance/draw/virtual.glsl';
-import instanceDrawWireframeStrip from '../../glsl/instance/draw/wireframe-strip.glsl';
-import instanceFragmentSolid from '../../glsl/instance/fragment/solid.glsl';
+import instanceDrawVirtual from '../../gen-glsl/instance/draw/virtual';
+import instanceDrawWireframeStrip from '../../gen-glsl/instance/draw/wireframe-strip';
+import instanceFragmentSolid from '../../gen-glsl/instance/fragment/solid';
 
 export type VirtualProps = {
   topology: GPUPrimitiveTopology,
