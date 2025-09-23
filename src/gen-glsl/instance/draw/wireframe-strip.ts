@@ -1,8 +1,8 @@
 import {decompressAST} from "../../../shader/glsl";
-import m0 from "../../../glsl/use/types.glsl";
-import m1 from "../../../glsl/geometry/quad.glsl";
-import m2 from "../../../glsl/geometry/strip.glsl";
-import m3 from "../../../glsl/geometry/line.glsl";
+import m0 from "../../../gen-glsl/use/types";
+import m1 from "../../../gen-glsl/geometry/quad";
+import m2 from "../../../gen-glsl/geometry/strip";
+import m3 from "../../../gen-glsl/geometry/line";
 const data = {
     "name": "wireframe-strip",
     "code": "#pragma import {SolidVertex} from '../../../glsl/use/types'\r\n#pragma import {getQuadIndex} from '../../../glsl/geometry/quad'\r\n#pragma import {getStripIndex} from '../../../glsl/geometry/strip'\r\n#pragma import {getLineJoin} from '../../../glsl/geometry/line'\r\n\r\nSolidVertex getVertex(int, int);\r\n\r\nlayout(location = 0) out vec4 fragColor;\r\nlayout(location = 1) out vec2 fragUV;\r\n\r\nvoid main() {\r\n  int vertexIndex = gl_VertexIndex;\r\n  int instanceIndex = gl_InstanceIndex;\r\n\r\n  ivec2 ij = getQuadIndex(vertexIndex);\r\n  vec2 xy = vec2(ij) * 2.0 - 1.0;\r\n\r\n  int n = STRIP_SEGMENTS * 2 + 1;\r\n  int f = instanceIndex % n;\r\n  int i = instanceIndex / n;\r\n\r\n  ivec2 stripIndex = getStripIndex(f);\r\n  int edgeIndex = stripIndex.y;\r\n  int triIndex = stripIndex.x;\r\n\r\n  SolidVertex a = getVertex(triIndex, i);\r\n  SolidVertex b = getVertex(triIndex + 1 + edgeIndex, i);\r\n\r\n  vec3 left = a.position.xyz / a.position.w;\r\n  vec3 right = b.position.xyz / b.position.w;\r\n\r\n  vec3 join = (ij.x > 0)\r\n    ? getLineJoin(left, left, right, 0.0, xy.y, 2.0, 1, 0)\r\n    : getLineJoin(left, right, right, 0.0, xy.y, 2.0, 2, 0);\r\n\r\n  gl_Position = vec4(join, 1.0);\r\n  fragColor = vec4(1.0, 1.0, 1.0, 1.0);\r\n  fragUV = vec2(0.0, 0.0);\r\n}\r\n",

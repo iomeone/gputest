@@ -1,8 +1,8 @@
 import {decompressAST} from "../../../shader/glsl";
-import m0 from "../../../glsl/fragment/pbr.glsl";
-import m1 from "../../../glsl/use/picking.glsl";
-import m2 from "../../../glsl/use/view.glsl";
-import m3 from "../../../glsl/use/light.glsl";
+import m0 from "../../../gen-glsl/fragment/pbr";
+import m1 from "../../../gen-glsl/use/view";
+import m2 from "../../../gen-glsl/use/view";
+import m3 from "../../../gen-glsl/use/light";
 const data = {
     "name": "mesh",
     "code": "#pragma import {PBR} from '../../../glsl/fragment/pbr';\r\n#pragma import {getPickingColor} from '../../../glsl/use/picking';\r\n#pragma import {viewUniforms} from '../../../glsl/use/view';\r\n#pragma import {lightUniforms} from '../../../glsl/use/light';\r\n\r\n#ifdef IS_PICKING\r\nlayout(location = 0) in flat uint fragIndex;\r\nlayout(location = 0) out uvec4 outColor;\r\n#else\r\nlayout(location = 0) in vec4 fragColor;\r\nlayout(location = 1) in vec2 fragUV;\r\n\r\nlayout(location = 2) in vec3 fragNormal;\r\nlayout(location = 3) in vec3 fragPosition;\r\n\r\nlayout(location = 0) out vec4 outColor;\r\n#endif\r\n\r\n#ifdef IS_PICKING\r\nvoid main() {\r\n  outColor = getPickingColor(fragIndex);\r\n}\r\n#else\r\nvoid main() {\r\n  vec3 fragLight = lightUniforms.lightPosition.xyz - fragPosition;\r\n  vec3 fragView = viewUniforms.viewPosition.xyz - fragPosition;\r\n\r\n  vec3 N = normalize(fragNormal);\r\n  vec3 L = normalize(fragLight);\r\n  vec3 V = normalize(fragView);\r\n\r\n  vec3 albedo = fragColor.rgb;\r\n  float metalness = 0.2;\r\n  float roughness = 0.8;\r\n\r\n  vec3 color = PBR(N, L, V, albedo, metalness, roughness) * lightUniforms.lightColor.xyz;\r\n  outColor = vec4(color, fragColor.a);\r\n}\r\n#endif\r\n\r\n",

@@ -1,7 +1,7 @@
 import {decompressAST} from "../../../shader/glsl";
-import m0 from "../../../glsl/use/view.glsl";
-import m1 from "../../../glsl/use/picking.glsl";
-import m2 from "../../../glsl/use/light.glsl";
+import m0 from "../../../gen-glsl/use/view";
+import m1 from "../../../gen-glsl/use/view";
+import m2 from "../../../gen-glsl/use/light";
 const data = {
     "name": "mesh",
     "code": "#pragma import {worldToClip} from '../../../glsl/use/view'\r\n#pragma import {pickingUniforms} from '../../../glsl/use/picking';\r\n#pragma import {lightUniforms} from '../../../glsl/use/light';\r\n\r\nlayout(location = 0) in vec4 position;\r\nlayout(location = 1) in vec4 normal;\r\nlayout(location = 2) in vec4 color;\r\nlayout(location = 3) in vec2 uv;\r\n\r\n#ifdef IS_PICKING\r\nlayout(location = 0) out flat uint fragIndex;\r\n#else\r\nlayout(location = 0) out vec4 fragColor;\r\nlayout(location = 1) out vec2 fragUV;\r\n\r\nlayout(location = 2) out vec3 fragNormal;\r\nlayout(location = 3) out vec3 fragPosition;\r\n#endif\r\n\r\nvoid main() {\r\n  int instanceIndex = gl_InstanceIndex;\r\n  gl_Position = worldToClip(position);\r\n#ifdef IS_PICKING\r\n  fragIndex = uint(instanceIndex);\r\n#else\r\n  fragColor = color;\r\n  fragUV = uv;\r\n\r\n  fragNormal = normal.xyz;\r\n  fragPosition = position.xyz;\r\n#endif\r\n}\r\n",

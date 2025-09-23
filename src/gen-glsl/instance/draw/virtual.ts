@@ -1,5 +1,5 @@
 import {decompressAST} from "../../../shader/glsl";
-import m0 from "../../../glsl/use/types.glsl";
+import m0 from "../../../gen-glsl/use/types";
 const data = {
     "name": "virtual",
     "code": "#pragma import {SolidVertex} from '../../../glsl/use/types'\r\n\r\nSolidVertex getVertex(int, int);\r\n\r\n#ifdef IS_PICKING\r\nlayout(location = 0) out flat uint fragIndex;\r\n#else\r\nlayout(location = 0) out vec4 fragColor;\r\nlayout(location = 1) out vec2 fragUV;\r\n#endif\r\n\r\nvoid main() {\r\n  int vertexIndex = gl_VertexIndex;\r\n  int instanceIndex = gl_InstanceIndex;\r\n\r\n  SolidVertex v = getVertex(vertexIndex, instanceIndex);\r\n\r\n  gl_Position = v.position;\r\n#ifdef IS_PICKING\r\n  fragIndex = uint(instanceIndex);\r\n#else\r\n  fragColor = v.color;\r\n  fragUV = v.uv;\r\n#endif\r\n}",

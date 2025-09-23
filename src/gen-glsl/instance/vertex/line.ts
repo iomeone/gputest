@@ -1,8 +1,8 @@
 import {decompressAST} from "../../../shader/glsl";
-import m0 from "../../../glsl/use/types.glsl";
-import m1 from "../../../glsl/use/view.glsl";
-import m2 from "../../../glsl/geometry/strip.glsl";
-import m3 from "../../../glsl/geometry/line.glsl";
+import m0 from "../../../gen-glsl/use/types";
+import m1 from "../../../gen-glsl/use/view";
+import m2 from "../../../gen-glsl/geometry/strip";
+import m3 from "../../../gen-glsl/geometry/line";
 const data = {
     "name": "line",
     "code": "#pragma import {SolidVertex} from '../../../glsl/use/types'\r\n#pragma import {worldToClip3D} from '../../../glsl/use/view'\r\n#pragma import {getStripIndex} from '../../../glsl/geometry/strip'\r\n#pragma import {getLineJoin} from '../../../glsl/geometry/line'\r\n\r\nfloat NaN = 0.0/0.0;\r\n\r\nvec4 getPosition(int);\r\nint getSegment(int);\r\nfloat getSize(int);\r\n\r\n#pragma export\r\nSolidVertex getLineVertex(int vertexIndex, int instanceIndex) {\r\n  ivec2 ij = getStripIndex(vertexIndex);\r\n\r\n  int segmentLeft = getSegment(instanceIndex);\r\n  if (segmentLeft == 2) {\r\n    return SolidVertex(\r\n      vec4(NaN, NaN, NaN, NaN),\r\n      vec4(NaN, NaN, NaN, NaN),\r\n      vec2(NaN, NaN)\r\n    );\r\n  }\r\n\r\n  vec2 uv = vec2(ij);\r\n  vec2 xy = uv * 2.0 - 1.0;\r\n\r\n  int cornerIndex, joinIndex;\r\n  if (ij.x == 0) {\r\n    joinIndex = LINE_JOIN_SIZE;\r\n    cornerIndex = instanceIndex;\r\n  }\r\n  else {\r\n    joinIndex = ij.x - 1;\r\n    cornerIndex = instanceIndex + 1;\r\n  }\r\n\r\n  int segment = getSegment(cornerIndex);\r\n  float size = getSize(cornerIndex);\r\n\r\n  vec4 beforePos = getPosition(cornerIndex - 1);\r\n  vec4 centerPos = getPosition(cornerIndex);\r\n  vec4 afterPos = getPosition(cornerIndex + 1);\r\n\r\n  vec3 before = worldToClip3D(beforePos);\r\n  vec3 center = worldToClip3D(centerPos);\r\n  vec3 after = worldToClip3D(afterPos);\r\n\r\n  float arc = joinIndex / float(LINE_JOIN_SIZE);\r\n  vec3 lineJoin = getLineJoin(before, center, after, arc, xy.y, size, segment, LINE_JOIN_STYLE);\r\n\r\n  return SolidVertex(\r\n    vec4(lineJoin, 1.0),\r\n    vec4(0.2, 0.4, 1.0, 1.0),\r\n    uv\r\n  );\r\n}\r\n",
