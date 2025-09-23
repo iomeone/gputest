@@ -1,72 +1,104 @@
-/* scripts/glsl-codegen.ts
-   用法：
-     npx ts-node scripts/glsl-codegen.ts           # 生成 ESM 模块（默认）
-     npx ts-node scripts/glsl-codegen.ts --cjs     # 生成 CommonJS 模块
-
-   作用：
-     把 src/glsl/ * * / * .glsl 解析为 TS 模块，输出到 src/gen-glsl/ * * .ts，
-     运行时代码严格遵循你贴的 loader 逻辑：
-       - 构造 data = { name, code, table, shake, tree: decompressAST(compressAST(tree)) }
-       - 为 table.modules 生成依赖 import，组装 libs 映射
-       - default 导出 getSymbol()，并为 table.visibles 生成具名导出
-*/
-
 // scripts/glsl-codegen.ts
 //
 // 用法：
 //   npx ts-node scripts/glsl-codegen.ts        # 生成 ESM 模块
 //   npx ts-node scripts/glsl-codegen.ts --cjs  # 生成 CommonJS 模块
 //
-// 说明：把 src/glsl/**/*.glsl 解析为 TS 模块，输出到 src/gen-glsl/**.ts。
-//       生成物内部所有 import 均为“相对路径”，不包含 @use-gpu 等别名。
-//       运行时代码与原 loader 逻辑一致：default + 具名导出、libs 依赖、压缩 AST 后运行时解压。
+// 说明：
+// 1) 复用作者的 transpileGLSL（最新逻辑：压缩 AST、运行时解压、默认导出语义等）
+// 2) 但对生成出来的代码做“导入路径重写”，确保：
+//    - 不出现 @use-gpu/* 别名
+//    - 所有依赖都变为指向 src/gen-glsl/**.ts 的相对导入（不带扩展名）
+//    - decompressAST 的导入改为相对指向 src/shader/glsl.ts
+// 3) CJS 分支中，若使用 exports.*，在 .ts 里会声明 exports 避免 TS 报错
 
 import * as fs from 'fs';
 import * as path from 'path';
 import glob from 'glob';
 
-// 使用仓库内的解析/压缩实现
-import { loadModule as parseGLSL } from '../shader/glsl';
-import { compressAST } from '../shader/glsl';
+// 复用作者提供的转译器（你贴的 transpile.ts）
+import { transpileGLSL } from '../glsl-loader/transpile';
 
 const CJS = process.argv.includes('--cjs');
 const VERBOSE = true;
 
 // 路径
-const ROOT       = process.cwd();
-const SRC        = path.join(ROOT, 'src');
-const SRC_GLSL   = path.join(SRC, 'glsl');
-const OUT_DIR    = path.join(SRC, 'gen-glsl');
-const SHADER_AST = path.join(SRC, 'shader', 'transform', 'ast'); // 用于运行时解压：decompressAST
+const ROOT        = process.cwd();
+const SRC         = path.join(ROOT, 'src');
+const SRC_GLSL    = path.join(SRC, 'glsl');
+const OUT_DIR     = path.join(SRC, 'gen-glsl');
+const SHADER_GLSL = path.join(SRC, 'shader', 'glsl.ts'); // 运行时解压的相对目标（导出 decompressAST）
 
-// -------- 工具函数 --------
+// -------- 工具 --------
 const toPosix = (p: string) => p.replace(/\\/g, '/');
 const relToRoot = (p: string) => toPosix(path.relative(ROOT, p) || '.');
 const ensureDir = (d: string) => { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); };
 const writeFile = (f: string, s: string) => { ensureDir(path.dirname(f)); fs.writeFileSync(f, s); };
-const stringify = (o: any) => JSON.stringify(o).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
-const banner = (t: string) => {
-  const line = '-'.repeat(64);
-  console.log(`\n${line}\n[glsl-codegen] ${t}\n${line}`);
-};
 
-// 生成 “相对路径（无扩展名、且以 ./ 或 ../ 开头）” 的导入 specifier
+// 生成 “相对（无扩展名、且以 ./ 或 ../ 开头）” 的导入 specifier
 const relNoExt = (fromFile: string, toFile: string) => {
   let rel = toPosix(path.relative(path.dirname(fromFile), toFile));
-  rel = rel.replace(/\\/g, '/');
   rel = rel.replace(/\.ts$/, '');
   if (!rel.startsWith('.')) rel = './' + rel;
   return rel;
 };
 
+const banner = (t: string) => {
+  const line = '-'.repeat(64);
+  console.log(`\n${line}\n[glsl-codegen] ${t}\n${line}`);
+};
+
+/** 把 transpileGLSL 产出的代码里的导入路径全部改成相对路径 */
+function rewriteImports(generated: string, outFile: string): string {
+  // 1) @use-gpu/shader/glsl → 相对 src/shader/glsl.ts
+  let relShader = toPosix(path.relative(path.dirname(outFile), SHADER_GLSL));
+  if (!relShader.startsWith('.')) relShader = './' + relShader;
+
+  // ESM：import {decompressAST} from '@use-gpu/shader/glsl'
+  generated = generated.replace(
+    /from\s+['"]@use-gpu\/shader\/glsl['"]/g,
+    `from "${relShader}"`
+  );
+  // CJS：const {decompressAST} = require('@use-gpu/shader/glsl')
+  generated = generated.replace(
+    /require\(\s*['"]@use-gpu\/shader\/glsl['"]\s*\)/g,
+    `require("${relShader}")`
+  );
+
+  // 2) 依赖导入："something.glsl" → 相对指到 src/gen-glsl/**.ts（不带扩展名）
+  // ESM：import mX from "NAME.glsl"
+  generated = generated.replace(
+    /from\s+['"]([^'"]+)\.glsl['"]/g,
+    (_m, name) => `from "${mapModuleNameToRelative(name, outFile)}"`
+  );
+  // CJS：require("NAME.glsl")
+  generated = generated.replace(
+    /require\(\s*['"]([^'"]+)\.glsl['"]\s*\)/g,
+    (_m, name) => `require("${mapModuleNameToRelative(name, outFile)}")`
+  );
+
+  return generated;
+}
+
+/** 把 table.modules 里的 name（可能是 glsl/... 或 @use-gpu/glsl/...）映射到生成物的相对导入 */
+function mapModuleNameToRelative(name: string, outFile: string): string {
+  const dep = name.replace(/^@?use-gpu\/glsl\//, '').replace(/^glsl\//, '');
+  const depOut = path.join(OUT_DIR, dep + '.ts');
+  const spec = relNoExt(outFile, depOut);
+  if (VERBOSE) {
+    console.log(`    [rewrite] ${name} -> ${spec}`);
+  }
+  return spec;
+}
+
 (function main() {
   banner('环境与路径');
-  console.log('[glsl-codegen] node     :', process.version);
-  console.log('[glsl-codegen] cwd      :', ROOT);
-  console.log('[glsl-codegen] SRC_GLSL :', relToRoot(SRC_GLSL));
-  console.log('[glsl-codegen] OUT_DIR  :', relToRoot(OUT_DIR));
-  console.log('[glsl-codegen] SHADER_AST (runtime import):', relToRoot(SHADER_AST));
-  console.log('[glsl-codegen] Output   :', CJS ? 'CommonJS' : 'ESM');
+  console.log('[glsl-codegen] node        :', process.version);
+  console.log('[glsl-codegen] cwd         :', ROOT);
+  console.log('[glsl-codegen] SRC_GLSL    :', relToRoot(SRC_GLSL));
+  console.log('[glsl-codegen] OUT_DIR     :', relToRoot(OUT_DIR));
+  console.log('[glsl-codegen] SHADER_GLSL :', relToRoot(SHADER_GLSL));
+  console.log('[glsl-codegen] Output      :', CJS ? 'CommonJS' : 'ESM');
 
   banner('扫描 .glsl');
   const relFiles = glob.sync('**/*.glsl', { cwd: SRC_GLSL, nodir: true }).sort();
@@ -77,8 +109,6 @@ const relNoExt = (fromFile: string, toFile: string) => {
   relFiles.forEach(f => VERBOSE && console.log('  [found]', toPosix(path.join('src/glsl', f))));
   console.log(`[glsl-codegen] 共 ${relFiles.length} 个 glsl 文件`);
 
-  let totalVisibles = 0;
-  let totalDeps = 0;
   let emitted = 0;
   const t0 = Date.now();
 
@@ -87,88 +117,31 @@ const relNoExt = (fromFile: string, toFile: string) => {
     const abs = path.join(SRC_GLSL, rel);
     const srcCode = fs.readFileSync(abs, 'utf8');
 
-    const mod = parseGLSL(srcCode, 'code'); // 解析
-    const { code, table, tree, shake } = mod;
-    console.log("-------------------------------------code\n", code);
-    // 逻辑名：glsl/…/name
-    const logical       = toPosix(path.join('glsl', rel)).replace(/\.glsl$/, '');
-    const withoutPrefix = logical.replace(/^glsl\//, ''); // 相对 OUT_DIR 的输出路径
-    const outFile       = path.join(OUT_DIR, withoutPrefix + '.ts');
+    // 传给 transpileGLSL 的 resourcePath 用 POSIX 分隔，保证 name = basename
+    const resourcePath = toPosix(path.join('glsl', rel)); // e.g. glsl/mask/point.glsl
 
-    // 依赖导入：全部转为相对路径，指向 src/gen-glsl/**.ts
-    const imports: string[] = [];
-    const markerEntries: string[] = [];
-    let depCount = 0;
+    // 1) 调用作者转译器得到“原始 JS/TS 代码片段”（包含 @use-gpu 路径与 *.glsl 依赖）
+    let generated = transpileGLSL(srcCode, resourcePath, !CJS);
 
-    for (const m of (table.modules as Array<{ name: string }>)) {
-      // 统一出 “生成物”的物理文件路径：src/gen-glsl/<dep>.ts
-      const depName = m.name.replace(/^@?use-gpu\/glsl\//, '').replace(/^glsl\//, '');
-    //   console.log("depName", depName);
-      const depOutFile = path.join(OUT_DIR, depName + '.ts');
-      const fromSpec = relNoExt(outFile, depOutFile);
-      const ident = `m${depCount++}`;
+    // 2) 重写所有导入为相对路径（并把 *.glsl → 指向 gen-glsl 的 .ts，无扩展）
+    const outFile = path.join(OUT_DIR, rel.replace(/\.glsl$/, '.ts'));
+    // generated = rewriteImports(generated, outFile);
 
-      if (CJS) {
-        imports.push(`const ${ident} = require(${JSON.stringify(fromSpec)});`);
-      } else {
-        imports.push(`import * as ${ident} from ${JSON.stringify(fromSpec)};`);
-      }
-      markerEntries.push(`${JSON.stringify(m.name)}: ${ident}`);
-
-      if (VERBOSE) {
-        console.log(`  [dep] ${toPosix(rel)} -> ${relToRoot(outFile)} imports ${depName}.ts as ${fromSpec}`);
-      }
+    // 3) CJS 场景：transpileGLSL 会生成 exports.* 语句；在 .ts 文件里声明 exports 以免 TS 报错
+    if (CJS && /exports\./.test(generated)) {
+      generated = `declare var exports: any;\n` + generated;
     }
 
-    // 运行时解压：decompressAST 的相对导入（确保以 ./ 开头）
-    let relToAst = toPosix(path.relative(path.dirname(outFile), SHADER_AST)) || '.';
-    if (!relToAst.startsWith('.')) relToAst = './' + relToAst;
-    const preamble = CJS
-      ? `const { decompressAST } = require(${JSON.stringify(relToAst)});`
-      : `import { decompressAST } from ${JSON.stringify(relToAst)};`;
+    // 4) 写文件
+    ensureDir(path.dirname(outFile));
+    fs.writeFileSync(outFile, generated, 'utf8');
 
-    // data 块（与 loader 逻辑一致：tree 为运行时解压后的对象）
-    const dataBlock = `const data = {
-  "name": ${stringify(path.basename(logical))},
-  "code": ${stringify(code)},
-  "table": ${stringify(table)},
-  "shake": ${stringify(shake)},
-  "tree": decompressAST(${stringify(compressAST(tree))})
-};`;
-
-    const libsBlock   = `const libs = { ${markerEntries.join(', ')} };`;
-    const getSymbol   = `const getSymbol = (entry?: string) => ({ module: data, libs, entry });`;
-    const defExport   = CJS ? 'module.exports = getSymbol();' : 'export default getSymbol();';
-    const namedExport = (table.visibles as string[]).map(s =>
-      CJS ? `module.exports.${s} = getSymbol(${JSON.stringify(s)});`
-          : `export const ${s} = getSymbol(${JSON.stringify(s)});`
-    );
-
-    const body = [
-      preamble,
-      ...imports,
-      dataBlock,
-      libsBlock,
-      getSymbol,
-      defExport,
-      ...namedExport,
-      ''
-    ].join('\n');
-
-    writeFile(outFile, body);
-
-    const visibles = (table.visibles as string[]).length;
-    totalVisibles += visibles;
-    totalDeps += depCount;
     emitted++;
-
-    console.log(`  [emit] ${relToRoot(outFile)}  (visibles:${visibles}, deps:${depCount}, bytes:${Buffer.byteLength(body, 'utf8')})`);
+    console.log(`  [emit] ${relToRoot(outFile)}  (bytes:${Buffer.byteLength(generated, 'utf8')})`);
   }
 
   const ms = Date.now() - t0;
   banner('完成');
   console.log('[glsl-codegen] 输出文件数 :', emitted);
-  console.log('[glsl-codegen] 具名导出数 :', totalVisibles);
-  console.log('[glsl-codegen] 依赖总数   :', totalDeps);
   console.log('[glsl-codegen] 总用时     :', ms, 'ms');
 })();
