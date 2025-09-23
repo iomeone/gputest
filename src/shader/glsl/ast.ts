@@ -159,6 +159,16 @@ export const makeASTParser = (code: string, tree: Tree) => {
     return {name, type, struct};
   }
 
+  const getQualifiedDeclaration = (node: SyntaxNode): VariableRef => {
+    const [a, ...rest] = getNodes(node, 1);
+    const locals = rest.map(getText).map(name => ({name, expr: null}));
+
+    const qualifiers = getNodes(a).map(getQualifier);
+    const type = {name: 'unknown', qualifiers};
+
+    return {type, locals};
+  }
+
   const getFunction = (node: SyntaxNode): FunctionRef => {
     const [a, b] = getNodes(node, 1);
     const flags = getFlags(node);
@@ -221,9 +231,10 @@ export const makeASTParser = (code: string, tree: Tree) => {
       return {at, symbols, identifiers, flags, struct};
     }
     if (a.type.id === T.QualifiedDeclaration) {
-      // TODO: are members global symbols?
-      console.warn('Unimplemented - T.QualifiedDeclaration');
-      return {at, symbols: [], identifiers: [], flags};
+      const variable = getQualifiedDeclaration(a);
+      const {type} = variable;
+      const symbols = [type.name];
+      return {at, symbols, identifiers: [], flags};
     }
     
     throw throwError('declaration', node);
@@ -395,12 +406,10 @@ export const makeASTParser = (code: string, tree: Tree) => {
     }
 
     const getAll = (ss: string[], accum: Set<string>): Set<string> => {
-      if (ss.length) {
-        for (let s of ss) {
-          accum.add(s);
-          const deps = graph.get(s);
-          if (deps?.length) getAll(deps, accum);
-        }
+      for (let s of ss) if (!accum.has(s)) {
+        accum.add(s);
+        const deps = graph.get(s);
+        if (deps?.length) getAll(deps, accum);
       }
       return accum;
     }
@@ -458,7 +467,6 @@ export const rewriteUsingAST = (
   do {
     const {type, from, to} = cursor;
     // Injected by compressed AST only: Skip, Shake, Id
-
     if (type.name === 'Skip') skip(from, to);
     
     // Top level declaration
@@ -467,7 +475,7 @@ export const rewriteUsingAST = (
       if (!shakes) continue;
       if (shakes.has(from)) {
         skip(from, to);
-        cursor.lastChild();
+        while (cursor.lastChild()) {};
       }
     }
     // Any identifier
@@ -576,7 +584,7 @@ export const decompressAST = (nodes: CompressedNode[]) => {
         const {to} = self;
         do {
           const node = nodes[i + 1];
-          if (node && node[1] >= to) return true;
+          if (node && node[1] >= to) return false;
         } while (next());
         return false;
       }

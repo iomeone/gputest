@@ -1,23 +1,23 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData, StorageSource, RenderPassMode,
-} from '../../core/types';
-import { ParsedBundle, ParsedModule } from '../../shader/types';
-import { ViewContext, RenderContext, PickingContext, useNoPicking } from '../../components';
-import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '../../live';
+  VertexData, StorageSource, RenderPassMode, DeepPartial,
+} from '@use-gpu/core/types';
+import { ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
+import { ViewContext, RenderContext, PickingContext, useNoPicking } from '@use-gpu/components';
+import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '@use-gpu/live';
 import {
   makeMultiUniforms, makeUniformsWithStorage,
   makeRenderPipeline,
   extractDataBindings, extractCodeBindings,
   uploadBuffer,
-} from '../../core';
+} from '@use-gpu/core';
 import { useBoundStorage } from '../hooks/useBoundStorage';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import instanceDrawVirtual from '../../gen-glsl/instance/draw/virtual';
-import instanceDrawWireframeStrip from '../../gen-glsl/instance/draw/wireframe-strip';
-import instanceFragmentSolid from '../../gen-glsl/instance/fragment/solid';
+import instanceDrawVirtual from '@use-gpu/glsl/instance/draw/virtual.glsl';
+import instanceDrawWireframeStrip from '@use-gpu/glsl/instance/draw/wireframe-strip.glsl';
+import instanceFragmentSolid from '@use-gpu/glsl/instance/fragment/solid.glsl';
 
 export type VirtualProps = {
   topology: GPUPrimitiveTopology,
@@ -34,6 +34,7 @@ export type VirtualProps = {
   defines: Record<string, any>,
   deps: any[],
 
+  pipeline: DeepPartial<GPURenderPipelineDescriptor>,
   mode?: RenderPassMode | string,
   id?: number,
 };
@@ -47,7 +48,6 @@ const getDebugShader = (topology: GPUPrimitiveTopology) => {
 
 export const Virtual: LiveComponent<VirtualProps> = memo((fiber) => (props) => {
   const {
-    topology,
     attributes: propAttributes,
     lambdas: propLambdas,
     links: propLinks,
@@ -58,8 +58,10 @@ export const Virtual: LiveComponent<VirtualProps> = memo((fiber) => (props) => {
 
     vertexCount,
     instanceCount,
+
+    pipeline: propPipeline,
     deps = null,
-    mode = RenderPassMode.Render,
+    mode = RenderPassMode.Opaque,
     id = 0,
   } = props;
 
@@ -82,6 +84,7 @@ export const Virtual: LiveComponent<VirtualProps> = memo((fiber) => (props) => {
   // Render shader
   const {glsl: {modules}} = languages;
   // TODO: non-strip topology
+  const topology = propPipeline.primitive?.topology ?? 'triangle-list';
   const vertexShader = !isDebug ? instanceDrawVirtual : getDebugShader(topology);
   const fragmentShader = instanceFragmentSolid;
 
@@ -119,22 +122,14 @@ export const Virtual: LiveComponent<VirtualProps> = memo((fiber) => (props) => {
   );
 
   // Rendering pipeline
-  const pipeline = useMemo(() =>
-    makeRenderPipeline(
+  const pipeline = useMemo(() => {
+    return makeRenderPipeline(
       resolvedContext,
       vertex,
       fragment,
-      {
-        primitive: {
-          topology,
-          stripIndexFormat: 'uint16',
-        },
-        vertex:   {},
-        fragment: {},
-      }
-    ),
-    [device, vertex, fragment, topology, colorStates, depthStencilState, samples, languages]
-  );
+      propPipeline,
+    );
+  }, [device, vertex, fragment, propPipeline, colorStates, depthStencilState, samples, languages]);
 
   // Uniforms
   const [

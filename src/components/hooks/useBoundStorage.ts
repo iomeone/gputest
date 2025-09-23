@@ -1,8 +1,8 @@
-import { UniformAttribute, ResolvedDataBindings, ResolvedCodeBindings } from '../../core/types';
-import { makeBoundStorageAccessors, makeBoundShader } from '../../core';
+import { UniformAttribute, ResolvedDataBindings, ResolvedCodeBindings } from '@use-gpu/core/types';
+import { makeBoundStorageAccessors, makeBoundShader } from '@use-gpu/core';
 import partition from 'lodash/partition';
 
-import { useMemo, useOne } from '../../live';
+import { useMemo, useOne } from '@use-gpu/live';
 
 export const useBoundStorage = <T>(
   dataUniforms: UniformAttribute[],

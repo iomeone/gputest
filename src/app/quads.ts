@@ -1,15 +1,15 @@
-import { LiveComponent } from '../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
-  TypedArray, ViewUniforms,
+  TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '../core/types';
-import { ParsedBundle, ParsedModule } from '../shader/types';
+} from '@use-gpu/core/types';
+import { ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
 
-import { ViewContext, PickingContext, useNoPicking, Virtual } from '../components';
-import { use, memo, useMemo, useOne, useState, useResource } from '../live';
+import { ViewContext, PickingContext, useNoPicking, Virtual } from '@use-gpu/components';
+import { use, memo, patch, useMemo, useOne, useState, useResource } from '@use-gpu/live';
 
-import { getQuadVertex } from '../gen-glsl/instance/vertex/quad';
+import { getQuadVertex } from '@use-gpu/glsl/instance/vertex/quad.glsl';
 
 export type QuadsProps = {
   position?: number[] | TypedArray,
@@ -23,6 +23,7 @@ export type QuadsProps = {
   getMask?: ParsedBundle | ParsedModule,
   getTexture?: ParsedBundle | ParsedModule,
   
+  pipeline: DeepPartial<GPURenderPipelineDescriptor>,
   mode?: RenderPassMode | string,
   id?: number,
 };
@@ -52,9 +53,17 @@ const LINKS = {
   'getVertex': getQuadVertex,
 };
 
+const PIPELINE = {
+  primitive: {
+    topology: 'triangle-strip',
+    stripIndexFormat: 'uint16',
+  },
+};
+
 export const Quads: LiveComponent<QuadsProps> = memo((fiber) => (props) => {
   const {
-    mode = RenderPassMode.Render,
+    pipeline: propPipeline,
+    mode = RenderPassMode.Opaque,
     id = 0,
   } = props;
 
@@ -73,8 +82,9 @@ export const Quads: LiveComponent<QuadsProps> = memo((fiber) => (props) => {
     ],
   ], props);
 
+  const pipeline = useOne(() => patch(PIPELINE, propPipeline), propPipeline);
+
   return use(Virtual)({
-    topology: 'triangle-strip',
     vertexCount,
     instanceCount,
 
@@ -86,6 +96,8 @@ export const Quads: LiveComponent<QuadsProps> = memo((fiber) => (props) => {
     links: LINKS,
     defines: DEFINES,
     deps: null,
+
+    pipeline: PIPELINE,
 
     mode,
     id,

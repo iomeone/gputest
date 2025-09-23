@@ -1,6 +1,6 @@
-import { LiveComponent, LiveFiber, LiveElement } from '../../live/types';
-import { UseRenderingContextGPU, RenderPassMode } from '../../core/types';
-import { use, yeet, memo, multiGatherReduce, useContext, useMemo } from '../../live';
+import { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live/types';
+import { UseRenderingContextGPU, RenderPassMode } from '@use-gpu/core/types';
+import { use, yeet, memo, multiGatherReduce, useContext, useMemo } from '@use-gpu/live';
 import { RenderContext } from '../providers/render-provider';
 import { PickingContext } from './picking';
 
@@ -28,11 +28,12 @@ export const Pass: LiveComponent<PassProps> = memo((fiber) => (props) => {
 
     const {device} = renderContext;
 
-    const renders = toArray(rs[RenderPassMode.Render]);
+    const opaques = toArray(rs[RenderPassMode.Opaque]);
+    const transparents = toArray(rs[RenderPassMode.Transparent]);
     const debugs = toArray(rs[RenderPassMode.Debug]);
     const pickings = toArray(rs[RenderPassMode.Picking]);
 
-    const visibles = [...renders, ...debugs];
+    const visibles = [...opaques, ...transparents, ...debugs];
 
     const renderToContext = (
       commandEncoder: GPUCommandEncoder,

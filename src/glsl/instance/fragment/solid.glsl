@@ -1,4 +1,4 @@
-#pragma import {getPickingColor} from '../../../glsl/use/picking';
+#pragma import {getPickingColor} from '@use-gpu/glsl/use/picking';
 
 #ifdef HAS_MASK
 #pragma optional
@@ -27,6 +27,7 @@ void main() {
 #else
 void main() {
   outColor = fragColor;
+  outColor.xyz *= outColor.a;
 
   #ifdef HAS_MASK
   outColor *= getMask(fragUV);

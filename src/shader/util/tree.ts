@@ -63,18 +63,23 @@ export const getGraphOrder = (
   name: string,
   depth: number = 0,
 ) => {
-  const queue = [{name, depth: 0}];
-  const depths = new Map<string, number>(); 
+  const queue = [{name, depth: 0, path: [name]}];
+  const depths = new Map<string, number>();
+
   while (queue.length) {
-    const {name, depth} = queue.shift()!;
+    const {name, depth, path} = queue.shift()!;
     depths.set(name, depth);
 
     const module = graph.get(name);
     if (!module) continue;
 
-    const deps = module.map(name => ({name, depth: depth + 1}));
+    const deps = module.map(name => {
+      const i = path.indexOf(name);
+      if (i >= 0) throw new Error("Cycle detected in module dependency graph: " + path.slice(i));
+      return {name, depth: depth + 1, path: [...path, name]};
+    });
+
     queue.push(...deps);
   }
   return depths;
 }
-

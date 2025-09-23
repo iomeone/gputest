@@ -1,5 +1,5 @@
-import { LiveFiber } from '../../live/types';
-import { formatNode, formatValue, formatNodeName } from '../../live';
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatNode, formatValue, formatNodeName } from '@use-gpu/live';
 import styled, { keyframes } from "styled-components";
 
 import React, { useState } from 'react';
@@ -56,7 +56,7 @@ export const Props: React.FC<PropsProps> = ({fiber}) => {
     else if (name === 'GATHER') {
     }
     else {
-			if (args.length === 1) props = args[0];
+			if (args.length === 1 && typeof args[0] === 'object') props = args[0];
 			else for (let k in args) props[k] = args[k];
     }
   }

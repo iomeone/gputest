@@ -22,6 +22,8 @@ export type Action<F extends Function> = {
   task: Task,
 };
 export type Dispatcher = (as: Action<any>[]) => void;
+
+// Render callbacks
 export type OnFiber<T = any> = (fiber: LiveFiber<any>) => T;
 export type FiberSetter<T> = (fiber: LiveFiber<any>, t: T) => void;
 export type RenderCallbacks = {
@@ -34,7 +36,7 @@ export type RenderCallbacks = {
 // User=defined context
 export type LiveContext<T> = { initialValue?: T, displayName?: string };
 
-// Fiber context
+// Fiber data structure
 export type LiveFiber<F extends Function> = FunctionCall<F> & {
   host?: HostInterface,
   path: Key[],
@@ -73,6 +75,7 @@ export type LiveFiber<F extends Function> = FunctionCall<F> & {
 
 export type FiberMap = Map<Key, LiveFiber<any>>;
 
+// Fiber context mapping
 export type FiberContext = {
   values: ContextValues,
   roots: ContextRoots,
@@ -81,6 +84,7 @@ export type FiberContext = {
 export type ContextValues = Map<LiveContext<any>, any>;
 export type ContextRoots = Map<LiveContext<any>, LiveFiber<any>>;
 
+// Fiber yeet state
 export type FiberYeet<T> = {
   id: number,
   emit: FiberSetter<any>,
@@ -90,6 +94,7 @@ export type FiberYeet<T> = {
   roots: LiveFiber<any>[],
 };
 
+// Ordered batch of fibers to update
 export type GroupedFibers = {
   root: LiveFiber<any>,
   subs: Set<LiveFiber<any>>,
@@ -128,3 +133,18 @@ export type HostInterface = {
   __flush: () => void,
   __ping: (fiber: LiveFiber<any>) => void,
 };
+
+// State management
+export type Update<T = any> = T
+  | {$set: T}
+  | {$merge: Merge<T>}
+  | {$apply: (t: T) => T}
+  | {$patch: (t: T) => Update<T>}
+  | DeepUpdate<T>
+  | undefined;
+
+export type Merge<T = any> = T | DeepUpdate<T> | undefined;
+
+export type DeepUpdate<T = any> = T extends (infer E)[]
+  ? {[n: number]: Update<E>}
+  : {[P in keyof T]?: Update<T[P]>};

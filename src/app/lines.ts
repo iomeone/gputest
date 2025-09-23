@@ -1,13 +1,13 @@
-import { LiveComponent } from '../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
-    TypedArray, ViewUniforms,
-    UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-    VertexData, StorageSource, RenderPassMode,
-} from '../core/types';
-import { ViewContext, PickingContext, useNoPicking, Virtual } from '../components';
-import { use, yeet, memo, useMemo, useOne, useState, useResource } from '../live';
+  TypedArray, ViewUniforms, DeepPartial,
+  UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
+  VertexData, StorageSource, RenderPassMode,
+} from '@use-gpu/core/types';
+import { ViewContext, PickingContext, useNoPicking, Virtual } from '@use-gpu/components';
+import { use, yeet, memo, patch, useMemo, useOne, useState, useResource } from '@use-gpu/live';
 
-import { getLineVertex } from '../gen-glsl/instance/vertex/line';
+import { getLineVertex } from '@use-gpu/glsl/instance/vertex/line.glsl';
 
 export type LinesProps = {
   position?: number[] | TypedArray,
@@ -21,6 +21,7 @@ export type LinesProps = {
   depth?: number,
   join: 'miter' | 'round' | 'bevel',
 
+  pipeline: DeepPartial<GPURenderPipelineDescriptor>,
   mode?: RenderPassMode,
   id?: number,
 };
@@ -51,9 +52,17 @@ const LINE_JOIN_STYLE = {
   'round': 2,
 };
 
+const PIPELINE = {
+  primitive: {
+    topology: 'triangle-strip',
+    stripIndexFormat: 'uint16',
+  },
+};
+
 export const Lines: LiveComponent<LinesProps> = memo((fiber) => (props) => {
   const {
-    mode = RenderPassMode.Render,
+    pipeline: propPipeline,
+    mode = RenderPassMode.Opaque,
     id = 0,
   } = props;
 
@@ -84,8 +93,9 @@ export const Lines: LiveComponent<LinesProps> = memo((fiber) => (props) => {
     [],
   ], props);
 
+  const pipeline = useOne(() => patch(PIPELINE, propPipeline), propPipeline);
+
   return use(Virtual)({
-    topology: 'triangle-strip',
     vertexCount,
     instanceCount,
 
@@ -98,6 +108,7 @@ export const Lines: LiveComponent<LinesProps> = memo((fiber) => (props) => {
     defines,
     deps: [join],
 
+    pipeline,
     mode,
     id,
   });

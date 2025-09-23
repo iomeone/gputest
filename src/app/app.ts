@@ -1,29 +1,26 @@
-import { LiveComponent } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../core/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import { use, useMemo, useOne, useResource, useState } from '../live';
+import { use, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   AutoCanvas,
   Loop, Draw, Pass,
-  Data, RawData,
+  Data, RawData, Inline,
   OrbitCamera, OrbitControls,
   Picking, Pick, EventProvider,
   Cursor,
   RenderToTexture,
   ViewProvider,
-} from '../components';
+} from '@use-gpu/components';
 import { Mesh } from './mesh';
 import { Quads } from './quads';
 import { Lines } from './lines';
 import { makeMesh } from './meshes/mesh';
-import { UseInspect } from '../inspect';
+import { UseInspect } from '@use-gpu/inspect';
 
-// import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '../glsl/mask/point.glsl';
-
-import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '../gen-glsl/mask/point';
-
+import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '@use-gpu/glsl/mask/point.glsl';
 
 export type AppProps = {
   device: GPUDevice,
@@ -60,6 +57,9 @@ export const App: LiveComponent<AppProps> = (fiber) => (props) => {
   const mesh = makeMesh();
 
   const view = [
+    use(Inline)(() => {
+      t = t + 1/60;
+    }),
     use(Pass)({
       children: [
         use(Data)({
@@ -67,15 +67,15 @@ export const App: LiveComponent<AppProps> = (fiber) => (props) => {
           render: ([positions, segments, sizes]: StorageSource[]) => [
             //use(Quads)({ positions, size: 10 }),
             use(Lines)({ positions, segments, size: 50, join: 'round' }),
-            //use(Lines)({ positions, segments, size: 50, join: 'round', mode: RenderPassMode.Debug }),
+            use(Lines)({ positions, segments, size: 50, join: 'round', mode: RenderPassMode.Debug }),
             //use(Lines)({ positions, segments, size: 50, join: getLineJoin(), mode: RenderPassMode.Picking }),
           ]
         }),
         use(RawData)({
           format: 'vec4',
           length: 100,
+          live: true,
           expr: (emit: Emitter, i: number) => {
-            t = t + 1/6000;
             const s = ((i*i + i) % 13133.371) % 1000;
             emit(
               Math.cos(t * 1.31 + Math.sin((t + s) * 0.31) + s) * 2,
@@ -85,11 +85,10 @@ export const App: LiveComponent<AppProps> = (fiber) => (props) => {
             );
           },
           render: (positions) => [
-            use(Quads)({ positions, size: 50, getMask: circle }),
+            use(Quads)({ positions, color: [1, 1, 1, 0.5], size: 50, getMask: circle, mode: RenderPassMode.Transparent }),
             //use(Quads)({ positions, size: 50, id: 2, mode: RenderPassMode.Picking }),
             //use(Quads)({ positions, size: 50, mode: RenderPassMode.Debug }),
           ],
-          live: true,
         }),
         /*
         use(Data)({

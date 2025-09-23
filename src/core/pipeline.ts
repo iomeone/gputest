@@ -20,7 +20,7 @@ export const makeRenderPipeline = (
   fragmentShader: ShaderModuleDescriptor,
   descriptor: DeepPartial<GPURenderPipelineDescriptor> = {},
 ) => {
-  const {device, colorStates, depthStencilState, samples, languages} = renderContext;
+  const {device, colorStates, depthStencilState, samples} = renderContext;
 
   const pipelineDescriptor: GPURenderPipelineDescriptor = {
     depthStencil: depthStencilState,

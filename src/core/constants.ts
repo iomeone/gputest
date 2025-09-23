@@ -496,3 +496,32 @@ export const TEXTURE_ARRAY_TYPES = {
 export const VERTEX_ATTRIBUTE_SIZES = VERTEX_SIZES as {[t in GPUVertexFormat]: number};
 
 export const UNIFORM_ATTRIBUTE_SIZES = UNIFORM_SIZES as {[t in UniformType]: number};
+
+// Standard blends
+export const BLEND_NONE = undefined;
+
+export const BLEND_ALPHA = {
+  color: {
+    operation: "add",
+    srcFactor: "src-alpha",
+    dstFactor: "one-minus-src-alpha",
+  },
+  alpha: {
+    operation: "add",
+    srcFactor: "one",
+    dstFactor: "one-minus-src-alpha",      
+  },
+} as any as GPUBlendState;
+
+export const BLEND_PREMULTIPLIED = {
+  color: {
+    operation: "add",
+    srcFactor: "one",
+    dstFactor: "one-minus-src-alpha",
+  },
+  alpha: {
+    operation: "add",
+    srcFactor: "one",
+    dstFactor: "one-minus-src-alpha",      
+  },
+} as any as GPUBlendState;

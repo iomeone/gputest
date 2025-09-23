@@ -11,6 +11,8 @@ import {
   linkBundle,
   linkModule,
   linkCode,
+  getPreamble,
+  setPreamble,
 } from './link';
 
 import {
@@ -33,6 +35,8 @@ export {
   linkBundle,
   linkModule,
   linkCode,
+  getPreamble,
+  setPreamble,
 } from './link';
 
 export {
@@ -52,6 +56,8 @@ export const GLSLLinker = {
   linkBundle,
   linkModule,
   linkCode,
+  getPreamble,
+  setPreamble,
 
   makeASTParser,
   compressAST,

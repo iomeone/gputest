@@ -1,17 +1,17 @@
-import { LiveComponent } from '../live/types';
-import { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode } from '../core/types';
-import { ViewContext, RenderContext, PickingContext, useNoPicking } from '../components';
-import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '../live';
+import { LiveComponent } from '@use-gpu/live/types';
+import { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode } from '@use-gpu/core/types';
+import { ViewContext, RenderContext, PickingContext, useNoPicking } from '@use-gpu/components';
+import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '@use-gpu/live';
 import {
   makeVertexBuffers, makeMultiUniforms, 
   makeRenderPipeline, makeShaderModule,
   uploadBuffer,
-} from '../core';
-import { linkBundle } from '../shader/glsl';
+} from '@use-gpu/core';
+import { linkBundle } from '@use-gpu/shader/glsl';
 
-import instanceDrawMesh from '../gen-glsl/instance/draw/mesh';
-import instanceFragmentMesh from '../gen-glsl/instance/fragment/mesh';
-import instanceFragmentSolid from '../gen-glsl/instance/fragment/solid';
+import instanceDrawMesh from '@use-gpu/glsl/instance/draw/mesh.glsl';
+import instanceFragmentMesh from '@use-gpu/glsl/instance/fragment/mesh.glsl';
+import instanceFragmentSolid from '@use-gpu/glsl/instance/fragment/solid.glsl';
 //import instanceVirtualWireframeMesh from 'instance/virtual/wireframe-mesh.glsl';
 
 export const MESH_UNIFORM_DEFS: UniformAttribute[] = [
@@ -37,7 +37,7 @@ export type MeshProps = {
 export const Mesh: LiveComponent<MeshProps> = memo((fiber) => (props) => {
   const {
     mesh,
-    mode = RenderPassMode.Render,
+    mode = RenderPassMode.Opaque,
     id = 0,
     blink,
   } = props;

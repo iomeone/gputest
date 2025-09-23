@@ -215,8 +215,8 @@ export type ResolvedCodeBindings<T> = {
 // Passes
 
 export enum RenderPassMode {
-  Render = 'render',
-  Picking = 'picking',
-  Depth = 'depth',
-  Debug = 'debug',
+  Opaque = 'o',
+  Transparent = 't',
+  Picking = 'p',
+  Debug = 'd',
 };

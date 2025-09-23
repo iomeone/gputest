@@ -11,9 +11,11 @@ import LRU from 'lru-cache';
 export const loadModule = (
   code: string,
   name: string,
+  entry?: string,
   compressed: boolean = false,
 ): ParsedModule => {
   if (code == null) throw new Error(`Shader code ${name} undefined`);
+  if (typeof code !== 'string') throw new Error(`Shader code ${name} is not a string`);
   let tree = parseShader(code);
 
   const parser = makeASTParser(code, tree);
@@ -22,24 +24,25 @@ export const loadModule = (
 
   if (compressed) tree = decompressAST(compressAST(tree));
 
-  return {name, code, tree, table, shake};
+  return {name, code, tree, table, shake, entry};
 }
 
 // Use cache to load modules
 export const loadModuleWithCache = (
   code: string,
   name: string,
-  cache: ParsedModuleCache | null = null,
+  entry?: string,
+  cache: ParsedModuleCache | null = DEFAULT_CACHE,
 ): ParsedModule => {
-  if (!cache) return loadModule(code, name, true);
+  if (!cache) return loadModule(code, name, entry, true);
 
   const hash = getProgramHash(code);
-  const entry = cache.get(hash);
-  if (entry) return entry;
+  const cached = cache.get(hash);
+  if (cached) return {...cached, entry};
   
-  const module = loadModule(code, name, true);
+  const module = loadModule(code, name, entry, true);
   cache.set(hash, module);
-  return module;
+  return {...module, entry};
 }
 
 // Parse GLSL using lezer grammar
@@ -59,7 +62,9 @@ export const makeLanguage = (compile: any, cache?: any) => ({
 });
 
 // LRU cache for parsed shader code
-export const makeModuleCache = (options: Record<string, any> = {}) => new LRU({
+export const makeModuleCache = (options: Record<string, any> = {}) => new LRU<string, ParsedModule>({
   max: 100,
   ...options,
 });
+
+export const DEFAULT_CACHE = makeModuleCache();

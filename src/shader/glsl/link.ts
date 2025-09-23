@@ -7,6 +7,7 @@ import { getGraphOrder } from '../util/tree';
 import { GLSL_VERSION } from '../constants';
 import * as T from '../grammar/glsl.terms';
 import mapValues from 'lodash/mapValues';
+import { DEFAULT_CACHE } from './shader';
 
 const TIMED = false;
 
@@ -20,18 +21,23 @@ const timed = (name: string, f: any) => {
   }
 }
 
+// Override GLSL version/prefix
+let PREAMBLE = `#version ${GLSL_VERSION}`;
+export const setPreamble = (s: string): string => PREAMBLE = s;
+export const getPreamble = (): string => PREAMBLE;
+
 // Link a source module with static modules and dynamic links.
 export const linkCode = timed('linkCode', (
   code: string,
   libraries: Record<string, string> = {},
-  linkDefs: Record<string, string> = {},
+  links: Record<string, string> = {},
   defines: Record<string, ShaderDefine> = {},
-  cache: ParsedModuleCache | null = null,
+  cache: ParsedModuleCache | null = DEFAULT_CACHE,
 ) => {
-  const main = loadModuleWithCache(code, 'main', cache);
+  const main = loadModuleWithCache(code, 'main', undefined, cache);
 
-  const parsedLibraries = mapValues(libraries, (code: string, name: string) => loadModuleWithCache(code, name, cache));
-  const parsedLinkDefs = mapValues(linkDefs, (code: string, name: string) => loadModuleWithCache(code, name.split(':')[0], cache));
+  const parsedLibraries = mapValues(libraries, (code: string, name: string) => loadModuleWithCache(code, name, undefined, cache));
+  const parsedLinkDefs = mapValues(links, (code: string, name: string) => loadModuleWithCache(code, name.split(':')[0], undefined, cache));
 
   return linkModule(main, parsedLibraries, parsedLinkDefs, defines);
 });
@@ -62,35 +68,51 @@ export const linkModule = timed('linkModule', (
   linkDefs: Record<string, ParsedModule> = {},
   defines: Record<string, ShaderDefine> = {},
 ) => {
+  if (typeof main === 'string') throw new Error("Module is a string instead of an object");
+
   const [links, aliases] = parseLinkAliases(linkDefs);
   const {modules, exported} = loadModules(main, libraries, links);
 
-  const program = [`#version ${GLSL_VERSION}`, defineConstants(defines)] as string[];
+  const program = [getPreamble(), defineConstants(defines)] as string[];
 
+  const hashes = new Map<string, string>();
   const namespaces = new Map<string, string>();
   const used = new Set<string>();
   const exists = new Set<string>();
   const visible = new Set<string>();
+  const fixed = new Map<string, string>();
 
   for (const module of modules) {
     const {name, code, tree, table, shake} = module;
-    const {globals, symbols, visibles, externals, modules} = table;
+    const {hash, globals, symbols, visibles, externals, modules} = table;
+
+    // Multiple links into same module with different name
+    if (hashes.has(hash)) {
+      namespaces.set(name, hashes.get(hash)!);
+      continue;
+    }
 
     // Namespace all non-global symbols other than main
     const rename = new Map<string, string>();
     if (module !== main) {
       const namespace = reserveNamespace(module, namespaces, used);
+      hashes.set(hash, namespace);
+
       for (const name of symbols) rename.set(name, namespace + name);
       for (const name of globals) rename.set(name, name);
-      for (const name of visibles) visible.add(namespace + name);
+
+      for (const name of visibles) visible.add(rename.get(name)!);
       for (const name of rename.values()) exists.add(name);
+
+      for (const name of globals) fixed.set(namespace + name, name);
     }
 
     // Replace imported symbol names with target
     for (const {name: module, imports} of modules) {
       const namespace = namespaces.get(module);
       for (const {name, imported} of imports) {
-        const imp = namespace + imported;
+        let imp = namespace + imported;
+        if (fixed.has(imp)) imp = fixed.get(imp)!;
         if (!exists.has(imp)) console.warn(`Import ${name} from '${module}' does not exist`);
         else if (!visible.has(imp)) console.warn(`Import ${name} from '${module}' is private`);
         rename.set(name, imp);
@@ -105,14 +127,15 @@ export const linkModule = timed('linkModule', (
 
       if ((namespace === undefined) && (flags & RF.Optional)) continue;
 
-      const imp = namespace + resolved;
+      let imp = namespace + resolved;
+      if (fixed.has(imp)) imp = fixed.get(imp)!;
       if (!exists.has(imp)) console.warn(`Link ${name}:${resolved} does not exist`);
       else if (!visible.has(imp)) console.warn(`Link ${name}:${resolved} is private`);
       rename.set(name, imp);
     }
 
     // Shake tree ops based on which symbols were exported
-    const keep = exported.get(name);
+    const keep = exported.get(hash);
     const ops = shake && keep ? resolveShakeOps(shake, keep) : null;
 
     // Rename symbols using AST while tree shaking
@@ -159,8 +182,9 @@ export const loadModules = timed('loadModules', (
       seen.add(name);
       deps.push(name);
 
-      let list = exported.get(name);
-      if (!list) exported.set(name, list = new Set());
+      const {table: {hash}} = module;
+      let list = exported.get(hash);
+      if (!list) exported.set(hash, list = new Set());
       imports.forEach(i => list!.add(i.name));
     }
 
@@ -177,8 +201,9 @@ export const loadModules = timed('loadModules', (
       seen.add(name);
       deps.push(name);
 
-      let list = exported.get(name);
-      if (!list) exported.set(name, list = new Set());
+      const {table: {hash}} = module;
+      let list = exported.get(hash);
+      if (!list) exported.set(hash, list = new Set());
       list.add(module.entry ?? name);
     }
 

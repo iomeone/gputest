@@ -20,6 +20,29 @@ exports[`link lifts recursive dependency 1`] = `
     "
 `;
 
+exports[`link links a global across a module 1`] = `
+"#version 450
+
+
+    void _gx_getPosition() {};
+    
+    vec4 _gx_getColor(int index) {
+      _gx_getPosition();
+      return vec4(1.0, 0.0, 1.0, 1.0);
+    }
+    
+
+    vec4 getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
+    
+
+    vec4 getPosition(int index);
+    vec4 _gx_getColor(int index);
+    void main() {
+      vec4 a = getPosition(0);
+    }
+    "
+`;
+
 exports[`link links an external 1`] = `
 "#version 450
 
@@ -118,4 +141,58 @@ _3w_SolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {
     uv
   );
 }"
+`;
+
+exports[`link links same module twice with different entry point 1`] = `
+"#version 450
+
+
+    float _om_used() { return 1.0; }
+    
+    vec4 _om_getPosition(int index) { return vec4(_om_used(), 0.0, 1.0, 1.0); }
+
+    vec4 _om_getColor(int index) { return vec4(_om_used(), 0.0, 1.0, 1.0); }
+    
+
+    vec4 _om_getPosition(int index);
+    vec4 _om_getColor(int index);
+    void main() {
+      vec4 a = _om_getPosition(0);
+      vec4 b = _om_getColor(0);
+    }
+    "
+`;
+
+exports[`link tree shakes around identifiers 1`] = `
+"#version 450
+
+
+    float _7p_used() { return 1.0; }
+
+    vec4 _7p_getPosition(int index) { return vec4(_7p_used(), 0.0, 1.0, 1.0); }
+
+    
+
+    vec4 _7p_getPosition(int index);
+    void main() {
+      vec4 a = _7p_getPosition(0);
+    }
+    "
+`;
+
+exports[`link tree shakes around identifiers 2`] = `
+"#version 450
+
+
+    float _7p_used() { return 1.0; }
+
+    vec4 _7p_getPosition(int index) { return vec4(_7p_used(), 0.0, 1.0, 1.0); }
+
+    
+
+    vec4 _7p_getPosition(int index);
+    void main() {
+      vec4 a = _7p_getPosition(0);
+    }
+    "
 `;

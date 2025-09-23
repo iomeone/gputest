@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getGraphOrder gets graph order 1`] = `
+Array [
+  Array [
+    "a",
+    0,
+  ],
+  Array [
+    "b",
+    1,
+  ],
+  Array [
+    "c",
+    1,
+  ],
+  Array [
+    "d",
+    2,
+  ],
+  Array [
+    "e",
+    3,
+  ],
+]
+`;

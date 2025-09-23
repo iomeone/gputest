@@ -1,4 +1,4 @@
-import { GLSLModules } from '../../glsl';
+import { GLSLModules } from '@use-gpu/glsl';
 import { parseShader } from './shader';
 import { makeASTParser, rewriteUsingAST, resolveShakeOps, compressAST, decompressAST } from './ast';
 import { formatAST, hasErrorNode } from '../util/tree';
@@ -49,6 +49,19 @@ describe('ast', () => {
     expect(declarations).toMatchSnapshot();
   });
   
+  it('gets test declarations with qualified declaration', () => {
+    const code = `
+      layout(location = 0) in wat;
+      layout(location = 1) in vec2;
+    `;
+
+    const tree = parseShader(code);
+    const {getDeclarations} = makeGuardedParser(code, tree);
+
+    const declarations = getDeclarations();
+    expect(declarations).toMatchSnapshot();
+  });
+
   it('gets quad vertex imports', () => {
     const code = GLSLModules['instance/vertex/quad'];
 

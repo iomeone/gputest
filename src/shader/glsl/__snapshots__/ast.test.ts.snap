@@ -757,6 +757,35 @@ Array [
 ]
 `;
 
+exports[`ast gets test declarations with qualified declaration 1`] = `
+Array [
+  Object {
+    "at": 7,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [
+      "unknown",
+    ],
+  },
+  Object {
+    "at": 42,
+    "flags": 0,
+    "identifiers": Array [],
+    "symbols": Array [],
+    "variable": Object {
+      "locals": Array [],
+      "type": Object {
+        "name": "vec2",
+        "qualifiers": Array [
+          "layout(location = 1)",
+          "in",
+        ],
+      },
+    },
+  },
+]
+`;
+
 exports[`ast gets use types symbol table 1`] = `
 Object {
   "declarations": Array [
