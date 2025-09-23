@@ -1,18 +1,18 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, StorageSource, UniformType, Emitter } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, StorageSource, UniformType, Emitter } from '@use-gpu/core/types';
 import { RenderContext, FrameContext } from '../providers';
-import { yeet, useMemo, useSomeMemo, useNoMemo, useContext, useSomeContext, useNoContext } from '../../live';
+import { yeet, useMemo, useSomeMemo, useNoMemo, useContext, useSomeContext, useNoContext } from '@use-gpu/live';
 import {
   makeDataEmitter, makeDataArray, copyNumberArray, emitIntoNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '../../core';
+} from '@use-gpu/core';
 
 export type RawDataProps = {
   length?: number,
   data?: number[] | TypedArray,
   expr?: (emit: Emitter, i: number, n: number) => void,
   format?: string,
-  live: boolean,
+  live?: boolean,
 
   render?: (source: StorageSource) => LiveElement<any>,
 };

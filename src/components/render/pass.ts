@@ -1,15 +1,12 @@
-import { LiveComponent, LiveFiber, LiveElement } from '../../live/types';
-import { UseRenderingContextGPU, RenderPassMode } from '../../core/types';
-import { use, yeet, memo, multiGatherReduce, useContext, useMemo } from '../../live';
+import { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live/types';
+import { UseRenderingContextGPU, RenderPassMode } from '@use-gpu/core/types';
+import { use, yeet, memo, multiGatherReduce, useContext, useMemo } from '@use-gpu/live';
 import { RenderContext } from '../providers/render-provider';
 import { PickingContext } from './picking';
 
 export type PassProps = {
-  device: GPUDevice,
-  colorAttachments: GPURenderPassColorAttachment[],
-  depthStencilAttachment: GPURenderPassDepthStencilAttachment,
-  children: LiveElement<any>,
-  render: () => LiveElement<any>,
+  children?: LiveElement<any>,
+  render?: () => LiveElement<any>,
 };
 
 export type RenderToPass = (passEncoder: GPURenderPassEncoder) => void;

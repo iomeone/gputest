@@ -1,12 +1,13 @@
 // Live function
-export type LiveFunction<F extends Function> = (fiber: LiveFiber<F>) => F;
-
-// Mounting key
-export type Key = string | number;
+export type ArrowFunction = <T>(...args: T[]) => any;
+export type LiveFunction<F extends Function> = (fiber: LiveFiber<any>) => F;
 
 // Component with single props object
 export type Component<P> = (props: P) => LiveElement<any>;
-export type LiveComponent<P> = LiveFunction<Component<P>>;
+export type LiveComponent<P> = (fiber: LiveFiber<any>) => Component<P>;
+
+// Mounting key
+export type Key = string | number;
 
 // State hook callbacks
 export type Initial<T> = (() => T) | T;
@@ -52,7 +53,7 @@ export type LiveFiber<F extends Function> = FunctionCall<F> & {
   memo: number,
 
   // Last rendered return type
-  type: Function,
+  type: ArrowFunction,
 
   // Mounting state
   seen?: Set<Key>,
@@ -95,13 +96,13 @@ export type GroupedFibers = {
 };
 
 // Deferred function calls
-export type FunctionCall<F extends Function = Function> = {
+export type FunctionCall<F extends Function = ArrowFunction> = {
   f: LiveFunction<F>,
   args?: any[],
   arg?: any
 };
 
-export type DeferredCall<F extends Function = Function> = FunctionCall<F> & {
+export type DeferredCall<F extends Function = ArrowFunction> = FunctionCall<F> & {
   key?: Key,
 };
 

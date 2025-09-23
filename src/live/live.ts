@@ -1,7 +1,7 @@
 import {
   Initial, Setter, Reducer, Key, Task,
   LiveFunction, LiveFiber, LiveContext, LiveElement,
-  FunctionCall, DeferredCall, HostInterface,
+  FunctionCall, DeferredCall, HostInterface, ArrowFunction,
 } from './types';
 
 import { comparePaths } from './util';
@@ -80,8 +80,8 @@ export const use = <F extends Function>(
   f: LiveFunction<F>,
   key?: Key,
 ) => (
-  ...args: any[]
-): DeferredCall<F> => ({f, args, key});
+  ...args: F extends ArrowFunction ? Parameters<F> : any[]
+): DeferredCall<F> => ({f, args, key}) as any;
 
 // Detach the rendering of a subtree
 export const detach = <F extends Function>(

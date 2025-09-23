@@ -1,8 +1,8 @@
-import { LiveComponent } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../core/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import { use, useMemo, useOne, useResource, useState } from '../live';
+import { use, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   AutoCanvas,
@@ -13,17 +13,14 @@ import {
   Cursor,
   RenderToTexture,
   ViewProvider,
-} from '../components';
-import { Cube } from './cube';
+} from '@use-gpu/components';
 import { Mesh } from './mesh';
 import { Quads } from './quads';
 import { Lines } from './lines';
 import { makeMesh } from './meshes/mesh';
-import { UseInspect } from '../inspect';
+import { UseInspect } from '@use-gpu/inspect';
 
-// import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '../glsl/mask/point.glsl';
-
-import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '../gen-glsl/mask/point';
+import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '@use-gpu/glsl/mask/point.glsl';
 
 export type AppProps = {
   device: GPUDevice,
@@ -41,13 +38,13 @@ const data = seq(10).map((i) => ({
 const quadFields = [
   ['vec4', 'position'],
   ['float', 'size'],
-];
+] as DataField[];
 
 const lineFields = [
   ['vec4', [0, 0, 0, 1, 1.5, 0, 0, 1, 1.5, 1.5, 0, 1, 1.5, 1.5, 1.5, 1, 1.5, -1.5, 1.5, 1]],
   ['int', [1, 3, 3, 3, 2]],
   ['float', [10, 10, 10, 10, 10]],
-];
+] as DataField[];
 
 let t = 0;
 let lj = 0;
@@ -74,7 +71,7 @@ export const App: LiveComponent<AppProps> = (fiber) => (props) => {
         use(RawData)({
           format: 'vec4',
           length: 100,
-          expr: (emit, i) => {
+          expr: (emit: Emitter, i: number) => {
             t = t + 1/6000;
             const s = ((i*i + i) % 13133.371) % 1000;
             emit(
@@ -117,7 +114,6 @@ export const App: LiveComponent<AppProps> = (fiber) => (props) => {
             hovered ? use(Cursor)({ cursor: 'pointer' }) : null,
           ],
         }),
-        //use(Cube)(),
       ]
     }),
   ];
@@ -138,7 +134,7 @@ export const App: LiveComponent<AppProps> = (fiber) => (props) => {
                   render: (radius: number, phi: number, theta: number) =>
 
                     use(OrbitCamera)({
-                      canvas, radius, phi, theta,
+                      radius, phi, theta,
                       render: (defs: UniformAttribute[], uniforms: ViewUniforms) =>
 
                         use(ViewProvider)({

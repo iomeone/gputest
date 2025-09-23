@@ -1,17 +1,17 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '../../core/types';
-import { RenderContext, FrameContext } from '../../components';
-import { yeet, useMemo, useSomeMemo, useNoMemo, useContext, useSomeContext, useNoContext } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '@use-gpu/core/types';
+import { RenderContext, FrameContext } from '@use-gpu/components';
+import { yeet, useMemo, useSomeMemo, useNoMemo, useContext, useSomeContext, useNoContext } from '@use-gpu/live';
 import {
   makeDataArray, copyDataArray, copyNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '../../core';
+} from '@use-gpu/core';
 
 export type DataProps = {
   length?: number,
   data?: any[],
   fields?: DataField[],
-  live: boolean,
+  live?: boolean,
 
   render?: (sources: StorageSource[]) => LiveElement<any>,
 };
