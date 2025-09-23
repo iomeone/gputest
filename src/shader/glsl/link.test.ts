@@ -1,4 +1,4 @@
-import { GLSLModules } from '@use-gpu/glsl';
+import { GLSLModules } from '../../glsl';
 import { linkCode } from './link';
 import { addASTSerializer } from '../test/snapshot';
 

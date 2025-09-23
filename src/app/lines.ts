@@ -1,13 +1,13 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../live/types';
 import {
     TypedArray, ViewUniforms,
     UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
     VertexData, StorageSource, RenderPassMode,
-} from '@use-gpu/core/types';
-import { ViewContext, PickingContext, useNoPicking, Virtual } from '@use-gpu/components';
-import { use, yeet, memo, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+} from '../core/types';
+import { ViewContext, PickingContext, useNoPicking, Virtual } from '../components';
+import { use, yeet, memo, useMemo, useOne, useState, useResource } from '../live';
 
-import { getLineVertex } from '@use-gpu/glsl/instance/vertex/line.glsl';
+import { getLineVertex } from '../gen-glsl/instance/vertex/line';
 
 export type LinesProps = {
   position?: number[] | TypedArray,

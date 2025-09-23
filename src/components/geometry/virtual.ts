@@ -1,23 +1,23 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 import {
   TypedArray, ViewUniforms, UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '@use-gpu/core/types';
-import { ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
-import { ViewContext, RenderContext, PickingContext, useNoPicking } from '@use-gpu/components';
-import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+} from '../../core/types';
+import { ParsedBundle, ParsedModule } from '../../shader/types';
+import { ViewContext, RenderContext, PickingContext, useNoPicking } from '../../components';
+import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '../../live';
 import {
   makeMultiUniforms, makeUniformsWithStorage,
   makeRenderPipeline,
   extractDataBindings, extractCodeBindings,
   uploadBuffer,
-} from '@use-gpu/core';
+} from '../../core';
 import { useBoundStorage } from '../hooks/useBoundStorage';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import instanceDrawVirtual from '@use-gpu/glsl/instance/draw/virtual.glsl';
-import instanceDrawWireframeStrip from '@use-gpu/glsl/instance/draw/wireframe-strip.glsl';
-import instanceFragmentSolid from '@use-gpu/glsl/instance/fragment/solid.glsl';
+import instanceDrawVirtual from '../../gen-glsl/instance/draw/virtual';
+import instanceDrawWireframeStrip from '../../gen-glsl/instance/draw/wireframe-strip';
+import instanceFragmentSolid from '../../gen-glsl/instance/fragment/solid';
 
 export type VirtualProps = {
   topology: GPUPrimitiveTopology,
