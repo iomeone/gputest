@@ -1,4 +1,4 @@
-import { loadModule, compressAST } from '@use-gpu/shader/glsl';
+import { loadModule, compressAST } from '../shader/glsl';
 
 const stringify = (s: any) => JSON.stringify(s);
 
@@ -7,7 +7,7 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
   const makeImport = (symbol: string, from: string) => esModule
     ? `import ${symbol} from ${stringify(from)};`
     : `const ${symbol} = require(${stringify(from)});`;
-  const preamble = makeImport('{decompressAST}', '@use-gpu/shader/glsl');
+  const preamble = makeImport('{decompressAST}', '../shader/glsl');
 
   // Parse module source code
   const name = resourcePath.split('/').pop()!.replace(/\.glsl$/, '');
