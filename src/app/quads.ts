@@ -1,14 +1,15 @@
-import { LiveComponent } from '../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '../core/types';
-import { ViewContext, PickingContext, useNoPicking, Virtual } from '../components';
-import { use, memo, useMemo, useOne, useState, useResource } from '../live';
+} from '@use-gpu/core/types';
+import { ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
 
-// import { getQuadVertex } from '../glsl/instance/vertex/quad.glsl';
-import { getQuadVertex } from '../gen-glsl/instance/vertex/quad';
+import { ViewContext, PickingContext, useNoPicking, Virtual } from '@use-gpu/components';
+import { use, memo, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+
+import { getQuadVertex } from '@use-gpu/glsl/instance/vertex/quad.glsl';
 
 export type QuadsProps = {
   position?: number[] | TypedArray,
@@ -20,6 +21,7 @@ export type QuadsProps = {
   colors?: StorageSource,
 
   getMask?: ParsedBundle | ParsedModule,
+  getTexture?: ParsedBundle | ParsedModule,
   
   mode?: RenderPassMode | string,
   id?: number,

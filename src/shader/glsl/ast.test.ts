@@ -1,6 +1,7 @@
-import { GLSLModules } from '../../glsl';
-import { parseGLSL } from './shader';
-import { makeASTParser, formatAST, rewriteUsingAST, resolveShakeOps, compressAST, decompressAST, hasErrorNode } from './ast';
+import { GLSLModules } from '@use-gpu/glsl';
+import { parseShader } from './shader';
+import { makeASTParser, rewriteUsingAST, resolveShakeOps, compressAST, decompressAST } from './ast';
+import { formatAST, hasErrorNode } from '../util/tree';
 import { addASTSerializer } from '../test/snapshot';
 
 addASTSerializer(expect);
@@ -24,7 +25,7 @@ describe('ast', () => {
       int a = 3, b = 1, c, d;
     `;
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getDeclarations} = makeGuardedParser(code, tree);
 
     const declarations = getDeclarations();
@@ -41,7 +42,7 @@ describe('ast', () => {
       };
     `;
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getDeclarations} = makeGuardedParser(code, tree);
 
     const declarations = getDeclarations();
@@ -51,7 +52,7 @@ describe('ast', () => {
   it('gets quad vertex imports', () => {
     const code = GLSLModules['instance/vertex/quad'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getImports} = makeGuardedParser(code, tree);
 
     const imports = getImports();
@@ -61,7 +62,7 @@ describe('ast', () => {
   it('gets quad vertex functions', () => {
     const code = GLSLModules['instance/vertex/quad'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getFunctions} = makeGuardedParser(code, tree);
 
     const functions = getFunctions();
@@ -71,7 +72,7 @@ describe('ast', () => {
   it('gets quad vertex declarations', () => {
     const code = GLSLModules['instance/vertex/quad'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getDeclarations} = makeGuardedParser(code, tree);
 
     const declarations = getDeclarations();
@@ -81,7 +82,7 @@ describe('ast', () => {
   it('gets solid fragment declarations', () => {
     const code = GLSLModules['instance/fragment/solid'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getDeclarations} = makeGuardedParser(code, tree);
 
     const declarations = getDeclarations();
@@ -91,7 +92,7 @@ describe('ast', () => {
   it('gets use view declarations', () => {
     const code = GLSLModules['use/view'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getDeclarations} = makeGuardedParser(code, tree);
 
     const declarations = getDeclarations();
@@ -101,7 +102,7 @@ describe('ast', () => {
   it('gets quad vertex symbol table', () => {
     const code = GLSLModules['instance/vertex/quad'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getSymbolTable} = makeGuardedParser(code, tree);
 
     const symbolTable = getSymbolTable();
@@ -111,7 +112,7 @@ describe('ast', () => {
   it('gets geometry quad symbol table', () => {
     const code = GLSLModules['geometry/quad'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getSymbolTable} = makeGuardedParser(code, tree);
 
     const symbolTable = getSymbolTable();
@@ -121,7 +122,7 @@ describe('ast', () => {
   it('gets use view symbol table', () => {
     const code = GLSLModules['use/view'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getSymbolTable} = makeGuardedParser(code, tree);
 
     const symbolTable = getSymbolTable();
@@ -131,7 +132,7 @@ describe('ast', () => {
   it('gets use types symbol table', () => {
     const code = GLSLModules['use/types'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const {getSymbolTable} = makeGuardedParser(code, tree);
 
     const symbolTable = getSymbolTable();
@@ -147,7 +148,7 @@ describe('ast', () => {
     }
     `;
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const rename = new Map<string, string>();
     rename.set('main', 'entryPoint');
     rename.set('getValue', '_zz_getValue');
@@ -167,7 +168,7 @@ describe('ast', () => {
     }
     `;
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const rename = new Map<string, string>();
     rename.set('main', 'entryPoint');
     rename.set('getValue', '_zz_getValue');
@@ -211,7 +212,7 @@ void main() {
 }
     `;
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const rename = new Map<string, string>();
     rename.set('main', 'entryPoint');
     rename.set('getVertex', '_zz_getVertex');
@@ -241,7 +242,7 @@ float getB() {
 }
     `;
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
 
     expect(table).toBeTruthy();
@@ -256,7 +257,7 @@ float getB() {
   it('shakes use/view AST', () => {
     const code = GLSLModules['use/view'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
 
     expect(table).toBeTruthy();
@@ -271,7 +272,7 @@ float getB() {
   it('shakes use/view AST using compressed AST', () => {
     const code = GLSLModules['use/view'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
 
     expect(table).toBeTruthy();
@@ -293,7 +294,7 @@ float getB() {
   it('gets shake information for instance/vertex/quad AST', () => {
     const code = GLSLModules['instance/vertex/quad'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
     expect(table).toMatchSnapshot();
     
@@ -302,7 +303,7 @@ float getB() {
   it('gets shake information for geometry/quad AST', () => {
     const code = GLSLModules['geometry/quad'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
     expect(table).toMatchSnapshot();
     
@@ -311,7 +312,7 @@ float getB() {
   it('gets shake information for use/types AST', () => {
     const code = GLSLModules['use/types'];
 
-    const tree = parseGLSL(code);
+    const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
     expect(table).toMatchSnapshot();
     

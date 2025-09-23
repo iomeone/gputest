@@ -1,7 +1,7 @@
 import {
   UniformType, UniformAttribute, UniformAttributeValue,
   ResolvedDataBindings, ResolvedCodeBindings,
-  ShaderModuleDescriptor, ShaderLib, StorageSource,
+  ShaderModuleDescriptor, StorageSource,
 } from './types';
 import { makeStorageAccessors, checkStorageTypes, checkStorageType } from './storage';
 import { makeUniformBlockAccessor } from './uniform';
@@ -77,10 +77,10 @@ export const makeBoundStorageAccessors = <T>(
 export const makeBoundShader = <A, B>(
   vertexShader: A,
   fragmentShader: A,
-  links: ShaderLib<A>,
+  links: Record<string, A>,
   defines: Record<string, any>,
   compile: (code: B, stage: string) => any,
-  link: (shader: A, links: ShaderLib<A>, defines: Record<string, any>, cache: any) => B,
+  link: (shader: A, links: Record<string, A>, defines: Record<string, any>, cache: any) => B,
   cache: any,
   base: number = 0,
 ): [ShaderModuleDescriptor, ShaderModuleDescriptor, B, B] => {

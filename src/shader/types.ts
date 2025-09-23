@@ -111,3 +111,4 @@ export type StructRef = {
 }
 
 export type ShaderDefine = string | number | boolean | null | undefined;
+export type ShaderCompiler = (code: string, stage: string) => Uint8Array | Uint32Array;

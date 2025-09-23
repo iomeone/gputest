@@ -1,15 +1,10 @@
-import { ShaderLanguages, ShaderCompiler } from '../../core/types';
-import { ParsedModule, ParsedModuleCache, ShaderDefine } from '../types';
+import { ParsedModule, ParsedModuleCache, ShaderDefine, ShaderCompiler } from '../types';
 import { Tree, SyntaxNode } from '@lezer/common';
 
-import { makeASTParser, compressAST, decompressAST, getProgramHash } from './ast';
+import { makeASTParser, compressAST, decompressAST } from './ast';
+import { getProgramHash } from '../util/hash';
 import { parser } from '../grammar/glsl';
 import LRU from 'lru-cache';
-
-type LangDef = {
-  glsl?: ShaderCompiler,
-  cache?: any,
-};
 
 // Parse a code module into its in-memory representation
 // (AST + symbol table)
@@ -19,7 +14,7 @@ export const loadModule = (
   compressed: boolean = false,
 ): ParsedModule => {
   if (code == null) throw new Error(`Shader code ${name} undefined`);
-  let tree = parseGLSL(code);
+  let tree = parseShader(code);
 
   const parser = makeASTParser(code, tree);
   const table = parser.getSymbolTable();
@@ -48,28 +43,20 @@ export const loadModuleWithCache = (
 }
 
 // Parse GLSL using lezer grammar
-export const parseGLSL = (code: string): Tree => parser.parse(code);
+export const parseShader = (code: string): Tree => parser.parse(code);
 
 // Make GLSL definitions
-export const defineGLSL = (defs: Record<string, ShaderDefine>): string => {
+export const defineConstants = (defs: Record<string, ShaderDefine>): string => {
   const out = [];
   for (let k in defs) if (defs[k] !== false && defs[k] !== null) out.push(`#define ${k} ${defs[k]}`);
   return out.join("\n");
 }
 
 // Make shader languages interface
-export const makeShaderLanguages = (langs: LangDef[]): ShaderLanguages => {
-  const out = {} as any;
-  for (const {glsl} of langs) {
-    if (glsl) {
-      out.glsl = {
-        compile: (code: string, stage: any) => (glsl as any)(code, stage, false),
-        cache: makeModuleCache(),
-      };
-    }
-  }
-  return out;
-};
+export const makeLanguage = (compile: any, cache?: any) => ({
+  compile: (code: string, stage: any) => (compile as any)(code, stage, false),
+  cache: cache ?? makeModuleCache(),
+});
 
 // LRU cache for parsed shader code
 export const makeModuleCache = (options: Record<string, any> = {}) => new LRU({

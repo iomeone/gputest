@@ -1,7 +1,9 @@
 import { Tree } from '@lezer/common';
 import { ShaderDefine, SymbolTable, ParsedModule, ParsedModuleCache, ParsedBundle, RefFlags as RF } from '../types';
-import { parseGLSL, defineGLSL, loadModule, loadModuleWithCache } from './shader';
+import { parseShader, defineConstants, loadModule, loadModuleWithCache } from './shader';
 import { rewriteUsingAST, resolveShakeOps } from './ast';
+import { parseBundle } from '../util/bundle';
+import { getGraphOrder } from '../util/tree';
 import { GLSL_VERSION } from '../constants';
 import * as T from '../grammar/glsl.terms';
 import mapValues from 'lodash/mapValues';
@@ -63,7 +65,7 @@ export const linkModule = timed('linkModule', (
   const [links, aliases] = parseLinkAliases(linkDefs);
   const {modules, exported} = loadModules(main, libraries, links);
 
-  const program = [`#version ${GLSL_VERSION}`, defineGLSL(defines)] as string[];
+  const program = [`#version ${GLSL_VERSION}`, defineConstants(defines)] as string[];
 
   const namespaces = new Map<string, string>();
   const used = new Set<string>();
@@ -194,27 +196,6 @@ export const loadModules = timed('loadModules', (
   };
 });
 
-// Get minimum depth for each module, so its symbols resolve correctly
-export const getGraphOrder = (
-  graph: Map<string, string[]>,
-  name: string,
-  depth: number = 0,
-) => {
-  const queue = [{name, depth: 0}];
-  const depths = new Map<string, number>(); 
-  while (queue.length) {
-    const {name, depth} = queue.shift()!;
-    depths.set(name, depth);
-
-    const module = graph.get(name);
-    if (!module) continue;
-
-    const deps = module.map(name => ({name, depth: depth + 1}));
-    queue.push(...deps);
-  }
-  return depths;
-}
-
 // Parse run-time specified keys `from:to` into a map of aliases
 export const parseLinkAliases = (
   links: Record<string, ParsedModule>,
@@ -235,22 +216,6 @@ export const parseLinkAliases = (
   return [out, aliases];
 }
 
-// Parse bundle of imports into main + libs
-export const parseBundle = (bundle: ParsedBundle): [ParsedModule, Record<string, ParsedModule>] => {
-  const out = {} as Record<string, ParsedModule>;
-  const traverse = (libs: Record<string, ParsedBundle>) => {
-    for (let k in libs) {
-      const bundle = libs[k];
-      out[k] = bundle.module;
-      traverse(bundle.libs);
-    }
-  };
-  traverse(bundle.libs);
-
-  let {module, entry} = bundle;
-  if (bundle.entry != null) module = {...module, entry};
-  return [module, out];
-}
 
 // Reserve a unique namespace based on truncated shader hash
 export const reserveNamespace = (

@@ -19,79 +19,23 @@ import {
   RefFlags as RF,
 } from '../types';
 import * as T from '../grammar/glsl.terms';
-import { GLSL_NATIVE_TYPES, HASH_KEY } from '../constants';
-import { toMurmur53 } from './hash';
+import { GLSL_NATIVE_TYPES } from '../constants';
+import { parseString } from '../util/bundle';
+import { getProgramHash } from '../util/hash';
+import { getChildNodes, hasErrorNode, formatAST, formatASTNode } from '../util/tree';
 import uniq from 'lodash/uniq';
 
 const NO_DEPS = [] as string[];
 const IGNORE_IDENTIFIERS = new Set(['location', 'set', 'binding']);
-
-const parseString = (s: string) => s.slice(1, -1).replace(/\\(.)/g, '$1');
 
 const isSpace = (s: string, i: number) => {
   const c = s.charCodeAt(i);
   return c === 32 || c === 13 || c === 10 || c === 9;
 };
 
-export const getProgramHash = (code: string) => {
-  const uint = toMurmur53(code, HASH_KEY);
-  return uint.toString(36).slice(-10);
-}
-
-export const hasErrorNode = (tree: Tree) => {
-  const cursor = tree.cursor();
-  do {
-    const {type, from, to} = cursor;
-    if (type.isError) return cursor.node;
-  } while (cursor.next());
-  return false;
-}
-
-export const getChildNodes = (node: SyntaxNode) => {
-  const out = [] as SyntaxNode[];
-  let n = node.firstChild;
-  while (n) {
-    out.push(n);
-    n = n.nextSibling;
-  }
-  return out;
-}
-
-export const formatASTNode = (node: SyntaxNode) => {
-  const {type} = node;
-  let child = node.firstChild;
-  let inner = [] as string[];
-  while (child) {
-    inner.push(formatASTNode(child));
-    child = child.nextSibling;
-  }
-  const space = inner.length ? ' ' : '';
-  return `(${type.name}${space}${inner.join(" ")})`;
-}
-
-export const formatAST = (node: SyntaxNode, program?: string, depth: number = 0) => {
-  const {type, from ,to} = node;
-  const prefix = '  '.repeat(depth);
-
-  let child = node.firstChild;
-  
-  const text = program != null ? program.slice(node.from, node.to).replace(/\n/g, "⮐ ") : '';
-  let out = [] as string[];
-  
-  let line = `${prefix}${type.name}`;
-  const n = line.length;
-  line += ' '.repeat(60 - n);
-  line += text;
-  out.push(line);
-
-  while (child) {
-    out.push(formatAST(child, program, depth + 1));
-    child = child.nextSibling;
-  }
-  return out.join("\n");
-}
-
+// Parse AST for given code string
 export const makeASTParser = (code: string, tree: Tree) => {
+
   const throwError = (t: string, n?: SyntaxNode) => {
     if (!n) throw new Error(`Missing node`);
     console.log(formatAST(tree.topNode, code));
@@ -480,7 +424,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
   };
 }
 
-// Resolve shake ops to 
+// Resolve shake ops to preserve all code needed for the given exports
 export const resolveShakeOps = (
   shake: ShakeOp[],
   exports: Set<string>, 
@@ -489,8 +433,8 @@ export const resolveShakeOps = (
 // Rewrite code using tree, renaming the given identifiers.
 // Removes:
 // - #version
-// - #pragma import
-// - #pragma export
+// - #pragma import | export | optional | global
+// - white-space after shake point
 export const rewriteUsingAST = (
   code: string,
   tree: Tree,
@@ -568,7 +512,7 @@ export const rewriteUsingAST = (
   return out;
 }
 
-// Compress an AST to only the info needed to do symbol replacement
+// Compress an AST to only the info needed to do symbol replacement and tree shaking
 export const compressAST = (tree: Tree): CompressedNode[] => {
   const out = [] as any[]
 
@@ -611,7 +555,7 @@ export const compressAST = (tree: Tree): CompressedNode[] => {
   return out;
 }
 
-// Decompress a compressed AST by returning a pseudo-tree-cursor.
+// Decompress a compressed AST on the fly by returning a pseudo-tree-cursor.
 export const decompressAST = (nodes: CompressedNode[]) => {
   const tree = {
     cursor: () => {

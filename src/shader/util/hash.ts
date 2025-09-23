@@ -1,3 +1,5 @@
+import { HASH_KEY } from '../constants';
+
 export const C1 = 0xcc9e2d51;
 export const C2 = 0x1b873593;
 export const C3 = 0xe6546b64;
@@ -52,4 +54,9 @@ export const toMurmur53 = (s: string, seed: number = 0) => {
   b ^= b >>> 16;
 
   return a + ((b & 0x1fffff) * 0x100000000);
+}
+
+export const getProgramHash = (code: string) => {
+  const uint = toMurmur53(code, HASH_KEY);
+  return uint.toString(36).slice(-10);
 }

@@ -1,24 +1,23 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData, StorageSource, RenderPassMode, ShaderLib,
-} from '../../core/types';
-import { ParsedBundle, ParsedModule } from '../../shader/types';
-import { ViewContext, RenderContext, PickingContext, useNoPicking } from '../../components';
-import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '../../live';
+  VertexData, StorageSource, RenderPassMode,
+} from '@use-gpu/core/types';
+import { ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
+import { ViewContext, RenderContext, PickingContext, useNoPicking } from '@use-gpu/components';
+import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '@use-gpu/live';
 import {
   makeMultiUniforms, makeUniformsWithStorage,
   makeRenderPipeline,
   extractDataBindings, extractCodeBindings,
   uploadBuffer,
-} from '../../core';
+} from '@use-gpu/core';
 import { useBoundStorage } from '../hooks/useBoundStorage';
 import { useBoundShader } from '../hooks/useBoundShader';
-import { loadModule } from '../../shader';
 
-import instanceDrawVirtual from '../../glsl/instance/draw/virtual.glsl';
-import instanceDrawWireframeStrip from '../../glsl/instance/draw/wireframe-strip.glsl';
-import instanceFragmentSolid from '../../glsl/instance/fragment/solid.glsl';
+import instanceDrawVirtual from '@use-gpu/glsl/instance/draw/virtual.glsl';
+import instanceDrawWireframeStrip from '@use-gpu/glsl/instance/draw/wireframe-strip.glsl';
+import instanceFragmentSolid from '@use-gpu/glsl/instance/fragment/solid.glsl';
 
 export type VirtualProps = {
   topology: GPUPrimitiveTopology,
@@ -31,7 +30,7 @@ export type VirtualProps = {
   attrBindings: any[],
   lambdaBindings: any[],
 
-  links: ShaderLib<ParsedBundle | ParsedModule>
+  links: Record<string, ParsedBundle | ParsedModule>
   defines: Record<string, any>,
   deps: any[],
 

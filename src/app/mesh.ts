@@ -1,17 +1,17 @@
-import { LiveComponent } from '../live/types';
-import { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode } from '../core/types';
-import { ViewContext, RenderContext, PickingContext, useNoPicking } from '../components';
-import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '../live';
+import { LiveComponent } from '@use-gpu/live/types';
+import { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode } from '@use-gpu/core/types';
+import { ViewContext, RenderContext, PickingContext, useNoPicking } from '@use-gpu/components';
+import { yeet, memo, useContext, useSomeContext, useNoContext, useMemo, useOne, useState, useResource } from '@use-gpu/live';
 import {
   makeVertexBuffers, makeMultiUniforms, 
   makeRenderPipeline, makeShaderModule,
   uploadBuffer,
-} from '../core';
-import { linkBundle as link } from '../shader';
+} from '@use-gpu/core';
+import { linkBundle } from '@use-gpu/shader/glsl';
 
-import instanceDrawMesh from '../glsl/instance/draw/mesh.glsl';
-import instanceFragmentMesh from '../glsl/instance/fragment/mesh.glsl';
-import instanceFragmentSolid from '../glsl/instance/fragment/solid.glsl';
+import instanceDrawMesh from '@use-gpu/glsl/instance/draw/mesh.glsl';
+import instanceFragmentMesh from '@use-gpu/glsl/instance/fragment/mesh.glsl';
+import instanceFragmentSolid from '@use-gpu/glsl/instance/fragment/solid.glsl';
 //import instanceVirtualWireframeMesh from 'instance/virtual/wireframe-mesh.glsl';
 
 export const MESH_UNIFORM_DEFS: UniformAttribute[] = [
@@ -76,8 +76,8 @@ export const Mesh: LiveComponent<MeshProps> = memo((fiber) => (props) => {
 
   // Rendering pipeline
   const pipeline = useMemo(() => {
-    const vertexLinked = link(vertexShader, {}, defines, cache);
-    const fragmentLinked = link(fragmentShader, {}, defines, cache);
+    const vertexLinked = linkBundle(vertexShader, {}, defines, cache);
+    const fragmentLinked = linkBundle(fragmentShader, {}, defines, cache);
 
     const vertex = makeShaderModule(compile(vertexLinked, 'vertex'));
     const fragment = makeShaderModule(compile(fragmentLinked, 'fragment'));

@@ -1,6 +1,6 @@
 import { Tree } from '@lezer/common';
 import { parser } from './glsl';
-import { formatAST, formatASTNode } from '../transform/ast';
+import { formatAST, formatASTNode } from '../util/tree';
 import { addASTSerializer } from '../test/snapshot';
 
 addASTSerializer(expect);

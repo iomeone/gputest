@@ -1,5 +1,7 @@
 import { vec2, vec3, mat4 } from 'gl-matrix';
 
+export type Dictionary<T = string> = Record<string, T>;
+
 export type DeepPartial<T> = T | {
   [P in keyof T]?: DeepPartial<T[P]>;
 };
@@ -162,12 +164,10 @@ export type StorageSource = {
 // Shaders
 export type ShaderStage = string;
 export type ShaderCompiler = (code: string, stage: ShaderStage) => TypedArray;
-export type ShaderLib<T = string> = Record<string, T>;
 
 export type ShaderLanguages = {[k: string]: ShaderLanguageAPI};
 export type ShaderLanguageAPI = {
   compile: ShaderCompiler,
-  modules: Record<string, string>,
   cache: any,
 };
 
