@@ -1,180 +1,228 @@
-import * as fs from 'fs';
+// 文件：src/glsl-loader/build.ts
+//
+// 运行：
+//   npx ts-node src/glsl-loader/build.ts
+//
+// 功能：
+//   1) 扫描 src/glsl/**/*.glsl
+//   2) 复制 .glsl 到 build/packages/glsl/ 同路径
+//   3) 解析每个 .glsl，收集 table.visibles（使用本地 src/shader）
+//   4) 生成 src/index.ts（GLSLModules 静态映射）
+//   5) 生成 src/glsl.d.ts（为每个 .glsl 写出具名导出的声明）
+//   6) 更新 package.json.exports（逐文件映射）
+//
+// 日志：详细打印每一步与关键路径，方便排查。
+
 import * as path from 'path';
+import * as fs from 'fs';
 import glob from 'glob';
 
-// 使用仓库内实现（保持相对路径）
-import { loadModule as parseGLSL } from '../src/shader/transform/shader';
-import { compressAST } from '../src/shader/transform/ast';
+// ✔ 用本地 shader 工程（不依赖外部包）
+// import { makeShaderLanguages } from '../shader';
 
-const CJS = process.argv.includes('--cjs');
-const VERBOSE = true;
+import { loadModule  as parseGLSL} from '../shader/glsl';
 
-// 路径
-const ROOT       = process.cwd();
-const SRC        = path.join(ROOT, 'src');
-const SRC_GLSL   = path.join(SRC, 'glsl');
-const OUT_DIR    = path.join(SRC, 'gen-glsl');
-const SHADER_AST = path.join(SRC, 'shader', 'transform', 'ast'); // 运行时引入 decompressAST 的目录
+// ------------------------- 配置 & 日志 -------------------------
+const VERBOSE = true; // 如需安静模式可改为 false
 
-// -------- 工具 --------
-const toPosix = (p: string) => p.replace(/\\/g, '/');
-const relToRoot = (p: string) => toPosix(path.relative(ROOT, p) || '.');
-const ensureDir = (d: string) => { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); };
-const writeFile = (f: string, s: string) => { ensureDir(path.dirname(f)); fs.writeFileSync(f, s); };
-const stringify = (s: any) => JSON.stringify(s); // 跟作者保持一致
-
-// 生成 “相对（无扩展名、且以 ./ 或 ../ 开头）” 的导入 specifier
-const relNoExt = (fromFile: string, toFile: string) => {
-  let rel = toPosix(path.relative(path.dirname(fromFile), toFile));
-  rel = rel.replace(/\.ts$/, '');
-  if (!rel.startsWith('.')) rel = './' + rel;
-  return rel;
-};
-
-const banner = (t: string) => {
+function log(...args: any[]) {
+  if (VERBOSE) console.log(...args);
+}
+function banner(title: string) {
   const line = '-'.repeat(64);
-  console.log(`\n${line}\n[glsl-codegen] ${t}\n${line}`);
+  console.log(`\n${line}\n[build] ${title}\n${line}`);
+}
+function relTo(p: string, base: string) {
+  return path.relative(base, p) || '.';
+}
+
+
+function errMsg(e: unknown): string {
+  return (e as any)?.message || String(e);
+}
+const t0 = Date.now();
+
+// ------------------------- 路径基准 -------------------------
+const ROOT     = path.resolve(__dirname, '..', '..');   // 项目根（src/ 的上一级）
+const SRC_DIR  = path.join(ROOT, 'src');
+const GLSL_DIR = path.join(SRC_DIR, 'glsl');
+
+const PACKAGE_JSON = path.join(ROOT, 'package.json');
+
+const INDEX_TS     = path.join(GLSL_DIR, 'index.ts');
+const TYPEDEF_TS   = path.join(GLSL_DIR, 'glsl.d.ts');
+
+const TARGET       = path.join(ROOT, 'build', 'packages', 'glsl');
+
+banner('环境与路径');
+console.log('[build] node version :', process.version);
+console.log('[build] process.cwd  :', process.cwd());
+console.log('[build] __dirname    :', __dirname);
+console.log('[build] ROOT         :', ROOT);
+console.log('[build] SRC_DIR      :', SRC_DIR);
+console.log('[build] GLSL_DIR     :', GLSL_DIR);
+console.log('[build] PACKAGE_JSON :', PACKAGE_JSON);
+console.log('[build] INDEX_TS     :', INDEX_TS);
+console.log('[build] TYPEDEF_TS   :', TYPEDEF_TS);
+console.log('[build] TARGET       :', TARGET);
+
+// ------------------------- 小工具 -------------------------
+const toPosix = (p: string) => p.replace(/\\/g, '/');
+const serialize = (v: any) => JSON.stringify(v, null, 2);
+
+function ensureDirSync(dir: string) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+function copyToTarget(absFile: string) {
+  const relFromSrc = path.relative(SRC_DIR, absFile); // e.g. glsl/instance/vertex/line.glsl
+  const dest = path.join(TARGET, relFromSrc);
+  ensureDirSync(path.dirname(dest));
+  fs.copyFileSync(absFile, dest);
+  log(`  [copy] ${relTo(absFile, ROOT)}  →  ${relTo(dest, ROOT)}`);
+}
+
+// ------------------------- 扫描 GLSL -------------------------
+banner('扫描 GLSL 文件');
+const fileRels = glob.sync('glsl/**/*.glsl', { cwd: SRC_DIR, nodir: true }); // 相对 src
+if (!fileRels.length) {
+  console.warn('[build] 未在 src/glsl 下找到任何 .glsl 文件，退出。');
+  process.exit(0);
+}
+const filesAbs = fileRels.map(rel => path.join(SRC_DIR, rel));
+filesAbs.forEach(f => log('  [found]', relTo(f, ROOT)));
+console.log(`[build] 共计 ${filesAbs.length} 个 .glsl 文件。`);
+
+// ------------------------- 解析器（本地 shader） -------------------------
+// banner('初始化本地 shader 解析器');
+// const languages: any = makeShaderLanguages();
+// const loadModule: any = languages?.loadModule;
+// if (typeof loadModule !== 'function') {
+//   console.error('[build] 错误：makeShaderLanguages() 未提供 loadModule。请检查 src/shader 导出。');
+//   process.exit(1);
+// }
+// console.log('[build] 解析器就绪：loadModule(function)');
+
+
+
+banner('加载本地 shader 解析器');
+if (typeof parseGLSL  !== 'function') {
+  console.error('[build] 错误：未找到 loadModule（../shader/transform/shader）。');
+  process.exit(1);
+}
+console.log('[build] 解析器就绪：loadModule(function) 来自 ../shader/transform/shader');
+
+
+
+// ------------------------- 复制 + 解析 -------------------------
+banner('复制到 build/ 并解析可见符号');
+const names: string[] = [];   // 形如 "glsl/…/line"
+const modules: any[] = [];    // loadModule 的返回（含 table.visibles）
+let totalVisibles = 0;
+
+for (const abs of filesAbs) {
+  copyToTarget(abs);
+
+  const relFromSrc = toPosix(path.relative(SRC_DIR, abs)); // glsl/.../x.glsl
+  const name = relFromSrc.replace(/\.glsl$/, '');          // glsl/.../x
+  names.push(name);
+
+  const code = fs.readFileSync(abs, 'utf8');
+  try {
+    const mod = parseGLSL(code, 'code');
+    const visibles: string[] = mod?.table?.visibles ?? [];
+    modules.push(mod);
+    totalVisibles += visibles.length;
+    log(`  [parse] ${relFromSrc}  (visibles: ${visibles.length})`);
+  } catch (e) {
+    console.warn(`  [parse:ERR] ${relFromSrc}  -> ${errMsg(e)}`);
+    modules.push({ table: { visibles: [] } });
+  }
+}
+console.log(`[build] 解析完成：${filesAbs.length} 文件，总计 ${totalVisibles} 个可见符号。`);
+
+// ------------------------- 更新 package.json exports -------------------------
+banner('更新 package.json exports');
+try {
+  const pkgRaw = fs.readFileSync(PACKAGE_JSON, 'utf8');
+  const pkg = JSON.parse(pkgRaw);
+
+  pkg.exports = { '.': './src/index.ts' };
+
+  let added = 0;
+  for (const rel of fileRels) {
+    const key = './' + toPosix(rel);       // "./glsl/.../x.glsl"
+    const val = './src/' + toPosix(rel);   // "./src/glsl/.../x.glsl"
+    pkg.exports[key] = val;
+    added++;
+    log(`  [export] ${key} -> ${val}`);
+  }
+  fs.writeFileSync(PACKAGE_JSON, JSON.stringify(pkg, null, 2));
+  console.log(`[build] exports 更新完成：新增 ${added} 条项；"." -> "./src/index.ts"。`);
+} catch (e) {
+  console.warn('[build] 写入 package.json 失败：', errMsg(e));
+}
+
+// ------------------------- 生成 src/index.ts -------------------------
+banner('生成 src/index.ts (GLSLModules)');
+const staticMap: Record<string, string> = {};
+filesAbs.forEach((abs, i) => {
+  const code = fs.readFileSync(abs, 'utf8');
+  staticMap[names[i]] = code;
+  staticMap['@use-gpu/glsl/' + names[i]] = code; // 兼容旧键
+});
+const indexTs = `// File generated by build.ts (local). Do not edit directly.
+// This file provides all the shader code in a statically importable form, used for testing.
+export const GLSLModules = ${serialize(staticMap)};
+export default GLSLModules;
+`;
+fs.writeFileSync(INDEX_TS, indexTs);
+console.log('[build] 写入：', relTo(INDEX_TS, ROOT), `（${Buffer.byteLength(indexTs, 'utf8')} bytes）`);
+
+// ------------------------- 生成 src/glsl.d.ts -------------------------
+banner('生成 src/glsl.d.ts（具名导出声明）');
+/**
+ * 注意：d.ts 内的类型导入路径以生成文件（src/glsl.d.ts）为基准。
+ * 因此使用 "./shader/types"（指向 src/shader/types.ts 的声明）。
+ */
+const makeTSModule = (relFromSrc: string, symbols: string[]) => {
+  // "./src/glsl/…/x.glsl" 在我们的收集里是 "glsl/…/x.glsl"
+  const pattern = '@use-gpu/' + toPosix(relFromSrc); // "@use-gpu/glsl/.../x.glsl"
+  return `declare module ${JSON.stringify(pattern)} {
+  type ParsedBundle = import('./shader/types').ParsedBundle;
+  const __module: ParsedBundle;
+  ${symbols.map(s => `export const ${s}: ParsedBundle;`).join('\n  ')}
+  export default __module;
+}
+`;
 };
 
-(function main() {
-  banner('环境与路径');
-  console.log('[glsl-codegen] node     :', process.version);
-  console.log('[glsl-codegen] cwd      :', ROOT);
-  console.log('[glsl-codegen] SRC_GLSL :', relToRoot(SRC_GLSL));
-  console.log('[glsl-codegen] OUT_DIR  :', relToRoot(OUT_DIR));
-  console.log('[glsl-codegen] SHADER_AST (runtime import):', relToRoot(SHADER_AST));
-  console.log('[glsl-codegen] Output   :', CJS ? 'CommonJS' : 'ESM');
+const typedefHeader = `// File generated by build.ts (local). Do not edit directly.
+declare module '@use-gpu/glsl' {
+  export const GLSLModules: Record<string, string>;
+  export default GLSLModules;
+}
+`;
 
-  banner('扫描 .glsl');
-  const relFiles = glob.sync('**/*.glsl', { cwd: SRC_GLSL, nodir: true }).sort();
-  if (!relFiles.length) {
-    console.log('[glsl-codegen] 未找到任何 glsl，退出。');
-    process.exit(0);
-  }
-  relFiles.forEach(f => VERBOSE && console.log('  [found]', toPosix(path.join('src/glsl', f))));
-  console.log(`[glsl-codegen] 共 ${relFiles.length} 个 glsl 文件`);
+let typedefBody = '';
+for (let i = 0; i < filesAbs.length; i++) {
+  const relFromSrc = toPosix(path.relative(SRC_DIR, filesAbs[i])); // "glsl/.../x.glsl"
+  const visibles: string[] = modules[i]?.table?.visibles ?? [];
+  typedefBody += makeTSModule(relFromSrc, visibles);
+  log(`  [typedef] ${relFromSrc} (exports: ${visibles.length})`);
+}
 
-  let totalVisibles = 0;
-  let totalDeps = 0;
-  let emitted = 0;
-  const t0 = Date.now();
+const typedefFull = typedefHeader + typedefBody;
+fs.writeFileSync(TYPEDEF_TS, typedefFull);
+console.log('[build] 写入：', relTo(TYPEDEF_TS, ROOT), `（${Buffer.byteLength(typedefFull, 'utf8')} bytes）`);
 
-  banner('生成模块到 src/gen-glsl');
-  for (const rel of relFiles) {
-    const abs = path.join(SRC_GLSL, rel);
-    const srcCode = fs.readFileSync(abs, 'utf8');
+// 同步一份 d.ts 到 build/packages/glsl
+copyToTarget(TYPEDEF_TS);
 
-    // 解析
-    const mod = parseGLSL(srcCode, 'code');
-    const { code, table, tree, shake } = mod;
-
-    // 名称：使用源文件名（与作者一致）
-    const fileBase = path.basename(rel).replace(/\.glsl$/, ''); // e.g. "point"
-    const logical       = toPosix(path.join('glsl', rel)).replace(/\.glsl$/, '');
-    const withoutPrefix = logical.replace(/^glsl\//, ''); // 输出相对 OUT_DIR 的路径
-    const outFile       = path.join(OUT_DIR, withoutPrefix + '.ts');
-
-    // 依赖：全部改成相对导入，指向生成物 src/gen-glsl/**.ts
-    const imports: string[] = [];
-    const markerEntries: string[] = [];
-    let depCount = 0;
-
-    for (const m of (table.modules as Array<{ name: string }>)) {
-      const depName = m.name.replace(/^@?use-gpu\/glsl\//, '').replace(/^glsl\//, '');
-      const depOutFile = path.join(OUT_DIR, depName + '.ts');
-      const spec = relNoExt(outFile, depOutFile);
-      const ident = `m${depCount++}`;
-
-      if (CJS) {
-        imports.push(`const ${ident} = require(${stringify(spec)});`);
-      } else {
-        imports.push(`import * as ${ident} from ${stringify(spec)};`);
-      }
-      markerEntries.push(`${stringify(m.name)}: ${ident}`);
-
-      if (VERBOSE) {
-        console.log(`  [dep] ${toPosix(rel)} -> ${relToRoot(outFile)} imports ${depName}.ts as ${spec}`);
-      }
-    }
-
-    // 运行时引入 decompressAST（相对路径；确保以 ./ 或 ../ 开头）
-    let relToAst = toPosix(path.relative(path.dirname(outFile), SHADER_AST)) || '.';
-    if (!relToAst.startsWith('.')) relToAst = './' + relToAst;
-    const preamble = CJS
-      ? `const { decompressAST } = require(${stringify(relToAst)});`
-      : `import { decompressAST } from ${stringify(relToAst)};`;
-
-    // data 块（严格对齐作者：tree = decompressAST(compressAST(tree))）
-    const def = `const data = {
-  "name": ${stringify(fileBase)},
-  "code": ${stringify(code)},
-  "table": ${stringify(table)},
-  "shake": ${stringify(shake)},
-  "tree": decompressAST(${stringify(compressAST(tree))}),
-};`;
-
-    const libs = `const libs = {${markerEntries.join(', ')}};`;
-    const getSymbol = `const getSymbol = (entry?: string) => ({module: data, libs, entry});`;
-
-    // 导出（严格对齐作者逻辑）
-    let exportDefault: string;
-    let exportSymbols: string[];
-
-    if (!CJS) {
-      exportDefault = 'export default getSymbol();';
-      exportSymbols = (table.visibles as string[]).map(
-        (s) => `export const ${s} = getSymbol(${stringify(s)});`
-      );
-    } else {
-      // 为了让 TS 编译阶段不抱怨 CJS 符号，这里先声明 exports（生成物是 .ts）
-      const declareExports = `declare var exports: any;`;
-      const lines: string[] = [];
-      lines.push(declareExports);
-      exportSymbols = (table.visibles as string[]).map(
-        (s) => `exports.${s} = getSymbol(${stringify(s)});`
-      );
-      exportDefault = [
-        `const __default = getSymbol();`,
-        `Object.defineProperty(exports, '__esModule', { value: true });`,
-        `Object.assign(exports, __default);`,
-        `exports.default = __default;`,
-      ].join('\n');
-      // 把声明插到 preamble 最前（见下面 body 组装）
-      // 我们会在最终 body 写入时把 declare 注入
-      // 为简单起见，直接把它与 preamble拼在一起：
-      // 但保持清晰，这里先合并：
-      const preWithDeclare = declareExports + '\n' + preamble;
-      // 覆盖 preamble
-      preamble = preWithDeclare;
-    }
-
-    // 组装输出（与作者保持顺序，并追加标记）
-    const body = [
-      preamble,
-      ...imports,
-      def,
-      libs,
-      getSymbol,
-      exportDefault,
-      ...exportSymbols,
-      '/* __GLSL_LOADER_GENERATED */',
-      ''
-    ].join('\n');
-
-    writeFile(outFile, body);
-
-    const visibles = (table.visibles as string[]).length;
-    totalVisibles += visibles;
-    totalDeps += depCount;
-    emitted++;
-
-    console.log(`  [emit] ${relToRoot(outFile)}  (visibles:${visibles}, deps:${depCount}, bytes:${Buffer.byteLength(body, 'utf8')})`);
-  }
-
-  const ms = Date.now() - t0;
-  banner('完成');
-  console.log('[glsl-codegen] 输出文件数 :', emitted);
-  console.log('[glsl-codegen] 具名导出数 :', totalVisibles);
-  console.log('[glsl-codegen] 依赖总数   :', totalDeps);
-  console.log('[glsl-codegen] 总用时     :', ms, 'ms');
-})();
+// ------------------------- 汇总 -------------------------
+const ms = Date.now() - t0;
+banner('完成');
+console.log(`[build] 文件总数     : ${filesAbs.length}`);
+console.log(`[build] 可见符号总数 : ${totalVisibles}`);
+console.log(`[build] 写入 index.ts: ${relTo(INDEX_TS, ROOT)}`);
+console.log(`[build] 写入 glsl.d.ts: ${relTo(TYPEDEF_TS, ROOT)}（并已复制到 ${relTo(TARGET, ROOT)}）`);
+console.log(`[build] 总用时        : ${ms} ms\n`);
