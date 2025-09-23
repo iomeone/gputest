@@ -26,8 +26,8 @@ import * as path from 'path';
 import glob from 'glob';
 
 // 使用仓库内的解析/压缩实现
-import { loadModule as parseGLSL } from '../shader/transform/shader';
-import { compressAST } from '../shader/transform/ast';
+import { loadModule as parseGLSL } from '../shader/glsl';
+import { compressAST } from '../shader/glsl';
 
 const CJS = process.argv.includes('--cjs');
 const VERBOSE = true;
@@ -89,7 +89,7 @@ const relNoExt = (fromFile: string, toFile: string) => {
 
     const mod = parseGLSL(srcCode, 'code'); // 解析
     const { code, table, tree, shake } = mod;
-
+    console.log("-------------------------------------code\n", code);
     // 逻辑名：glsl/…/name
     const logical       = toPosix(path.join('glsl', rel)).replace(/\.glsl$/, '');
     const withoutPrefix = logical.replace(/^glsl\//, ''); // 相对 OUT_DIR 的输出路径
@@ -103,6 +103,7 @@ const relNoExt = (fromFile: string, toFile: string) => {
     for (const m of (table.modules as Array<{ name: string }>)) {
       // 统一出 “生成物”的物理文件路径：src/gen-glsl/<dep>.ts
       const depName = m.name.replace(/^@?use-gpu\/glsl\//, '').replace(/^glsl\//, '');
+    //   console.log("depName", depName);
       const depOutFile = path.join(OUT_DIR, depName + '.ts');
       const fromSpec = relNoExt(outFile, depOutFile);
       const ident = `m${depCount++}`;

@@ -20,7 +20,7 @@ import glob from 'glob';
 // ✔ 用本地 shader 工程（不依赖外部包）
 // import { makeShaderLanguages } from '../shader';
 
-import { loadModule  as parseGLSL} from '../shader/transform/shader';
+import { loadModule  as parseGLSL} from '../shader/glsl';
 
 // ------------------------- 配置 & 日志 -------------------------
 const VERBOSE = true; // 如需安静模式可改为 false

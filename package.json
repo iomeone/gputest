@@ -79,29 +79,5 @@
     "setupFiles": [
       "./test/setup.ts"
     ]
-  },
-  "exports": {
-    ".": "./src/index.ts",
-    "./glsl/fragment/pbr.glsl": "./src/glsl/fragment/pbr.glsl",
-    "./glsl/geometry/line.glsl": "./src/glsl/geometry/line.glsl",
-    "./glsl/geometry/quad.glsl": "./src/glsl/geometry/quad.glsl",
-    "./glsl/geometry/strip.glsl": "./src/glsl/geometry/strip.glsl",
-    "./glsl/instance/draw/mesh.glsl": "./src/glsl/instance/draw/mesh.glsl",
-    "./glsl/instance/draw/virtual.glsl": "./src/glsl/instance/draw/virtual.glsl",
-    "./glsl/instance/draw/wireframe-strip.glsl": "./src/glsl/instance/draw/wireframe-strip.glsl",
-    "./glsl/instance/fragment/mesh.glsl": "./src/glsl/instance/fragment/mesh.glsl",
-    "./glsl/instance/fragment/solid.glsl": "./src/glsl/instance/fragment/solid.glsl",
-    "./glsl/instance/geometry/line.glsl": "./src/glsl/instance/geometry/line.glsl",
-    "./glsl/instance/geometry/quad.glsl": "./src/glsl/instance/geometry/quad.glsl",
-    "./glsl/instance/geometry/strip.glsl": "./src/glsl/instance/geometry/strip.glsl",
-    "./glsl/instance/vertex/line.glsl": "./src/glsl/instance/vertex/line.glsl",
-    "./glsl/instance/vertex/quad.glsl": "./src/glsl/instance/vertex/quad.glsl",
-    "./glsl/mask/point.glsl": "./src/glsl/mask/point.glsl",
-    "./glsl/use/light.glsl": "./src/glsl/use/light.glsl",
-    "./glsl/use/picking.glsl": "./src/glsl/use/picking.glsl",
-    "./glsl/use/types.glsl": "./src/glsl/use/types.glsl",
-    "./glsl/use/view.glsl": "./src/glsl/use/view.glsl",
-    "./glsl/vertex/line.glsl": "./src/glsl/vertex/line.glsl",
-    "./glsl/vertex/quad.glsl": "./src/glsl/vertex/quad.glsl"
   }
 }
