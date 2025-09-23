@@ -1,7 +1,7 @@
 import {decompressAST} from "../../shader/glsl";
-import m0 from "../../glsl/use/types.glsl";
-import m1 from "../../glsl/use/view.glsl";
-import m2 from "../../glsl/geometry/quad.glsl";
+import m0 from "../../gen-glsl/use/types";
+import m1 from "../../gen-glsl/use/view";
+import m2 from "../../gen-glsl/geometry/quad";
 const data = {
     "name": "quad",
     "code": "#pragma import {SolidVertex} from '../../glsl/use/types'\r\n#pragma import {viewUniforms, worldToClip} from '../../glsl/use/view'\r\n#pragma import {getQuadUV} from '../../glsl/geometry/quad'\r\n\r\nvec4 getPosition(int);\r\nvec4 getColor(int);\r\nfloat getSize(int);\r\n\r\n#pragma export\r\nSolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {\r\n  vec4 instancePosition = getPosition(instanceIndex);\r\n  vec4 instanceColor = getColor(instanceIndex);\r\n  float instanceSize = getSize(instanceIndex);\r\n\r\n  vec4 position = worldToClip(instancePosition);\r\n\r\n  vec2 uv = getQuadUV(vertexIndex);\r\n  vec2 xy = uv * 2.0 - 1.0;\r\n  \r\n  #ifdef HAS_EDGE_BLEED\r\n  xy = xy * (instanceSize + 0.5) / instanceSize;\r\n  uv = xy * .5 + .5;\r\n  #endif\r\n  \r\n  position.xy += xy * viewUniforms.viewResolution * (instanceSize * position.w);\r\n\r\n  return SolidVertex(\r\n    position,\r\n    instanceColor,\r\n    uv\r\n  );\r\n}",

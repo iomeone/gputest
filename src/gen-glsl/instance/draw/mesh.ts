@@ -1,6 +1,6 @@
 import {decompressAST} from "../../../shader/glsl";
 import m0 from "../../../gen-glsl/use/view";
-import m1 from "../../../gen-glsl/use/view";
+import m1 from "../../../gen-glsl/use/picking";
 import m2 from "../../../gen-glsl/use/light";
 const data = {
     "name": "mesh",

@@ -1,5 +1,5 @@
 import {decompressAST} from "../../../shader/glsl";
-import m0 from "../../../gen-glsl/use/view";
+import m0 from "../../../gen-glsl/use/picking";
 const data = {
     "name": "solid",
     "code": "#pragma import {getPickingColor} from '../../../glsl/use/picking';\r\n\r\n#ifdef HAS_MASK\r\n#pragma optional\r\nfloat getMask(vec2);\r\n#endif\r\n\r\n#ifdef HAS_TEXTURE\r\n#pragma optional\r\nvec4 getTexture(vec2);\r\n#endif\r\n\r\n#ifdef IS_PICKING\r\nlayout(location = 0) in flat uint fragIndex;\r\nlayout(location = 0) out uvec4 outColor;\r\n#else\r\nlayout(location = 0) in vec4 fragColor;\r\nlayout(location = 1) in vec2 fragUV;\r\n\r\nlayout(location = 0) out vec4 outColor;\r\n#endif\r\n\r\n#ifdef IS_PICKING\r\nvoid main() {\r\n  outColor = getPickingColor(fragIndex);\r\n}\r\n#else\r\nvoid main() {\r\n  outColor = fragColor;\r\n\r\n  #ifdef HAS_MASK\r\n  outColor *= getMask(fragUV);\r\n  #endif\r\n  #ifdef HAS_TEXTURE\r\n  outColor *= getTexture(fragUV);\r\n  #endif\r\n\r\n  if (outColor.a <= 0.0) discard;\r\n}\r\n#endif\r\n",

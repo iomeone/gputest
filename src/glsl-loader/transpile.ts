@@ -19,7 +19,7 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
 
 
 
-
+    var preamble : string = "";
 
 
 
@@ -79,7 +79,7 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
               log({ mode: 'fallback', resourcePath: rp, dir, target: TARGET_IN_SRC, decompressFrom });
             }
 
-            const preamble = makeImport('{decompressAST}', decompressFrom);
+             preamble = makeImport('{decompressAST}', decompressFrom);
 
       }
 
@@ -135,45 +135,67 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
 
 
 
-    // 依赖导入：把 table.modules 里的 name 映射到相对的 gen-glsl/<dep>
-    // 预期生成：import m0 from "../../../gen-glsl/use/view";
-    let i = 0;
-    const imports: string[] = [];
-    const markers: string[] = [];
-    // 小工具（若你前面没有的话可以解开下面一行）
-    // const toPosix = (p: string) => p.replace(/\\/g, '/');
-    const rp = toPosix(resourcePath);
-    // 取出“以 src 为根”的 glsl 子目录，如：glsl/geometry/strip.glsl → glsl/geometry
-    // 支持绝对路径 (.../src/glsl/...) 和相对路径 (glsl/...)
-    let relFromSrc = rp;
-    const m = rp.match(/\/src\/(glsl\/.+)$/);
-    if (m) relFromSrc = m[1];
-    const curDirRelSrc = relFromSrc.replace(/\/[^/]+\.glsl$/, ''); // e.g. glsl/geometry
-    const curOutDir    = curDirRelSrc.replace(/^glsl\//, 'gen-glsl/'); // e.g. gen-glsl/geometry
-    for (const { name } of table.modules) {
-      // 1) 规范依赖名为 glsl/<dep>
-      let depRelSrc = name.replace(/^@?use-gpu\/glsl\//, '');
-      if (!/^glsl\//.test(depRelSrc)) depRelSrc = `glsl/${depRelSrc}`;
-      // 2) 转成生成物路径：gen-glsl/<dep>
-      const depOut   = depRelSrc.replace(/^glsl\//, 'gen-glsl/'); // e.g. gen-glsl/use/view
-      // 3) 计算从当前输出目录到依赖输出文件的相对导入（无扩展名）
-      let spec = path.posix.relative(curOutDir, depOut);          // e.g. ../../use/view
-      if (!spec.startsWith('.')) spec = './' + spec;              // 保证以 ./ 或 ../ 开头
-      // 4) 产出 import 语句与 libs 标记
-      imports.push(makeImport(`m${i}`, spec));
-      markers.push(`${stringify(name)}: m${i}`);
-      // 5) 日志
-      console.log('[transpileGLSL:dep]', {
-        resourcePath: rp,
-        curOutDir,
-        depName: name,
-        mapped: depOut,
-        importSpec: spec,
-        slot: `m${i}`,
-      });
-      ++i;
-    }
+// —— 改成下面这一段（离线生成到 gen-glsl，强制相对路径、无 .glsl 后缀）——
+let i = 0;
+const imports: string[] = [];
+const markers: string[] = [];
 
+// 如果你上文没有这个工具函数，就解注释用它
+const toPosix = (p: string) => p.replace(/\\/g, '/');
+
+const rp = toPosix(resourcePath);
+
+// 计算“当前 .glsl 的目录（以 src 为根的相对路径）”，例如：
+//   resourcePath = "glsl/instance/vertex/quad.glsl"
+//   -> curDirRelSrc = "glsl/instance/vertex"
+let relFromSrc = rp;
+const mAbs = rp.match(/\/src\/(glsl\/.*)$/);
+if (mAbs) relFromSrc = mAbs[1];
+
+const curDirRelSrc = relFromSrc.replace(/\/[^/]+\.glsl$/, '');   // glsl/instance/vertex
+const curOutDir    = curDirRelSrc.replace(/^glsl\//, 'gen-glsl/'); // gen-glsl/instance/vertex
+
+// 为了生成你期望的 "../../../gen-glsl/..." 这种写法，
+// 我们构造“从当前生成目录退回到 src 根”的前缀，然后再下到 gen-glsl/目标。
+// depthSegs = "gen-glsl/instance/vertex" 的段数 = 3 -> "../../../"
+const depthSegs  = curOutDir.split('/').filter(Boolean).length;
+const rootPrefix = depthSegs ? '../'.repeat(depthSegs) : './';
+
+for (const { name } of table.modules as Array<{ name: string }>) {
+  // 1) 规范为以 glsl/ 为根的路径
+  let depNorm: string;
+  if (name.startsWith('@use-gpu/glsl/')) {
+    depNorm = 'glsl/' + name.slice('@use-gpu/glsl/'.length);
+  } else if (name.startsWith('glsl/')) {
+    depNorm = name;
+  } else {
+    // 可能是相对路径（如 "../geometry/quad" 或 "../../../glsl/geometry/quad"）
+    depNorm = path.posix.normalize(path.posix.join(curDirRelSrc, name));
+  }
+
+  // 2) 取出 glsl/ 下的相对部分，例如 "glsl/geometry/quad" -> "geometry/quad"
+  const depUnderGlsl = depNorm.replace(/^glsl\//, '');
+
+  // 3) 构造 import spec：退回到 src 根，再进入 gen-glsl/<dep>
+  //    例如：curOutDir="gen-glsl/instance/vertex" -> "../../../gen-glsl/geometry/quad"
+  const spec = `${rootPrefix}gen-glsl/${depUnderGlsl}`;
+
+  imports.push(makeImport(`m${i}`, spec));
+  markers.push(`${stringify(name)}: m${i}`);
+
+  console.log('[transpileGLSL:dep]', {
+    resourcePath: rp,
+    curOutDir,
+    depthSegs,
+    depName: name,
+    depNorm,
+    depUnderGlsl,
+    importSpec: spec,
+    slot: `m${i}`,
+  });
+
+  ++i;
+}
 
 
 
