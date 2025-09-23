@@ -1,9 +1,9 @@
-import { ResolvedDataBindings, ResolvedCodeBindings, ShaderLanguages } from '@use-gpu/core/types';
-import { ParsedModule, ParsedBundle, ShaderDefine } from '@use-gpu/shader/types';
+import { ResolvedDataBindings, ResolvedCodeBindings, ShaderLanguages } from '../../core/types';
+import { ParsedModule, ParsedBundle, ShaderDefine } from '../../shader/types';
 
-import { makeBoundShader } from '@use-gpu/core';
-import { linkBundle as link, loadModule } from '@use-gpu/shader/glsl';
-import { useFiber, useMemo } from '@use-gpu/live';
+import { makeBoundShader } from '../../core';
+import { linkBundle as link, loadModule } from '../../shader/glsl';
+import { useFiber, useMemo } from '../../live';
 import mapValues from 'lodash/mapValues';
 
 const NO_DEPS = [] as any[];

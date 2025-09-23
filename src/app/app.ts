@@ -1,8 +1,8 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
-import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
+import { LiveComponent } from '../live/types';
+import { CanvasRenderingContextGPU } from '../webgpu/types';
+import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../core/types';
 
-import { use, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { use, useMemo, useOne, useResource, useState } from '../live';
 
 import {
   AutoCanvas,
@@ -13,14 +13,14 @@ import {
   Cursor,
   RenderToTexture,
   ViewProvider,
-} from '@use-gpu/components';
+} from '../components';
 import { Mesh } from './mesh';
 import { Quads } from './quads';
 import { Lines } from './lines';
 import { makeMesh } from './meshes/mesh';
-import { UseInspect } from '@use-gpu/inspect';
+import { UseInspect } from '../inspect';
 
-import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '@use-gpu/glsl/mask/point.glsl';
+import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '../glsl/mask/point.glsl';
 
 export type AppProps = {
   device: GPUDevice,

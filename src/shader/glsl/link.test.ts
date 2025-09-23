@@ -1,4 +1,4 @@
-import { GLSLModules } from '@use-gpu/glsl';
+import { GLSLModules } from '../../glsl';
 import { linkCode, linkModule } from './link';
 import { loadModule } from './shader';
 import { formatAST } from '../util/tree'; 

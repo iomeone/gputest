@@ -1,15 +1,15 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '@use-gpu/core/types';
-import { ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
+} from '../core/types';
+import { ParsedBundle, ParsedModule } from '../shader/types';
 
-import { ViewContext, PickingContext, useNoPicking, Virtual } from '@use-gpu/components';
-import { use, memo, patch, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { ViewContext, PickingContext, useNoPicking, Virtual } from '../components';
+import { use, memo, patch, useMemo, useOne, useState, useResource } from '../live';
 
-import { getQuadVertex } from '@use-gpu/glsl/instance/vertex/quad.glsl';
+import { getQuadVertex } from '../glsl/instance/vertex/quad.glsl';
 
 export type QuadsProps = {
   position?: number[] | TypedArray,

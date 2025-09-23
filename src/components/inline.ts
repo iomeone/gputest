@@ -1,6 +1,6 @@
-import { LiveFiber, LiveFunction, LiveElement } from '@use-gpu/live/types';
+import { LiveFiber, LiveFunction, LiveElement } from '../live/types';
 
-import { enterFiber, exitFiber } from '@use-gpu/live'; 
+import { enterFiber, exitFiber } from '../live'; 
 
 export type RawFiber = (fiber: LiveFiber<any>) => LiveElement<any>;
 export type LiveReturner = (fiber: RawFiber) => LiveElement<any>;

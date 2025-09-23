@@ -54,12 +54,12 @@ function rewriteImports(generated: string, outFile: string): string {
   let relShader = toPosix(path.relative(path.dirname(outFile), SHADER_GLSL));
   if (!relShader.startsWith('.')) relShader = './' + relShader;
 
-  // ESM：import {decompressAST} from '@use-gpu/shader/glsl'
+  // ESM：import {decompressAST} from '../shader/glsl'
   generated = generated.replace(
     /from\s+['"]@use-gpu\/shader\/glsl['"]/g,
     `from "${relShader}"`
   );
-  // CJS：const {decompressAST} = require('@use-gpu/shader/glsl')
+  // CJS：const {decompressAST} = require('../shader/glsl')
   generated = generated.replace(
     /require\(\s*['"]@use-gpu\/shader\/glsl['"]\s*\)/g,
     `require("${relShader}")`
