@@ -1,5 +1,5 @@
 import {parseBundle} from "../../shader";
-import {decompressAST} from "../../shader/wlsl";
+import {decompressAST} from "../../shader/wgsl";
 const data = {
     "name": "strip",
     "code": "@export fn getStripIndex(vertex: i32) -> vec2<i32> {\r\n  var x = vertex >> 1u;\r\n  var y = vertex & 1;\r\n  return vec2<i32>(x, y);\r\n}\r\n\r\n@export fn getStripUV(vertex: i32) -> vec2<f32> {\r\n  return vec2<f32>(getStripIndex(vertex));\r\n}\r\n\r\n",

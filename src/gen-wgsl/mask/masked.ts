@@ -1,5 +1,5 @@
 import {parseBundle} from "../../shader";
-import {decompressAST} from "../../shader/wlsl";
+import {decompressAST} from "../../shader/wgsl";
 const data = {
     "name": "masked",
     "code": "@external fn getMask(uv: vec2<f32>) -> f32;\r\n@external fn getTexture(uv: vec2<f32>) -> vec4<f32>;\r\n\r\n@export fn getMaskedFragment(color: vec4<f32>, uv: vec2<f32>) -> vec4<f32> {\r\n  var c = color;\r\n  c = c * getMask(uv);\r\n  c = c * getTexture(uv);\r\n  return c;\r\n}\r\n",

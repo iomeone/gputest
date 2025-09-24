@@ -1,5 +1,5 @@
 import {parseBundle} from "../../shader";
-import {decompressAST} from "../../shader/wlsl";
+import {decompressAST} from "../../shader/wgsl";
 const data = {
     "name": "types",
     "code": "@export struct SolidVertex {\r\n  position: vec4<f32>;\r\n  color: vec4<f32>;\r\n  uv: vec2<f32>;\r\n};\r\n\r\n@export struct MeshVertex {\r\n  position: vec4<f32>;\r\n  normal: vec3<f32>;\r\n  color: vec4<f32>;\r\n  uv: vec2<f32>;\r\n};\r\n",

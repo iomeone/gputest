@@ -1,5 +1,5 @@
 import {parseBundle} from "../../../shader";
-import {decompressAST} from "../../../shader/wlsl";
+import {decompressAST} from "../../../shader/wgsl";
 const data = {
     "name": "solid",
     "code": "@external fn getFragment(color: vec4<f32>, uv: vec2<f32>) -> vec4<f32> {};\r\n\r\n@stage(fragment)\r\nfn main(\r\n  @location(0) fragColor: vec4<f32>,\r\n  @location(1) fragUV: vec2<f32>,  \r\n) -> @location(0) vec4<f32> {\r\n  var outColor = fragColor;\r\n\r\n  // TODO: awaiting compound support\r\n  //outColor.xyz *= outColor.a;\r\n  outColor = vec4<f32>(outColor.xyz * outColor.a, outColor.a);\r\n  outColor = getFragment(outColor, fragUV);\r\n\r\n  if (outColor.a <= 0.0) { discard; }\r\n  return outColor;\r\n}\r\n",

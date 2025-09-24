@@ -1,5 +1,5 @@
 import {parseBundle} from "../../shader";
-import {decompressAST} from "../../shader/wlsl";
+import {decompressAST} from "../../shader/wgsl";
 const data = {
     "name": "picking",
     "code": "struct PickingUniforms {\r\n  pickingId: u32;\r\n};\r\n\r\n@group(PICKING) @binding(PICKING) var<uniform> pickingUniforms: PickingUniforms;\r\n\r\n@export fn getPickingColor(fragIndex: u32) -> vec4<u32> {\r\n  var r = pickingUniforms.pickingId;\r\n  var g = fragIndex;\r\n  return vec4<u32>(r, g, 0u, 0u);\r\n}\r\n",

@@ -1,5 +1,5 @@
 import {parseBundle} from "../../../shader";
-import {decompressAST} from "../../../shader/wlsl";
+import {decompressAST} from "../../../shader/wgsl";
 import m0 from "../../../gen-wgsl/instance/ui/sdf";
 const data = {
     "name": "fragment",

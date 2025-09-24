@@ -1,5 +1,5 @@
 import {parseBundle} from "../../shader";
-import {decompressAST} from "../../shader/wlsl";
+import {decompressAST} from "../../shader/wgsl";
 const data = {
     "name": "light",
     "code": "struct LightUniforms {\r\n  lightPosition: vec4<f32>;\r\n  lightColor: vec4<f32>;\r\n};\r\n\r\n@export @group(LIGHT) @binding(LIGHT) var<uniform> lightUniforms: LightUniforms;\r\n",

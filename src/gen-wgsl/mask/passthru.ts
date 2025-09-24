@@ -1,5 +1,5 @@
 import {parseBundle} from "../../shader";
-import {decompressAST} from "../../shader/wlsl";
+import {decompressAST} from "../../shader/wgsl";
 const data = {
     "name": "passthru",
     "code": "@export fn getPassThruFragment(color: vec4<f32>, uv: vec2<f32>) -> vec4<f32> {\r\n  return color;\r\n}\r\n",

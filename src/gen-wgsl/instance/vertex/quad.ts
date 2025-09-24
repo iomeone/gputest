@@ -1,5 +1,5 @@
 import {parseBundle} from "../../../shader";
-import {decompressAST} from "../../../shader/wlsl";
+import {decompressAST} from "../../../shader/wgsl";
 import m0 from "../../../gen-wgsl/use/types";
 import m1 from "../../../gen-wgsl/use/view";
 import m2 from "../../../gen-wgsl/geometry/quad";

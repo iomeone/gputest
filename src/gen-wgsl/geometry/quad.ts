@@ -1,5 +1,5 @@
 import {parseBundle} from "../../shader";
-import {decompressAST} from "../../shader/wlsl";
+import {decompressAST} from "../../shader/wgsl";
 const data = {
     "name": "quad",
     "code": "let QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(\r\n  vec2<i32>(0, 0),\r\n  vec2<i32>(1, 0),\r\n  vec2<i32>(0, 1),\r\n  vec2<i32>(1, 1),\r\n);\r\n\r\n@export fn getQuadIndex(vertex: i32) -> vec2<i32> {\r\n  return QUAD[vertex];\r\n}\r\n\r\n@export fn getQuadUV(vertex: i32) -> vec2<f32> {\r\n  return vec2<f32>(getQuadIndex(vertex));\r\n}\r\n\r\n",
