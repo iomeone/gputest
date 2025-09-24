@@ -17,7 +17,7 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
   // const preamble = makeImport('{decompressAST}', '../shader/glsl');
 
 
-
+  const toPosix = (p: string) => p.replace(/\\/g, '/');
 
     var preamble: string = '';
 
@@ -136,8 +136,6 @@ let i = 0;
 const imports: string[] = [];
 const markers: string[] = [];
 
-// 如果你上文没有这个工具函数，就解注释用它
-const toPosix = (p: string) => p.replace(/\\/g, '/');
 
 const rp = toPosix(resourcePath);
 
