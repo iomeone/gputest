@@ -19,69 +19,65 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
 
 
 
-    var preamble : string = "";
+    var preamble: string = '';
 
 
 
 
 
 
-      {
-        const toPosix = (p: string) => p.replace(/\\/g, '/');
-            const log = (...args: any[]) => console.log('[transpileGLSL:preamble]', ...args);
+    {
+      const log = (...args: any[]) => console.log('[transpileGLSL:preamble]', ...args);
+      const rp  = toPosix(resourcePath); // e.g. "glsl/instance/vertex/quad.glsl"
 
-            const rpRaw = resourcePath;
-            const rp = toPosix(rpRaw);
-
-            // 目标始终是以 “src 为根”的 'shader/glsl'
-            const TARGET_IN_SRC = 'shader/glsl';
-
-            // 计算：以 “src 为根” 的当前 .glsl 所在目录（dirRelToSrc）
-            let dirRelToSrc: string | null = null;
-            let mode = '';
-
-            // 情形 A：resourcePath 是绝对路径并且包含 /src/glsl/...
-            let m = rp.match(/\/src\/glsl\/(.+)\/[^/]+\.glsl$/);
-            if (m) {
-              dirRelToSrc = `glsl/${m[1]}`;       // e.g. glsl/geometry
-              mode = 'abs->src/glsl/subdir';
-            } else {
-              // 情形 B：resourcePath 是相对路径 'glsl/xxx/.../file.glsl'
-              m = rp.match(/^glsl\/(.+)\/[^/]+\.glsl$/);
-              if (m) {
-                dirRelToSrc = `glsl/${m[1]}`;
-                mode = 'rel glsl/subdir';
-              } else {
-                // 情形 C：文件直接在 glsl 根目录
-                if (/\/src\/glsl\/[^/]+\.glsl$/.test(rp)) {
-                  dirRelToSrc = 'glsl';
-                  mode = 'abs->src/glsl/root';
-                } else if (/^glsl\/[^/]+\.glsl$/.test(rp)) {
-                  dirRelToSrc = 'glsl';
-                  mode = 'rel glsl/root';
-                }
-              }
-            }
-
-            let decompressFrom: string;
-            if (dirRelToSrc) {
-              // 用「以 src 为根」的相对目录，计算到 TARGET_IN_SRC 的相对导入
-              let rel = path.posix.relative(dirRelToSrc, TARGET_IN_SRC);  // e.g. ../../shader/glsl
-              if (!rel.startsWith('.')) rel = './' + rel;
-              decompressFrom = rel;
-              log({ mode, resourcePath: rp, dirRelToSrc, target: TARGET_IN_SRC, decompressFrom });
-            } else {
-              // 兜底：直接用当前文件所在目录去算（不依赖 src 结构）
-              const dir = rp.includes('/') ? rp.slice(0, rp.lastIndexOf('/')) : '.';
-              let rel = path.posix.relative(dir, TARGET_IN_SRC);
-              if (!rel.startsWith('.')) rel = './' + rel;
-              decompressFrom = rel;
-              log({ mode: 'fallback', resourcePath: rp, dir, target: TARGET_IN_SRC, decompressFrom });
-            }
-
-             preamble = makeImport('{decompressAST}', decompressFrom);
-
+      // 识别“以 src 为根”的 glsl 子目录
+      let dirRelToSrc: string | null = null;
+      let mode = '';
+      let m = rp.match(/\/src\/glsl\/(.+)\/[^/]+\.glsl$/);
+      if (m) {
+        dirRelToSrc = `glsl/${m[1]}`;       // e.g. "glsl/instance/vertex"
+        mode = 'abs->src/glsl/subdir';
+      } else {
+        m = rp.match(/^glsl\/(.+)\/[^/]+\.glsl$/);
+        if (m) {
+          dirRelToSrc = `glsl/${m[1]}`;
+          mode = 'rel glsl/subdir';
+        } else if (/\/src\/glsl\/[^/]+\.glsl$/.test(rp)) {
+          dirRelToSrc = 'glsl';
+          mode = 'abs->src/glsl/root';
+        } else if (/^glsl\/[^/]+\.glsl$/.test(rp)) {
+          dirRelToSrc = 'glsl';
+          mode = 'rel glsl/root';
+        }
       }
+
+      const TARGET_PARSE = 'shader';       // parseBundle 所在（src/shader/index.ts）
+      const TARGET_GLSL  = 'shader/glsl';  // decompressAST 所在（src/shader/glsl.ts）
+
+      const relFrom = (from: string, to: string) => {
+        let rel = path.posix.relative(from, to);
+        if (!rel.startsWith('.')) rel = './' + rel;
+        return rel;
+      };
+
+      let parseFrom: string, decompressFrom: string;
+
+      if (dirRelToSrc) {
+        parseFrom      = relFrom(dirRelToSrc, TARGET_PARSE);
+        decompressFrom = relFrom(dirRelToSrc, TARGET_GLSL);
+        log({ mode, resourcePath: rp, dirRelToSrc, parseFrom, decompressFrom });
+      } else {
+        const dir = rp.includes('/') ? rp.slice(0, rp.lastIndexOf('/')) : '.';
+        parseFrom      = relFrom(dir, TARGET_PARSE);
+        decompressFrom = relFrom(dir, TARGET_GLSL);
+        log({ mode: 'fallback', resourcePath: rp, dir, parseFrom, decompressFrom });
+      }
+
+      preamble = [
+        makeImport('{parseBundle}', parseFrom),
+        makeImport('{decompressAST}', decompressFrom),
+      ].join('\n');
+    }
 
    
 
@@ -118,8 +114,8 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
     "code": ${stringify(code)},
     "table": ${stringify(table)},
     "shake": ${stringify(shake)},
-    "tree": decompressAST(${stringify(compressAST(tree))}),
-  };`
+    "tree": decompressAST(${stringify(compressAST(tree!))}),
+  };`;
 
   // Emit dependency imports
   // let i = 0;
@@ -161,41 +157,46 @@ const curOutDir    = curDirRelSrc.replace(/^glsl\//, 'gen-glsl/'); // gen-glsl/i
 const depthSegs  = curOutDir.split('/').filter(Boolean).length;
 const rootPrefix = depthSegs ? '../'.repeat(depthSegs) : './';
 
-for (const { name } of table.modules as Array<{ name: string }>) {
-  // 1) 规范为以 glsl/ 为根的路径
-  let depNorm: string;
-  if (name.startsWith('@use-gpu/glsl/')) {
-    depNorm = 'glsl/' + name.slice('@use-gpu/glsl/'.length);
-  } else if (name.startsWith('glsl/')) {
-    depNorm = name;
-  } else {
-    // 可能是相对路径（如 "../geometry/quad" 或 "../../../glsl/geometry/quad"）
-    depNorm = path.posix.normalize(path.posix.join(curDirRelSrc, name));
+
+if (table.modules && Array.isArray(table.modules)) {
+
+  for (const { name } of table.modules as Array<{ name: string }>) {
+    // 1) 规范为以 glsl/ 为根的路径
+    let depNorm: string;
+    if (name.startsWith('@use-gpu/glsl/')) {
+      depNorm = 'glsl/' + name.slice('@use-gpu/glsl/'.length);
+    } else if (name.startsWith('glsl/')) {
+      depNorm = name;
+    } else {
+      // 可能是相对路径（如 "../geometry/quad" 或 "../../../glsl/geometry/quad"）
+      depNorm = path.posix.normalize(path.posix.join(curDirRelSrc, name));
+    }
+
+    // 2) 取出 glsl/ 下的相对部分，例如 "glsl/geometry/quad" -> "geometry/quad"
+    const depUnderGlsl = depNorm.replace(/^glsl\//, '');
+
+    // 3) 构造 import spec：退回到 src 根，再进入 gen-glsl/<dep>
+    //    例如：curOutDir="gen-glsl/instance/vertex" -> "../../../gen-glsl/geometry/quad"
+    const spec = `${rootPrefix}gen-glsl/${depUnderGlsl}`;
+
+    imports.push(makeImport(`m${i}`, spec));
+    markers.push(`${stringify(name)}: m${i}`);
+
+    console.log('[transpileGLSL:dep]', {
+      resourcePath: rp,
+      curOutDir,
+      depthSegs,
+      depName: name,
+      depNorm,
+      depUnderGlsl,
+      importSpec: spec,
+      slot: `m${i}`,
+    });
+
+    ++i;
   }
-
-  // 2) 取出 glsl/ 下的相对部分，例如 "glsl/geometry/quad" -> "geometry/quad"
-  const depUnderGlsl = depNorm.replace(/^glsl\//, '');
-
-  // 3) 构造 import spec：退回到 src 根，再进入 gen-glsl/<dep>
-  //    例如：curOutDir="gen-glsl/instance/vertex" -> "../../../gen-glsl/geometry/quad"
-  const spec = `${rootPrefix}gen-glsl/${depUnderGlsl}`;
-
-  imports.push(makeImport(`m${i}`, spec));
-  markers.push(`${stringify(name)}: m${i}`);
-
-  console.log('[transpileGLSL:dep]', {
-    resourcePath: rp,
-    curOutDir,
-    depthSegs,
-    depName: name,
-    depNorm,
-    depUnderGlsl,
-    importSpec: spec,
-    slot: `m${i}`,
-  });
-
-  ++i;
 }
+
 
 
 
@@ -214,7 +215,7 @@ for (const { name } of table.modules as Array<{ name: string }>) {
   const libs = `const libs = {${markers.join(', ')}};`
 
   // Export visible symbols
-  const exportSymbols = table.visibles.map((s: string) => 
+  const exportSymbols = (table.visibles ?? []).map((s: string) =>
     `${esModule ? 'export const ' : 'exports.'}${s} = getSymbol(${stringify(s)});`
   );
   
