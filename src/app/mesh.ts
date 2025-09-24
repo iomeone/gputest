@@ -9,9 +9,9 @@ import {
 } from '../core';
 import { linkBundle } from '../shader/glsl';
 
-import instanceDrawMesh from '../glsl/instance/draw/mesh.glsl';
-import instanceFragmentMesh from '../glsl/instance/fragment/mesh.glsl';
-import instanceFragmentSolid from '../glsl/instance/fragment/solid.glsl';
+import instanceDrawMesh from '../gen-glsl/instance/draw/mesh';
+import instanceFragmentMesh from '../gen-glsl/instance/fragment/mesh';
+import instanceFragmentSolid from '../gen-glsl/instance/fragment/solid';
 //import instanceVirtualWireframeMesh from 'instance/virtual/wireframe-mesh.glsl';
 
 export const MESH_UNIFORM_DEFS: UniformAttribute[] = [

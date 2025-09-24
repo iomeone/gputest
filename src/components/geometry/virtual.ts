@@ -6,9 +6,9 @@ import { memo, use, useContext, useNoContext, useFiber, useMemo, useOne, useStat
 import { bindBundle, bindingsToLinks } from '../../shader/glsl';
 import { useRenderPipeline } from '../hooks/useRenderPipeline';
 
-import instanceDrawVirtual from '../../glsl/instance/draw/virtual.glsl';
-import instanceDrawWireframeStrip from '../../glsl/instance/draw/wireframe-strip.glsl';
-import instanceFragmentSolid from '../../glsl/instance/fragment/solid.glsl';
+import instanceDrawVirtual from '../../gen-glsl/instance/draw/virtual';
+import instanceDrawWireframeStrip from '../../gen-glsl/instance/draw/wireframe-strip';
+import instanceFragmentSolid from '../../gen-glsl/instance/fragment/solid';
 
 import { render } from './render';
 

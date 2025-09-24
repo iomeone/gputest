@@ -14,8 +14,8 @@ import { use, memo, patch, useFiber, useMemo, useOne, useState, useResource } fr
 import { bindBundle, bindingsToLinks } from '../../shader/glsl';
 import { makeShaderBindings } from '../../core';
 
-import { getQuadVertex } from '../../glsl/instance/vertex/quad.glsl';
-import { getMaskedFragment } from '../../glsl/mask/masked.glsl';
+import { getQuadVertex } from '../../gen-glsl/instance/vertex/quad';
+import { getMaskedFragment } from '../../gen-glsl/mask/masked';
 
 export type RawQuadsProps = {
   position?: number[] | TypedArray,

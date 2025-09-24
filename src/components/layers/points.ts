@@ -12,7 +12,7 @@ import { use, memo, patch, useFiber, useMemo, useOne, useState, useResource } fr
 import { linkBundle, bindBundle, bindingToModule, bindingsToLinks, resolveBindings, castTo } from '../../shader/glsl';
 import { makeShaderBinding, makeShaderBindings } from '../../core';
 
-import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../glsl/mask/point.glsl';
+import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../gen-glsl/mask/point';
 
 export enum PointShape {
   Circle = 'circle',

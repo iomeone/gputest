@@ -15,8 +15,8 @@ import { use, memo, patch, useFiber, useMemo, useOne, useState, useResource } fr
 import { bindBundle, bindingsToLinks } from '../../shader/glsl';
 import { makeShaderBindings } from '../../core';
 
-import rectangleVertex from '../../glsl/instance/ui/vertex.glsl';
-import rectangleFragment from '../../glsl/instance/ui/fragment.glsl';
+import rectangleVertex from '../../gen-glsl/instance/ui/vertex';
+import rectangleFragment from '../../gen-glsl/instance/ui/fragment';
 
 export type UIRectanglesProps = {
   rectangle?: number[] | TypedArray,
