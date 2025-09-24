@@ -1,12 +1,12 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 
-import { use, gather, resume, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { use, gather, resume, useMemo, useOne, useResource, useState } from '../../live';
 
 import {
   Draw, Pass,
   Flat, Absolute, Layout, Stack, Flex, Element,
   Aggregate, RawTexture,
-} from '@use-gpu/components';
+} from '../../components';
 import { Mesh } from '../mesh';
 import { makeMesh, makeTexture } from '../meshes/mesh';
 

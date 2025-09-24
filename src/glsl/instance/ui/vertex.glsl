@@ -1,8 +1,8 @@
-#pragma import {SolidVertex} from '@use-gpu/glsl/use/types'
-#pragma import {worldToClip} from '@use-gpu/glsl/use/view'
-#pragma import {getQuadUV} from '@use-gpu/glsl/geometry/quad'
+#pragma import {SolidVertex} from '../../../glsl/use/types'
+#pragma import {worldToClip} from '../../../glsl/use/view'
+#pragma import {getQuadUV} from '../../../glsl/geometry/quad'
 
-#pragma import {SolidVertex} from '@use-gpu/glsl/use/types'
+#pragma import {SolidVertex} from '../../../glsl/use/types'
 
 layout(location = 0) out flat vec4 fragRectangle;
 layout(location = 1) out flat vec4 fragRadius;

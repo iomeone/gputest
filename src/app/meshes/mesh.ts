@@ -1,5 +1,5 @@
-import { VertexData, RawTexture } from '@use-gpu/core/types';
-import { makeVertexAttributeLayout } from '@use-gpu/core';
+import { VertexData, RawTexture } from '../../core/types';
+import { makeVertexAttributeLayout } from '../../core';
 
 export const makeMesh = (): VertexData => {
   const vertices   = [meshVertexArray]

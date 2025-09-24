@@ -1,5 +1,5 @@
-#pragma import {getPickingColor} from '@use-gpu/glsl/use/picking';
-#pragma import {viewUniforms} from '@use-gpu/glsl/use/view';
+#pragma import {getPickingColor} from '../../../glsl/use/picking';
+#pragma import {viewUniforms} from '../../../glsl/use/view';
 
 vec4 getTexture(vec2);
 

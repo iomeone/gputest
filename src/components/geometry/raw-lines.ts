@@ -1,21 +1,21 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '@use-gpu/core/types';
-import { ShaderModule } from '@use-gpu/shader/types';
+} from '../../core/types';
+import { ShaderModule } from '../../shader/types';
 
 import { ViewContext } from '../providers/view-provider';
 import { PickingContext, useNoPicking } from '../render/picking';
 import { Virtual } from './virtual';
 
-import { use, yeet, memo, patch, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
-import { bindBundle, bindingsToLinks } from '@use-gpu/shader/glsl';
-import { makeShaderBindings } from '@use-gpu/core';
+import { use, yeet, memo, patch, useFiber, useMemo, useOne, useState, useResource } from '../../live';
+import { bindBundle, bindingsToLinks } from '../../shader/glsl';
+import { makeShaderBindings } from '../../core';
 
-import { getLineVertex } from '@use-gpu/glsl/instance/vertex/line.glsl';
-import { getPassThruFragment } from '@use-gpu/glsl/mask/passthru.glsl';
+import { getLineVertex } from '../../glsl/instance/vertex/line.glsl';
+import { getPassThruFragment } from '../../glsl/mask/passthru.glsl';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,

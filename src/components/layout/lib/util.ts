@@ -1,4 +1,4 @@
-import { LiveElement } from '@use-gpu/live/types';
+import { LiveElement } from '../../../live/types';
 import { Point, Rectangle, Gap, Margin, Alignment, Anchor, LayoutRenderer } from '../types';
 
 export const parseDimension = (x: string | number, total: number, snap?: boolean = false): number => {

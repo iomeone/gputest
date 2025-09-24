@@ -1,4 +1,4 @@
-import { LiveElement, Key } from '@use-gpu/live/types';
+import { LiveElement, Key } from '../../live/types';
 
 export type Point = [number, number];
 export type Point4 = [number, number, number, number];

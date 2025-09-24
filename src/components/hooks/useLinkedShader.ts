@@ -1,9 +1,9 @@
-import { ShaderLanguages } from '@use-gpu/core/types';
-import { ParsedModule, ParsedBundle, ShaderDefine } from '@use-gpu/shader/types';
+import { ShaderLanguages } from '../../core/types';
+import { ParsedModule, ParsedBundle, ShaderDefine } from '../../shader/types';
 
-import { resolveBindings, linkBundle } from '@use-gpu/shader/glsl';
-import { makeShaderModule } from '@use-gpu/core';
-import { useFiber, useMemo, useOne } from '@use-gpu/live';
+import { resolveBindings, linkBundle } from '../../shader/glsl';
+import { makeShaderModule } from '../../core';
+import { useFiber, useMemo, useOne } from '../../live';
 
 const NO_DEPS = [] as any[];
 const NO_LIBS = {} as Record<string, any>;

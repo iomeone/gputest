@@ -1,8 +1,8 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
-import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
+import { LiveComponent } from '../../live/types';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
+import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../../core/types';
 
-import { use, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { use, useMemo, useOne, useResource, useState } from '../../live';
 
 import {
   Loop, Draw, Pass, Flat,
@@ -12,7 +12,7 @@ import {
   RawQuads as Quads, RawLines,
   RenderToTexture,
   Router, Routes,
-} from '@use-gpu/components';
+} from '../../components';
 import { Mesh } from '../mesh';
 import { makeMesh, makeTexture } from '../meshes/mesh';
 

@@ -1,7 +1,7 @@
-#pragma import {SolidVertex} from '@use-gpu/glsl/use/types'
-#pragma import {worldToClip, worldToClip3D, getPerspectiveScale} from '@use-gpu/glsl/use/view'
-#pragma import {getStripIndex} from '@use-gpu/glsl/geometry/strip'
-#pragma import {getLineJoin} from '@use-gpu/glsl/geometry/line'
+#pragma import {SolidVertex} from '../../../glsl/use/types'
+#pragma import {worldToClip, worldToClip3D, getPerspectiveScale} from '../../../glsl/use/view'
+#pragma import {getStripIndex} from '../../../glsl/geometry/strip'
+#pragma import {getLineJoin} from '../../../glsl/geometry/line'
 
 float NaN = 0.0/0.0;
 
