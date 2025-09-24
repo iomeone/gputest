@@ -16,7 +16,7 @@ const IGNORED_DIRS = new Set([
 
 const HANDLED_EXTS = new Set([
   '.ts', '.tsx', '.js', '.jsx', '.mts', '.mjs', '.cts', '.cjs',
-  '.d.ts', '.d.mts', '.d.cts', '.glsl'
+  '.d.ts', '.d.mts', '.d.cts', '.glsl', '.wgsl'
 ]);
 
 const args = new Set(process.argv.slice(2));
@@ -35,6 +35,10 @@ const RE_IMPORT_EXPORT =
 // 匹配 import('...') / require('...') 动态导入或 CJS：
 const RE_REQUIRE_IMPORT_CALL =
   /\b(?:import|require)\s*\(\s*(['"])(@use-gpu(?:\/[^'"]*)?)\1\s*\)/g;
+
+const RE_WGSL_USE =
+  /\buse\s*(['"])(@use-gpu(?:\/[^'"]*)?)\1((?:\s*::\s*\{[^}]*\})?\s*;?)/g;
+
 
 function rewriteSpecifier(filePath, spec) {
   if (!spec.startsWith('@use-gpu')) return spec;
@@ -77,8 +81,25 @@ async function processFile(filePath) {
     return m;
   };
 
+
+
+  const replaceWgslUse = (m, quote, spec, tail) => {
+    const next = rewriteSpecifier(filePath, spec);
+    if (next !== spec) {
+      replacements++;
+      if (VERBOSE) console.log(`  wgsl use: ${spec}  →  ${next}`);
+      // 仅替换路径，保留后面的 ::{...} 或 ; 等尾部内容
+      return m.replace(`${quote}${spec}${quote}`, `${quote}${next}${quote}`);
+    }
+    return m;
+  };
+
+
+
+
   content = content.replace(RE_IMPORT_EXPORT, replaceImportExport);
   content = content.replace(RE_REQUIRE_IMPORT_CALL, replaceRequireImport);
+  content = content.replace(RE_WGSL_USE, replaceWgslUse);
 
   const changed = replacements > 0 && content !== raw;
   return { changed, replacements, content };
