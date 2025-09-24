@@ -1,5 +1,5 @@
-import { LiveFiber } from '@use-gpu/live/types';
-import { formatNode, formatValue, renderFibers } from '@use-gpu/live';
+import { LiveFiber } from '../../live/types';
+import { formatNode, formatValue, renderFibers } from '../../live';
 import { useUpdateState } from './cursor';
 import { ExpandState, SelectState, HoverState, PingState } from './types';
 

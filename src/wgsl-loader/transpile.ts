@@ -1,4 +1,4 @@
-import { loadModule, compressAST } from '@use-gpu/shader/wgsl';
+import { loadModule, compressAST } from '../shader/wgsl';
 
 const stringify = (s: any) => JSON.stringify(s);
 

@@ -1,5 +1,5 @@
-import { LiveFiber } from '@use-gpu/live/types';
-import { formatNode, formatValue } from '@use-gpu/live';
+import { LiveFiber } from '../../live/types';
+import { formatNode, formatValue } from '../../live';
 import { styled } from "@stitches/react";
 
 import React, { Fragment, useState } from 'react';

@@ -1,8 +1,8 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
+import { LiveComponent } from '../live/types';
+import { CanvasRenderingContextGPU } from '../webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../core/types';
 
-import { use, useFiber, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { use, useFiber, useMemo, useOne, useResource, useState } from '../live';
 
 import {
   AutoCanvas,
@@ -15,8 +15,8 @@ import {
   RenderToTexture,
   Router, Routes,
   ViewProvider,
-} from '@use-gpu/components';
-import { UseInspect } from '@use-gpu/inspect';
+} from '../components';
+import { UseInspect } from '../inspect';
 
 import { GeometryPage } from './pages/geometry';
 import { InteractPage } from './pages/interact';

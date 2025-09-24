@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement, Task } from '@use-gpu/live/types';
-import { use, detach, useCallback, useOne, useResource } from '@use-gpu/live';
+import { LiveComponent, LiveElement, Task } from '../../live/types';
+import { use, detach, useCallback, useOne, useResource } from '../../live';
 
 export type LoopProps = {
   gpuContext: GPUCanvasContext,

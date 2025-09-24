@@ -1,19 +1,19 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode, DataTexture } from '@use-gpu/core/types';
-import { ViewContext, RenderContext, PickingContext, usePickingContext } from '@use-gpu/components';
-import { yeet, memo, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource, tagFunction } from '@use-gpu/live';
+import { LiveComponent } from '../live/types';
+import { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode, DataTexture } from '../core/types';
+import { ViewContext, RenderContext, PickingContext, usePickingContext } from '../components';
+import { yeet, memo, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource, tagFunction } from '../live';
 import {
   makeVertexBuffers, makeRawSourceTexture, makeMultiUniforms,
   makeRenderPipeline, makeShaderModule, makeSampler, makeTextureBinding,
   uploadBuffer, uploadDataTexture,
-} from '@use-gpu/core';
-import { linkBundle } from '@use-gpu/shader/wgsl';
+} from '../core';
+import { linkBundle } from '../shader/wgsl';
 
-import instanceDrawMesh from '@use-gpu/wgsl/instance/draw/mesh.wgsl';
-import instanceFragmentMesh from '@use-gpu/wgsl/instance/fragment/mesh.wgsl';
+import instanceDrawMesh from '../wgsl/instance/draw/mesh.wgsl';
+import instanceFragmentMesh from '../wgsl/instance/fragment/mesh.wgsl';
 
-import instanceDrawMeshPick from '@use-gpu/wgsl/instance/draw/mesh-pick.wgsl';
-import instanceFragmentMeshPick from '@use-gpu/wgsl/instance/fragment/mesh-pick.wgsl';
+import instanceDrawMeshPick from '../wgsl/instance/draw/mesh-pick.wgsl';
+import instanceFragmentMeshPick from '../wgsl/instance/fragment/mesh-pick.wgsl';
 
 export const MESH_UNIFORM_DEFS: UniformAttribute[] = [
   {

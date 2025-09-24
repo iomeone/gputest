@@ -1,5 +1,5 @@
-import { LiveFunction } from '@use-gpu/live/types';
-import { TextureSource } from '@use-gpu/core/types';
+import { LiveFunction } from '../../live/types';
+import { TextureSource } from '../../core/types';
 
 export enum LayerType {
   Point = 'point',

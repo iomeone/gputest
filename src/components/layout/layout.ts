@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../live/types';
 import { LayoutElement, Point } from './types';
 
-import { memo, yeet, resume, provide, gather, useContext, useMemo } from '@use-gpu/live';
+import { memo, yeet, resume, provide, gather, useContext, useMemo } from '../../live';
 import { LayoutContext } from '../providers/layout-provider';
 
 export type LayoutProps = {

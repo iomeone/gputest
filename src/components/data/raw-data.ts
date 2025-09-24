@@ -1,11 +1,11 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { TypedArray, StorageSource, UniformType, Emitter } from '@use-gpu/core/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { TypedArray, StorageSource, UniformType, Emitter } from '../../core/types';
 import { DeviceContext, FrameContext } from '../providers';
-import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
+import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
 import {
   makeDataEmitter, makeDataArray, copyNumberArray, emitIntoNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '@use-gpu/core';
+} from '../../core';
 
 export type RawDataProps = {
   length?: number,

@@ -1,19 +1,19 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '@use-gpu/core/types';
-import { ShaderModule } from '@use-gpu/shader/types';
+} from '../../core/types';
+import { ShaderModule } from '../../shader/types';
 
 import { RawQuads } from '../geometry/raw-quads';
 
-import { patch } from '@use-gpu/state';
-import { use, memo, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
-import { linkBundle, bindBundle, bindingToModule, bindingsToLinks, resolveBindings, castTo } from '@use-gpu/shader/wgsl';
-import { makeShaderBinding, makeShaderBindings } from '@use-gpu/core';
+import { patch } from '../../state';
+import { use, memo, useFiber, useMemo, useOne, useState, useResource } from '../../live';
+import { linkBundle, bindBundle, bindingToModule, bindingsToLinks, resolveBindings, castTo } from '../../shader/wgsl';
+import { makeShaderBinding, makeShaderBindings } from '../../core';
 
-import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '@use-gpu/wgsl/mask/point.wgsl';
+import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../wgsl/mask/point.wgsl';
 
 export enum PointShape {
   Circle = 'circle',

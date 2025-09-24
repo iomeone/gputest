@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '@use-gpu/core/types';
-import { DeviceContext, FrameContext } from '@use-gpu/components';
-import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '../../core/types';
+import { DeviceContext, FrameContext } from '../../components';
+import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
 import {
   makeDataArray, makeDataAccessor,
   copyDataArray, copyNumberArray,
@@ -10,7 +10,7 @@ import {
   copyDataArrayChunked, copyNumberArrayChunked,
   copyChunksToSegments,
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '@use-gpu/core';
+} from '../../core';
 
 export type CompositeDataProps = {
   length?: number,

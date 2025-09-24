@@ -1,18 +1,18 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { RenderPassMode, DeepPartial } from '@use-gpu/core/types';
-import { ShaderModule, ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
-import { memo, use, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource, useConsoleLog } from '@use-gpu/live';
+import { LiveComponent } from '../../live/types';
+import { RenderPassMode, DeepPartial } from '../../core/types';
+import { ShaderModule, ParsedBundle, ParsedModule } from '../../shader/types';
+import { memo, use, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource, useConsoleLog } from '../../live';
 
-import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
+import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
 import { useRenderPipeline } from '../hooks/useRenderPipeline';
 
-import instanceDrawVirtual from '@use-gpu/wgsl/instance/draw/virtual.wgsl';
-import instanceDrawVirtualPick from '@use-gpu/wgsl/instance/draw/virtual-pick.wgsl';
+import instanceDrawVirtual from '../../wgsl/instance/draw/virtual.wgsl';
+import instanceDrawVirtualPick from '../../wgsl/instance/draw/virtual-pick.wgsl';
 
-import instanceFragmentSolid from '@use-gpu/wgsl/instance/fragment/solid.wgsl';
-import instanceFragmentSolidPick from '@use-gpu/wgsl/instance/fragment/solid-pick.wgsl';
+import instanceFragmentSolid from '../../wgsl/instance/fragment/solid.wgsl';
+import instanceFragmentSolidPick from '../../wgsl/instance/fragment/solid-pick.wgsl';
 
-import instanceDrawWireframeStrip from '@use-gpu/wgsl/instance/draw/wireframe-strip.wgsl';
+import instanceDrawWireframeStrip from '../../wgsl/instance/draw/wireframe-strip.wgsl';
 
 import { render } from './render';
 

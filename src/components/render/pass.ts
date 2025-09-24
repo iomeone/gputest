@@ -1,6 +1,6 @@
-import { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live/types';
-import { UseRenderingContextGPU, RenderPassMode } from '@use-gpu/core/types';
-import { use, yeet, memo, resume, multiGather, useContext, useMemo } from '@use-gpu/live';
+import { LiveComponent, LiveFiber, LiveElement } from '../../live/types';
+import { UseRenderingContextGPU, RenderPassMode } from '../../core/types';
+import { use, yeet, memo, resume, multiGather, useContext, useMemo } from '../../live';
 import { RenderContext } from '../providers/render-provider';
 import { PickingContext } from './picking';
 

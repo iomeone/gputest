@@ -1,4 +1,4 @@
-import { LiveFiber } from '@use-gpu/live/types';
+import { LiveFiber } from '../../live/types';
 
 export type ExpandState = Record<number, boolean>;
 export type PingState = Record<number, number>;

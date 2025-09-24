@@ -1,6 +1,6 @@
-import { LiveFiber, LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveFiber, LiveComponent, LiveElement } from '../../live/types';
 
-import { memo, consume, resume, makeContext, useConsumer, useOne, useMemo, getTailValue } from '@use-gpu/live';
+import { memo, consume, resume, makeContext, useConsumer, useOne, useMemo, getTailValue } from '../../live';
 
 export const CursorContext = makeContext(null, 'CursorContext');
 
