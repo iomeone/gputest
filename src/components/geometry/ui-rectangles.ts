@@ -1,22 +1,23 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, TextureSource, RenderPassMode,
-} from '../../core/types';
-import { ShaderModule } from '../../shader/types';
+} from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/types';
 
 import { ViewContext } from '../providers/view-provider';
 import { PickingContext, useNoPicking } from '../render/picking';
 import { LayoutContext } from '../providers/layout-provider';
 import { render } from './render';
 
-import { use, memo, patch, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingsToLinks } from '../../shader/glsl';
-import { makeShaderBindings } from '../../core';
+import { patch } from '@use-gpu/state';
+import { use, memo, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
+import { makeShaderBindings } from '@use-gpu/core';
 
-import rectangleVertex from '../../gen-glsl/instance/ui/vertex';
-import rectangleFragment from '../../gen-glsl/instance/ui/fragment';
+import rectangleVertex from '@use-gpu/wgsl/instance/ui/vertex.wgsl';
+import rectangleFragment from '@use-gpu/wgsl/instance/ui/fragment.wgsl';
 
 export type UIRectanglesProps = {
   rectangle?: number[] | TypedArray,
@@ -25,6 +26,7 @@ export type UIRectanglesProps = {
   stroke?: number[] | TypedArray,
   fill?: number[] | TypedArray,
   uv?: number[] | TypedArray,
+  repeat?: number,
   texture?: TextureSource,
 
   rectangles?: StorageSource,
@@ -33,7 +35,7 @@ export type UIRectanglesProps = {
   strokes?: StorageSource,
   fills?: StorageSource,
   uvs?: StorageSource,
-  textures?: TextureSource[],
+  repeats?: StorageSource,
 
   getRectangle?: ShaderModule,
   getRadius?: ShaderModule,
@@ -41,11 +43,12 @@ export type UIRectanglesProps = {
   getStroke?: ShaderModule,
   getFill?: ShaderModule,
   getUV?: ShaderModule,
+  getRepeat?: ShaderModule,
   getTexture?: ShaderModule,
 
   count?: number,
   
-  pipeline: DeepPartial<GPURenderPipelineDescriptor>,
+  pipeline?: DeepPartial<GPURenderPipelineDescriptor>,
   mode?: RenderPassMode | string,
   id?: number,
 };
@@ -55,16 +58,17 @@ const GRAY = [0.5, 0.5, 0.5, 1];
 const SQUARE = [0, 0, 1, 1];
 
 const VERTEX_BINDINGS = [
-  { name: 'getRectangle', format: 'vec4', value: ZERO },
-  { name: 'getRadius', format: 'vec4', value: 0 },
-  { name: 'getBorder', format: 'vec4', value: 0 },
-  { name: 'getStroke', format: 'vec4', value: GRAY },
-  { name: 'getFill', format: 'vec4', value: GRAY },
-  { name: 'getUV', format: 'vec4', value: SQUARE },
+  { name: 'getRectangle', format: 'vec4<f32>', value: ZERO },
+  { name: 'getRadius', format: 'vec4<f32>', value: 0 },
+  { name: 'getBorder', format: 'vec4<f32>', value: 0 },
+  { name: 'getStroke', format: 'vec4<f32>', value: GRAY },
+  { name: 'getFill', format: 'vec4<f32>', value: GRAY },
+  { name: 'getUV', format: 'vec4<f32>', value: SQUARE },
+  { name: 'getRepeat', format: 'i32', value: 0 },
 ] as UniformAttributeValue[];
 
 const FRAGMENT_BINDINGS = [
-  { name: 'getTexture', format: 'vec4', args: ['vec2'], value: [1.0, 1.0, 1.0, 1.0] },
+  { name: 'getTexture', format: 'vec4<f32>', args: ['vec2<f32>'], value: [0.0, 0.0, 0.0, 0.0] },
 ] as UniformAttributeValue[];
 
 const DEFINES = {
@@ -79,9 +83,9 @@ const PIPELINE = {
   depthStencil: {
     depthWriteEnabled: false,
   },
-};
+} as DeepPartial<GPURenderPipelineDescriptor>;
 
-export const UIRectangles: LiveComponent<UIRectanglesProps> = memo((props) => {
+export const UIRectangles: LiveComponent<UIRectanglesProps> = memo((props: UIRectanglesProps) => {
   const {
     pipeline: propPipeline,
     mode = RenderPassMode.Opaque,
@@ -90,7 +94,7 @@ export const UIRectangles: LiveComponent<UIRectanglesProps> = memo((props) => {
   } = props;
 
   const vertexCount = 4;
-  const instanceCount = props.positions?.length ?? count;
+  const instanceCount = props.rectangles?.length ?? count;
 
   const pipeline = useOne(() => patch(PIPELINE, propPipeline), propPipeline);
   const key = useFiber().id;
@@ -101,18 +105,19 @@ export const UIRectangles: LiveComponent<UIRectanglesProps> = memo((props) => {
   const s = props.strokes ?? props.strokes ?? props.getStroke;
   const f = props.fills ?? props.fill ?? props.getFill;
   const u = props.uvs ?? props.uv ?? props.getUV;
+  const p = props.repeats ?? props.repeat ?? props.getRepeat;
 
-  const t = props.textures ?? props.texture ?? props.getTexture;
+  const t = props.texture ?? props.getTexture;
 
   const [vs, fs] = useMemo(() => {
-    const vertexBindings = makeShaderBindings<ShaderModule>(VERTEX_BINDINGS, [r, a, b, s, f, u]);
+    const vertexBindings = makeShaderBindings<ShaderModule>(VERTEX_BINDINGS, [r, a, b, s, f, u, p]);
     const fragmentBindings = makeShaderBindings<ShaderModule>(FRAGMENT_BINDINGS, [t]);
 
     const vs = bindBundle(rectangleVertex, bindingsToLinks(vertexBindings), null, key);
     const fs = bindBundle(rectangleFragment, bindingsToLinks(fragmentBindings), null, key);
 
     return [vs, fs];
-  }, [r, a, b, s, f, u, t]);
+  }, [r, a, b, s, f, u, p, t]);
 
   return render({
     vertexCount,

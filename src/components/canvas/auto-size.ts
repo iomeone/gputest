@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { useResource, useState } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { useResource, useState } from '@use-gpu/live';
 
 export type AutoSizeProps = {
   canvas: HTMLCanvasElement,
@@ -9,8 +9,12 @@ export type AutoSizeProps = {
 
 export const getCanvasSize = (window: Window, canvas: HTMLCanvasElement): [number, number, number] => {
   const pixelRatio = window?.devicePixelRatio ?? 1;
-  const {offsetWidth, offsetHeight} = canvas.parentNode;
-  return [pixelRatio * offsetWidth, pixelRatio * offsetHeight, pixelRatio];
+  const {parentNode} = canvas;
+  if (parentNode) {
+    const {offsetWidth, offsetHeight} = parentNode as any;
+    return [pixelRatio * offsetWidth, pixelRatio * offsetHeight, pixelRatio];
+  }
+  return [pixelRatio * window.innerWidth, pixelRatio * window.innerHeight, pixelRatio];
 }
 
 export const AutoSize: LiveComponent<AutoSizeProps> = (props) => {

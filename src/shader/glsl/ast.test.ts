@@ -1,7 +1,8 @@
-import { GLSLModules } from '../../glsl';
+import { GLSLModules } from './glsl.test.data';
 import { parseShader } from './shader';
-import { makeASTParser, rewriteUsingAST, resolveShakeOps, compressAST, decompressAST } from './ast';
+import { makeASTParser, rewriteUsingAST, compressAST, decompressAST } from './ast';
 import { formatAST, hasErrorNode } from '../util/tree';
+import { resolveShakeOps } from '../util/shake';
 import { addASTSerializer } from '../test/snapshot';
 
 addASTSerializer(expect);
@@ -186,7 +187,7 @@ describe('ast', () => {
     rename.set('main', 'entryPoint');
     rename.set('getValue', '_zz_getValue');
     
-    const compressed = compressAST(tree);
+    const compressed = compressAST(code, tree);
     const decompressed = decompressAST(compressed);
     expect(compressed).toMatchSnapshot();
     expect(decompressed).toMatchSnapshot();
@@ -230,7 +231,7 @@ void main() {
     rename.set('main', 'entryPoint');
     rename.set('getVertex', '_zz_getVertex');
     
-    const compressed = compressAST(tree);
+    const compressed = compressAST(code, tree);
     const decompressed = decompressAST(compressed);
     expect(compressed).toMatchSnapshot();
     expect(decompressed).toMatchSnapshot();
@@ -270,9 +271,9 @@ void main() {
     `;
 
     const tree = parseShader(code);
-    const compressed = compressAST(tree);
+    const compressed = compressAST(code, tree);
     const decompressed = decompressAST(compressed);
-    const recompressed = compressAST(decompressed);
+    const recompressed = compressAST(code, decompressed);
     expect(compressed).toEqual(recompressed);
   });
 
@@ -332,7 +333,7 @@ float getB() {
     const ops = resolveShakeOps(table, keep);
     
     const tree1 = tree;
-    const tree2 = decompressAST(compressAST(tree1));
+    const tree2 = decompressAST(compressAST(code, tree1));
 
     const code1 = rewriteUsingAST(code, tree1, new Map(), ops);
     const code2 = rewriteUsingAST(code, tree2, new Map(), ops);

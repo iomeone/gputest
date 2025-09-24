@@ -1,6 +1,6 @@
-import { LiveFiber, LiveComponent, LiveElement, Task } from '../../live/types';
-import { CanvasRenderingContextGPU } from '../../webgpu/types';
-import { use, provide, gather, useContext, useMemo, useOne } from '../../live';
+import { LiveFiber, LiveComponent, LiveElement, Task } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { use, provide, gather, useContext, useMemo, useOne } from '@use-gpu/live';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { FrameContext } from '../providers/frame-provider';
@@ -12,7 +12,7 @@ import {
   makeDepthTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
-} from '../../core';
+} from '@use-gpu/core';
 
 export type RenderToTextureProps = {
   width: number,

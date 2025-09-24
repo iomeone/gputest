@@ -14,7 +14,7 @@ export const Expandable: React.FC<ExpandableProps> = ({id, expandCursor, childre
   const onClick = (e: any) => {
     updateExpand(expand === false);
     e.preventDefault();
-		e.stopPropagation();
+    e.stopPropagation();
   }
 
   return children(expand, onClick);

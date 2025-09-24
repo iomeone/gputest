@@ -1,11 +1,11 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, StorageSource, UniformType, Emitter } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, StorageSource, UniformType, Emitter } from '@use-gpu/core/types';
 import { DeviceContext, FrameContext } from '../providers';
-import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
 import {
   makeDataEmitter, makeDataArray, copyNumberArray, emitIntoNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '../../core';
+} from '@use-gpu/core';
 
 export type RawDataProps = {
   length?: number,
@@ -29,7 +29,7 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
 
   // Make data buffer
   const [buffer, array, source, dims] = useMemo(() => {
-    const f = (format && (format in UNIFORM_DIMS)) ? format as UniformType : UniformType.float;
+    const f = (format && (format in UNIFORM_DIMS)) ? format as UniformType : UniformType.f32;
     const l = length ?? (data?.length || 0);
 
     const {array, dims} = makeDataArray(f, l || 1);

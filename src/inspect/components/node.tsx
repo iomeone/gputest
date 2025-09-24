@@ -1,6 +1,6 @@
-import { LiveFiber } from '../../live/types';
-import { formatValue, formatNodeName } from '../../live';
-import styled, { keyframes } from "styled-components";
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatValue, formatNodeName } from '@use-gpu/live';
+import { styled, keyframes } from "@stitches/react";
 
 import React, { useCallback, useRef, useEffect } from 'react';
 import { Action } from './types';
@@ -8,84 +8,84 @@ import { Action } from './types';
 const ICON = (s: string) => <span className="m-icon">{s}</span>
 const ICONSMALL = (s: string) => <span className="m-icon m-icon-small">{s}</span>
 
-const pingAnimation = keyframes`
- 0% { background: rgba(10, 170, 85, 1.0); }
- 100% { background: rgba(0, 0, 0, 1.0); }
-`
+const pingAnimation = keyframes({
+  '0%': { background: 'rgba(10, 170, 85, 1.0)' },
+  '100%': { background: 'rgba(0, 0, 0, 1.0)' },
+});
 
-const mountAnimation = keyframes`
- 0% { background: rgba(120, 120, 120, 1.0); }
- 100% { background: rgba(0, 0, 0, 1.0); }
-`
+const mountAnimation = keyframes({
+  '0%': { background: 'rgba(120, 120, 120, 1.0)' },
+  '100%': { background: 'rgba(0, 0, 0, 1.0)' },
+});
 
-const selectedAnimation = keyframes`
- 0% { background: rgba(10, 170, 85, 1.0); }
- 100% { background: rgba(50, 130, 200, 0.85); }
-`
+const selectedAnimation = keyframes({
+  '0%': { background: 'rgba(10, 170, 85, 1.0)', },
+  '100%': { background: 'rgba(50, 130, 200, 0.85)', },
+});
 
-export const StyledNode = styled.div`
-  white-space: nowrap;
-  margin: -2px -5px;
-  padding: 2px 5px;
-  position: relative;
+export const StyledNode = styled('div', {
+  whiteSpace: 'nowrap',
+  margin: '-2px -5px',
+  padding: '2px 5px',
+  position: 'relative',
 
-  &.selected {
-    background: rgba(50, 130, 200, 0.85);
-  }
+  '&.selected': {
+    background: 'rgba(50, 130, 200, 0.85)',
+  },
 
-  &.hovered {
-    background: rgba(50, 180, 200, 1.0);
-  }
+  '&.hovered': {
+    background: 'rgba(50, 180, 200, 1.0)',
+  },
 
-  &.by {
-    background: rgba(30, 140, 160, 1.0);
-  }
+  '&.by': {
+    background: 'rgba(30, 140, 160, 1.0)',
+  },
 
-  &.depended {
-    background: rgba(80, 60, 200, 1.0);
-  }
+  '&.depended': {
+    background: 'rgba(80, 60, 200, 1.0)',
+  },
 
-  &.staticMount {
-    background: rgba(120, 120, 120, 1.0);
-  }
+  '&.staticMount': {
+    background: 'rgba(120, 120, 120, 1.0)',
+  },
 
-  &.staticPing {
-    background: rgba(10, 170, 85, 1.0);
-  }
+  '&.staticPing': {
+    background: 'rgba(10, 170, 85, 1.0)',
+  },
 
-  &.builtin {
-    color: var(--colorTextMuted);
-  }
+  '&.builtin': {
+    color: 'var(--colorTextMuted)',
+  },
 
-  &.mounted {
-    animation-name: ${mountAnimation};
-    animation-duration: 1.0s;
-    animation-iteration-count: 1;
+  '&.mounted': {
+    animationName: mountAnimation,
+    animationDuration: '1.0s',
+    animationIterationCount: 1,
 
-    &.selected {
-      animation-name: ${selectedAnimation};
-    }
-  }
+    '&.selected': {
+      animationName: selectedAnimation,
+    },
+  },
 
-  &.pinged {
-    animation-name: ${pingAnimation};
-    animation-duration: 1.0s;
-    animation-iteration-count: 1;
+  '&.pinged': {
+    animationName: pingAnimation,
+    animationDuration: '1.0s',
+    animationIterationCount: 1,
 
-    &.selected {
-      animation-name: ${selectedAnimation};
-    }
-  }
+    '&.selected': {
+      animationName: selectedAnimation,
+    },
+  },
 
-  &.repinged {
-    animation-name: none;
-    background: rgba(10, 150, 75, 1.0);
+  '&.repinged': {
+    animationName: 'none',
+    background: 'rgba(10, 150, 75, 1.0)',
 
-    &.selected {
-      background: rgba(20, 100, 200, 0.75);
-    }
-  }
-`;
+    '&.selected': {
+      background: 'rgba(20, 100, 200, 0.75)',
+    },
+  },
+});
 
 type NodeProps = {
   fiber: LiveFiber<any>,

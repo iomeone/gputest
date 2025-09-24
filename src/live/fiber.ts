@@ -4,7 +4,7 @@ import {
   OnFiber, DeferredCall, Key,
 } from './types';
 
-import { use, reconcile, DETACH, RECONCILE, MAP_REDUCE, GATHER, MULTI_GATHER, YEET, MORPH, PROVIDE, CONSUME } from './builtin';
+import { use, reconcile, morph, DETACH, RECONCILE, MAP_REDUCE, GATHER, MULTI_GATHER, YEET, MORPH, PROVIDE, CONSUME } from './builtin';
 import { discardState } from './hooks';
 import { renderFibers } from './tree';
 import { isSameDependencies } from './util';
@@ -255,11 +255,12 @@ export const updateFiber = <F extends Function>(
   // If morphing, do before noticing type change
   if (fiberType === MORPH) {
     const e = call!.args;
-    const c = e as DeferredCall<any>;
+    const c = e as any as DeferredCall<any>;
+    const cs = e as any as DeferredCall<any>[];
     const isArray = !!e && Array.isArray(e);
     const fiberType = isArray ? Array : c?.f;
 
-    if (isArray) reconcileFiberCalls(c.map(call => morph(call)));
+    if (isArray) reconcileFiberCalls(fiber, cs.map(call => morph(call)));
     morphFiberCall(fiber, fiberType, c);
     return fiber;
   }
@@ -377,7 +378,7 @@ export const makeFiberContinuation = <F extends Function, R>(
 }
 
 // Tag a component as a static continuation
-export const makeStaticContinuation = (c: LiveFunction<any>, name: string): LiveFunction<any> => {
+export const makeStaticContinuation = (c: LiveFunction<any>): LiveFunction<any> => {
   (c as any).isStaticComponent = true;
   return c;
 }
@@ -582,7 +583,7 @@ export const morphFiberCall = <F extends Function>(
   const {mount} = fiber;
 
   if (fiber.type && (fiber.type !== fiberType)) {
-    if (mount.context === fiber.context && !mount.next) {
+    if (call && mount && mount.context === fiber.context && !mount.next) {
       // Discard all fiber state
       enterFiber(mount, 0);
       exitFiber(mount);
@@ -610,7 +611,7 @@ export const inlineFiberCall = <F extends Function>(
   if (fiber.type && fiber.type !== fiberType) disposeFiberMounts(fiber);
   fiber.type = fiberType;
 
-  if (Array.isArray(element)) reconcileFiberCalls(fiber, element);
+  if (isArray) reconcileFiberCalls(fiber, element as any);
   else {
     const call = element as DeferredCall<any>;
     if ((call?.f as any).isLiveInline) updateFiber(fiber, call);
@@ -795,12 +796,11 @@ export const visitYeetRoot = <F extends Function>(
   fiber: LiveFiber<F>,
 ) => {
   const {host, yeeted} = fiber;
-  if (fiber.type === YEET) {
-    DEBUG && console.log('Reduce', formatNode(fiber), '->', formatNode(root));
-
+  if (fiber.type === YEET && yeeted) {
     const {root} = yeeted;
-    bustFiberMemo(root);
 
+    DEBUG && console.log('Reduce', formatNode(fiber), '->', formatNode(root));
+    bustFiberMemo(root);
     if (host) host.visit(root);
   }
 }
@@ -808,7 +808,7 @@ export const visitYeetRoot = <F extends Function>(
 // Remove a cached yeeted value and all upstream reductions
 export const bustFiberYeet = <F extends Function>(fiber: LiveFiber<F>, force?: boolean) => {
   const {type, yeeted} = fiber;
-  if ((fiber.type === YEET) || (yeeted && force)) {
+  if ((fiber.type === YEET && yeeted) || (yeeted && force)) {
     let yt = yeeted;
     yt.value = undefined;
 

@@ -5,31 +5,31 @@ import { UniformAttribute, UniformType } from './types';
 export const VIEW_UNIFORMS: UniformAttribute[] = [
   {
     name: 'projectionMatrix',
-    format: UniformType.mat4,
+    format: UniformType['mat4x4<f32>'],
   },
   {
     name: 'viewMatrix',
-    format: UniformType.mat4,
+    format: UniformType['mat4x4<f32>'],
   },
   {
     name: 'viewPosition',
-    format: UniformType.vec4
+    format: UniformType['vec4<f32>']
   },
   {
     name: 'viewResolution',
-    format: UniformType.vec2,
+    format: UniformType['vec2<f32>'],
   },
   {
     name: 'viewSize',
-    format: UniformType.vec2,
+    format: UniformType['vec2<f32>'],
   },
   {
     name: 'viewWorldUnit',
-    format: UniformType.float,
+    format: UniformType.f32,
   },
   {
     name: 'viewPixelRatio',
-    format: UniformType.float,
+    format: UniformType.f32,
   },
 ];
 
@@ -103,7 +103,7 @@ export const makeProjectionMatrix = (
   }
   else {
     // Orthogonal matrix
-    const s = focus * Math.tan(fov / 2);
+    const s = radius * Math.tan(fov / 2);
     matrix = makeOrthogonalMatrix(-aspect * s, aspect * s, -s, s, near, far);
   }
 

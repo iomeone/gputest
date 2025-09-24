@@ -1,0 +1,194 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`bind binds an external 1`] = `
+"let TEST = true;
+
+    fn _00_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    
+
+    fn colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
+    fn colorNotUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 1.0); }
+
+    fn getColor() -> vec4<f32> {
+      return _00_getColor() + colorUsed();
+    }
+    "
+`;
+
+exports[`bind binds an external 2`] = `
+"let TEST = true;
+
+
+    fn _01_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    
+
+    fn colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
+    fn colorNotUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 1.0); }
+
+    fn getColor() -> vec4<f32> {
+      return _01_getColor() + colorUsed();
+    }
+    "
+`;
+
+exports[`bind binds an external 3`] = `
+"let TEST = true;
+
+    fn _00_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    
+
+    fn _01_colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
+fn _01_getColor() -> vec4<f32> {
+      return _00_getColor() + _01_colorUsed();
+    }
+    
+
+    fn main() {
+      var v: vec4<f32>;
+      v = _01_getColor();
+      return v;
+    }
+    "
+`;
+
+exports[`bind binds an external 4`] = `
+"let TEST = true;
+
+
+    fn _01_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    
+
+    fn _02_colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
+fn _02_getColor() -> vec4<f32> {
+      return _01_getColor() + _02_colorUsed();
+    }
+    
+
+    fn main() {
+      var v: vec4<f32>;
+      v = _02_getColor();
+      return v;
+    }
+    "
+`;
+
+exports[`bind links data bindings 1`] = `
+"
+struct _VT_Type {
+  _VT_0_getColor: vec4<f32>;
+};
+@group(0) @binding(1) var<uniform> _VT_Uniform: _VT_Type;
+
+
+fn _VT_0_getColor(a: i32) -> vec4<f32> {
+  return _VT_Uniform._VT_0_getColor;
+}
+
+
+@group(0) @binding(0) var<storage> _VT_0_getSizeStorage: array<vec2<f32>>;
+
+fn _VT_0_getSize(index: i32) -> vec2<f32> {
+  return _VT_0_getSizeStorage[index];
+}
+
+
+    fn main() {
+      _VT_0_getColor(0);
+      _VT_0_getSize(0);
+    }
+    "
+`;
+
+exports[`bind makes deterministic links for data bindings 1`] = `
+Object {
+  "base": undefined,
+  "code": "#virtual [getColor getSize] 101",
+  "name": "_VT_hoi6if_",
+  "storages": Array [
+    Object {
+      "storage": Object {
+        "buffer": Object {},
+        "format": "vec2<f32>",
+        "length": 10,
+        "version": 1,
+      },
+      "uniform": Object {
+        "args": Array [
+          "i32",
+        ],
+        "format": "vec2<f32>",
+        "name": "getSize",
+        "value": Array [
+          1,
+          1,
+        ],
+      },
+    },
+  ],
+  "table": Object {
+    "declarations": Array [
+      Object {
+        "at": 0,
+        "flags": 0,
+        "func": Object {
+          "name": "getColor",
+          "parameters": Array [
+            "i32",
+          ],
+          "type": Object {
+            "name": "vec4<f32>",
+          },
+        },
+        "symbol": "getColor",
+      },
+      Object {
+        "at": 0,
+        "flags": 0,
+        "func": Object {
+          "name": "getSize",
+          "parameters": Array [
+            "i32",
+          ],
+          "type": Object {
+            "name": "vec2<f32>",
+          },
+        },
+        "symbol": "getSize",
+      },
+    ],
+    "hash": "hoi6if8by6",
+    "symbols": Array [
+      "getColor",
+      "getSize",
+    ],
+    "visibles": Array [
+      "getColor",
+      "getSize",
+    ],
+  },
+  "textures": Array [],
+  "uniforms": Array [
+    Object {
+      "constant": Array [
+        1,
+        0.5,
+        1,
+        1,
+      ],
+      "uniform": Object {
+        "args": Array [
+          "i32",
+        ],
+        "format": "vec4<f32>",
+        "name": "getColor",
+        "value": Array [
+          0,
+          0.5,
+          1,
+          1,
+        ],
+      },
+    },
+  ],
+}
+`;

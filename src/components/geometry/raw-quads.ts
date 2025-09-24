@@ -1,21 +1,22 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '../../core/types';
-import { ShaderModule } from '../../shader/types';
+} from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/types';
 
 import { ViewContext } from '../providers/view-provider';
 import { PickingContext, useNoPicking } from '../render/picking';
 import { Virtual } from './virtual';
 
-import { use, memo, patch, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingsToLinks } from '../../shader/glsl';
-import { makeShaderBindings } from '../../core';
+import { patch } from '@use-gpu/state';
+import { use, memo, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
+import { makeShaderBindings } from '@use-gpu/core';
 
-import { getQuadVertex } from '../../gen-glsl/instance/vertex/quad';
-import { getMaskedFragment } from '../../gen-glsl/mask/masked';
+import { getQuadVertex } from '@use-gpu/wgsl/instance/vertex/quad.wgsl';
+import { getMaskedFragment } from '@use-gpu/wgsl/mask/masked.wgsl';
 
 export type RawQuadsProps = {
   position?: number[] | TypedArray,
@@ -39,7 +40,7 @@ export type RawQuadsProps = {
   getTexture?: ShaderModule,
 
   count?: number,
-  pipeline: DeepPartial<GPURenderPipelineDescriptor>,
+  pipeline?: DeepPartial<GPURenderPipelineDescriptor>,
   mode?: RenderPassMode | string,
   id?: number,
 };
@@ -48,15 +49,15 @@ const ZERO = [0, 0, 0, 1];
 const GRAY = [0.5, 0.5, 0.5, 1];
 
 const VERTEX_BINDINGS = [
-  { name: 'getPosition', format: 'vec4', value: ZERO },
-  { name: 'getColor', format: 'vec4', value: GRAY },
-  { name: 'getSize', format: 'vec2', value: [1, 1] },
-  { name: 'getDepth', format: 'float', value: 0 },
+  { name: 'getPosition', format: 'vec4<f32>', value: ZERO },
+  { name: 'getColor', format: 'vec4<f32>', value: GRAY },
+  { name: 'getSize', format: 'vec2<f32>', value: [1, 1] },
+  { name: 'getDepth', format: 'f32', value: 0 },
 ] as UniformAttributeValue[];
 
 const FRAGMENT_BINDINGS = [
-  { name: 'getMask', format: 'float', args: ['vec2'], value: 1 },
-  { name: 'getTexture', format: 'vec4', args: ['vec2'], value: [1.0, 1.0, 1.0, 1.0] },
+  { name: 'getMask', format: 'f32', args: ['vec2<f32>'], value: 1 },
+  { name: 'getTexture', format: 'vec4<f32>', args: ['vec2<f32>'], value: [1.0, 1.0, 1.0, 1.0] },
 ] as UniformAttributeValue[];
 
 const DEFINES = {
@@ -69,9 +70,9 @@ const PIPELINE = {
     topology: 'triangle-strip',
     stripIndexFormat: 'uint16',
   },
-};
+} as DeepPartial<GPURenderPipelineDescriptor>;
 
-export const RawQuads: LiveComponent<RawQuadsProps> = memo((props) => {
+export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps) => {
   const {
     pipeline: propPipeline,
     mode = RenderPassMode.Opaque,

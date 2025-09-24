@@ -38,10 +38,10 @@ export const use = <F extends Function>(
 ): DeferredCall<F> => ({f, args, key, by: getCurrentFiberID()});
 
 // morph a call to a live function
-export const morph = <F extends Function>(
-  call: DeferredCall<F>,
+export const morph = (
+  calls: LiveElement<any>,
   key?: Key,
-): DeferredCall<F> => ({f: MORPH, args: call, key, by: getCurrentFiberID()});
+): DeferredCall<() => void> => ({f: MORPH, args: calls as any, key, by: getCurrentFiberID()});
 
 // Detach the rendering of a subtree
 export const detach = <F extends Function>(
@@ -51,7 +51,7 @@ export const detach = <F extends Function>(
 ): DeferredCall<() => void> => ({f: DETACH, args: [call, callback], key, by: getCurrentFiberID()});
 
 // Reconcile an array of calls
-export const reconcile = <F extends Function>(
+export const reconcile = (
   calls: LiveElement<any>,
   key?: Key,
 ): DeferredCall<() => void> => {

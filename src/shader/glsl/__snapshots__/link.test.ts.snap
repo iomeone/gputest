@@ -73,14 +73,26 @@ vec2 _00_getQuadUV(int vertex) {
   return vec2(_00_getQuadIndex(vertex));
 }
 
-struct _01_SolidVertex {
+
+    vec4 _01_getColor(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
+    
+
+    float _02_getDepth(int index) { return 0.5; }
+    
+
+    vec4 _03_getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
+    
+
+    float _04_getSize(int index) { return 1.0; }
+    
+struct _05_SolidVertex {
   vec4 position;
   vec4 color;
   vec2 uv;
 };
 
 
-layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING) uniform _02_ViewUniforms {
+layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING) uniform _06_ViewUniforms {
   mat4 projectionMatrix;
   mat4 viewMatrix;
   vec4 viewPosition;
@@ -88,58 +100,46 @@ layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING) uniform _02_ViewUniforms {
   vec2 viewSize;
   float viewWorldUnit;
   float viewPixelRatio;
-} _02_viewUniforms;
+} _06_viewUniforms;
 
-vec4 _02_worldToView(vec4 position) {
-  return _02_viewUniforms.viewMatrix * position;
+vec4 _06_worldToView(vec4 position) {
+  return _06_viewUniforms.viewMatrix * position;
 }
 
-vec4 _02_viewToClip(vec4 position) {
-  return _02_viewUniforms.projectionMatrix * position;
+vec4 _06_viewToClip(vec4 position) {
+  return _06_viewUniforms.projectionMatrix * position;
 }
 
-vec4 _02_worldToClip(vec4 position) {
-  return _02_viewToClip(_02_worldToView(position));
+vec4 _06_worldToClip(vec4 position) {
+  return _06_viewToClip(_06_worldToView(position));
 }
 
-float _02_getPerspectiveScale(float w, float f) {
-  mat4 m = _02_viewUniforms.projectionMatrix;
-  float worldScale = m[1][1] * _02_viewUniforms.viewWorldUnit;
+float _06_getPerspectiveScale(float w, float f) {
+  mat4 m = _06_viewUniforms.projectionMatrix;
+  float worldScale = m[1][1] * _06_viewUniforms.viewWorldUnit;
   float clipScale = mix(1.0, worldScale / w, f);
-  float pixelScale = clipScale * _02_viewUniforms.viewPixelRatio;
+  float pixelScale = clipScale * _06_viewUniforms.viewPixelRatio;
   return pixelScale;
 }
 
+vec4 _03_getPosition(int);
+vec4 _01_getColor(int);
+vec2 _04_getSize(int);
+float _02_getDepth(int);
 
-    vec4 _03_getColor(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
-    
+_05_SolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {
+  vec4 position = _03_getPosition(instanceIndex);
+  vec4 color = _01_getColor(instanceIndex);
+  vec2 size = _04_getSize(instanceIndex);
+  float depth = _02_getDepth(instanceIndex);
 
-    float _04_getDepth(int index) { return 0.5; }
-    
-
-    vec4 _05_getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
-    
-
-    float _06_getSize(int index) { return 1.0; }
-    
-vec4 _05_getPosition(int);
-vec4 _03_getColor(int);
-vec2 _06_getSize(int);
-float _04_getDepth(int);
-
-_01_SolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {
-  vec4 position = _05_getPosition(instanceIndex);
-  vec4 color = _03_getColor(instanceIndex);
-  vec2 size = _06_getSize(instanceIndex);
-  float depth = _04_getDepth(instanceIndex);
-
-  vec4 center = _02_worldToClip(position);
+  vec4 center = _06_worldToClip(position);
 
   vec2 uv = _00_getQuadUV(vertexIndex);
   vec2 xy = uv * 2.0 - 1.0;
   
   // Lerp between fixed size and full perspective.
-  float pixelScale = _02_getPerspectiveScale(center.w, depth);
+  float pixelScale = _06_getPerspectiveScale(center.w, depth);
   size *= pixelScale;
 
   #ifdef HAS_EDGE_BLEED
@@ -147,9 +147,9 @@ _01_SolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {
   uv = xy * .5 + .5;
   #endif
 
-  center.xy += xy * size * _02_viewUniforms.viewResolution * center.w;
+  center.xy += xy * size * _06_viewUniforms.viewResolution * center.w;
 
-  return _01_SolidVertex(
+  return _05_SolidVertex(
     center,
     color,
     uv

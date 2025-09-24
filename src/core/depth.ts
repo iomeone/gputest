@@ -15,10 +15,20 @@ export const makeDepthStencilState = (format: GPUTextureFormat): GPUDepthStencil
   format,
 });
 
-export const makeDepthStencilAttachment = (depthTexture: GPUTexture): GPURenderPassDepthStencilAttachment => ({
+export const makeDepthStencilAttachment = (
+  depthTexture: GPUTexture,
+  depthClearValue: number = 1.0,
+  depthLoadOp: GPULoadOp = 'clear',
+  depthStoreOp: GPUStoreOp = 'store',
+  stencilClearValue: number = 0,
+  stencilLoadOp: GPULoadOp = 'clear',
+  stencilStoreOp: GPUStoreOp = 'store',
+): GPURenderPassDepthStencilAttachment => ({
   view: depthTexture.createView(),
-  depthLoadValue: 1.0,
-  depthStoreOp: "store" as GPUStoreOp,
-  stencilLoadValue: 0,
-  stencilStoreOp: "store" as GPUStoreOp,
+  depthClearValue,
+  depthLoadOp,
+  depthStoreOp,
+  stencilClearValue,
+  stencilLoadOp,
+  stencilStoreOp,
 });

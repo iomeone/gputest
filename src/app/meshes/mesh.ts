@@ -1,5 +1,5 @@
-import { VertexData, RawTexture } from '../../core/types';
-import { makeVertexAttributeLayout } from '../../core';
+import { VertexData, DataTexture } from '@use-gpu/core/types';
+import { makeVertexAttributeLayout } from '@use-gpu/core';
 
 export const makeMesh = (): VertexData => {
   const vertices   = [meshVertexArray]
@@ -8,11 +8,11 @@ export const makeMesh = (): VertexData => {
   return {vertices, attributes, count: 36};
 }
 
-export const makeTexture = (): RawTexture => {
+export const makeTexture = (): DataTexture => {
   return rawTextureRGBA;
 }
 
-export const rawTextureRGBA: RawTexture = {
+export const rawTextureRGBA: DataTexture = {
   data: new Uint8Array([
     0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 
     0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 

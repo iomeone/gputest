@@ -6,9 +6,13 @@ export const makeColorState = (format: GPUTextureFormat, blend?: GPUBlendState):
 export const makeColorAttachment = (
   texture: GPUTexture | null,
   resolve: GPUTexture | null,
-  loadValue: GPUColor,
+  clearValue: GPUColor = [0, 0, 0, 0],
+  loadOp: GPULoadOp = 'clear',
+  storeOp: GPUStoreOp = 'store',
 ): GPURenderPassColorAttachment => ({
   view: texture ? texture.createView() : null,
   resolveTarget: resolve ? resolve.createView() : undefined,
-  loadValue,
+  clearValue,
+  loadOp,
+  storeOp,
 } as unknown as GPURenderPassColorAttachment);

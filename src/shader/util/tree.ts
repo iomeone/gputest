@@ -1,4 +1,5 @@
 import { SyntaxNode, Tree } from '@lezer/common';
+import { CompressedNode } from '../types';
 
 // Gather all child nodes (may be implicit)
 export const getChildNodes = (node: SyntaxNode) => {
@@ -57,29 +58,47 @@ export const formatASTNode = (node: SyntaxNode) => {
   return `(${type.name}${space}${inner.join(" ")})`;
 }
 
-// Get depth for each item in a graph, so its dependencies resolve correctly
-export const getGraphOrder = (
-  graph: Map<string, string[]>,
-  name: string,
-  depth: number = 0,
-) => {
-  const queue = [{name, depth: 0, path: [name]}];
-  const depths = new Map<string, number>();
 
-  while (queue.length) {
-    const {name, depth, path} = queue.shift()!;
-    depths.set(name, depth);
+// Decompress a compressed AST on the fly by returning a pseudo-tree-cursor.
+export const decompressAST = (nodes: CompressedNode[]) => {
+  const tree = {
+    __nodes: () => nodes,
+    cursor: () => {
+      let i = -1;
+      const n = nodes.length;
 
-    const module = graph.get(name);
-    if (!module) continue;
+      const next = () => {
+        const hasNext = ++i < n;
+        if (!hasNext) return false;
+        
+        const node = nodes[i];
+        [self.type.name, self.from, self.to] = node;
 
-    const deps = module.map(name => {
-      const i = path.indexOf(name);
-      if (i >= 0) throw new Error("Cycle detected in module dependency graph: " + path.slice(i));
-      return {name, depth: depth + 1, path: [...path, name]};
-    });
+        return true;
+      };
 
-    queue.push(...deps);
-  }
-  return depths;
+      const lastChild = () => {
+        const {to} = self;
+        do {
+          const node = nodes[i + 1];
+          if (node && node[1] >= to) return false;
+        } while (next());
+        return false;
+      }
+
+      const self = {
+        type: {name: ''},
+        node: {parent: {type: {name: 'Program'}}},
+        from: 0,
+        to: 0,
+        next,
+        lastChild,
+      } as any;
+
+      next();
+
+      return self;
+    },
+  } as any as Tree;
+  return tree;
 }

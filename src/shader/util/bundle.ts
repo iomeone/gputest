@@ -1,4 +1,4 @@
-import  { ParsedBundle, ParsedModule } from '../types';
+import { ParsedBundle, ParsedModule } from '../types';
 
 const NO_LIBS = {};
 
@@ -71,31 +71,3 @@ export const forBundleModules = (
 
 // Parse escaped C-style string
 export const parseString = (s: string) => s.slice(1, -1).replace(/\\(.)/g, '$1');
-
-// Parse run-time specified keys `from:to` into a map of aliases
-export const parseLinkAliases = <T>(
-  links: Record<string, T>,
-): [
-  Record<string, T>,
-  Map<string, string> | null,
-] => {
-  const out = {} as Record<string, T>;
-  let aliases = null as Map<string, string> | null;
-
-  for (let k in links) {
-    const link = links[k] as any;
-    if (!link) continue;
-
-    let [name, imported] = k.split(':');
-    if (!imported && link.entry != null) imported = link.entry;
-    if (!imported && link.module?.entry != null) imported = link.module.entry;
-
-    out[name] = link;
-    if (imported) {
-      if (!aliases) aliases = new Map<string, string>();
-      aliases.set(name, imported);
-    }
-  }
-
-  return [out, aliases];
-}

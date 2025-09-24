@@ -1,21 +1,22 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '../../core/types';
-import { ShaderModule } from '../../shader/types';
+} from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/types';
 
 import { ViewContext } from '../providers/view-provider';
 import { PickingContext, useNoPicking } from '../render/picking';
 import { Virtual } from './virtual';
 
-import { use, yeet, memo, patch, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingsToLinks } from '../../shader/glsl';
-import { makeShaderBindings } from '../../core';
+import { patch } from '@use-gpu/state';
+import { use, yeet, memo, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
+import { makeShaderBindings } from '@use-gpu/core';
 
-import { getLineVertex } from '../../gen-glsl/instance/vertex/line';
-import { getPassThruFragment } from '../../gen-glsl/mask/passthru';
+import { getLineVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
+import { getPassThruFragment } from '@use-gpu/wgsl/mask/passthru.wgsl';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,
@@ -38,7 +39,7 @@ export type RawLinesProps = {
 
   join?: 'miter' | 'round' | 'bevel',
 
-  pipeline: DeepPartial<GPURenderPipelineDescriptor>,
+  pipeline?: DeepPartial<GPURenderPipelineDescriptor>,
   mode?: RenderPassMode,
   id?: number,
 };
@@ -46,33 +47,33 @@ export type RawLinesProps = {
 const ZERO = [0, 0, 0, 1];
 
 const VERTEX_BINDINGS = [
-  { name: 'getPosition', format: 'vec4', value: ZERO },
-  { name: 'getSegment', format: 'int', value: 0 },
-  { name: 'getColor', format: 'vec4', value: [0.5, 0.5, 0.5, 1] },
-  { name: 'getSize', format: 'float', value: 1 },
-  { name: 'getDepth', format: 'float', value: 0 },
+  { name: 'getPosition', format: 'vec4<f32>', value: ZERO },
+  { name: 'getSegment', format: 'i32', value: 0 },
+  { name: 'getColor', format: 'vec4<f32>', value: [0.5, 0.5, 0.5, 1] },
+  { name: 'getSize', format: 'f32', value: 1 },
+  { name: 'getDepth', format: 'f32', value: 0 },
 ] as UniformAttributeValue[];
 
 const LINE_JOIN_SIZE = {
   'bevel': 1,
   'miter': 2,
   'round': 4,
-};
+} as Record<string, number>;
 
 const LINE_JOIN_STYLE = {
   'bevel': 0,
   'miter': 1,
   'round': 2,
-};
+} as Record<string, number>;
 
 const PIPELINE = {
   primitive: {
     topology: 'triangle-strip',
     stripIndexFormat: 'uint16',
   },
-};
+} as DeepPartial<GPURenderPipelineDescriptor>;
 
-export const RawLines: LiveComponent<RawLinesProps> = memo((props) => {
+export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps) => {
   const {
     pipeline: propPipeline,
     mode = RenderPassMode.Opaque,

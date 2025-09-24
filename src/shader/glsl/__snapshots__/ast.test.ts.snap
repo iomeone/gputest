@@ -25,16 +25,10 @@ Object {
         },
       },
     },
-  ],
-  "externals": undefined,
-  "functions": Array [
     Object {
       "at": 102,
       "flags": 1,
-      "identifiers": Array [
-        "QUAD",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "getQuadIndex",
         "parameters": Array [
           "int",
@@ -45,6 +39,9 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "QUAD",
+      ],
       "symbols": Array [
         "getQuadIndex",
       ],
@@ -52,10 +49,7 @@ Object {
     Object {
       "at": 176,
       "flags": 1,
-      "identifiers": Array [
-        "getQuadIndex",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "getQuadUV",
         "parameters": Array [
           "int",
@@ -66,18 +60,22 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "getQuadIndex",
+      ],
       "symbols": Array [
         "getQuadUV",
       ],
     },
   ],
+  "externals": undefined,
   "globals": undefined,
   "hash": "vz5280ybh9",
   "modules": undefined,
   "symbols": Array [
+    "QUAD",
     "getQuadIndex",
     "getQuadUV",
-    "QUAD",
   ],
   "visibles": Array [
     "getQuadIndex",
@@ -89,10 +87,9 @@ Object {
 exports[`ast gets quad vertex declarations 1`] = `
 Array [
   Object {
-    "at": 217,
+    "at": 175,
     "flags": 0,
-    "identifiers": Array [],
-    "prototype": Object {
+    "func": Object {
       "name": "getPosition",
       "parameters": Array [
         "int",
@@ -102,15 +99,15 @@ Array [
         "qualifiers": Array [],
       },
     },
+    "identifiers": Array [],
     "symbols": Array [
       "getPosition",
     ],
   },
   Object {
-    "at": 240,
+    "at": 198,
     "flags": 0,
-    "identifiers": Array [],
-    "prototype": Object {
+    "func": Object {
       "name": "getColor",
       "parameters": Array [
         "int",
@@ -120,15 +117,15 @@ Array [
         "qualifiers": Array [],
       },
     },
+    "identifiers": Array [],
     "symbols": Array [
       "getColor",
     ],
   },
   Object {
-    "at": 260,
+    "at": 218,
     "flags": 0,
-    "identifiers": Array [],
-    "prototype": Object {
+    "func": Object {
       "name": "getSize",
       "parameters": Array [
         "int",
@@ -138,15 +135,15 @@ Array [
         "qualifiers": Array [],
       },
     },
+    "identifiers": Array [],
     "symbols": Array [
       "getSize",
     ],
   },
   Object {
-    "at": 279,
+    "at": 237,
     "flags": 0,
-    "identifiers": Array [],
-    "prototype": Object {
+    "func": Object {
       "name": "getDepth",
       "parameters": Array [
         "int",
@@ -156,6 +153,7 @@ Array [
         "qualifiers": Array [],
       },
     },
+    "identifiers": Array [],
     "symbols": Array [
       "getDepth",
     ],
@@ -166,8 +164,19 @@ Array [
 exports[`ast gets quad vertex functions 1`] = `
 Array [
   Object {
-    "at": 316,
+    "at": 274,
     "flags": 1,
+    "func": Object {
+      "name": "getQuadVertex",
+      "parameters": Array [
+        "int",
+        "vertexIndex",
+      ],
+      "type": Object {
+        "name": "SolidVertex",
+        "qualifiers": Array [],
+      },
+    },
     "identifiers": Array [
       "position",
       "getPosition",
@@ -189,17 +198,6 @@ Array [
       "viewUniforms",
       "SolidVertex",
     ],
-    "prototype": Object {
-      "name": "getQuadVertex",
-      "parameters": Array [
-        "int",
-        "vertexIndex",
-      ],
-      "type": Object {
-        "name": "SolidVertex",
-        "qualifiers": Array [],
-      },
-    },
     "symbols": Array [
       "getQuadVertex",
     ],
@@ -217,7 +215,7 @@ Array [
         "name": "SolidVertex",
       },
     ],
-    "name": "@use-gpu/glsl/use/types",
+    "name": "use/types",
     "symbols": Array [
       "SolidVertex",
     ],
@@ -238,7 +236,7 @@ Array [
         "name": "getPerspectiveScale",
       },
     ],
-    "name": "@use-gpu/glsl/use/view",
+    "name": "use/view",
     "symbols": Array [
       "viewUniforms",
       "worldToClip",
@@ -253,7 +251,7 @@ Array [
         "name": "getQuadUV",
       },
     ],
-    "name": "@use-gpu/glsl/geometry/quad",
+    "name": "geometry/quad",
     "symbols": Array [
       "getQuadUV",
     ],
@@ -265,10 +263,9 @@ exports[`ast gets quad vertex symbol table 1`] = `
 Object {
   "declarations": Array [
     Object {
-      "at": 217,
+      "at": 175,
       "flags": 0,
-      "identifiers": Array [],
-      "prototype": Object {
+      "func": Object {
         "name": "getPosition",
         "parameters": Array [
           "int",
@@ -278,15 +275,15 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [],
       "symbols": Array [
         "getPosition",
       ],
     },
     Object {
-      "at": 240,
+      "at": 198,
       "flags": 0,
-      "identifiers": Array [],
-      "prototype": Object {
+      "func": Object {
         "name": "getColor",
         "parameters": Array [
           "int",
@@ -296,15 +293,15 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [],
       "symbols": Array [
         "getColor",
       ],
     },
     Object {
-      "at": 260,
+      "at": 218,
       "flags": 0,
-      "identifiers": Array [],
-      "prototype": Object {
+      "func": Object {
         "name": "getSize",
         "parameters": Array [
           "int",
@@ -314,15 +311,15 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [],
       "symbols": Array [
         "getSize",
       ],
     },
     Object {
-      "at": 279,
+      "at": 237,
       "flags": 0,
-      "identifiers": Array [],
-      "prototype": Object {
+      "func": Object {
         "name": "getDepth",
         "parameters": Array [
           "int",
@@ -332,96 +329,15 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [],
       "symbols": Array [
         "getDepth",
       ],
     },
-  ],
-  "externals": Array [
     Object {
-      "at": 217,
-      "flags": 0,
-      "identifiers": Array [],
-      "prototype": Object {
-        "name": "getPosition",
-        "parameters": Array [
-          "int",
-        ],
-        "type": Object {
-          "name": "vec4",
-          "qualifiers": Array [],
-        },
-      },
-      "symbols": Array [
-        "getPosition",
-      ],
-    },
-    Object {
-      "at": 240,
-      "flags": 0,
-      "identifiers": Array [],
-      "prototype": Object {
-        "name": "getColor",
-        "parameters": Array [
-          "int",
-        ],
-        "type": Object {
-          "name": "vec4",
-          "qualifiers": Array [],
-        },
-      },
-      "symbols": Array [
-        "getColor",
-      ],
-    },
-    Object {
-      "at": 260,
-      "flags": 0,
-      "identifiers": Array [],
-      "prototype": Object {
-        "name": "getSize",
-        "parameters": Array [
-          "int",
-        ],
-        "type": Object {
-          "name": "vec2",
-          "qualifiers": Array [],
-        },
-      },
-      "symbols": Array [
-        "getSize",
-      ],
-    },
-    Object {
-      "at": 279,
-      "flags": 0,
-      "identifiers": Array [],
-      "prototype": Object {
-        "name": "getDepth",
-        "parameters": Array [
-          "int",
-        ],
-        "type": Object {
-          "name": "float",
-          "qualifiers": Array [],
-        },
-      },
-      "symbols": Array [
-        "getDepth",
-      ],
-    },
-  ],
-  "functions": Array [
-    Object {
-      "at": 316,
+      "at": 274,
       "flags": 1,
-      "identifiers": Array [
-        "getPosition",
-        "getColor",
-        "getSize",
-        "getDepth",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "getQuadVertex",
         "parameters": Array [
           "int",
@@ -432,13 +348,93 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "getPosition",
+        "getColor",
+        "getSize",
+        "getDepth",
+      ],
       "symbols": Array [
         "getQuadVertex",
       ],
     },
   ],
+  "externals": Array [
+    Object {
+      "at": 175,
+      "flags": 0,
+      "func": Object {
+        "name": "getPosition",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [],
+      "symbols": Array [
+        "getPosition",
+      ],
+    },
+    Object {
+      "at": 198,
+      "flags": 0,
+      "func": Object {
+        "name": "getColor",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [],
+      "symbols": Array [
+        "getColor",
+      ],
+    },
+    Object {
+      "at": 218,
+      "flags": 0,
+      "func": Object {
+        "name": "getSize",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "vec2",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [],
+      "symbols": Array [
+        "getSize",
+      ],
+    },
+    Object {
+      "at": 237,
+      "flags": 0,
+      "func": Object {
+        "name": "getDepth",
+        "parameters": Array [
+          "int",
+        ],
+        "type": Object {
+          "name": "float",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [],
+      "symbols": Array [
+        "getDepth",
+      ],
+    },
+  ],
   "globals": undefined,
-  "hash": "vidntg3d26",
+  "hash": "4ty31mhjri",
   "modules": Array [
     Object {
       "at": 0,
@@ -448,7 +444,7 @@ Object {
           "name": "SolidVertex",
         },
       ],
-      "name": "@use-gpu/glsl/use/types",
+      "name": "use/types",
       "symbols": Array [
         "SolidVertex",
       ],
@@ -469,7 +465,7 @@ Object {
           "name": "getPerspectiveScale",
         },
       ],
-      "name": "@use-gpu/glsl/use/view",
+      "name": "use/view",
       "symbols": Array [
         "viewUniforms",
         "worldToClip",
@@ -484,18 +480,18 @@ Object {
           "name": "getQuadUV",
         },
       ],
-      "name": "@use-gpu/glsl/geometry/quad",
+      "name": "geometry/quad",
       "symbols": Array [
         "getQuadUV",
       ],
     },
   ],
   "symbols": Array [
-    "getQuadVertex",
     "getPosition",
     "getColor",
     "getSize",
     "getDepth",
+    "getQuadVertex",
   ],
   "visibles": Array [
     "getQuadVertex",
@@ -532,35 +528,35 @@ Array [
 exports[`ast gets shake information for instance/vertex/quad AST 1`] = `
 Array [
   Array [
-    217,
+    175,
     Array [
       "getPosition",
       "getQuadVertex",
     ],
   ],
   Array [
-    240,
+    198,
     Array [
       "getColor",
       "getQuadVertex",
     ],
   ],
   Array [
-    260,
+    218,
     Array [
       "getSize",
       "getQuadVertex",
     ],
   ],
   Array [
-    279,
+    237,
     Array [
       "getDepth",
       "getQuadVertex",
     ],
   ],
   Array [
-    316,
+    274,
     Array [
       "getQuadVertex",
     ],
@@ -588,10 +584,9 @@ Array [
 exports[`ast gets solid fragment declarations 1`] = `
 Array [
   Object {
-    "at": 68,
+    "at": 54,
     "flags": 0,
-    "identifiers": Array [],
-    "prototype": Object {
+    "func": Object {
       "name": "getFragment",
       "parameters": Array [
         "vec4",
@@ -601,12 +596,13 @@ Array [
         "qualifiers": Array [],
       },
     },
+    "identifiers": Array [],
     "symbols": Array [
       "getFragment",
     ],
   },
   Object {
-    "at": 117,
+    "at": 103,
     "flags": 0,
     "identifiers": Array [],
     "symbols": Array [
@@ -630,7 +626,7 @@ Array [
     },
   },
   Object {
-    "at": 162,
+    "at": 148,
     "flags": 0,
     "identifiers": Array [],
     "symbols": Array [
@@ -653,7 +649,7 @@ Array [
     },
   },
   Object {
-    "at": 209,
+    "at": 195,
     "flags": 0,
     "identifiers": Array [],
     "symbols": Array [
@@ -676,7 +672,7 @@ Array [
     },
   },
   Object {
-    "at": 249,
+    "at": 235,
     "flags": 0,
     "identifiers": Array [],
     "symbols": Array [
@@ -699,7 +695,7 @@ Array [
     },
   },
   Object {
-    "at": 287,
+    "at": 273,
     "flags": 0,
     "identifiers": Array [],
     "symbols": Array [
@@ -926,7 +922,6 @@ Object {
     },
   ],
   "externals": undefined,
-  "functions": undefined,
   "globals": undefined,
   "hash": "3wmin9gcu9",
   "modules": undefined,
@@ -1089,16 +1084,10 @@ Object {
         "ViewUniforms",
       ],
     },
-  ],
-  "externals": undefined,
-  "functions": Array [
     Object {
       "at": 275,
       "flags": 1,
-      "identifiers": Array [
-        "viewUniforms",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "worldToView",
         "parameters": Array [
           "vec4",
@@ -1109,6 +1098,9 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
       "symbols": Array [
         "worldToView",
       ],
@@ -1116,10 +1108,7 @@ Object {
     Object {
       "at": 372,
       "flags": 1,
-      "identifiers": Array [
-        "viewUniforms",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "viewToClip",
         "parameters": Array [
           "vec4",
@@ -1130,6 +1119,9 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
       "symbols": Array [
         "viewToClip",
       ],
@@ -1137,11 +1129,7 @@ Object {
     Object {
       "at": 474,
       "flags": 1,
-      "identifiers": Array [
-        "viewToClip",
-        "worldToView",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "worldToClip",
         "parameters": Array [
           "vec4",
@@ -1152,6 +1140,10 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "viewToClip",
+        "worldToView",
+      ],
       "symbols": Array [
         "worldToClip",
       ],
@@ -1159,10 +1151,7 @@ Object {
     Object {
       "at": 570,
       "flags": 1,
-      "identifiers": Array [
-        "viewUniforms",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "clipToScreen3D",
         "parameters": Array [
           "vec4",
@@ -1173,6 +1162,9 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
       "symbols": Array [
         "clipToScreen3D",
       ],
@@ -1180,10 +1172,7 @@ Object {
     Object {
       "at": 689,
       "flags": 1,
-      "identifiers": Array [
-        "viewUniforms",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "screenToClip3D",
         "parameters": Array [
           "vec4",
@@ -1194,6 +1183,9 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
       "symbols": Array [
         "screenToClip3D",
       ],
@@ -1201,11 +1193,7 @@ Object {
     Object {
       "at": 814,
       "flags": 1,
-      "identifiers": Array [
-        "viewToClip",
-        "worldToView",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "worldToClip3D",
         "parameters": Array [
           "vec4",
@@ -1216,6 +1204,10 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "viewToClip",
+        "worldToView",
+      ],
       "symbols": Array [
         "worldToClip3D",
       ],
@@ -1223,10 +1215,7 @@ Object {
     Object {
       "at": 952,
       "flags": 1,
-      "identifiers": Array [
-        "viewUniforms",
-      ],
-      "prototype": Object {
+      "func": Object {
         "name": "getPerspectiveScale",
         "parameters": Array [
           "float",
@@ -1237,15 +1226,21 @@ Object {
           "qualifiers": Array [],
         },
       },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
       "symbols": Array [
         "getPerspectiveScale",
       ],
     },
   ],
+  "externals": undefined,
   "globals": undefined,
   "hash": "q3u45dtwd2",
   "modules": undefined,
   "symbols": Array [
+    "viewUniforms",
+    "ViewUniforms",
     "worldToView",
     "viewToClip",
     "worldToClip",
@@ -1253,10 +1248,10 @@ Object {
     "screenToClip3D",
     "worldToClip3D",
     "getPerspectiveScale",
-    "viewUniforms",
-    "ViewUniforms",
   ],
   "visibles": Array [
+    "viewUniforms",
+    "ViewUniforms",
     "worldToView",
     "viewToClip",
     "worldToClip",
@@ -1264,8 +1259,6 @@ Object {
     "screenToClip3D",
     "worldToClip3D",
     "getPerspectiveScale",
-    "viewUniforms",
-    "ViewUniforms",
   ],
 }
 `;

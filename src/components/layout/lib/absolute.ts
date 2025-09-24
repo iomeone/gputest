@@ -1,12 +1,11 @@
-import { Point, LayoutState, LayoutGenerator, LayoutResult, Rectangle } from '../types';
-import { makeBlockLayout } from './block';
+import { Point, LayoutElement, LayoutState, LayoutRenderer, LayoutResult, Rectangle } from '../types';
 import { parseDimension } from './util';
 
 const NO_LAYOUT = [0, 0, 0, 0] as Rectangle;
 
 export const fitAbsoluteBox = (
   els: LayoutElement[],
-  into: Rectangle,
+  into: Point,
   l?: string | number | null,
   t?: string | number | null,
   r?: string | number | null,

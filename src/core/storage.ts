@@ -1,12 +1,12 @@
 import { StorageSource, UniformAttribute, DataBinding } from './types';
 
-export const makeStorage = (
+export const makeStorageBinding = (
   device: GPUDevice,
   pipeline: GPURenderPipeline | GPUComputePipeline,
   links: Record<string, StorageSource | null | undefined>,
   set: number = 0,
-) => {
-  const entries = makeStorageBindings(links);
+): GPUBindGroup => {
+  const entries = makeStorageEntries(links);
   const bindGroup = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(set),
     entries,
@@ -14,7 +14,7 @@ export const makeStorage = (
   return bindGroup;
 }
 
-export const makeStorageBindings = (
+export const makeStorageEntries = (
   links: Record<string, StorageSource | null | undefined>,
   binding: number = 0
 ): GPUBindGroupEntry[] => {
@@ -25,23 +25,6 @@ export const makeStorageBindings = (
     if (link) {
       const {buffer} = link;
       entries.push({binding, resource: {buffer}});
-      binding++;
-    }
-  }
-
-  return entries;
-};
-
-export const makeStorageForDataBindings = <T>(
-  bindings: DataBinding<T>[],
-  binding: number = 0,
-): GPUBindGroupEntry[] => {
-  const entries = [] as any[];
-
-  for (const b of bindings) {
-    if (b.storage) {
-      const {storage} = b;
-      entries.push({binding, resource: {buffer: storage.buffer}});
       binding++;
     }
   }
@@ -64,7 +47,8 @@ export const checkStorageType = (
   link: StorageSource | null | undefined,
 ) => {
   const {name, format} = uniform;
-  if (link && link.format !== format) throw new Error(`Invalid format ${link.format} bound for ${format} "${name}"`);
+  //if (link && link.format !== format) throw new Error(`Invalid format ${link.format} bound for ${format} "${name}"`);
+  if (link && link.format !== format) console.warn(`Invalid format ${link.format} bound for ${format} "${name}"`);
 } 
 
 export const makeStorageAccessors = (

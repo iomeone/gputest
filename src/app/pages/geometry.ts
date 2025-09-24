@@ -1,18 +1,17 @@
-import { LiveComponent } from '../../live/types';
-import { CanvasRenderingContextGPU } from '../../webgpu/types';
-import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../../core/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import { use, useMemo, useOne, useResource, useState } from '../../live';
+import { use, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   Loop, Draw, Pass, Flat,
   CompositeData, Data, RawData, Raw,
   OrbitCamera, OrbitControls,
   Pick, Cursor, Points, Lines,
-  RawQuads as Quads, RawLines,
   RenderToTexture,
   Router, Routes,
-} from '../../components';
+} from '@use-gpu/components';
 import { Mesh } from '../mesh';
 import { makeMesh, makeTexture } from '../meshes/mesh';
 
@@ -28,14 +27,14 @@ const data = seq(10).map((i) => ({
 }));
 
 const quadFields = [
-  ['vec4', 'position'],
-  ['float', 'size'],
+  ['vec4<f32>', 'position'],
+  ['f32', 'size'],
 ] as DataField[];
 
 const lineFields = [
-  ['vec4', [2, -2, 2, 1, 2, -2, -2, 1, -2, -2, -2, 1, -2, -2, 0, 1, 0, -2, 0, 1, 0, 0, 0, 1]],
-  ['int', [1, 3, 3, 3, 3, 2]],
-  ['float', [10, 10, 10, 10, 10]],
+  ['vec4<f32>', [2, -2, 2, 1, 2, -2, -2, 1, -2, -2, -2, 1, -2, -2, 0, 1, 0, -2, 0, 1, 0, 0, 0, 1]],
+  ['i32', [1, 3, 3, 3, 3, 2]],
+  ['f32', [10, 10, 10, 10, 10]],
 ] as DataField[];
 
 const lineData = seq(1).map((i) => ({
@@ -53,9 +52,9 @@ lineData.push({
 })
 
 const lineDataFields = [
-  ['vec4[]', (o: any) => o.path],
-  ['vec4', 'color'],
-  ['float', 'size'],
+  ['array<vec4<f32>>', (o: any) => o.path],
+  ['vec4<f32>', 'color'],
+  ['f32', 'size'],
 ] as DataField[];
 
 let t = 0;
@@ -79,9 +78,9 @@ export const GeometryPage: LiveComponent<GeometryPageProps> = (props) => {
             use(Data)({
               fields: lineFields,
               render: ([positions, segments, sizes]: StorageSource[]) => [
-                use(RawLines)({ positions, segments, size: 50, join: 'round' }),
-                use(RawLines)({ positions, segments, size: 50, join: 'round', mode: RenderPassMode.Debug }),
-                use(RawLines)({ positions, segments, size: 50, join: 'round', mode: RenderPassMode.Debug, depth: 1 }),
+                use(Lines)({ positions, segments, size: 50, join: 'round' }),
+                use(Lines)({ positions, segments, size: 50, join: 'round', mode: RenderPassMode.Debug }),
+                use(Lines)({ positions, segments, size: 50, join: 'round', mode: RenderPassMode.Debug, depth: 1 }),
               ]
             }),
             use(CompositeData)({
@@ -89,11 +88,11 @@ export const GeometryPage: LiveComponent<GeometryPageProps> = (props) => {
               data: lineData,
               isLoop: (o: any) => o.loop,
               render: ([segments, positions, colors, sizes]: StorageSource[]) => [
-                use(RawLines)({ segments, positions, colors, sizes, }),
+                use(Lines)({ segments, positions, colors, sizes, }),
               ]          
             }),
             use(RawData)({
-              format: 'vec4',
+              format: 'vec4<f32>',
               length: 100,
               live: true,
               expr: (emit: Emitter, i: number) => {

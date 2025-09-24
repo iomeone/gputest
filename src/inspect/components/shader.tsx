@@ -1,6 +1,6 @@
-import { LiveFiber } from '../../live/types';
-import { formatNode, formatValue } from '../../live';
-import styled, { keyframes } from "styled-components";
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatNode, formatValue } from '@use-gpu/live';
+import { styled } from "@stitches/react";
 
 import React, { Fragment, useState } from 'react';
 import { Action } from './types';
@@ -8,33 +8,33 @@ import { SplitRow, Label, Selectable } from './layout';
 
 import { inspectObject } from './props';
 
-const StyledShader = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  font-family: "Fira Code", "Bitstream Vera Mono", monospace;
-  font-size: 12px;
-  line-height: 13px;
-`
+const StyledShader = styled('div', {
+  background: 'rgba(255, 255, 255, 0.1)',
+  fontFamily: '"Fira Code", "Bitstream Vera Mono", monospace',
+  fontSize: '12px',
+  lineHeight: '13px',
+});
 
-const StyledEditor = styled.div`
-  display: flex;
-  padding: 10px 0;
-  width: 100%;
-`
+const StyledEditor = styled('div', {
+  display: 'flex',
+  padding: '10px 0',
+  width: '100%',
+});
 
-const StyledGutter = styled.div`
-  padding: 0 5px;
-  border-right: 1px solid var(--borderThin);
-  text-align: right;
-  color: var(--colorTextMuted);
-  font-size: 0.9em;
-`
+const StyledGutter = styled('div', {
+  padding: '0 5px',
+  borderRight: '1px solid var(--borderThin)',
+  textAlign: 'right',
+  color: 'var(--colorTextMuted)',
+  fontSize: '0.9em',
+});
 
-const StyledCode = styled.div`
-  flex-grow: 1;
-  white-space: pre;
-  padding: 0 10px;
-  overflow: auto;
-`
+const StyledCode = styled('div', {
+  flexGrow: '1',
+  whiteSpace: 'pre',
+  padding: '0 10px',
+  overflow: 'auto',
+});
 
 type ShaderProps = {
   shader: string,

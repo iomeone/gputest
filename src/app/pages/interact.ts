@@ -1,14 +1,14 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
 
-import { use, gather, resume, useMemo, useOne, useResource, useState } from '../../live';
+import { use, gather, resume, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   Draw, Pass,
-  Flat, Absolute, Layout, Stack, Flex, Element,
+  Flat, Absolute, Layout, Block, Flex, Element,
   Aggregate, RawTexture,
-} from '../../components';
-import { Mesh } from '../mesh';
-import { makeMesh, makeTexture } from '../meshes/mesh';
+} from '@use-gpu/components';
+import { makeTexture } from '../meshes/mesh';
 
 export type InteractPageProps = {
   _unused?: boolean,
@@ -27,7 +27,7 @@ export const InteractPage: LiveComponent<InteractPageProps> = (props) => {
 
             gather([
               use(RawTexture)({ data: texture }),
-            ], resume(([source]) =>
+            ], resume(([texture]: [TextureSource]) =>
 
               use(Flat)({
                 children:
@@ -46,11 +46,46 @@ export const InteractPage: LiveComponent<InteractPageProps> = (props) => {
 
                               children: 
 
-                                use(Stack)({
+                                use(Block)({
                                   children: [
-                                    use(Element)({ width: 100, height: 100 }),
 
-                                    use(Stack)({
+                                    use(Block)({
+                                      width: 300, height: 200, 
+                                      children: [
+
+                                        use(Absolute)({
+                                          children: [
+
+                                            use(Element)({ }),
+
+                                          ],
+                                        }),
+
+                                        use(Absolute)({
+                                          left: 10,
+                                          top: 10,
+                                          right: 10,
+                                          bottom: 10,
+
+                                          children: [
+
+                                            use(Element)({
+                                              radius: 10,
+                                              image: {
+                                                texture,
+                                                width: 100,
+                                                height: 100,
+                                                repeat: 'none',
+                                              },
+                                            }),
+
+                                          ],
+                                        }),
+
+                                      ],
+                                    }),
+
+                                    use(Block)({
                                       padding: 0,
                                       children: [
                                         use(Element)({ width: 200, height: 100, margin: 10 }),
@@ -60,11 +95,11 @@ export const InteractPage: LiveComponent<InteractPageProps> = (props) => {
                                     }),
 
                                     use(Flex)({
-                                      alignX: 'between',
+                                      align: ['between', 'start'],
                                       children: [
                                         use(Element)({ width: 200, height: 100 }),
                                         use(Element)({ width: 300, height: 100, margin: 30, shrink: 1 }),
-                                        use(Stack)({
+                                        use(Block)({
                                           children: [
                                             use(Element)({ width: 200, height: 100 }),
                                             use(Element)({ width: 300, height: 100 }),

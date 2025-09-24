@@ -1,8 +1,9 @@
-import { LiveElement } from '../../../live/types';
-import { Point, Rectangle, Gap, Margin, Alignment, Anchor, LayoutRenderer } from '../types';
+import { LiveElement } from '@use-gpu/live/types';
+import { Point, Rectangle, Gap, Margin, Alignment, Anchor, Dimension, LayoutRenderer } from '../types';
 
-export const parseDimension = (x: string | number, total: number, snap?: boolean = false): number => {
+export const parseDimension = (x: string | number | null | undefined, total: number, snap: boolean = false): number => {
   if (typeof x === 'number') return snap ? Math.round(x) : x;
+  if (x == null) return snap ? Math.round(total) : total;
 
   let v;
   const s = x as string;
@@ -27,6 +28,11 @@ export const parseAnchor = (x: string): number => {
 export const normalizeAlignment = (x: Alignment | [Alignment, Alignment]): [Alignment, Alignment] =>
   !Array.isArray(x)
     ? [x, x] as [Alignment, Alignment]
+    : x;
+
+export const normalizeAnchor = (x: Anchor | [Anchor, Anchor]): [Anchor, Anchor] =>
+  !Array.isArray(x)
+    ? [x, x] as [Anchor, Anchor]
     : x;
 
 export const normalizeMargin = (m: number | Margin): Margin =>

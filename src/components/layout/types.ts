@@ -1,4 +1,5 @@
-import { LiveElement, Key } from '../../live/types';
+import { TextureSource } from '@use-gpu/core/types';
+import { LiveElement, Key } from '@use-gpu/live/types';
 
 export type Point = [number, number];
 export type Point4 = [number, number, number, number];
@@ -12,9 +13,19 @@ export type Rectangle = Point4;
 export type Direction = 'x' | 'y' | 'lr' | 'rl' | 'tb' | 'bt';
 export type Alignment = 'start' | 'center' | 'end' | 'justify' | 'between' | 'evenly';
 export type Anchor = 'start' | 'center' | 'end';
+export type Base = 'start' | 'base' | 'center' | 'end';
 
-export type Fit = 'fit' | 'cover' | 'scale' | 'none';
+export type Fit = 'contain' | 'cover' | 'scale' | 'none';
 export type Repeat = 'x' | 'y' | 'xy' | 'none';
+
+export type ImageAttachment = {
+  texture: TextureSource,
+  width?: Dimension,
+  height?: Dimension,
+  fit?: Fit,
+  repeat?: Repeat,
+  align?: Anchor | [Anchor, Anchor],
+};
 
 export type LayoutRenderer = (box: Rectangle) => LiveElement<any>;
 export type LayoutFit = {
@@ -46,6 +57,3 @@ export type LayoutResult = {
   results?: LayoutResult[],
   render?: (layout: LayoutState) => LiveElement<any>,
 };
-
-export type LayoutGenerator = (layout: LayoutState) => LayoutResult;
-export type LayoutResolver = (layout: LayoutState, ls: LayoutHandler[]) => LayoutResult;

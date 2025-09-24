@@ -1,16 +1,16 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode, DeepPartial,
-} from '../../core/types';
-import { ShaderModule, ParsedBundle, ParsedModule } from '../../shader/types';
-import { ViewContext, RenderContext, PickingContext, usePickingContext } from '../../components';
-import { yeet, memo, useContext, useNoContext, useMemo, useOne, useState, useResource, useConsoleLog } from '../../live';
+} from '@use-gpu/core/types';
+import { ShaderModule, ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
+import { ViewContext, RenderContext, PickingContext, usePickingContext } from '@use-gpu/components';
+import { yeet, memo, useContext, useNoContext, useMemo, useOne, useState, useResource, useConsoleLog } from '@use-gpu/live';
 import {
   makeMultiUniforms, makeBoundUniforms,
   makeRenderPipeline,
   uploadBuffer,
-} from '../../core';
+} from '@use-gpu/core';
 import { useLinkedShader } from '../hooks/useLinkedShader';
 import { useRenderPipeline } from '../hooks/useRenderPipeline';
 
@@ -25,11 +25,11 @@ export type RenderProps = {
   vertexCount: number,
   instanceCount: number,
 
-  vertex: ShaderModule,
-  fragment: ShaderModule,
+  vertex: ParsedBundle,
+  fragment: ParsedBundle,
 
   defines: Record<string, any>,
-  deps: any[],
+  deps: any[] | null,
 };
 
 export const render = (props: RenderProps) => {
@@ -52,21 +52,20 @@ export const render = (props: RenderProps) => {
   // Render set up
   const {viewUniforms, viewDefs} = useContext(ViewContext);
   const {renderContext, pickingUniforms, pickingDefs} = usePickingContext(id, isPicking);
-  const {device, languages} = renderContext;
+  const {device} = renderContext;
 
   // Render shader
   // TODO: non-strip topology
   const topology = propPipeline.primitive?.topology ?? 'triangle-list';
 
   const defines = useMemo(() => ({
-    IS_PICKING: isPicking,
-    VIEW_BINDGROUP: 0,
-    VIEW_BINDING: 0,
-    PICKING_BINDGROUP: 0,
-    PICKING_BINDING: 1,
-    VIRTUAL_BINDGROUP: 1,
+    '@group(VIEW)': '@group(0)',
+    '@binding(VIEW)': '@binding(0)',
+    '@group(PICKING)': '@group(0)',
+    '@binding(PICKING)': '@binding(1)',
+    '@group(VIRTUAL)': '@group(1)',
     ...propDefines,
-  }), [isPicking, propDefines]);
+  }), [propDefines]);
 
   // Shaders
   const {
@@ -77,7 +76,6 @@ export const render = (props: RenderProps) => {
     vertexShader,
     fragmentShader,
     defines,
-    languages,
     deps,
     1,
   );
@@ -85,7 +83,7 @@ export const render = (props: RenderProps) => {
   // Rendering pipeline
   const pipeline = useRenderPipeline(
     renderContext,
-    shader,
+    shader as any,
     propPipeline,
   );
 

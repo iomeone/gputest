@@ -1,5 +1,5 @@
-import { LiveFiber } from '../../live/types';
-import { formatNode, formatValue, renderFibers } from '../../live';
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatNode, formatValue, renderFibers } from '@use-gpu/live';
 import { useUpdateState } from './cursor';
 import { ExpandState, SelectState, HoverState, PingState } from './types';
 
@@ -10,14 +10,12 @@ import { Props } from './props';
 import { Call } from './call';
 import { Shader } from './shader';
 import {
-  InspectContainer, InspectToggle,
+  InspectContainer, InspectToggle, Button,
   SplitRow, RowPanel, Panel, PanelFull, PanelScrollable, Inset, InsetColumnFull,
 } from './layout';
-import { Button, Tab, Grid } from 'semantic-ui-react'
-import "../theme.css";
 
-const { Row, Column } = Grid;
-const { Pane } = Tab;
+import * as Tabs from '@radix-ui/react-tabs';
+import "../theme.css";
 
 const ICON = (s: string) => <span className="m-icon">{s}</span>
 
@@ -27,8 +25,6 @@ type InspectMap = WeakMap<LiveFiber<any>, InspectFiber>;
 type InspectProps = {
   fiber: LiveFiber<any>,
 }
-
-const TAB_STYLE = { secondary: true, pointing: true };
 
 export const Inspect: React.FC<InspectProps> = ({fiber}) => {
   const expandCursor = useUpdateState<ExpandState>({});
@@ -53,21 +49,17 @@ export const Inspect: React.FC<InspectProps> = ({fiber}) => {
     },
   ] : [];
 
+  let vertexTab: React.ReactNode;
+  let fragmentTab: React.ReactNode;
   if (selectedFiber) {
     const inspect = selectedFiber.__inspect;
     if (inspect) {
       const {vertex, fragment} = inspect;
       if (vertex) {
-        panes.push({
-          menuItem: 'Vertex',
-          render: () => <Shader shader={vertex} />
-        });
+        vertexTab = <Shader shader={vertex} />;
       }
       if (fragment) {
-        panes.push({
-          menuItem: 'Fragment',
-          render: () => <Shader shader={fragment} />
-        });
+        fragmentTab = <Shader shader={fragment} />
       }
     }
   }
@@ -87,7 +79,18 @@ export const Inspect: React.FC<InspectProps> = ({fiber}) => {
 
   const props = (
     <Inset>
-      <Tab menu={TAB_STYLE} panes={panes} />
+      <Tabs.Root defaultValue="props">
+        <Tabs.List>
+          <Tabs.Trigger value="props">Props</Tabs.Trigger>
+          <Tabs.Trigger value="fiber">Fiber</Tabs.Trigger>
+          {vertexTab ? <Tabs.Trigger value="vertex">Vertex</Tabs.Trigger> : null}
+          {fragmentTab ? <Tabs.Trigger value="fragment">Fragment</Tabs.Trigger> : null}
+        </Tabs.List>
+        <Tabs.Content value="props"><Props fiber={selectedFiber} fibers={fibers} /></Tabs.Content>
+        <Tabs.Content value="fiber"><Call fiber={selectedFiber} fibers={fibers} /></Tabs.Content>
+        {vertexTab ? <Tabs.Content value="vertex">{vertexTab}</Tabs.Content> : null }
+        {fragmentTab ? <Tabs.Content value="fragment">{fragmentTab}</Tabs.Content> : null }
+      </Tabs.Root>
     </Inset>
   );
 

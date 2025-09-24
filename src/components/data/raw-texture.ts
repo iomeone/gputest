@@ -1,8 +1,8 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, DataTexture, TextureSource, UniformType, Emitter } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, DataTexture, TextureSource, UniformType, Emitter } from '@use-gpu/core/types';
 import { DeviceContext, FrameContext } from '../providers';
-import { yeet, memo, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
-import { makeRawSourceTexture, makeTextureView, uploadRawTexture } from '../../core';
+import { yeet, memo, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
+import { makeSampler, makeRawSourceTexture, makeTextureView, uploadDataTexture } from '@use-gpu/core';
 
 export type RawTextureProps = {
   data?: DataTexture,
@@ -20,15 +20,22 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
     live = false,
   } = props;
 
-  const memoKey = [data.format, ...data.size].join('/');
+  const memoKey = data ? [data.format, ...data.size].join('/') : null;
 
   // Make source texture from data
   const source = useMemo(() => {
+    if (!data) return null;
+
     const {size, format} = data;
     const texture = makeRawSourceTexture(device, data);
     const source = {
       texture,
       view: makeTextureView(texture),
+      sampler: {
+        minFilter: 'nearest',
+        magFilter: 'nearest',
+      } as GPUSamplerDescriptor,
+      layout: 'texture_2d<f32>',
       format,
       size,
       version: 0,
@@ -38,7 +45,9 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
 
   // Refresh and upload data
   const refresh = () => {
-    uploadRawTexture(device, source.texture, data);
+    if (!source || !data) return;
+
+    uploadDataTexture(device, source.texture, data);
     source.version = incrementVersion(source.version);
   };
 
@@ -52,5 +61,5 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
     refresh();
   }
 
-  return useMemo(() => render ? render(source) : yeet(source), [render, source]);
+  return useMemo(() => source ? (render ? render(source) : yeet(source)) : null, [render, source]);
 };

@@ -1,4 +1,3 @@
-import { GLSLModules } from '../../glsl';
 import { bindBundle, bindingsToLinks, resolveBindings } from './bind';
 import { loadModule } from './shader';
 import { linkBundle } from './link';
@@ -76,17 +75,18 @@ describe("bind", () => {
       },
       {
         uniform: { format: 'vec2', name: 'getSize', value: [1, 1], args: ['int'] },
-        buffer: {
+        storage: {
           buffer: {} as any,
           format: 'vec2',
           length: 10,
+          version: 1,
         },
       },
     ];
 
     const toSnapshot = (link: any) => {
-      const { name, code, table, virtual: { uniforms, bindings, base }} = link;
-      return { name, code, table, uniforms, bindings, base };
+      const { name, code, table, virtual: { uniforms, storages, textures, base }} = link;
+      return { name, code, table, uniforms, storages, textures, base };
     }
 
     const links1 = bindingsToLinks(dataBindings);
@@ -108,6 +108,7 @@ describe("bind", () => {
           buffer: {} as any,
           format: 'vec2',
           length: 10,
+          version: 1,
         },
       },
     ];
@@ -124,8 +125,8 @@ describe("bind", () => {
     const mod = loadModule(code, 'code');
 
     const toSnapshot = (link: any) => {
-      const { name, code, table, virtual: { uniforms, bindings, base }} = link;
-      return { name, code, table, uniforms, bindings, base };
+      const { name, code, table, virtual: { uniforms, storages, textures, base }} = link;
+      return { name, code, table, uniforms, storages, textures, base };
     }
 
     const links = bindingsToLinks(dataBindings);

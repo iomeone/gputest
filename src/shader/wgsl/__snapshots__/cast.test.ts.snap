@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`cast casts 1`] = `
+"
+     fn _00_getValue() -> vec2<f32> { return vec2<f32>(1.0, 2.0); }
+    
+fn cast() -> vec3 {
+  return _00_getValue().xyx;
+}
+"
+`;
+
+exports[`cast casts and links 1`] = `
+"
+    fn _00_getValue() -> vec2<f32> { return vec2<f32>(1.0, 2.0); }
+    
+fn _01_cast() -> vec3 {
+  return _00_getValue().xyx;
+}
+
+
+    fn main() { _01_cast(); }
+    "
+`;

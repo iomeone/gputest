@@ -3,7 +3,7 @@ import { UniformAttribute, UniformType } from './types';
 export const PICKING_UNIFORMS: UniformAttribute[] = [
   {
     name: 'pickingId',
-    format: UniformType.int,
+    format: UniformType.i32,
   },
 ];
 

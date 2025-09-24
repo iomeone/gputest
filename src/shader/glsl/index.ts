@@ -1,10 +1,8 @@
 import {
-  parseShader,
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
   defineConstants,
-  makeLanguage,
   makeModuleCache,
 } from './shader';
 
@@ -36,13 +34,15 @@ import {
   rewriteUsingAST,
 } from './ast';
 
+import {
+  getProgramHash
+} from '../util/hash';
+
 export {
-  parseShader,
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
   defineConstants,
-  makeLanguage,
   makeModuleCache,
 } from './shader';
 
@@ -73,13 +73,16 @@ export {
   decompressAST,
   rewriteUsingAST,
 } from './ast';
+
+export {
+  getProgramHash
+} from '../util/hash';
 
 export const GLSLLinker = {
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
 
-  parseShader,
   defineConstants,
 
   linkBundle,
@@ -102,8 +105,9 @@ export const GLSLLinker = {
   decompressAST,
   rewriteUsingAST,
 
-  makeLanguage,
   makeModuleCache,
+
+  getProgramHash,
 };
 
 export default GLSLLinker;

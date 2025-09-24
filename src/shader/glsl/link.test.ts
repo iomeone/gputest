@@ -1,4 +1,4 @@
-import { GLSLModules } from '../../glsl';
+import { GLSLModules } from './glsl.test.data';
 import { linkCode, linkModule } from './link';
 import { loadModule } from './shader';
 import { formatAST } from '../util/tree'; 

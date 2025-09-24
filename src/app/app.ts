@@ -1,13 +1,13 @@
-import { LiveComponent } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../core/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import { use, useFiber, useMemo, useOne, useResource, useState } from '../live';
+import { use, useFiber, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   AutoCanvas,
   Loop, Draw, Pass,
-  CompositeData, Data, RawData, Inline,
+  CompositeData, Data, RawData,
   OrbitCamera, OrbitControls,
   AutoPicking, Pick,
   Cursor, Points, Lines,
@@ -15,10 +15,8 @@ import {
   RenderToTexture,
   Router, Routes,
   ViewProvider,
-} from '../components';
-import { Mesh } from './mesh';
-import { makeMesh } from './meshes/mesh';
-import { UseInspect } from '../inspect';
+} from '@use-gpu/components';
+import { UseInspect } from '@use-gpu/inspect';
 
 import { GeometryPage } from './pages/geometry';
 import { InteractPage } from './pages/interact';
@@ -29,15 +27,13 @@ export type AppProps = {
   device: GPUDevice,
   adapter: GPUAdapter,
   canvas: HTMLCanvasElement,
-  languages: ShaderLanguages,
 };
 
 export const App: LiveComponent<AppProps> = (props) => {
-  const {canvas, device, adapter, languages} = props;
+  const {canvas, device, adapter} = props;
 
   const fiber = useFiber();
   const inspect = useInspector();
-  const mesh = makeMesh();
 
   const routes = (
     use(Router)({
@@ -45,10 +41,10 @@ export const App: LiveComponent<AppProps> = (props) => {
         "/": {
           routes: {
             "geometry": { element: use(GeometryPage)({ canvas }) },
-            "layout": { element: use(LayoutPage)() },
-            "interact": { element: use(InteractPage)() },
+            "layout": { element: use(LayoutPage)({ }) },
+            "interact": { element: use(InteractPage)({ }) },
             "": { element: use(GeometryPage)({ canvas }) },
-            "*": { element: use(EmptyPage)() },
+            "*": { element: use(EmptyPage)({ }) },
           },
         },
       },
@@ -57,7 +53,7 @@ export const App: LiveComponent<AppProps> = (props) => {
 
   return [
     use(AutoCanvas)({
-      canvas, device, adapter, languages, samples: 4,
+      canvas, device, adapter, samples: 4,
       children:
       
         use(AutoPicking)({

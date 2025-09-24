@@ -1,14 +1,17 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
-import { Margin, Direction, Alignment, Anchor } from './types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LayoutElement, Margin, Dimension, Direction, Alignment, Anchor, Point } from '../types';
 
-import { resume, yeet, memo, gather, useOne, useMemo } from '../../../live';
+import { resume, yeet, memo, gather, useOne, useMemo } from '@use-gpu/live';
 import { getFlexMinMax, fitFlex } from '../lib/flex';
-import { makeBoxLayout, normalizeAlignment, normalizeAnchor, normalizeGap } from '../lib/util';
+import { makeBoxLayout, normalizeAlignment, normalizeGap, parseDimension } from '../lib/util';
 
 const NO_MARGIN = [0, 0, 0, 0] as Margin;
 
 export type FlexProps = {
   direction?: Direction,
+
+  width?: Dimension,
+  height?: Dimension,
 
   gap?: number | Point,
   align?: Alignment | [Alignment, Alignment],
@@ -23,9 +26,11 @@ export type FlexProps = {
   children?: LiveElement<any>,
 };
 
-export const Flex: LiveComponent<BlockProps> = memo((props) => {
+export const Flex: LiveComponent<FlexProps> = memo((props: FlexProps) => {
   const {
     direction = 'x',
+    width,
+    height,
     gap: g = 0,
     align: al = 'start',
     anchor = 'start',
@@ -33,7 +38,6 @@ export const Flex: LiveComponent<BlockProps> = memo((props) => {
     shrink = 1,
     wrap = false,
     snap = true,
-    render,
     children,
   } = props;
 
@@ -41,16 +45,18 @@ export const Flex: LiveComponent<BlockProps> = memo((props) => {
   const align  = normalizeAlignment(al);
 
   const Resume = useOne(() =>
-    makeResume(direction, gap, align, anchor, grow, shrink, wrap, snap),
-    [direction, gap, align, anchor, grow, shrink, wrap, snap]
+    makeResume(direction, width, height, gap, align, anchor, grow, shrink, wrap, snap),
+    [direction, width, height, gap, align, anchor, grow, shrink, wrap, snap]
   );
 
-  return gather(children, Resume);
+  return children ? gather(children, Resume) : null;
 }, 'Flex');
 
 const makeResume = (
   direction: Direction,
-  gap: number | Point,
+  width: Dimension | undefined,
+  height: Dimension | undefined,
+  gap: Point,
   align: [Alignment, Alignment],
   anchor: Anchor,
   grow: number,
@@ -59,7 +65,13 @@ const makeResume = (
   snap: boolean,
 ) =>
   resume((els: LayoutElement[]) => {
-    const sizing = getFlexMinMax(els, direction, gap, wrap, snap);
+    const w = width != null && width === +width ? width : null;
+    const h = height != null && height === +height ? height : null;
+
+    const size = [w ?? 0, h ?? 0];
+    const fixed = [w, h];
+
+    const sizing = getFlexMinMax(els, fixed, direction, gap, wrap, snap);
 
     return yeet({
       sizing,
@@ -67,11 +79,18 @@ const makeResume = (
       grow,
       shrink,
       fit: (into: Point) => {
-        const {size, sizes, offsets, renders} = fitFlex(els, into, direction, gap, align[0], align[1], anchor, wrap, snap);
+        const w = width != null ? parseDimension(width, into[0], snap) : null;
+        const h = height != null ? parseDimension(height, into[1], snap) : null;
+        const fixed = [
+          width != null ? w : null,
+          height != null ? h : null,
+        ] as [number | number, number | null];
+
+        const {size, sizes, offsets, renders} = fitFlex(els, into, fixed, direction, gap, align[0], align[1], anchor, wrap, snap);
         return {
           size,
           render: makeBoxLayout(sizes, offsets, renders),
         };
       }
     });
-  }, 'Flex');
+  });

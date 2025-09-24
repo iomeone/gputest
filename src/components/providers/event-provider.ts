@@ -1,8 +1,8 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { PickingUniforms } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { PickingUniforms } from '@use-gpu/core/types';
 
-import { memo, provide, provideMemo, makeContext, useContext, useMemo, useOne, useResource, useState } from '../../live';
-import { makeIdAllocator, PICKING_UNIFORMS } from '../../core';
+import { memo, provide, provideMemo, makeContext, useContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { makeIdAllocator, PICKING_UNIFORMS } from '@use-gpu/core';
 import { PickingContext } from '../render/picking';
 
 const CAPTURE_EVENT = {capture: true};
@@ -30,7 +30,7 @@ export type MouseState = {
   y: number,
 };
 
-export const EventProvider: LiveComponent<EventProviderProps> = memo(({element, children}) => {
+export const EventProvider: LiveComponent<EventProviderProps> = memo(({element, children}: EventProviderProps) => {
   const dpi = window.devicePixelRatio;
   const {sampleTexture} = useContext(PickingContext);
 

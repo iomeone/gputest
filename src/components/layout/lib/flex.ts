@@ -1,5 +1,5 @@
-import { LiveElement } from '../../../live/types';
-import { Point, LayoutElement, LayoutRenderer, Margin, Rectangle, Alignment } from '../types';
+import { LiveElement } from '@use-gpu/live/types';
+import { LayoutElement, LayoutRenderer, Direction, Point, Point4, Margin, Rectangle, Alignment, Anchor } from '../types';
 
 import { parseAnchor } from './util';
 
@@ -8,12 +8,18 @@ const isNotAbsolute = (el: LayoutElement) => !el.absolute;
 
 export const getFlexMinMax = (
   els: LayoutElement[],
-  direction: 'x' | 'y',
+  fixed: [number | number, number | null],
+  direction: Direction,
   gap: Point,
   wrap: boolean,
   snap: boolean,
 ) => {
-  const isX = direction === 'x';
+  if (fixed[0] != null && fixed[1] != null) {
+    if (snap) [Math.round(fixed[0]), Math.round(fixed[1]), Math.round(fixed[0]), Math.round(fixed[1])];
+    return [fixed[0], fixed[1], fixed[0], fixed[1]];
+  }
+
+  const isX = direction === 'x' || direction === 'lr' || direction === 'rl';
   const [gapX, gapY] = gap;
 
   let allMinX = 0;
@@ -70,6 +76,15 @@ export const getFlexMinMax = (
     }
   }
 
+  if (fixed[0] != null) {
+    allMinX = fixed[0];
+    allMaxX = fixed[0];
+  }
+  if (fixed[1] != null) {
+    allMinY = fixed[1];
+    allMaxY = fixed[1];
+  }
+
   if (snap) {
     allMinX = Math.round(allMinX);
     allMinY = Math.round(allMinY);
@@ -83,15 +98,16 @@ export const getFlexMinMax = (
 export const fitFlex = (
   els: LayoutElement[],
   into: Point,
-  direction: 'x' | 'y',
+  fixed: [number | number, number | null],
+  direction: Direction,
   gap: Point,
-  alignX: 'start' | 'center' | 'end' | 'justify' | 'between' | 'evenly',
-  alignY: 'start' | 'center' | 'end' | 'justify' | 'between' | 'evenly',
-  anchor: 'start' | 'center' | 'end',
+  alignX: Alignment,
+  alignY: Alignment,
+  anchor: Anchor,
   wrap: boolean,
   snap: boolean,
 ) => {
-  const isX = (direction === 'x');
+  const isX = direction === 'x' || direction === 'lr' || direction === 'rl';
 
   const [gapX, gapY] = gap;
   const gapMain = isX ? gapX : gapY;
@@ -104,8 +120,12 @@ export const fitFlex = (
   const isSnap = !!snap;
   const isWrap = !!wrap;
 
-  const spaceMain  = isX ? into[0] : into[1];
+  const containX = fixed[0] != null ? Math.min(fixed[0], into[0]) : into[0];
+  const containY = fixed[1] != null ? Math.min(fixed[1], into[1]) : into[1];
+
+  const spaceMain  = isX ? containX : containY;
   const spaceCross = isX ? into[1] : into[0];
+  const isCrossFixed = isX ? fixed[1] != null : fixed[0] != null;
 
   let i = 0;
 
@@ -154,7 +174,7 @@ export const fitFlex = (
 
     // Lay out a row of flexed boxes into their final size
     const crossSizes   = [] as Point[];
-    const crossOffsets = [] as Point[];
+    const crossOffsets = [] as [number, number][];
     const crossRenders = [] as LayoutRenderer[];
 
     let maxSize = 0;
@@ -171,11 +191,13 @@ export const fitFlex = (
 
       let s = isX ? w : h;
       let c = isX ? h : w;
-      let m = isX ? ml + mr : mt + mb;
+      let mm = isX ? ml + mr : mt + mb;
+      let mc = isX ? mt + mb : ml + mr;
+      let hh = c + mc;
 
       crossRenders.push(render);
-      crossOffsets.push(isX ? [ml + axisPos, mt] : [ml, mt + axisPos]);
-      axisPos += s + m + axisGap;
+      crossOffsets.push(isX ? [ml + axisPos, mt, hh] : [ml, mt + axisPos, hh]);
+      axisPos += s + mm + axisGap;
 
       if (snap) {
         s = Math.round(s);
@@ -183,7 +205,7 @@ export const fitFlex = (
       }
 
       crossSizes.push(isX ? [s, h] : [w, s]);
-      maxSize = Math.max(maxSize, c);
+      maxSize = Math.max(maxSize, hh);
     }
 
     cross.push({
@@ -203,7 +225,7 @@ export const fitFlex = (
     const n = cross.length;
     if (!n) return;
 
-    const slack = Math.max(0, spaceCross - accumCross - gapCross);
+    const slack = isCrossFixed ? Math.max(0, spaceCross - accumCross - gapCross) : 0;
 
     let crossGap = 0;
     let crossPos = 0;
@@ -215,7 +237,7 @@ export const fitFlex = (
 
       const m = ss.length;
       for (let j = 0; j < m; ++j) {
-        const lead = anchorRatio * (size - ss[j][isX ? 1 : 0]);
+        const lead = anchorRatio * (size - os[j][2]);
         let [l, t] = os[j];
 
         const o = crossPos + lead;
@@ -266,10 +288,9 @@ export const fitFlex = (
   reduceMain();
   reduceCross();
 
-  let [w, h] = into;
-  w = Math.max(w,  isX ? maxMain : maxCross);
-  h = Math.max(h, !isX ? maxMain : maxCross);
-  
+  const w =  isX ? containX : fixed[0] != null ? fixed[0] : maxCross;
+  const h = !isX ? containY : fixed[0] != null ? fixed[1] : maxCross;
+
   return {
     size: [w, h],
     sizes,

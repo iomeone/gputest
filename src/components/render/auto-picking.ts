@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 
 import { Picking } from './picking';
 import { EventProvider } from '../providers/event-provider';
 
-import { use } from '../../live';
+import { use } from '@use-gpu/live';
 
 export type AutoPickingProps = {
   canvas: HTMLCanvasElement,

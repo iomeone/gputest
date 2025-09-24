@@ -17,13 +17,15 @@ import {
   ShakeTable,
   ShakeOp,
   RefFlags as RF,
-} from '../types';
-import * as T from '../grammar/glsl.terms';
-import { GLSL_NATIVE_TYPES } from '../constants';
+} from './types';
+import * as T from './grammar/glsl.terms';
+import { GLSL_NATIVE_TYPES } from './constants';
 import { parseString } from '../util/bundle';
 import { getProgramHash } from '../util/hash';
-import { getChildNodes, hasErrorNode, formatAST, formatASTNode } from '../util/tree';
+import { getChildNodes, hasErrorNode, formatAST, formatASTNode, decompressAST } from '../util/tree';
 import uniq from 'lodash/uniq';
+
+export { decompressAST } from '../util/tree';
 
 const NO_DEPS = [] as string[];
 const IGNORE_IDENTIFIERS = new Set(['location', 'set', 'binding']);
@@ -41,7 +43,8 @@ export const makeASTParser = (code: string, tree: Tree) => {
   const throwError = (t: string, n?: SyntaxNode) => {
     if (!n) throw new Error(`Missing node`);
     console.log(formatAST(tree.topNode, code));
-    throw new Error(`Error parsing ${t} node '${code.slice(n.from, n.to)}'\n${formatAST(n, code)}`);
+    const loc = name != null ? ` in ${name}` : '';
+    throw new Error(`Error parsing: ${t} node '${code.slice(n.from, n.to)}'${loc}\n${formatAST(n, code)}`);
   }
 
   const getNodes = (node: SyntaxNode, min?: number) => {
@@ -174,13 +177,13 @@ export const makeASTParser = (code: string, tree: Tree) => {
   const getFunction = (node: SyntaxNode): FunctionRef => {
     const [a, b] = getNodes(node, 1);
     const flags = getFlags(node);
-    const prototype = getPrototype(a);
+    const func = getPrototype(a);
     const at = node.from;
 
-    const symbols = [prototype.name];
+    const symbols = [func.name];
     const identifiers = b ? getIdentifiers(b, symbols) : [];
 
-    return {at, symbols, identifiers, flags, prototype};
+    return {at, symbols, identifiers, flags, func};
   };
 
   const getDeclaration = (node: SyntaxNode): DeclarationRef => {
@@ -189,13 +192,13 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const at = node.from;
 
     if (a.type.id === T.FunctionPrototype) {
-      const prototype = getPrototype(a);
-      const {name} = prototype;
+      const func = getPrototype(a);
+      const {name} = func;
 
       const symbols = [name];
       const identifiers = getIdentifiers(node, symbols);
 
-      return {at, symbols, identifiers, flags, prototype};
+      return {at, symbols, identifiers, flags, func};
     }
     if (a.type.id === T.VariableDeclaration) {
       const variable = getVariable(a);
@@ -369,9 +372,11 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const declarations = getDeclarations();
 
     const externals = declarations
-      .filter(d => d.prototype && !functions.find(f => f.prototype.name === d.prototype!.name));
+      .filter(d => d.func && !functions.find(f => f.func.name === d.func!.name));
 
     const refs = [...functions, ...declarations];
+    refs.sort((a, b) => a.at - b.at);
+
     const exported = refs.filter(d => d.flags & RF.Exported);
     const globalled = refs.filter(d => d.flags & RF.Global);
 
@@ -391,17 +396,13 @@ export const makeASTParser = (code: string, tree: Tree) => {
       globals: orNone(globals),
       externals: orNone(externals),
       modules: orNone(modules),
-      functions: orNone(functions),
-      declarations: orNone(declarations),
+      declarations: orNone(refs),
     };
   }
 
   const getShakeTable = (table: SymbolTable = getSymbolTable()): ShakeTable | undefined => {
-    const {functions, declarations} = table;
-    const refs = [] as (FunctionRef | DeclarationRef)[];
-    if (functions) refs.push(...functions);
-    if (declarations) refs.push(...declarations);
-    refs.sort((a, b) => a.at - b.at);
+    const {declarations: refs} = table;
+    if (!refs) return undefined;
 
     const graph = new Map<string, string[]>();
     const link = (from: string, to: string) => {
@@ -444,12 +445,6 @@ export const makeASTParser = (code: string, tree: Tree) => {
     getShakeTable,
   };
 }
-
-// Resolve shake ops to preserve all code needed for the given exports
-export const resolveShakeOps = (
-  shake: ShakeOp[],
-  exports: Set<string>, 
-) => shake.filter(([, deps]) => deps.every(s => !exports.has(s))).map(([at]) => at);
 
 // Rewrite code using tree, renaming the given identifiers.
 // Removes:
@@ -533,7 +528,7 @@ export const rewriteUsingAST = (
 }
 
 // Compress an AST to only the info needed to do symbol replacement and tree shaking
-export const compressAST = (tree: Tree): CompressedNode[] => {
+export const compressAST = (_: string, tree: Tree): CompressedNode[] => {
   const out = [] as any[]
 
   // Pass through nodes from pre-compressed tree immediately
@@ -547,14 +542,11 @@ export const compressAST = (tree: Tree): CompressedNode[] => {
   const cursor = tree.cursor();
   do {
     const {type, from, to} = cursor;
-    // Injected by compressed AST only: Skip, Shake, Id
-    if (type.name === 'Skip') skip(from, to);
-    else if (type.name === 'Shake') shake(from, to);
-    
-    else if (type.name === 'Declaration' || type.name === 'FunctionDefinition') {
+
+    if (type.name === 'Declaration' || type.name === 'FunctionDefinition') {
       if (cursor.node.parent?.type.name === 'Program') shake(from, to);
     }
-    else if (type.name === 'Identifier' || type.name === 'Id') {
+    else if (type.name === 'Identifier') {
       const {from, to} = cursor;
       ident(from, to);
     }
@@ -581,48 +573,4 @@ export const compressAST = (tree: Tree): CompressedNode[] => {
   } while (cursor.next());
 
   return out;
-}
-
-// Decompress a compressed AST on the fly by returning a pseudo-tree-cursor.
-export const decompressAST = (nodes: CompressedNode[]) => {
-  const tree = {
-    __nodes: () => nodes,
-    cursor: () => {
-      let i = -1;
-      const n = nodes.length;
-
-      const next = () => {
-        const hasNext = ++i < n;
-        if (!hasNext) return false;
-        
-        const node = nodes[i];
-        [self.type.name, self.from, self.to] = node;
-
-        return true;
-      };
-
-      const lastChild = () => {
-        const {to} = self;
-        do {
-          const node = nodes[i + 1];
-          if (node && node[1] >= to) return false;
-        } while (next());
-        return false;
-      }
-
-      const self = {
-        type: {name: ''},
-        node: {parent: {type: {name: 'Program'}}},
-        from: 0,
-        to: 0,
-        next,
-        lastChild,
-      } as any;
-
-      next();
-
-      return self;
-    },
-  } as any as Tree;
-  return tree;
 }

@@ -1,9 +1,9 @@
-import { LiveComponent } from '../../live/types';
-import { UniformType, TypedArray, StorageSource } from '../../core/types';
-import { LayerAggregate, LayerType } from './types';
+import { LiveComponent, LiveFunction, LiveElement } from '@use-gpu/live/types';
+import { UniformType, TypedArray, StorageSource } from '@use-gpu/core/types';
+import { LayerAggregator, LayerAggregatorDef, LayerAggregate, PointAggregate, LineAggregate, RectangleAggregate, LayerType } from './types';
 
 import { RenderContext } from '../providers/render-provider';
-import { use, resume, multiGather, useContext, useYolo, useOne, useMemo } from '../../live';
+import { use, resume, multiGather, useContext, useOne, useMemo } from '@use-gpu/live';
 import {
   makeDataArray,
   makeStorageBuffer,
@@ -12,7 +12,7 @@ import {
   copyNumberArrayCompositeRange,
   copyChunksToSegments,
   uploadBuffer,
-} from '../../core';
+} from '@use-gpu/core';
 
 import { Lines } from './lines';
 import { Points } from './points';
@@ -29,7 +29,7 @@ type AggregateBuffer = {
   source: StorageSource,
 };
 
-const allCount = (a: number, b: number): number => a + b.count + (b.isLoop ? 3 : 0);
+const allCount = (a: number, b: LayerAggregate): number => a + b.count + ((b as any).isLoop ? 3 : 0);
 
 const allKeys = (a: Set<string>, b: LayerAggregate): Set<string> => {
   for (let k in b) a.add(k);
@@ -42,17 +42,43 @@ export const Aggregate: LiveComponent<AggregateProps> = (props) => {
 };
 
 const Resume = resume((aggregates: Record<string, LayerAggregate[]>) => 
-  Object.keys(AGGREGATORS).map((type: any) => aggregates[type] ? use(Layer, type)(type, aggregates[type]) : null)
-, 'Aggregate');
+  Object.keys(AGGREGATORS).map((type: string) => {
+    const aggregator = AGGREGATORS[type]!;
+    const [,, Component] = aggregator;
+    return aggregates[type] ? use(Component, type)(aggregator, aggregates[type]) : null;
+  })
+);
+
+const UILayer: LiveFunction<any> = (
+  aggregator: LayerAggregatorDef,
+  items: RectangleAggregate[],
+) => {
+  const layers = [] as RectangleAggregate[][];
+  const ids = [] as number[];
+
+  let layer = null;
+  let texture = null;
+  for (const item of items) {
+    if (!layer || item.texture !== texture) {
+      texture = item.texture;
+
+      layer = [] as RectangleAggregate[];
+      layers.push(layer);
+      ids.push(item.id);
+    }
+    layer.push(item);
+  }
+
+  return layers.map((layer, i) => use(Layer, ids[i])(aggregator, layer));
+};
 
 const Layer: LiveFunction<any> = (
-  type: LayerType,
+  aggregator: LayerAggregatorDef,
   items: LayerAggregate[],
 ) => {
   const {device} = useContext(RenderContext);
 
   const out = [] as LiveElement[];
-  const aggregator = AGGREGATORS[type];
   if (!aggregator) return null;
 
   const [makeAggregator, Component] = aggregator;
@@ -88,7 +114,7 @@ const getItemSummary = (items: LayerAggregate[]) => {
 
 const makePointAccumulator = (
   device: GPUDevice,
-  items: LineAggregate[],
+  items: PointAggregate[],
   keys: Set<string>,
   count: number,
 ) => {
@@ -99,14 +125,14 @@ const makePointAccumulator = (
   const hasSize = keys.has('sizes') || keys.has('size');
   const hasDepth = keys.has('depths') || keys.has('depth');
 
-  if (hasPosition) storage.positions = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasColor) storage.colors = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasSize) storage.sizes = makeAggregateBuffer(device, UniformType.float, count);
-  if (hasDepth) storage.depth = makeAggregateBuffer(device, UniformType.float, count);
+  if (hasPosition) storage.positions = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasColor) storage.colors = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasSize) storage.sizes = makeAggregateBuffer(device, UniformType.f32, count);
+  if (hasDepth) storage.depth = makeAggregateBuffer(device, UniformType.f32, count);
 
-  return (items: LineAggregate[]) => {
+  return (items: PointAggregate[]) => {
     const count = items.reduce(allCount, 0);
-    const props = {count, shape: 'circle'};
+    const props = {count, shape: 'circle'} as Record<string, any>;
 
     if (hasPosition) props.positions = updateAggregateBuffer(device, storage.positions, items, count, 'position', 'positions');
     if (hasColor) props.colors = updateAggregateBuffer(device, storage.colors, items, count, 'color', 'colors');
@@ -116,7 +142,6 @@ const makePointAccumulator = (
     return props;
   };
 }
-
 
 const makeLineAccumulator = (
   device: GPUDevice,
@@ -132,16 +157,16 @@ const makeLineAccumulator = (
   const hasSize = keys.has('sizes') || keys.has('size');
   const hasDepth = keys.has('depths') || keys.has('depth');
 
-  storage.segments = makeAggregateBuffer(device, UniformType.int, count);
+  storage.segments = makeAggregateBuffer(device, UniformType.i32, count);
 
-  if (hasPosition) storage.positions = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasColor) storage.colors = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasSize) storage.sizes = makeAggregateBuffer(device, UniformType.float, count);
-  if (hasDepth) storage.depth = makeAggregateBuffer(device, UniformType.float, count);
+  if (hasPosition) storage.positions = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasColor) storage.colors = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasSize) storage.sizes = makeAggregateBuffer(device, UniformType.f32, count);
+  if (hasDepth) storage.depth = makeAggregateBuffer(device, UniformType.f32, count);
 
   return (items: LineAggregate[]) => {
     const count = items.reduce(allCount, 0);
-    const props = {count, join: 'miter'};
+    const props = {count, join: 'miter'} as Record<string, any>;
 
     if (hasSegment) props.segments = updateAggregateBuffer(device, storage.segments, items, count, 'segment', 'segments');
     else props.segments = updateAggregateSegments(device, storage.segments, items, count);
@@ -157,7 +182,7 @@ const makeLineAccumulator = (
 
 const makeRectangleAccumulator = (
   device: GPUDevice,
-  items: LineAggregate[],
+  items: RectangleAggregate[],
   keys: Set<string>,
   count: number,
 ) => {
@@ -169,19 +194,21 @@ const makeRectangleAccumulator = (
   const hasStroke = keys.has('strokes') || keys.has('stroke');
   const hasFill = keys.has('fills') || keys.has('fill');
   const hasUV = keys.has('uvs') || keys.has('uv');
-  const hasTexture = keys.has('textures') || keys.has('texture');
+  const hasRepeat = keys.has('repeats') || keys.has('repeat');
 
-  if (hasRectangle) storage.rectangles = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasRadius) storage.radiuses = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasBorder) storage.borders = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasStroke) storage.strokes = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasFill) storage.fills = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasUV) storage.uvs = makeAggregateBuffer(device, UniformType.vec4, count);
-  if (hasTexture) storage.textures = makeAggregateBuffer(device, UniformType.vec4, count);
+  const hasTexture = keys.has('texture');
 
-  return (items: LineAggregate[]) => {
+  if (hasRectangle) storage.rectangles = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasRadius) storage.radiuses = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasBorder) storage.borders = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasStroke) storage.strokes = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasFill) storage.fills = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasUV) storage.uvs = makeAggregateBuffer(device, UniformType['vec4<f32>'], count);
+  if (hasRepeat) storage.repeats = makeAggregateBuffer(device, UniformType['i32'], count);
+
+  return (items: RectangleAggregate[]) => {
     const count = items.reduce(allCount, 0);
-    const props = {count};
+    const props = {count} as Record<string, any>;
 
     if (hasRectangle) props.rectangles = updateAggregateBuffer(device, storage.rectangles, items, count, 'rectangle', 'rectangles');
     if (hasRadius) props.radiuses = updateAggregateBuffer(device, storage.radiuses, items, count, 'radius', 'radiuses');
@@ -189,8 +216,9 @@ const makeRectangleAccumulator = (
     if (hasStroke) props.strokes = updateAggregateBuffer(device, storage.strokes, items, count, 'stroke', 'strokes');
     if (hasFill) props.fills = updateAggregateBuffer(device, storage.fills, items, count, 'fill', 'fills');
     if (hasUV) props.uvs = updateAggregateBuffer(device, storage.uvs, items, count, 'uv', 'uvs');
+    if (hasRepeat) props.repeats = updateAggregateBuffer(device, storage.repeats, items, count, 'repeat', 'repeats');
 
-    if (hasTexture) props.colors = updateAggregateBuffer(device, storage.colors, items, count, 'texture', 'textures');
+    if (hasTexture) props.texture = items[0].texture;
 
     return props;
   };
@@ -223,7 +251,7 @@ const updateAggregateBuffer = (
 
   let pos = 0;
   for (const item of items) {
-    const {count, [key]: single, [keys]: multiple, isLoop} = item;
+    const {count, [key]: single, [keys]: multiple, isLoop} = item as any;
 
     if (multiple) copyNumberArrayCompositeRange(multiple, array, 0, pos, dims, count, isLoop);
     else if (single) copyNumberArrayRepeatedRange(single, array, 0, pos, dims, count, isLoop);
@@ -250,7 +278,7 @@ const updateAggregateSegments = (
   const loops = [] as boolean[];
 
   for (const item of items) {
-    const {count, isLoop} = item;
+    const {count, isLoop} = item as any;
     chunks.push(count);
     loops.push(!!isLoop);
   }
@@ -263,7 +291,7 @@ const updateAggregateSegments = (
 }
 
 const AGGREGATORS = {
-  [LayerType.Line]: [makeLineAccumulator, Lines],
-  [LayerType.Point]: [makePointAccumulator, Points],
-  [LayerType.Rectangle]: [makeRectangleAccumulator, Rectangles],
-};
+  [LayerType.Line]: [makeLineAccumulator, Lines, Layer],
+  [LayerType.Point]: [makePointAccumulator, Points, Layer],
+  [LayerType.Rectangle]: [makeRectangleAccumulator, Rectangles, UILayer],
+} as Record<string, LayerAggregatorDef>;

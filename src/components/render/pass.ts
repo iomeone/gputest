@@ -1,6 +1,6 @@
-import { LiveComponent, LiveFiber, LiveElement } from '../../live/types';
-import { UseRenderingContextGPU, RenderPassMode } from '../../core/types';
-import { use, yeet, memo, resume, multiGather, useContext, useMemo } from '../../live';
+import { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live/types';
+import { UseRenderingContextGPU, RenderPassMode } from '@use-gpu/core/types';
+import { use, yeet, memo, resume, multiGather, useContext, useMemo } from '@use-gpu/live';
 import { RenderContext } from '../providers/render-provider';
 import { PickingContext } from './picking';
 
@@ -13,7 +13,7 @@ export type RenderToPass = (passEncoder: GPURenderPassEncoder) => void;
 
 const toArray = <T>(x: T | T[]): T[] => Array.isArray(x) ? x : x != null ? [x] : []; 
 
-export const Pass: LiveComponent<PassProps> = memo((props) => {
+export const Pass: LiveComponent<PassProps> = memo((props: PassProps) => {
   const {children, render} = props;
 
   return multiGather(children ?? (render ? render() : null), Resume);
@@ -45,7 +45,7 @@ const Resume = resume((rs: Record<string, RenderToPass | RenderToPass[]>) => {
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
     for (let r of rs) r(passEncoder);
-    passEncoder.endPass();
+    passEncoder.end();
   };
 
   return yeet(() => {

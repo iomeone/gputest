@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '../../core/types';
-import { DeviceContext, FrameContext } from '../../components';
-import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '@use-gpu/core/types';
+import { DeviceContext, FrameContext } from '@use-gpu/components';
+import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
 import {
   makeDataArray, makeDataAccessor,
   copyDataArray, copyNumberArray,
@@ -10,7 +10,7 @@ import {
   copyDataArrayChunked, copyNumberArrayChunked,
   copyChunksToSegments,
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '../../core';
+} from '@use-gpu/core';
 
 export type CompositeDataProps = {
   length?: number,
@@ -24,8 +24,8 @@ export type CompositeDataProps = {
 
 const NO_FIELDS = [] as DataField[];
 
-const isComposite = (format: string) => !!format.match(/\[\]$/);
-const toSimple = (format: string) => format.replace(/\[\]$/, '');
+const isComposite = (format: string) => !!format.match(/^array</);
+const toSimple = (format: string) => format.slice(6, -1);
 
 export const CompositeData: LiveComponent<CompositeDataProps> = (props) => {
   const device = useContext(DeviceContext);
@@ -99,7 +99,7 @@ export const CompositeData: LiveComponent<CompositeDataProps> = (props) => {
 
     const fieldBuffers = fs.map(([format, accessor]) => {
       const composite = isComposite(format);
-      format = toSimple(format);
+      format = composite ? toSimple(format) : format;
 
       if (!(format in UNIFORM_DIMS)) throw new Error(`Unknown data format "${format}"`);
       const f = format as any as UniformType;
@@ -122,7 +122,7 @@ export const CompositeData: LiveComponent<CompositeDataProps> = (props) => {
 
     let segmentBuffer;
     {
-      const format = UniformType.int;
+      const format = UniformType.i32;
       const {array, dims} = makeDataArray(format, length);
       const buffer = makeStorageBuffer(device, array.byteLength);
       const source = {

@@ -1,3 +1,3 @@
-import { makeContext } from '../../live';
+import { makeContext } from '@use-gpu/live';
 
 export const DeviceContext = makeContext(null, 'DeviceContext');

@@ -1,5 +1,5 @@
 // Live function
-export type ArrowFunction = <T>(...args: T[]) => any;
+export type ArrowFunction = (...args: any[]) => any;
 export type LiveFunction<F extends Function> = F;
 
 // Component with single props object

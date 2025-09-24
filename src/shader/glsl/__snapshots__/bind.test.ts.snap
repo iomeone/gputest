@@ -121,15 +121,35 @@ vec2 _VT_0_getSize(int index) {
 exports[`bind makes deterministic links for data bindings 1`] = `
 Object {
   "base": undefined,
-  "bindings": Array [],
-  "code": "#virtual [getColor] 1",
-  "name": "_VT_x4yya1_",
+  "code": "#virtual [getColor getSize] 101",
+  "name": "_VT_hoi6if_",
+  "storages": Array [
+    Object {
+      "storage": Object {
+        "buffer": Object {},
+        "format": "vec2",
+        "length": 10,
+        "version": 1,
+      },
+      "uniform": Object {
+        "args": Array [
+          "int",
+        ],
+        "format": "vec2",
+        "name": "getSize",
+        "value": Array [
+          1,
+          1,
+        ],
+      },
+    },
+  ],
   "table": Object {
-    "functions": Array [
+    "declarations": Array [
       Object {
         "at": 0,
         "flags": 0,
-        "prototype": Object {
+        "func": Object {
           "name": "getColor",
           "parameters": Array [
             "int",
@@ -140,15 +160,32 @@ Object {
         },
         "symbols": Array [],
       },
+      Object {
+        "at": 0,
+        "flags": 0,
+        "func": Object {
+          "name": "getSize",
+          "parameters": Array [
+            "int",
+          ],
+          "type": Object {
+            "name": "vec2",
+          },
+        },
+        "symbols": Array [],
+      },
     ],
-    "hash": "x4yya10vdr",
+    "hash": "hoi6if8by6",
     "symbols": Array [
       "getColor",
+      "getSize",
     ],
     "visibles": Array [
       "getColor",
+      "getSize",
     ],
   },
+  "textures": undefined,
   "uniforms": Array [
     Object {
       "constant": Array [

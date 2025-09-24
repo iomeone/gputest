@@ -3,7 +3,7 @@ html {
 
   --backgroundEmpty: #222;
   --backgroundInactive: #444;
-  --backgroundHover: #666;
+  --backgroundHover: #555;
   --backgroundActive: #666;
 
   --borderThin: #444;
@@ -24,15 +24,33 @@ html > body {
   color: var(--colorText);
 }
 
-body .ui.button {
-  background: var(--backgroundInactive);
-  color: var(--colorText);
-}
-body .ui.button:hover {
-  background: var(--backgroundActive);
-  color: var(--colorTextHighlight);
+div[role="tablist"] {
+  height: 38px;
+  border-bottom: 2px solid var(--backgroundInactive);
+  margin-bottom: 10px;
 }
 
+button[role="tab"] {
+  background: none;
+  font: inherit;
+  color: inherit;
+  border: 0;
+  padding: 0px 20px;
+  line-height: 40px;
+  height: 40px;
+  margin-bottom: -2px;
+  border-bottom: 2px solid transparent;
+}
+button[role="tab"]:hover {
+  border-bottom: 2px solid var(--backgroundHover);  
+}
+button[role="tab"][data-state="active"] {
+  font-weight: bold;
+  color: var(--colorTextActive);
+  border-bottom: 2px solid var(--backgroundActive);  
+}
+
+/*
 body .ui.secondary.pointing.menu {
   border-color: var(--backgroundEmpty);  
 }
@@ -56,6 +74,7 @@ body .ui.secondary.pointing.menu a.active.item:hover {
   color: var(--textActive);
   border-color: var(--backgroundActive); 
 }
+*/
 
 html > body ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, .1);

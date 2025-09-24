@@ -1,6 +1,5 @@
-import { RawTexture } from './types';
+import { DataTexture, DataBinding } from './types';
 import { TYPED_ARRAYS, TEXTURE_FORMAT_SIZES, TEXTURE_FORMAT_DIMS } from './constants';
-import { makeUniformBindings } from './uniform';
 
 type Point = [number, number];
 type Point3 = [number, number, number];
@@ -12,6 +11,16 @@ export const makeSampler = (
   descriptor?: Partial<GPUSamplerDescriptor>,
 ) => device.createSampler(descriptor);
 
+export const makeTextureView = (
+  texture: GPUTexture,
+  mipLevelCount: number = 1,
+  baseMipLevel: number = 0,
+) =>
+  texture.createView({
+    mipLevelCount,
+    baseMipLevel,
+  });
+
 export const makeRenderTexture = (
   device: GPUDevice,
   width: number,
@@ -21,7 +30,7 @@ export const makeRenderTexture = (
 ): GPUTexture => {
   const texture = device.createTexture({
     // @ts-ignore
-    size: { width, height, depth: 1, depthOrArrayLayers: 1 },
+    size: [width, height, 1],
     sampleCount: samples,
     format,
     // @ts-ignore
@@ -40,7 +49,7 @@ export const makeReadbackTexture = (
 ): GPUTexture => {
   const texture = device.createTexture({
     // @ts-ignore
-    size: { width, height, depth: 1, depthOrArrayLayers: 1 },
+    size: [width, height, 1],
     sampleCount: samples,
     format,
     // @ts-ignore
@@ -60,7 +69,7 @@ export const makeSourceTexture = (
 ): GPUTexture => {
   const texture = device.createTexture({
     // @ts-ignore
-    size: { width, height, depth, depthOrArrayLayers: depth },
+    size: [width, height, depth],
     sampleCount: samples,
     format,
     // @ts-ignore
@@ -72,23 +81,13 @@ export const makeSourceTexture = (
 
 export const makeRawSourceTexture = (
   device: GPUDevice,
-  rawTexture: RawTexture,
+  dataTexture: DataTexture,
 ) => {
-  const {size, format} = rawTexture;
+  const {size, format} = dataTexture;
   const [w, h, d] = size as Point3;
 
   return makeSourceTexture(device, w, h, d || 1, format, 1);
 }
-
-export const makeTextureView = (
-  texture: GPUTexture,
-  mipLevelCounts: number = 1,
-  baseMipLevel: number = 0,
-) =>
-  texture.createView({
-    mipLevelCounts,
-    baseMipLevel,
-  });
 
 export const makeTextureDataLayout = (
   size: Point | Point3,
@@ -108,12 +107,12 @@ export const makeTextureDataLayout = (
   };
 };
 
-export const uploadRawTexture = (
+export const uploadDataTexture = (
   device: GPUDevice,
   texture: GPUTexture,
-  rawTexture: RawTexture,
+  dataTexture: DataTexture,
 ): void => {
-  const {data, size, format} = rawTexture;
+  const {data, size, format} = dataTexture;
 
   const layout = makeTextureDataLayout(size, format);  
   uploadTexture(device, texture, data, layout, size);
@@ -135,7 +134,7 @@ export const uploadTexture = (
 
   const [width, height, d] = size as Point3;
   // @ts-ignore
-  const extent = { width, height, depth: d || 1, depthOrArrayLayers: d || 1 };
+  const extent = [width, height, d || 1];
 
   const copy = {
     texture,
@@ -147,3 +146,57 @@ export const uploadTexture = (
   // @ts-ignore
   device.queue.writeTexture(copy, data, layout, extent);
 }
+
+export const makeTextureBinding = (
+  device: GPUDevice,
+  pipeline: GPURenderPipeline | GPUComputePipeline,
+  sampler: GPUSampler,
+  texture: GPUTexture | GPUTextureView,
+  set: number = 0,
+): GPUBindGroup => {
+  const view = (texture instanceof GPUTexture) ? makeTextureView(texture) : texture;
+
+  const entries = [
+    {binding: 0, resource: sampler},
+    {binding: 1, resource: view},
+  ];
+
+  const bindGroup = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(set),
+    entries,
+  });
+  return bindGroup;
+}
+
+export const makeMultiTextureBinding = (
+  device: GPUDevice,
+  pipeline: GPURenderPipeline | GPUComputePipeline,
+  textures: [GPUSampler, GPUTexture | GPUTextureView][],
+  set: number = 0,
+): GPUBindGroup => {
+  const entries = makeTextureEntries(textures);
+  const bindGroup = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(set),
+    entries,
+  });
+  return bindGroup;
+}
+
+export const makeTextureEntries = (
+  textures: [GPUSampler, GPUTexture | GPUTextureView][],
+  binding: number = 0
+): GPUBindGroupEntry[] => {
+  const entries = [] as any[];
+
+  for (const [sampler, texture] of textures) {
+    const view = (texture instanceof GPUTexture) ? makeTextureView(texture) : texture;
+
+    entries.push({binding, resource: sampler});
+    binding++;
+
+    entries.push({binding, resource: view});
+    binding++;
+  }
+
+  return entries;
+};

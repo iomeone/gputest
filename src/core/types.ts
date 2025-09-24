@@ -13,7 +13,6 @@ export type UseRenderingContextGPU = {
   samples: number,
 
   device: GPUDevice,
-  languages: ShaderLanguages,
 
   gpuContext: GPUCanvasContext,
   colorStates: GPUColorTargetState[],
@@ -47,55 +46,49 @@ export type TypedArrayConstructor =
 
 export enum UniformType {
   "bool" = "bool",
-  "bvec2" = "bvec2",
-  "bvec3" = "bvec3",
-  "bvec4" = "bvec4",
+  "vec2<bool>" = "vec2<bool>",
+  "vec3<bool>" = "vec3<bool>",
+  "vec4<bool>" = "vec4<bool>",
 
-  "uint" = "uint",
-  "uvec2" = "uvec2",
-  "uvec3" = "uvec3",
-  "uvec4" = "uvec4",
+  "u32" = "u32",
+  "vec2<u32>" = "vec2<u32>",
+  "vec3<u32>" = "vec3<u32>",
+  "vec4<u32>" = "vec4<u32>",
 
-  "int" = "int",
-  "ivec2" = "ivec2",
-  "ivec3" = "ivec3",
-  "ivec4" = "ivec4",
+  "i32" = "i32",
+  "vec2<i32>" = "vec2<i32>",
+  "vec3<i32>" = "vec3<i32>",
+  "vec4<i32>" = "vec4<i32>",
 
-  "float" = "float",
-  "vec2" = "vec2",
-  "vec3" = "vec3",
-  "vec4" = "vec4",
+  "f32" = "f32",
+  "vec2<f32>" = "vec2<f32>",
+  "vec3<f32>" = "vec3<f32>",
+  "vec4<f32>" = "vec4<f32>",
 
-  "double" = "double",
-  "dvec2" = "dvec2",
-  "dvec3" = "dvec3",
-  "dvec4" = "dvec4",
+  "f64" = "f64",
+  "vec2<f64>" = "vec2<f64>",
+  "vec3<f64>" = "vec3<f64>",
+  "vec4<f64>" = "vec4<f64>",
 
-  "mat2" = "mat2",
-  "mat2x2" = "mat2x2",
-  "mat3x2" = "mat3x2",
-  "mat2x3" = "mat2x3",
-  "mat2x4" = "mat2x4",
-  "mat4x2" = "mat4x2",
-  "mat3" = "mat3",
-  "mat3x3" = "mat3x3",
-  "mat3x4" = "mat3x4",
-  "mat4x3" = "mat4x3",
-  "mat4" = "mat4",
-  "mat4x4" = "mat4x4",
+  "mat2x2<f32>" = "mat2x2<f32>",
+  "mat3x2<f32>" = "mat3x2<f32>",
+  "mat2x3<f32>" = "mat2x3<f32>",
+  "mat2x4<f32>" = "mat2x4<f32>",
+  "mat4x2<f32>" = "mat4x2<f32>",
+  "mat3x3<f32>" = "mat3x3<f32>",
+  "mat3x4<f32>" = "mat3x4<f32>",
+  "mat4x3<f32>" = "mat4x3<f32>",
+  "mat4x4<f32>" = "mat4x4<f32>",
 
-  "dmat2" = "dmat2",
-  "dmat2x2" = "dmat2x2",
-  "dmat3x2" = "dmat3x2",
-  "dmat2x3" = "dmat2x3",
-  "dmat2x4" = "dmat2x4",
-  "dmat4x2" = "dmat4x2",
-  "dmat3" = "dmat3",
-  "dmat3x3" = "dmat3x3",
-  "dmat3x4" = "dmat3x4",
-  "dmat4x3" = "dmat4x3",
-  "dmat4" = "dmat4",
-  "dmat4x4" = "dmat4x4",
+  "mat2x2<f64>" = "mat2x2<f64>",
+  "mat3x2<f64>" = "mat3x2<f64>",
+  "mat2x3<f64>" = "mat2x3<f64>",
+  "mat2x4<f64>" = "mat2x4<f64>",
+  "mat4x2<f64>" = "mat4x2<f64>",
+  "mat3x3<f64>" = "mat3x3<f64>",
+  "mat3x4<f64>" = "mat3x4<f64>",
+  "mat4x3<f64>" = "mat4x3<f64>",
+  "mat4x4<f64>" = "mat4x4<f64>",
 };
 
 // Vertex attributes
@@ -136,10 +129,6 @@ export type UniformLayout = {
 };
 
 // Uniform bindings
-export type UniformBinding = {
-  resource: GPUBindingResource
-};
-
 export type UniformPipe = {
   layout: UniformLayout,
   data: ArrayBuffer,
@@ -174,7 +163,9 @@ export type StorageSource = {
 };
 
 export type TextureSource = {
-  view: GPUTextureView,
+  view: GPUTexture | GPUTextureView,
+  sampler: GPUSampler | GPUSamplerDescriptor,
+  layout: string,
   format: string,
   size: [number, number] | [number, number, number],
   version: number,
@@ -182,20 +173,11 @@ export type TextureSource = {
 
 export type DataTexture = {
   data: TypedArray,
-  format: string,
+  format: GPUTextureFormat,
   size: [number, number] | [number, number, number],
 };
 
 // Shaders
-export type ShaderStage = string;
-export type ShaderCompiler = (code: string, stage: ShaderStage) => [TypedArray, number | string];
-
-export type ShaderLanguages = {[k: string]: ShaderLanguageAPI};
-export type ShaderLanguageAPI = {
-  compile: ShaderCompiler,
-  cache: any,
-};
-
 export type ShaderModuleDescriptor = {
   code: TypedArray | string,
   entryPoint: string,
@@ -214,7 +196,7 @@ export type ViewUniforms = {
   viewPosition: { value: vec3 | [number, number, number] | number[] },
   viewResolution: { value: vec2 | [number, number] | number[] },
   viewSize: { value: vec2 | [number, number] | number[] },
-  viewFocus: { value: number },
+  viewWorldUnit: { value: number },
   viewPixelRatio: { value: number },
 };
 

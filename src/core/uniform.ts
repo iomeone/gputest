@@ -1,16 +1,16 @@
 import {
   UniformAllocation, VirtualAllocation, ResourceAllocation,
   UniformAttribute, UniformAttributeDescriptor,
-  UniformBinding, UniformLayout, UniformType,
+  UniformLayout, UniformType,
   UniformPipe, UniformByteSetter, UniformFiller,
   DataBinding,
   StorageSource,
+  TextureSource,
 } from './types';
 import { UNIFORM_ATTRIBUTE_SIZES } from './constants';
 import { UNIFORM_BYTE_SETTERS } from './bytes';
 import { makeUniformBuffer } from './buffer';
-import { makeStorageForDataBindings, makeStorageBindings } from './storage';
-import { makeTextureView } from './texture';
+import { makeSampler, makeTextureView } from './texture';
 
 export const getUniformAttributeSize = (format: UniformType): number => UNIFORM_ATTRIBUTE_SIZES[format];
 export const getUniformByteSetter = (format: UniformType): UniformByteSetter => UNIFORM_BYTE_SETTERS[format];
@@ -23,7 +23,7 @@ export const makeUniforms = (
 ): UniformAllocation => {
   const pipe = makeUniformPipe(uniforms);
   const buffer = makeUniformBuffer(device, pipe.data);
-  const entries = makeUniformBindings([{resource: {buffer}}]);
+  const entries = makeResourceEntries([{buffer}]);
   const bindGroup = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(set),
     entries,
@@ -41,9 +41,9 @@ export const makeMultiUniforms = (
   const buffer = makeUniformBuffer(device, pipe.data);
 
   const {layout: {offsets}} = pipe;
-  const bindings = offsets.map((offset) => ({resource: {buffer, offset}}));
+  const bindings = offsets.map((offset) => ({buffer, offset}));
 
-  const entries = makeUniformBindings(bindings);
+  const entries = makeResourceEntries(bindings);
   const bindGroup = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(set),
     entries,
@@ -69,8 +69,8 @@ export const makeBoundUniforms = <T>(
   if (!hasBindings && !hasUniforms) return {};
 
   if (hasBindings) {
-    const storageEntries = bindings.length ? makeStorageForDataBindings(bindings, 0) : [];
-    entries.push(...storageEntries);
+    const bindingEntries = bindings.length ? makeDataBindingsEntries(device, bindings, 0) : [];
+    entries.push(...bindingEntries);
   }
 
   if (hasUniforms) {
@@ -78,7 +78,7 @@ export const makeBoundUniforms = <T>(
     pipe = makeUniformPipe(struct);
     buffer = makeUniformBuffer(device, pipe.data);
 
-    const uniformEntries = makeUniformBindings([{resource: {buffer}}], bindings.length);
+    const uniformEntries = makeResourceEntries([{buffer}], entries.length);
     entries.push(...uniformEntries);
   }
 
@@ -90,42 +90,36 @@ export const makeBoundUniforms = <T>(
   return {pipe, buffer, bindGroup};
 }
 
-export const makeTextureUniforms = (
+export const makeDataBindingsEntries = <T>(
   device: GPUDevice,
-  pipeline: GPURenderPipeline | GPUComputePipeline,
-  sampler: GPUSampler,
-  texture: GPUTexture,
-  set: number = 0,
-): ResourceAllocation => {
-  if (texture instanceof GPUTexture) texture = makeTextureView(texture);
+  bindings: DataBinding<T>[],
+  binding: number = 0,
+): GPUBindGroupEntry[] => {
+  const entries = [] as any[];
+  
+  for (const b of bindings) {
+    if (b.storage) {
+      const {storage} = b;
+      entries.push({binding, resource: {buffer: storage.buffer}});
+      binding++;
+    }
+    else if (b.texture) {
+      const {texture} = b;
+      const {view, sampler} = texture;
+      
+      const textureResource = (view instanceof GPUTextureView) ? view : makeTextureView(view);
+      const samplerResource = (sampler instanceof GPUSampler) ? sampler : makeSampler(device, sampler);
 
-  const entries = makeUniformBindings([{resource: sampler}, {resource: texture}]);
-  const bindGroup = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(set),
-    entries,
-  });
-  return {bindGroup};
-}
+      entries.push({binding, resource: samplerResource});
+      binding++;
 
-export const makeMultiTextureUniforms = (
-  device: GPUDevice,
-  pipeline: GPURenderPipeline | GPUComputePipeline,
-  textures: [GPUSampler, GPUTexture | GPUTextureView][],
-  set: number = 0,
-): ResourceAllocation => {
+      entries.push({binding, resource: textureResource});
+      binding++;
+    }
+  }
 
-  const bindings = textures.flatMap(([sampler, texture]) => {
-    if (texture instanceof GPUTexture) texture = makeTextureView(texture);
-    return [{resource: sampler}, {resource: texture}];
-  });
-
-  const entries = makeUniformBindings(bindings);
-  const bindGroup = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(set),
-    entries,
-  });
-  return {bindGroup};
-}
+  return entries;
+};
 
 export const makeUniformPipe = (
   uniforms: UniformAttribute[],
@@ -149,13 +143,13 @@ export const makeMultiUniformPipe = (
   return {layout, data, fill};
 }
 
-export const makeUniformBindings = (
-  bindings: UniformBinding[],
+export const makeResourceEntries = (
+  bindings: GPUBindingResource[],
   binding: number = 0,
 ): GPUBindGroupEntry[] => {
   const entries = [] as any[];
 
-  for (const {resource} of bindings) {
+  for (const resource of bindings) {
     entries.push({binding, resource});
     binding++;
   }

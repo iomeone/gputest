@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Update } from '../../state/types';
+import { Update } from '@use-gpu/state/types';
 
-import { patch, $set } from '../../state';
+import { patch, $set } from '@use-gpu/state';
 
 export type Cursor<T> = [T, Updater<T>];
 export type Updater<T> = (u: Update<T>) => void;

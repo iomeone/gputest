@@ -1,6 +1,7 @@
 export * from './display/absolute';
+export * from './display/block';
 export * from './display/flex';
-export * from './display/stack';
+export * from './display/inline';
 
 export * from './element';
 export * from './flat';

@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement, Task } from '../../live/types';
-import { use, detach, useCallback, useOne, useResource } from '../../live';
+import { LiveComponent, LiveElement, Task } from '@use-gpu/live/types';
+import { use, detach, useCallback, useOne, useResource } from '@use-gpu/live';
 
 export type LoopProps = {
   gpuContext: GPUCanvasContext,
@@ -14,7 +14,7 @@ export type LoopRef = {
   dispatch?: () => void,
 };
 
-const Dispatch = () => (props: LoopRef) => props.children ?? (props.render ? props.render() : null);
+const Dispatch = (props: LoopRef) => props.children ?? (props.render ? props.render() : null);
 
 export const Loop: LiveComponent<LoopProps> = (props) => {
   const {children, render} = props;
