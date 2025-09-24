@@ -55,7 +55,7 @@ export const transpileWGSL = (source: string, resourcePath: string, esModule: bo
         }
   
         const TARGET_PARSE = 'shader';       // parseBundle 所在（src/shader/index.ts）
-        const TARGET_GLSL  = 'shader/wlsl';  // decompressAST 所在（src/shader/glsl.ts）
+        const TARGET_GLSL  = 'shader/wgsl';  // decompressAST 所在（src/shader/glsl.ts）
   
         const relFrom = (from: string, to: string) => {
           let rel = path.posix.relative(from, to);
