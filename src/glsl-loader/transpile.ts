@@ -17,8 +17,6 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
   // const preamble = makeImport('{decompressAST}', '../shader/glsl');
 
 
-  const toPosix = (p: string) => p.replace(/\\/g, '/');
-
     var preamble: string = '';
 
 
@@ -130,6 +128,14 @@ export const transpileGLSL = (source: string, resourcePath: string, esModule: bo
 
 
 
+
+
+
+
+
+
+
+  
 
 // —— 改成下面这一段（离线生成到 gen-glsl，强制相对路径、无 .glsl 后缀）——
 let i = 0;
