@@ -1,65 +1,59 @@
-import { LiveComponent, LiveFiber, LiveElement } from '../../live/types';
-import { UseRenderingContextGPU, RenderPassMode } from '../../core/types';
-import { use, yeet, memo, multiGatherReduce, useContext, useMemo } from '../../live';
+import { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live/types';
+import { UseRenderingContextGPU, RenderPassMode } from '@use-gpu/core/types';
+import { use, yeet, memo, resume, multiGather, useContext, useMemo } from '@use-gpu/live';
 import { RenderContext } from '../providers/render-provider';
 import { PickingContext } from './picking';
 
 export type PassProps = {
-  children?: LiveElement<any>,
   render?: () => LiveElement<any>,
+  children?: LiveElement<any>,
 };
 
 export type RenderToPass = (passEncoder: GPURenderPassEncoder) => void;
 
-const makeStaticDone = (c: any): any => {
-  c.isStaticComponent = true;
-  c.displayName = '[Pass]';
-  return c;
-}
+const toArray = <T>(x: T | T[]): T[] => Array.isArray(x) ? x : x != null ? [x] : []; 
 
-const toArray = <T>(x: T | T[]): T[] => Array.isArray(x) ? x : x ? [x] : []; 
-
-export const Pass: LiveComponent<PassProps> = memo((fiber) => (props) => {
+export const Pass: LiveComponent<PassProps> = memo((props) => {
   const {children, render} = props;
 
-  const Done = useMemo(() => makeStaticDone((fiber: LiveFiber<any>) => (rs: Record<string, RenderToPass | RenderToPass[]>) => {
-    const renderContext = useContext(RenderContext);
-    const pickingContext = useContext(PickingContext);
+  return multiGather(children ?? (render ? render() : null), Resume);
+}, 'Pass');
 
-    const {device} = renderContext;
+const Resume = resume((rs: Record<string, RenderToPass | RenderToPass[]>) => {
+  const renderContext = useContext(RenderContext);
+  const pickingContext = useContext(PickingContext);
 
-    const opaques = toArray(rs[RenderPassMode.Opaque]);
-    const transparents = toArray(rs[RenderPassMode.Transparent]);
-    const debugs = toArray(rs[RenderPassMode.Debug]);
-    const pickings = toArray(rs[RenderPassMode.Picking]);
+  const {device} = renderContext;
 
-    const visibles = [...opaques, ...transparents, ...debugs];
+  const opaques = toArray(rs[RenderPassMode.Opaque]);
+  const transparents = toArray(rs[RenderPassMode.Transparent]);
+  const debugs = toArray(rs[RenderPassMode.Debug]);
+  const pickings = toArray(rs[RenderPassMode.Picking]);
 
-    const renderToContext = (
-      commandEncoder: GPUCommandEncoder,
-      context: UseRenderingContextGPU,
-      rs: RenderToPass[],
-    ) => {
-      const {colorAttachments, depthStencilAttachment} = context;
-      const renderPassDescriptor: GPURenderPassDescriptor = {
-        colorAttachments,
-        depthStencilAttachment,
-      };
+  const visibles = [...opaques, ...transparents, ...debugs];
 
-      const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-      for (let r of rs) r(passEncoder);
-      passEncoder.endPass();
+  const renderToContext = (
+    commandEncoder: GPUCommandEncoder,
+    context: UseRenderingContextGPU,
+    rs: RenderToPass[],
+  ) => {
+    const {colorAttachments, depthStencilAttachment} = context;
+    const renderPassDescriptor: GPURenderPassDescriptor = {
+      colorAttachments,
+      depthStencilAttachment,
     };
 
-    return yeet(() => {
-      const commandEncoder = device.createCommandEncoder();
+    const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+    for (let r of rs) r(passEncoder);
+    passEncoder.endPass();
+  };
 
-      renderToContext(commandEncoder, renderContext, visibles);
-      if (pickingContext) renderToContext(commandEncoder, pickingContext.renderContext, pickings);
+  return yeet(() => {
+    const commandEncoder = device.createCommandEncoder();
 
-      device.queue.submit([commandEncoder.finish()]);      
-    });
-  }), []);
+    renderToContext(commandEncoder, renderContext, visibles);
+    if (pickingContext) renderToContext(commandEncoder, pickingContext.renderContext, pickings);
 
-  return multiGatherReduce(children ?? (render ? render() : null), Done);
-}, 'Pass');
+    device.queue.submit([commandEncoder.finish()]);      
+  });
+});

@@ -1,4 +1,4 @@
-import { GLSLModules } from '../../glsl';
+import { GLSLModules } from '@use-gpu/glsl';
 import { parseShader } from './shader';
 import { makeASTParser, rewriteUsingAST, resolveShakeOps, compressAST, decompressAST } from './ast';
 import { formatAST, hasErrorNode } from '../util/tree';
@@ -238,6 +238,42 @@ void main() {
     const output1 = rewriteUsingAST(code, tree, rename);
     const output2 = rewriteUsingAST(code, decompressed, rename);
     expect(output2).toEqual(output1);
+  });
+
+  it('recompresses AST', () => {
+    const code = `
+#pragma import {SolidVertex} from 'use/types'
+
+SolidVertex getVertex(int, int);
+
+#ifdef IS_PICKING
+layout(location = 0) out flat uint fragIndex;
+#else
+layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec2 fragUV;
+#endif
+
+void main() {
+  int vertexIndex = gl_VertexIndex;
+  int instanceIndex = gl_InstanceIndex;
+
+  SolidVertex v = getVertex(vertexIndex, instanceIndex);
+
+  gl_Position = v.position;
+#ifdef IS_PICKING
+  fragIndex = uint(instanceIndex);
+#else
+  fragColor = v.color;
+  fragUV = v.uv;
+#endif
+}
+    `;
+
+    const tree = parseShader(code);
+    const compressed = compressAST(tree);
+    const decompressed = decompressAST(compressed);
+    const recompressed = compressAST(decompressed);
+    expect(compressed).toEqual(recompressed);
   });
 
   it('shakes simple program', () => {

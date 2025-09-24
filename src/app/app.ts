@@ -1,26 +1,29 @@
-import { LiveComponent } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../core/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, ShaderLanguages, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import { use, useMemo, useOne, useResource, useState } from '../live';
+import { use, useFiber, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   AutoCanvas,
   Loop, Draw, Pass,
-  Data, RawData, Inline,
+  CompositeData, Data, RawData, Inline,
   OrbitCamera, OrbitControls,
-  Picking, Pick, EventProvider,
-  Cursor,
+  AutoPicking, Pick,
+  Cursor, Points, Lines,
+  RawQuads as Quads, RawLines,
   RenderToTexture,
+  Router, Routes,
   ViewProvider,
-} from '../components';
+} from '@use-gpu/components';
 import { Mesh } from './mesh';
-import { Quads } from './quads';
-import { Lines } from './lines';
 import { makeMesh } from './meshes/mesh';
-import { UseInspect } from '../inspect';
+import { UseInspect } from '@use-gpu/inspect';
 
-import { circle, diamond, circleOutlined, diamondOutlined, squareOutlined } from '../gen-glsl/mask/point';
+import { GeometryPage } from './pages/geometry';
+import { InteractPage } from './pages/interact';
+import { LayoutPage } from './pages/layout';
+import { EmptyPage } from './pages/empty';
 
 export type AppProps = {
   device: GPUDevice,
@@ -29,137 +32,37 @@ export type AppProps = {
   languages: ShaderLanguages,
 };
 
-const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
-
-const data = seq(10).map((i) => ({
-  position: [Math.random()*4-2, Math.random()*4-2, Math.random()*4-2, 1],
-  size: Math.random() * 50 + 10,
-}));
-const quadFields = [
-  ['vec4', 'position'],
-  ['float', 'size'],
-] as DataField[];
-
-const lineFields = [
-  ['vec4', [0, 0, 0, 1, 1.5, 0, 0, 1, 1.5, 1.5, 0, 1, 1.5, 1.5, 1.5, 1, 1.5, -1.5, 1.5, 1]],
-  ['int', [1, 3, 3, 3, 2]],
-  ['float', [10, 10, 10, 10, 10]],
-] as DataField[];
-
-let t = 0;
-let lj = 0;
-const getLineJoin = () => ['bevel', 'miter', 'round'][lj = (lj + 1) % 3];
-
-export const App: LiveComponent<AppProps> = (fiber) => (props) => {
+export const App: LiveComponent<AppProps> = (props) => {
   const {canvas, device, adapter, languages} = props;
 
+  const fiber = useFiber();
   const inspect = useInspector();
   const mesh = makeMesh();
 
-  const view = [
-    use(Inline)(() => {
-      t = t + 1/60;
-    }),
-    use(Pass)({
-      children: [
-        use(Data)({
-          fields: lineFields,
-          render: ([positions, segments, sizes]: StorageSource[]) => [
-            //use(Quads)({ positions, size: 10 }),
-            use(Lines)({ positions, segments, size: 50, join: 'round' }),
-            use(Lines)({ positions, segments, size: 50, join: 'round', mode: RenderPassMode.Debug }),
-            //use(Lines)({ positions, segments, size: 50, join: getLineJoin(), mode: RenderPassMode.Picking }),
-          ]
-        }),
-        use(RawData)({
-          format: 'vec4',
-          length: 100,
-          live: true,
-          expr: (emit: Emitter, i: number) => {
-            const s = ((i*i + i) % 13133.371) % 1000;
-            emit(
-              Math.cos(t * 1.31 + Math.sin((t + s) * 0.31) + s) * 2,
-              Math.sin(t * 1.113 + Math.sin((t - s) * 0.414) - s) * 2,
-              Math.cos(t * 0.981 + Math.cos((t + s*s) * 0.515) + s*s) * 2,
-              1,
-            );
+  const routes = (
+    use(Router)({
+      routes: {
+        "/": {
+          routes: {
+            "geometry": { element: use(GeometryPage)({ canvas }) },
+            "layout": { element: use(LayoutPage)() },
+            "interact": { element: use(InteractPage)() },
+            "": { element: use(GeometryPage)({ canvas }) },
+            "*": { element: use(EmptyPage)() },
           },
-          render: (positions) => [
-            use(Quads)({ positions, color: [1, 1, 1, 0.5], size: 50, getMask: circle, mode: RenderPassMode.Transparent }),
-            //use(Quads)({ positions, size: 50, id: 2, mode: RenderPassMode.Picking }),
-            //use(Quads)({ positions, size: 50, mode: RenderPassMode.Debug }),
-          ],
-        }),
-        /*
-        use(Data)({
-          data,
-          fields: quadFields,
-          render: ([positions, sizes]: StorageSource[]) => [
-            use(Quads)({ positions, sizes }),
-            //use(Quads)({ positions, sizes, debug: true }),
-          ],
-        }),
-        */
-        /*
-        use(RawData)({
-          type: 'vec4',
-          length: 100,
-          expr: (emit) => emit(Math.random()*4-2, Math.random()*4-2, Math.random()*4-2, 1),
-          render: (positions) => use(Quads)({ positions }),
-          //live: true,
-        }),
-        */
-        use(Pick)({
-          render: ({id, hovered, clicked}) => [
-            use(Mesh)({ mesh, blink: clicked }),
-            use(Mesh)({ id, mesh, mode: RenderPassMode.Picking }),
-            hovered ? use(Cursor)({ cursor: 'pointer' }) : null,
-          ],
-        }),
-      ]
-    }),
-  ];
+        },
+      },
+    })
+  );
 
   return [
     use(AutoCanvas)({
       canvas, device, adapter, languages, samples: 4,
       children:
       
-        use(Picking)({
-          children:
-
-            use(EventProvider)({
-              element: canvas, children:
-
-                use(OrbitControls)({
-                  canvas,
-                  render: (radius: number, phi: number, theta: number) =>
-
-                    use(OrbitCamera)({
-                      radius, phi, theta,
-                      render: (defs: UniformAttribute[], uniforms: ViewUniforms) =>
-
-                        use(ViewProvider)({
-                          defs, uniforms, children:
-
-    //                        use(Loop)({
-    //                          children: [
-
-                                //use(RenderToTexture)({
-                                //  children: view,
-                                //}),
-          
-                                use(Draw)({
-                                  children: view,
-                                }),
-
-    //                          ],
-    //                        })
-          
-                        })
-                    })
-                })
-            })
+        use(AutoPicking)({
+          canvas,
+          children: routes,
         })
     }),
     inspect ? use(UseInspect)({fiber, canvas}) : null,
@@ -170,8 +73,8 @@ const useInspector = () => {
   const [inspect, setInspect] = useState<boolean>(true);
   useResource((dispose) => {
     const keydown = (e: KeyboardEvent) => {
-      if (e.metaKey && e.key === 'i') setInspect((s) => !s);
-      if (e.metaKey && e.key === 'j') setInspect((s) => s);
+      if ((e.ctrlKey || e.metaKey) && e.key === 'i') setInspect((s) => !s);
+      if ((e.ctrlKey || e.metaKey) && e.key === 'j') setInspect((s) => s);
     }
 
     window.addEventListener('keydown', keydown);

@@ -3,18 +3,22 @@ import LRU from 'lru-cache';
 
 export type ParsedModuleCache = LRU<string, ParsedModule>;
 
+export type ShaderModule = ParsedBundle | ParsedModule;
+
 export type ParsedBundle = {
   module: ParsedModule,
-  libs: Record<string, ParsedBundle>,
+  libs?: Record<string, ShaderModule>,
   entry?: string,
+  virtual?: ParsedModule[],
 };
 
 export type ParsedModule = {
   name: string,
   code: string,
-  tree: Tree,
   table: SymbolTable,
+  tree?: Tree,
   shake?: ShakeTable,
+  virtual?: VirtualTable,
   entry?: string,
 };
 
@@ -24,17 +28,25 @@ export type CompressedNode = [string, number, number];
 
 export type SymbolTable = {
   hash: string,
-  symbols: SymbolRef[],
-  visibles: SymbolRef[],
-  globals: SymbolRef[],
-  modules: ModuleRef[],
-  functions: FunctionRef[],
-  declarations: DeclarationRef[],
-  externals: DeclarationRef[],
+  symbols?: SymbolRef[],
+  visibles?: SymbolRef[],
+  globals?: SymbolRef[],
+  modules?: ModuleRef[],
+  functions?: FunctionRef[],
+  declarations?: DeclarationRef[],
+  externals?: DeclarationRef[],
 };
 
 export type ShakeTable = ShakeOp[];
 export type ShakeOp = [number, string[]];
+
+export type VirtualTable = {
+  render: VirtualRender,
+  uniforms?: DataBinding[],
+  bindings?: DataBinding[],
+  base?: number,
+  namespace?: string,
+};
 
 export enum RefFlags {
   Exported = 1,
@@ -112,3 +124,28 @@ export type StructRef = {
 
 export type ShaderDefine = string | number | boolean | null | undefined;
 export type ShaderCompiler = (code: string, stage: string) => Uint8Array | Uint32Array;
+
+export type StorageSource = {
+  buffer: GPUBuffer,
+  format: string,
+  length: number,
+};
+
+export type UniformAttribute = {
+  name: string,
+  format: string,
+  args?: string[],
+};
+
+export type UniformAttributeValue = UniformAttribute & {
+  value: any,
+};
+
+export type DataBinding = {
+  uniform: UniformAttributeValue,
+  storage?: StorageSource,
+  lambda?: ParsedBundle | ParsedModule,
+  constant?: any,
+};
+
+export type VirtualRender = (namespace: string, rename: Map<string, string>, base: number) => string;

@@ -8,13 +8,14 @@ html {
 
   --borderThin: #444;
 
-  --shim: rgba(0, 0, 0, 0.95);
+  --shim: rgba(0, 0, 0, 0.85);
   --shimGray: rgba(255, 255, 255, 0.1);
 
-  --colorTextMuted: #888;
-  --colorText: #ccc;
-  --colorTextHover: #ddd;
-  --colorTextActive: #eee;
+  --colorTextMuted: rgba(255, 255, 255, .5);
+  --colorTextSemi: rgba(255, 255, 255, .65);
+  --colorText: #ddd;
+  --colorTextHover: #eee;
+  --colorTextActive: #fff;
 }
 
 html > body {
@@ -54,4 +55,27 @@ body .ui.secondary.pointing.menu a.item:hover {
 body .ui.secondary.pointing.menu a.active.item:hover {
   color: var(--textActive);
   border-color: var(--backgroundActive); 
+}
+
+html > body ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, .1);
+  border-radius: 0;
+}
+
+html > body ::-webkit-scrollbar-thumb {
+  cursor: pointer;
+  border-radius: 5px;
+  background: rgba(128, 128, 128, .4);
+  -webkit-transition: color .2s ease;
+  transition: background .2s ease;
+}
+
+html > body ::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, .6);
+}
+
+html > body ::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 6px;
+  height: 6px;
 }

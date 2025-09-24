@@ -1,4 +1,4 @@
-#pragma import {viewUniforms} from '../../glsl/use/view'
+#pragma import {viewUniforms} from '@use-gpu/glsl/use/view'
 
 // segments
 //
@@ -30,7 +30,7 @@ vec2 lineJoinMiter(vec2 left, vec2 right, int segment, float arc) {
   if (arc == 1.0) return right;
 
   mid = normalize((left + right) / 2.0);
-  scale = min(2.0, 1.0 / dot(mid, left));
+  scale = min(2.0, 1.0 / max(0.001, dot(mid, left)));
 
   return mid * scale;
 }

@@ -1,13 +1,13 @@
 import { LiveFiber, Task } from './types';
-import { use, detach, provide, PROVIDE, makeContext } from './live';
-import { renderFiber, makeSubFiber } from './fiber';
+import { use, detach, provide, provideMemo, PROVIDE, makeContext } from './builtin';
+import { renderFiber } from './fiber';
 import { memoArgs, useState, useContext } from './hooks';
 import { renderSync } from './tree';
 
 it("mounts", () => {
 
-  const Root = () => () => use(Node)();
-  const Node = () => () => {};
+  const Root = () => use(Node)();
+  const Node = () => {};
 
   const result = renderSync(use(Root)());
 
@@ -24,12 +24,12 @@ it("mounts", () => {
 
 it("mounts multiple", () => {
 
-  const Root = () => () => [
+  const Root = () => [
     use(Node, '1')(),
     use(Node, '2')(),
   ];
 
-  const Node = () => () => {};
+  const Node = () => {};
 
   const result = renderSync(use(Root)());
   expect(result.f).toBe(Root);
@@ -42,18 +42,18 @@ it("mounts multiple", () => {
   expect(node2 && node2.f).toBe(Node);
 });
 
-it("mounts a subfiber", () => {
+it("detaches a subfiber", () => {
 
   let captureSubFiber: LiveFiber<any> | null = null;
 
-  const Root = (fiber: LiveFiber<any>) => () =>
+  const Root = () =>
     detach(use(Sub)(), (render: () => void, mount: LiveFiber<any>) => {
       captureSubFiber = mount;
       render();
     });
 
-  const Sub = () => () => use(Node)();
-  const Node = () => () => {};
+  const Sub = () => use(Node)();
+  const Node = () => {};
 
   const result = renderSync(use(Root)());
   expect(result.f).toBe(Root);
@@ -64,6 +64,8 @@ it("mounts a subfiber", () => {
   expect(captureSubFiber).toBeTruthy();
   if (captureSubFiber != null) {
     const {mount} = captureSubFiber;
+    // @ts-ignore
+    expect(captureSubFiber.f).toBe(Sub);
     // @ts-ignore
     expect(mount && mount.f).toBe(Node);
   }
@@ -79,7 +81,7 @@ it("reacts on the root (setter form)", () => {
   let trigger = null as Task | null;
   const setTrigger = (f: Task) => trigger = f;
 
-  const Root = (fiber: LiveFiber<any>) => () => {
+  const Root = () => {
     rendered.root++;
 
     const [, setValue] = useState(0);
@@ -88,7 +90,7 @@ it("reacts on the root (setter form)", () => {
     return use(Node)(Math.random());
   };
 
-  const Node = () => (x?: number) => {
+  const Node = (x?: number) => {
     rendered.node++;
   };
 
@@ -98,7 +100,7 @@ it("reacts on the root (setter form)", () => {
   if (!result.host) return;
   if (!result.mount) return;
 
-  const {host: {__flush: flush}} = result;
+  const {host: {flush}} = result;
 
   expect(result.f).toBe(Root);
   const node1 = result.mount;
@@ -128,7 +130,7 @@ it("reacts on the root (reducer form)", () => {
   let trigger = null as Task | null;
   const setTrigger = (f: Task) => trigger = f;
 
-  const Root = (fiber: LiveFiber<any>) => () => {
+  const Root = () => {
     rendered.root++;
 
     const [, setValue] = useState(0);
@@ -137,7 +139,7 @@ it("reacts on the root (reducer form)", () => {
     return use(Node)(Math.random());
   };
 
-  const Node = () => (x?: number) => {
+  const Node = (x?: number) => {
     rendered.node++;
   };
 
@@ -147,7 +149,7 @@ it("reacts on the root (reducer form)", () => {
   if (!result.host) return;
   if (!result.mount) return;
 
-  const {host: {__flush: flush}} = result;
+  const {host: {flush}} = result;
 
   expect(result.f).toBe(Root);
   const node1 = result.mount;
@@ -177,7 +179,7 @@ it("reacts and remounts on the root", () => {
   let trigger = null as Task | null;
   const setTrigger = (f: Task) => trigger = f;
 
-  const Root = (fiber: LiveFiber<any>) => () => {
+  const Root = () => {
     const [, setValue] = useState(0);
     setTrigger(() => setValue(1));
 
@@ -189,7 +191,7 @@ it("reacts and remounts on the root", () => {
     ];
   };
 
-  const Node = () => (x?: number) => {
+  const Node = (x?: number) => {
     rendered.node++;
   };
 
@@ -197,7 +199,7 @@ it("reacts and remounts on the root", () => {
   expect(result.host).toBeTruthy();
   if (!result.host) return;
 
-  const {host: {__flush: flush, __stats: stats}} = result;
+  const {host: {flush, __stats: stats}} = result;
 
   expect(result.f).toBe(Root);
   expect(result.mounts).toBeTruthy();
@@ -256,14 +258,14 @@ it("reacts and remounts a sub tree", () => {
   let trigger = null as Task | null;
   const setTrigger = (f: Task) => trigger = f;
 
-  const Root = () => () => {
+  const Root = () => {
     rendered.root++;
     return [
       use(SubRoot, 'subroot')(),
     ];
   };
 
-  const SubRoot = (fiber: LiveFiber<any>) => () => {
+  const SubRoot = () => {
     const [, setValue] = useState(0);
     setTrigger(() => setValue(1));
 
@@ -275,7 +277,7 @@ it("reacts and remounts a sub tree", () => {
     ];
   };
 
-  const Node = () => (x?: number) => {
+  const Node = (x?: number) => {
     rendered.node++;
     return;
   };
@@ -286,7 +288,7 @@ it("reacts and remounts a sub tree", () => {
   if (!result.host) return;
   if (!result.mounts) return;
 
-  const {host: {__flush: flush, __stats: stats}} = result;
+  const {host: {flush, __stats: stats}} = result;
 
   expect(result.f).toBe(Root);
   expect(result.mounts).toBeTruthy();
@@ -338,7 +340,7 @@ it("coalesces updates", () => {
   const setTrigger1 = (f: Task) => trigger1 = f;
   const setTrigger2 = (f: Task) => trigger2 = f;
 
-  const Root = (fiber: LiveFiber<any>) => () => {
+  const Root = () => {
     rendered.root++;
 
     const [, setValue] = useState(0);
@@ -347,7 +349,7 @@ it("coalesces updates", () => {
     return use(Node)(Math.random());
   };
 
-  const Node = (fiber: LiveFiber<any>) => (x?: number) => {
+  const Node = (x?: number) => {
     rendered.node++;
 
     const [, setValue] = useState(0);
@@ -360,7 +362,7 @@ it("coalesces updates", () => {
   if (!result.host) return;
   if (!result.mount) return;
 
-  const {host: {__flush: flush}} = result;
+  const {host: {flush}} = result;
 
   expect(result.f).toBe(Root);
   const node1 = result.mount;
@@ -394,7 +396,7 @@ it("updates with memo in the way", () => {
   const setTrigger1 = (f: Task) => trigger1 = f;
   const setTrigger2 = (f: Task) => trigger2 = f;
 
-  const Root = (fiber: LiveFiber<any>) => () => {
+  const Root = () => {
     rendered.root++;
 
     const [, setValue] = useState(0);
@@ -403,13 +405,13 @@ it("updates with memo in the way", () => {
     return use(Memo)();
   };
 
-  const Memo = memoArgs((fiber: LiveFiber<any>) => () => {
+  const Memo = memoArgs(() => {
     rendered.memo++;
 
     return use(Node)(Math.random());
   });
 
-  const Node = (fiber: LiveFiber<any>) => (x?: number) => {
+  const Node = (x?: number) => {
     rendered.node++;
 
     const [, setValue] = useState(0);
@@ -424,7 +426,7 @@ it("updates with memo in the way", () => {
   if (!result.mount) return;
   if (!result.mount.mount) return;
 
-  const {host: {__flush: flush}} = result;
+  const {host: {flush}} = result;
 
   expect(result.f).toBe(Root);
   const memo1 = result.mount;
@@ -465,7 +467,7 @@ it("updates context with memo in the way", () => {
   let trigger = null as Task | null;
   const setTrigger = (f: Task) => trigger = f;
 
-  const Root = (fiber: LiveFiber<any>) => () => {
+  const Root = () => {
     rendered.root++;
 
     const [value, setValue] = useState(0);
@@ -474,13 +476,13 @@ it("updates context with memo in the way", () => {
     return provide(context, value, use(Memo)());
   };
 
-  const Memo = memoArgs((fiber: LiveFiber<any>) => () => {
+  const Memo = memoArgs(() => {
     rendered.memo++;
 
     return use(Node)();
   });
 
-  const Node = (fiber: LiveFiber<any>) => () => {
+  const Node = () => {
     rendered.node++;
     const value = useContext(context);
     rendered.value = value;
@@ -494,7 +496,7 @@ it("updates context with memo in the way", () => {
   if (!result.mount) return;
   if (!result.mount.mount) return;
 
-  const {host: {__flush: flush}} = result;
+  const {host: {flush}} = result;
 
   expect(result.f).toBe(Root);
   const provide1 = result.mount;
@@ -527,7 +529,7 @@ it("updates context with memo in the way", () => {
 
 });
 
-it("does not update context if value is the same", () => {
+it("does update context if value is the same", () => {
 
   const context = makeContext();
 
@@ -540,7 +542,7 @@ it("does not update context if value is the same", () => {
   let trigger = null as Task | null;
   const setTrigger = (f: Task) => trigger = f;
 
-  const Root = (fiber: LiveFiber<any>) => () => {
+  const Root = () => {
     rendered.root++;
 
     const [value, setValue] = useState(0);
@@ -549,13 +551,13 @@ it("does not update context if value is the same", () => {
     return provide(context, 0, use(Memo)());
   };
 
-  const Memo = memoArgs((fiber: LiveFiber<any>) => () => {
+  const Memo = memoArgs(() => {
     rendered.memo++;
 
     return use(Node)();
   });
 
-  const Node = (fiber: LiveFiber<any>) => () => {
+  const Node = () => {
     rendered.node++;
     const value = useContext(context);
     rendered.value = value;
@@ -569,7 +571,84 @@ it("does not update context if value is the same", () => {
   if (!result.mount) return;
   if (!result.mount.mount) return;
 
-  const {host: {__flush: flush}} = result;
+  const {host: {flush}} = result;
+
+  expect(result.f).toBe(Root);
+  const provide1 = result.mount;
+  expect(provide1 && provide1.f).toBe(PROVIDE);
+  const memo1 = result.mount.mount;
+  expect(memo1 && memo1.f).toBe(Memo);
+  const node1 = result.mount.mount.mount;
+  expect(node1 && node1.f).toBe(Node);
+
+  expect(rendered.root).toBe(1);
+  expect(rendered.memo).toBe(1);
+  expect(rendered.node).toBe(1);
+  expect(rendered.value).toBe(0);
+
+  if (trigger) trigger();
+  if (flush) flush();
+
+  expect(result.f).toBe(Root);
+  const provide2 = result.mount;
+  expect(provide2 && provide2.f).toBe(PROVIDE);
+  const memo2 = result.mount.mount;
+  expect(memo2 && memo2.f).toBe(Memo);
+  const node2 = result.mount.mount.mount;
+  expect(node2 && node2.f).toBe(Node);
+
+  expect(rendered.root).toBe(2);
+  expect(rendered.memo).toBe(1);
+  expect(rendered.node).toBe(2);
+  expect(rendered.value).toBe(0);
+
+});
+
+it("does not update memoized context if value is the same", () => {
+
+  const context = makeContext();
+
+  const rendered = {
+    root: 0,
+    memo: 0,
+    node: 0,
+    value: -1,
+  };
+  let trigger = null as Task | null;
+  const setTrigger = (f: Task) => trigger = f;
+
+  const Root = () => {
+    rendered.root++;
+
+    const [value, setValue] = useState(0);
+    setTrigger(() => setValue(1));
+
+    return provideMemo(context, 0, memoChild);
+  };
+
+  const Memo = memoArgs(() => {
+    rendered.memo++;
+
+    return use(Node)();
+  });
+
+  const Node = () => {
+    rendered.node++;
+    const value = useContext(context);
+    rendered.value = value;
+  };
+
+  const memoChild = use(Memo)();
+
+  const result = renderSync(use(Root)());
+  expect(result.host).toBeTruthy();
+  expect(result.mount).toBeTruthy();
+  expect(result.mount!.mount).toBeTruthy();
+  if (!result.host) return;
+  if (!result.mount) return;
+  if (!result.mount.mount) return;
+
+  const {host: {flush}} = result;
 
   expect(result.f).toBe(Root);
   const provide1 = result.mount;

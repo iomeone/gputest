@@ -9,6 +9,7 @@ export type DeepPartial<T> = T | {
 export type UseRenderingContextGPU = {
   width: number,
   height: number,
+  pixelRatio: number,
   samples: number,
 
   device: GPUDevice,
@@ -151,6 +152,16 @@ export type UniformAllocation = {
   bindGroup: GPUBindGroup,
 };
 
+export type ResourceAllocation = {
+  bindGroup: GPUBindGroup,
+};
+
+export type VirtualAllocation = {
+  pipe?: UniformPipe,
+  buffer?: GPUBuffer,
+  bindGroup?: GPUBindGroup,
+};
+
 export type UniformFiller = (items: any) => void;
 export type UniformByteSetter = (view: DataView, offset: number, data: any) => void;
 
@@ -159,11 +170,25 @@ export type StorageSource = {
   buffer: GPUBuffer,
   format: string,
   length: number,
+  version: number,
+};
+
+export type TextureSource = {
+  view: GPUTextureView,
+  format: string,
+  size: [number, number] | [number, number, number],
+  version: number,
+};
+
+export type DataTexture = {
+  data: TypedArray,
+  format: string,
+  size: [number, number] | [number, number, number],
 };
 
 // Shaders
 export type ShaderStage = string;
-export type ShaderCompiler = (code: string, stage: ShaderStage) => TypedArray;
+export type ShaderCompiler = (code: string, stage: ShaderStage) => [TypedArray, number | string];
 
 export type ShaderLanguages = {[k: string]: ShaderLanguageAPI};
 export type ShaderLanguageAPI = {
@@ -174,6 +199,7 @@ export type ShaderLanguageAPI = {
 export type ShaderModuleDescriptor = {
   code: TypedArray | string,
   entryPoint: string,
+  hash: string | number,
 };
 
 export type ShaderStageDescriptor = {
@@ -188,6 +214,8 @@ export type ViewUniforms = {
   viewPosition: { value: vec3 | [number, number, number] | number[] },
   viewResolution: { value: vec2 | [number, number] | number[] },
   viewSize: { value: vec2 | [number, number] | number[] },
+  viewFocus: { value: number },
+  viewPixelRatio: { value: number },
 };
 
 export type PickingUniforms = {
@@ -199,17 +227,17 @@ export type PickingUniforms = {
 export type Emitter = (...args: number[]) => void;
 export type Accessor = (o: any) => any;
 export type EmitterExpression = (emit: Emitter, ...args: any[]) => any;
-export type DataField = [string, string | Accessor | ArrayLike];
+
 export type ArrayLike = any[] | TypedArray;
 
-export type ResolvedDataBindings = {
-  constants: Record<string, any>,
-  links: Record<string, StorageSource>,
-};
-
-export type ResolvedCodeBindings<T> = {
-  constants: Record<string, any>,
-  links: Record<string, T>,
+export type AccessorSpec = string | Accessor | ArrayLike;
+export type DataField = [string, AccessorSpec];
+export type DataBinding<T> = {
+  uniform: UniformAttributeValue,
+  storage?: StorageSource,
+  texture?: TextureSource,
+  constant?: any,
+  lambda?: T,
 };
 
 // Passes

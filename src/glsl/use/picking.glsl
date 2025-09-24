@@ -1,6 +1,6 @@
 #ifdef IS_PICKING
 #pragma export
-layout(set = 0, binding = PICKING_BINDING) uniform PickingUniforms {
+layout(set = PICKING_BINDGROUP, binding = PICKING_BINDING) uniform PickingUniforms {
   uint pickingId;
 } pickingUniforms;
 

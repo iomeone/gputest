@@ -1,11 +1,11 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '../../core/types';
-import { RenderContext, FrameContext } from '../../components';
-import { yeet, useMemo, useSomeMemo, useNoMemo, useContext, useSomeContext, useNoContext } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '@use-gpu/core/types';
+import { DeviceContext, FrameContext } from '@use-gpu/components';
+import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
 import {
-  makeDataArray, copyDataArray, copyNumberArray, 
+  makeDataArray, makeDataAccessor, copyDataArray, copyNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '../../core';
+} from '@use-gpu/core';
 
 export type DataProps = {
   length?: number,
@@ -18,13 +18,14 @@ export type DataProps = {
 
 const NO_FIELDS = [] as DataField[];
 
-export const Data: LiveComponent<DataProps> = (fiber) => (props) => {
-  const {device} = useContext(RenderContext);
+export const Data: LiveComponent<DataProps> = (props) => {
+  const device = useContext(DeviceContext);
 
   const {
-    data, fields,
-    live,
+    data,
+    fields,
     render,
+    live = false,
   } = props;
 
   const l = data?.length || 0;
@@ -36,16 +37,8 @@ export const Data: LiveComponent<DataProps> = (fiber) => (props) => {
       if (!(format in UNIFORM_DIMS)) throw new Error(`Unknown data format "${format}"`);
       const f = format as any as UniformType;
 
-      let length = l, raw;
-      if (typeof accessor === 'object' && 
-          accessor.length === +accessor.length) {
-        length = Math.floor(accessor.length / UNIFORM_DIMS[f]);
-        raw = accessor;
-      }
-      else if (typeof accessor === 'string') {
-        const k = accessor;
-        accessor = (o: any) => o[k];
-      }
+      let {raw, length, fn} = makeDataAccessor(f, accessor);
+      if (length == null) length = l;
 
       const {array, dims} = makeDataArray(f, length);
       if (dims === 3) throw new Error("Dims must be 1, 2, or 4");
@@ -55,6 +48,7 @@ export const Data: LiveComponent<DataProps> = (fiber) => (props) => {
         buffer,
         format,
         length,
+        version: 0,
       };
       
       return {buffer, array, source, dims, accessor, raw};
@@ -63,24 +57,25 @@ export const Data: LiveComponent<DataProps> = (fiber) => (props) => {
     return [fieldBuffers, fieldSources];
   }, [device, fs, l]);
 
-  if (!live) {
-    useNoContext(FrameContext);
-    useSomeMemo(() => {
-      for (const {buffer, array, dims, accessor, raw} of fieldBuffers) if (raw || data) {
-        if (raw) copyNumberArray(raw, array);
-        else if (data) copyDataArray(data, array, dims, accessor as Accessor);
-        uploadBuffer(device, buffer, array.buffer);
-      }
-    }, [device, data, fieldBuffers]);
-  }
-  else {
-    useSomeContext(FrameContext);
-    useNoMemo();
-    for (const {buffer, array, dims, accessor, raw} of fieldBuffers) if (raw || data) {
+  // Refresh and upload data
+  const refresh = () => {
+    for (const {buffer, array, source, dims, accessor, raw} of fieldBuffers) if (raw || data) {
       if (raw) copyNumberArray(raw, array);
       else if (data) copyDataArray(data, array, dims, accessor as Accessor);
+
       uploadBuffer(device, buffer, array.buffer);
+      source.version = incrementVersion(source.version);
     }
+  };
+
+  if (!live) {
+    useNoContext(FrameContext);
+    useMemo(refresh, [device, data, fieldBuffers]);
+  }
+  else {
+    useContext(FrameContext);
+    useNoMemo();
+    refresh();
   }
 
   return useMemo(() => render ? render(fieldSources) : yeet(fieldSources), [render, fieldSources]);

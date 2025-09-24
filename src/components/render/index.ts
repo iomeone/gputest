@@ -1,3 +1,4 @@
+export * from './auto-picking';
 export * from './draw';
 export * from './loop';
 export * from './pass';

@@ -1,23 +1,31 @@
-import { LiveFiber, LiveComponent, LiveElement, Task } from '../../live/types';
-import { gatherReduce, makeContext, useContext, useOne, useMemo, provide } from '../../live';
+import { LiveFiber, LiveComponent, LiveElement, Task } from '@use-gpu/live/types';
+import {
+  gather, provide, resume,
+  makeContext, useContext, useOptionalContext, useNoContext,
+} from '@use-gpu/live';
 import { RenderContext } from '../providers/render-provider';
-import { FrameContext } from '../providers/frame-context';
+import { FrameContext } from '../providers/frame-provider';
 import { PickingContext } from './picking';
 
 export type DrawProps = {
-  children?: LiveElement<any>,
+  live?: boolean,
   render?: () => LiveElement<any>,
+  children?: LiveElement<any>,
 };
 
-const makeStaticDone = (c: any): any => {
-  c.isStaticComponent = true;
-  c.displayName = '[Draw]';
-  return c;
-}
+export const Draw: LiveComponent<DrawProps> = (props) => {
+  const {live, render, children} = props;
 
-const Done = makeStaticDone((fiber: LiveFiber<any>) => (ts: Task[]) => {
+  if (live) useContext(FrameContext);
+  else useNoContext(FrameContext);
+
+  return gather(children ?? (render ? render() : null), Resume);
+};
+
+const Resume = resume((ts: Task[]) => {
   const {device, gpuContext, colorAttachments, samples} = useContext(RenderContext);
   const pickingContext = useContext(PickingContext);
+  const frameContext = useOptionalContext(FrameContext);
 
   const view = gpuContext
   // @ts-ignore
@@ -31,14 +39,3 @@ const Done = makeStaticDone((fiber: LiveFiber<any>) => (ts: Task[]) => {
   for (let task of ts) task();
   if (pickingContext) pickingContext.captureTexture();
 });
-
-export const Draw: LiveComponent<DrawProps> = (fiber) => (props) => {
-  const {children, render} = props;
-
-  const frame = useOne(() => ({current: 0}));
-  frame.current++;
-
-  return provide(FrameContext, frame.current,
-    gatherReduce(children ?? (render ? render() : null), Done)
-  );
-};

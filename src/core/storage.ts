@@ -1,4 +1,4 @@
-import { StorageSource, UniformAttribute } from './types';
+import { StorageSource, UniformAttribute, DataBinding } from './types';
 
 export const makeStorage = (
   device: GPUDevice,
@@ -25,6 +25,23 @@ export const makeStorageBindings = (
     if (link) {
       const {buffer} = link;
       entries.push({binding, resource: {buffer}});
+      binding++;
+    }
+  }
+
+  return entries;
+};
+
+export const makeStorageForDataBindings = <T>(
+  bindings: DataBinding<T>[],
+  binding: number = 0,
+): GPUBindGroupEntry[] => {
+  const entries = [] as any[];
+
+  for (const b of bindings) {
+    if (b.storage) {
+      const {storage} = b;
+      entries.push({binding, resource: {buffer: storage.buffer}});
       binding++;
     }
   }

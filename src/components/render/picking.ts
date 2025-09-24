@@ -1,6 +1,6 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { CanvasRenderingContextGPU } from '../../webgpu/types';
-import { TypedArray, UniformAttribute } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { TypedArray, UniformAttribute } from '@use-gpu/core/types';
 import {
   PICKING_FORMAT,
   PICKING_COLOR,
@@ -8,7 +8,11 @@ import {
 } from '../constants';
 
 import { RenderContext, RenderProvider } from '../providers';
-import { memo, use, provide, useContext, useMemo, useOne, useResource, makeContext } from '../../live';
+import {
+  memo, use, provide, makeContext,
+  useMemo, useOne, useNoOne, useResource,
+  useContext, useNoContext,
+} from '@use-gpu/live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -20,7 +24,7 @@ import {
   TEXTURE_ARRAY_TYPES,
   TEXTURE_FORMAT_SIZES,
   PICKING_UNIFORMS,
-} from '../../core';
+} from '@use-gpu/core';
 
 const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
 
@@ -35,7 +39,28 @@ type PickingContextType = {
 };
 
 export const PickingContext = makeContext<PickingContextType>(null, 'PickingContext');
-export const useNoPicking = () => useResource(() => ({}));
+
+export const NO_PICKING = {} as any;
+
+export const usePicking = (id: number) => useOne(() => ({
+  pickingDefs: PICKING_UNIFORMS,
+  pickingUniforms: {
+    pickingId: { value: id },
+  },
+}));
+
+export const useNoPicking = () => useNoOne();
+
+export const usePickingContext = (id?: number, isPicking?: boolean) => {
+  const renderContext = useContext(RenderContext);
+
+  const pickingContext = isPicking ? useContext(PickingContext) : useNoContext(PickingContext);  
+  const {pickingDefs, pickingUniforms} = usePicking(id || 0) ?? useNoOne() ?? NO_PICKING;
+  const resolvedContext = pickingContext?.renderContext ?? renderContext;
+
+  return {renderContext: resolvedContext, pickingDefs, pickingUniforms};
+}
+
 
 export type PickingProps = {
   pickingFormat?: GPUTextureFormat, 
@@ -48,7 +73,7 @@ export type PickingProps = {
 
 const NOP = () => {};
 
-export const Picking: LiveComponent<PickingProps> = (fiber) => (props) => {
+export const Picking: LiveComponent<PickingProps> = (props) => {
   const renderContext = useContext(RenderContext);
 
   const {
@@ -117,13 +142,6 @@ export const Picking: LiveComponent<PickingProps> = (fiber) => (props) => {
       return index;
     }
 
-    const usePicking = (id: number) => useOne(() => ({
-      pickingDefs: PICKING_UNIFORMS,
-      pickingUniforms: {
-        pickingId: { value: id },
-      },
-    }));
-
     const context = {
       renderContext: {
         ...renderContext,
@@ -134,6 +152,7 @@ export const Picking: LiveComponent<PickingProps> = (fiber) => (props) => {
         colorAttachments,
         depthStencilAttachment,
       } as CanvasRenderingContextGPU,
+      pickingTexture,
       captureTexture,
       sampleTexture,
       usePicking,
@@ -144,13 +163,3 @@ export const Picking: LiveComponent<PickingProps> = (fiber) => (props) => {
 
   return provide(PickingContext, pickingContext, children);
 };
-
-export type PickingProviderProps = {
-  pickingContext: PickingContextType,
-  children: LiveElement<any>,
-};
-
-export const PickingProvider: LiveComponent<PickingProviderProps> = memo((fiber) => (props) => {
-  const {pickingContext, children} = props;
-  return provide(PickingContext, pickingContext, children);
-}, 'PickingProvider');

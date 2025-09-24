@@ -1,14 +1,21 @@
 import { GPUMount, GPUDeviceMount } from './types';
 
-export const mountGPU = async (selector: string): Promise<GPUMount> => {
+export const mountGPU = async (
+  selector: string,
+  requiredFeatures: GPUFeatureName[] = [],
+  requiredLimits: Record<string, number> = {},
+): Promise<GPUMount> => {
  
-  const {adapter, device} = await mountGPUDevice();
+  const {adapter, device} = await mountGPUDevice(requiredFeatures, requiredLimits);
   const canvas = mountCanvas(selector);
 
   return {adapter, device, canvas};
 }
 
-export const mountGPUDevice = async (): Promise<GPUDeviceMount> => {
+export const mountGPUDevice = async (
+  requiredFeatures: GPUFeatureName[] = [],
+  requiredLimits: Record<string, number> = {},
+): Promise<GPUDeviceMount> => {
   if (!navigator.gpu) throw new Error("WebGPU not supported in browser");
 
   const adapter = await navigator.gpu.requestAdapter({
@@ -17,7 +24,8 @@ export const mountGPUDevice = async (): Promise<GPUDeviceMount> => {
   if (!adapter) throw new Error("Cannot get WebGPU adapter");
 
   const device = await adapter.requestDevice({
-    //requiredFeatures: ['depth32float-stencil8'],
+    requiredLimits,
+    requiredFeatures,
   });
   if (!device) throw new Error("Cannot get WebGPU device");
 

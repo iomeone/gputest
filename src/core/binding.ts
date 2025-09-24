@@ -1,76 +1,48 @@
 import {
   UniformType, UniformAttribute, UniformAttributeValue,
   ResolvedDataBindings, ResolvedCodeBindings,
-  ShaderModuleDescriptor, StorageSource,
+  ShaderModuleDescriptor, StorageSource, DataBinding,
 } from './types';
 import { makeStorageAccessors, checkStorageTypes, checkStorageType } from './storage';
-import { makeUniformBlockAccessor } from './uniform';
 import { makeShaderModule } from './pipeline';
 import partition from 'lodash/partition';
 
-// Extract data bindings from a list of `constant | buffer | null` values.
-export const extractDataBindings = (
+// Parse a set of sources for a given set of uniforms/attributes
+export const makeShaderBindings = <T>(
   uniforms: UniformAttributeValue[],
-  bindings: any[],
-): ResolvedDataBindings => {
-  const constants = {} as Record<string, any>;
-  const links = {} as Record<string, any>;
-  for (const u of uniforms) {
-    const v = bindings.shift();
-    if (v?.buffer != null) {
-      const b = v as StorageSource;
-      checkStorageType(u, b);
-      links[u.name] = b;
-    }
-    else {
-      constants[u.name] = v ?? u.value;
-    }
+  sources: any[],
+): DataBinding<T>[] => {
+  const n = uniforms.length;
+  const out = [] as DataBinding<T>[];
+  for (let i = 0; i < n; ++i) {
+    const u = uniforms[i];
+    const s = sources[i];
+    out.push(makeShaderBinding<T>(u, s));
   }
-  return {links, constants};
+  return out;
 }
 
-// Extract code bindings from a list of `shader | null` values.
-export const extractCodeBindings = <T>(
-  uniforms: UniformAttributeValue[],
-  bindings: any[],
-): ResolvedCodeBindings<T> => {
-  const constants = {} as Record<string, any>;
-  const links = {} as Record<string, T>;
-  for (const u of uniforms) {
-    const v = bindings.shift();
-    if (v?.libs != null || v?.table != null) {
-      const s = v as T;
-      links[u.name] = s;
+// Parse a source for a given uniform/attribute
+export const makeShaderBinding = <T>(
+  uniform: UniformAttributeValue,
+  source?: StorageSource | T | any,
+): DataBinding<T> => {
+  if (source) {
+    if (source.libs || source.table) {
+      const lambda = source as T;
+      return {uniform, lambda};
     }
-    else {
-      constants[u.name] = v ?? u.value;
+    if (source.buffer) {
+      const storage = source as StorageSource;
+      checkStorageType(uniform, storage);
+      return {uniform, storage};
+    }
+    if (source.texture) {
+      const texture = source as TextureSource;
+      return {uniform, texture};
     }
   }
-  return {links, constants};
-}
-
-// Generate accessors for bound dynamic uniforms, either attribute, lambda or constant
-export const makeBoundStorageAccessors = <T>(
-  dataUniforms: UniformAttribute[],
-  codeUniforms: UniformAttribute[],
-  dataBindings: ResolvedDataBindings,
-  codeBindings: ResolvedCodeBindings<T>,
-  base: number = 0,
-): {
-  accessors: Record<string, string>,
-  attributes: UniformAttribute[],
-  constants: UniformAttribute[],
-  lambdas: UniformAttribute[],
-} => {
-  const [attributes, dataConstants] = partition(dataUniforms, ({name}) => !!(dataBindings.links as any)[name]);
-  const [lambdas, codeConstants] = partition(codeUniforms, ({name}) => !!(codeBindings.links as any)[name]);
-  const constants = [...dataConstants, ...codeConstants];
-
-  const constantAccessors = makeUniformBlockAccessor(constants, base);
-  const storageAccessors = makeStorageAccessors(attributes, base, 1);
-  const accessors = {...constantAccessors, ...storageAccessors};
-
-  return {accessors, attributes, lambdas, constants};
+  return {uniform, constant: source ?? uniform.value};
 }
 
 // Bind a shader to a set of data bindings, either as constants or a buffer
@@ -82,7 +54,6 @@ export const makeBoundShader = <A, B>(
   compile: (code: B, stage: string) => any,
   link: (shader: A, links: Record<string, A>, defines: Record<string, any>, cache: any) => B,
   cache: any,
-  base: number = 0,
 ): [ShaderModuleDescriptor, ShaderModuleDescriptor, B, B] => {
   const vertexLinked = link(vertexShader, links, defines, cache);
   const fragmentLinked = link(fragmentShader, links, defines, cache);

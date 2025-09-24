@@ -1,15 +1,18 @@
-import { LiveFiber } from '../../live/types';
-import { formatNode, formatValue, traverseFiber, renderFibers } from '../../live';
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatNode, formatValue, renderFibers } from '@use-gpu/live';
 import { useUpdateState } from './cursor';
-import { ExpandState, SelectState, PingState } from './types';
+import { ExpandState, SelectState, HoverState, PingState } from './types';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { memo, useLayoutEffect, useEffect, useMemo, useState } from 'react';
 import { Node } from './node';
-import { Fiber } from './fiber';
+import { FiberTree } from './fiber';
 import { Props } from './props';
 import { Call } from './call';
 import { Shader } from './shader';
-import { InspectContainer, InspectContainerCollapsed, InspectToggle, SplitRow, RowPanel, Scrollable, Inset } from './layout';
+import {
+  InspectContainer, InspectToggle,
+  SplitRow, RowPanel, Panel, PanelFull, PanelScrollable, Inset, InsetColumnFull,
+} from './layout';
 import { Button, Tab, Grid } from 'semantic-ui-react'
 import "../theme.css";
 
@@ -30,24 +33,23 @@ const TAB_STYLE = { secondary: true, pointing: true };
 export const Inspect: React.FC<InspectProps> = ({fiber}) => {
   const expandCursor = useUpdateState<ExpandState>({});
   const selectedCursor = useUpdateState<SelectState>(null);
+  const hoveredCursor = useUpdateState<HoverState>(() => ({ fiber: null, deps: [], root: null }));
 
   const [open, updateOpen] = useUpdateState<boolean>(false);
   const toggleOpen = () => updateOpen(!open);
 
-  const [detail, updateDetail] = useUpdateState<boolean>(false);
-  const toggleDetail = () => updateDetail(!detail);
-
-  const [selectedFiber] = selectedCursor;
+  const fibers = new Map<number, LiveFiber<any>>();
+  const [selectedFiber, setSelected] = selectedCursor;
   const ping = usePingTracker(fiber);
 
   const panes = selectedFiber ? [
     {
       menuItem: 'Props',
-      render: () => <Props fiber={selectedFiber} />
+      render: () => <Props fiber={selectedFiber} fibers={fibers} />
     },
     {
       menuItem: 'Fiber',
-      render: () => <Call fiber={selectedFiber} />
+      render: () => <Call fiber={selectedFiber} fibers={fibers} />
     },
   ] : [];
 
@@ -70,54 +72,51 @@ export const Inspect: React.FC<InspectProps> = ({fiber}) => {
     }
   }
 
-  const Container = detail ? InspectContainer : InspectContainerCollapsed;
-
   const tree = (
-    <Scrollable>
-      <Inset>
-        <Fiber fiber={fiber} ping={ping} expandCursor={expandCursor} selectedCursor={selectedCursor} />
-      </Inset>
-    </Scrollable>
+    <InsetColumnFull>
+      <FiberTree
+        fiber={fiber}
+        fibers={fibers}
+        ping={ping}
+        expandCursor={expandCursor}
+        selectedCursor={selectedCursor}
+        hoveredCursor={hoveredCursor}
+      />
+    </InsetColumnFull>
   );
 
-  const expand = (
-    <InspectToggle onClick={toggleDetail}>
-      <Button>{detail ? '<' : '>'}</Button>
-    </InspectToggle>
-  );
-  
   const props = (
-    <Scrollable>
-      <Inset>
-        <Tab menu={TAB_STYLE} panes={panes} />
-      </Inset>
-    </Scrollable>
+    <Inset>
+      <Tab menu={TAB_STYLE} panes={panes} />
+    </Inset>
   );
 
   // Avoid text selection on double click
-	const onMouseDown = (e: any) => {
+  const onMouseDown = (e: any) => {
     if (e.detail > 1) {
-  		e.preventDefault();
+      e.preventDefault();
     }
-	};
+  };
 
   return (<>
-    {open  ? <Container onMouseDown={onMouseDown} className="ui inverted">
-      {detail ? (
+    {open ? (
+      <InspectContainer onMouseDown={onMouseDown} className="ui inverted">
         <SplitRow>
-          <RowPanel style={{width: '33%'}}>
-            {tree}
-            {expand}
+          <RowPanel style={{width: '34%'}}>
+            <PanelFull onClick={() => setSelected(null)}>
+              {tree}
+            </PanelFull>
           </RowPanel>
-          <RowPanel style={{width: '66%'}}>
-            {props}
-          </RowPanel>
+          {selectedFiber ? (
+            <RowPanel style={{width: '66%'}}>
+              <PanelScrollable>
+                {props}
+              </PanelScrollable>
+            </RowPanel>
+          ) : null}
         </SplitRow>
-      ) : (<>
-        {expand}
-        {tree}
-      </>)}
-    </Container> : null}
+      </InspectContainer>
+    ) : null}
     <InspectToggle onClick={toggleOpen}>
       <Button>{open ? ICON("close") : ICON("bug_report")}</Button>
     </InspectToggle>

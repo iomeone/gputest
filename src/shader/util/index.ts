@@ -1,3 +1,3 @@
 export * from './bundle';
-export * from './hash';
+export { toMurmur53, getProgramHash } from './hash';
 export * from './tree';

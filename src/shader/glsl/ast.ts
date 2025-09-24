@@ -28,6 +28,8 @@ import uniq from 'lodash/uniq';
 const NO_DEPS = [] as string[];
 const IGNORE_IDENTIFIERS = new Set(['location', 'set', 'binding']);
 
+const orNone = <T>(list: T[]): T[] | undefined => list.length ? list : undefined;
+
 const isSpace = (s: string, i: number) => {
   const c = s.charCodeAt(i);
   return c === 32 || c === 13 || c === 10 || c === 9;
@@ -367,8 +369,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const declarations = getDeclarations();
 
     const externals = declarations
-      .filter(d => d.prototype)
-      .filter(d => !functions.find(f => f.prototype.name === d.prototype!.name));
+      .filter(d => d.prototype && !functions.find(f => f.prototype.name === d.prototype!.name));
 
     const refs = [...functions, ...declarations];
     const exported = refs.filter(d => d.flags & RF.Exported);
@@ -378,17 +379,28 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const globals = uniq(globalled.flatMap(r => r.symbols));
     const symbols = uniq(refs.flatMap(r => r.symbols));
 
-    const scope = new Set(symbols);
+    const scope = new Set(symbols ?? []);
     for (let ref of refs) if (ref.identifiers) {
       ref.identifiers = ref.identifiers.filter(s => scope.has(s));
     }
 
-    return {hash, symbols, visibles, globals, externals, modules, functions, declarations};
+    return {
+      hash,
+      symbols: orNone(symbols),
+      visibles: orNone(visibles),
+      globals: orNone(globals),
+      externals: orNone(externals),
+      modules: orNone(modules),
+      functions: orNone(functions),
+      declarations: orNone(declarations),
+    };
   }
 
   const getShakeTable = (table: SymbolTable = getSymbolTable()): ShakeTable | undefined => {
     const {functions, declarations} = table;
-    const refs = [...functions, ...declarations] as (FunctionRef | DeclarationRef)[];
+    const refs = [] as (FunctionRef | DeclarationRef)[];
+    if (functions) refs.push(...functions);
+    if (declarations) refs.push(...declarations);
     refs.sort((a, b) => a.at - b.at);
 
     const graph = new Map<string, string[]>();
@@ -524,6 +536,10 @@ export const rewriteUsingAST = (
 export const compressAST = (tree: Tree): CompressedNode[] => {
   const out = [] as any[]
 
+  // Pass through nodes from pre-compressed tree immediately
+  // @ts-ignore
+  if (tree.__nodes) return tree.__nodes();
+
   const shake = (from: number, to: number) => out.push(["Shake", from, to]);
   const skip = (from: number, to: number) => out.push(["Skip", from, to]);
   const ident = (from: number, to: number) => out.push(["Id", from, to]);
@@ -531,7 +547,11 @@ export const compressAST = (tree: Tree): CompressedNode[] => {
   const cursor = tree.cursor();
   do {
     const {type, from, to} = cursor;
-    if (type.name === 'Declaration' || type.name === 'FunctionDefinition') {
+    // Injected by compressed AST only: Skip, Shake, Id
+    if (type.name === 'Skip') skip(from, to);
+    else if (type.name === 'Shake') shake(from, to);
+    
+    else if (type.name === 'Declaration' || type.name === 'FunctionDefinition') {
       if (cursor.node.parent?.type.name === 'Program') shake(from, to);
     }
     else if (type.name === 'Identifier' || type.name === 'Id') {
@@ -566,6 +586,7 @@ export const compressAST = (tree: Tree): CompressedNode[] => {
 // Decompress a compressed AST on the fly by returning a pseudo-tree-cursor.
 export const decompressAST = (nodes: CompressedNode[]) => {
   const tree = {
+    __nodes: () => nodes,
     cursor: () => {
       let i = -1;
       const n = nodes.length;

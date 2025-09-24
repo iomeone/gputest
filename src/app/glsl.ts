@@ -1,6 +1,8 @@
 import { ShaderStage } from '@webgpu/glslang';
-import { ShaderCompiler } from '../core/types';
+import { ShaderCompiler } from '@use-gpu/core/types';
+import { getProgramHash } from '@use-gpu/shader';
 import Glslang from './glslang-web-devel/glslang';
+import LRU from 'lru-cache';
 
 export type Compiler = (code: string, stage: ShaderStage) => Uint32Array;
 
@@ -16,11 +18,26 @@ const timed = (name: string, f: any) => {
   }
 }
 
+export const makeShaderCache = (options: Record<string, any> = {}) => new LRU<string, any>({
+  max: 100,
+  ...options,
+});
+
 const init = async (): Promise<ShaderCompiler> => {
   const glslang = await Glslang();
+  const cache = makeShaderCache();
   return timed('compileGLSL', (code: string, stage: ShaderStage) => {
     try {
-      return glslang.compileGLSL(code, stage, false);
+      const hash = getProgramHash(code);
+      if (cache.has(hash)) {
+        return cache.get(hash);
+      }
+
+      const compiled = glslang.compileGLSL(code, stage, false);
+      const record = [compiled, hash];
+      cache.set(hash, record);
+
+      return record;
     }
     catch (e: any) {
       const lines = code.split("\n").map((line, i) => `${i+1}: ${line}`);

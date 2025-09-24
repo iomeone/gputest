@@ -1,10 +1,13 @@
 import { HASH_KEY } from '../constants';
 
-export const C1 = 0xcc9e2d51;
-export const C2 = 0x1b873593;
-export const C3 = 0xe6546b64;
-export const C4 = 0x85ebca6b;
-export const C5 = 0xc2b2ae35;
+let KEY = 0;
+export const makeKey = () => KEY = ((KEY + 1)|0);
+
+const C1 = 0xcc9e2d51;
+const C2 = 0x1b873593;
+const C3 = 0xe6546b64;
+const C4 = 0x85ebca6b;
+const C5 = 0xc2b2ae35;
 
 export const add = (a: number, b: number) => ((a|0) + (b|0)) >>> 0;
 export const rot = (a: number, b: number) => ((a << b) | (a >>> (32 - b))) >>> 0;

@@ -1,4 +1,4 @@
-import { LiveFiber, Task, Action, Dispatcher, Key } from './types';
+import { LiveFiber, Task, Action, Dispatcher, Key, ArrowFunction } from './types';
 
 const RAF = typeof window !== 'undefined' ? window.requestAnimationFrame : setTimeout;
 const NO_DEPS = [] as any[];
@@ -120,29 +120,29 @@ export const isSameDependencies = (
   return valid;
 }
 
-// Checks if one path is a subpath of another
-export const isSubPath = (a: Key[], b: Key[]) => {
-  if (b.length <= a.length) return false;
-  const n = a.length;
-  for (let i = 0; i < n; ++i) if (a[i] !== b[i]) return false;
-  return true;
+// Checks if B is a subnode of A
+export const isSubNode = (a: LiveFiber<any>, b: LiveFiber<any>) => {
+  const ak = a.path;
+  const bk = b.path;
+
+  if (ak.length > bk.length) return false;
+  if (a.depth >= b.depth) return false;
+
+  const n = ak.length;
+  for (let i = 0; i < n; ++i) if (ak[i] !== bk[i]) return false;
+
+  return (bk.length > ak.length) || (b.depth > a.depth);
 }
 
-// Checks if one path is a subpath of another
-export const isSubOrSamePath = (a: Key[], b: Key[]) => {
-  if (b.length < a.length) return false;
-  const n = a.length;
-  for (let i = 0; i < n; ++i) if (a[i] !== b[i]) return false;
-  return true;
-}
-
-
-// Sorting comparison of two paths
-export const comparePaths = (a: Key[], b: Key[]) => {
-  const n = Math.min(a.length, b.length);
+// Sorting comparison of two fibers in depth-first tree order
+export const compareFibers = (a: LiveFiber<any>, b: LiveFiber<any>) => {
+  const ak = a.path;
+  const bk = b.path;
+  
+  const n = Math.min(ak.length, bk.length);
   for (let i = 0; i < n; ++i) {
-    const ai = a[i];
-    const bi = b[i];
+    const ai = ak[i];
+    const bi = bk[i];
 
     const an = typeof ai === 'number';
     const bn = typeof bi === 'number';
@@ -160,5 +160,11 @@ export const comparePaths = (a: Key[], b: Key[]) => {
       continue;
     }
   }
-  return a.length - b.length;
+
+  return (ak.length - bk.length) || (a.depth - b.depth);
+}
+
+export const tagFunction = <F extends ArrowFunction>(f: F) => {
+  (f as any).displayName = `${Math.floor(Math.random() * 10000)}`;
+  return f;
 }

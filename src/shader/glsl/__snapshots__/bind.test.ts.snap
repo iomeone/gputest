@@ -1,0 +1,176 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`bind binds an external 1`] = `
+"#version 450
+#define TEST true
+
+    vec4 _00_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
+    
+
+    vec4 _00_getColor();
+    
+    vec4 colorUsed() { return vec4(0.0, 0.1, 0.2, 0.0); }
+    vec4 colorNotUsed() { return vec4(0.0, 0.1, 0.2, 1.0); }
+
+    vec4 getColor() {
+      return _00_getColor() + colorUsed();
+    }
+    "
+`;
+
+exports[`bind binds an external 2`] = `
+"#version 450
+#define TEST true
+
+
+    vec4 _01_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
+    
+
+    vec4 _01_getColor();
+    
+    vec4 colorUsed() { return vec4(0.0, 0.1, 0.2, 0.0); }
+    vec4 colorNotUsed() { return vec4(0.0, 0.1, 0.2, 1.0); }
+
+    vec4 getColor() {
+      return _01_getColor() + colorUsed();
+    }
+    "
+`;
+
+exports[`bind binds an external 3`] = `
+"#version 450
+#define TEST true
+
+    vec4 _00_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
+    
+
+    vec4 _00_getColor();
+    
+    vec4 _01_colorUsed() { return vec4(0.0, 0.1, 0.2, 0.0); }
+    vec4 _01_getColor() {
+      return _00_getColor() + _01_colorUsed();
+    }
+    
+
+    vec4 _01_getColor();
+    void main() {
+      vec4 v;
+      v.xyz = vec3(1.0, 0.0, 0.0);
+      gl_FragColor = _01_getColor();
+    }
+    "
+`;
+
+exports[`bind binds an external 4`] = `
+"#version 450
+#define TEST true
+
+
+    vec4 _01_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
+    
+
+    vec4 _01_getColor();
+    
+    vec4 _02_colorUsed() { return vec4(0.0, 0.1, 0.2, 0.0); }
+    vec4 _02_getColor() {
+      return _01_getColor() + _02_colorUsed();
+    }
+    
+
+    vec4 _02_getColor();
+    void main() {
+      vec4 v;
+      v.xyz = vec3(1.0, 0.0, 0.0);
+      gl_FragColor = _02_getColor();
+    }
+    "
+`;
+
+exports[`bind links data bindings 1`] = `
+"#version 450
+
+layout (set = VIRTUAL_BINDGROUP, binding = 1) uniform _VT_Type {
+  vec4 _VT_0_getColor;
+} _VT_Uniform;
+
+
+vec4 _VT_0_getColor(int) {
+  return _VT_Uniform._VT_0_getColor;
+}
+
+
+layout (std430, set = VIRTUAL_BINDGROUP, binding = 0) readonly buffer _VT_0_getSizeType {
+  vec2 data[];
+} _VT_0_getSizeStorage;
+
+vec2 _VT_0_getSize(int index) {
+  return _VT_0_getSizeStorage.data[index];
+}
+
+
+    vec4 _VT_0_getColor(int);
+    vec2 _VT_0_getSize(int);
+    
+    void main() {
+      _VT_0_getColor(0);
+      _VT_0_getSize(0);
+    }
+    "
+`;
+
+exports[`bind makes deterministic links for data bindings 1`] = `
+Object {
+  "base": undefined,
+  "bindings": Array [],
+  "code": "#virtual [getColor] 1",
+  "name": "_VT_x4yya1_",
+  "table": Object {
+    "functions": Array [
+      Object {
+        "at": 0,
+        "flags": 0,
+        "prototype": Object {
+          "name": "getColor",
+          "parameters": Array [
+            "int",
+          ],
+          "type": Object {
+            "name": "vec4",
+          },
+        },
+        "symbols": Array [],
+      },
+    ],
+    "hash": "x4yya10vdr",
+    "symbols": Array [
+      "getColor",
+    ],
+    "visibles": Array [
+      "getColor",
+    ],
+  },
+  "uniforms": Array [
+    Object {
+      "constant": Array [
+        1,
+        0.5,
+        1,
+        1,
+      ],
+      "uniform": Object {
+        "args": Array [
+          "int",
+        ],
+        "format": "vec4",
+        "name": "getColor",
+        "value": Array [
+          0,
+          0.5,
+          1,
+          1,
+        ],
+      },
+    },
+  ],
+}
+`;

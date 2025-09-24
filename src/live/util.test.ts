@@ -1,4 +1,4 @@
-import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, makePaintRequester, comparePaths } from './util';
+import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, makePaintRequester, compareFibers, isSubNode } from './util';
 
 it("schedules actions", () => {
   let run = {a: 0, b: 0} as Record<string, number>;
@@ -89,8 +89,70 @@ it("requests paints", (done) => {
   }, 30);
 });
 
+it("resolves node ancestry", () => {
+  
+  const n1  = {depth: 0, path: [0]} as any;
+  const n11 = {depth: 1, path: [0, 0]} as any;
+  const n12 = {depth: 1, path: [0, 1]} as any;
+
+  const n111 = {depth: 2, path: [0, 0, 0]} as any;
+  const n1111 = {depth: 3, path: [0, 0, 0]} as any;
+
+  const n11111 = {depth: 4, path: [0, 0, 0, 0]} as any;
+  const n11112 = {depth: 4, path: [0, 0, 0, 1]} as any;
+
+  expect(isSubNode(n1, n11)).toBe(true);
+  expect(isSubNode(n1, n12)).toBe(true);
+  expect(isSubNode(n1, n111)).toBe(true);
+  expect(isSubNode(n1, n1111)).toBe(true);
+  expect(isSubNode(n1, n11111)).toBe(true);
+  expect(isSubNode(n1, n11112)).toBe(true);
+
+  expect(isSubNode(n11, n1)).toBe(false);
+  expect(isSubNode(n12, n1)).toBe(false);
+  expect(isSubNode(n111, n1)).toBe(false);
+  expect(isSubNode(n1111, n1)).toBe(false);
+  expect(isSubNode(n11111, n1)).toBe(false);
+  expect(isSubNode(n11112, n1)).toBe(false);
+
+  expect(isSubNode(n11, n12)).toBe(false);
+  expect(isSubNode(n12, n11)).toBe(false);
+
+  expect(isSubNode(n11, n111)).toBe(true);
+  expect(isSubNode(n11, n1111)).toBe(true);
+  expect(isSubNode(n11, n11111)).toBe(true);
+  expect(isSubNode(n11, n11112)).toBe(true);
+
+  expect(isSubNode(n12, n111)).toBe(false);
+  expect(isSubNode(n12, n1111)).toBe(false);
+  expect(isSubNode(n12, n11111)).toBe(false);
+  expect(isSubNode(n12, n11112)).toBe(false);
+
+  expect(isSubNode(n111, n1111)).toBe(true);
+  expect(isSubNode(n111, n11111)).toBe(true);
+  expect(isSubNode(n111, n11112)).toBe(true);
+
+  expect(isSubNode(n1111, n111)).toBe(false);
+  expect(isSubNode(n11111, n111)).toBe(false);
+  expect(isSubNode(n11112, n111)).toBe(false);
+
+});
+
 it("sorts fibers", () => {
-  expect(comparePaths([0, 0], [0, 0])).toBe(0);
-  expect(comparePaths([0, 0, 0], [0, 0, 1])).toBe(-1);
-  expect(comparePaths([0, 0, 1], [0, 0, 0, 0, 1])).toBe(1);
+
+  const n1  = {depth: 0, path: [0]} as any;
+  const n11 = {depth: 1, path: [0, 0]} as any;
+  const n12 = {depth: 1, path: [0, 1]} as any;
+
+  const n111 = {depth: 2, path: [0, 0, 0]} as any;
+  const n1111 = {depth: 3, path: [0, 0, 0]} as any;
+
+  const n11111 = {depth: 4, path: [0, 0, 0, 0]} as any;
+  const n11112 = {depth: 4, path: [0, 0, 0, 1]} as any;
+
+  const list = [n11111, n11112, n1, n12, n11, n111, n1111];
+  const sorted = [n1, n11, n111, n1111, n11111, n11112, n12];
+
+  list.sort(compareFibers);
+  expect(list).toEqual(sorted);
 });

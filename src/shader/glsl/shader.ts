@@ -1,10 +1,14 @@
-import { ParsedModule, ParsedModuleCache, ShaderDefine, ShaderCompiler } from '../types';
+import { ParsedModule, ParsedModuleCache, ShaderDefine, ShaderCompiler, SymbolTable, VirtualTable } from '../types';
 import { Tree, SyntaxNode } from '@lezer/common';
 
 import { makeASTParser, compressAST, decompressAST } from './ast';
-import { getProgramHash } from '../util/hash';
+import { getProgramHash, makeKey } from '../util/hash';
 import { parser } from '../grammar/glsl';
+import { PREFIX_VIRTUAL } from '../constants';
 import LRU from 'lru-cache';
+
+const EMPTY_LIST = [] as any[];
+const EMPTY_TABLE = {} as any;
 
 // Parse a code module into its in-memory representation
 // (AST + symbol table)
@@ -24,7 +28,7 @@ export const loadModule = (
 
   if (compressed) tree = decompressAST(compressAST(tree));
 
-  return {name, code, tree, table, shake, entry};
+  return {name, code, table, entry, shake, tree};
 }
 
 // Use cache to load modules
@@ -43,6 +47,36 @@ export const loadModuleWithCache = (
   const module = loadModule(code, name, entry, true);
   cache.set(hash, module);
   return {...module, entry};
+}
+
+// Load a static (inert) module
+export const loadStaticModule = (code: string, name: string, entry?: string) => {
+  const table = {
+    hash: getProgramHash(code),
+  };
+  return { name, code, table, entry };
+}
+
+// Load a virtual (generated) module
+export const loadVirtualModule = (
+  virtual: VirtualTable,
+  initTable: Partial<SymbolTable> = EMPTY_TABLE,
+  entry?: string,
+  key: string | number = makeKey(),
+) => {
+  let symbols = initTable.symbols ?? EMPTY_LIST;
+  const code = `#virtual [${symbols.join(' ')}] ${key.toString(16)}`;
+
+  const hash = getProgramHash(code);
+  const name = `${PREFIX_VIRTUAL}${hash.slice(0, 6)}_`;
+
+  const table = {
+    hash,
+    symbols,
+    visibles: symbols,
+    ...initTable,
+  };
+  return { name, code, table, entry, virtual };
 }
 
 // Parse GLSL using lezer grammar

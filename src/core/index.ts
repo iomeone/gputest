@@ -9,7 +9,7 @@ export * from './depth';
 export * from './picking';
 export * from './pipeline';
 export * from './storage';
-export * from './target';
+export * from './texture';
 export * from './types';
 export * from './uniform';
 export * from './view';
