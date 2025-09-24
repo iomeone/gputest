@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '../../../wgsl/use/types'::{ SolidVertex };
 
 @external fn getVertex(v: i32, i: i32) -> SolidVertex {};
 

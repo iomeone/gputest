@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/picking'::{ getPickingColor };
+use '../../../wgsl/use/picking'::{ getPickingColor };
 
 @stage(fragment)
 fn main(

@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/picking'::{ getPickingColor }
+use '../../../wgsl/use/picking'::{ getPickingColor }
 
 //@group(1) @binding(0) var s: sampler;
 //@group(1) @binding(1) var t: texture_2d<f32>;

@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/fragment/pbr'::{ PBR };
-use '@use-gpu/wgsl/use/view'::{ viewUniforms };
-use '@use-gpu/wgsl/use/light'::{ lightUniforms };
+use '../../../wgsl/fragment/pbr'::{ PBR };
+use '../../../wgsl/use/view'::{ viewUniforms };
+use '../../../wgsl/use/light'::{ lightUniforms };
 
 @group(1) @binding(0) var s: sampler;
 @group(1) @binding(1) var t: texture_2d<f32>;

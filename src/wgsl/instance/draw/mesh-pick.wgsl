@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ worldToClip };
+use '../../../wgsl/use/view'::{ worldToClip };
 
 struct VertexOutput {
   @builtin(position) position: vec4<f32>;

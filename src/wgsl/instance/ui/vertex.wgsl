@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/view'::{ worldToClip };
-use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
+use '../../../wgsl/use/view'::{ worldToClip };
+use '../../../wgsl/geometry/quad'::{ getQuadUV };
 
 struct VertexOutput {
   @builtin(position)              position: vec4<f32>;
