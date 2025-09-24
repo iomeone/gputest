@@ -9,11 +9,11 @@ import {
 } from '../core';
 import { linkBundle } from '../shader/wgsl';
 
-import instanceDrawMesh from '../wgsl/instance/draw/mesh.wgsl';
-import instanceFragmentMesh from '../wgsl/instance/fragment/mesh.wgsl';
+import instanceDrawMesh from '../gen-wgsl/instance/draw/mesh';
+import instanceFragmentMesh from '../gen-wgsl/instance/fragment/mesh';
 
-import instanceDrawMeshPick from '../wgsl/instance/draw/mesh-pick.wgsl';
-import instanceFragmentMeshPick from '../wgsl/instance/fragment/mesh-pick.wgsl';
+import instanceDrawMeshPick from '../gen-wgsl/instance/draw/mesh-pick';
+import instanceFragmentMeshPick from '../gen-wgsl/instance/fragment/mesh-pick';
 
 export const MESH_UNIFORM_DEFS: UniformAttribute[] = [
   {

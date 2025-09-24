@@ -16,8 +16,8 @@ import { use, memo, useFiber, useMemo, useOne, useState, useResource } from '../
 import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
 import { makeShaderBindings } from '../../core';
 
-import rectangleVertex from '../../wgsl/instance/ui/vertex.wgsl';
-import rectangleFragment from '../../wgsl/instance/ui/fragment.wgsl';
+import rectangleVertex from '../../gen-wgsl/instance/ui/vertex';
+import rectangleFragment from '../../gen-wgsl/instance/ui/fragment';
 
 export type UIRectanglesProps = {
   rectangle?: number[] | TypedArray,

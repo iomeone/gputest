@@ -15,8 +15,8 @@ import { use, yeet, memo, useFiber, useMemo, useOne, useState, useResource } fro
 import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
 import { makeShaderBindings } from '../../core';
 
-import { getLineVertex } from '../../wgsl/instance/vertex/line.wgsl';
-import { getPassThruFragment } from '../../wgsl/mask/passthru.wgsl';
+import { getLineVertex } from '../../gen-wgsl/instance/vertex/line';
+import { getPassThruFragment } from '../../gen-wgsl/mask/passthru';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,

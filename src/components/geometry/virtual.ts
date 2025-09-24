@@ -6,13 +6,13 @@ import { memo, use, useContext, useNoContext, useFiber, useMemo, useOne, useStat
 import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
 import { useRenderPipeline } from '../hooks/useRenderPipeline';
 
-import instanceDrawVirtual from '../../wgsl/instance/draw/virtual.wgsl';
-import instanceDrawVirtualPick from '../../wgsl/instance/draw/virtual-pick.wgsl';
+import instanceDrawVirtual from '../../gen-wgsl/instance/draw/virtual';
+import instanceDrawVirtualPick from '../../gen-wgsl/instance/draw/virtual-pick';
 
-import instanceFragmentSolid from '../../wgsl/instance/fragment/solid.wgsl';
-import instanceFragmentSolidPick from '../../wgsl/instance/fragment/solid-pick.wgsl';
+import instanceFragmentSolid from '../../gen-wgsl/instance/fragment/solid';
+import instanceFragmentSolidPick from '../../gen-wgsl/instance/fragment/solid-pick';
 
-import instanceDrawWireframeStrip from '../../wgsl/instance/draw/wireframe-strip.wgsl';
+import instanceDrawWireframeStrip from '../../gen-wgsl/instance/draw/wireframe-strip';
 
 import { render } from './render';
 
