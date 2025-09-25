@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, Margin, Dimension, Direction, Alignment, Anchor, Point } from '../types';
 
-import { resume, yeet, memo, gather, useOne, useMemo } from '../../../live';
+import { resume, yeet, memo, gather, useOne, useMemo } from '@use-gpu/live';
 import { getFlexMinMax, fitFlex } from '../lib/flex';
 import { makeBoxLayout, normalizeAlignment, normalizeGap, parseDimension } from '../lib/util';
 

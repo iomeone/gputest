@@ -1,5 +1,6 @@
-import { TextureSource } from '../../core/types';
-import { LiveElement, Key } from '../../live/types';
+import { TextureSource } from '@use-gpu/core/types';
+import { LiveElement, Key } from '@use-gpu/live/types';
+import { TextMetrics } from '@use-gpu/text/types';
 
 export type Point = [number, number];
 export type Point4 = [number, number, number, number];
@@ -42,18 +43,35 @@ export type LayoutElement = {
   absolute?: boolean,
 
   fit: (size: Point) => LayoutFit,
-  key: Key,
 };
 
-export type LayoutState = Rectangle;
+export type InlineElement = {
+  spans: InlineSpan[],
+};
 
-export type LayoutResult = {
-  box: Rectangle,
-  margin: Margin,
+export type InlineSpan = {
+  text: string,
+  metrics: TextMetrics,
+};
+
+export type InlineFit = {
   size: Point,
-  grow: number,
-  shrink: number,
+  render: LayoutRenderer,
+};
 
-  results?: LayoutResult[],
-  render?: (layout: LayoutState) => LiveElement<any>,
+export type UIAggregate = {
+  id: number,
+  count: number,
+
+  rectangles?: number[],
+  colors?: number[],
+  textures?: TextureSource[],
+  uvs?: number[],
+  repeats?: number[],
+
+  rectangle?: number[],
+  color?: number[],
+  texture?: TextureSource,
+  uv?: number[],
+  repeat?: number,
 };

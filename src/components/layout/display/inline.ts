@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, Point, Alignment, Base, Margin } from '../types';
 
-import { memo, gather, resume, yeet, useOne } from '../../../live';
+import { memo, gather, resume, yeet, useOne } from '@use-gpu/live';
 import { getInlineMinMax, fitInline } from '../lib/inline';
 import { normalizeMargin, makeBoxLayout, parseDimension } from '../lib/util';
 
@@ -39,8 +39,8 @@ export const Inline: LiveComponent<InlineProps> = memo((props: BlockProps) => {
   const padding = normalizeMargin(p);
 
   const Resume = useOne(() =>
-    makeResume(direction, grow, shrink, snap, margin, padding),
-    [direction, grow, shrink, snap, margin, padding]
+    makeResume(direction, align, anchor, grow, shrink, wrap, snap, margin, padding),
+    [direction, align, anchor, grow, shrink, wrap, snap, margin, padding]
   );
 
   return children ? gather(children, Resume) : null;
@@ -48,8 +48,11 @@ export const Inline: LiveComponent<InlineProps> = memo((props: BlockProps) => {
 
 const makeResume = (
   direction: 'x' | 'y',
+  align: Alignment,
+  anchor: Base,
   grow: number,
   shrink: number,
+  wrap: boolean,
   snap: boolean,
   margin: Margin,
   padding: Margin,

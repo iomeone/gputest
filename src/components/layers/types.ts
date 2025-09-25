@@ -1,35 +1,16 @@
-import { LiveFunction } from '../../live/types';
-import { TextureSource } from '../../core/types';
+import { LiveFunction, LiveElement } from '@use-gpu/live/types';
 
 export enum LayerType {
   Point = 'point',
   Line = 'line',
-  Rectangle = 'rectangle',
 };
-
-export type LayerAggregatorDef = [LayerAggregator, LiveFunction<any>, LiveFunction<any>];
 
 export type LayerAggregator = (
   device: GPUDevice,
-  items: LineAggregate[],
+  items: LayerAggregate[],
   keys: Set<string>,
   count: number,
-) => (items: LineAggregate[]) => void;
-
-export type RectangleAggregate = {
-  id: number,
-  count: number,
-
-  rectangles?: number[],
-  colors?: number[],
-  textures?: TextureSource,
-  uvs?: number[],
-
-  rectangle?: number[],
-  color?: number[],
-  texture?: TextureSource,
-  uv?: number[],
-};
+) => (items: LayerAggregate[]) => LiveElement<any>;
 
 export type PointAggregate = {
   id: number,
@@ -66,5 +47,4 @@ export type LineAggregate = {
 
 export type LayerAggregate =
   | PointAggregate
-  | LineAggregate
-  | RectangleAggregate;
+  | LineAggregate;

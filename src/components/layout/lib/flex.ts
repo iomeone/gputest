@@ -1,4 +1,4 @@
-import { LiveElement } from '../../../live/types';
+import { LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, LayoutRenderer, Direction, Point, Point4, Margin, Rectangle, Alignment, Anchor } from '../types';
 
 import { parseAnchor } from './util';

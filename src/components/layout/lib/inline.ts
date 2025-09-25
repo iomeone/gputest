@@ -1,4 +1,4 @@
-import { LiveElement } from '../../../live/types';
+import { LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, LayoutRenderer, Direction, Point, Margin, Rectangle, Alignment, Base } from '../types';
 
 import { parseAnchor } from './util';
@@ -13,7 +13,6 @@ export const getInlineMinMax = (
   snap: boolean,
 ) => {
   const isX = direction === 'x' || direction === 'lr' || direction === 'rl';
-  const [gapX, gapY] = gap;
 
   let allMinX = 0;
   let allMinY = 0;

@@ -222,6 +222,13 @@ export type DataBinding<T> = {
   lambda?: T,
 };
 
+export type AggregateBuffer = {
+  buffer: GPUBuffer,
+  array: TypedArray,
+  dims: number,
+  source: StorageSource,
+};
+
 // Passes
 
 export enum RenderPassMode {

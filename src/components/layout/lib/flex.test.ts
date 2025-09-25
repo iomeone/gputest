@@ -1,4 +1,4 @@
-import { LayoutState, LayoutResult, Rectangle, Point, Margin, Sizing } from '../types';
+import { Rectangle, Point, Margin, Sizing } from '../types';
 import { getFlexMinMax, fitFlex } from './flex';
 import { makeBoxLayout } from './util';
 

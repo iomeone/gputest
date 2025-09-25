@@ -1,4 +1,4 @@
-import { LayoutState, Rectangle, Sizing, Point, Margin } from '../types';
+import { Rectangle, Sizing, Point, Margin } from '../types';
 import { getBlockMinMax, getBlockMargin, fitBlock } from './block';
 import { makeBoxLayout } from './util';
 

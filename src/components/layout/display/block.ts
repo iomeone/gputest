@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, Point, Dimension, Margin } from '../types';
 
-import { memo, gather, resume, yeet, useOne } from '../../../live';
+import { memo, gather, resume, yeet, useOne } from '@use-gpu/live';
 import { getBlockMinMax, getBlockMargin, fitBlock } from '../lib/block';
 import { normalizeMargin, makeBoxLayout, parseDimension } from '../lib/util';
 

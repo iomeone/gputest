@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TextureSource } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
 
-import { use, yeet, useContext, useMemo, useNoContext } from '../../live';
+import { use, yeet, useContext, useMemo, useNoContext } from '@use-gpu/live';
 import { LayoutContext } from '../providers/layout-provider';
 import { LayerType } from '../layers/types';
 import { Rectangle, ImageAttachment, Fit, Repeat, Anchor, Point4 } from './types';
@@ -115,46 +115,38 @@ export const Surface: LiveComponent<SurfaceProps> = (props) => {
       let right  = boxW - (left + w);
       let bottom = boxH - (top + h);
 
-      console.log({left, top, right, bottom});
-
       uv = [
         -left / w,
         -top / h,
         1 + right / w,
         1 + bottom / h,
       ];
-
-      console.log(uv);
     }
 
     render = {
-      rectangle: {
-        id,
-        rectangle: layout,
-        radius,
-        border,
-        stroke,
-        fill,
-        
-        texture: sampledTexture,
-        repeat: REPEAT_FLAG[repeat] ?? 0,
-        uv,
+      id,
+      rectangle: layout,
+      radius,
+      border,
+      stroke,
+      fill,
+      
+      texture: sampledTexture,
+      repeat: REPEAT_FLAG[repeat] ?? 0,
+      uv,
 
-        count: 1,
-      }
+      count: 1,
     };
   }
   else {
     render = {
-      rectangle: {
-        id,
-        rectangle: layout,
-        radius,
-        border,
-        stroke,
-        fill,
-        count: 1,
-      }
+      id,
+      rectangle: layout,
+      radius,
+      border,
+      stroke,
+      fill,
+      count: 1,
     };
   }
 

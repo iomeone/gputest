@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { LayoutState } from './types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { Rectangle } from './types';
 
-import { use, provide, makeContext, useContext, useOne, useMemo } from '../../live';
-import { ViewUniforms, UniformAttribute } from '../../core/types';
-import { VIEW_UNIFORMS, makeOrthogonalMatrix } from '../../core';
+import { use, provide, makeContext, useContext, useOne, useMemo } from '@use-gpu/live';
+import { ViewUniforms, UniformAttribute } from '@use-gpu/core/types';
+import { VIEW_UNIFORMS, makeOrthogonalMatrix } from '@use-gpu/core';
 import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
@@ -51,7 +51,7 @@ export const Flat: LiveComponent<FlatProps> = (props) => {
     const top = 0;
     const right = w;
     const bottom = h;
-    const layout = [left, top, right, bottom] as LayoutState;
+    const layout = [left, top, right, bottom] as Rectangle;
 
     const matrix = makeOrthogonalMatrix(left, right, bottom, top, -near, -far);
 

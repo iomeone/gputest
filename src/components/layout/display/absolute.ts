@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { Point, LayoutElement } from '../types';
 
-import { memo, gather, resume, yeet, useOne } from '../../../live';
+import { memo, gather, resume, yeet, useOne } from '@use-gpu/live';
 import { fitAbsoluteBox } from '../lib/absolute';
 import { makeBoxLayout } from '../lib/util';
 
