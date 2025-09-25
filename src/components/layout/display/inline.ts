@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
 import { LayoutElement, Point, Alignment, Base, Margin } from '../types';
 
-import { memo, gather, resume, yeet, useOne } from '@use-gpu/live';
+import { memo, gather, resume, yeet, useOne } from '../../../live';
 import { getInlineMinMax, fitInline } from '../lib/inline';
 import { normalizeMargin, makeInlineLayout, parseDimension } from '../lib/util';
 

@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { TextureSource } from '@use-gpu/core/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { TextureSource } from '../../core/types';
 import { Point4, InlineSpan } from './types';
 
-import { use, yeet, useFiber, useMemo } from '@use-gpu/live';
-import { getLineBreaks, measureFont, measureText } from '@use-gpu/text';
+import { use, yeet, useFiber, useMemo } from '../../live';
+import { getLineBreaks, measureFont, measureText } from '../../text';
 import { parseDimension, normalizeMargin } from './lib/util';
 
 import { Surface } from './surface';
