@@ -149,14 +149,25 @@ export class UseGPUText {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
+     * @param {number} size
+     * @returns {any}
+     */
+    measure_font(size) {
+        const ret = wasm.usegputext_measure_font(this.__wbg_ptr, size);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
      * @param {string} text
      * @param {number} size
      * @returns {any}
      */
-    get_metrics(text, size) {
+    measure_text(text, size) {
         const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.usegputext_get_metrics(this.__wbg_ptr, ptr0, len0, size);
+        const ret = wasm.usegputext_measure_text(this.__wbg_ptr, ptr0, len0, size);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }

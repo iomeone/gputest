@@ -7,7 +7,8 @@ export class UseGPUText {
   [Symbol.dispose](): void;
   static new(): UseGPUText;
   get_line_breaks(text: string): any;
-  get_metrics(text: string, size: number): any;
+  measure_font(size: number): any;
+  measure_text(text: string, size: number): any;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -17,7 +18,8 @@ export interface InitOutput {
   readonly __wbg_usegputext_free: (a: number, b: number) => void;
   readonly usegputext_new: () => number;
   readonly usegputext_get_line_breaks: (a: number, b: number, c: number) => [number, number, number];
-  readonly usegputext_get_metrics: (a: number, b: number, c: number, d: number) => [number, number, number];
+  readonly usegputext_measure_font: (a: number, b: number) => [number, number, number];
+  readonly usegputext_measure_text: (a: number, b: number, c: number, d: number) => [number, number, number];
   readonly init_panic_hook: () => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
