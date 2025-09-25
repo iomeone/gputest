@@ -1,12 +1,11 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 
-import { use, useMemo, useOne, useResource, useState } from '../../live';
+import { use, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   Draw, Pass,
-  Flat, Absolute, Layout, Block, Flex, Inline, Element,
-  Aggregate,
-} from '../../components';
+  Flat, UI, Layout, Absolute, Block, Flex, Inline, Element, Text,
+} from '@use-gpu/components';
 
 export type LayoutPageProps = {
   _unused?: boolean,
@@ -24,7 +23,7 @@ export const LayoutPage: LiveComponent<LayoutPageProps> = (props) => {
             use(Flat)({
               children:
               
-                use(Aggregate)({
+                use(UI)({
                   children:
 
                     use(Layout)({
@@ -132,6 +131,11 @@ export const LayoutPage: LiveComponent<LayoutPageProps> = (props) => {
                           children: [
 
                             use(Inline)({
+                              children: [
+                                
+                                use(Text)({ content: "A simple and efficient method is presented which allows improved rendering of glyphs composed of curved and linear elements. A distance field is generated from a high resolution image, and then stored into a channel of a lower-resolution texture.\n\nIn the simplest case, this texture can then be rendered simply by using the alpha-testing and alpha-thresholding feature of modern GPUs, without a custom shader. This allows the technique to be used on even the lowest-end 3D graphics hardware." })
+                              
+                              ],
                             }),
 
                           ],

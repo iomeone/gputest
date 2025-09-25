@@ -1,13 +1,13 @@
-import { LiveComponent } from '../../live/types';
-import { TextureSource } from '../../core/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
 
-import { use, gather, resume, useMemo, useOne, useResource, useState } from '../../live';
+import { use, gather, resume, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   Draw, Pass,
-  Flat, Absolute, Layout, Block, Flex, Element,
-  Aggregate, RawTexture,
-} from '../../components';
+  Flat, UI, Layout, Absolute, Block, Flex, Element,
+  RawTexture,
+} from '@use-gpu/components';
 import { makeTexture } from '../meshes/mesh';
 
 export type InteractPageProps = {
@@ -32,7 +32,7 @@ export const InteractPage: LiveComponent<InteractPageProps> = (props) => {
               use(Flat)({
                 children:
               
-                    use(Aggregate)({
+                    use(UI)({
                       children:
 
                         use(Layout)({
