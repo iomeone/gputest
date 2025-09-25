@@ -13,7 +13,7 @@ import { use, memo, useFiber, useMemo, useOne, useState, useResource } from '../
 import { linkBundle, bindBundle, bindingToModule, bindingsToLinks, resolveBindings, castTo } from '../../shader/wgsl';
 import { makeShaderBinding, makeShaderBindings } from '../../core';
 
-import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../wgsl/mask/point.wgsl';
+import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../gen-wgsl/mask/point';
 
 export enum PointShape {
   Circle = 'circle',

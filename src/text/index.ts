@@ -1,7 +1,7 @@
-let useGPUText: typeof import('../pkg');
+let useGPUText: typeof import('../use-gpu-text/pkg');
 
 export const GPUText = async () => {
-  const { UseGPUText } = await import('../pkg');
+  const { UseGPUText } = await import('../use-gpu-text/pkg');
   return useGPUText = UseGPUText.new();
 }
 
