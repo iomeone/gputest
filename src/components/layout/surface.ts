@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TextureSource } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
 
-import { use, yeet, useContext, useMemo, useNoContext } from '../../live';
+import { use, yeet, useContext, useMemo, useNoContext } from '@use-gpu/live';
 import { LayoutContext } from '../providers/layout-provider';
 import { LayerType } from '../layers/types';
 import { Rectangle, ImageAttachment, Fit, Repeat, Anchor, Point4 } from './types';
@@ -92,7 +92,6 @@ export const Surface: LiveComponent<SurfaceProps> = (props) => {
  
       let w = width != null ? parseDimension(width, size[0], false) : size[0];
       let h = height != null ? parseDimension(height, size[1], false) : size[1];
-      console.log({w, h});
 
       if (fit === 'contain') {
         let fitW = boxW / w;

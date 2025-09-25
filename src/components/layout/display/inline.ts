@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, Point, Alignment, Base, Margin } from '../types';
 
-import { memo, gather, resume, yeet, useOne } from '../../../live';
+import { memo, gather, resume, yeet, useOne } from '@use-gpu/live';
 import { getInlineMinMax, fitInline } from '../lib/inline';
-import { normalizeMargin, makeBoxLayout, parseDimension } from '../lib/util';
+import { normalizeMargin, makeInlineLayout, parseDimension } from '../lib/util';
 
 export type InlineProps = {
   direction?: 'x' | 'y',
@@ -66,10 +66,13 @@ const makeResume = (
       grow,
       shrink,
       fit: (into: Point) => {
-        const {size, sizes, offsets, renders} = fitInline(els, into, direction, align, anchor, wrap, snap);
+        const {size, ranges, offsets, renders} = fitInline(els, into, direction, align, anchor, wrap, snap);
+        
+        console.log({size, ranges, offsets})
+        
         return {
           size,
-          render: makeBoxLayout(sizes, offsets, renders),
+          render: makeInlineLayout(ranges, offsets, renders),
         };
       }
     });

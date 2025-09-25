@@ -1,5 +1,5 @@
-import { LiveElement } from '../../../live/types';
-import { Point, Rectangle, Gap, Margin, Alignment, Anchor, Dimension, LayoutRenderer } from '../types';
+import { LiveElement } from '@use-gpu/live/types';
+import { Point, Rectangle, Gap, Margin, Alignment, Anchor, Dimension, LayoutRenderer, InlineRenderer } from '../types';
 
 export const parseDimension = (x: string | number | null | undefined, total: number, snap: boolean = false): number => {
   if (typeof x === 'number') return snap ? Math.round(x) : x;
@@ -23,6 +23,11 @@ export const parseAnchor = (x: string): number => {
 
   const align = isStart ? 0 : isEnd ? 1 : 0.5;
   return align;
+}
+
+export const parseBase = (x: string): number | null => {
+  const isBase = (x === 'base');
+    return isBase ? null : parseAnchor(x);
 }
 
 export const normalizeAlignment = (x: Alignment | [Alignment, Alignment]): [Alignment, Alignment] =>
@@ -75,6 +80,40 @@ export const makeBoxLayout = (
 
     const layout = [l, t, r, b] as Rectangle;
     const el = render(layout);
+
+    if (Array.isArray(el)) out.push(...(el as any[]));
+    else out.push(el);
+  }
+
+  return out;
+};
+
+export const makeInlineLayout = (
+  ranges: Point[],
+  //sizes: Point[],
+  offsets: Point[],
+  renders: InlineRenderer[],
+) => (
+  box: Rectangle
+) => {
+  let [left, top, right, bottom] = box;
+  const out = [] as LiveElement<any>[];
+  const n = ranges.length;
+  debugger;
+
+  for (let i = 0; i < n; ++i) {
+    const range = ranges[i];
+    //const size = sizes[i];
+    const offset = offsets[i];
+    const render = renders[i];
+
+    const l = left + offset[0];
+    const t = top + offset[1];
+    const r = l;// + size[0];
+    const b = t;// + size[1];
+
+    const layout = [l, t, r, b] as Rectangle;
+    const el = render(layout, range[0], range[1]);
 
     if (Array.isArray(el)) out.push(...(el as any[]));
     else out.push(el);

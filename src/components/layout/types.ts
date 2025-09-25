@@ -1,6 +1,6 @@
-import { TextureSource } from '../../core/types';
-import { LiveElement, Key } from '../../live/types';
-import { TextMetrics } from '../../text/types';
+import { TextureSource } from '@use-gpu/core/types';
+import { LiveElement, Key } from '@use-gpu/live/types';
+import { FontMetrics, TextMetrics } from '@use-gpu/text/types';
 
 export type Point = [number, number];
 export type Point4 = [number, number, number, number];
@@ -29,6 +29,8 @@ export type ImageAttachment = {
 };
 
 export type LayoutRenderer = (box: Rectangle) => LiveElement<any>;
+export type InlineRenderer = (box: Rectangle, start: number, end: number) => LiveElement<any>;
+
 export type LayoutFit = {
   size: Point,
   render: LayoutRenderer,
@@ -47,16 +49,16 @@ export type LayoutElement = {
 
 export type InlineElement = {
   spans: InlineSpan[],
+  height: FontMetrics,
+  absolute?: boolean,
+  render: InlineRenderer,
 };
 
 export type InlineSpan = {
-  text: string,
-  metrics: TextMetrics,
-};
-
-export type InlineFit = {
-  size: Point,
-  render: LayoutRenderer,
+  start: number,
+  end: number,
+  hard: boolean,
+  width: TextMetrics,
 };
 
 export type UIAggregate = {

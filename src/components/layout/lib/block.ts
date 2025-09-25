@@ -1,8 +1,7 @@
-import { LiveElement } from '../../../live/types';
+import { LiveElement } from '@use-gpu/live/types';
 import { Point, Point4, LayoutElement, LayoutRenderer, Margin, Rectangle } from '../types';
 import { mergeMargin } from './util';
 
-const isAbsolute = (el: LayoutElement) => !!el.absolute;
 const isNotAbsolute = (el: LayoutElement) => !el.absolute;
 
 export const getBlockMinMax = (
@@ -131,7 +130,7 @@ export const fitBlock = (
   const renders = [] as LayoutRenderer[];
 
   for (const el of els) {
-    const {margin, fit} = el;
+    const {margin, fit, absolute} = el;
     const [ml, mt, mr, mb] = margin;
 
     const size = contain.slice() as Point;
@@ -146,7 +145,7 @@ export const fitBlock = (
     sizes.push(fitted);
     renders.push(render);
 
-    if (isAbsolute(el)) {
+    if (absolute) {
       if (isX) {
         offsets.push([w, pt + mt]);
       }

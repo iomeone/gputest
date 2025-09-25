@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TextureSource } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
 import { Point4, InlineSpan } from './types';
 
-import { use, yeet, useFiber, useMemo } from '../../live';
-import { getLineBreaks, getMetrics } from '../../text';
+import { use, yeet, useFiber, useMemo } from '@use-gpu/live';
+import { getLineBreaks, measureFont, measureText } from '@use-gpu/text';
 import { parseDimension, normalizeMargin } from './lib/util';
 
 import { Surface } from './surface';
@@ -20,6 +20,7 @@ export type TextProps = {
   */
   color?: Point4,
   size?: number,
+  line?: number,
 
   content?: string,
 };
@@ -31,8 +32,14 @@ export const Text: LiveComponent<TextProps> = (props) => {
   const {
     color = BLACK,
     size = 16,
+    line,
     content = '',
   } = props;
+
+  const height = useMemo(() => {
+    const {ascent, descent, lineHeight} = measureFont(size);
+    return {ascent, descent, lineHeight: line ?? lineHeight};
+  }, [size, line]);
 
   const spans = useMemo(() => {
     const spans: InlineSpan[] = [];
@@ -46,9 +53,9 @@ export const Text: LiveComponent<TextProps> = (props) => {
       const hard = breaks[i + 1];
 
       const text = content.slice(start, end);
-      const metrics = getMetrics(text, size);
+      const width = measureText(text, size);
 
-      spans.push({start, end, metrics});
+      spans.push({start, end, hard, width});
 
       start = end;
     }
@@ -58,5 +65,12 @@ export const Text: LiveComponent<TextProps> = (props) => {
 
   return yeet({
     spans,
+    height,
+    render: (layout: Rectangle, startIndex: number, endIndex: number) => {
+      const start = spans[startIndex].start;
+      const end = spans[endIndex - 1].end;
+      console.log('render', content.slice(start, end), 'at', layout[0], layout[1]);
+      return null;
+    },
   });
 };

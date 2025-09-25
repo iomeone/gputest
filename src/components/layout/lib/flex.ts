@@ -1,10 +1,7 @@
-import { LiveElement } from '../../../live/types';
+import { LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, LayoutRenderer, Direction, Point, Point4, Margin, Rectangle, Alignment, Anchor } from '../types';
 
 import { parseAnchor } from './util';
-
-const isAbsolute = (el: LayoutElement) => !!el.absolute;
-const isNotAbsolute = (el: LayoutElement) => !el.absolute;
 
 export const getFlexMinMax = (
   els: LayoutElement[],
@@ -126,8 +123,6 @@ export const fitFlex = (
   const spaceMain  = isX ? containX : containY;
   const spaceCross = isX ? into[1] : into[0];
   const isCrossFixed = isX ? fixed[1] != null : fixed[0] != null;
-
-  let i = 0;
 
   const sizes   = [] as Point[];
   const offsets = [] as Point[];
@@ -260,12 +255,11 @@ export const fitFlex = (
     cross.length = 0;
   };
 
-  const n = els.length;
   for (const el of els) {
-    const {margin, sizing, fit, grow, shrink} = el;
+    const {margin, sizing, fit, grow, shrink, absolute} = el;
     const [ml, mt, mr, mb] = margin;
 
-    if (isAbsolute(el)) {
+    if (absolute) {
       const {render, size: fitted} = fit(sizing.slice(0, 2) as Point);
 
       sizes.push(fitted);

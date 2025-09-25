@@ -1,7 +1,10 @@
-export type TextMetrics = {
+export type FontMetrics = {
   ascent: number,
   descent: number,
-  lineGap: number,
-  width: number,
+  lineHeight: number,
+};
+
+export type TextMetrics = {
+  advance: number,
   trim: number,
 };
