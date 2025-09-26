@@ -1,4 +1,4 @@
-use './sdf'::{ SDF, getBorderBoxSDF, getRoundedBorderBoxSDF };
+use './sdf'::{ SDF, getUVScale, getBorderBoxSDF, getRoundedBorderBoxSDF };
 
 @external fn getTexture(uv: vec2<f32>) -> vec4<f32> {};
 
@@ -15,25 +15,38 @@ fn main(
   @location(8)                    fragTextureUV: vec2<f32>,
 ) -> @location(0) vec4<f32> {
   var fillColor = fragFill;
-  fillColor = vec4<f32>(fillColor.xyz * fillColor.a, fillColor.a);
 
   var texture = getTexture(fragTextureUV);
-  if (texture.a > 0.0) {
-    if (fragRepeat == 0 || fragRepeat == 1) {
-      if (fragTextureUV.x < 0.0 || fragTextureUV.x > 1.0) { texture.a = 0.0; }
-    }
-    if (fragRepeat == 0 || fragRepeat == 2) {
-      if (fragTextureUV.y < 0.0 || fragTextureUV.y > 1.0) { texture.a = 0.0; }
+  var sdf: SDF;
+  
+  if (fragRepeat < 0) {
+    var wh = fragRectangle.zw - fragRectangle.xy;
+    var scale = getUVScale(fragUV * wh) * fragRadius.x;
+    var d = (texture.a - 0.75) * f32(fragRadius.y) + 0.25;
+    sdf = SDF(d / scale, d / scale);
+  }
+  else {
+    if (texture.a > 0.0) {
+      if (fragRepeat == 0 || fragRepeat == 1) {
+        if (fragTextureUV.x < 0.0 || fragTextureUV.x > 1.0) { texture.a = 0.0; }
+      }
+      if (fragRepeat == 0 || fragRepeat == 2) {
+        if (fragTextureUV.y < 0.0 || fragTextureUV.y > 1.0) { texture.a = 0.0; }
+      }
+  
+      fillColor = vec4<f32>(
+        fillColor.rgb * fillColor.a * (1.0 - texture.a) + texture.rgb,
+        mix(fillColor.a, 1.0, texture.a),
+      );
     }
   
-    fillColor = mix(fillColor, texture, texture.a);
+    if (fillColor.a <= 0.0) { discard; }
+  
+    if (fragMode == 0) { return fillColor; }
+
+    if (fragMode == 1) { sdf = getBorderBoxSDF(fragRectangle, fragBorder, fragUV); }
+    else { sdf = getRoundedBorderBoxSDF(fragRectangle, fragRadius, fragBorder, fragUV); }
   }
-
-  if (fragMode == 0) { return fillColor; }
-
-  var sdf: SDF;
-  if (fragMode == 1) { sdf = getBorderBoxSDF(fragRectangle, fragBorder, fragUV); }
-  else { sdf = getRoundedBorderBoxSDF(fragRectangle, fragRadius, fragBorder, fragUV); }
 
   var mask = clamp(sdf.outer, 0.0, 1.0);
   if (mask == 0.0) { discard; }

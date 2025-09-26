@@ -1,14 +1,14 @@
-import { LiveComponent, LiveFunction, LiveElement } from '../../live/types';
-import { AggregateBuffer, UniformType, TypedArray, StorageSource } from '../../core/types';
+import { LiveComponent, LiveFunction, LiveElement } from '@use-gpu/live/types';
+import { AggregateBuffer, UniformType, TypedArray, StorageSource } from '@use-gpu/core/types';
 import { UIAggregate } from './types';
 
 import { RenderContext } from '../providers/render-provider';
-import { use, resume, gather, useContext, useOne, useMemo } from '../../live';
+import { use, resume, gather, useContext, useOne, useMemo } from '@use-gpu/live';
 import {
   makeAggregateBuffer,
   updateAggregateBuffer,
   updateAggregateSegments,
-} from '../../core';
+} from '@use-gpu/core';
 
 import { UIRectangles } from '../geometry/ui-rectangles';
 
@@ -109,6 +109,8 @@ const makeUIAccumulator = (
 
   return (items: RectangleAggregate[]) => {
     const count = items.reduce(allCount, 0);
+    if (!count) return null;
+
     const props = {count} as Record<string, any>;
 
     if (hasRectangle) props.rectangles = updateAggregateBuffer(device, storage.rectangles, items, count, 'rectangle', 'rectangles');

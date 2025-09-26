@@ -1,5 +1,5 @@
-import { LiveFiber } from '../../live/types';
-import { formatNode, formatValue, formatNodeName } from '../../live';
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatNode, formatValue, formatNodeName } from '@use-gpu/live';
 import { styled } from "@stitches/react";
 
 import React, { useState } from 'react';
@@ -26,7 +26,7 @@ const Compact = styled('span', {
 
 export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
   // @ts-ignore
-  const {id, f, arg, args} = fiber;
+  const {id, f, arg, args, yeeted} = fiber;
   const name = formatNodeName(fiber);
   let props = {} as Record<string, any>;
 
@@ -46,6 +46,9 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
   }
 
   if (args !== undefined) {
+    if (name === 'YEET') {
+      props = {yeet: args[0]};
+    }
     if (name === 'MAP_REDUCE') {
       const [, map, reduce] = args;
       props = {map, reduce};
@@ -61,6 +64,12 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
       else for (let k in args) props[k] = args[k];
     }
   }
+
+	let yt = yeeted?.value != null ? (<>
+		<Spacer />
+	  <div><b>Yeeted</b></div>
+	  <div>{inspectObject(yeeted?.value, state, toggleState, '')}</div>
+	</>) : null;
 
   let history = null as React.ReactNode | null;
   let parent = fiber;
@@ -80,6 +89,7 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
   return (<>
     <div><b>{name}</b></div>
     <div>{inspectObject(props, state, toggleState, '')}</div>
+		{yt}
     <Spacer />
     <div><b>Rendered By</b></div>
     <div>{history}</div>

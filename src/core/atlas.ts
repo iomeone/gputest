@@ -1,396 +1,216 @@
+import { makeTextureDataLayout, uploadTexture } from './texture';
+import { AtlasMapping, Atlas } from './types';
+
 type Rectangle = [number, number, number, number];
-type Caret = [number, number];
-type Anchor = {
-  x: number,
-  y: number,
-  dx: number,
-  dy: number,
-  shadow: [number, number] | null,
-  caret: Caret | null,
-};
+type Point = [number, number];
 
-const NEW_CARET: Caret = [-1, -1];
-const SPLIT_X: Caret = [1, 0];
-const SPLIT_Y: Caret = [0, 1];
-
-const makeAnchor = (
-  x: number,
-  y: number,
-  dx: number,
-  dy: number,
-  caret: Caret | null = null,
-  shadow: null,
-) => ({x, y, dx, dy, shadow, caret});
-
-export type AtlasMapping = {
-  rect: Rectangle,
-  uv: Rectangle,
-};
-
-enum Overlap {
-  none = 'none',
-  some = 'some',
-}
-
-const getRangeOverlap = (minA: number, maxA: number, minB: number, maxB: number) => {
-  if (maxA <= minB || maxB <= minA) return Overlap.none;
-  return Overlap.some;
-};
+type Slot = [number, number, number, number, number, number, number];
+type Bin = Set<Slot>;
+type Bins = Map<number, Slot>;
 
 export const makeAtlas = (
   width: number,
   height: number,
+  snap: number = 1,
 ) => {
-  let anchors = [] as Anchor[];
-  let lengths = [] as Caret[];
+  
+  const ls: Bins = new Map();
+  const rs: Bins = new Map();
+  const ts: Bins = new Map();
+  const bs: Bins = new Map();
+  const slots: Bin = new Set();
 
+  const place = (key: number, w: number, h: number): AtlasMapping => {    
+    if (map.get(key)) throw new Error("key mapped already", key);
+
+    const cw = Math.ceil(w / snap) * snap;
+    const ch = Math.ceil(h / snap) * snap;
+
+    const slot = getNextAvailable(cw, ch, true);
+    if (!slot) {
+      console.warn('atlas full?', w, h);
+      return null;
+    }
+
+    const [x, y] = slot;
+    const rect = [x, y, x + w, y + h];
+    const uv = [rect[0] / width, rect[1] / height, rect[2] / width, rect[3] / height];
+
+    if (snap) {
+      const clip = [x, y, x + cw, y + ch];
+      clipRectangle(clip);
+    }
+    else clipRectangle(rect);
+
+    const placement = {key, rect, uv};
+    map.set(key, placement);
+    return placement;
+  };
+  
+  const getBin = (xs: Set, x: number) => {
+    let vs = xs.get(x);
+    if (!vs) xs.set(x, vs = new Set());
+    return vs;
+  }
+
+  const addSlot = (slot: Slot) => {
+    const [l, t, r, b] = slot;
+
+    {
+      const lsb = ls.get(l);
+      const rsb = rs.get(r);
+      const tsb = ts.get(t);
+      const bsb = bs.get(b);
+
+      const remove: Slot[] = [] ;
+      if (lsb) for (const s of lsb) {
+        if (containsRectangle(s, slot)) return;
+        if (containsRectangle(slot, s)) remove.push(s);
+      }
+      if (rsb) for (const s of rsb) {
+        if (containsRectangle(s, slot)) return;
+        if (containsRectangle(slot, s)) remove.push(s);
+      }
+      if (tsb) for (const s of tsb) {
+        if (containsRectangle(s, slot)) return;
+        if (containsRectangle(slot, s)) remove.push(s);
+      }
+      if (bsb) for (const s of bsb) {
+        if (containsRectangle(s, slot)) return;
+        if (containsRectangle(slot, s)) remove.push(s);
+      }
+    
+      for (const s of remove) removeSlot(s);
+    }
+
+    {
+      const lsb = getBin(ls, l);
+      const rsb = getBin(rs, r);
+      const tsb = getBin(ts, t);
+      const bsb = getBin(bs, b);
+
+      slots.add(slot);
+      lsb.add(slot);
+      rsb.add(slot);
+      tsb.add(slot);
+      bsb.add(slot);
+    }
+  };
+
+  const removeSlot = (slot: Slot) => {
+    const [l, t, r, b] = slot;
+
+    const lsb = getBin(ls, l);
+    const rsb = getBin(rs, r);
+    const tsb = getBin(ts, t);
+    const bsb = getBin(bs, b);
+    
+    slots.delete(slot);
+    lsb.delete(slot);
+    rsb.delete(slot);
+    tsb.delete(slot);
+    bsb.delete(slot);
+
+    if (lsb.size === 0) ls.delete(l);
+    if (rsb.size === 0) rs.delete(r);
+    if (tsb.size === 0) ts.delete(t);
+    if (bsb.size === 0) bs.delete(b);
+  };
+  
   const map = new Map<number, AtlasMapping>();
 
-  let lastR = 0;
-  let lastB = 0;
-
   const getNextAvailable = (w: number, h: number, debug: boolean = false) => {
-    let n = anchors.length;
-
-    let anchor: Anchor | null = null;
-    let index = -1;
+    let slot: Slot | null = null;
     let max = 0;
 
-    for (let i = 0; i < n; ++i) {
-      const a = anchors[i];
-      const {x, y, dx, dy, shadow, caret} = a;
-      if (!caret) continue;
+    for (const s of slots.values()) {
+      const [l, t, r, b, sx, sy, corner] = s;
+      
+      const x = l;
+      const y = t;
+      const cw = r - l;
+      const ch = b - t;
 
-      const [cw, ch] = caret;
       if (w <= cw && h <= ch) {
-        const fx = (w <= dx ? w / dx : w / ch);
-        const fy = (h <= dy ? h / dy : w / cw);
+        const fx = (w <= sx ? w / sx : w / cw);
+        const fy = (h <= sy ? h / sy : h / ch);
 
-        const s = x === lastR || y === lastB ? 1.0 : 0.5;
+        const b = corner + 1;
         const f = 1.0 - (Math.min(x / width, y / height) + (x / width * y / height)) * .25;
-        const d = s * f * fx * fy;
-                  if (debug) console.log({s, f, d})
+        const d = b * f * fx * fy;
+
         if (d > max) {
-          anchor = a;
-          index = i;
+          slot = s;
           max = d;
         }
       }
     }
 
-    return {anchor, index};
+    return slot;
   }
- 
-  const resolveCarets = (anchors: Anchors[]) => {
-    for (let a of anchors) {
-      if (a.caret === NEW_CARET) {
-        a.caret = clipCaretToAnchors(a.x, a.y, anchors);
-      }
-    }
+  
+  const stats = {
+    slots: 0,
+    checks: 0,
+    clips: 0,
   };
   
-  const clipCaretToAnchors = (
-    l: number,
-    t: number,
-    anchors: Anchor[],
-    caret?: [number. number] | null,
-  ) => {
-    const c = caret ?? [width - l, height - t] as Caret;
-    let [w, h] = c;
+  const clipRectangle = (other: Rectangle) => {
+    const add = [] as Slot[];
+    const remove = [] as Slot[];
 
-    if (l === 210 && t === 700) console.log('@clip', l, t);
-
-    for (const anchor of anchors) {
-      const {x, y, dx, dy} = anchor;
-
-      const xo = dy < 0 ? getRangeOverlap(l, l + w, x, x + 1) : Overlap.none;
-      if (l === 210 && t === 700) console.log('clip X at', x, y, '@', xo);
-      if (xo === Overlap.some) {
-        const yo = getRangeOverlap(t, t + h, Math.min(y, y + dy), Math.max(y, y + dy));
-        if (l === 210 && t === 700) console.log('clip Y to', x, y, '@', yo);
-        if (yo !== Overlap.none) {
-          w = Math.min(w, x - l);
-        }
-      }
-
-      const yo = dx < 0 ? getRangeOverlap(t, t + h, y, y + 1) : Overlap.none;
-      if (l === 210 && t === 700) console.log('clip Y at', x, y, '@', yo);
-      if (yo === Overlap.some) {
-        const xo = getRangeOverlap(l, l + w, Math.min(x, x + dx), Math.max(x, x + dx));
-        if (l === 210 && t === 700) console.log('clip X to', x, y, '@', xo, yo);
-        if (xo !== Overlap.none) {
-          h = Math.min(h, y - t);
-        }
-      }
-    }
-    
-    if (w <= 0 || h <= 0) return null;
-
-    c[0] = w;
-    c[1] = h;
-    return c;
-  };
-  
-  const insertAnchors = (anchors: Anchor[], index: number, rect: Rectangle) => {
-    const [l, t, r, b] = rect;
+    const [l, t, r, b] = other;
     const w = r - l;
     const h = b - t;
 
-    const n = anchors.length;
-    const oldAnchor = anchors[index];
+    for (const slot of slots.values()) {
+      stats.checks++;
+      if (intersectRectangle(slot, other)) {
+        const splits = subtractRectangle(slot, other);
+        add.push(...splits);
+        remove.push(slot);
 
-    const prevAnchor = anchors[index - 1];
-    const nextAnchor = anchors[index + 1];
-
-    const {x, y, dx, dy, shadow} = oldAnchor;
-    console.log('place', x, y, dx, dy, 'at', rect[0], rect[1], shadow)
-
-    const ca = (dy != h || shadow === SPLIT_X) ? makeAnchor(l, b, w, dy - h, true ? NEW_CARET : null) : null;
-    const cb = makeAnchor(r, b, 0, 0);
-    const cc = (dx != w || shadow === SPLIT_Y) ? makeAnchor(r, t, dx - w, h, true ? NEW_CARET : null) : null;
-
-    const newAnchors = [] as Anchor[];
-    if (shadow && shadow[0]) {
-      newAnchors.push({...oldAnchor, dy: 0, caret: null, shadow: null });
-      if (ca) ca.dy = -h;
-    }
-    if (ca) newAnchors.push(ca);
-    newAnchors.push(cb);
-    if (cc) newAnchors.push(cc);
-    console.log({newAnchors})
-    if (shadow && shadow[1]) {
-      newAnchors.push({...oldAnchor, dx: 0, caret: null, shadow: null });
-      if (cc) cc.dx = -w;
-    }
-
-    let out = [] as Anchor[];
-    let measure: number[] = [];
-    for (let a of anchors) {
-      let {x, y, dx, dy, shadow, caret} = a;
-
-      if (a === oldAnchor) {
-        measure.push(out.length - 1);
-        measure.push(out.length);
-        measure.push(out.length + 1);
-        out.push(...newAnchors);
-        measure.push(out.length - 1);
-        measure.push(out.length);
-        measure.push(out.length + 1);
-        continue;
-      }
-      else if (a === prevAnchor) {
-        if (!ca && shadow !== SPLIT_Y) continue;
-        a.shadow = undefined;
-      }
-      else if (a === nextAnchor) {
-        if (!cc && shadow !== SPLIT_X) continue;
-        a.shadow = undefined;
-      }
-
-      if (caret) {
-        const [cw, ch] = caret;
-        if (x >= r || x + cw <= l || y >= b || y + ch <= t) {
-          out.push(a);
-        }
-        else {
-          a.caret = clipCaretToAnchors(x, y, newAnchors, caret);
-          out.push(a);
-        }
-      }
-      else {
-        out.push(a);
-      }
-    }
-    
-    console.log('->', out.slice())
-    
-    const measureAnchor = (anchors: number[], index: number) => {
-      const a = anchors[index];
-      const prev = anchors[index - 1];
-      const next = anchors[index + 1];
-      
-      if (!prev || !next) return;
-
-      let pdy = -(a.y - prev.y);
-      let ndx = next.x - a.x;
-
-      let dx = ndx;
-      let dy = pdy;
-
-      if (dx === 0 && a.caret) dx = a.caret[0];
-      if (dy === 0 && a.caret) dy = a.caret[1];
-
-      a.dx = dx;
-      a.dy = dy;
-    };
-
-    const fixUp = (anchors: Anchor[]) => {
-      let n = anchors.length;
-
-      let out: Anchor[] = [];
-      let measure: number[] = [];
-      console.log('fixUp', anchors);
-
-      for (let i = 0; i < n; ++i) {
-        const a = anchors[i];
-        const prev = anchors[i - 1];
-        const next = anchors[i + 1];
-
-        if (!prev || !next) {
-          out.push(a);
-          continue;
-        }
-
-        const dx = a.x - prev.x;
-        const dy = -(a.y - prev.y);
-        if (dx === 0 && dy === 0) {
-          out[out.length - 1].shadow = undefined;
-          measure.push(out.length - 1);
-          measure.push(out.length);
-          continue;
-        }
-
-        const mdx = (next.x - a.x) * dx;
-        const mdy = (next.y - a.y) * -dy;
-        if ((mdx < 0 && !mdy) || (mdy < 0 && !mdx)) {
-          measure.push(out.length - 1);
-          measure.push(out.length);
-          console.log({mdx, mdy})
-          continue;
-        }
-
-        out.push(a);
-      }
-
-      for (let i of measure) {
-        measureAnchor(out, i - 1);
-        measureAnchor(out, i);
-      }
-
-      if (out.length !== anchors.length) return fixUp(out);
-      return out;
-    };
-
-    const castSplit = (anchors: Anchor[]) => {
-      if (dy < h) {
-        let min = Infinity;
-        let split = -1;
-        let at = 0;
-
-        let n = anchors.length - 1;
-        for (let i = 0; i < n; ++i) {
-          const pa = anchors[i];
-          const pb = anchors[i + 1];
-        
-          if (pa.x === pb.x && pa.x < l) {
-            if (pa.y >= b && pb.y < b) {
-              const d = l - pa.x;
-              if (d < 0 || d >= min) continue;
-              min = d;
-              split = i;
-              at = pa.x;
-            }
-          }
-        }
-
-        if (split >= 0) {
-          const a = makeAnchor(at, b, 0, 0, NEW_CARET, SPLIT_Y);
-          a.caret = clipCaretToAnchors(at, b, anchors);
-          anchors.splice(split + 1, 0, a);
-
-          measureAnchor(anchors, split + 1);
-        }
-      }
-
-      if (dx < w) {
-        let min = Infinity;
-        let split = -1;
-        let at = 0;
-
-        let n = anchors.length - 1;
-        for (let i = 0; i < n; ++i) {
-          const pa = anchors[i];
-          const pb = anchors[i + 1];
-
-          if (pa.y === pb.y && pa.y < t) {
-            if (pb.x >= r && pa.x < r) {
-              const d = t - pa.y;
-              if (d < 0 || d >= min) continue;
-              min = d;
-              split = i;
-              at = pa.y;
-            }
-          }
-        }
-
-        if (split >= 0) {
-          const a = makeAnchor(r, at, 0, 0, NEW_CARET, SPLIT_X);
-          a.caret = clipCaretToAnchors(r, at, anchors);
-          anchors.splice(split + 1, 0, a);
-
-          measureAnchor(anchors, split + 1);
-        }
+        stats.slots += splits.length;
+        stats.clips++;
       }
     };
-
-    castSplit(out);
-    resolveCarets(out);
-
-    for (const i of measure) {
-      measureAnchor(out, i - 1);
-      measureAnchor(out, i);
-    }
     
-    return fixUp(out);
+    for (const s of remove) removeSlot(s);
+    for (const s of add) addSlot(s);
   };
 
-  const place = (key: number, w: number, h: number) => {
-    console.log('-----')
-    if (map.get(key)) throw new Error("key mapped already", key);
-
-    const {anchor, index} = getNextAvailable(w, h);
-    if (index < 0) {
-      console.warn('atlas full?', index);
-      getNextAvailable(w, h, true);
-      return null;
-    }
-
-    const {x, y} = anchor;
-    const rect = [x, y, x + w, y + h];
-    const uv = [rect[0] / width, rect[1] / height, rect[2] / width, rect[2] / height];
-
-    lastR = x + w;
-    lastB = y + h;
-
-    anchors = insertAnchors(anchors, index, rect);
-    console.log({anchors})
-    console.log({rect})
-
-    const placement = {rect, uv};
-    map.set(key, placement);
-    return placement;
-  };
-
-  const debugAnchors = () => anchors;
   const debugPlacements = () => Array.from(map.keys()).map(k => map.get(k)!);
-  
+  const debugSlots = () => Array.from(slots.values()).map(s => s);
+
   const debugValidate = () => {
     const rects = debugPlacements().map(({rect}) => rect);
+    let n = rects.length;
     
     const out: Caret[] = [];
+    
+    const box: Rectangle = [Infinity, Infinity, -Infinity, -Infinity];
 
-    let n = rects.length;
     for (let i = 0; i < n; ++i) {
       const a = rects[i];
+      const [l, t, r, b] = a;
+
+      box[0] = Math.min(box[0], l);
+      box[1] = Math.min(box[1], t);
+      box[2] = Math.max(box[2], r);
+      box[3] = Math.max(box[3], b);
+
       for (let j = i + 1; j < n; ++j) {
         const b = rects[j];
+
         if (!(a[0] >= b[2] || b[0] >= a[2] || a[1] >= b[3] || b[1] >= a[3])) {
           console.warn(`Overlap detected ${a.join(',')} => ${b.join(',')}`);
-          const x = Math.max(a[0], b[0]);
-          const y = Math.max(a[1], b[1]);
-          const dx = Math.min(a[2], b[2]) - x;
-          const dy = Math.min(a[3], b[3]) - y;
-          out.push({x, y, dx, dy});
+          const pl = Math.max(a[0], b[0]);
+          const pt = Math.max(a[1], b[1]);
+          const pr = Math.min(a[2], b[2]);
+          const pb = Math.min(a[3], b[3]);
+          const dx = pr - pl;
+          const dy = pb - pt;
+          out.push({x: pl, y: pt, dx, dy});
         }
       }
     }
@@ -398,9 +218,76 @@ export const makeAtlas = (
     return out;
   }
 
-  anchors.push(makeAnchor(0, height, 0, height));
-  anchors.push(makeAnchor(0, 0, width, height, [width, height]));
-  anchors.push(makeAnchor(width, 0, width, 0));
+  const slot = [0, 0, width, height, width, height, 1];
+  addSlot(slot);
 
-  return {place, map, width, height, debugAnchors, debugPlacements, debugValidate};
+  return {place, map, width, height, debugPlacements, debugSlots, debugValidate} as Atlas;
+};
+
+export const uploadAtlasMapping = (
+  device: GPUDevice,
+  texture: GPUTexture,
+  format: GPUTextureFormat,
+  data: Uint8Array,
+  mapping: AtlasMapping,
+): void => {
+  const {rect} = mapping;
+  const [l, t, r, b] = rect;
+
+  const offset = [l, t] as Point;
+  const size = [r - l, b - t] as Point;
+    
+  const layout = makeTextureDataLayout(size, format);  
+  uploadTexture(device, texture, data, layout, size, offset);
+}
+
+const intersectRange = (minA: number, maxA: number, minB: number, maxB: number) => !(minA >= maxB || minB >= maxA);
+const intersectRangeEnds = (minA: number, maxA: number, minB: number, maxB: number) => !(minA > maxB || minB > maxA);
+const containsRange = (minA: number, maxA: number, minB: number, maxB: number) => (minA <= minB && maxA >= maxB);
+const getOverlap = (minA: number, maxA: number, minB: number, maxB: number) => Math.max(0, Math.min(maxA, maxB) - Math.max(minA, minB));
+
+const containsRectangle = (a: Rectangle, b: Rectangle) => {
+  const [al, at, ar, ab] = a;
+  const [bl, bt, br, bb] = b;
+
+  return containsRange(al, ar, bl, br) && containsRange(at, ab, bt, bb);
+};
+
+const touchRectangle = (a: Rectangle, b: Rectangle) => {
+  const [al, at, ar, ab] = a;
+  const [bl, bt, br, bb] = b;
+
+  return intersectRangeEnds(al, ar, bl, br) && intersectRangeEnds(at, ab, bt, bb);
+};
+
+const intersectRectangle = (a: Rectangle, b: Rectangle) => {
+  const [al, at, ar, ab] = a;
+  const [bl, bt, br, bb] = b;
+
+  return intersectRange(al, ar, bl, br) && intersectRange(at, ab, bt, bb);
+};
+
+const subtractRectangle = (a: Slot, b: Rectangle): Slot => {
+  const [al, at, ar, ab, sx, sy, corner] = a;
+  const [bl, bt, br, bb] = b;
+  
+  const w = getOverlap(al, ar, bl, br);
+  const h = getOverlap(at, ab, bt, bb);
+
+  const out: Rectangle[] = [];
+
+  if (al < bl) {
+    out.push([al, at, bl, ab, Math.min(sx, bl - al), ab - at, 1]);
+  }
+  if (ar > br) {
+    out.push([br, at, ar, ab, Math.min(sx, ar - br), Math.max(h, bb - at), +(at >= bt)]);
+  }
+  if (at < bt) {
+    out.push([al, at, ar, bt, ar - al, Math.min(sy, bt - at), 1]);
+  }
+  if (ab > bb) {
+    out.push([al, bb, ar, ab, Math.max(w, br - al), Math.min(sy, ab - bb), +(al >= bl)]);
+  }
+
+  return out;
 };

@@ -1,5 +1,5 @@
-import { LiveElement } from '../../../live/types';
-import { FontMetrics } from '../../../text/types';
+import { LiveElement } from '@use-gpu/live/types';
+import { FontMetrics } from '@use-gpu/text/types';
 import { LayoutElement, InlineElement, LayoutRenderer, Direction, Point, Margin, Rectangle, Alignment, Base } from '../types';
 
 import { parseBase, parseAnchor } from './util';
@@ -95,7 +95,7 @@ export const fitInline = (
   const mainSpans = [] as [number, number];
   const mainEls = [] as InlineElement[];
 
-  const reduceMain = () => {
+  const reduceMain = (hard: boolean) => {
     const n = mainEls.length;
     if (!n) return;
 
@@ -103,7 +103,7 @@ export const fitInline = (
 
     let mainGap = 0;
     let mainPos = 0;
-    if (slack) [mainGap, mainPos] = getInlineSpacing(slack, wordCount, align);
+    if (slack && !hard) [mainGap, mainPos] = getInlineSpacing(slack, wordCount, align);
 
     const perSpan = (_h: boolean, advance: number, trim: number) => {
       mainPos += advance;
@@ -162,7 +162,7 @@ export const fitInline = (
     spanData.forSpans((hard, advance, trim) => {
       if (wrap && (caretMain + advance - trim > spaceMain)) {
         addSpan(el, startIndex, endIndex);
-        reduceMain();
+        reduceMain(false);
 
         startIndex = i;
         caretMain = 0;
@@ -175,7 +175,7 @@ export const fitInline = (
 
       if (hard) {
         addSpan(el, startIndex, endIndex);
-        reduceMain();
+        reduceMain(true);
 
         startIndex = endIndex;
         caretMain = 0;
@@ -184,7 +184,7 @@ export const fitInline = (
 
     addSpan(el, startIndex, endIndex);
   }
-  reduceMain();
+  reduceMain(true);
   
   const size = isX ? [into[0], caretCross] : [caretCross, into[1]];
   

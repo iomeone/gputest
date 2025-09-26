@@ -1,10 +1,10 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TextureSource } from '../../core/types';
-import { SpanData, PerSpan, PerGlyph } from '../../text/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
+import { SpanData, PerSpan, PerGlyph } from '@use-gpu/text/types';
 import { Point4, InlineSpan } from './types';
 
-import { use, yeet, useContext, useFiber, useMemo } from '../../live';
-import { measureFont, measureSpans } from '../../text';
+import { use, yeet, useContext, useFiber, useMemo } from '@use-gpu/live';
+import { measureFont, measureSpans } from '@use-gpu/text';
 import { parseDimension, normalizeMargin } from './lib/util';
 
 import { FontContext } from '../providers/font-provider';
@@ -23,6 +23,7 @@ export type TextProps = {
   color?: Point4,
   size?: number,
   line?: number,
+  snap?: boolean,
 
   content?: string,
 };
@@ -34,11 +35,12 @@ export const Text: LiveComponent<TextProps> = (props) => {
   const {
     color = BLACK,
     size = 16,
+    snap = false,
     lineHeight,
     content = '',
   } = props;
 
-  const {gpuText, getGlyph, getScale} = useContext(FontContext);
+  const {gpuText, source, getGlyph, getScale, getRadius} = useContext(FontContext);
 
   const height = useMemo(() => {
     const {ascent, descent, lineHeight: fontHeight} = gpuText.measureFont(size);
@@ -66,7 +68,7 @@ export const Text: LiveComponent<TextProps> = (props) => {
       endIndex: number = breaks.length / 2,
     ) => {
       const start = getStart(startIndex) * 2;
-      const end = getEnd(endIndex) * 2;
+      const end = getEnd(endIndex - 1) * 2;
       for (let i = start; i < end; i += 2) callback(glyphs[i], !!glyphs[i + 1]);
     };
 
@@ -82,51 +84,68 @@ export const Text: LiveComponent<TextProps> = (props) => {
     render: (layout: Rectangle, startIndex: number, endIndex: number, spacing: number) => {
       const {forSpans, forGlyphs} = spanData;
       const scale = getScale(size);
-      let [l, t] = layout;
+      const [l, t] = layout;
 
       const out = [] as any[];
 
-      forSpans((_o, _a, _t, index) => {
-        forGlyphs((id: number, isWhiteSpace: boolean) => {
-          if (!isWhiteSpace) {
-            const glyph = getGlyph(id, size);
+      const rects = [] as number[];
+      const uvs = [] as number[];
+      let count = 0;
 
-            if (glyph.image) {
-              //console.log('glyph', glyph, 'at', layout[0], layout[1]);              
+      const {ascent, descent, lineHeight} = height;
+      const h = ascent - descent;
+      const g = (lineHeight - h) / 2;
+      const base = h + g;
+
+      let x = l;
+      let y = t + base;
+
+      let sx = x;
+
+      forSpans((_o, _a, trim, index) => {
+        forGlyphs((id: number, isWhiteSpace: boolean) => {
+          const {glyph, mapping} = getGlyph(id, size);
+          const {image, layoutBounds, outlineBounds} = glyph;
+          const [ll, lt, lr, lb] = layoutBounds;
+
+          if (!isWhiteSpace) {
+            if (image) {
+              const [gl, gt, gr, gb] = outlineBounds;
+
+              const cx = snap ? Math.round(sx) : sx;
+              const cy = snap ? Math.round(y) : y;
+              
+              rects.push((scale * gl) + cx, (scale * gt) + cy, (scale * gr) + cx, (scale * gb) + cy);
+              uvs.push(...mapping.uv);
+              count++;
             }
           }
+
+          sx += lr * scale;
+          x += lr * scale;
         }, index, index + 1);
-      });
 
-      return null;
-      /*
-      return yeet({
-        sizing,
-        margin,
-        grow,
-        shrink,
-        fit: (into: Point) => {
-          const w = width != null ? parseDimension(width, into[0], snap) : into[0];
-          const h = height != null ? parseDimension(height, into[1], snap) : into[1];
-          const size = [w, h];
+        if (trim) {
+          x += spacing;
+          sx = snap ? Math.round(x) : x;
+        }
+      }, startIndex, endIndex);
 
-          const render = (layout: Rectangle): LiveElement<any> => (
-            use(Surface, id)({
-              id,
-              layout,
+      const render = {
+        rectangles: rects,
+        radius: [1 / scale, getRadius(), 0, 0],
+        fill: [0.5, 0.5, 0.5, 1.0],
+        stroke: [1.0, 1.0, 1.0, 1.0],
+        texture: source,
+        uvs: uvs,
+        repeat: -1,
 
-              stroke,
-              fill,
-              border,
-              radius,
+        count,
+      };
+      console.log(scale)
 
-              image,
-            })
-          );
-          return {size, render};
-        },
-      });
-      */
+      //return use(() => yeet(render))();
+      return yeet(render);
     },
   });
 };

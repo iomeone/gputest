@@ -116,7 +116,7 @@ export const makeSubFiber = <F extends Function>(
   key?: Key,
 ): LiveFiber<F> => {
   const {host} = parent;
-  const fiber = makeFiber(node.f, host, parent, node.args, by, key) as LiveFiber<F>;
+  const fiber = makeFiber(node.f, host, parent, node.args ?? (node.arg ? [node.arg] : null), by, key) as LiveFiber<F>;
   return fiber;
 }
 
@@ -299,7 +299,7 @@ export const updateFiber = <F extends Function>(
     if (!yeeted) throw new Error("Yeet without aggregator");
     bustFiberYeet(fiber);
     visitYeetRoot(fiber);
-    yeeted.emit(fiber, call!.arg);
+    yeeted.emit(fiber, call!.arg ?? call!.args[0]);
   }
   // Mount normal node (may still be built-in)
   else {
@@ -756,7 +756,9 @@ export const updateMount = <P extends Function>(
   }
 
   if (update) {
-    if (mount!.args === newMount!.args && mount!.version) {
+    const args = newMount.args ?? (newMount.arg ? [newMount.arg] : null);
+    
+    if (mount!.args === args && mount!.version) {
       DEBUG && console.log('Skipping', key, formatNode(newMount!));
       return false;
     }
@@ -764,7 +766,7 @@ export const updateMount = <P extends Function>(
     DEBUG && console.log('Updating', key, formatNode(newMount!));
     if (host) host.__stats.updates++;
 
-    mount!.args = newMount!.args;
+    mount!.args = args;
 
     return mount!;
   }

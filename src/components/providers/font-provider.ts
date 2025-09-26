@@ -1,14 +1,16 @@
-import { LiveComponent } from '../../live/types';
-import { GPUTextContext } from '../../text/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { GPUTextContext } from '@use-gpu/text/types';
 
-import { provideMemo, useAsync, useMemo, makeContext } from '../../live';
-import { GPUText } from '../../text';
-import { AtlasMapping, makeAtlas } from '../../core';
+import { provideMemo, useAsync, useContext, useMemo, makeContext } from '@use-gpu/live';
+import { GPUText, glyphToRGBA, glyphToSDF } from '@use-gpu/text';
+import { AtlasMapping, makeAtlas, makeSourceTexture, makeTextureView, uploadAtlasMapping } from '@use-gpu/core';
+import { DeviceContext } from '../providers/device-provider';
 
 export const FontContext = makeContext(null, 'FontContext');
 
 export type FontContextProps = {
   gpuText: GPUTextContext,
+  getRadius: () => number,
   getGlyph: (i: number, s: number) => GlyphMetrics,
   getScale: (s: number) => number,
 };
@@ -28,7 +30,7 @@ const roundUp2 = (v: number) => {
   return v;
 };
 
-const getNearestScale = (size: number) => roundUp2(size * 2);
+const getNearestScale = (size: number) => roundUp2(size); 
 
 const hashGlyph = (id: number, size: number) => (id << 16) + size;
 
@@ -39,56 +41,78 @@ type GlyphCache = {
 
 export const FontProvider: LiveComponent<FontProviderProps> = ({children}) => {
 
+  const device = useContext(DeviceContext);
   const gpuText = useAsync(GPUText);
-  const atlas = makeAtlas(1500, 1500);
-
-  atlas.place(0, 100, 100);
-  atlas.place(1, 110, 90);
-  atlas.place(2, 75, 120);
-  atlas.place(3, 50, 50);
-  atlas.place(4, 150, 100);
-  atlas.place(5, 250, 100);
-  atlas.place(6, 350, 100);
-  atlas.place(7, 600, 600);
-  atlas.place(8, 140, 100);
-  atlas.place(9, 450, 200);
-  atlas.place(10, 140, 100);
-  atlas.place(11, 140, 100);
-  atlas.place(12, 250, 100);
-  atlas.place(13, 80, 100);
-
-  for (let i = 0; i < 30; ++i)
-    atlas.place(15 + i, 95, 90);
-
-    for (let i = 0; i < 50; ++i)
-      atlas.place(50 + i, 85 + (i%4)*5, 85 + (i%3)*5);
-
-  //for (let i = 100; i < 150; ++i) atlas.place(i, Math.random() * 50 + 100, Math.random() * 50 + 100);
   
   const context = useMemo(() => {
+    if (!gpuText) return null;
+
+    const width = 1024;
+    const height = 1024;
+    const pad = 10;
+    const radius = 10;
+    const atlas = makeAtlas(width, height);
+
+    const format = "rgba8unorm" as GPUTextureFormat;
+    const texture = makeSourceTexture(device, atlas.width, atlas.height, 1, format);
+    const source = {
+      texture,
+      view: makeTextureView(texture),
+      sampler: {
+        minFilter: 'linear',
+        magFilter: 'linear',
+      } as GPUSamplerDescriptor,
+      layout: 'texture_2d<f32>',
+      format,
+      size: [width, height],
+      version: 1,
+    };
+
     const glyphs = new Map<number, GlyphCache>();
 
+    const getRadius = () => radius;
     const getScale = (size: number) => size / getNearestScale(size);
-
-    const getGlyph = (id: number, size: number) => {
-      return {};
-
-      const key = hashGlyph(id, getNearestScale(size));
+    const getGlyph = (id: number, size: number): Entry => {
+      const scale = getNearestScale(size);
+      const key = hashGlyph(id, scale);
       const cache = glyphs.get(key);
       if (cache) return cache;
 
-      const glyph = gpuText.measureGlyph(id, size);
-      const mapping = atlas.place(glyph.width, glyph.height);
+      const glyph = gpuText.measureGlyph(id, scale);
+      let mapping: AtlasMapping | null = null;
+
+      const {image, width: w, height: h, outlineBounds: ob} = glyph;
+      if (image && w && h) {
+        const {data, width, height} = glyphToSDF(image, w, h, pad, radius);
+
+        ob[0] -= pad;
+        ob[1] -= pad;
+        ob[2] += pad;
+        ob[3] += pad;
+
+        mapping = atlas.place(id, width, height);
+        uploadAtlasMapping(
+          device,
+          texture,
+          format,
+          data,
+          mapping,
+        );
+      }
+
       const entry = {glyph, mapping};
-
       glyphs.set(key, entry);
+      source.version++;
 
-      return glyph;
+      return entry;
     };
 
     return {
       gpuText,
       atlas,
+      texture,
+      source,
+      getRadius,
       getScale,
       getGlyph,
     };

@@ -3,7 +3,7 @@
   inner: f32;
 };
 
-fn getUVScale(uv: vec2<f32>) -> f32 {
+@export fn getUVScale(uv: vec2<f32>) -> f32 {
   var dx = dpdx(uv);
   var dy = dpdy(uv);
   return (length(dx) + length(dy)) * 0.5;

@@ -57,7 +57,7 @@ pub struct GlyphMetrics {
 #[wasm_bindgen]
 impl UseGPUText {
     pub fn new() -> UseGPUText {
-        let ttf = include_bytes!("../../../public/fonts/Lato-Regular.ttf") as &[u8];
+        let ttf = include_bytes!("../../../public/Lato-Regular.ttf") as &[u8];
         let font = FontArc::try_from_slice(ttf).unwrap();
         let fonts = vec!(font);
 
@@ -194,7 +194,7 @@ impl UseGPUText {
             id,
             
             layout_bounds: vec!(lb.min.x, lb.min.y, lb.max.x, lb.max.y),
-            outline_bounds: ob.map(|ob| { vec!(ob.min.x, ob.min.y, ob.max.x, ob.max.y) }),
+            outline_bounds: ob.map(|ob| { vec!(ob.min.x, ob.min.y, ob.max.x + 1.0, ob.max.y + 1.0) }),
             
             image,
             width,

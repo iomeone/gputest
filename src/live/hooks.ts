@@ -4,7 +4,7 @@ import {
   DeferredCall, HostInterface, Hook,
 } from './types';
 
-import { bind, makeFiber, bustFiberMemo, getCurrentFiber } from './fiber';
+import { bind, bustFiberMemo, getCurrentFiber } from './fiber';
 import { isSameDependencies } from './util';
 import { formatNode } from './debug';
 

@@ -229,6 +229,18 @@ export type AggregateBuffer = {
   source: StorageSource,
 };
 
+export type AtlasMapping = {
+  rect: Rectangle,
+  uv: Rectangle,
+};
+
+export type Atlas = {
+  place: (key: number, w: number, h: number) => void,
+  map: Map<number, AtlasMapping>,
+  width: number,
+  height: number,
+};
+
 // Passes
 
 export enum RenderPassMode {
