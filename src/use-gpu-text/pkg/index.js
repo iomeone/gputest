@@ -93,6 +93,11 @@ function getDataViewMemory0() {
     return cachedDataViewMemory0;
 }
 
+function getArrayU8FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
+}
+
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_export_3.get(idx);
     wasm.__externref_table_dealloc(idx);
@@ -164,10 +169,22 @@ export class UseGPUText {
      * @param {number} size
      * @returns {any}
      */
-    measure_text(text, size) {
+    measure_spans(text, size) {
         const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.usegputext_measure_text(this.__wbg_ptr, ptr0, len0, size);
+        const ret = wasm.usegputext_measure_spans(this.__wbg_ptr, ptr0, len0, size);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @param {number} id
+     * @param {number} size
+     * @returns {any}
+     */
+    measure_glyph(id, size) {
+        const ret = wasm.usegputext_measure_glyph(this.__wbg_ptr, id, size);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -214,6 +231,10 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
+    imports.wbg.__wbg_Error_e17e777aac105295 = function(arg0, arg1) {
+        const ret = Error(getStringFromWasm0(arg0, arg1));
+        return ret;
+    };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
         let deferred0_0;
         let deferred0_1;
@@ -231,6 +252,10 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbg_new_1f3a344cf3123716 = function() {
         const ret = new Array();
+        return ret;
+    };
+    imports.wbg.__wbg_new_638ebfaedbf32a5e = function(arg0) {
+        const ret = new Uint8Array(arg0);
         return ret;
     };
     imports.wbg.__wbg_new_8a6f238a6ece86ea = function() {
@@ -256,6 +281,16 @@ function __wbg_get_imports() {
     imports.wbg.__wbindgen_cast_2241b6af4c4b2941 = function(arg0, arg1) {
         // Cast intrinsic for `Ref(String) -> Externref`.
         const ret = getStringFromWasm0(arg0, arg1);
+        return ret;
+    };
+    imports.wbg.__wbindgen_cast_4625c577ab2ec9ee = function(arg0) {
+        // Cast intrinsic for `U64 -> Externref`.
+        const ret = BigInt.asUintN(64, arg0);
+        return ret;
+    };
+    imports.wbg.__wbindgen_cast_cb9088102bce6b30 = function(arg0, arg1) {
+        // Cast intrinsic for `Ref(Slice(U8)) -> NamedExternref("Uint8Array")`.
+        const ret = getArrayU8FromWasm0(arg0, arg1);
         return ret;
     };
     imports.wbg.__wbindgen_cast_d6cd19b81560fd6e = function(arg0) {

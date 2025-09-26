@@ -8,7 +8,8 @@ export class UseGPUText {
   static new(): UseGPUText;
   get_line_breaks(text: string): any;
   measure_font(size: number): any;
-  measure_text(text: string, size: number): any;
+  measure_spans(text: string, size: number): any;
+  measure_glyph(id: number, size: number): any;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -19,7 +20,8 @@ export interface InitOutput {
   readonly usegputext_new: () => number;
   readonly usegputext_get_line_breaks: (a: number, b: number, c: number) => [number, number, number];
   readonly usegputext_measure_font: (a: number, b: number) => [number, number, number];
-  readonly usegputext_measure_text: (a: number, b: number, c: number, d: number) => [number, number, number];
+  readonly usegputext_measure_spans: (a: number, b: number, c: number, d: number) => [number, number, number];
+  readonly usegputext_measure_glyph: (a: number, b: number, c: number) => [number, number, number];
   readonly init_panic_hook: () => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
