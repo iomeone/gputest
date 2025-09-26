@@ -1,9 +1,14 @@
 import { FontMetrics, TextMetrics } from './types';
 
-let useGPUText: typeof import('../pkg');
+let useGPUText: typeof import('../use-gpu-text/pkg');
 
 export const GPUText = async () => {
-  const { UseGPUText } = await import('../pkg');
+  console.log("GPUText = async ()");
+  // const { UseGPUText } = await import('../use-gpu-text/pkg');
+  const { default: init, UseGPUText } = await import('../use-gpu-text/pkg/index.js');
+  await init(new URL('../use-gpu-text/pkg/index_bg.wasm', import.meta.url));
+
+  
   return useGPUText = UseGPUText.new();
 }
 
