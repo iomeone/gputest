@@ -57,7 +57,7 @@ pub struct GlyphMetrics {
 #[wasm_bindgen]
 impl UseGPUText {
     pub fn new() -> UseGPUText {
-        let ttf = include_bytes!("../../../public/Lato-Regular.ttf") as &[u8];
+        let ttf = include_bytes!("../../../public/fonts/Lato-Regular.ttf") as &[u8];
         let font = FontArc::try_from_slice(ttf).unwrap();
         let fonts = vec!(font);
 
