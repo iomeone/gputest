@@ -1,11 +1,11 @@
 
-import { use, useContext } from '@use-gpu/live';
+import { use, useContext } from '../../live';
 import { UI } from './ui';
 import { Surface } from './surface';
 import { CompositeData } from '../data';
 import { Lines } from '../layers';
 import { FontContext } from '../providers/font-provider';
-//import { makeAtlas } from '@use-gpu/core';
+//import { makeAtlas } from '../../core';
 
 export const DebugAtlas = ({texture}) => {
   const {atlas, source} = useContext(FontContext);

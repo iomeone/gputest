@@ -1,14 +1,14 @@
-import { LiveComponent, LiveFunction, LiveElement } from '@use-gpu/live/types';
-import { AggregateBuffer, UniformType, TypedArray, StorageSource } from '@use-gpu/core/types';
+import { LiveComponent, LiveFunction, LiveElement } from '../../live/types';
+import { AggregateBuffer, UniformType, TypedArray, StorageSource } from '../../core/types';
 import { UIAggregate } from './types';
 
 import { RenderContext } from '../providers/render-provider';
-import { use, resume, gather, useContext, useOne, useMemo } from '@use-gpu/live';
+import { use, resume, gather, useContext, useOne, useMemo } from '../../live';
 import {
   makeAggregateBuffer,
   updateAggregateBuffer,
   updateAggregateSegments,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { UIRectangles } from '../geometry/ui-rectangles';
 
