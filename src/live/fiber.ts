@@ -403,7 +403,7 @@ export const reconcileFiberCalls = <F extends Function>(
   let i = 0;
   for (let call of calls) {
 
-    let key = call?.key ?? i;
+    let key = call?.key ?? (0x100000000 + i);
     if (seen.has(key)) throw new Error(`Duplicate key ${key} while reconciling ` + formatNode(fiber));
     seen.add(key);
     order[i++] = key;

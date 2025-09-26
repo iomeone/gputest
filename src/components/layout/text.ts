@@ -1,11 +1,13 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TextureSource } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
+import { SpanData, PerSpan, PerGlyph } from '@use-gpu/text/types';
 import { Point4, InlineSpan } from './types';
 
-import { use, yeet, useFiber, useMemo } from '../../live';
-import { getLineBreaks, measureFont, measureText } from '../../text';
+import { use, yeet, useContext, useFiber, useMemo } from '@use-gpu/live';
+import { measureFont, measureSpans } from '@use-gpu/text';
 import { parseDimension, normalizeMargin } from './lib/util';
 
+import { FontContext } from '../providers/font-provider';
 import { Surface } from './surface';
 
 export type TextProps = {
@@ -32,45 +34,99 @@ export const Text: LiveComponent<TextProps> = (props) => {
   const {
     color = BLACK,
     size = 16,
-    line,
+    lineHeight,
     content = '',
   } = props;
 
+  const {gpuText, getGlyph, getScale} = useContext(FontContext);
+
   const height = useMemo(() => {
-    const {ascent, descent, lineHeight} = measureFont(size);
-    return {ascent, descent, lineHeight: line ?? lineHeight};
-  }, [size, line]);
+    const {ascent, descent, lineHeight: fontHeight} = gpuText.measureFont(size);
+    return {ascent, descent, lineHeight: lineHeight ?? fontHeight};
+  }, [size, lineHeight]);
 
-  const spans = useMemo(() => {
-    const spans: InlineSpan[] = [];
+  const spanData: SpanData = useMemo(() => {
+    const {breaks, metrics, glyphs} = gpuText.measureSpans(content, size);
 
-    const breaks = getLineBreaks(content);
-    
-    let start = 0;
-    const n = breaks.length;
-    for (let i = 0; i < n; i += 2) {
-      const end = breaks[i];
-      const hard = breaks[i + 1];
+    const forSpans = (
+      callback: PerSpan,
+      startIndex: number = 0,
+      endIndex: number = breaks.length / 2,
+    ) => {
+      let end = endIndex * 2;
+      for (let i = Math.max(0, startIndex * 2); i < end;) {
+        callback(breaks[i + 1], metrics[i], metrics[i + 1], i / 2);
+        i += 2;
+      }
+    };
 
-      const text = content.slice(start, end);
-      const width = measureText(text, size);
+    const forGlyphs = (
+      callback: PerGlyph,
+      startIndex: number = 0,
+      endIndex: number = breaks.length / 2,
+    ) => {
+      const start = getStart(startIndex) * 2;
+      const end = getEnd(endIndex) * 2;
+      for (let i = start; i < end; i += 2) callback(glyphs[i], !!glyphs[i + 1]);
+    };
 
-      spans.push({start, end, hard, width});
+    const getStart = (spanIndex: number) => spanIndex > 0 ? getEnd(spanIndex - 1) : 0;
+    const getEnd = (spanIndex: number) => breaks[spanIndex * 2];
 
-      start = end;
-    }
-
-    return spans;
+    return {forSpans, forGlyphs, getStart, getEnd};
   }, [content, size]);
 
   return yeet({
-    spans,
+    spanData,
     height,
-    render: (layout: Rectangle, startIndex: number, endIndex: number) => {
-      const start = spans[startIndex].start;
-      const end = spans[endIndex - 1].end;
-      console.log('render', content.slice(start, end), 'at', layout[0], layout[1]);
+    render: (layout: Rectangle, startIndex: number, endIndex: number, spacing: number) => {
+      const {forSpans, forGlyphs} = spanData;
+      const scale = getScale(size);
+      let [l, t] = layout;
+
+      const out = [] as any[];
+
+      forSpans((_o, _a, _t, index) => {
+        forGlyphs((id: number, isWhiteSpace: boolean) => {
+          if (!isWhiteSpace) {
+            const glyph = getGlyph(id, size);
+
+            if (glyph.image) {
+              //console.log('glyph', glyph, 'at', layout[0], layout[1]);              
+            }
+          }
+        }, index, index + 1);
+      });
+
       return null;
+      /*
+      return yeet({
+        sizing,
+        margin,
+        grow,
+        shrink,
+        fit: (into: Point) => {
+          const w = width != null ? parseDimension(width, into[0], snap) : into[0];
+          const h = height != null ? parseDimension(height, into[1], snap) : into[1];
+          const size = [w, h];
+
+          const render = (layout: Rectangle): LiveElement<any> => (
+            use(Surface, id)({
+              id,
+              layout,
+
+              stroke,
+              fill,
+              border,
+              radius,
+
+              image,
+            })
+          );
+          return {size, render};
+        },
+      });
+      */
     },
   });
 };

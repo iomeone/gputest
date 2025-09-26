@@ -15,6 +15,7 @@ fn main(
   @location(8)                    fragTextureUV: vec2<f32>,
 ) -> @location(0) vec4<f32> {
   var fillColor = fragFill;
+  fillColor = vec4<f32>(fillColor.xyz * fillColor.a, fillColor.a);
 
   var texture = getTexture(fragTextureUV);
   if (texture.a > 0.0) {

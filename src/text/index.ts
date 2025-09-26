@@ -1,23 +1,25 @@
-import { FontMetrics, TextMetrics } from './types';
+import { FontMetrics, SpanMetrics, GlyphMetrics, GPUTextContext } from './types';
 
-let useGPUText: typeof import('../pkg');
+let UseGPUText: typeof import('../pkg');
 
-export const GPUText = async () => {
-  const { UseGPUText } = await import('../pkg');
-  return useGPUText = UseGPUText.new();
-}
+export const GPUText = async (): Promise<GPUTextContext> => {
+  if (!UseGPUText) {
+    ({UseGPUText} = await import('../pkg'));
+  }
 
-export const getLineBreaks = (text: string): number[] => {
-  if (!useGPUText) throw new Error("GPUText not loaded");
-  return useGPUText.get_line_breaks(text);
-}
+  const useGPUText = UseGPUText.new();
 
-export const measureFont = (size: number): FontMetrics => {
-  if (!useGPUText) throw new Error("GPUText not loaded");
-  return useGPUText.measure_font(size);
-}
+  const measureFont = (size: number): FontMetrics => {
+    return useGPUText.measure_font(size);
+  }
 
-export const measureText = (text: string, size: number): TextMetrics => {
-  if (!useGPUText) throw new Error("GPUText not loaded");
-  return useGPUText.measure_text(text, size);
+  const measureSpans = (text: string, size: number): SpanMetrics => {
+    return useGPUText.measure_spans(text, size);
+  }
+  
+  const measureGlyph = (id: number, size: number): GlyphMetrics => {
+    return useGPUText.measure_glyph(id, size);
+  }
+  
+  return {measureFont, measureSpans, measureGlyph};
 }

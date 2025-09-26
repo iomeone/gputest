@@ -418,6 +418,25 @@ export const useNoMemo = useNoHook(Hook.MEMO);
 export const useNoOne = useNoHook(Hook.ONE);
 export const useNoCallback = useNoHook(Hook.CALLBACK);
 
+// Async wrapper
+export const useAsync = <T>(f: () => Promise<T>, deps: any[] = NO_DEPS): T | null => {
+  const [value, setValue] = useState<T | null>(null);
+  const cancelled = false;
+
+  const ref = useResource((dispose) => {
+    f().then((value) => {
+      if (!cancelled) setValue(value);
+    });
+    dispose(() => { cancelled = true; });
+  }, deps);
+
+  return value;
+};
+export const useNoAsync = () => {
+  useNoState();
+  useNoResource();
+};
+
 // Cleanup effect tracker
 // Calls previous cleanup before accepting new one
 export const makeResourceTag = () => {

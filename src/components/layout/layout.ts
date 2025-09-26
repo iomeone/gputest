@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, Point } from './types';
 
-import { memo, yeet, resume, provide, gather, useContext, useMemo } from '../../live';
+import { memo, yeet, resume, provide, gather, useContext, useMemo } from '@use-gpu/live';
 import { LayoutContext } from '../providers/layout-provider';
 
 export type LayoutProps = {
@@ -32,7 +32,7 @@ const Resume = resume((els: LayoutElement[]) => {
     if (Array.isArray(el)) out.push(...el);
     else if (el) out.push(el);
   }
-
+  
   /*
   let l = 0;
   for (const el of out) if (el) {

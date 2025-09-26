@@ -3,6 +3,7 @@ export * from './display/block';
 export * from './display/flex';
 export * from './display/inline';
 
+export * from './debug';
 export * from './element';
 export * from './text';
 

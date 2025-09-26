@@ -1,8 +1,8 @@
-import { LiveComponent } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../core/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import { use, useFiber, useMemo, useOne, useResource, useState } from '../live';
+import { use, useFiber, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   AutoCanvas,
@@ -10,17 +10,19 @@ import {
   CompositeData, Data, RawData,
   OrbitCamera, OrbitControls,
   AutoPicking, Pick,
+  FontProvider,
   Cursor, Points, Lines,
   RawQuads as Quads, RawLines,
   RenderToTexture,
   Router, Routes,
   ViewProvider,
-} from '../components';
-import { UseInspect } from '../inspect';
+} from '@use-gpu/components';
+import { UseInspect } from '@use-gpu/inspect';
 
 import { GeometryPage } from './pages/geometry';
 import { InteractPage } from './pages/interact';
 import { LayoutPage } from './pages/layout';
+import { AtlasPage } from './pages/atlas';
 import { EmptyPage } from './pages/empty';
 
 export type AppProps = {
@@ -43,6 +45,7 @@ export const App: LiveComponent<AppProps> = (props) => {
             "geometry": { element: use(GeometryPage)({ canvas }) },
             "layout": { element: use(LayoutPage)({ }) },
             "interact": { element: use(InteractPage)({ }) },
+            "atlas": { element: use(AtlasPage)({ }) },
             "": { element: use(GeometryPage)({ canvas }) },
             "*": { element: use(EmptyPage)({ }) },
           },
@@ -52,16 +55,20 @@ export const App: LiveComponent<AppProps> = (props) => {
   );
 
   return [
-    use(AutoCanvas)({
-      canvas, device, adapter, samples: 4,
-      children:
+      use(AutoCanvas)({
+        canvas, device, adapter, samples: 4,
+        children:
       
-        use(AutoPicking)({
-          canvas,
-          children: routes,
-        })
-    }),
-    inspect ? use(UseInspect)({fiber, canvas}) : null,
+          use(FontProvider)({
+            children: 
+          
+              use(AutoPicking)({
+                canvas,
+                children: routes,
+              }),
+          }),
+      }),
+      inspect ? use(UseInspect)({fiber, canvas}) : null,
   ];
 };
 

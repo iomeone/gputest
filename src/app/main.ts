@@ -1,6 +1,5 @@
-import { mountGPU } from '../webgpu';
-import { use, render, formatTree } from '../live';
-import { GPUText } from '../text';
+import { mountGPU } from '@use-gpu/webgpu';
+import { use, render, formatTree } from '@use-gpu/live';
 
 import { App } from './app';
 
@@ -9,7 +8,6 @@ const ROOT_SELECTOR = '#use-gpu';
 export const main = async (): Promise<void> => {
 
   try {
-    await GPUText();
     const {adapter, device, canvas} = await mountGPU(
       ROOT_SELECTOR,
       [],

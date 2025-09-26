@@ -1,4 +1,5 @@
 export * from './aggregate';
+export * from './atlas';
 export * from './attribute';
 export * from './binding';
 export * from './buffer';

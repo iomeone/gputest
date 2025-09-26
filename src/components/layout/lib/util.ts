@@ -1,4 +1,5 @@
-import { LiveElement } from '../../../live/types';
+import { LiveElement } from '@use-gpu/live/types';
+import { SpanData } from '@use-gpu/text/types';
 import { Point, Rectangle, Gap, Margin, Alignment, Anchor, Dimension, LayoutRenderer, InlineRenderer } from '../types';
 
 export const parseDimension = (x: string | number | null | undefined, total: number, snap: boolean = false): number => {
@@ -99,7 +100,6 @@ export const makeInlineLayout = (
   let [left, top, right, bottom] = box;
   const out = [] as LiveElement<any>[];
   const n = ranges.length;
-  debugger;
 
   for (let i = 0; i < n; ++i) {
     const range = ranges[i];
@@ -113,7 +113,7 @@ export const makeInlineLayout = (
     const b = t;// + size[1];
 
     const layout = [l, t, r, b] as Rectangle;
-    const el = render(layout, range[0], range[1]);
+    const el = render(layout, range[0], range[1], offset[2]);
 
     if (Array.isArray(el)) out.push(...(el as any[]));
     else out.push(el);
@@ -121,3 +121,22 @@ export const makeInlineLayout = (
 
   return out;
 };
+
+export const makeGlyphLayout = (
+  box: Rectangle,
+  spanData: SpanData,
+) => {
+  const {forSpans, getStart, getEnd} = spanData;
+
+  const out = [] as LiveElement<any>[];
+  
+
+  let caret = 0;
+  forSpans((hard, advance, trim, index) => {
+    
+    console.log('render', content.slice(getStart(index), getEnd(index)), 'at', layout[0], layout[1]);
+  }, startIndex, endIndex);
+
+  return out;
+};
+
