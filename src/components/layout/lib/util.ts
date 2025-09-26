@@ -1,5 +1,5 @@
-import { LiveElement } from '@use-gpu/live/types';
-import { SpanData } from '@use-gpu/text/types';
+import { LiveElement } from '../../../live/types';
+import { SpanData } from '../../../text/types';
 import { Point, Rectangle, Gap, Margin, Alignment, Anchor, Dimension, LayoutRenderer, InlineRenderer } from '../types';
 
 export const parseDimension = (x: string | number | null | undefined, total: number, snap: boolean = false): number => {

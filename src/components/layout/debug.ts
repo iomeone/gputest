@@ -1,5 +1,5 @@
 
-import { use, useContext } from '@use-gpu/live';
+import { use, useContext } from '../../live';
 import { Surface } from './surface';
 import { FontContext } from '../providers/font-provider';
 

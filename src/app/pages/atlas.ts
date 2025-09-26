@@ -1,11 +1,11 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 
-import { use, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { use, useMemo, useOne, useResource, useState } from '../../live';
 
 import {
   Draw, Pass,
   Flat, UI, DebugAtlas,
-} from '@use-gpu/components';
+} from '../../components';
 
 export type AtlasPageProps = {
   _unused?: boolean,

@@ -1,9 +1,9 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { GPUTextContext } from '@use-gpu/text/types';
+import { LiveComponent } from '../../live/types';
+import { GPUTextContext } from '../../text/types';
 
-import { provideMemo, useAsync, useMemo, makeContext } from '@use-gpu/live';
-import { GPUText } from '@use-gpu/text';
-import { AtlasMapping, makeAtlas } from '@use-gpu/core';
+import { provideMemo, useAsync, useMemo, makeContext } from '../../live';
+import { GPUText } from '../../text';
+import { AtlasMapping, makeAtlas } from '../../core';
 
 export const FontContext = makeContext(null, 'FontContext');
 

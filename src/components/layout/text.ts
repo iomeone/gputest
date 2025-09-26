@@ -1,10 +1,10 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { TextureSource } from '@use-gpu/core/types';
-import { SpanData, PerSpan, PerGlyph } from '@use-gpu/text/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { TextureSource } from '../../core/types';
+import { SpanData, PerSpan, PerGlyph } from '../../text/types';
 import { Point4, InlineSpan } from './types';
 
-import { use, yeet, useContext, useFiber, useMemo } from '@use-gpu/live';
-import { measureFont, measureSpans } from '@use-gpu/text';
+import { use, yeet, useContext, useFiber, useMemo } from '../../live';
+import { measureFont, measureSpans } from '../../text';
 import { parseDimension, normalizeMargin } from './lib/util';
 
 import { FontContext } from '../providers/font-provider';
