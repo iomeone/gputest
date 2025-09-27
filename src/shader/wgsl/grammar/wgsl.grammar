@@ -54,7 +54,7 @@ GlobalConstantDeclaration {
   AttributeList k<'override'> VariableIdentifier (assign Value<expression>)?
 }
 
-TypeAliasDeclaration { AttributeList k<'type'> Identifier assign TypeDeclaration }
+TypeAliasDeclaration { AttributeList k<'type'> Identifier (assign TypeDeclaration)? }
 
 StructDeclaration { AttributeList k<'struct'> Identifier StructBodyDeclaration }
 StructBodyDeclaration { '{' ((StructMember comma)* StructMember comma?)? '}' }

@@ -1,6 +1,6 @@
-import { UniformAttribute, ShaderModule, ParsedBundle } from '../types';
+import { UniformAttribute, ShaderModule, ParsedBundle, RefFlags as RF } from '../types';
 import { loadVirtualModule } from './shader';
-import { getHash } from './hash';
+import { toMurmur53, scrambleBits53, mixBits53 } from './hash';
 import { toBundle, getBundleHash, getBundleKey } from './bundle';
 import { PREFIX_CHAIN } from '../constants';
 
@@ -17,6 +17,24 @@ export type MakeChainAccessor = (
   from: string,
   to: string,
 ) => string;
+
+const SYMBOLS = ['chain', 'from', 'to'];
+
+const EXTERNALS = [
+  {
+    func: {name: 'from'},
+    flags: RF.External,
+  },
+  {
+    func: {name: 'to'},
+    flags: RF.External,
+  },
+];
+
+const makeDeclarations = (type: any, parameters: any) => [{
+  func: {name: 'chain', type, parameters},
+  flags: RF.Exported,
+}];
 
 export const makeChainTo = (
   makeChainAccessor: MakeChainAccessor,
@@ -49,28 +67,9 @@ export const makeChainTo = (
   const k1 = getBundleKey(fBundle);
   const k2 = getBundleKey(tBundle);
 
-  const code    = `@chain [${entry}] [${h1}] [${h2}]`;
-  const rehash  = getHash(code);
-  const rekey   = getHash(`${code} ${k1} ${k2}`);
-  const symbols = [entry, 'from', 'to'];
-
-  const namespace1 = `${PREFIX_CHAIN}${rehash.slice(0, 6)}_1`;
-  const namespace2 = `${PREFIX_CHAIN}${rehash.slice(0, 6)}_2`;
-
-  const modules = [
-    {
-      at: 0,
-      symbols: NO_SYMBOLS,
-      name: namespace1,
-      imports: [{name: 'from', imported: fromName}],
-    },
-    {
-      at: 0,
-      symbols: NO_SYMBOLS,
-      name: namespace2,
-      imports: [{name: 'to', imported: toName}],
-    },
-  ];
+  const code    = `@chain [${entry}]`;
+  const rehash  = scrambleBits53(mixBits53(toMurmur53(code), mixBits53(h1, h2)));
+  const rekey   = scrambleBits53(mixBits53(rehash, mixBits53(k1, k2)));
 
   // Code generator
   const render = (namespace: string, rename: Map<string, string>) => {
@@ -80,9 +79,11 @@ export const makeChainTo = (
     return makeChainAccessor(toFormat, name, args ?? [], from, to);
   }
 
+  const declarations = makeDeclarations(toFormat, fromArgs);
+
   const chain = loadVirtualModule(
     { render },
-    { symbols, modules },
+    { symbols: SYMBOLS, declarations, externals: EXTERNALS },
     entry,
     rehash,
     code,
@@ -95,8 +96,12 @@ export const makeChainTo = (
   if (fromModule.virtual) revirtuals.push(fromModule);
   if (toModule.virtual) revirtuals.push(toModule);
 
-  return {module: chain, libs: {
-    [namespace1]: from,
-    [namespace2]: to,
-  }, virtuals: revirtuals};
+  return {
+    module: chain,
+    links: {
+      from: fBundle,
+      to: tBundle,
+    },
+    virtuals: revirtuals,
+  };
 }

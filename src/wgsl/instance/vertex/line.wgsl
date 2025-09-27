@@ -1,17 +1,20 @@
-use '../../../wgsl/use/types'::{ SolidVertex };
-use '../../../wgsl/use/view'::{ viewUniforms, worldToClip, worldToView, viewToClip, toClip3D, clipLineIntoView, getPerspectiveScale };
-use '../../../wgsl/geometry/strip'::{ getStripIndex };
-use '../../../wgsl/geometry/line'::{ getLineJoin };
-use '../../../wgsl/geometry/arrow'::{ getArrowSize };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToView, viewToClip, toClip3D, clipLineIntoView, getPerspectiveScale, applyZBias3 };
+use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
+use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
+use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
 
-@optional @external fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
-@optional @external fn getSegment(i: u32) -> i32 { return 0; };
-@optional @external fn getColor(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.5, 1.0); };
-@optional @external fn getWidth(i: u32) -> f32 { return 1.0; };
-@optional @external fn getDepth(i: u32) -> f32 { return 0.0; };
+@optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
+@optional @link fn getSegment(i: u32) -> i32 { return 0; };
+@optional @link fn getColor(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.5, 1.0); };
+@optional @link fn getWidth(i: u32) -> f32 { return 1.0; };
+@optional @link fn getDepth(i: u32) -> f32 { return 0.0; };
+@optional @link fn getZBias(i: u32) -> f32 { return 0.0; };
   
-@optional @external fn getTrim(i: u32) -> vec4<u32> { return vec4<u32>(0u, 0u, 0u, 0u); };
-@optional @external fn getSize(i: u32) -> f32 { return 3.0; };
+@optional @link fn getTrim(i: u32) -> vec4<u32> { return vec4<u32>(0u, 0u, 0u, 0u); };
+@optional @link fn getSize(i: u32) -> f32 { return 3.0; };
+
+@optional @link fn getLookup(i: u32) -> u32 { return i; };
 
 let ARROW_ASPECT: f32 = 2.5;
 
@@ -69,13 +72,17 @@ fn trimAnchor(
     return SolidVertex(
       vec4(NaN, NaN, NaN, NaN),
       vec4(NaN, NaN, NaN, NaN),
-      vec2(NaN, NaN),
+      vec4(NaN, NaN, NaN, NaN),
+      vec4(NaN, NaN, NaN, NaN),
       0u,
     );
   }
 
   var uv = vec2<f32>(ij);
   var xy = uv * 2.0 - 1.0;
+
+  let uv4 = vec4<f32>(uv, 0.0, 0.0);
+  let st4 = vec4<f32>(0.0);
 
   var cornerIndex: u32;
   var joinIndex: u32;
@@ -95,6 +102,7 @@ fn trimAnchor(
   var color = getColor(cornerIndex);
   var width = getWidth(cornerIndex);
   var depth = getDepth(cornerIndex);
+  var zBias = getZBias(cornerIndex);
 
   var centerPos = getPosition(cornerIndex);
   var beforePos = centerPos;
@@ -141,9 +149,8 @@ fn trimAnchor(
   }
 
   // Clip ends into view
-  var near = viewUniforms.viewNearFar.x * 2.0;
-  var clipBeforeV = clipLineIntoView(beforePos, centerPos, near);
-  var clipAfterV  = clipLineIntoView(afterPos, centerPos, near);
+  var clipBeforeV = clipLineIntoView(beforePos, centerPos);
+  var clipAfterV  = clipLineIntoView(afterPos, centerPos);
 
   var before = toClip3D(viewToClip(clipBeforeV));
   var after  = toClip3D(viewToClip(clipAfterV));
@@ -153,16 +160,17 @@ fn trimAnchor(
 
   if (center4.w <= 0.0) {
     if (ij.x == 0u) {
-      centerV = clipLineIntoView(centerPos, afterPos, near);
+      centerV = clipLineIntoView(centerPos, afterPos);
     }
     else if (ij.x != 0u) {
-      centerV = clipLineIntoView(centerPos, beforePos, near);
+      centerV = clipLineIntoView(centerPos, beforePos);
     }
     else {
       return SolidVertex(
         vec4(NaN, NaN, NaN, NaN),
         vec4(NaN, NaN, NaN, NaN),
-        vec2(NaN, NaN),
+        vec4(NaN, NaN, NaN, NaN),
+        vec4(NaN, NaN, NaN, NaN),
         instanceIndex,
       );
     }
@@ -178,10 +186,15 @@ fn trimAnchor(
   var arc = f32(joinIndex) / f32(LINE_JOIN_SIZE);
   var lineJoin = getLineJoin(before, center, after, arc, xy.y, width, segment, LINE_JOIN_STYLE);
 
+  if (zBias != 0.0) {
+    lineJoin = applyZBias3(lineJoin, width * zBias, center4.w);
+  }
+
   return SolidVertex(
-    vec4<f32>(lineJoin, 1.0),
+    vec4<f32>(lineJoin, 1.0) * center4.w,
     color,
-    uv,
-    instanceIndex,
+    uv4,
+    st4,
+    getLookup(cornerIndex),
   );
 }

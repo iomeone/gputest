@@ -1,16 +1,18 @@
-use '../../../wgsl/use/types'::{ SolidVertex };
-use '../../../wgsl/use/view'::{ worldToClip, worldToClip3D };
-use '../../../wgsl/geometry/arrow'::{ getArrowSize, getArrowCorrection };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToClip3D };
+use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize, getArrowCorrection };
 
-@optional @external fn getVertex(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
+@optional @link fn getVertex(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 
-@optional @external fn getAnchor(i: u32) -> vec4<u32> { return vec4<u32>(0u, 1u, 0u, 0u); };
+@optional @link fn getAnchor(i: u32) -> vec4<u32> { return vec4<u32>(0u, 1u, 0u, 0u); };
 
-@optional @external fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); };
-@optional @external fn getColor(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.5, 1.0); };
-@optional @external fn getSize(i: u32) -> f32 { return 3.0; };
-@optional @external fn getWidth(i: u32) -> f32 { return 1.0; };
-@optional @external fn getDepth(i: u32) -> f32 { return 0.0; };
+@optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); };
+@optional @link fn getColor(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.5, 1.0); };
+@optional @link fn getSize(i: u32) -> f32 { return 3.0; };
+@optional @link fn getWidth(i: u32) -> f32 { return 1.0; };
+@optional @link fn getDepth(i: u32) -> f32 { return 0.0; };
+
+@optional @link fn getLookup(i: u32) -> u32 { return i; };
   
 let ARROW_ASPECT: f32 = 2.5;
 
@@ -64,17 +66,18 @@ let ARROW_ASPECT: f32 = 2.5;
     arrowRadius = getArrowCorrection(cap.w, center.w, depth);
   }
 
-  //let position = vec4<f32>(meshPosition.xyz * finalSize + startPos.xyz, 1.0);
-  let uv = vec2<f32>(f32(anchorIndex), 0.0);
+  let uv = vec4<f32>(f32(anchorIndex), 0.0, 0.0, 0.0);
+  let st = uv;
 
   let orientedPos = m * vec4<f32>(vec3<f32>(meshPosition.x, meshPosition.yz * arrowRadius) * arrowSize, 1.0);
   let finalPos = vec4<f32>(orientedPos.xyz + startPos.xyz, 1.0);
-  let position = worldToClip(finalPos);
-
+  var position = worldToClip(finalPos);
+  
   return SolidVertex(
     position,
     color,
     uv,
-    instanceIndex,
+    st,
+    getLookup(anchorIndex),
   );
 }

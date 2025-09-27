@@ -1,6 +1,6 @@
 import { Tree } from '@lezer/common';
-import { ASTParser, VirtualTable, SymbolTable, ParsedModule, ParsedModuleCache, CompressedNode } from '../types';
-import { getHash, makeKey } from './hash';
+import { ASTParser, VirtualTable, SymbolTableT, ParsedModule, ParsedModuleCache, CompressedNode } from '../types';
+import { formatMurmur53, toMurmur53 } from './hash';
 import { decompressAST } from './tree';
 import { PREFIX_VIRTUAL } from '../constants';
 
@@ -9,13 +9,13 @@ const EMPTY_TABLE = {} as any;
 
 // Parse a code module into its in-memory representation
 // (AST + symbol table)
-export const makeLoadModule = <T extends SymbolTable>(
+export const makeLoadModule = <T extends SymbolTableT = any>(
   parseShader: (code: string) => Tree,
   makeASTParser: (code: string, tree: Tree, name?: string) => ASTParser<T>,
   compressAST: (code: string, tree: Tree) => CompressedNode[],
 ) => (
   code: string,
-  name: string,
+  name: string = 'main',
   entry?: string,
   compressed: boolean = false,
 ): ParsedModule => {
@@ -28,55 +28,56 @@ export const makeLoadModule = <T extends SymbolTable>(
   const shake = astParser.getShakeTable(table);
 
   if (compressed) tree = decompressAST(compressAST(code, tree));
+  const hash = toMurmur53(code);
 
-  const hash = getHash(code);
-
-  return {name, code, hash, table, entry, shake, tree};
+  return bindEntryPoint({name, code, hash, table, shake, tree}, entry);
 }
 
 // Use cache to load modules
 export const makeLoadModuleWithCache = (
-  loadModule: (code: string, name: string, entry?: string, compressed?: boolean) => ParsedModule,
+  loadModule: (code: string, name?: string, entry?: string, compressed?: boolean) => ParsedModule,
   defaultCache: ParsedModuleCache,
 ) => (
   code: string,
-  name: string,
+  name?: string,
   entry?: string,
   cache: ParsedModuleCache | null = defaultCache,
 ): ParsedModule => {
   if (!cache) return loadModule(code, name, entry, true);
 
-  const hash = getHash(code);
+  const hash = toMurmur53(code);
   const cached = cache.get(hash);
-  if (cached) return {...cached, entry};
+  if (cached) {
+    return bindEntryPoint(cached, entry);
+  }
   
-  const module = loadModule(code, name, entry, true);
+  const module = loadModule(code, name, undefined, true);
   cache.set(hash, module);
-  return {...module, entry};
+  return bindEntryPoint(module, entry);
 }
 
 // Load a static (inert) module
 export const loadStaticModule = (code: string, name: string, entry?: string) => {
-  const hash = getHash(code);
-  return { name, code, hash, entry, table: EMPTY_TABLE };
+  const hash = toMurmur53([code, entry]);
+  return ({ name, code, hash, table: EMPTY_TABLE });
 }
 
 // Load a virtual (generated) module
-export const loadVirtualModule = <T extends SymbolTable = any>(
+export const loadVirtualModule = <T extends SymbolTableT = any>(
   virtual: VirtualTable,
   initTable: Partial<T> = EMPTY_TABLE,
   entry?: string,
-  hash?: string,
+  hash?: number,
   code?: string,
-  key?: string,
+  key?: number,
 ) => {
   let symbols = initTable.symbols ?? EMPTY_LIST;
 
   code = code ?? `@virtual [${symbols.join(' ')}]`;
-  hash = hash ?? getHash(code);
+  hash = hash ?? toMurmur53(code);
   key  = key  ?? hash;
 
-  const name = `${PREFIX_VIRTUAL}${key.slice(0, 6)}`;
+  const name = `${PREFIX_VIRTUAL}${formatMurmur53(key).slice(0, 6)}`;
 
   const table = {
     symbols,
@@ -85,3 +86,15 @@ export const loadVirtualModule = <T extends SymbolTable = any>(
   };
   return { name, code, hash, table, entry, virtual, key };
 }
+
+// Set entry point of a module, returns new module.
+// Is the same instance as the original (key = old hash), so it merges with copies of itself.
+// But is structurally different (hash = new key), so differences in links are reflected in the shader hash.
+export const bindEntryPoint = (module: ParsedModule, entry?: string) => {
+  const {hash, table} = module;
+  if (entry == null && table.symbols?.includes('main')) entry = 'main';
+  if (entry == null) return module;
+
+  const structural = toMurmur53([hash, entry]);
+  return {...module, entry, hash: structural, key: hash};
+};

@@ -1,4 +1,4 @@
-import { LiveFiber, LiveComponent, LiveFunction, DeferredCall } from './types';
+import type { LiveFiber, LiveComponent, LiveFunction, DeferredCall } from './types';
 
 import { bind } from './fiber';
 import { use, provide, makeContext } from './builtin';

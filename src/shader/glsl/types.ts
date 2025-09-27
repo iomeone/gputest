@@ -21,6 +21,7 @@ export type {
   ShakeOp,
   StorageSource,
   LambdaSource,
+  TextureSource,
   UniformAttribute,
   UniformAttributeValue,
   VirtualRender,

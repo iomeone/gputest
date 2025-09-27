@@ -1,9 +1,10 @@
-import { LiveFiber } from '../../live/types';
-import { formatValue, isSubNode, YEET, DEBUG } from '../../live';
+import type { LiveFiber } from '@use-gpu/live';
+import type { Cursor } from '@use-gpu/state';
+import { formatValue, isSubNode, YEET, DEBUG } from '@use-gpu/live';
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useLayoutEffect, useRef } from 'react';
 
-import { useRefineCursor, Cursor } from './cursor';
+import { useRefineCursor } from '@use-gpu/state';
 import { usePingContext } from './ping';
 import { Node } from './node';
 import { ReactNode } from './react-node';
@@ -12,8 +13,7 @@ import { ExpandState, SelectState, HoverState, Action } from './types';
 import { TreeWrapper, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeRowOmitted, TreeLegendItem, SplitColumn, SplitColumnFull, Muted } from './layout';
 import { Expandable } from './expandable';
 
-const ICON = (s: string) => <span className="m-icon">{s}</span>
-const ICONSMALL = (s: string) => <span className="m-icon m-icon-small">{s}</span>
+import { IconItem, SVGChevronDown, SVGChevronRight, SVGNextOpen, SVGNextClosed } from './svg';
 
 type FiberTreeProps = {
   fiber: LiveFiber<any>,
@@ -31,6 +31,7 @@ type FiberNodeProps = {
   selectedCursor: Cursor<SelectState>,
   hoveredCursor: Cursor<HoverState>,
   indent?: number,
+  depthLimit?: number,
   continuation?: boolean,
   siblings?: boolean,
 }
@@ -45,8 +46,8 @@ type FiberReactNodeProps = {
 type TreeExpandProps = {
   expand: boolean,
   onToggle: (e: any) => void,
-  openIcon?: string,
-  closedIcon?: string,
+  openIcon?: any,
+  closedIcon?: any,
 }
 
 // Get rendered-by depth by tracing `by` props up the tree
@@ -140,7 +141,7 @@ export const FiberTree: React.FC<FiberTreeProps> = ({
 export const FiberNode: React.FC<FiberNodeProps> = memo(({
   fiber,
   fibers,
-  depthLimit,
+  depthLimit = Infinity,
   expandCursor,
   selectedCursor,
   hoveredCursor,
@@ -179,7 +180,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
     const select  = () => updateSelectState({ $set: fiber });
     const hover   = () => updateHoverState({ $set: {
       fiber,
-      by: fibers.get(fiber.by),
+      by: fibers.get(fiber.by) ?? null,
       deps: host ? Array.from(host.traceDown(fiber)) : [],
       precs: host ? Array.from(host.traceUp(fiber)) : [],
       root,
@@ -196,7 +197,32 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
     return [select, hover, unhover];
   }, [fiber, updateSelectState, updateHoverState]);
 
+  const rowRef = useRef<HTMLDivElement>(null);
   const out = [] as React.ReactElement[];
+
+  useLayoutEffect(() => {
+    const {current: row} = rowRef;
+    if (selected && row) {
+      const rect = row.getBoundingClientRect();
+
+      let parent = row as HTMLElement | null;
+      while (parent) {
+        if (parent.classList.contains('tree-scroller')) break;
+        parent = parent.parentElement;
+      }
+      if (parent) {
+        const container = parent.getBoundingClientRect();
+
+        if (rect.left < container.left || rect.right > container.right) {
+          parent.scrollLeft += rect.left - container.left - 50;
+        }
+        
+        if (rect.top < container.top || rect.bottom > container.bottom) {
+          parent.scrollTop += rect.top - container.top - 150;
+        }
+      }
+    }
+  }, [selected]);
 
   // Render node itself
   const nodeRender = shouldRender ? (
@@ -212,6 +238,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
       onClick={select}
       onMouseEnter={hover}
       onMouseLeave={unhover}
+      ref={rowRef}
     />
   ) : null;
 
@@ -278,9 +305,9 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   let nextRender = null as React.ReactElement | null;
   if (next) {
     childRender = shouldRender ? (
-      <TreeIndent indent={indent + .5}>
+      <TreeIndent indent={indent + .5 + (continuation ? 1 : 0)}>
         <TreeLine>
-          <TreeIndent indent={-indent - .5}>
+          <TreeIndent indent={-indent - .5 - (continuation ? 1 : 0)}>
             {out}
           </TreeIndent>
         </TreeLine>
@@ -296,7 +323,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
         selectedCursor={selectedCursor}
         hoveredCursor={hoveredCursor}
         continuation
-        indent={indent - +!!out.length}
+        indent={indent - +!!out.length + (continuation ? 1 : 0)}
       />
     );
   }
@@ -312,8 +339,8 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   
   // Expandable node
   if (out.length) {
-    const openIcon = continuation ? 'arrow_downward' : undefined;
-    const closedIcon = continuation ? 'subdirectory_arrow_right' : undefined;
+    const openIcon = continuation ? <SVGNextOpen /> : undefined;
+    const closedIcon = continuation ? <SVGNextClosed /> : undefined;
     return (
       <Expandable
         id={id}
@@ -334,7 +361,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   }
 
   // Leaf node
-  const continuationIcon = ICONSMALL('subdirectory_arrow_right');
+  const continuationIcon = <IconItem><SVGNextClosed /></IconItem>;
   return (<>
     <TreeRow indent={indent + 1}>
       {continuation ? <Muted>{continuationIcon}</Muted> : null}
@@ -348,10 +375,10 @@ export const TreeExpand: React.FC<TreeExpandProps> = ({
   expand,
   onToggle,
   children,
-  openIcon = 'expand_more',
-  closedIcon = 'chevron_right',
+  openIcon = <SVGChevronDown />,
+  closedIcon = <SVGChevronRight />,
 }) => {
-  const icon = expand !== false ? ICON(openIcon) : ICON(closedIcon) ;
+  const icon = <IconItem>{expand !== false ? openIcon : closedIcon}</IconItem>;
 
   return (<>
     <TreeRow>
@@ -361,7 +388,7 @@ export const TreeExpand: React.FC<TreeExpandProps> = ({
   </>);
 }
 
-export const FiberReactNode: React.FC<FiberNodeProps> = memo(({
+export const FiberReactNode: React.FC<FiberReactNodeProps> = memo(({
   reactNode,
   expandCursor,
   first = false,

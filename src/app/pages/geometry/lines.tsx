@@ -1,9 +1,7 @@
-import { LC } from '../../../live/types';
-import { CanvasRenderingContextGPU } from '../../../webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../../../core/types';
+import type { LC } from '@use-gpu/live';
+import type { DataField } from '@use-gpu/core';
 
-import React from '../../../live/jsx';
-import { use } from '../../../live';
+import React, { use } from '@use-gpu/live';
 
 import {
   Draw, Pass,
@@ -11,7 +9,23 @@ import {
   CompositeData, LineSegments, ArrowSegments,
   OrbitCamera, OrbitControls,
   LineLayer, ArrowLayer,
-} from '../../../components';
+} from '@use-gpu/workbench';
+
+// Line data fields
+
+const dataFields = [
+  // Accessor syntax
+  ['array<vec3<f32>>', (o: any) => o.path],
+  // Shorthand => o.color
+  ['vec4<f32>', 'color'],
+  ['f32', 'width'],
+] as DataField[];
+
+const isLoop = (o: any) => o.loop;
+const isStart = (o: any) => o.start;
+const isEnd = (o: any) => o.end;
+
+// Generate some random lines and arrows
 
 const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
 
@@ -23,25 +37,27 @@ const circleY = (a: number, r: number) => Math.sin(a * Math.PI * 2) * r;
 const N = 32;
 
 let lineData = seq(9).map((i) => ({
+  // path: [[x, y, z], ...]
   path: (
-    (i < 5) ? seq(10).map(j => [i / 5 - 1, j / 11 - 1, 0, 1]) :
-    seq(N).map(j => [.25 + (i%2)*.5 + circleX(j/N, .15), (i - 5) / 5 - 1 + circleY(j/N, .15), 0, 1])
+    (i < 5) ? seq(10).map(j => [i / 5 - 1, j / 11 - 1, 0]) :
+    seq(N).map(j => [.25 + (i%2)*.5 + circleX(j/N, .15), (i - 5) / 5 - 1 + circleY(j/N, .15), 0])
   ),
+  // color: [r, g, b, a]
   color: randomColor(),
   width: Math.random() * 30 + 5,
   loop: i >= 5,
 }));
 
 let zigzagData = [{
-  path: seq(24).map(i => [i / 14 - 1 - .2, -.1, ((i % 2) - .5) * .1, 1]),
+  path: seq(24).map(i => [i / 14 - 1 - .2, -.1, ((i % 2) - .5) * .1]),
   color: randomColor(),
   width: 10,
 }];
 
 let arrowData = seq(9).map((i) => ({
   path: (
-    (i < 5) ? seq(10).map(j => [i / 5 - 1, j / 11, 0, 1]) :
-    seq(N).map(j => [.25 + (i%2)*.5 + circleX(j/N, .15), (i - 5) / 5 + circleY(j/N, .15), 0, 1])
+    (i < 5) ? seq(10).map(j => [i / 5 - 1, j / 11, 0]) :
+    seq(N).map(j => [.25 + (i%2)*.5 + circleX(j/N, .15), (i - 5) / 5 + circleY(j/N, .15), 0])
   ),
   color: randomColor(),
   width: Math.random() * (i >= 5 ? 3 : 30) + 5,
@@ -49,16 +65,6 @@ let arrowData = seq(9).map((i) => ({
   start: !(i % 2),
   end: !(i % 3) || i === 7,
 }))
-
-const isLoop = (o: any) => o.loop;
-const isStart = (o: any) => o.start;
-const isEnd = (o: any) => o.end;
-
-const dataFields = [
-  ['array<vec4<f32>>', (o: any) => o.path],
-  ['vec4<f32>', 'color'],
-  ['f32', 'width'],
-] as DataField[];
 
 export const GeometryLinesPage: LC = () => {
 
@@ -70,7 +76,7 @@ export const GeometryLinesPage: LC = () => {
           data={lineData}
           loop={isLoop}
           on={<LineSegments />}
-          render={([positions, colors, widths, segments]: StorageSource[]) =>
+          render={(positions, colors, widths, segments) =>
             <LineLayer
               positions={positions}
               colors={colors}
@@ -84,8 +90,8 @@ export const GeometryLinesPage: LC = () => {
         <CompositeData
           fields={dataFields}
           data={zigzagData}
-          on={use(LineSegments)}
-          render={([positions, colors, widths, segments]: StorageSource[]) =>
+          on={<LineSegments />}
+          render={(positions, colors, widths, segments) =>
             <LineLayer
               positions={positions}
               colors={colors}
@@ -104,7 +110,7 @@ export const GeometryLinesPage: LC = () => {
           start={isStart}
           end={isEnd}
           on={<ArrowSegments />}
-          render={([positions, colors, widths, segments, anchors, trims]: StorageSource[]) =>
+          render={(positions, colors, widths, segments, anchors, trims) =>
             <ArrowLayer
               positions={positions}
               colors={colors}

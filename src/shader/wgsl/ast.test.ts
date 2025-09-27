@@ -1,7 +1,8 @@
-//import { GLSLModules } from '../../glsl';
+import { WGSLModules } from './wgsl.test.data';
 import { parseShader } from './shader';
-import { makeASTParser /*, rewriteUsingAST, resolveShakeOps, compressAST, decompressAST*/ } from './ast';
+import { makeASTParser, rewriteUsingAST, compressAST, decompressAST } from './ast';
 import { formatAST, hasErrorNode } from '../util/tree';
+import { resolveShakeOps } from '../util/shake';
 import { addASTSerializer } from '../test/snapshot';
 
 addASTSerializer(expect);
@@ -27,7 +28,7 @@ describe('ast', () => {
 
     import 'test';
 
-    @optional @external fn getInt() -> i32 {}
+    @optional @link fn getInt() -> i32 {}
 
     @export fn main() {}
     `;
@@ -69,7 +70,7 @@ describe('ast', () => {
 
   it('gets test function declaration', () => {
     const code = `
-      @stage(fragment) fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {
+      @fragment fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {
         return foo(in1, in2);
       }
     `;
@@ -133,7 +134,7 @@ describe('ast', () => {
         vec2<i32>(1, 1),
       );
 
-      @optional @external fn getInt() -> i32 {}
+      @optional @link fn getInt() -> i32 {}
 
       @export fn main() {}
     `;
@@ -150,9 +151,9 @@ describe('ast', () => {
       @exported var x: f32;
       var y: f32;
 
-      @optional @external fn getFloat1() -> f32 {}
+      @optional @link fn getFloat1() -> f32 {}
 
-      @optional @external fn getFloat2() -> f32 { return x + y; }
+      @optional @link fn getFloat2() -> f32 { return x + y; }
 
       @export fn main() {
         var z: f32 = getFloat1() + getFloat2();
@@ -166,9 +167,21 @@ describe('ast', () => {
     expect(table).toMatchSnapshot();
   });
 
-  /*
+  it('gets inferred type from function declaration', () => {
+    const code = `
+      @infer type T;
+      @link fn main() -> @infer(T) T {}
+    `;
+
+    const tree = parseShader(code);
+    const {getDeclarations} = makeGuardedParser(code, tree);
+
+    const declarations = getDeclarations();
+    expect(declarations).toMatchSnapshot();
+  });
+
   it('gets quad vertex imports', () => {
-    const code = GLSLModules['instance/vertex/quad'];
+    const code = WGSLModules['instance/vertex/quad'];
 
     const tree = parseShader(code);
     const {getImports} = makeGuardedParser(code, tree);
@@ -176,19 +189,9 @@ describe('ast', () => {
     const imports = getImports();
     expect(imports).toMatchSnapshot();
   });
-  
-  it('gets quad vertex functions', () => {
-    const code = GLSLModules['instance/vertex/quad'];
-
-    const tree = parseShader(code);
-    const {getFunctions} = makeGuardedParser(code, tree);
-
-    const functions = getFunctions();
-    expect(functions).toMatchSnapshot();
-  });
 
   it('gets quad vertex declarations', () => {
-    const code = GLSLModules['instance/vertex/quad'];
+    const code = WGSLModules['instance/vertex/quad'];
 
     const tree = parseShader(code);
     const {getDeclarations} = makeGuardedParser(code, tree);
@@ -198,7 +201,7 @@ describe('ast', () => {
   });
 
   it('gets solid fragment declarations', () => {
-    const code = GLSLModules['instance/fragment/solid'];
+    const code = WGSLModules['instance/fragment/solid'];
 
     const tree = parseShader(code);
     const {getDeclarations} = makeGuardedParser(code, tree);
@@ -208,7 +211,7 @@ describe('ast', () => {
   });
 
   it('gets use view declarations', () => {
-    const code = GLSLModules['use/view'];
+    const code = WGSLModules['@use-gpu/wgsl/use/view'];
 
     const tree = parseShader(code);
     const {getDeclarations} = makeGuardedParser(code, tree);
@@ -218,7 +221,7 @@ describe('ast', () => {
   });
 
   it('gets quad vertex symbol table', () => {
-    const code = GLSLModules['instance/vertex/quad'];
+    const code = WGSLModules['instance/vertex/quad'];
 
     const tree = parseShader(code);
     const {getSymbolTable} = makeGuardedParser(code, tree);
@@ -228,7 +231,7 @@ describe('ast', () => {
   });
 
   it('gets geometry quad symbol table', () => {
-    const code = GLSLModules['geometry/quad'];
+    const code = WGSLModules['@use-gpu/wgsl/geometry/quad'];
 
     const tree = parseShader(code);
     const {getSymbolTable} = makeGuardedParser(code, tree);
@@ -238,7 +241,7 @@ describe('ast', () => {
   });
 
   it('gets use view symbol table', () => {
-    const code = GLSLModules['use/view'];
+    const code = WGSLModules['@use-gpu/wgsl/use/view'];
 
     const tree = parseShader(code);
     const {getSymbolTable} = makeGuardedParser(code, tree);
@@ -248,7 +251,7 @@ describe('ast', () => {
   });
 
   it('gets use types symbol table', () => {
-    const code = GLSLModules['use/types'];
+    const code = WGSLModules['@use-gpu/wgsl/use/types'];
 
     const tree = parseShader(code);
     const {getSymbolTable} = makeGuardedParser(code, tree);
@@ -256,13 +259,15 @@ describe('ast', () => {
     const symbolTable = getSymbolTable();
     expect(symbolTable).toMatchSnapshot();
   });
-
+  
   it('rewrites code using the AST', () => {
     const code = `
-    float getValue(int index);
-    void main() {
-      float x = 3.0;
-      float y = getValue(2);
+    fn getValue(index: i32) -> f32;
+    fn main() -> vec3<f32> {
+      let x = 3.0;
+      let y = getValue(2);
+      let v: vec3<f32> = vec3<f32>(x, y, 0.0);
+      return v.xyz;
     }
     `;
 
@@ -277,12 +282,12 @@ describe('ast', () => {
 
   it('rewrites code using the compressed AST', () => {
     const code = `
-    float getValue(int index);
-    void main() {
-      float x = 3.0;
-      float y = getValue(2);
-      vec3 v;
-      v.xyz;
+    fn getValue(index: i32) -> f32;
+    fn main() -> vec3<f32> {
+      let x = 3.0;
+      let y = getValue(2);
+      let v: vec3<f32> = vec3<f32>(x, y, 0.0);
+      return v.xyz;
     }
     `;
 
@@ -291,7 +296,7 @@ describe('ast', () => {
     rename.set('main', 'entryPoint');
     rename.set('getValue', '_zz_getValue');
     
-    const compressed = compressAST(tree);
+    const compressed = compressAST(code, tree);
     const decompressed = decompressAST(compressed);
     expect(compressed).toMatchSnapshot();
     expect(decompressed).toMatchSnapshot();
@@ -303,30 +308,33 @@ describe('ast', () => {
 
   it('rewrites a lot of code using the compressed AST', () => {
     const code = `
-#pragma import {SolidVertex} from 'use/types'
+use 'use/types'::{SolidVertex};
 
-SolidVertex getVertex(int, int);
+@infer type T;
 
-#ifdef IS_PICKING
-layout(location = 0) out flat uint fragIndex;
-#else
-layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec2 fragUV;
-#endif
+@link fn getVertex(a: i32, b: i32) -> @infer(T) T {};
 
-void main() {
-  int vertexIndex = gl_VertexIndex;
-  int instanceIndex = gl_InstanceIndex;
+struct VertexOutput {
+  @builtin position: vec4<f32>,
+  @location(0) fragColor: vec4<f32>,
+  @location(1) fragUV: vec2<f32>,
+  @location(2) @interpolate(flat) fragIndex: u32,
+};
+
+@vertex
+fn main(
+  @builtin(vertex_index) vertexIndex: i32,
+  @builtin(instance_index) instanceIndex: i32,
+) -> VertexOutput {
 
   SolidVertex v = getVertex(vertexIndex, instanceIndex);
 
-  gl_Position = v.position;
-#ifdef IS_PICKING
-  fragIndex = uint(instanceIndex);
-#else
-  fragColor = v.color;
-  fragUV = v.uv;
-#endif
+  return VertexOutput(
+    v.position,
+    v.color,
+    v.uv,
+    u32(instanceIndex),
+  );
 }
     `;
 
@@ -335,7 +343,7 @@ void main() {
     rename.set('main', 'entryPoint');
     rename.set('getVertex', '_zz_getVertex');
     
-    const compressed = compressAST(tree);
+    const compressed = compressAST(code, tree);
     const decompressed = decompressAST(compressed);
     expect(compressed).toMatchSnapshot();
     expect(decompressed).toMatchSnapshot();
@@ -343,55 +351,55 @@ void main() {
     const output1 = rewriteUsingAST(code, tree, rename);
     const output2 = rewriteUsingAST(code, decompressed, rename);
     expect(output2).toEqual(output1);
+    expect(output1).toMatchSnapshot();
   });
 
   it('recompresses AST', () => {
     const code = `
-#pragma import {SolidVertex} from 'use/types'
+use 'use/types'::{SolidVertex};
 
-SolidVertex getVertex(int, int);
+fn getVertex(a: i32, b: i32) -> SolidVertex {};
 
-#ifdef IS_PICKING
-layout(location = 0) out flat uint fragIndex;
-#else
-layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec2 fragUV;
-#endif
+struct VertexOutput {
+  @builtin position: vec4<f32>,
+  @location(0) fragColor: vec4<f32>,
+  @location(1) fragUV: vec2<f32>,
+  @location(2) @interpolate(flat) fragIndex: u32,
+};
 
-void main() {
-  int vertexIndex = gl_VertexIndex;
-  int instanceIndex = gl_InstanceIndex;
+@vertex
+fn main(
+  @builtin(vertex_index) vertexIndex: i32,
+  @builtin(instance_index) instanceIndex: i32,
+) -> VertexOutput {
 
   SolidVertex v = getVertex(vertexIndex, instanceIndex);
 
-  gl_Position = v.position;
-#ifdef IS_PICKING
-  fragIndex = uint(instanceIndex);
-#else
-  fragColor = v.color;
-  fragUV = v.uv;
-#endif
+  return VertexOutput(
+    v.position,
+    v.color,
+    v.uv,
+    u32(instanceIndex),
+  );
 }
     `;
 
     const tree = parseShader(code);
-    const compressed = compressAST(tree);
+    const compressed = compressAST(code, tree);
     const decompressed = decompressAST(compressed);
-    const recompressed = compressAST(decompressed);
+    const recompressed = compressAST(code, decompressed);
     expect(compressed).toEqual(recompressed);
   });
-
+  
   it('shakes simple program', () => {
     const code = `
-const float x = 1.0;
+let x: f32 = 1.0;
 
-#pragma export
-float getA() {
+@export fn getA() -> f32 {
   return x;
 }
 
-#pragma export
-float getB() {
+@export fn getB() -> f32 {
   return x;
 }
     `;
@@ -409,7 +417,7 @@ float getB() {
   });
   
   it('shakes use/view AST', () => {
-    const code = GLSLModules['use/view'];
+    const code = WGSLModules['@use-gpu/wgsl/use/view'];
 
     const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
@@ -424,7 +432,7 @@ float getB() {
   });
 
   it('shakes use/view AST using compressed AST', () => {
-    const code = GLSLModules['use/view'];
+    const code = WGSLModules['@use-gpu/wgsl/use/view'];
 
     const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
@@ -437,7 +445,7 @@ float getB() {
     const ops = resolveShakeOps(table, keep);
     
     const tree1 = tree;
-    const tree2 = decompressAST(compressAST(tree1));
+    const tree2 = decompressAST(compressAST(code, tree1));
 
     const code1 = rewriteUsingAST(code, tree1, new Map(), ops);
     const code2 = rewriteUsingAST(code, tree2, new Map(), ops);
@@ -446,7 +454,7 @@ float getB() {
   });
 
   it('gets shake information for instance/vertex/quad AST', () => {
-    const code = GLSLModules['instance/vertex/quad'];
+    const code = WGSLModules['instance/vertex/quad'];
 
     const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
@@ -455,7 +463,7 @@ float getB() {
   });
 
   it('gets shake information for geometry/quad AST', () => {
-    const code = GLSLModules['geometry/quad'];
+    const code = WGSLModules['@use-gpu/wgsl/geometry/quad'];
 
     const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
@@ -464,13 +472,13 @@ float getB() {
   });
 
   it('gets shake information for use/types AST', () => {
-    const code = GLSLModules['use/types'];
+    const code = WGSLModules['@use-gpu/wgsl/use/types'];
 
     const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();
     expect(table).toMatchSnapshot();
     
   });
-  */
+
 });
 

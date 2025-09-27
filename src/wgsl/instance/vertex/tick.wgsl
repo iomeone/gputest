@@ -1,31 +1,51 @@
-use '../../../wgsl/use/view'::{ worldToClip, getWorldScale };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
 
-@external fn transformPosition(p: vec4<f32>) -> vec4<f32>;
+@link fn transformPosition(p: vec4<f32>) -> vec4<f32>;
 
-@external fn getPosition(i: u32) -> vec4<f32>;
-@external fn getOffset(i: u32) -> vec4<f32>;
-@external fn getDepth(i: u32) -> f32;
-@external fn getSize(i: u32) -> f32;
+@link fn getPosition(i: u32) -> vec4<f32>;
+@link fn getOffset(i: u32) -> vec4<f32>;
+@link fn getDepth(i: u32) -> f32;
+@link fn getSize(i: u32) -> f32;
+
+@optional @link fn getTangent(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); };
+@optional @link fn getBase(i: u32) -> f32 { return 2.0; }
 
 let EPSILON: f32 = 0.001;
 
 @export fn getTickPosition(index: u32) -> vec4<f32> {
-  let offset = getOffset(index);
-  let depth = getDepth(index);
-  let size = getSize(index);
-
   let n = u32(LINE_DETAIL + 1);
   let v = f32(index % n) / f32(LINE_DETAIL) - 0.5;
 
-  let anchor = getPosition(index / n);
-  
+  let instanceIndex = index / n;
+
+  let anchor = getPosition(instanceIndex);
+  let offset = getOffset(instanceIndex);
+  let depth = getDepth(instanceIndex);
+  let size = getSize(instanceIndex);
+  let tangent = getTangent(instanceIndex);
+  let base = getBase(instanceIndex);
+
   let center = transformPosition(anchor);
-  let adj = transformPosition(anchor + offset * EPSILON);
-
-  let tangent = normalize(adj.xyz - center.xyz);
-  
   let c = worldToClip(center);
-  let s = getWorldScale(c.w, depth);
+  let s = getWorldScale(c.w, depth) * getViewScale();
 
-  return center + vec4<f32>(tangent * size * v * s, 0.0);
+  if (length(tangent) > 0.0) {
+    let adj = transformPosition(anchor + tangent * EPSILON);
+    let diff = (adj.xyz - center.xyz) / EPSILON;
+
+    let l = length(diff) * 0.999;
+    let limit = s * size;
+    let trunc = limit / l;
+
+    let modulus = u32(round(pow(base, ceil(log(trunc)/log(base)))));
+    if ((modulus > 1u) && ((instanceIndex % modulus) != 0u)) {
+      var NaN: f32 = bitcast<f32>(0xffffffffu);
+      return vec4<f32>(NaN, NaN, NaN, NaN);
+    }
+  }
+
+  let adj = transformPosition(anchor + offset * EPSILON);
+  let normal = normalize(adj.xyz - center.xyz);
+  
+  return center + vec4<f32>(normal * size * v * s, 0.0);
 }

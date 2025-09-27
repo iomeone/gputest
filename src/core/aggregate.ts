@@ -1,7 +1,8 @@
-import { AggregateBuffer, UniformType } from './types';
+import type { AggregateBuffer, UniformType } from './types';
 
 import { makeStorageBuffer, uploadBuffer } from './buffer';
 import {
+  alignSizeTo,
   makeDataArray,
   copyNumberArrayRange,
   copyNumberArrayRepeatedRange,
@@ -9,15 +10,15 @@ import {
   generateChunkSegments,
 } from './data';
 
-export const makeAggregateBuffer = (device: GPUDevice, format: UniformType, length: number) => {
+export const makeAggregateBuffer = (device: GPUDevice, format: UniformType, length: number): AggregateBuffer => {
   const {array, dims} = makeDataArray(format, length);
-  if (dims === 3) throw new Error("Dims must be 1, 2, or 4");
 
   const buffer = makeStorageBuffer(device, array.byteLength);
   const source = {
     buffer,
     format,
     length,
+    size: [length],
     version: 0,
   };
 
@@ -59,7 +60,7 @@ export const updateAggregateSegments = (
 ) => {
   const {buffer, array, source, dims} = segments;
 
-  generateChunkSegments(array, chunks, loops);
+  generateChunkSegments(array, null, chunks, loops);
   uploadBuffer(device, buffer, array.buffer);
   source.length = count;
 

@@ -1,4 +1,4 @@
-import { LiveFiber } from './types';
+import type { LiveFiber } from './types';
 import { makeFiberQueue } from './queue';
 import { compareFibers } from './util';
 

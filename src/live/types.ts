@@ -1,17 +1,44 @@
 // Live function
 export type ArrowFunction = (...args: any[]) => any;
-export type LiveFunction<F extends Function> = F;
+export type LiveFunction<F extends Function = ArrowFunction> = F;
 
 // Component with single props object
-export type LiveComponent<P> = (props: P) => LiveElement<any>;
-export type Component<P> = LiveComponent<P>;
+export type RawLiveComponent<P> = (props: P) => LiveElement<any>;
 
-// React types interop
-export type PropsWithChildren<P> = P & { children?: LiveElement<any> };
-export type LC<P = object> = LiveComponent<PropsWithChildren<P>>;
+// React/JSX types interop
+export type PropsWithChildren<P> = P & { children?: string | LiveNode<any> };
+export type LiveComponent<P = object> = (props: PropsWithChildren<P>) => any;
+export type Component<P = object> = LiveComponent<P>;
+export type LC<P = object> = LiveComponent<P>;
+export type RefObject<T> = { current: T | null };
+export interface MutableRefObject<T> { current: T; };
+
+export type ReactElementInterop = {
+  type: any,
+  props: any,
+  key: any,
+};
+
+export type LivePure<F extends Function = ArrowFunction> = undefined | null | DeferredCall<F> | LivePure<any>[];
+export type LiveElement<F extends Function = ArrowFunction> = undefined | null | DeferredCall<F> | LiveElement<any>[] | ReactElementInterop;
+export type LiveNode<F extends Function = ArrowFunction> = LiveElement<F> | string | ArrowFunction | Array<LiveNode<any>>;
 
 // Mounting key
 export type Key = string | number;
+
+// Deferred function calls
+export type FunctionCall<F extends Function = ArrowFunction> = {
+  f: LiveFunction<F>,
+  args?: any[],
+  arg?: any
+};
+
+export type DeferredCall<F extends Function = ArrowFunction> = FunctionCall<F> & {
+  key?: Key,
+  by?: number,
+};
+
+export type DeferredCallInterop<F extends Function = ArrowFunction> = DeferredCall<F> | ReactElementInterop;
 
 // State hook callbacks
 export type Initial<T> = (() => T) | T;
@@ -33,21 +60,22 @@ export enum Hook {
   CALLBACK = 3,
   RESOURCE = 4,
   CONTEXT = 5,
-  CONSUMER = 6,
+  CAPTURE = 6,
   VERSION = 7,
 };
 
 // Deferred actions
 export type Task = () => void;
-export type Action<F extends Function> = {
-  fiber: LiveFiber<F>,
+export type Action = {
+  fiber: LiveFiber<any>,
   task: Task,
 };
-export type Dispatcher = (as: Action<any>[]) => void;
+export type Dispatcher = (as: Action[]) => void;
 
 // Render callbacks
 export type OnFiber<T = any> = (fiber: LiveFiber<any>) => T;
 export type FiberSetter<T> = (fiber: LiveFiber<any>, t: T) => void;
+export type FiberGather<T> = (fiber: LiveFiber<any>, self?: boolean) => T;
 export type RenderCallbacks = {
   dispatch: OnFiber<void>,
   onRender: (fiber: LiveFiber<any>, allowSlice?: boolean) => boolean,
@@ -56,7 +84,9 @@ export type RenderCallbacks = {
 };
 
 // User=defined context
-export type LiveContext<T> = { initialValue?: T, displayName?: string };
+export type LiveContext<T> = { initialValue?: T, displayName?: string, context?: true, capture?: false };
+export type LiveCapture<T> = { displayName?: string, capture?: true, context?: false };
+export type LiveMap<T> = Map<LiveFiber<any>, T>;
 
 // Fiber data structure
 export type LiveFiber<F extends Function> = FunctionCall<F> & {
@@ -91,7 +121,7 @@ export type LiveFiber<F extends Function> = FunctionCall<F> & {
   context: FiberContext,
 
   // Yeeting state
-  yeeted: FiberYeet<any> | null,
+  yeeted: FiberYeet<any, any> | null,
 
   // Count number of runs for inspector
   runs: number,
@@ -107,32 +137,19 @@ export type FiberContext = {
   roots: ContextRoots,
 };
 
-export type ContextValues = Map<LiveContext<any>, any>;
-export type ContextRoots = Map<LiveContext<any>, LiveFiber<any>>;
+export type ContextValues = Map<LiveContext<any> | LiveCapture<any>, any>;
+export type ContextRoots = Map<LiveContext<any> | LiveCapture<any>, LiveFiber<any>>;
 
 // Fiber yeet state
-export type FiberYeet<T> = {
+export type FiberYeet<A, B> = {
   id: number,
-  emit: FiberSetter<any>,
-  value?: T,
-  reduced?: T,
-  parent?: FiberYeet<T>,
+  emit: FiberSetter<A>,
+  gather: FiberGather<B>,
   root: LiveFiber<any>,
+  value?: A,
+  reduced?: B,
+  parent?: FiberYeet<A, B>,
 };
-
-// Deferred function calls
-export type FunctionCall<F extends Function = ArrowFunction> = {
-  f: LiveFunction<F>,
-  args?: any[],
-  arg?: any
-};
-
-export type DeferredCall<F extends Function = ArrowFunction> = FunctionCall<F> & {
-  key?: Key,
-  by?: number,
-};
-
-export type LiveElement<F = any> = null | DeferredCall<any> | LiveElement<any>[];
 
 // Priority queue
 export type FiberQueue = {
@@ -174,4 +191,5 @@ export type HostInterface = {
 
   __stats: {mounts: number, unmounts: number, updates: number, dispatch: number},
   __ping: (fiber: LiveFiber<any>, active?: boolean) => void,
+  __highlight: (id: number | null, active?: boolean) => void,
 };

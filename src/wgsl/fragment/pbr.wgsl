@@ -49,7 +49,7 @@ fn smithGGXCorrelated(dotNL: f32, dotNV: f32, alpha: f32) -> f32 {
   var a2 = alpha * alpha;
   var GGXL = dotNV * sqrt((dotNL - a2 * dotNL) * dotNL + a2);
   var GGXV = dotNL * sqrt((dotNV - a2 * dotNV) * dotNV + a2);
-  return 0.5 / (GGXL + GGXV);
+  return 0.5 / (GGXL + GGXV + 0.00001);
 }
 
 fn G1X(dotNX: f32, k: f32) -> f32 {
@@ -61,11 +61,18 @@ fn geometricGGX(dotNL: f32, dotNV: f32, alpha: f32) -> f32 {
   return G1X(dotNL, k) * G1X(dotNV, k);
 }
 
+@export struct PBRParams {
+  albedo: vec3<f32>,
+  metalness: f32,
+  roughness: f32,
+};
+
 // N, L, V must be normalized
 @export fn PBR(
   N: vec3<f32>,
   L: vec3<f32>,
   V: vec3<f32>,
+  radiance: vec3<f32>,
   albedo: vec3<f32>,
   metalness: f32,
   roughness: f32,
@@ -77,8 +84,6 @@ fn geometricGGX(dotNL: f32, dotNV: f32, alpha: f32) -> f32 {
   var alpha = roughness * roughness;
   var dotNV = saturate(dot(N, V));
 
-  var radiance = 3.1415;
-
   var H = normalize(V + L);
   var dotNL = saturate(dot(N, L));
   var dotNH = saturate(dot(N, H));
@@ -89,9 +94,9 @@ fn geometricGGX(dotNL: f32, dotNV: f32, alpha: f32) -> f32 {
   var G = smithGGXCorrelated(dotNL, dotNV, alpha);
   //float G2 = geometricGGX(dotNL, dotNV, alpha);
   
-  var Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);
+  var Fd = diffuseColor * fdBurley(dotNL, dotNV, dotLH, alpha);
   var Fs = F * D * G;
 
-  var direct = (Fd + Fs) * radiance * dotNL;
+  var direct = max(vec3<f32>(0.0), Fd + Fs) * radiance * dotNL;
   return direct;
 }

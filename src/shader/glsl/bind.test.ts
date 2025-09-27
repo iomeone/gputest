@@ -49,13 +49,13 @@ describe("bind", () => {
     }
     
     {
-      const bound = bindBundle(sub, links, defines, 'key');
+      const bound = bindBundle(sub, links, defines);
       const linked = linkBundle(bound);
       expect(linked).toMatchSnapshot();
     }
 
     {
-      const bound = bindBundle(sub, links, defines, 'key');
+      const bound = bindBundle(sub, links, defines);
       const linked = linkBundle(module, {getColor: bound});
       expect(linked).toMatchSnapshot();
     }
@@ -74,6 +74,7 @@ describe("bind", () => {
           buffer: {} as any,
           format: 'vec2',
           length: 10,
+          size: [10],
           version: 1,
         },
       },
@@ -103,6 +104,7 @@ describe("bind", () => {
           buffer: {} as any,
           format: 'vec2',
           length: 10,
+          size: [10],
           version: 1,
         },
       },

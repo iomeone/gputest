@@ -1,5 +1,1047 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ast gets geometry quad symbol table 1`] = `
+Object {
+  "declarations": Array [
+    Object {
+      "at": 0,
+      "constant": Object {
+        "attributes": undefined,
+        "identifiers": Array [],
+        "name": "QUAD",
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "i32",
+                },
+              ],
+              "name": "vec2",
+            },
+            Object {
+              "name": "4",
+            },
+          ],
+          "name": "array",
+        },
+        "value": "array<vec2<i32>, 4>(
+  vec2<i32>(0, 0),
+  vec2<i32>(1, 0),
+  vec2<i32>(0, 1),
+  vec2<i32>(1, 1),
+)",
+      },
+      "flags": 0,
+      "symbol": "QUAD",
+    },
+    Object {
+      "at": 135,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "QUAD",
+        ],
+        "inferred": undefined,
+        "name": "getQuadIndex",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "vertex",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec2",
+        },
+      },
+      "symbol": "getQuadIndex",
+    },
+    Object {
+      "at": 213,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "getQuadIndex",
+        ],
+        "inferred": undefined,
+        "name": "getQuadUV",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "vertex",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec2",
+        },
+      },
+      "symbol": "getQuadUV",
+    },
+  ],
+  "exports": Array [
+    Object {
+      "at": 135,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "QUAD",
+        ],
+        "inferred": undefined,
+        "name": "getQuadIndex",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "vertex",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec2",
+        },
+      },
+      "symbol": "getQuadIndex",
+    },
+    Object {
+      "at": 213,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "getQuadIndex",
+        ],
+        "inferred": undefined,
+        "name": "getQuadUV",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "vertex",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec2",
+        },
+      },
+      "symbol": "getQuadUV",
+    },
+  ],
+  "externals": undefined,
+  "globals": undefined,
+  "modules": undefined,
+  "symbols": Array [
+    "QUAD",
+    "getQuadIndex",
+    "getQuadUV",
+  ],
+  "visibles": Array [
+    "getQuadIndex",
+    "getQuadUV",
+  ],
+}
+`;
+
+exports[`ast gets inferred type from function declaration 1`] = `
+Array [
+  Object {
+    "alias": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "infer",
+        },
+      ],
+      "name": "T",
+      "type": Object {
+        "name": "T",
+      },
+    },
+    "at": 7,
+    "flags": 16,
+    "symbol": "T",
+  },
+  Object {
+    "at": 28,
+    "flags": 3,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "link",
+        },
+      ],
+      "identifiers": Array [],
+      "inferred": Array [
+        Object {
+          "at": -1,
+          "name": "T",
+        },
+      ],
+      "name": "main",
+      "parameters": undefined,
+      "type": Object {
+        "args": undefined,
+        "attributes": Array [
+          Object {
+            "args": Array [
+              "T",
+            ],
+            "name": "infer",
+          },
+        ],
+        "name": "T",
+      },
+    },
+    "symbol": "main",
+  },
+]
+`;
+
+exports[`ast gets quad vertex declarations 1`] = `
+Array [
+  Object {
+    "at": 183,
+    "flags": 2,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "link",
+        },
+      ],
+      "identifiers": Array [],
+      "inferred": undefined,
+      "name": "getPosition",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "i",
+          "type": Object {
+            "args": undefined,
+            "name": "i32",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec4",
+      },
+    },
+    "symbol": "getPosition",
+  },
+  Object {
+    "at": 229,
+    "flags": 2,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "link",
+        },
+      ],
+      "identifiers": Array [],
+      "inferred": undefined,
+      "name": "getColor",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "i",
+          "type": Object {
+            "args": undefined,
+            "name": "i32",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec4",
+      },
+    },
+    "symbol": "getColor",
+  },
+  Object {
+    "at": 272,
+    "flags": 2,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "link",
+        },
+      ],
+      "identifiers": Array [],
+      "inferred": undefined,
+      "name": "getSize",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "i",
+          "type": Object {
+            "args": undefined,
+            "name": "i32",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec2",
+      },
+    },
+    "symbol": "getSize",
+  },
+  Object {
+    "at": 314,
+    "flags": 2,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "link",
+        },
+      ],
+      "identifiers": Array [],
+      "inferred": undefined,
+      "name": "getDepth",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "i",
+          "type": Object {
+            "args": undefined,
+            "name": "i32",
+          },
+        },
+      ],
+      "type": Object {
+        "args": undefined,
+        "attributes": undefined,
+        "name": "f32",
+      },
+    },
+    "symbol": "getDepth",
+  },
+  Object {
+    "at": 352,
+    "flags": 1,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "export",
+        },
+      ],
+      "identifiers": Array [
+        "position",
+        "getPosition",
+        "color",
+        "getColor",
+        "size",
+        "getSize",
+        "depth",
+        "getDepth",
+        "center",
+        "worldToClip",
+        "uv",
+        "getQuadUV",
+        "xy",
+        "pixelScale",
+        "getPerspectiveScale",
+        "w",
+        "HAS_EDGE_BLEED",
+        "viewUniforms",
+        "viewResolution",
+        "zw",
+        "SolidVertex",
+      ],
+      "inferred": undefined,
+      "name": "getQuadVertex",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "vertexIndex",
+          "type": Object {
+            "args": undefined,
+            "name": "i32",
+          },
+        },
+        Object {
+          "attributes": undefined,
+          "name": "instanceIndex",
+          "type": Object {
+            "args": undefined,
+            "name": "i32",
+          },
+        },
+      ],
+      "type": Object {
+        "args": undefined,
+        "attributes": undefined,
+        "name": "SolidVertex",
+      },
+    },
+    "symbol": "getQuadVertex",
+  },
+]
+`;
+
+exports[`ast gets quad vertex imports 1`] = `
+Array [
+  Object {
+    "at": 0,
+    "imports": Array [
+      Object {
+        "imported": "SolidVertex",
+        "name": "SolidVertex",
+      },
+    ],
+    "name": "@use-gpu/wgsl/use/types",
+    "symbols": Array [
+      "SolidVertex",
+    ],
+  },
+  Object {
+    "at": 0,
+    "imports": Array [
+      Object {
+        "imported": "viewUniforms",
+        "name": "viewUniforms",
+      },
+      Object {
+        "imported": "worldToClip",
+        "name": "worldToClip",
+      },
+      Object {
+        "imported": "getPerspectiveScale",
+        "name": "getPerspectiveScale",
+      },
+    ],
+    "name": "@use-gpu/wgsl/use/view",
+    "symbols": Array [
+      "viewUniforms",
+      "worldToClip",
+      "getPerspectiveScale",
+    ],
+  },
+  Object {
+    "at": 0,
+    "imports": Array [
+      Object {
+        "imported": "getQuadUV",
+        "name": "getQuadUV",
+      },
+    ],
+    "name": "@use-gpu/wgsl/geometry/quad",
+    "symbols": Array [
+      "getQuadUV",
+    ],
+  },
+]
+`;
+
+exports[`ast gets quad vertex symbol table 1`] = `
+Object {
+  "declarations": Array [
+    Object {
+      "at": 183,
+      "flags": 2,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "link",
+          },
+        ],
+        "identifiers": Array [],
+        "inferred": undefined,
+        "name": "getPosition",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "i",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "getPosition",
+    },
+    Object {
+      "at": 229,
+      "flags": 2,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "link",
+          },
+        ],
+        "identifiers": Array [],
+        "inferred": undefined,
+        "name": "getColor",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "i",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "getColor",
+    },
+    Object {
+      "at": 272,
+      "flags": 2,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "link",
+          },
+        ],
+        "identifiers": Array [],
+        "inferred": undefined,
+        "name": "getSize",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "i",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec2",
+        },
+      },
+      "symbol": "getSize",
+    },
+    Object {
+      "at": 314,
+      "flags": 2,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "link",
+          },
+        ],
+        "identifiers": Array [],
+        "inferred": undefined,
+        "name": "getDepth",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "i",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": undefined,
+          "attributes": undefined,
+          "name": "f32",
+        },
+      },
+      "symbol": "getDepth",
+    },
+    Object {
+      "at": 352,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "getPosition",
+          "getColor",
+          "getSize",
+          "getDepth",
+        ],
+        "inferred": undefined,
+        "name": "getQuadVertex",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "vertexIndex",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "instanceIndex",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": undefined,
+          "attributes": undefined,
+          "name": "SolidVertex",
+        },
+      },
+      "symbol": "getQuadVertex",
+    },
+  ],
+  "exports": Array [
+    Object {
+      "at": 352,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "getPosition",
+          "getColor",
+          "getSize",
+          "getDepth",
+        ],
+        "inferred": undefined,
+        "name": "getQuadVertex",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "vertexIndex",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "instanceIndex",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": undefined,
+          "attributes": undefined,
+          "name": "SolidVertex",
+        },
+      },
+      "symbol": "getQuadVertex",
+    },
+  ],
+  "externals": Array [
+    Object {
+      "at": 183,
+      "flags": 2,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "link",
+          },
+        ],
+        "identifiers": Array [],
+        "inferred": undefined,
+        "name": "getPosition",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "i",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "getPosition",
+    },
+    Object {
+      "at": 229,
+      "flags": 2,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "link",
+          },
+        ],
+        "identifiers": Array [],
+        "inferred": undefined,
+        "name": "getColor",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "i",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "getColor",
+    },
+    Object {
+      "at": 272,
+      "flags": 2,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "link",
+          },
+        ],
+        "identifiers": Array [],
+        "inferred": undefined,
+        "name": "getSize",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "i",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec2",
+        },
+      },
+      "symbol": "getSize",
+    },
+    Object {
+      "at": 314,
+      "flags": 2,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "link",
+          },
+        ],
+        "identifiers": Array [],
+        "inferred": undefined,
+        "name": "getDepth",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "i",
+            "type": Object {
+              "args": undefined,
+              "name": "i32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": undefined,
+          "attributes": undefined,
+          "name": "f32",
+        },
+      },
+      "symbol": "getDepth",
+    },
+  ],
+  "globals": undefined,
+  "modules": Array [
+    Object {
+      "at": 0,
+      "imports": Array [
+        Object {
+          "imported": "SolidVertex",
+          "name": "SolidVertex",
+        },
+      ],
+      "name": "@use-gpu/wgsl/use/types",
+      "symbols": Array [
+        "SolidVertex",
+      ],
+    },
+    Object {
+      "at": 0,
+      "imports": Array [
+        Object {
+          "imported": "viewUniforms",
+          "name": "viewUniforms",
+        },
+        Object {
+          "imported": "worldToClip",
+          "name": "worldToClip",
+        },
+        Object {
+          "imported": "getPerspectiveScale",
+          "name": "getPerspectiveScale",
+        },
+      ],
+      "name": "@use-gpu/wgsl/use/view",
+      "symbols": Array [
+        "viewUniforms",
+        "worldToClip",
+        "getPerspectiveScale",
+      ],
+    },
+    Object {
+      "at": 0,
+      "imports": Array [
+        Object {
+          "imported": "getQuadUV",
+          "name": "getQuadUV",
+        },
+      ],
+      "name": "@use-gpu/wgsl/geometry/quad",
+      "symbols": Array [
+        "getQuadUV",
+      ],
+    },
+  ],
+  "symbols": Array [
+    "getPosition",
+    "getColor",
+    "getSize",
+    "getDepth",
+    "getQuadVertex",
+  ],
+  "visibles": Array [
+    "getQuadVertex",
+  ],
+}
+`;
+
+exports[`ast gets shake information for geometry/quad AST 1`] = `
+Array [
+  Array [
+    0,
+    Array [
+      "QUAD",
+      "getQuadIndex",
+      "getQuadUV",
+    ],
+  ],
+  Array [
+    135,
+    Array [
+      "getQuadIndex",
+      "getQuadUV",
+    ],
+  ],
+  Array [
+    213,
+    Array [
+      "getQuadUV",
+    ],
+  ],
+]
+`;
+
+exports[`ast gets shake information for instance/vertex/quad AST 1`] = `
+Array [
+  Array [
+    183,
+    Array [
+      "getPosition",
+      "getQuadVertex",
+    ],
+  ],
+  Array [
+    229,
+    Array [
+      "getColor",
+      "getQuadVertex",
+    ],
+  ],
+  Array [
+    272,
+    Array [
+      "getSize",
+      "getQuadVertex",
+    ],
+  ],
+  Array [
+    314,
+    Array [
+      "getDepth",
+      "getQuadVertex",
+    ],
+  ],
+  Array [
+    352,
+    Array [
+      "getQuadVertex",
+    ],
+  ],
+]
+`;
+
+exports[`ast gets shake information for use/types AST 1`] = `
+Array [
+  Array [
+    1,
+    Array [
+      "SolidVertex",
+    ],
+  ],
+  Array [
+    94,
+    Array [
+      "MeshVertex",
+    ],
+  ],
+]
+`;
+
 exports[`ast gets shake table 1`] = `
 Array [
   Array [
@@ -26,18 +1068,157 @@ Array [
     ],
   ],
   Array [
-    106,
+    102,
     Array [
       "getFloat2",
       "main",
     ],
   ],
   Array [
-    173,
+    165,
     Array [
       "main",
     ],
   ],
+]
+`;
+
+exports[`ast gets solid fragment declarations 1`] = `
+Array [
+  Object {
+    "at": 1,
+    "flags": 2,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "link",
+        },
+      ],
+      "identifiers": Array [],
+      "inferred": undefined,
+      "name": "getFragment",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "color",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec4",
+          },
+        },
+        Object {
+          "attributes": undefined,
+          "name": "uv",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec2",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec4",
+      },
+    },
+    "symbol": "getFragment",
+  },
+  Object {
+    "at": 73,
+    "flags": 1,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "fragment",
+        },
+      ],
+      "identifiers": Array [
+        "outColor",
+        "xyz",
+        "a",
+        "getFragment",
+      ],
+      "inferred": undefined,
+      "name": "main",
+      "parameters": Array [
+        Object {
+          "attributes": Array [
+            Object {
+              "args": Array [
+                "0",
+              ],
+              "name": "location",
+            },
+          ],
+          "name": "fragColor",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec4",
+          },
+        },
+        Object {
+          "attributes": Array [
+            Object {
+              "args": Array [
+                "1",
+              ],
+              "name": "location",
+            },
+          ],
+          "name": "fragUV",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec2",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": Array [
+          Object {
+            "args": Array [
+              "0",
+            ],
+            "name": "location",
+          },
+        ],
+        "name": "vec4",
+      },
+    },
+    "symbol": "main",
+  },
 ]
 `;
 
@@ -210,10 +1391,11 @@ Object {
           },
           Object {
             "args": undefined,
-            "name": "external",
+            "name": "link",
           },
         ],
         "identifiers": Array [],
+        "inferred": undefined,
         "name": "getInt",
         "parameters": undefined,
         "type": Object {
@@ -225,7 +1407,7 @@ Object {
       "symbol": "getInt",
     },
     Object {
-      "at": 446,
+      "at": 442,
       "flags": 1,
       "func": Object {
         "attributes": Array [
@@ -235,6 +1417,30 @@ Object {
           },
         ],
         "identifiers": Array [],
+        "inferred": undefined,
+        "name": "main",
+        "parameters": undefined,
+        "type": Object {
+          "attributes": undefined,
+          "name": "void",
+        },
+      },
+      "symbol": "main",
+    },
+  ],
+  "exports": Array [
+    Object {
+      "at": 442,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [],
+        "inferred": undefined,
         "name": "main",
         "parameters": undefined,
         "type": Object {
@@ -257,10 +1463,11 @@ Object {
           },
           Object {
             "args": undefined,
-            "name": "external",
+            "name": "link",
           },
         ],
         "identifiers": Array [],
+        "inferred": undefined,
         "name": "getInt",
         "parameters": undefined,
         "type": Object {
@@ -342,6 +1549,7 @@ Array [
         },
       ],
       "identifiers": Array [],
+      "inferred": undefined,
       "name": "main",
       "parameters": undefined,
       "type": Object {
@@ -362,15 +1570,14 @@ Array [
     "func": Object {
       "attributes": Array [
         Object {
-          "args": Array [
-            "fragment",
-          ],
-          "name": "stage",
+          "args": undefined,
+          "name": "fragment",
         },
       ],
       "identifiers": Array [
         "foo",
       ],
+      "inferred": undefined,
       "name": "fragShader",
       "parameters": Array [
         Object {
@@ -594,5 +1801,2096 @@ Array [
     "flags": 0,
     "symbol": "b",
   },
+]
+`;
+
+exports[`ast gets use types symbol table 1`] = `
+Object {
+  "declarations": Array [
+    Object {
+      "at": 1,
+      "flags": 1,
+      "struct": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "members": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "color",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "uv",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec2",
+            },
+          },
+        ],
+        "name": "SolidVertex",
+      },
+      "symbol": "SolidVertex",
+    },
+    Object {
+      "at": 94,
+      "flags": 1,
+      "struct": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "members": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "normal",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec3",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "color",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "uv",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec2",
+            },
+          },
+        ],
+        "name": "MeshVertex",
+      },
+      "symbol": "MeshVertex",
+    },
+  ],
+  "exports": Array [
+    Object {
+      "at": 1,
+      "flags": 1,
+      "struct": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "members": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "color",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "uv",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec2",
+            },
+          },
+        ],
+        "name": "SolidVertex",
+      },
+      "symbol": "SolidVertex",
+    },
+    Object {
+      "at": 94,
+      "flags": 1,
+      "struct": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "members": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "normal",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec3",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "color",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "uv",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec2",
+            },
+          },
+        ],
+        "name": "MeshVertex",
+      },
+      "symbol": "MeshVertex",
+    },
+  ],
+  "externals": undefined,
+  "globals": undefined,
+  "modules": undefined,
+  "symbols": Array [
+    "SolidVertex",
+    "MeshVertex",
+  ],
+  "visibles": Array [
+    "SolidVertex",
+    "MeshVertex",
+  ],
+}
+`;
+
+exports[`ast gets use view declarations 1`] = `
+Array [
+  Object {
+    "at": 0,
+    "flags": 0,
+    "struct": Object {
+      "attributes": undefined,
+      "members": Array [
+        Object {
+          "attributes": undefined,
+          "name": "projectionMatrix",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "mat4x4",
+          },
+        },
+        Object {
+          "attributes": undefined,
+          "name": "viewMatrix",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "mat4x4",
+          },
+        },
+        Object {
+          "attributes": undefined,
+          "name": "viewPosition",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec4",
+          },
+        },
+        Object {
+          "attributes": undefined,
+          "name": "viewResolution",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec2",
+          },
+        },
+        Object {
+          "attributes": undefined,
+          "name": "viewSize",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec2",
+          },
+        },
+        Object {
+          "attributes": undefined,
+          "name": "viewWorldDepth",
+          "type": Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        },
+        Object {
+          "attributes": undefined,
+          "name": "viewPixelRatio",
+          "type": Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        },
+      ],
+      "name": "ViewUniforms",
+    },
+    "symbol": "ViewUniforms",
+  },
+  Object {
+    "at": 212,
+    "flags": 1,
+    "symbol": "viewUniforms",
+    "variable": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "export",
+        },
+        Object {
+          "args": Array [
+            "VIEW",
+          ],
+          "name": "group",
+        },
+        Object {
+          "args": Array [
+            "VIEW",
+          ],
+          "name": "binding",
+        },
+      ],
+      "identifiers": Array [
+        "ViewUniforms",
+      ],
+      "name": "viewUniforms",
+      "qual": "<uniform>",
+      "type": Object {
+        "args": undefined,
+        "name": "ViewUniforms",
+      },
+      "value": undefined,
+    },
+  },
+  Object {
+    "at": 290,
+    "flags": 1,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "export",
+        },
+      ],
+      "identifiers": Array [
+        "viewUniforms",
+        "viewMatrix",
+      ],
+      "inferred": undefined,
+      "name": "worldToView",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "position",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec4",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec4",
+      },
+    },
+    "symbol": "worldToView",
+  },
+  Object {
+    "at": 397,
+    "flags": 1,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "export",
+        },
+      ],
+      "identifiers": Array [
+        "viewUniforms",
+        "projectionMatrix",
+      ],
+      "inferred": undefined,
+      "name": "viewToClip",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "position",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec4",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec4",
+      },
+    },
+    "symbol": "viewToClip",
+  },
+  Object {
+    "at": 509,
+    "flags": 1,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "export",
+        },
+      ],
+      "identifiers": Array [
+        "viewToClip",
+        "worldToView",
+      ],
+      "inferred": undefined,
+      "name": "worldToClip",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "position",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec4",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec4",
+      },
+    },
+    "symbol": "worldToClip",
+  },
+  Object {
+    "at": 615,
+    "flags": 1,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "export",
+        },
+      ],
+      "identifiers": Array [
+        "xy",
+        "viewUniforms",
+        "viewSize",
+        "z",
+      ],
+      "inferred": undefined,
+      "name": "clipToScreen3D",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "position",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec4",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec3",
+      },
+    },
+    "symbol": "clipToScreen3D",
+  },
+  Object {
+    "at": 749,
+    "flags": 1,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "export",
+        },
+      ],
+      "identifiers": Array [
+        "xy",
+        "viewUniforms",
+        "viewResolution",
+        "z",
+      ],
+      "inferred": undefined,
+      "name": "screenToClip3D",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "position",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec4",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec3",
+      },
+    },
+    "symbol": "screenToClip3D",
+  },
+  Object {
+    "at": 889,
+    "flags": 1,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "export",
+        },
+      ],
+      "identifiers": Array [
+        "pos",
+        "viewToClip",
+        "worldToView",
+        "xyz",
+        "w",
+      ],
+      "inferred": undefined,
+      "name": "worldToClip3D",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "position",
+          "type": Object {
+            "args": Array [
+              Object {
+                "args": undefined,
+                "name": "f32",
+              },
+            ],
+            "name": "vec4",
+          },
+        },
+      ],
+      "type": Object {
+        "args": Array [
+          Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        ],
+        "attributes": undefined,
+        "name": "vec3",
+      },
+    },
+    "symbol": "worldToClip3D",
+  },
+  Object {
+    "at": 1026,
+    "flags": 1,
+    "func": Object {
+      "attributes": Array [
+        Object {
+          "args": undefined,
+          "name": "export",
+        },
+      ],
+      "identifiers": Array [
+        "m",
+        "viewUniforms",
+        "projectionMatrix",
+        "worldScale",
+        "viewWorldDepth",
+        "clipScale",
+        "mix",
+        "pixelScale",
+        "viewPixelRatio",
+      ],
+      "inferred": undefined,
+      "name": "getPerspectiveScale",
+      "parameters": Array [
+        Object {
+          "attributes": undefined,
+          "name": "w",
+          "type": Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        },
+        Object {
+          "attributes": undefined,
+          "name": "f",
+          "type": Object {
+            "args": undefined,
+            "name": "f32",
+          },
+        },
+      ],
+      "type": Object {
+        "args": undefined,
+        "attributes": undefined,
+        "name": "f32",
+      },
+    },
+    "symbol": "getPerspectiveScale",
+  },
+]
+`;
+
+exports[`ast gets use view symbol table 1`] = `
+Object {
+  "declarations": Array [
+    Object {
+      "at": 0,
+      "flags": 0,
+      "struct": Object {
+        "attributes": undefined,
+        "members": Array [
+          Object {
+            "attributes": undefined,
+            "name": "projectionMatrix",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "mat4x4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "viewMatrix",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "mat4x4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "viewPosition",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "viewResolution",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec2",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "viewSize",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec2",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "viewWorldDepth",
+            "type": Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "viewPixelRatio",
+            "type": Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          },
+        ],
+        "name": "ViewUniforms",
+      },
+      "symbol": "ViewUniforms",
+    },
+    Object {
+      "at": 212,
+      "flags": 1,
+      "symbol": "viewUniforms",
+      "variable": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+          Object {
+            "args": Array [
+              "VIEW",
+            ],
+            "name": "group",
+          },
+          Object {
+            "args": Array [
+              "VIEW",
+            ],
+            "name": "binding",
+          },
+        ],
+        "identifiers": Array [
+          "ViewUniforms",
+          "ViewUniforms",
+        ],
+        "name": "viewUniforms",
+        "qual": "<uniform>",
+        "type": Object {
+          "args": undefined,
+          "name": "ViewUniforms",
+        },
+        "value": undefined,
+      },
+    },
+    Object {
+      "at": 290,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "worldToView",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "worldToView",
+    },
+    Object {
+      "at": 397,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "viewToClip",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "viewToClip",
+    },
+    Object {
+      "at": 509,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewToClip",
+          "worldToView",
+        ],
+        "inferred": undefined,
+        "name": "worldToClip",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "worldToClip",
+    },
+    Object {
+      "at": 615,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "clipToScreen3D",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec3",
+        },
+      },
+      "symbol": "clipToScreen3D",
+    },
+    Object {
+      "at": 749,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "screenToClip3D",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec3",
+        },
+      },
+      "symbol": "screenToClip3D",
+    },
+    Object {
+      "at": 889,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewToClip",
+          "worldToView",
+        ],
+        "inferred": undefined,
+        "name": "worldToClip3D",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec3",
+        },
+      },
+      "symbol": "worldToClip3D",
+    },
+    Object {
+      "at": 1026,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "getPerspectiveScale",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "w",
+            "type": Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "f",
+            "type": Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": undefined,
+          "attributes": undefined,
+          "name": "f32",
+        },
+      },
+      "symbol": "getPerspectiveScale",
+    },
+  ],
+  "exports": Array [
+    Object {
+      "at": 212,
+      "flags": 1,
+      "symbol": "viewUniforms",
+      "variable": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+          Object {
+            "args": Array [
+              "VIEW",
+            ],
+            "name": "group",
+          },
+          Object {
+            "args": Array [
+              "VIEW",
+            ],
+            "name": "binding",
+          },
+        ],
+        "identifiers": Array [
+          "ViewUniforms",
+          "ViewUniforms",
+        ],
+        "name": "viewUniforms",
+        "qual": "<uniform>",
+        "type": Object {
+          "args": undefined,
+          "name": "ViewUniforms",
+        },
+        "value": undefined,
+      },
+    },
+    Object {
+      "at": 290,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "worldToView",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "worldToView",
+    },
+    Object {
+      "at": 397,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "viewToClip",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "viewToClip",
+    },
+    Object {
+      "at": 509,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewToClip",
+          "worldToView",
+        ],
+        "inferred": undefined,
+        "name": "worldToClip",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec4",
+        },
+      },
+      "symbol": "worldToClip",
+    },
+    Object {
+      "at": 615,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "clipToScreen3D",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec3",
+        },
+      },
+      "symbol": "clipToScreen3D",
+    },
+    Object {
+      "at": 749,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "screenToClip3D",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec3",
+        },
+      },
+      "symbol": "screenToClip3D",
+    },
+    Object {
+      "at": 889,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewToClip",
+          "worldToView",
+        ],
+        "inferred": undefined,
+        "name": "worldToClip3D",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "position",
+            "type": Object {
+              "args": Array [
+                Object {
+                  "args": undefined,
+                  "name": "f32",
+                },
+              ],
+              "name": "vec4",
+            },
+          },
+        ],
+        "type": Object {
+          "args": Array [
+            Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          ],
+          "attributes": undefined,
+          "name": "vec3",
+        },
+      },
+      "symbol": "worldToClip3D",
+    },
+    Object {
+      "at": 1026,
+      "flags": 1,
+      "func": Object {
+        "attributes": Array [
+          Object {
+            "args": undefined,
+            "name": "export",
+          },
+        ],
+        "identifiers": Array [
+          "viewUniforms",
+        ],
+        "inferred": undefined,
+        "name": "getPerspectiveScale",
+        "parameters": Array [
+          Object {
+            "attributes": undefined,
+            "name": "w",
+            "type": Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          },
+          Object {
+            "attributes": undefined,
+            "name": "f",
+            "type": Object {
+              "args": undefined,
+              "name": "f32",
+            },
+          },
+        ],
+        "type": Object {
+          "args": undefined,
+          "attributes": undefined,
+          "name": "f32",
+        },
+      },
+      "symbol": "getPerspectiveScale",
+    },
+  ],
+  "externals": undefined,
+  "globals": undefined,
+  "modules": undefined,
+  "symbols": Array [
+    "ViewUniforms",
+    "viewUniforms",
+    "worldToView",
+    "viewToClip",
+    "worldToClip",
+    "clipToScreen3D",
+    "screenToClip3D",
+    "worldToClip3D",
+    "getPerspectiveScale",
+  ],
+  "visibles": Array [
+    "viewUniforms",
+    "worldToView",
+    "viewToClip",
+    "worldToClip",
+    "clipToScreen3D",
+    "screenToClip3D",
+    "worldToClip3D",
+    "getPerspectiveScale",
+  ],
+}
+`;
+
+exports[`ast rewrites a lot of code using the compressed AST 1`] = `
+Array [
+  Array [
+    "Skip",
+    1,
+    31,
+  ],
+  Array [
+    "Skip",
+    34,
+    48,
+  ],
+  Array [
+    "Skip",
+    50,
+    102,
+  ],
+  Array [
+    "Shake",
+    103,
+    281,
+  ],
+  Array [
+    "Id",
+    112,
+    124,
+  ],
+  Array [
+    "Attr",
+    129,
+    137,
+  ],
+  Array [
+    "Id",
+    130,
+    137,
+  ],
+  Array [
+    "Id",
+    138,
+    146,
+  ],
+  Array [
+    "Attr",
+    161,
+    173,
+  ],
+  Array [
+    "Id",
+    162,
+    170,
+  ],
+  Array [
+    "Id",
+    174,
+    183,
+  ],
+  Array [
+    "Attr",
+    198,
+    210,
+  ],
+  Array [
+    "Id",
+    199,
+    207,
+  ],
+  Array [
+    "Id",
+    211,
+    217,
+  ],
+  Array [
+    "Attr",
+    232,
+    244,
+  ],
+  Array [
+    "Id",
+    233,
+    241,
+  ],
+  Array [
+    "Attr",
+    245,
+    263,
+  ],
+  Array [
+    "Id",
+    246,
+    257,
+  ],
+  Array [
+    "Id",
+    258,
+    262,
+  ],
+  Array [
+    "Id",
+    264,
+    273,
+  ],
+  Array [
+    "Shake",
+    284,
+    562,
+  ],
+  Array [
+    "Attr",
+    284,
+    291,
+  ],
+  Array [
+    "Id",
+    285,
+    291,
+  ],
+  Array [
+    "Id",
+    295,
+    299,
+  ],
+  Array [
+    "Attr",
+    303,
+    325,
+  ],
+  Array [
+    "Id",
+    304,
+    311,
+  ],
+  Array [
+    "Id",
+    312,
+    324,
+  ],
+  Array [
+    "Id",
+    326,
+    337,
+  ],
+  Array [
+    "Attr",
+    346,
+    370,
+  ],
+  Array [
+    "Id",
+    347,
+    354,
+  ],
+  Array [
+    "Id",
+    355,
+    369,
+  ],
+  Array [
+    "Id",
+    371,
+    384,
+  ],
+  Array [
+    "Id",
+    396,
+    408,
+  ],
+  Array [
+    "Id",
+    414,
+    425,
+  ],
+  Array [
+    "Id",
+    430,
+    439,
+  ],
+  Array [
+    "Id",
+    440,
+    451,
+  ],
+  Array [
+    "Id",
+    453,
+    466,
+  ],
+  Array [
+    "Id",
+    479,
+    491,
+  ],
+  Array [
+    "Id",
+    497,
+    498,
+  ],
+  Array [
+    "Id",
+    499,
+    507,
+  ],
+  Array [
+    "Id",
+    513,
+    514,
+  ],
+  Array [
+    "Id",
+    515,
+    520,
+  ],
+  Array [
+    "Id",
+    526,
+    527,
+  ],
+  Array [
+    "Id",
+    528,
+    530,
+  ],
+  Array [
+    "Id",
+    540,
+    553,
+  ],
+]
+`;
+
+exports[`ast rewrites a lot of code using the compressed AST 2`] = `
+Object {
+  "__nodes": [Function],
+  "cursor": [Function],
+}
+`;
+
+exports[`ast rewrites a lot of code using the compressed AST 3`] = `
+"
+struct VertexOutput {
+  @builtin position: vec4<f32>,
+  @location(0) fragColor: vec4<f32>,
+  @location(1) fragUV: vec2<f32>,
+  @location(2) @interpolate(flat) fragIndex: u32,
+};
+
+@vertex
+fn entryPoint(
+  @builtin(vertex_index) vertexIndex: i32,
+  @builtin(instance_index) instanceIndex: i32,
+) -> VertexOutput {
+
+  SolidVertex v = _zz_getVertex(vertexIndex, instanceIndex);
+
+  return VertexOutput(
+    v.position,
+    v.color,
+    v.uv,
+    u32(instanceIndex),
+  );
+}
+    "
+`;
+
+exports[`ast rewrites code using the AST 1`] = `
+"
+    fn _zz_getValue(index: i32) -> f32;
+    fn entryPoint() -> vec3<f32> {
+      let x = 3.0;
+      let y = _zz_getValue(2);
+      let v: vec3<f32> = vec3<f32>(x, y, 0.0);
+      return v.xyz;
+    }
+    "
+`;
+
+exports[`ast rewrites code using the compressed AST 1`] = `
+Array [
+  Array [
+    "Shake",
+    0,
+    35,
+  ],
+  Array [
+    "Id",
+    8,
+    16,
+  ],
+  Array [
+    "Id",
+    17,
+    22,
+  ],
+  Array [
+    "Shake",
+    36,
+    184,
+  ],
+  Array [
+    "Id",
+    44,
+    48,
+  ],
+  Array [
+    "Id",
+    76,
+    77,
+  ],
+  Array [
+    "Id",
+    95,
+    96,
+  ],
+  Array [
+    "Id",
+    99,
+    107,
+  ],
+  Array [
+    "Id",
+    122,
+    123,
+  ],
+  Array [
+    "Id",
+    147,
+    148,
+  ],
+  Array [
+    "Id",
+    150,
+    151,
+  ],
+  Array [
+    "Id",
+    172,
+    173,
+  ],
+  Array [
+    "Id",
+    174,
+    177,
+  ],
+]
+`;
+
+exports[`ast rewrites code using the compressed AST 2`] = `
+Object {
+  "__nodes": [Function],
+  "cursor": [Function],
+}
+`;
+
+exports[`ast shakes simple program 1`] = `
+Array [
+  Array [
+    0,
+    Array [
+      "x",
+      "getA",
+      "getB",
+    ],
+  ],
+  Array [
+    20,
+    Array [
+      "getA",
+    ],
+  ],
+  Array [
+    62,
+    Array [
+      "getB",
+    ],
+  ],
+]
+`;
+
+exports[`ast shakes simple program 2`] = `
+"
+let x: f32 = 1.0;
+
+fn getA() -> f32 {
+  return x;
+}
+
+"
+`;
+
+exports[`ast shakes use/view AST 1`] = `
+Array [
+  Array [
+    0,
+    Array [
+      "ViewUniforms",
+      "viewUniforms",
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+      "viewToClip",
+      "clipToScreen3D",
+      "screenToClip3D",
+      "getPerspectiveScale",
+    ],
+  ],
+  Array [
+    212,
+    Array [
+      "viewUniforms",
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+      "viewToClip",
+      "clipToScreen3D",
+      "screenToClip3D",
+      "getPerspectiveScale",
+    ],
+  ],
+  Array [
+    290,
+    Array [
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    397,
+    Array [
+      "viewToClip",
+      "worldToClip",
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    509,
+    Array [
+      "worldToClip",
+    ],
+  ],
+  Array [
+    615,
+    Array [
+      "clipToScreen3D",
+    ],
+  ],
+  Array [
+    749,
+    Array [
+      "screenToClip3D",
+    ],
+  ],
+  Array [
+    889,
+    Array [
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    1026,
+    Array [
+      "getPerspectiveScale",
+    ],
+  ],
+]
+`;
+
+exports[`ast shakes use/view AST 2`] = `
+"
+struct ViewUniforms {
+  projectionMatrix: mat4x4<f32>,
+  viewMatrix: mat4x4<f32>,
+  viewPosition: vec4<f32>,
+  viewResolution: vec2<f32>,
+  viewSize: vec2<f32>,
+  viewWorldDepth: f32,
+  viewPixelRatio: f32,
+};
+
+@group(VIEW) @binding(VIEW) var<uniform> viewUniforms: ViewUniforms;
+
+fn worldToView(position: vec4<f32>) -> vec4<f32> {
+  return viewUniforms.viewMatrix * position;
+}
+
+fn viewToClip(position: vec4<f32>) -> vec4<f32> {
+  return viewUniforms.projectionMatrix * position;
+}
+
+fn worldToClip(position: vec4<f32>) -> vec4<f32> {
+  return viewToClip(worldToView(position));
+}
+
+"
+`;
+
+exports[`ast shakes use/view AST using compressed AST 1`] = `
+Array [
+  Array [
+    0,
+    Array [
+      "ViewUniforms",
+      "viewUniforms",
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+      "viewToClip",
+      "clipToScreen3D",
+      "screenToClip3D",
+      "getPerspectiveScale",
+    ],
+  ],
+  Array [
+    212,
+    Array [
+      "viewUniforms",
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+      "viewToClip",
+      "clipToScreen3D",
+      "screenToClip3D",
+      "getPerspectiveScale",
+    ],
+  ],
+  Array [
+    290,
+    Array [
+      "worldToView",
+      "worldToClip",
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    397,
+    Array [
+      "viewToClip",
+      "worldToClip",
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    509,
+    Array [
+      "worldToClip",
+    ],
+  ],
+  Array [
+    615,
+    Array [
+      "clipToScreen3D",
+    ],
+  ],
+  Array [
+    749,
+    Array [
+      "screenToClip3D",
+    ],
+  ],
+  Array [
+    889,
+    Array [
+      "worldToClip3D",
+    ],
+  ],
+  Array [
+    1026,
+    Array [
+      "getPerspectiveScale",
+    ],
+  ],
 ]
 `;

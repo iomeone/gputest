@@ -1,7 +1,8 @@
-import { LiveComponent } from '../../live/types';
-import { use } from '../../live';
-import { HTML } from '../../react';
-import { useRouterContext } from '../../components';
+import type { LiveComponent } from '@use-gpu/live';
+
+import { use } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { useRouterContext } from '@use-gpu/workbench';
 
 import React from 'react';
 import { styled } from '@stitches/react';
@@ -14,10 +15,10 @@ export const Title = styled('h1', {
   textAlign: 'center',
   fontSize: '24px',
   lineHeight: '48px',
-});
+} as any);
 
 export type HomePageProps = {
-  container: HTMLElement,
+  container?: Element | null,
 };
 
 const PANEL_STYLE = {
@@ -45,8 +46,8 @@ export const HomePage: LiveComponent<HomePageProps> = (props) => {
         
         <ul>
           {PAGES.slice(0, -1).map(({title, path}) => (
-            <li>
-              <a key={path} {...linkTo(path)}>{title}</a>
+            <li key={path}>
+              <a {...linkTo(path)}>{title}</a>
             </li>
           ))}
         </ul>

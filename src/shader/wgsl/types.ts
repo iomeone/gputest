@@ -21,6 +21,7 @@ export type {
   ShaderDefine,
   StorageSource,
   LambdaSource,
+  TextureSource,
   UniformAttribute,
   UniformAttributeValue,
   VirtualRender,
@@ -37,6 +38,7 @@ export type SymbolTable = {
   modules?: ModuleRef[],
   declarations?: DeclarationRef[],
   externals?: DeclarationRef[],
+  exports?: DeclarationRef[],
   symbols?: string[],
   visibles?: string[],
   globals?: string[],
@@ -68,6 +70,15 @@ export type IdentifiersRef = {
   identifiers?: string[],
 };
 
+export type InferrableRef = {
+  inferred?: InferRef[],
+};
+
+export type InferRef = {
+  name: string,
+  at: number,
+};
+
 export type AttributeRef = {
   name: string,
   args?: string[],
@@ -87,7 +98,7 @@ export type QualifiedTypeAliasRef = TypeAliasRef & {
   qual?: string,
 };
 
-export type FunctionRef = AttributesRef & IdentifiersRef & FunctionHeaderRef;
+export type FunctionRef = AttributesRef & IdentifiersRef & FunctionHeaderRef & InferrableRef;
 export type VariableRef = AttributesRef & IdentifiersRef & VariableDeclarationRef;
 export type AnnotatedTypeRef = AttributesRef & TypeRef;
 

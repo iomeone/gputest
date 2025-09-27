@@ -82,7 +82,7 @@ struct _03_ViewUniforms {
   viewPosition: vec4<f32>,
   viewResolution: vec2<f32>,
   viewSize: vec2<f32>,
-  viewWorldUnit: f32,
+  viewWorldDepth: f32,
   viewPixelRatio: f32,
 };
 
@@ -102,7 +102,7 @@ fn _03_worldToClip(position: vec4<f32>) -> vec4<f32> {
 
 fn _03_getPerspectiveScale(w: f32, f: f32) -> f32 {
   var m = _03_viewUniforms.projectionMatrix;
-  var worldScale = m[1][1] * _03_viewUniforms.viewWorldUnit;
+  var worldScale = m[1][1] * _03_viewUniforms.viewWorldDepth;
   var clipScale = mix(1.0, worldScale / w, f);
   var pixelScale = clipScale * _03_viewUniforms.viewPixelRatio;
   return pixelScale;

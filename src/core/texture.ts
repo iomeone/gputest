@@ -1,4 +1,4 @@
-import { DataTexture, DataBinding, TextureSource } from './types';
+import type { DataTexture, ExternalTexture, DataBinding, TextureSource } from './types';
 import { TYPED_ARRAYS, TEXTURE_FORMAT_SIZES, TEXTURE_FORMAT_DIMS } from './constants';
 
 type Point = [number, number];
@@ -26,15 +26,38 @@ export const makeRenderTexture = (
   width: number,
   height: number,
   format: GPUTextureFormat,
-  samples: number = 1
+  sampleCount: number = 1,
+  mipLevelCount: number = 1,
 ): GPUTexture => {
   const texture = device.createTexture({
     // @ts-ignore
     size: [width, height, 1],
-    sampleCount: samples,
+    sampleCount,
+    mipLevelCount,
     format,
     // @ts-ignore
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  return texture;
+}
+
+export const makeCopyableTexture = (
+  device: GPUDevice,
+  width: number,
+  height: number,
+  format: GPUTextureFormat,
+  sampleCount: number = 1,
+  mipLevelCount: number = 1,
+): GPUTexture => {
+  const texture = device.createTexture({
+    // @ts-ignore
+    size: [width, height, 1],
+    sampleCount,
+    mipLevelCount,
+    format,
+    // @ts-ignore
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
   });
 
   return texture;
@@ -45,12 +68,14 @@ export const makeRenderableTexture = (
   width: number,
   height: number,
   format: GPUTextureFormat,
-  samples: number = 1
+  sampleCount: number = 1,
+  mipLevelCount: number = 1,
 ): GPUTexture => {
   const texture = device.createTexture({
     // @ts-ignore
     size: [width, height, 1],
-    sampleCount: samples,
+    sampleCount,
+    mipLevelCount,
     format,
     // @ts-ignore
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING ,
@@ -64,15 +89,17 @@ export const makeReadbackTexture = (
   width: number,
   height: number,
   format: GPUTextureFormat,
-  samples: number = 1
+  sampleCount: number = 1,
+  mipLevelCount: number = 1,
 ): GPUTexture => {
   const texture = device.createTexture({
     // @ts-ignore
     size: [width, height, 1],
-    sampleCount: samples,
+    sampleCount,
+    mipLevelCount,
     format,
     // @ts-ignore
-    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC | GPUTextureUsage.TEXTURE_BINDING,
   });
 
   return texture;
@@ -84,12 +111,14 @@ export const makeSourceTexture = (
   height: number,
   depth: number,
   format: GPUTextureFormat,
-  samples: number = 1
+  sampleCount: number = 1,
+  mipLevelCount: number = 1,
 ): GPUTexture => {
   const texture = device.createTexture({
     // @ts-ignore
     size: [width, height, depth],
-    sampleCount: samples,
+    sampleCount,
+    mipLevelCount,
     format,
     // @ts-ignore
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
@@ -104,28 +133,31 @@ export const makeDynamicTexture = (
   height: number,
   depth: number,
   format: GPUTextureFormat,
-  samples: number = 1
+  sampleCount: number = 1,
+  mipLevelCount: number = 1,
 ): GPUTexture => {
   const texture = device.createTexture({
     // @ts-ignore
     size: [width, height, depth],
-    sampleCount: samples,
+    sampleCount,
+    mipLevelCount,
     format,
     // @ts-ignore
-    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC,
   });
 
   return texture;
 }
 
-export const makeRawSourceTexture = (
+export const makeRawTexture = (
   device: GPUDevice,
-  dataTexture: DataTexture,
+  dataTexture: DataTexture | ExternalTexture,
+  mipLevelCount: number = 1,
 ) => {
   const {size, format} = dataTexture;
   const [w, h, d] = size as Point3;
 
-  return makeSourceTexture(device, w, h, d || 1, format, 1);
+  return makeSourceTexture(device, w, h, d || 1, format ?? 'rgba8unorm', 1, mipLevelCount);
 }
 
 export const makeTextureDataLayout = (
@@ -153,7 +185,7 @@ export const uploadDataTexture = (
 ): void => {
   const {data, size, format} = dataTexture;
 
-  const layout = makeTextureDataLayout(size, format);  
+  const layout = makeTextureDataLayout(size, format ?? 'rgba8unorm');
   uploadTexture(device, texture, data, layout, size);
 }
 
@@ -186,17 +218,33 @@ export const uploadTexture = (
   device.queue.writeTexture(copy, data, layout, extent);
 }
 
+export const uploadExternalTexture = (
+  device: GPUDevice,
+  texture: GPUTexture,
+  source: any,
+  size: Point | Point3,
+): void => {
+
+  const [w, h, d] = size as Point3;
+  const extent = [w, h, d || 1];
+
+  device.queue.copyExternalImageToTexture({ source }, { texture }, extent);
+}
+
 export const resizeTextureSource = (
   device: GPUDevice,
   source: TextureSource,
   width: number,
   height: number,
   depth: number = 1,
+  mips: 'auto' | number = 1,
   mipLevel: GPUIntegerCoordinate = 0,
   aspect: GPUTextureAspect = "all",
 ) => {
   const {format} = source;
-  const newTexture = makeDynamicTexture(device, width, height, depth, format as any, 1);
+
+  const ms = mips === 'auto' ? Math.floor(Math.log2(Math.min(width, height))) + 1 : mips;
+  const newTexture = makeDynamicTexture(device, width, height, depth, format as any, 1, ms);
 
   const src = {
     texture: source.texture,
@@ -219,8 +267,8 @@ export const resizeTextureSource = (
   return {
     ...source,
     texture: newTexture,
-    view: makeTextureView(newTexture),
-    size: [width, height, depth],
+    view: makeTextureView(newTexture, ms),
+    size: [width, height, depth] as [number, number, number],
     version: 1,
   };
 }
@@ -235,8 +283,8 @@ export const makeTextureBinding = (
   const view = (texture instanceof GPUTexture) ? makeTextureView(texture) : texture;
 
   const entries = [
-    {binding: 0, resource: sampler},
-    {binding: 1, resource: view},
+    {binding: 0, resource: view},
+    {binding: 1, resource: sampler},
   ];
 
   const bindGroup = device.createBindGroup({

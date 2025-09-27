@@ -1,14 +1,14 @@
 // Testing shaders
 export const WGSLModules = {
   "instance/vertex/quad": `
-use '../../wgsl/use/types'::{ SolidVertex };
-use '../../wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale }; 
-use '../../wgsl/geometry/quad'::{ getQuadUV };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale }; 
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
 
-@external fn getPosition(i: i32) -> vec4<f32> {};
-@external fn getColor(i: i32) -> vec4<f32> {};
-@external fn getSize(i: i32) -> vec2<f32> {};
-@external fn getDepth(i: i32) -> f32 {};
+@link fn getPosition(i: i32) -> vec4<f32> {};
+@link fn getColor(i: i32) -> vec4<f32> {};
+@link fn getSize(i: i32) -> vec2<f32> {};
+@link fn getDepth(i: i32) -> f32 {};
 
 @export fn getQuadVertex(vertexIndex: i32, instanceIndex: i32) -> SolidVertex {
   var position = getPosition(instanceIndex);
@@ -45,9 +45,9 @@ use '../../wgsl/geometry/quad'::{ getQuadUV };
 `,
 
   "instance/fragment/solid": `
-@external fn getFragment(color: vec4<f32>, uv: vec2<f32>) -> vec4<f32> {};
+@link fn getFragment(color: vec4<f32>, uv: vec2<f32>) -> vec4<f32> {};
 
-@stage(fragment)
+@fragment
 fn main(
   @location(0) fragColor: vec4<f32>,
   @location(1) fragUV: vec2<f32>,  
@@ -90,7 +90,7 @@ struct ViewUniforms {
   viewPosition: vec4<f32>,
   viewResolution: vec2<f32>,
   viewSize: vec2<f32>,
-  viewWorldUnit: f32,
+  viewWorldDepth: f32,
   viewPixelRatio: f32,
 };
 
@@ -109,11 +109,11 @@ struct ViewUniforms {
 }
 
 @export fn clipToScreen3D(position: vec4<f32>) -> vec3<f32> {
-  return vec3(position.xy * viewUniforms.viewSize, position.z);
+  return vec3<f32>(position.xy * viewUniforms.viewSize, position.z);
 }
 
 @export fn screenToClip3D(position: vec4<f32>) -> vec3<f32> {
-  return vec3(position.xy * viewUniforms.viewResolution, position.z);
+  return vec3<f32>(position.xy * viewUniforms.viewResolution, position.z);
 }
 
 @export fn worldToClip3D(position: vec4<f32>) -> vec3<f32> {
@@ -123,7 +123,7 @@ struct ViewUniforms {
 
 @export fn getPerspectiveScale(w: f32, f: f32) -> f32 {
   var m = viewUniforms.projectionMatrix;
-  var worldScale = m[1][1] * viewUniforms.viewWorldUnit;
+  var worldScale = m[1][1] * viewUniforms.viewWorldDepth;
   var clipScale = mix(1.0, worldScale / w, f);
   var pixelScale = clipScale * viewUniforms.viewPixelRatio;
   return pixelScale;

@@ -63,12 +63,12 @@ Program                                                     ⮐ fn main() {}⮐
 `;
 
 exports[`WGSL grammar snapshots parses a test program 5`] = `
-Program                                                     ⮐ @external fn main() {}⮐ 
-  LocalDeclaration                                          @external fn main() {}
-    FunctionDeclaration                                     @external fn main() {}
-      AttributeList                                         @external
-        Attribute                                           @external
-          Identifier                                        external
+Program                                                     ⮐ @link fn main() {}⮐ 
+  LocalDeclaration                                          @link fn main() {}
+    FunctionDeclaration                                     @link fn main() {}
+      AttributeList                                         @link
+        Attribute                                           @link
+          Identifier                                        link
       FunctionHeader                                        fn main()
         fn                                                  fn
         Identifier                                          main
@@ -78,7 +78,7 @@ Program                                                     ⮐ @external fn mai
 `;
 
 exports[`WGSL grammar snapshots parses a test program 6`] = `
-Program                                                     ⮐ struct A {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }⮐ ⮐ @stage(fragment)⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }⮐ 
+Program                                                     ⮐ struct A {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }⮐ ⮐ @fragment⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }⮐ 
   LocalDeclaration                                          ⮐ struct A {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }
     StructDeclaration                                       ⮐ struct A {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }
       AttributeList                                         
@@ -101,11 +101,10 @@ Program                                                     ⮐ struct A {⮐   
           Identifier                                        y
           TypeDeclaration                                   f32
             f32                                             f32
-  LocalDeclaration                                          @stage(fragment)⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }
-    FunctionDeclaration                                     @stage(fragment)⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }
-      AttributeList                                         @stage(fragment)
-        Attribute                                           @stage(fragment)
-          Identifier                                        stage
+  LocalDeclaration                                          @fragment⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }
+    FunctionDeclaration                                     @fragment⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }
+      AttributeList                                         @fragment
+        Attribute                                           @fragment
           Identifier                                        fragment
       FunctionHeader                                        fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32>
         fn                                                  fn
@@ -294,7 +293,7 @@ Program                                                     ⮐ fn main() {⮐  
 `;
 
 exports[`WGSL grammar snapshots parses a test program 10`] = `
-Program                                                     ⮐ import {MeshVertex} from 'use/types';⮐ import {viewUniforms as view, worldToClip} from 'use/view';⮐ import {getQuadUV} from 'geometry/quad';⮐ ⮐ import 'test';⮐ ⮐ @optional @external fn getInt() -> i32 {}⮐ ⮐ @export fn main() {}⮐ 
+Program                                                     ⮐ import {MeshVertex} from 'use/types';⮐ import {viewUniforms as view, worldToClip} from 'use/view';⮐ import {getQuadUV} from 'geometry/quad';⮐ ⮐ import 'test';⮐ ⮐ @optional @link fn getInt() -> i32 {}⮐ ⮐ @export fn main() {}⮐ 
   ImportDeclaration                                         import {MeshVertex} from 'use/types'
     import                                                  import
     ImportDeclarationList                                   {MeshVertex}
@@ -319,13 +318,13 @@ Program                                                     ⮐ import {MeshVert
   ImportDeclaration                                         import 'test'
     import                                                  import
     String                                                  'test'
-  LocalDeclaration                                          @optional @external fn getInt() -> i32 {}
-    FunctionDeclaration                                     @optional @external fn getInt() -> i32 {}
-      AttributeList                                         @optional @external
+  LocalDeclaration                                          @optional @link fn getInt() -> i32 {}
+    FunctionDeclaration                                     @optional @link fn getInt() -> i32 {}
+      AttributeList                                         @optional @link
         Attribute                                           @optional
           Identifier                                        optional
-        Attribute                                           @external
-          Identifier                                        external
+        Attribute                                           @link
+          Identifier                                        link
       FunctionHeader                                        fn getInt() -> i32
         fn                                                  fn
         Identifier                                          getInt
@@ -349,7 +348,7 @@ Program                                                     ⮐ import {MeshVert
 `;
 
 exports[`WGSL grammar snapshots parses a test program 11`] = `
-Program                                                     ⮐ use 'use/types'::{MeshVertex};⮐ use 'use/view'::{viewUniforms as view, worldToClip};⮐ use 'geometry/quad'::{getQuadUV};⮐ ⮐ use 'test';⮐ ⮐ @optional @external fn getInt() -> i32 {}⮐ ⮐ @export fn main() {}⮐ 
+Program                                                     ⮐ use 'use/types'::{MeshVertex};⮐ use 'use/view'::{viewUniforms as view, worldToClip};⮐ use 'geometry/quad'::{getQuadUV};⮐ ⮐ use 'test';⮐ ⮐ @optional @link fn getInt() -> i32 {}⮐ ⮐ @export fn main() {}⮐ 
   ImportDeclaration                                         use 'use/types'::{MeshVertex}
     use                                                     use
     String                                                  'use/types'
@@ -374,13 +373,13 @@ Program                                                     ⮐ use 'use/types':
   ImportDeclaration                                         use 'test'
     use                                                     use
     String                                                  'test'
-  LocalDeclaration                                          @optional @external fn getInt() -> i32 {}
-    FunctionDeclaration                                     @optional @external fn getInt() -> i32 {}
-      AttributeList                                         @optional @external
+  LocalDeclaration                                          @optional @link fn getInt() -> i32 {}
+    FunctionDeclaration                                     @optional @link fn getInt() -> i32 {}
+      AttributeList                                         @optional @link
         Attribute                                           @optional
           Identifier                                        optional
-        Attribute                                           @external
-          Identifier                                        external
+        Attribute                                           @link
+          Identifier                                        link
       FunctionHeader                                        fn getInt() -> i32
         fn                                                  fn
         Identifier                                          getInt

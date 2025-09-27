@@ -1,4 +1,5 @@
 export const VIRTUAL_BINDGROUP = 'VIRTUAL_BINDGROUP';
+export const VOLATILE_BINDGROUP = 'VOLATILE_BINDGROUP';
 
 export const GLSL_VERSION = '450';
 export const GLSL_NATIVE_TYPES = new Set([

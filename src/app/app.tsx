@@ -1,82 +1,85 @@
-import { LiveComponent } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../core/types';
+import type { LC } from '@use-gpu/live';
 
-import React from '../live/jsx';
-import { FC, useFiber, useResource, useState } from '../live';
+import React, { into, useFiber, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { AutoCanvas, WebGPU } from '@use-gpu/webgpu';
+import { DebugProvider, FontLoader, Router, Routes } from '@use-gpu/workbench';
 
-import {
-  AutoCanvas, CanvasPicking,
-  Loop, Draw, Pass,
-  CompositeData, Data, RawData,
-  FontLoader,
-  OrbitCamera, OrbitControls,
-  Pick,
-  Cursor, Points, Lines,
-  RawQuads as Quads, RawLines,
-  RenderToTexture,
-  Router, Routes,
-  TextProvider,
-  ViewProvider,
-  WebGPU,
-} from '../components';
-import { UseInspect } from '../inspect';
+import { UseInspect } from '@use-gpu/inspect';
+import '@use-gpu/inspect/theme.css';
 
 import { makeRoutes } from './routes';
-import { makePicker } from './pages/page-picker';
+import { makePicker } from './ui/page-picker';
 
 import { FALLBACK_MESSAGE } from './fallback';
 
-export const App: FC = () => {
+export const App: LC = () => {
   
-  const root = document.querySelector('#use-gpu');
+  const root = document.querySelector('#use-gpu')!;
+  const inner = document.querySelector('#use-gpu .canvas')!;
 
-  const router = (
+  const router = useOne(() => (
     <Router>
-      <Routes routes={makeRoutes()} />
+      <Routes routes={makeRoutes()} morph />
       <Routes routes={makePicker(root)} />
     </Router>
-  );
+  ), root);
   
-  const fonts = [
+  const fonts = useOne(() => [
     {
       family: 'Lato',
       weight: 400,
       style: 'normal',
-      src: '/Lato-Regular.ttf',
+      src: '/fonts/Lato-Regular.ttf',
     },
     {
       family: 'Lato',
       weight: 400,
       style: 'italic',
-      src: '/Lato-Italic.ttf',
+      src: '/fonts/Lato-Italic.ttf',
     },
     {
       family: 'Lato',
       weight: 500,
       style: 'normal',
-      src: '/Lato-Bold.ttf',
+      src: '/fonts/Lato-Bold.ttf',
     },
-  ];
+    {
+      family: 'Noto Emoji',
+      weight: 400,
+      style: 'normal',
+      src: '/fonts/NotoColorEmoji.ttf',
+    },
+  ]);
 
   const fiber = useFiber();
   const inspect = useInspector();
 
-  return (
+  const view = useMemo(() => (
     <WebGPU
-      fallback={FALLBACK_MESSAGE}
+      fallback={(error: Error) => <HTML container={inner}>{into(FALLBACK_MESSAGE(error))}</HTML>}
     >
       <AutoCanvas
-        selector={'#use-gpu'}
+        selector={'#use-gpu .canvas'}
         samples={4}
       >
         <FontLoader fonts={fonts}>
           {router}
         </FontLoader>
       </AutoCanvas>
-      {inspect ? <UseInspect fiber={fiber} container={root} /> : null}
     </WebGPU>
-  );
+  ), [root, fonts, router]);
+
+  return (
+    <UseInspect
+      fiber={fiber}
+      container={root}
+      active={inspect}
+      provider={DebugProvider}
+    >
+      {view}
+    </UseInspect>
+  )
 };
 
 // Toggle inspector with ctrl/cmd-I.

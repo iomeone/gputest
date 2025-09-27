@@ -1,5 +1,5 @@
+import type { TypedArrayConstructor, TypedArray } from './types';
 import { TYPED_ARRAYS, TEXTURE_FORMAT_SIZES, TEXTURE_FORMAT_DIMS } from './constants';
-import { TypedArrayConstructor, TypedArray } from './types';
 
 type BufferArray = TypedArray | number[] | ArrayBuffer | number;
 

@@ -2,11 +2,15 @@ import {
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
+  transpileGLSL,
+  bindEntryPoint,
   defineConstants,
   makeModuleCache,
 
   bundleToAttribute,
   bundleToAttributes,
+
+  glsl, float, int, uint,
 } from './shader';
 
 import {
@@ -14,11 +18,13 @@ import {
   bindModule,
   bindingsToLinks,
   bindingToModule,
+  sourceToModule,
   resolveBindings,
 } from './bind';
 
 import {
   castTo,
+  swizzleTo,
 } from './cast';
 
 import {
@@ -45,18 +51,23 @@ import {
 } from './ast';
 
 import {
-  getHash
-} from '../util/hash';
+  getBundleHash,
+  getBundleKey,
+} from '../util/bundle';
 
 export {
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
+  transpileGLSL,
+  bindEntryPoint,
   defineConstants,
   makeModuleCache,
 
   bundleToAttribute,
   bundleToAttributes,
+
+  glsl, float, int, uint,
 } from './shader';
 
 export {
@@ -64,11 +75,13 @@ export {
   bindModule,
   bindingsToLinks,
   bindingToModule,
+  sourceToModule,
   resolveBindings,
 } from './bind';
 
 export {
   castTo,
+  swizzleTo,
 } from './cast';
 
 export {
@@ -95,15 +108,19 @@ export {
 } from './ast';
 
 export {
-  getHash
-} from '../util/hash';
+  getBundleHash,
+  getBundleKey,
+} from '../util/bundle';
 
 export const GLSLLinker = {
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
+  transpileGLSL,
+  bindEntryPoint,
   bundleToAttribute,
   bundleToAttributes,
+  glsl, float, int, uint,
 
   defineConstants,
 
@@ -117,11 +134,13 @@ export const GLSLLinker = {
   bindModule,
   bindingsToLinks,
   bindingToModule,
+  sourceToModule,
   resolveBindings,
 
   castTo,
   chainTo,
   diffBy,
+  swizzleTo,
 
   makeASTParser,
   compressAST,
@@ -130,9 +149,8 @@ export const GLSLLinker = {
 
   makeModuleCache,
 
-  getHash,
-  bundleToAttribute,
-  bundleToAttributes,
+  getBundleHash,
+  getBundleKey,
 };
 
 export default GLSLLinker;

@@ -1,6 +1,27 @@
-import { DeferredCall, LiveFiber } from './types';
+import type { DeferredCall, LiveElement, LiveFiber } from './types';
+import { reactInterop } from './fiber';
 
 const {prototype: {hasOwnProperty}} = Object;
+
+export type LoggingOptions = {
+  dispatch: boolean,
+  fiber: boolean,
+};
+
+/** @hidden */
+export const LOGGING = {
+  dispatch: false,
+  fiber: false,
+} as Record<string, boolean>;
+
+/** Turn on logging for the Live run-time. Very chatty.
+
+- `dispatch`: All dispatches to roots and sub-roots.
+- `fiber`: All updates to individual fibers.
+*/
+export const setLogging = (options: LoggingOptions) => {
+  for (let k in options) LOGGING[k] = (options as any)[k];
+};
 
 export const formatTree = (root: LiveFiber<any>, depth: number = 0): string => {
   const {mount, mounts, next} = root;
@@ -27,7 +48,10 @@ export const formatTree = (root: LiveFiber<any>, depth: number = 0): string => {
   return out.join("\n");
 }
 
-export const formatNodeName = <F extends Function>(node: DeferredCall<F>): string => {
+export const formatNodeName = <F extends Function>(_node: LiveElement<F>): string => {
+  const node = reactInterop(_node) as DeferredCall<F> | null;
+  if (!node) return 'null';
+  
   const {f, arg, args} = node;
 
   // @ts-ignore
@@ -37,10 +61,10 @@ export const formatNodeName = <F extends Function>(node: DeferredCall<F>): strin
     const value = formatValue(context.displayName);
     return `Provide(${value})`;
   }
-  else if (name === 'CONSUME' && args) {
+  else if (name === 'CAPTURE' && args) {
     const [context] = args;
     const value = formatValue(context.displayName);
-    return `Consume(${value})`;
+    return `Capture(${value})`;
   }
   else if (name === 'DETACH' && args) {
     const [call] = args;
@@ -72,7 +96,10 @@ export const formatNodeName = <F extends Function>(node: DeferredCall<F>): strin
   return name;
 }
 
-export const formatNode = <F extends Function>(node: DeferredCall<F>): string => {
+export const formatNode = <F extends Function>(_node: LiveElement<F>): string => {
+  const node = reactInterop(_node) as DeferredCall<F> | null;
+  if (!node) return '<null />';
+
   const name = formatNodeName(node);
 
   const args = [] as string[];

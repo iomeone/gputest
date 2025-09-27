@@ -11,7 +11,7 @@ export const ReactNode: React.FC<ReactNodeProps> = ({
 }) => {
   const {type, elementType} = reactNode;
 
-  let name: string;
+  let name: string | null = null;
   if (typeof elementType === 'string') name = elementType;
   else if (elementType) name = elementType.name ?? elementType.displayName;
 

@@ -2,11 +2,15 @@ import {
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
+  transpileWGSL,
+  bindEntryPoint,
   defineConstants,
   makeModuleCache,
 
   bundleToAttribute,
   bundleToAttributes,
+
+  wgsl, f32, i32, u32,
 } from './shader';
 
 import {
@@ -20,6 +24,7 @@ import {
 
 import {
   castTo,
+  swizzleTo,
 } from './cast';
 
 import {
@@ -44,18 +49,23 @@ import {
 } from './ast';
 
 import {
-  getHash
-} from '../util/hash';
+  getBundleHash,
+  getBundleKey,
+} from '../util/bundle';
 
 export {
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
+  transpileWGSL,
+  bindEntryPoint,
   defineConstants,
   makeModuleCache,
 
   bundleToAttribute,
   bundleToAttributes,
+
+  wgsl, f32, i32, u32,
 } from './shader';
 
 export {
@@ -69,6 +79,7 @@ export {
 
 export {
   castTo,
+  swizzleTo,
 } from './cast';
 
 export {
@@ -93,15 +104,19 @@ export {
 } from './ast';
 
 export {
-  getHash
-} from '../util/hash';
+  getBundleHash,
+  getBundleKey,
+} from '../util/bundle';
 
 export const WGSLLinker = {
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
+  transpileWGSL,
+  bindEntryPoint,
   bundleToAttribute,
   bundleToAttributes,
+  wgsl, f32, i32, u32,
 
   defineConstants,
 
@@ -119,6 +134,7 @@ export const WGSLLinker = {
   castTo,
   chainTo,
   diffBy,
+  swizzleTo,
 
   makeASTParser,
   compressAST,
@@ -127,7 +143,8 @@ export const WGSLLinker = {
 
   makeModuleCache,
 
-  getHash,
+  getBundleHash,
+  getBundleKey,
 };
 
 export default WGSLLinker;

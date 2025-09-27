@@ -1,18 +1,18 @@
-import { LC } from '../../../live/types';
-import { CanvasRenderingContextGPU } from '../../../webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../../../core/types';
-
-import React from '../../../live/jsx';
+import type { LC } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
-  Draw, Pass, Flat, UI, Layout, Absolute, Block, Flex, Inline, Text,
+  Draw, Pass, Flat,
   OrbitCamera, OrbitControls,
   Pick, Cursor, LinearRGB,
-} from '../../../components';
+} from '@use-gpu/workbench';
+import {
+  UI, Layout, Absolute, Block, Flex, Inline, Text
+} from '@use-gpu/layout';
 import { Mesh } from '../../components/mesh';
 import { makeMesh, makeTexture } from '../../meshes/cube';
 
-export const LinearRGBPage: LC = () => {
+export const RTTLinearRGBPage: LC = () => {
   const mesh = makeMesh();
   const texture = makeTexture();
 
@@ -23,7 +23,7 @@ export const LinearRGBPage: LC = () => {
         <Pick
           render={({id, hovered, presses}) => [
             <Mesh texture={texture} mesh={mesh} blink={presses.left} />,
-            <Mesh id={id} texture={texture} mesh={mesh} mode={RenderPassMode.Picking} />,
+            <Mesh id={id} texture={texture} mesh={mesh} mode={'picking'} />,
             hovered ? <Cursor cursor='pointer' /> : null,
           ]}
         />

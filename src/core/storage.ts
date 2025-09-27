@@ -1,4 +1,4 @@
-import { StorageSource, UniformAttribute, DataBinding } from './types';
+import type { StorageSource, UniformAttribute, DataBinding } from './types';
 
 export const makeStorageBinding = (
   device: GPUDevice,
@@ -32,6 +32,8 @@ export const makeStorageEntries = (
   return entries;
 };
 
+const toTypeName = (s: any) => s?.module?.entry ?? s;
+
 export const checkStorageTypes = (
   uniforms: UniformAttribute[],
   links: Record<string, StorageSource | null | undefined>,
@@ -46,33 +48,25 @@ export const checkStorageType = (
   uniform: UniformAttribute,
   link: StorageSource | null | undefined,
 ) => {
-  const {name, format} = uniform;
-  //if (link && link.format !== format) throw new Error(`Invalid format ${link.format} bound for ${format} "${name}"`);
-  if (link && link.format !== format) console.warn(`Invalid format ${link.format} bound for ${format} "${name}"`);
-} 
+  const {name, format: from} = uniform;
+  const to = link?.format;
 
-export const makeStorageAccessors = (
-  uniforms: UniformAttribute[],
-  set: number = 0,
-  binding: number = 0,
-): Record<string, string> => {
-  const modules = {} as Record<string, string>;
+  const f = toTypeName(from);
+  const t = toTypeName(to);
+  
+  if (link && t != null && f !== t) {
+    // Remove vec<..> to allow for automatic widening/narrowing
+    const fromVec = f.replace(/vec[0-9](to[0-9])?/, '').replace(/^<|>$/g, '');
+    const toVec   = t.replace(/vec[0-9](to[0-9])?/, '').replace(/^<|>$/g, ''); 
 
-  for (const {name, format} of uniforms) {
-    modules[name] = makeStorageAccessor(set, binding, format, name);
-    binding++;
+    if (fromVec !== toVec) {
+      // Remove bit size to allow for automatic widening/narrowing
+      const fromScalar = fromVec.replace(/([uif])([0-9]+)/, '$1__');
+      const toScalar   =   toVec.replace(/([uif])([0-9]+)/, '$1__');
+
+      if (fromScalar !== toScalar) {
+        console.warn(`Invalid format ${to} bound for ${from} "${name}" (${fromScalar} != ${toScalar})`);
+      }
+    }
   }
-
-  return modules;
-};
-
-export const makeStorageAccessor = (set: number, binding: number, type: string, name: string) => `
-layout (std430, set = ${set}, binding = ${binding}) readonly buffer ${name}Type {
-  ${type} data[];
-} ${name}Storage;
-
-#pragma export
-${type} ${name}(int index) {
-  return ${name}Storage.data[index];
-}
-`;
+} 

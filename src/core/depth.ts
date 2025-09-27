@@ -11,24 +11,39 @@ export const makeDepthTexture = (
 
 export const makeDepthStencilState = (format: GPUTextureFormat): GPUDepthStencilState => ({
   depthWriteEnabled: true,
-  depthCompare: "less-equal" as GPUCompareFunction,
+  depthCompare: "greater-equal" as GPUCompareFunction,
   format,
 });
 
 export const makeDepthStencilAttachment = (
   depthTexture: GPUTexture,
-  depthClearValue: number = 1.0,
+  depthFormat: GPUTextureFormat,
+  depthClearValue: number = 0.0,
   depthLoadOp: GPULoadOp = 'clear',
   depthStoreOp: GPUStoreOp = 'store',
   stencilClearValue: number = 0,
   stencilLoadOp: GPULoadOp = 'clear',
   stencilStoreOp: GPUStoreOp = 'store',
-): GPURenderPassDepthStencilAttachment => ({
-  view: depthTexture.createView(),
-  depthClearValue,
-  depthLoadOp,
-  depthStoreOp,
-  stencilClearValue,
-  stencilLoadOp,
-  stencilStoreOp,
-});
+): GPURenderPassDepthStencilAttachment => {
+  const hasStencil = depthFormat.match(/stencil/);
+  
+  if (hasStencil) {
+    return {
+      view: depthTexture.createView(),
+      depthClearValue,
+      depthLoadOp,
+      depthStoreOp,
+      stencilClearValue,
+      stencilLoadOp,
+      stencilStoreOp,
+    };
+  }
+  else {
+    return {
+      view: depthTexture.createView(),
+      depthClearValue,
+      depthLoadOp,
+      depthStoreOp,
+    };  
+  }
+}

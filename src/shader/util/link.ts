@@ -1,23 +1,15 @@
 import { Tree } from '@lezer/common';
-import { ParsedBundle, ParsedModule, ParsedModuleCache, ShaderDefine, ImportRef, RefFlags as RF } from '../types';
+import { ShaderModule, ParsedBundle, ParsedModule, ParsedModuleCache, ShaderDefine, ImportRef, RefFlags as RF } from '../types';
 import { VIRTUAL_BINDINGS } from '../constants';
 
 import { bindBundle, bindModule } from './bind';
 import { toBundle, getBundleKey } from './bundle';
 import { resolveShakeOps } from './shake';
-import { timed } from './timed';
 import mapValues from 'lodash/mapValues';
 
 export type Linker = (
   source: ParsedBundle,
-  libraries?: Record<string, ParsedBundle | ParsedModule>,
-) => string;
-
-export type LinkModule = (
-  main: ParsedModule,
-  libraries?: Record<string, ParsedModule>,
-  linkDefs?: Record<string, ParsedModule>,
-  defines?: Record<string, ShaderDefine> | null,
+  libraries?: Record<string, ShaderModule>,
 ) => string;
 
 export type LoadModuleWithCache = (
@@ -45,57 +37,63 @@ export type RewriteUsingAST = (
   optionals?: Set<string> | null,
 ) => string;
 
-const NO_LIBS: Record<string, ParsedBundle | ParsedModule> = {};
+const NO_LIBS: Record<string, ShaderModule> = {};
 
 // Link a source module with static modules and dynamic links.
 export const makeLinkCode = (
   linker: Linker,
   loadModuleWithCache: LoadModuleWithCache,
   defaultCache: ParsedModuleCache,
-) => timed('linkCode', (
+) => (
   code: string,
   libraries: Record<string, string> = {},
-  links?: Record<string, string> | null,
+  links?: Record<string, string | null> | null,
   defines?: Record<string, ShaderDefine> | null,
   cache: ParsedModuleCache | null = defaultCache,
 ) => {
   const main = loadModuleWithCache(code, 'main', undefined, cache);
 
   const parsedLibraries = mapValues(libraries, (code: string, name: string) => loadModuleWithCache(code, name, undefined, cache));
-  const parsedLinks = mapValues(links, (code: string, name: string) => loadModuleWithCache(code, name.split(':')[0], undefined, cache));
+  const parsedLinks = mapValues(links, (code: string, name: string) =>
+    (
+      code != null
+      ? loadModuleWithCache(code, name.split(':')[0], undefined, cache)
+      : null
+    ) as ShaderModule | null
+  ) as any;
 
   const bundle = bindModule(main, parsedLinks, defines);
   return linker(bundle, parsedLibraries);
-});
+};
 
 // Link a bundle of parsed module + libs, dynamic links
 export const makeLinkBundle = (
   linker: Linker,
-) => timed('linkBundle', (
-  source: ParsedBundle | ParsedModule,
-  links?: Record<string, ParsedBundle | ParsedModule>,
+) => (
+  source: ShaderModule,
+  links?: Record<string, ShaderModule | null>,
   defines?: Record<string, ShaderDefine> | null,
 ) => {
   let bundle = toBundle(source);
   if (links || defines) bundle = bindBundle(bundle, links, defines);
 
   return linker(bundle);
-});
+};
 
 // Link a bundle of parsed module + libs, dynamic links
 export const makeLinkModule = (
   linker: Linker,
-) => timed('linkBundle', (
+) => (
   source: ParsedModule,
-  libraries: Record<string, ParsedBundle | ParsedModule> = NO_LIBS,
-  links?: Record<string, ParsedBundle | ParsedModule>,
+  libraries: Record<string, ShaderModule> = NO_LIBS,
+  links?: Record<string, ShaderModule | null>,
   defines?: Record<string, ShaderDefine> | null,
 ) => {
   let bundle = toBundle(source);
   if (links || defines) bundle = bindBundle(bundle, links, defines);
 
   return linker(bundle, libraries);
-});
+};
 
 // Make a shader linker with injectable language rules
 export const makeLinker = (
@@ -104,8 +102,8 @@ export const makeLinker = (
   defineConstants: DefineConstants,
   rewriteUsingAST: RewriteUsingAST,
 ) => (
-  source: ParsedBundle | ParsedModule,
-  libraries: Record<string, ParsedBundle | ParsedModule> = NO_LIBS,
+  source: ShaderModule,
+  libraries: Record<string, ShaderModule> = NO_LIBS,
 ) => {
   const bundle = toBundle(source);
   const main = getBundleKey(source);
@@ -122,19 +120,23 @@ export const makeLinker = (
   if (def.length) program.push(def);
 
   // Namespace by module key
-  const namespaces = new Map<string, string>();
+  const namespaces = new Map<number, string>();
 
   // Track symbols in global namespace 
   const exists = new Set<string>();
   const visible = new Set<string>();
   const fixed = new Map<string, string>();
 
+  // Track link signatures
+  const signatures = new Map<string, any>();
+  const infers = new Map<string, string>();
+
   let hasBoundVirtuals = false;
 
   for (const bundle of bundles) {
     const {module, defines} = bundle;
     const {name, code, tree, table, shake, virtual} = module;
-    const {globals, symbols, visibles, externals, modules} = table;
+    const {globals, symbols, visibles, externals, modules, exports: exp} = table;
 
     const key = getBundleKey(bundle);
     const importMap = imported.get(key);
@@ -143,10 +145,12 @@ export const makeLinker = (
     let optionals: Set<string> | null = null;
 
     // Namespace all non-global symbols outside main module
+    let scope = '';
     const rename = new Map<string, string>();
     if (key !== main) {
       const namespace = virtual?.namespace;
       const ns = reserveNamespace(key, namespaces, namespace);
+      scope = ns;
 
       if (symbols) for (const name of symbols) rename.set(name, ns + name);
       if (globals) for (const name of globals) {
@@ -155,11 +159,19 @@ export const makeLinker = (
       }
       if (visibles) for (const name of visibles) visible.add(rename.get(name)!);
       for (const name of rename.values()) exists.add(name);
+
+      // Gather all exported signatures for type inference
+      if (exp) for (const {flags, func} of exp) {
+        if (func && (flags & RF.Exported)) {
+          const {name} = func;
+          signatures.set(ns + name, func);
+        }
+      }
     }
 
     // Replace imported symbol names with target
     if (modules) for (const {name: module, imports} of modules) {
-      const key = importMap!.get(module);
+      const key = importMap!.get(module)!;
       const ns = namespaces.get(key);
 
       for (const {name, imported} of imports) {
@@ -171,13 +183,14 @@ export const makeLinker = (
         }
         else if (!visible.has(imp)) console.warn(`Import ${name} from '${module}' is private`);
         rename.set(name, imp);
+        infers.set(scope + name, imp);
       }
     }
 
     // Replace imported function prototype names with target
     if (externals) for (const {flags, func} of externals) if (func) {
-      const {name} = func;
-      const key = importMap!.get(name);
+      const {name, inferred} = func;
+      const key = importMap?.get(name)!;
       const ns = namespaces.get(key);
 
       const resolved = aliasMap?.get(name) ?? name;
@@ -195,6 +208,21 @@ export const makeLinker = (
       }
       else if (!visible.has(imp)) console.warn(`Link ${name}:${resolved} is private`);
       rename.set(name, imp);
+
+      if (inferred) {
+        const sig = signatures.get(imp);
+        const {type, parameters} = sig;
+        for (const {name, at} of inferred) {
+          const resolved = at < 0 ? type : parameters[at];
+
+          let imp = ns + (resolved.type?.name ?? resolved.name);
+          let i = imp;
+          while (i = infers.get(imp)) { imp = i; }
+
+          rename.set(name, imp);
+          infers.set(scope + name, imp);
+        }
+      }
     }
 
     // Copy over static renames
@@ -205,14 +233,14 @@ export const makeLinker = (
     if (virtual) {
       const {uniforms, storages, textures} = virtual;
       if ((uniforms || storages || textures) && (!hasBoundVirtuals)) {
-        const id = code.replace('#virtual ', '');
+        const id = code.replace('@virtual ', '');
         throw new Error(`Virtual module ${id} has unresolved data bindings`);
       }
 
       // Emit virtual module in target namespace,
       // with dynamically assigned binding slots.
       const ns = namespaces.get(key)!;
-      const recode = virtual.render(ns, rename, virtual.base);
+      const recode = virtual.render(ns, rename, virtual.bindingBase, virtual.volatileBase);
       program.push(recode);
     }
     else if (tree) {
@@ -236,22 +264,22 @@ export const makeLinker = (
 
 // Load all references from a tree of bundles
 // while gathering info about what's exported (for tree shaking).
-export const loadBundlesInOrder = timed('loadBundlesInOrder', (
+export const loadBundlesInOrder = (
   bundle: ParsedBundle,
-  libraries: Record<string, ParsedModule> = {},
+  libraries: Record<string, ShaderModule> = {},
 ): {
   bundles: ParsedBundle[]
-  exported: Map<string, Set<string>>,
-  imported: Map<string, Map<string, string>>,
-  aliased: Map<string, Map<string, string>>,
+  exported: Map<number, Set<string>>,
+  imported: Map<number, Map<string, number>>,
+  aliased: Map<number, Map<string, string>>,
 } => {
-  const graph = new Map<string, string[]>();
-  const seen  = new Set<string>();
-  const hoist = new Set<string>();
+  const graph = new Map<number, number[]>();
+  const seen  = new Set<number>();
+  const hoist = new Set<number>();
 
-  const exported = new Map<string, Set<string>>();
-  const imported = new Map<string, Map<string, string>>();
-  const aliased  = new Map<string, Map<string, string>>();
+  const exported = new Map<number, Set<string>>();
+  const imported = new Map<number, Map<string, number>>();
+  const aliased  = new Map<number, Map<string, string>>();
 
   const out: ParsedBundle[] = [];
 
@@ -260,7 +288,7 @@ export const loadBundlesInOrder = timed('loadBundlesInOrder', (
   const key = getBundleKey(bundle);
 
   // Traverse graph starting from source
-  const queue = [{key, name, chunk: bundle as ParsedBundle | ParsedModule}];
+  const queue = [{key, name, chunk: bundle as ShaderModule}];
   seen.add(key);
 
   const getContext = (m: ParsedModule) => {
@@ -277,13 +305,13 @@ export const loadBundlesInOrder = timed('loadBundlesInOrder', (
     const bundle = toBundle(chunk);
     const {module, libs, links: linkDefs} = bundle;
     const {table: {modules, externals}} = module;
-    const deps = [] as string[];
+    const deps = [] as number[];
 
     const [links, aliases] = parseLinkAliases(linkDefs);
 
     // Static renames and imports for this module instance
     let aliasMap: Map<string, string> | null = null;
-    let importMap: Map<string, string> | null = null;
+    let importMap: Map<string, number> | null = null;
 
     // Recurse into imports
     if (modules) for (const {at, name, imports} of modules) {
@@ -335,6 +363,7 @@ export const loadBundlesInOrder = timed('loadBundlesInOrder', (
       let list = exported.get(key);
       if (!list) exported.set(key, list = new Set());
       list.add(symbol);
+      
     }
 
     // Build module-to-module dependency graph
@@ -358,7 +387,7 @@ export const loadBundlesInOrder = timed('loadBundlesInOrder', (
     imported,
     aliased,
   };
-});
+};
 
 
 // Generate a new namespace
@@ -374,12 +403,12 @@ export const reserveNamespace = (
 
 // Get depth for each item in a graph, so its dependencies resolve correctly
 export const getGraphOrder = (
-  graph: Map<string, string[]>,
-  name: string,
+  graph: Map<number, number[]>,
+  name: number,
   depth: number = 0,
 ) => {
   const queue = [{name, depth: 0, path: [name]}];
-  const depths = new Map<string, number>();
+  const depths = new Map<number, number>();
 
   while (queue.length) {
     const {name, depth, path} = queue.shift()!;

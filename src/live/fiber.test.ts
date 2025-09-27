@@ -1,4 +1,4 @@
-import { Component, DeferredCall } from './types';
+import type { Component, DeferredCall } from './types';
 import { use } from './builtin';
 import { bind, makeFiber, renderFiber, updateFiber } from './fiber';
 

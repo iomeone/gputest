@@ -1,4 +1,4 @@
-import { VertexAttribute } from './types';
+import type { VertexAttribute } from './types';
 import { VERTEX_ATTRIBUTE_SIZES } from './constants';
 
 export const getVertexAttributeSize = (format: GPUVertexFormat): number =>

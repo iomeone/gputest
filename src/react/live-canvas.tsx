@@ -1,19 +1,34 @@
 import React, { useLayoutEffect, useRef } from 'react';
 
-import { render as renderLive } from '../live';
-import { LiveElement } from '../live/types';
+import type { LiveFiber, LiveElement } from '@use-gpu/live';
+import { render as renderLive, resolveRootNode } from '@use-gpu/live';
 
 export type LiveCanvasProps = {
+  /** CSS styles to apply to the `<canvas>` */
   style?: Record<string, any>,
-  render: (canvas: HTMLCanvasElement) => LiveElement<any>,
+  /** Render prop for Live contents */
+  render?: (canvas: HTMLCanvasElement) => LiveElement<any>,
+  /** Render prop for Live contents (alternative) */
+  children?: (canvas: HTMLCanvasElement) => LiveElement<any>,
 };
 
-export const LiveCanvas: React.FC<LiveCanvasProps> = ({style, render}) => {
-  const ref = useRef<HTMLCanvasElement>();
+/**
+ * Embed Live `<canvas>` inside React. Portal from React to Live.
+ */
+export const LiveCanvas: React.FunctionComponent<LiveCanvasProps> = ({style, render, children}) => {
+  const el = useRef<HTMLCanvasElement>(null);
+  const fiber = useRef<LiveFiber<any>>();
 
   useLayoutEffect(() => {
-    if (ref.current) renderLive(render(ref.current));
+    if (el.current) {
+      const content = (render ?? children);
+      if (!content) return;
+      
+      const element = (typeof content === 'function') ? content(el.current) : content;
+      const rootNode = resolveRootNode(element);
+      fiber.current = renderLive(rootNode, fiber.current);
+    }
   }, [render]);
 
-  return <canvas ref={ref} style={style} />;
+  return <canvas ref={el} style={style} />;
 };

@@ -3,23 +3,23 @@
 exports[`getGraphOrder gets graph order 1`] = `
 Array [
   Array [
-    "a",
+    1,
     0,
   ],
   Array [
-    "b",
+    2,
     1,
   ],
   Array [
-    "c",
+    3,
     1,
   ],
   Array [
-    "d",
+    4,
     2,
   ],
   Array [
-    "e",
+    5,
     3,
   ],
 ]

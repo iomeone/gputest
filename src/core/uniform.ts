@@ -1,21 +1,24 @@
-import {
-  UniformAllocation, VirtualAllocation, ResourceAllocation,
+import type {
+  UniformAllocation, VirtualAllocation, VolatileAllocation, ResourceAllocation,
   UniformAttribute, UniformAttributeDescriptor,
   UniformLayout, UniformType,
-  UniformPipe, UniformByteSetter, UniformFiller,
+  UniformPipe, UniformByteSetter, UniformFiller, UniformDataSetter, UniformValueSetter,
   DataBinding,
   StorageSource,
   TextureSource,
-  Prop,
+  Lazy,
 } from './types';
-import { UNIFORM_ATTRIBUTE_SIZES } from './constants';
+import { UNIFORM_ATTRIBUTE_SIZES, UNIFORM_ATTRIBUTE_ALIGNS } from './constants';
 import { UNIFORM_BYTE_SETTERS } from './bytes';
+
+import { getObjectKey, toMurmur53 } from '@use-gpu/state';
 import { makeUniformBuffer } from './buffer';
 import { makeSampler, makeTextureView } from './texture';
+import { alignSizeTo } from './data';
 
-export const resolve = <T>(x: Prop<T>): T => {
-  if (typeof x === 'function') return x();
-  if (typeof x === 'object') {
+export const resolve = <T>(x: Lazy<T>): T => {
+  if (typeof x === 'function') return (x as any)();
+  if (typeof x === 'object' && x != null) {
     if ('expr' in x) return x.expr();
     if ('current' in x) return x.current;
   }
@@ -23,6 +26,7 @@ export const resolve = <T>(x: Prop<T>): T => {
 };
 
 export const getUniformAttributeSize = (format: UniformType): number => UNIFORM_ATTRIBUTE_SIZES[format];
+export const getUniformAttributeAlign = (format: UniformType): number => UNIFORM_ATTRIBUTE_ALIGNS[format];
 export const getUniformByteSetter = (format: UniformType): UniformByteSetter => UNIFORM_BYTE_SETTERS[format];
 
 export const makeUniforms = (
@@ -34,7 +38,10 @@ export const makeUniforms = (
   const pipe = makeUniformPipe(uniforms);
   const buffer = makeUniformBuffer(device, pipe.data);
   const entries = makeResourceEntries([{buffer}]);
+
+  const label = uniforms.map(u => u.name).join(' ');
   const bindGroup = device.createBindGroup({
+    label,
     layout: pipeline.getBindGroupLayout(set),
     entries,
   });
@@ -53,8 +60,10 @@ export const makeMultiUniforms = (
   const {layout: {offsets}} = pipe;
   const bindings = offsets.map((offset) => ({buffer, offset}));
 
+  const label = uniformGroups.flatMap(uniforms => uniforms.map(u => u.name)).join(' ');
   const entries = makeResourceEntries(bindings);
   const bindGroup = device.createBindGroup({
+    label,
     layout: pipeline.getBindGroupLayout(set),
     entries,
   });
@@ -68,15 +77,15 @@ export const makeBoundUniforms = <T>(
   uniforms: DataBinding<T>[],
   bindings: DataBinding<T>[],
   set: number = 0,
+  force?: boolean,
 ): VirtualAllocation => {
-  const entries = [] as GPUBindGroupEntry[];
-
-  let pipe, buffer, bindGroup;
-
   const hasBindings = !!bindings.length;
   const hasUniforms = !!uniforms.length;
 
-  if (!hasBindings && !hasUniforms) return {};
+  if (!hasBindings && !hasUniforms && !force) return {};
+
+  const entries = [] as GPUBindGroupEntry[];
+  let pipe, buffer;
 
   if (hasBindings) {
     const bindingEntries = bindings.length ? makeDataBindingsEntries(device, bindings, 0) : [];
@@ -92,14 +101,60 @@ export const makeBoundUniforms = <T>(
     entries.push(...uniformEntries);
   }
 
-  if (entries.length) {
-    bindGroup = device.createBindGroup({
+  const bindGroup = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(set),
+    entries,
+  });
+
+  return {pipe, buffer, bindGroup};
+}
+
+export const makeVolatileUniforms = <T>(
+  device: GPUDevice,
+  pipeline: GPURenderPipeline | GPUComputePipeline,
+  bindings: DataBinding<T>[],
+  set: number = 0,
+): VolatileAllocation => {
+  const hasBindings = !!bindings.length;
+  if (!hasBindings) return {};
+
+  let depth = 1;
+  for (const b of bindings) {
+    if (b.storage?.volatile) depth = Math.max(depth, +b.storage.volatile);
+    else if (b.texture?.volatile) depth = Math.max(depth, +b.texture.volatile);
+  }
+
+  const cache = miniLRU<GPUBindGroup>(depth + 1);
+
+  const ids: number[] = [];
+  const bindGroup = () => {
+
+    ids.length = 0;
+    for (const b of bindings) {
+      let v: any = undefined;
+      if (b.texture) v = b.texture.view ?? b.texture.texture;
+      else if (b.storage) v = b.storage.buffer;      
+
+      ids.push(getObjectKey(v));
+    }
+
+    const key = toMurmur53(ids);
+    const cached = cache.get(key);
+    if (cached) {
+      return cached;
+    }
+
+    const entries = bindings.length ? makeDataBindingsEntries(device, bindings, 0) : [];
+    const bindGroup = device.createBindGroup({
       layout: pipeline.getBindGroupLayout(set),
       entries,
     });
-  }
 
-  return {pipe, buffer, bindGroup};
+    cache.set(key, bindGroup);
+    return bindGroup;
+  };
+
+  return {bindGroup};
 }
 
 export const makeDataBindingsEntries = <T>(
@@ -112,21 +167,27 @@ export const makeDataBindingsEntries = <T>(
   for (const b of bindings) {
     if (b.storage) {
       const {storage} = b;
-      entries.push({binding, resource: {buffer: storage.buffer}});
+      entries.push({binding, resource: {
+        buffer:     storage.buffer,
+        offset:     storage.byteOffset,
+        byteLength: storage.byteLength,
+      }});
       binding++;
     }
     else if (b.texture) {
       const {texture} = b;
-      const {view, sampler} = texture;
-      
-      const textureResource = (view instanceof GPUTextureView) ? view : makeTextureView(view);
-      const samplerResource = (sampler instanceof GPUSampler) ? sampler : makeSampler(device, sampler);
+      const {texture: t, view, sampler} = texture;
 
-      entries.push({binding, resource: samplerResource});
-      binding++;
+      const textureResource = view ?? makeTextureView(t);
+      const samplerResource = sampler ? ((sampler instanceof GPUSampler) ? sampler : makeSampler(device, sampler)) : null;
 
       entries.push({binding, resource: textureResource});
       binding++;
+
+      if (sampler) {
+        entries.push({binding, resource: samplerResource});
+        binding++;
+      }
     }
   }
 
@@ -139,7 +200,7 @@ export const makeUniformPipe = (
 ): UniformPipe => {
   const layout = makeUniformLayout(uniforms);
   const data = makeLayoutData(layout, count);
-  const fill = makeLayoutFiller(layout, data);
+  const {fill} = makeLayoutFiller(layout, data);
 
   return {layout, data, fill};
 }
@@ -150,7 +211,7 @@ export const makeMultiUniformPipe = (
 ): UniformPipe => {
   const layout = makeMultiUniformLayout(uniformGroups);
   const data = makeLayoutData(layout, count);
-  const fill = makeLayoutFiller(layout, data);
+  const {fill} = makeLayoutFiller(layout, data);
 
   return {layout, data, fill};
 }
@@ -175,19 +236,22 @@ export const makeUniformLayout = (
 ): UniformLayout => {
   const out = [] as any[];
 
+  let max = 0;
   let offset = base;
   for (const {name, format} of uniforms) {
     const s = getUniformAttributeSize(format);
-    const align = Math.min(s, 16);
+    const a = getUniformAttributeAlign(format);
+    if (a === 0) throw new Error(`Type ${format} is not host-shareable or unimplemented`);
 
-    const o = offset % align;
-    if (o) offset += align - o;
-    out.push({name, offset, format});
+    const o = alignSizeTo(offset, a);
+    out.push({name, offset: o, format});
+    max = Math.max(max, a);
 
-    offset += s;
+    offset = o + s;
   }
 
-  return {length: offset - base, attributes: out, offsets: [base]};
+  const s = alignSizeTo(offset, max);
+  return {length: s - base, attributes: out, offsets: [base]};
 };
 
 export const makeMultiUniformLayout = (
@@ -204,9 +268,8 @@ export const makeMultiUniformLayout = (
     out.push(...attributes);
     offsets.push(offset);
     offset += length;
-    
-    const d = offset % alignment;
-    offset += d ? alignment - d : 0;
+
+    offset = alignSizeTo(offset, alignment);
   }
 
   return {length: offset - base, attributes: out, offsets};
@@ -224,7 +287,11 @@ export const makeLayoutData = (
 export const makeLayoutFiller = (
   layout: UniformLayout,
   data: ArrayBuffer,
-): UniformFiller => {
+): {
+  fill: UniformFiller,
+  setData: UniformDataSetter,
+  setValue: UniformValueSetter,
+} => {
   const {length, attributes} = layout;
 
   const map = new Map<string, UniformAttributeDescriptor>();
@@ -232,7 +299,20 @@ export const makeLayoutFiller = (
 
   const dataView = new DataView(data);
 
-  const setItem = (index: number, item: any) => {
+  const setValue = (index: number, field: number, value: any) => {
+    const base = index * length;
+    const attr = attributes[field];
+    if (!attr) return;
+
+    const {offset, format} = attr;
+    const setter = getUniformByteSetter(format);
+
+    const o = value;
+    const v = resolve(o);
+    if (v != null) setter(dataView, base + offset, v);
+  }
+
+  const setData = (index: number, item: any) => {
     const base = index * length;
     for (let k in item) {
       const attr = map.get(k);
@@ -247,11 +327,37 @@ export const makeLayoutFiller = (
     }
   }
 
-  return (items: any) => {
+  const fill = (items: any) => {
     let index = 0;
-    if (!Array.isArray(items)) setItem(index, items);
+    if (!Array.isArray(items)) setData(index++, items);
     else for (const item of items) {
-      setItem(index++, item);
+      setData(index++, item);
     }
+    return index;
+  };
+
+  return {fill, setData, setValue};
+}
+
+const miniLRU = <T>(max: number) => {
+  const keys   = [] as number[];
+  const values = [] as T[];
+
+  for (let i = 0; i < max; ++i) {
+    keys.push(null as any);
+    values.push(null as any);
   }
+
+  let h = 0;
+  return {
+    get: (key: number) => {
+      const i = keys.indexOf(key);
+      return i >= 0 ? values[i] : null;
+    },
+    set: (key: number, value: T) => {
+      keys[h] = key;
+      values[h] = value;
+      h = (h + 1) % max;
+    },
+  };
 }

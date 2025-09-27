@@ -1,7 +1,7 @@
-@external fn getGridValue(i: u32) -> f32;
-@external fn getGridDirection(i: u32) -> i32;
-@external fn getGridMin(i: u32) -> vec4<f32>;
-@external fn getGridMax(i: u32) -> vec4<f32>;
+@link fn getGridValue(i: u32) -> f32;
+@link fn getGridDirection(i: u32) -> i32;
+@link fn getGridMin(i: u32) -> vec4<f32>;
+@link fn getGridMax(i: u32) -> vec4<f32>;
 
 let STEP = vec2<f32>(0.0, 1.0);
 

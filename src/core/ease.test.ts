@@ -1,4 +1,4 @@
-import { Point } from './types';
+import type { Point } from './types';
 import { cubicBezier, cubicBezierDt, cubicBezierInverse, makeDistanceMap, queryDistanceMap } from './ease';
 
 describe('ease', () => {

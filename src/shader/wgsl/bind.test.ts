@@ -11,7 +11,7 @@ describe("bind", () => {
   it("bind produces a bound bundle", () => {
     
     const codeMain = `
-    @external fn getColor() -> vec4<f32> {};
+    @link fn getColor() -> vec4<f32> {};
     fn main() {
       var v: vec4<f32>;
       v = getColor();
@@ -20,7 +20,7 @@ describe("bind", () => {
     `
 
     const codeSub = `
-    @external fn getSubColor() -> vec4<f32> {};
+    @link fn getSubColor() -> vec4<f32> {};
 
     fn colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
     fn colorNotUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 1.0); }
@@ -41,7 +41,7 @@ describe("bind", () => {
     const links = {"getSubColor:getColor": getColor};
     const defines = {'TEST': true};
 
-    const bound = bindBundle(sub, links, defines, 'key');
+    const bound = bindBundle(sub, links, defines);
 
     expect(bound.hash).not.toEqual(sub.table.hash);
     expect(bound.hash).toBeTruthy();
@@ -54,7 +54,7 @@ describe("bind", () => {
   it("binds an external", () => {
     
     const codeMain = `
-    @external fn getColor() -> vec4<f32> {};
+    @link fn getColor() -> vec4<f32> {};
     fn main() {
       var v: vec4<f32>;
       v = getColor();
@@ -63,7 +63,7 @@ describe("bind", () => {
     `
 
     const codeSub = `
-    @external fn getSubColor() -> vec4<f32> {};
+    @link fn getSubColor() -> vec4<f32> {};
 
     fn colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
     fn colorNotUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 1.0); }
@@ -90,13 +90,13 @@ describe("bind", () => {
     }
 
     {
-      const bound = bindBundle(sub, links, defines, 'key');
+      const bound = bindBundle(sub, links, defines);
       const linked = linkBundle(bound);
       expect(linked).toMatchSnapshot();
     }
 
     {
-      const bound = bindBundle(sub, links, defines, 'key');
+      const bound = bindBundle(sub, links, defines);
       const linked = linkBundle(module, {getColor: bound});
       expect(linked).toMatchSnapshot();
     }
@@ -115,6 +115,7 @@ describe("bind", () => {
           buffer: {} as any,
           format: 'vec2<f32>',
           length: 10,
+          size: [10],
           version: 1,
         },
       },
@@ -144,14 +145,15 @@ describe("bind", () => {
           buffer: {} as any,
           format: 'vec2<f32>',
           length: 10,
+          size: [10],
           version: 1,
         },
       },
     ];
 
     const code = `
-    @external fn getColor(i: i32) -> vec4<f32> {};
-    @external fn getSize(i: i32) -> vec2<f32> {};
+    @link fn getColor(i: i32) -> vec4<f32> {};
+    @link fn getSize(i: i32) -> vec2<f32> {};
 
     fn main() {
       getColor(0);

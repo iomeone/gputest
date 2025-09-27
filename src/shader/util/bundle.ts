@@ -1,17 +1,24 @@
-import { UniformAttribute, ParsedBundle, ParsedModule, TypeLike, RefFlags as RF } from '../types';
+import { UniformAttribute, ShaderModule, ParsedBundle, ParsedModule, TypeLike, RefFlags as RF } from '../types';
 
-const NO_LIBS = {};
+const NO_LIBS: Record<string, any> = {};
+const NO_ARGS: any[] = [];
 
-export const getBundleKey = (bundle: ParsedBundle | ParsedModule) => {
+export const getBundleKey = (bundle: ShaderModule): number => {
   return (('module' in bundle) ? bundle.key ?? bundle.module.key : bundle.key) ?? getBundleHash(bundle);
 };
 
-export const getBundleHash = (bundle: ParsedBundle | ParsedModule) => {
+export const getBundleHash = (bundle: ShaderModule): number => {
   return ('module' in bundle) ? bundle.hash ?? bundle.module.hash : bundle.hash;
 };
 
+export const getBundleEntry = (bundle: ShaderModule) => {
+  return ('module' in bundle) ? bundle.entry ?? bundle.module.entry : bundle.entry;
+};
+
 // Force module/bundle to bundle
-export const toBundle = (bundle: ParsedBundle | ParsedModule): ParsedBundle => {
+export const toBundle = (bundle: ShaderModule): ParsedBundle => {
+  if (bundle === undefined) throw new Error("Bundle is undefined");
+  if (bundle === null) throw new Error("Bundle is null");
   if (typeof bundle === 'string') throw new Error("Bundle is a string instead of an object");
 
   if ('table' in bundle) return {
@@ -22,7 +29,9 @@ export const toBundle = (bundle: ParsedBundle | ParsedModule): ParsedBundle => {
 }
 
 // Force module/bundle to module
-export const toModule = (bundle: ParsedBundle | ParsedModule) => {
+export const toModule = (bundle: ShaderModule) => {
+  if (bundle === undefined) throw new Error("Bundle is undefined");
+  if (bundle === null) throw new Error("Bundle is null");
   if (typeof bundle === 'string') throw new Error("Bundle is a string instead of an object");
 
   if ('table' in bundle) return bundle as ParsedModule;
@@ -40,7 +49,7 @@ export const makeBundleToAttributes = (
   toTypeString: ToTypeString,
   toArgTypes: ToArgTypes,
 ) => (
-  bundle: ParsedBundle | ParsedModule,
+  bundle: ShaderModule,
 ): UniformAttribute[] => {
   const module = toModule(bundle);
   const {table: {declarations}} = module;
@@ -62,7 +71,7 @@ export const makeBundleToAttribute = (
   toTypeString: ToTypeString,
   toArgTypes: ToArgTypes,
 ) => (
-  bundle: ParsedBundle | ParsedModule,
+  bundle: ShaderModule,
   name?: string,
 ): UniformAttribute => {
   const module = toModule(bundle);
@@ -70,13 +79,25 @@ export const makeBundleToAttribute = (
 
   const entry = name ?? bundle.entry ?? module.entry;
 
-  for (const fn of declarations) if (fn.func) {
-    const {func} = fn;
-    const {type, name, parameters} = func;
-    if (name === entry) {
-      return {name, format: toTypeString(type), args: toArgTypes(parameters)};
+  for (const d of declarations) {
+    if (d.func) {
+      const {type, name, parameters} = d.func;
+      if (name === entry) {
+        return {name, format: toTypeString(type), args: toArgTypes(parameters)};
+      }
+    }
+    if (d.struct) {
+      const {name, members} = d.struct;
+      if (name === entry) {
+        const ms = members?.map(({name, type}: any) => ({
+          name,
+          format: toTypeString(type),
+        }));
+        const args = ms?.map(({format}: any) => format);
+        return {name, format: name, args, members: ms};
+      }
     }
   }
 
-  return {name: name ?? 'main', format: 'void', args: []};
+  return {name: name ?? 'main', format: 'void', args: NO_ARGS};
 }

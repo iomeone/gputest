@@ -1,6 +1,9 @@
 import React, { useCallback } from 'react';
-import { useRefineCursor, Cursor } from './cursor';
-import { ExpandState } from './types';
+import type { Cursor } from '@use-gpu/state';
+import type { ExpandState } from './types';
+
+import { useRefineCursor, useUpdateState } from '@use-gpu/state';
+
 
 type ExpandableProps = {
   id: string | number,

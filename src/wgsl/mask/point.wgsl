@@ -3,13 +3,13 @@ let OUTLINE = 0.4;
 fn getUVScale(uv: vec2<f32>) -> f32 {
   var dx = dpdx(uv);
   var dy = dpdy(uv);
-  // implicit factor 2 to account for uv -> xy map
-  return length(dx) + length(dy);
+  // implicit * 2 / 2
+  return (length(dx) + length(dy));
 }
 
 fn scaleSDF(sdf: f32, scale: f32) -> f32 {
   var d = sdf / scale + 0.5;
-  return clamp(d, 0.0, 1.0);
+  return clamp(d, 0.0, 1.0) * max(0.0, min(1.0, 2.0 / scale) * 2.0 - 1.0);
 }
 
 fn outlineSDF(sdf: f32) -> f32 {

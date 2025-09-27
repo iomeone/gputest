@@ -8,11 +8,13 @@ export * from './color';
 export * from './constants';
 export * from './data';
 export * from './depth';
+export * from './mip';
 export * from './picking';
 export * from './pipeline';
 export * from './storage';
 export * from './texture';
 export * from './tuple';
-export * from './types';
 export * from './uniform';
 export * from './view';
+
+export * from './types';

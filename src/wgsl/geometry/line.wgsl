@@ -1,17 +1,4 @@
-use '../../wgsl/use/view'::{ viewUniforms };
-
-// segments
-//
-// o--o--o  o--o--o--o  o--o
-// 1  3  2  1  3  3  2  1  2
-
-@export fn getLineSegment(index: u32) -> i32 {
-  let n = u32(LINE_DETAIL + 1);
-  let i = index % n;
-  if (i == 0u) { return 1; }
-  if (i == n - 1u) { return 2; }
-  return 3;
-};
+use '@use-gpu/wgsl/use/view'::{ screenToClip3D, clip3DToScreen };
 
 fn turn(xy: vec2<f32>) -> vec2<f32> {
   return vec2<f32>(xy.y, -xy.x);
@@ -62,9 +49,9 @@ fn slerp(d: f32, a: vec2<f32>, b: vec2<f32>, t: f32) -> vec2<f32> {
   segment: i32,
   style: i32,
 ) -> vec3<f32> {
-  var before = beforePoint.xy * viewUniforms.viewSize;
-  var center = centerPoint.xy * viewUniforms.viewSize;
-  var after = afterPoint.xy * viewUniforms.viewSize;
+  var before = clip3DToScreen(beforePoint);
+  var center = clip3DToScreen(centerPoint);
+  var after  = clip3DToScreen(afterPoint);
 
   var left = turn(normalize(center - before));
   var right = turn(normalize(after - center));
@@ -94,9 +81,7 @@ fn slerp(d: f32, a: vec2<f32>, b: vec2<f32>, t: f32) -> vec2<f32> {
   }
 
   var offset = size * mid * y;
-  // TODO: awaiting compound support
-  //center += offset;
   center = center + offset;
 
-  return vec3<f32>(center * viewUniforms.viewResolution, centerPoint.z);
+  return screenToClip3D(center, centerPoint.z);
 }

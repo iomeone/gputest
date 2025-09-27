@@ -1,12 +1,14 @@
 import { Tree, SyntaxNode } from '@lezer/common';
 import LRU from 'lru-cache';
 
-export type ASTParser<T extends SymbolTable = any> = {
+type ColorSpace = any;
+
+export type ASTParser<T extends SymbolTableT = any> = {
   getSymbolTable: () => T,
   getShakeTable: (table?: T) => ShakeTable | undefined,
 };
 
-export type SymbolTable = {
+export type SymbolTableT = {
   symbols?: string[],
 };
 
@@ -16,50 +18,50 @@ export type TypeLike = {
   args?: TypeLike[],
 };
 
-export type ParsedModuleCache<T extends SymbolTable = any> = LRU<string, ParsedModule<T>>;
+export type ParsedModuleCache<T extends SymbolTableT = any> = LRU<number, ParsedModule<T>>;
 
-export type ShaderModule<T extends SymbolTable = any> = ParsedBundle<T> | ParsedModule<T>;
+export type ShaderModule<T extends SymbolTableT = any> = ParsedBundle<T> | ParsedModule<T>;
 
-export type ParsedBundle<T extends SymbolTable = any> = {
+export type ParsedBundle<T extends SymbolTableT = any> = {
   module: ParsedModule<T>,
   libs?: Record<string, ShaderModule<T>>,
   links?: Record<string, ShaderModule<T>>,
   entry?: string,
 
-  hash?: string,
-  key?: string,
+  hash?: number,
+  key?: number,
   defines?: Record<string, any>,
   virtuals?: ParsedModule<T>[],
 };
 
-export type ParsedModule<T extends SymbolTable = any> = {
+export type ParsedModule<T extends SymbolTableT = any> = {
   name: string,
   code: string,
-  hash: string,
+  hash: number,
   table: T,
 
   tree?: Tree,
   shake?: ShakeTable,
   virtual?: VirtualTable<T>,
   entry?: string,
-
-  key?: string,
+  key?: number,
 };
 
-export type VirtualTable<T extends SymbolTable = any> = {
+export type VirtualTable<T extends SymbolTableT = any> = {
   render: VirtualRender,
   uniforms?: DataBinding<T>[],
   storages?: DataBinding<T>[],
   textures?: DataBinding<T>[],
-  base?: number,
+  bindingBase?: number,
+  volatileBase?: number,
   namespace?: string,
 };
 
-export type DataBinding<T extends SymbolTable = any> = {
-  uniform: UniformAttributeValue,
+export type DataBinding<T extends SymbolTableT = any> = {
+  uniform: UniformAttribute,
   storage?: StorageSource,
   texture?: TextureSource,
-  lambda?: LambdaSource<T>,
+  lambda?: LambdaSource<ShaderModule<T>>,
   constant?: any,
 };
 
@@ -82,6 +84,7 @@ export enum RefFlags {
   External = 1 << 1,
   Optional = 1 << 2,
   Global   = 1 << 3,
+  Infer    = 1 << 4,
 };
 
 export type ShaderDefine = string | number | boolean | null | undefined;
@@ -91,42 +94,54 @@ export type ShakeOp = [number, string[]];
 
 export type StorageSource = {
   buffer: GPUBuffer,
-  format: string,
+  format: string | ShaderModule,
   length: number,
+  size: number[],
   version: number,
+
+  volatile?: number,
+  byteOffset?: number,
+  byteLength?: number,
+  colorSpace?: ColorSpace,
 };
 
-export type LambdaSource<T extends SymbolTable> = {
-  shader: ShaderModule<T>,
-  size: [number, number] | [number, number, number] | [number, number, number, number],
+export type LambdaSource<T = any> = {
+  shader: T,
+  length: number,
+  size: number[],
+  version: number,
+
+  colorSpace?: ColorSpace,
 };
 
 export type TextureSource = {
-  view: GPUTexture | GPUTextureView,
-  sampler: GPUSampler | GPUSamplerDescriptor,
+  texture: GPUTexture,
+  view?: GPUTextureView,
+  sampler: GPUSampler | GPUSamplerDescriptor | null,
   layout: string,
   format: string,
-  variant?: string,
-  absolute?: boolean,
   size: [number, number] | [number, number, number],
   version: number,
+
+  mips?: number,
+  variant?: string,
+  args?: string[],
+  absolute?: boolean,
+  volatile?: number,
+  colorSpace?: ColorSpace,
 };
 
-// export type ShaderSource = StorageSource | LambdaSource<ShaderModule> | ShaderModule;
-
-export type ShaderSource<T extends SymbolTable = any> =
-  | StorageSource
-  | LambdaSource<T>
-  | ShaderModule<T>;
+export type ShaderSource = StorageSource | LambdaSource<ShaderModule> | TextureSource | ShaderModule;
 
 export type UniformAttribute = {
   name: string,
-  format: string,
-  args?: string[],
+  format: any,
+  args?: any[],
+  members?: UniformAttribute[],
 };
 
 export type UniformAttributeValue = UniformAttribute & {
   value: any,
 };
 
-export type VirtualRender = (namespace: string, rename: Map<string, string>, base: number) => string;
+export type VirtualRender = (namespace: string, rename: Map<string, string>, virtualBase?: number, volatileBase?: number) => string;

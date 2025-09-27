@@ -1,39 +1,39 @@
-import { mat4, vec3 } from 'gl-matrix';
+import type { UniformAttribute, UniformType } from './types';
 
-import { UniformAttribute, UniformType } from './types';
+import { mat4, vec3, vec4 } from 'gl-matrix';
 
 export const VIEW_UNIFORMS: UniformAttribute[] = [
   {
     name: 'projectionMatrix',
-    format: UniformType['mat4x4<f32>'],
+    format: 'mat4x4<f32>',
   },
   {
     name: 'viewMatrix',
-    format: UniformType['mat4x4<f32>'],
+    format: 'mat4x4<f32>',
   },
   {
     name: 'viewPosition',
-    format: UniformType['vec4<f32>']
+    format: 'vec4<f32>'
   },
   {
     name: 'viewNearFar',
-    format: UniformType['vec2<f32>']
+    format: 'vec2<f32>'
   },
   {
     name: 'viewResolution',
-    format: UniformType['vec2<f32>'],
+    format: 'vec2<f32>',
   },
   {
     name: 'viewSize',
-    format: UniformType['vec2<f32>'],
+    format: 'vec2<f32>',
   },
   {
-    name: 'viewWorldUnit',
-    format: UniformType.f32,
+    name: 'viewWorldDepth',
+    format: 'vec2<f32>',
   },
   {
     name: 'viewPixelRatio',
-    format: UniformType.f32,
+    format: 'f32',
   },
 ];
 
@@ -83,10 +83,10 @@ export const makeProjectionMatrix = (
     matrix = mat4.create();
     mat4.perspective(matrix, fov, aspect, near, far);
 
-    // Move Z from -1..1 to 0..1 in clip space
+    // Move Z from -1..1 to 1..0 in clip space (reversed Z)
     const z = mat4.create();
     mat4.translate(z, z, vec3.fromValues(0, 0, 0.5));
-    mat4.scale(z, z, vec3.fromValues(1, 1, 0.5));
+    mat4.scale(z, z, vec3.fromValues(1, 1, -0.5));
     mat4.multiply(matrix, z, matrix);
   }
   else if (dolly > 0) {
@@ -99,36 +99,68 @@ export const makeProjectionMatrix = (
     matrix = mat4.create();
     mat4.perspective(matrix, dFov, aspect, dNear, dFar);
 
-    // Move Z from -1..1 to 0..1 in clip space
+    // Move Z from -1..1 to 1..0 in clip space (reversed Z)
     const z = mat4.create();
     mat4.translate(z, z, vec3.fromValues(0, 0, 0.5));
-    mat4.scale(z, z, vec3.fromValues(1, 1, 0.5));
+    mat4.scale(z, z, vec3.fromValues(1, 1, -0.5));
     mat4.multiply(matrix, z, matrix);
   }
   else {
     // Orthogonal matrix
     const s = radius * Math.tan(fov / 2);
-    matrix = makeOrthogonalMatrix(-aspect * s, aspect * s, -s, s, near, far);
+    matrix = makeOrthogonalMatrix(-aspect * s, aspect * s, -s, s, far, near);
   }
 
   return matrix;
 }
 
-export const makeOrbitMatrix = (radius: number, phi: number, theta: number, dolly: number): mat4 => {
+const NO_TARGET = [0, 0, 0];
+
+export const makeOrbitMatrix = (
+  radius: number,
+  phi: number,
+  theta: number,
+  target: number[] | vec3 | vec4 = NO_TARGET,
+  dolly: number = 1,
+): mat4 => {
+
   const matrix = mat4.create();
   mat4.translate(matrix, matrix, vec3.fromValues(0, 0, -radius / (dolly || 1)));
   mat4.rotate(matrix, matrix, theta, vec3.fromValues(1, 0, 0));
   mat4.rotate(matrix, matrix, phi, vec3.fromValues(0, 1, 0));
+  mat4.translate(matrix, matrix, target as any as vec3);
+  
   return matrix;
 }
 
-export const makeOrbitPosition = (radius: number, phi: number, theta: number, dolly: number): number[] => {
+export const makeOrbitPosition = (
+  radius: number,
+  phi: number,
+  theta: number,
+  target: number[] | vec3 | vec4 = NO_TARGET,
+  dolly: number = 1,
+): number[] => {
   const ct = Math.cos(theta);
   radius /= Math.max(1e-5, dolly);
   return [
-    -Math.sin(phi) * ct * radius,
-    Math.sin(theta) * radius,
-    Math.cos(phi) * ct * radius,
+    -Math.sin(phi) * ct * radius + (target[0] || 0),
+    Math.sin(theta) * radius + (target[1] || 0),
+    Math.cos(phi) * ct * radius + (target[2] || 0),
   ];
 }
 
+export const makePanMatrix = (x: number, y: number, zoom: number, dolly: number): mat4 => {
+  const matrix = mat4.create();
+  mat4.translate(matrix, matrix, vec3.fromValues(x, y, 1 - 1 / (dolly || 1)));
+  mat4.scale(matrix, matrix, vec3.fromValues(zoom, zoom, zoom));
+  return matrix;
+}
+
+export const makePanPosition = (x: number, y: number, zoom: number, dolly: number): number[] => {
+  const z = 1 - 1 / Math.max(1e-5, dolly);
+  return [
+    x,
+    y,
+    z,
+  ];
+}

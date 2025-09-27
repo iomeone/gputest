@@ -1,4 +1,5 @@
 export const VIRTUAL_BINDGROUP = '@group(VIRTUAL)';
+export const VOLATILE_BINDGROUP = '@group(VOLATILE)';
 
 export const WGSL_NATIVE_TYPES = new Set([
   'bool',

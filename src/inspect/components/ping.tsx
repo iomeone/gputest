@@ -1,19 +1,19 @@
-import { LiveFiber, ArrowFunction } from '../../live/types';
-import { formatNodeName, incrementVersion } from '../../live';
+import type { LiveFiber, ArrowFunction } from '@use-gpu/live';
+import { formatNodeName, incrementVersion } from '@use-gpu/live';
 
 import React, { memo, createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 const PingContext = createContext<PingContextProps>({
-  set: () => {},
-  unset: () => {},
+  subscribe: () => {},
+  unsubscribe: () => {},
 });
 
 const NO_DEPS: any[] = [];
 
 type PingContextProps = {
-  subscribe: (fiber: LiveFiber<any>, f: ArrowFunction) => void,
-  unsubscribe: (fiber: LiveFiber<any>) => void,
+  subscribe: (fiber: LiveFiber<any> | null | undefined, f: ArrowFunction) => void,
+  unsubscribe: (fiber: LiveFiber<any> | null | undefined, f: ArrowFunction) => void,
 };
 
 type PingProviderProps = {
@@ -23,7 +23,7 @@ type PingProviderProps = {
 
 type Timer = ReturnType<typeof setTimeout>;
 
-type PingEntry = [number, ArrowFunction[]];
+type PingEntry = [number, number, boolean];
 
 // Track update pings to show highlights in tree
 export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => {
@@ -99,7 +99,6 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
 
           const fs = s.values();
           for (const f of fs) f(v, false);
-          if (s.size === 0) reping.add(id);
         }
       
         for (const f of all) f(version, false);
@@ -118,9 +117,11 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
       hot = q;
     };
 
-    fiber.host.__ping = (fiber: LiveFiber<any>, active: boolean) => {
+    if (!fiber.host) return;
+
+    fiber.host.__ping = (fiber: LiveFiber<any>, active?: boolean) => {
       version = incrementVersion(version);
-      queue.push([fiber.id, fiber.runs, active]);
+      queue.push([fiber.id, fiber.runs, !!active]);
 
       if (!timer) {
         timer = setTimeout(flush, 0);
@@ -142,7 +143,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
   );
 }
 
-export const usePingContext = (fiber: LiveFiber<any>) => {
+export const usePingContext = (fiber?: LiveFiber<any>) => {
   const {subscribe, unsubscribe} = useContext(PingContext);
 
   const [, forceUpdate] = useForceUpdate();
@@ -163,8 +164,8 @@ export const usePingContext = (fiber: LiveFiber<any>) => {
   return [version, live];
 }
 
-export const useForceUpdate = () => {
+export const useForceUpdate = (): [number, () => void] => {
   const [version, setVersion] = useState<number>(0);
-  const forceUpdate = useCallback(() => setVersion(incrementVersion));
+  const forceUpdate = useCallback(() => setVersion(incrementVersion), NO_DEPS);
   return [version, forceUpdate];
 };

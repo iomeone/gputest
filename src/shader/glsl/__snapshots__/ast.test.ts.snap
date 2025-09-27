@@ -946,7 +946,7 @@ Array [
       "viewPosition",
       "viewResolution",
       "viewSize",
-      "viewWorldUnit",
+      "viewWorldDepth",
       "viewPixelRatio",
     ],
     "struct": Object {
@@ -984,7 +984,7 @@ Array [
             },
           },
           Object {
-            "name": "viewWorldUnit",
+            "name": "viewWorldDepth",
             "type": Object {
               "name": "float",
             },
@@ -1055,7 +1055,7 @@ Object {
               },
             },
             Object {
-              "name": "viewWorldUnit",
+              "name": "viewWorldDepth",
               "type": Object {
                 "name": "float",
               },
@@ -1082,7 +1082,7 @@ Object {
       ],
     },
     Object {
-      "at": 275,
+      "at": 276,
       "flags": 1,
       "func": Object {
         "name": "worldToView",
@@ -1103,7 +1103,7 @@ Object {
       ],
     },
     Object {
-      "at": 372,
+      "at": 373,
       "flags": 1,
       "func": Object {
         "name": "viewToClip",
@@ -1124,7 +1124,7 @@ Object {
       ],
     },
     Object {
-      "at": 474,
+      "at": 475,
       "flags": 1,
       "func": Object {
         "name": "worldToClip",
@@ -1146,7 +1146,7 @@ Object {
       ],
     },
     Object {
-      "at": 570,
+      "at": 571,
       "flags": 1,
       "func": Object {
         "name": "clipToScreen3D",
@@ -1167,7 +1167,7 @@ Object {
       ],
     },
     Object {
-      "at": 689,
+      "at": 690,
       "flags": 1,
       "func": Object {
         "name": "screenToClip3D",
@@ -1188,7 +1188,7 @@ Object {
       ],
     },
     Object {
-      "at": 814,
+      "at": 815,
       "flags": 1,
       "func": Object {
         "name": "worldToClip3D",
@@ -1210,7 +1210,7 @@ Object {
       ],
     },
     Object {
-      "at": 952,
+      "at": 953,
       "flags": 1,
       "func": Object {
         "name": "getPerspectiveScale",
@@ -1556,7 +1556,7 @@ Array [
     ],
   ],
   Array [
-    275,
+    276,
     Array [
       "worldToView",
       "worldToClip",
@@ -1564,7 +1564,7 @@ Array [
     ],
   ],
   Array [
-    372,
+    373,
     Array [
       "viewToClip",
       "worldToClip",
@@ -1572,31 +1572,31 @@ Array [
     ],
   ],
   Array [
-    474,
+    475,
     Array [
       "worldToClip",
     ],
   ],
   Array [
-    570,
+    571,
     Array [
       "clipToScreen3D",
     ],
   ],
   Array [
-    689,
+    690,
     Array [
       "screenToClip3D",
     ],
   ],
   Array [
-    814,
+    815,
     Array [
       "worldToClip3D",
     ],
   ],
   Array [
-    952,
+    953,
     Array [
       "getPerspectiveScale",
     ],
@@ -1611,7 +1611,7 @@ exports[`ast shakes use/view AST 2`] = `
   vec4 viewPosition;
   vec2 viewResolution;
   vec2 viewSize;
-  float viewWorldUnit;
+  float viewWorldDepth;
   float viewPixelRatio;
 } viewUniforms;
 
@@ -1647,7 +1647,7 @@ Array [
     ],
   ],
   Array [
-    275,
+    276,
     Array [
       "worldToView",
       "worldToClip",
@@ -1655,7 +1655,7 @@ Array [
     ],
   ],
   Array [
-    372,
+    373,
     Array [
       "viewToClip",
       "worldToClip",
@@ -1663,31 +1663,31 @@ Array [
     ],
   ],
   Array [
-    474,
+    475,
     Array [
       "worldToClip",
     ],
   ],
   Array [
-    570,
+    571,
     Array [
       "clipToScreen3D",
     ],
   ],
   Array [
-    689,
+    690,
     Array [
       "screenToClip3D",
     ],
   ],
   Array [
-    814,
+    815,
     Array [
       "worldToClip3D",
     ],
   ],
   Array [
-    952,
+    953,
     Array [
       "getPerspectiveScale",
     ],

@@ -8,6 +8,7 @@ import {
   FunctionHeaderRef,
   FunctionRef,
   ImportRef,
+  InferRef,
   ModuleRef,
   ParameterRef,
   QualifiedTypeAliasRef,
@@ -32,7 +33,7 @@ export { decompressAST } from '../util/tree';
 const NO_STRINGS = [] as string[];
 const VOID_TYPE = {name: 'void'};
 const AUTO_TYPE = {name: 'auto'};
-const PRIVATE_ATTRIBUTES = new Set(['@export', '@external', '@global', '@optional']);
+const PRIVATE_ATTRIBUTES = new Set(['@export', '@link', '@global', '@optional', '@infer']);
 
 const orNone = <T>(list: T[]): T[] | undefined => list.length ? list : undefined;
 
@@ -172,19 +173,22 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const parameters = getParameters(b);
     const type = hasType ? getReturnType(c) : VOID_TYPE;
 
-     return {name, type, parameters};
+    return {name, type, parameters};
   };
 
   const getFunction = (node: SyntaxNode): FunctionRef => {
     const [a, b, c] = getNodes(node, 3);
 
     const attributes = getAttributes(a);
-    const {name, type, parameters} = getFunctionHeader(b);
+    const header = getFunctionHeader(b);
+
+    const inferred = getInferred(header);
+    const {name, type, parameters} = header;
 
     const exclude = parameters ? parameters.map(p => (p as any).name) : undefined;
     const identifiers = getIdentifiers(c, name, exclude);
 
-    return {name, type, attributes, parameters, identifiers};
+    return {name, type, attributes, parameters, identifiers, inferred};
   };
 
   const getVariableIdentifier = (node: SyntaxNode): TypeAliasRef => {
@@ -243,11 +247,11 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
   };
   
   const getTypeAlias = (node: SyntaxNode): TypeAliasRef => {
-    const [a,, b, c] = getNodes(node, 4);
+    const [a,, b, c] = getNodes(node, 3);
 
     const attributes = getAttributes(a);
     const name = getText(b);
-    const type = getType(c);
+    const type = c ? getType(c) : {name};
 
     return {name, type, attributes};
   };
@@ -274,22 +278,54 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     return {name, attributes, members};
   };
 
+  const getInferred = (func: FunctionHeaderRef) => {
+    const inferred: InferRef[] = [];
+    let index = -1;
+
+    const {name, type, parameters} = func;
+    const attr = findAttribute(func.type.attributes, 'infer');
+    if (attr && attr.args?.length) inferred.push({
+      name: attr.args[0],
+      at: index,
+    });
+    index++;
+
+    if (parameters) for (const param of parameters) {
+      const attributes = (param as any).attributes;
+      if (attributes) {
+        const attr = findAttribute(attributes, 'infer');
+        if (attr && attr.args?.length) inferred.push({
+          name: attr.args[0],
+          at: index,
+        });
+      }
+      index++;
+    }
+
+    return inferred.length ? inferred : undefined;
+  };
+
   ////////////////
 
+  const findAttribute = (attributes: AttributeRef[] | undefined, name: string) =>
+    attributes?.find(a => a.name === name);
+
   const hasAttribute = (attributes: AttributeRef[] | undefined, name: string) =>
-    !!attributes?.find(a => a.name === name);
+    findAttribute(attributes, name) != null;
 
   const getFlags = (ref: AttributesRef) => {
     const isExported = hasAttribute(ref.attributes, 'export');
-    const isExternal = hasAttribute(ref.attributes, 'external');
+    const isExternal = hasAttribute(ref.attributes, 'link');
     const isOptional = hasAttribute(ref.attributes, 'optional');
     const isGlobal   = hasAttribute(ref.attributes, 'global');
+    const isInfer    = hasAttribute(ref.attributes, 'infer')
 
     return (
       (isExported ? RF.Exported : 0) |
       (isExternal ? RF.External : 0) |
       (isOptional ? RF.Optional : 0) |
-      (isGlobal   ? RF.Global   : 0)
+      (isGlobal   ? RF.Global   : 0) |
+      (isInfer    ? RF.Infer    : 0)
     );
   }
 
@@ -301,8 +337,9 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
     if (a.type.id === T.FunctionDeclaration) {
       const func = getFunction(a);
-      const flags = getFlags(func);
+      const fs = getFlags(func);
       const symbol = func.name;
+      const flags = (symbol === 'main') ? (fs | RF.Exported) : fs;
       return {at, symbol, flags, func};
     }
     if (a.type.id === T.GlobalVariableDeclaration) {
@@ -410,8 +447,10 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       visibles: orNone(visibles),
       globals: orNone(globals),
       modules: orNone(modules),
-      declarations: orNone(declarations),
       externals: orNone(externals),
+      exports: orNone(exported),
+
+      declarations: orNone(declarations),
     };
   }
 
@@ -469,7 +508,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 // Removes:
 // - import ... from declarations
 // - @export | @optional | @global attributes
-// - @external declarations
+// - @link declarations
 // - white-space/semi-colons after shake point
 export const rewriteUsingAST = (
   code: string,
@@ -534,13 +573,17 @@ export const rewriteUsingAST = (
         while (cursor.lastChild()) {};
       }
       else {
-        // Check if declaration is external
+        // Check if declaration is external or inferred
         const sub = cursor.node.cursor;
         sub.firstChild();
         sub.firstChild();
 
         const t = code.slice(sub.from, sub.to);
-        if (t.match('@external')) {
+        if (t.match('@infer')) {
+          skip(from, to);
+          while (cursor.lastChild()) {};
+        }
+        else if (t.match('@link')) {
           if (t.match('@optional')) {
             while (sub.lastChild()) {};
             sub.next();
@@ -618,7 +661,11 @@ export const compressAST = (code: string, tree: Tree): CompressedNode[] => {
       sub.firstChild();
 
       const t = code.slice(sub.from, sub.to);
-      if (t.match('@external')) {
+      if (t.match('@infer')) {
+        skip(from, to);
+        while (cursor.lastChild()) {};
+      }
+      else if (t.match('@link')) {
         if (t.match('@optional')) {
           while (sub.lastChild()) {};
           sub.next();

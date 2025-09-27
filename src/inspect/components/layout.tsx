@@ -1,22 +1,46 @@
-import React from 'react';
-import { styled } from '@stitches/react';
+import React, { PropsWithChildren } from 'react';
+import { styled as _styled } from '@stitches/react';
+
+// TODO: TS nightly issue?
+const styled: any = _styled;
 
 type TreeIndentProps = { indent?: number };
 
 export const Button = styled('button', {
   border: 0,
   padding: '10px 20px',
-  background: 'var(--backgroundInactive)',
-  color: 'var(--colorText)',
+  background: 'var(--LiveInspect-backgroundInactive)',
+  color: 'var(--LiveInspect-colorText)',
+  '&:active': {
+    color: 'var(--LiveInspect-colorTextMuted)',
+  },
   '&:hover': {
-    background: 'var(--backgroundActive)',
-    color: 'var(--colorTextHighlight)',
+    background: 'var(--LiveInspect-backgroundActive)',
+    color: 'var(--LiveInspect-colorTextHover)',
+  },
+});
+
+export const SmallButton = styled('button', {
+  border: 0,
+  padding: '5px 10px',
+  background: 'var(--LiveInspect-backgroundInactive)',
+  color: 'var(--LiveInspect-colorText)',
+  '&:hover': {
+    background: 'var(--LiveInspect-backgroundActive)',
+    color: 'var(--LiveInspect-colorTextHover)',
+  },
+  '&:active': {
+    color: 'var(--LiveInspect-colorTextMuted)',
+  },
+  '&.active': {
+    background: 'var(--LiveInspect-backgroundOn)',
+    color: 'var(--LiveInspect-colorTextOn)',
   },
 });
 
 export const InspectContainer = styled('div', {
   pointerEvents: 'none',
-  color: 'var(--colorText)',
+  color: 'var(--LiveInspect-colorText)',
   cursor: 'default',
   position: 'relative',
   height: '100%',
@@ -48,10 +72,14 @@ export const TreeControls = styled('div', {
   pointerEvents: 'auto',
   background: 'rgba(0, 0, 0, 0.75)',
   zIndex: 10,
+
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'end',
 });
 
 export const Muted = styled('span', {
-  color: 'var(--colorTextMuted)',
+  color: 'var(--LiveInspect-colorTextMuted)',
 });
 
 export const Spacer = styled('div', {
@@ -82,25 +110,25 @@ export const SplitColumnFull = styled(SplitColumn, {
 export const RowPanel = styled('div', {
   position: 'relative',
   '&:not(:last-child)': {
-    borderRight: '1px solid var(--borderThin)',
+    borderRight: '1px solid var(--LiveInspect-borderThin)',
   }
 });
 
 export const ColumnPanel = styled('div', {
   '&:not(:last-child)': {
-    borderBottom: '1px solid var(--borderThin)',
+    borderBottom: '1px solid var(--LiveInspect-borderThin)',
   }
 });
 
 export const Panel = styled('div', {
   pointerEvents: 'auto',
-  background: 'var(--shim)',
+  background: 'var(--LiveInspect-shim)',
   maxHeight: '100%',
 });
 
 export const PanelScrollable = styled('div', {
   pointerEvents: 'auto',
-  background: 'var(--shim)',
+  background: 'var(--LiveInspect-shim)',
   maxHeight: '100%',
   overflow: 'auto',
 });
@@ -140,7 +168,7 @@ export const TreeToggle = styled('div', {
 export const TreeLegend = styled('div', {
   position: 'sticky',
   left: 0,
-  color: 'var(--colorTextSemi)',
+  color: 'var(--LiveInspect-colorTextSemi)',
   paddingTop: '30px',
   display: 'flex',
   flexWrap: 'wrap',
@@ -166,7 +194,7 @@ export const TreeLegendItem = styled('div', {
 
 export const TreeLine = styled('div', {
   marginLeft: '-1px',
-  borderLeft: '2px dotted var(--borderThin)',
+  borderLeft: '2px dotted var(--LiveInspect-borderThin)',
 });
 
 export const TreeRowOmittedChunk = styled('div', {
@@ -200,4 +228,13 @@ export const TreeIndent: React.FC<TreeIndentProps> = ({ indent, children }) => (
 const TreeRowInner = styled('div', {
   display: 'flex',
   height: '20px',
+});
+
+export const DOMMock = styled('div', {
+  position: 'absolute',
+  border: '1px solid rgba(255, 255, 255, 0.5)',
+  background: 'rgba(255, 255, 255, 0.1)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 });

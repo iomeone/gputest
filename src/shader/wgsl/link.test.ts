@@ -11,7 +11,7 @@ describe("link", () => {
   it("links an external", () => {
     
     const code = `
-    @external fn getColor() -> vec4<f32> {};
+    @link fn getColor() -> vec4<f32> {};
     fn main() -> @location(0) vec4<f32> {
       return getColor();
     }
@@ -31,7 +31,7 @@ describe("link", () => {
     const code = `
     @group(GROUP) @binding(BINDING) var<uniform> color: vec4<f32>;
 
-    @external fn getColor() -> vec4<f32> {};
+    @link fn getColor() -> vec4<f32> {};
     fn main() -> @location(LOCATION) vec4<f32> {
       return getColor() + color;
     }
@@ -123,7 +123,7 @@ describe("link", () => {
     `
 
     const main = `
-    @external fn getColor() -> vec4<f32> {};
+    @link fn getColor() -> vec4<f32> {};
     fn main() {
       var a = getColor();
     }
@@ -154,7 +154,7 @@ describe("link", () => {
     `
 
     const main = `
-    @external fn getPosition(index: i32) -> vec4<f32> {};
+    @link fn getPosition(index: i32) -> vec4<f32> {};
     fn main() {
       var a = getPosition(0);
     }
@@ -184,8 +184,8 @@ describe("link", () => {
     `
 
     const main = `
-    @external fn getPosition(index: i32) -> vec4<f32> {};
-    @external fn getColor(index: i32) -> vec4<f32> {};
+    @link fn getPosition(index: i32) -> vec4<f32> {};
+    @link fn getColor(index: i32) -> vec4<f32> {};
     fn main() {
       var a = getPosition(0);
       var b = getColor(0);
@@ -219,8 +219,8 @@ describe("link", () => {
     `
 
     const main = `
-    @external fn getPosition(index: i32) -> vec4<f32> {};
-    @external fn getColor(index: i32) -> vec4<f32> {};
+    @link fn getPosition(index: i32) -> vec4<f32> {};
+    @link fn getColor(index: i32) -> vec4<f32> {};
     fn main() {
       var a = getPosition(0);
     }

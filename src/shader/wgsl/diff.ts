@@ -16,19 +16,21 @@ const literal = (v: string | number, isFloat: boolean, isUnsigned: boolean) => {
 export const makeDiffAccessor = (
   name: string,
   accessor: string,
+  sizers: (string | null)[],
   args: string[],
   type: string,
-  offsets: (number | string)[],
+  offsets: (number | string | null)[],
 ) => {
   const isFloat = (type: string) => !!type.match(/(^|<)f/);
-  const isUnsigned = (type: string) => !!type.match(/(^|<)u/);
+  const toSigned = (type: string) => type.replace('u', 'i');
 
   const symbols = args.map((t, i) => `${arg(i)}`);
 
   return `fn ${name}(${symbols.map((s, i) => `${s}: ${args[i]}`).join(', ')}) -> ${type} {
-  ${symbols.map((s, i) => `let d${s} = ${s} + ${literal(offsets[i] ?? 0, isFloat(args[i]), isUnsigned(args[i]))};`)}
+  ${symbols.map((s, i) => offsets[i] != null ? `let size${i} = ${toSigned(args[i])}(${sizers[i]!}());` : '').join('\n  ')}
+  ${symbols.map((s, i) => offsets[i] != null ? `var d${s} = max(${literal(0, isFloat(args[i]), false)}, min(size${i}, ${toSigned(args[i])}(${s}) + ${literal(offsets[i] ?? 0, isFloat(args[i]), false)}));` : '').join('\n  ')}
   let v1 = ${accessor}(${symbols.join(', ')});
-  let v2 = ${accessor}(${symbols.map(s => 'd' + s).join(', ')});
+  let v2 = ${accessor}(${symbols.map((s, i) => offsets[i] != null ? `${args[i]}(d${s})` : s).join(', ')});
   return v2 - v1;
 }
 `;

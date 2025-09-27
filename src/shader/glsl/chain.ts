@@ -4,7 +4,7 @@ import { bundleToAttribute } from './shader';
 const arg = (x: number) => String.fromCharCode(97 + x);
 
 export const makeChainAccessor = (
-  type: TypeLike,
+  type: string,
   name: string,
   args: string[],
   from: string,

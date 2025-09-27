@@ -1,4 +1,4 @@
-import { LiveFiber, Task } from './types';
+import type { LiveFiber, Task } from './types';
 import { use, keyed, detach, provide, PROVIDE, makeContext } from './builtin';
 import { renderFiber } from './fiber';
 import { memoArgs, useState, useContext } from './hooks';

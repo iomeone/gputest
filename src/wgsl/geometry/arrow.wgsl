@@ -1,4 +1,4 @@
-use '../../wgsl/use/view'::{ getWorldScale };
+use '@use-gpu/wgsl/use/view'::{ getWorldScale, getViewScale };
 
 let ARROW_ASPECT: f32 = 2.5;
 
@@ -6,7 +6,8 @@ fn sqr(f: f32) -> f32 { return f * f; };
 
 @export fn getArrowSize(maxLength: f32, width: f32, size: f32, both: i32, w: f32, depth: f32) -> f32 {
   if (w <= 0.0) { return 0.0; }
-  let worldScale = getWorldScale(w, depth);
+  
+  let worldScale = getWorldScale(w, depth) * getViewScale();
 
   let targetSize = size * width * worldScale * 0.5;
   var maxSize = maxLength / ARROW_ASPECT;

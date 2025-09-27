@@ -1,14 +1,12 @@
-import { LiveFiber } from '../../live/types';
-import { formatValue, formatNodeName } from '../../live';
+import type { LiveFiber } from '@use-gpu/live';
+import type { Action } from './types';
+
+import { formatValue, formatNodeName, YEET } from '@use-gpu/live';
 import { styled, keyframes } from "@stitches/react";
 
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
-import { Action } from './types';
 import { usePingContext } from './ping';
-import { SVGAtom } from './svg-atom';
-
-const ICON = (s: string) => <span className="m-icon">{s}</span>
-const ICONSMALL = (s: string) => <span className="m-icon m-icon-small">{s}</span>
+import { IconRow, SVGAtom, SVGHighlightElement, SVGYeet, SVGDashboard } from './svg';
 
 type NodeProps = {
   fiber: LiveFiber<any>,
@@ -26,7 +24,7 @@ type NodeProps = {
   onMouseLeave?: Action,
 };
 
-export const Node: React.FC<NodeProps> = ({
+export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
   fiber,
   staticPing,
   staticMount,
@@ -39,14 +37,18 @@ export const Node: React.FC<NodeProps> = ({
   onClick,
   onMouseEnter,
   onMouseLeave,
-}) => {
-  const {id, by, f, args, yeeted, __inspect} = fiber;
+}, ref) => {
+  const {id, by, f, type, args, __inspect} = fiber;
 
-  const yeet = yeeted?.value !== undefined;
+  const yeet = type === YEET;
   const react = !!__inspect?.react;
 
-  const suffix1 = yeet ? ICONSMALL("switch_left") : null;
-  const suffix2 = react ? <SVGAtom /> : null;
+  const suffix1 = yeet ? <SVGYeet key="yeet" title="Yeet" /> : null;
+  const suffix2 = react ? <SVGAtom key="atom" title="React" /> : null;
+  const suffix3 = !__inspect?.layout && __inspect?.setHovered ? <SVGHighlightElement key="layout" title="Highlight" /> : null;
+  const suffix4 = __inspect?.layout ? <SVGDashboard key="dash" title="Layout" /> : null;
+
+  const icons = [suffix1, suffix2, suffix3, suffix4].filter(x => !!x);
 
   const [version, pinged] = usePingContext(fiber);
 
@@ -63,11 +65,8 @@ export const Node: React.FC<NodeProps> = ({
   if (hovered === id) classes.push('hovered');
   if (hovered === by) classes.push('by');
   if (f.isLiveBuiltin) classes.push('builtin');
-  classes.push(`depth-${Math.min(4, depth)}`);
+  classes.push(`depth-${Math.min(4, depth || 0)}`);
   const className = classes.join(' ');
-
-  const elRef = useRef<HTMLDivElement | null>(null);
-  const {current: el} = elRef;
 
   const handleClick = useCallback((e) => {
     e.stopPropagation();
@@ -79,7 +78,7 @@ export const Node: React.FC<NodeProps> = ({
 
   return (
     <div
-      ref={elRef}
+      ref={ref}
       className={"fiber-tree-node " + className}
       onClick={handleClick}
       onMouseEnter={onMouseEnter}
@@ -87,7 +86,7 @@ export const Node: React.FC<NodeProps> = ({
     >
       <div className={"fiber-tree-ping cover-parent " + className} />
       <div className={"fiber-tree-highlight cover-parent " + className} />
-      <div className={"fiber-tree-label " + className}>{name}{suffix1}{suffix2}</div>
+      <div className={"fiber-tree-label " + className}>{name}<IconRow>{icons}</IconRow></div>
     </div>
   );
-}
+});
