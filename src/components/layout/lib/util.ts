@@ -1,6 +1,19 @@
-import { LiveElement } from '../../../live/types';
-import { SpanData } from '../../../text/types';
-import { Point, Rectangle, Gap, Margin, Alignment, Anchor, Dimension, LayoutRenderer, InlineRenderer } from '../types';
+import { LiveElement } from '@use-gpu/live/types';
+import { Point, Rectangle, Gap, Margin, Alignment, Anchor, Dimension, LayoutRenderer, InlineRenderer, InlineLine } from '../types';
+
+type Fitter<T> = (into: Point) => T;
+export const memoFit = <T>(f: Fitter<T>): Fitter<T> => {
+  let last: Point | null = null;
+  let value: T | null = null;
+  return (into: Point) => {
+    if (last && last[0] === into[0] && last[1] === into[1]) {
+      return value!;
+    }
+    value = f(into);
+    last = into;
+    return value;
+  };
+}
 
 export const parseDimension = (x: string | number | null | undefined, total: number, snap: boolean = false): number => {
   if (typeof x === 'number') return snap ? Math.round(x) : x;
@@ -19,8 +32,8 @@ export const parseDimension = (x: string | number | null | undefined, total: num
 }
 
 export const parseAnchor = (x: string): number => {
-  const isStart = (x === 'start');
-  const isEnd = (x === 'end');
+  const isStart = (x === 'start' || x === 'justify-start');
+  const isEnd = (x === 'end' || x === 'justify-end');
 
   const align = isStart ? 0 : isEnd ? 1 : 0.5;
   return align;
@@ -92,51 +105,50 @@ export const makeBoxLayout = (
 export const makeInlineLayout = (
   ranges: Point[],
   //sizes: Point[],
-  offsets: Point[],
+  offsets: [number, number, number, number][],
   renders: InlineRenderer[],
 ) => (
   box: Rectangle
 ) => {
   let [left, top, right, bottom] = box;
-  const out = [] as LiveElement<any>[];
   const n = ranges.length;
 
+  let last: InlineRenderer | null = null;
+  let lines: InlineLine[] = [];
+
+  const out: LiveElement<any> = [];
+  const flush = (render: InlineRenderer) => {
+    const el = render(lines);
+    if (Array.isArray(el)) out.push(...(el as any[]));
+    else out.push(el);
+
+    lines = [];
+  };
+  
   for (let i = 0; i < n; ++i) {
     const range = ranges[i];
     //const size = sizes[i];
     const offset = offsets[i];
     const render = renders[i];
 
-    const l = left + offset[0];
-    const t = top + offset[1];
+    const [x, y, gap] = offset;
+    const l = left + x;
+    const t = top + y;
     const r = l;// + size[0];
     const b = t;// + size[1];
 
     const layout = [l, t, r, b] as Rectangle;
-    const el = render(layout, range[0], range[1], offset[2]);
+    const [start, end] = range;
 
-    if (Array.isArray(el)) out.push(...(el as any[]));
-    else out.push(el);
+    if (last !== render) {
+      if (last) flush(last);
+      last = render;
+    }
+
+    lines.push({layout, start, end, gap});
   }
 
-  return out;
-};
-
-export const makeGlyphLayout = (
-  box: Rectangle,
-  spanData: SpanData,
-) => {
-  const {forSpans, getStart, getEnd} = spanData;
-
-  const out = [] as LiveElement<any>[];
-  
-
-  let caret = 0;
-  forSpans((hard, advance, trim, index) => {
-    
-    console.log('render', content.slice(getStart(index), getEnd(index)), 'at', layout[0], layout[1]);
-  }, startIndex, endIndex);
+  if (last) flush(last);
 
   return out;
 };
-

@@ -1,9 +1,9 @@
 // Testing shaders
 export const WGSLModules = {
   "instance/vertex/quad": `
-use '../../wgsl/use/types'::{ SolidVertex };
-use '../../wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale }; 
-use '../../wgsl/geometry/quad'::{ getQuadUV };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale }; 
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
 
 @external fn getPosition(i: i32) -> vec4<f32> {};
 @external fn getColor(i: i32) -> vec4<f32> {};
@@ -85,13 +85,13 @@ let QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(
 
   "@use-gpu/wgsl/use/view": `
 struct ViewUniforms {
-  projectionMatrix: mat4x4<f32>;
-  viewMatrix: mat4x4<f32>;
-  viewPosition: vec4<f32>;
-  viewResolution: vec2<f32>;
-  viewSize: vec2<f32>;
-  viewWorldUnit: f32;
-  viewPixelRatio: f32;
+  projectionMatrix: mat4x4<f32>,
+  viewMatrix: mat4x4<f32>,
+  viewPosition: vec4<f32>,
+  viewResolution: vec2<f32>,
+  viewSize: vec2<f32>,
+  viewWorldUnit: f32,
+  viewPixelRatio: f32,
 };
 
 @export @group(VIEW) @binding(VIEW) var<uniform> viewUniforms: ViewUniforms;
@@ -132,16 +132,16 @@ struct ViewUniforms {
 
   "@use-gpu/wgsl/use/types": `
 @export struct SolidVertex {
-  position: vec4<f32>;
-  color: vec4<f32>;
-  uv: vec2<f32>;
+  position: vec4<f32>,
+  color: vec4<f32>,
+  uv: vec2<f32>,
 };
 
 @export struct MeshVertex {
-  position: vec4<f32>;
-  normal: vec3<f32>;
-  color: vec4<f32>;
-  uv: vec2<f32>;
+  position: vec4<f32>,
+  normal: vec3<f32>,
+  color: vec4<f32>,
+  uv: vec2<f32>,
 };
 `,
 };

@@ -5,7 +5,7 @@ import {
   copyNumberArrayCompositeRange,
   copyDataArraysComposite, copyNumberArraysComposite,
   copyDataArrays, copyDataArrayChunked,
-  copyChunksToSegments,
+  generateChunkSegments,
 } from './data';
 
 describe('data', () => {
@@ -132,7 +132,7 @@ describe('data', () => {
     const loops = [0, 0, 1, 0, 0] as any as boolean[];
     const dst = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-    copyChunksToSegments(dst, chunks, loops);
+    generateChunkSegments(dst, chunks, loops);
     expect(dst).toEqual([1, 3, 2, 1, 2, 0, 3, 3, 3, 3, 3, 0, 0, 0, 1, 3, 3, 2])
   });
   

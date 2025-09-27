@@ -1,6 +1,7 @@
 export type FontMetrics = {
   ascent: number,
   descent: number,
+  baseline: number,
   lineHeight: number,
 };
 
@@ -14,21 +15,47 @@ export type GlyphMetrics = {
   id: number[],
   layoutBounds: number[],
   outlineBounds: number[] | null,
+  image: Uint8Array,
+  bounds: number[],
+  width: number,
+  height: number,
 };
 
-export type PerSpan => (hard: bool, advance: number, trim: number) => void;
-export type PerGlyph => (id: number, isWhiteSpace: boolean) => void;
+export type RustTextAPI = {
+  resolveFont: (font: Partial<Font>) => number,
+  resolveFontStack: (fonts: Partial<Font>[]) => number[],
+  setFonts: (fonts: Font[]) => void,
 
-export type SpanData = {
-  forSpans: (callback: PerSpan, startIndex?: number, endIndex?: number) => void,
-  forGlyphs: (callback: PerGlyph, startIndex?: number, endIndex?: number) => void,
-  getStart: (i: number) => number,
-  getEnd: (i: number) => number,
+  measureFont: (fontId: number, size: number) => FontMetrics,
+  measureSpans: (fontStack: number[], text: Uint16Array, size: number) => SpanMetrics,
+  measureGlyph: (fontId: number, glyphId: number, size: number) => GlyphMetrics,
+
+  packString: (s: string) => Uint16Array,
+  packStrings: (s: string[]) => Uint16Array,
 };
 
-export type GPUTextContext = {
-  measureFont: (size: number) => FontMetrics,
-  measureSpans: (text: string, size: number) => SpanMetrics,
-  measureGlyph: (id: number, size: number) => GlyphMetrics,
+export const packStrings = (strings: string[] | string): Uint16Array => {
+  let ss: string[];
+  if (!Array.isArray(strings)) ss = [strings];
+  else ss = strings;
+
+  const c = ss.length;
+  const n = ss.reduce((a, b) => a + b.length, 0);
+
+  let pos = 0;
+  const array = new Uint16Array(n + c);
+  for (const s of ss) {
+    const l = s.length;
+    for (let i = 0; i < l; ++i) {
+      const c = s.charCodeAt(i);
+      if (c !== 0) {
+        array[pos++] = c;
+      }
+    }
+    array[pos++] = 0;
+  }
+
+  return array;
 };
 
+export const packString = packStrings;

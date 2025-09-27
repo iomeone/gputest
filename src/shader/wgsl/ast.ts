@@ -24,7 +24,6 @@ import {
 import * as T from './grammar/wgsl.terms';
 import { WGSL_NATIVE_TYPES } from './constants';
 import { parseString } from '../util/bundle';
-import { getProgramHash } from '../util/hash';
 import { getChildNodes, hasErrorNode, formatAST, formatASTNode, decompressAST } from '../util/tree';
 import uniq from 'lodash/uniq';
 
@@ -47,15 +46,30 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
   const throwError = (t: string, n?: SyntaxNode) => {
     if (!n) throw new Error(`Missing node`);
-    console.log(formatAST(tree.topNode, code));
-    const loc = name != null ? ` in ${name}` : '';
-    throw new Error(`Error parsing: ${t} node '${code.slice(n.from, n.to)}'${loc}\n${formatAST(n, code)}`);
+
+    while (n.parent) {
+      if (n.from !== n.to) break;
+      n = n.parent;
+    }
+    
+    let start = n.from;
+    let end = n.to;
+    while (start > 0 && code.charAt(start - 1) !== "\n") start--;
+    while (end < code.length - 1 && code.charAt(end + 1) !== "\n") end++;
+
+    const loc = name != null ? ` '${name}'` : '';
+    throw new Error(
+      `Error parsing${loc}: ${t} in '${code.slice(n.from, n.to)}'\n`+
+      `${code.slice(start, end)}\n`+
+      `${" ".repeat(n.from - start)}^\n\n`+
+      formatAST(n, code)
+    );
   }
 
   const getNodes = (node: SyntaxNode, min?: number) => {
     const nodes = getChildNodes(node);
     for (const n of nodes) if (node.type.isError) throwError('error', node);
-    if (min != null && nodes.length < min) throwError(`not enough nodes (${min})`, node);
+    if (min != null && nodes.length < min) throwError(`not enough tokens (${min})`, node);
     return nodes;
   }
 
@@ -372,8 +386,6 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
   ////////////////
 
   const getSymbolTable = (): SymbolTable => {
-    const hash = getProgramHash(code);
-
     const modules = getImports();
     const declarations = getDeclarations();
 
@@ -394,7 +406,6 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     }
 
     return {
-      hash,
       symbols: orNone(symbols),
       visibles: orNone(visibles),
       globals: orNone(globals),
@@ -465,6 +476,7 @@ export const rewriteUsingAST = (
   tree: Tree,
   rename: Map<string, string>,
   shake?: number[] | null,
+  optionals?: Set<string> | null,
 ) => {
   let out = '';
   let pos = 0;
@@ -484,10 +496,16 @@ export const rewriteUsingAST = (
 
   const cursor = tree.cursor();
   do {
-    const {type, from, to} = cursor;
+    const {type, from, to, arg} = cursor as any;
 
-    // Injected by compressed AST only: Skip, Shake, Id, Attr
+    // Injected by compressed AST only: Skip, Shake, Id, Attr, Opt
     if (type.name === 'Skip') skip(from, to);
+    if (type.name === 'Opt') {
+      if (!optionals || !optionals.has(arg)) {
+        skip(from, to);
+        while (cursor.lastChild()) {};
+      }
+    }
     else if (type.name === 'Shake') {
       if (!shakes) continue;
       const shaken = shakes.has(from);
@@ -523,8 +541,22 @@ export const rewriteUsingAST = (
 
         const t = code.slice(sub.from, sub.to);
         if (t.match('@external')) {
-          skip(from, to);
-          while (cursor.lastChild()) {};
+          if (t.match('@optional')) {
+            while (sub.lastChild()) {};
+            sub.next();
+            sub.next();
+            sub.next();
+
+            const arg = code.slice(sub.from, sub.to);
+            if (!optionals || !optionals.has(arg)) {
+              skip(from, to);
+              while (cursor.lastChild()) {};
+            }
+          }
+          else {
+            skip(from, to);
+            while (cursor.lastChild()) {};
+          }
         }
       }
     }
@@ -567,6 +599,7 @@ export const compressAST = (code: string, tree: Tree): CompressedNode[] => {
   const skip  = (from: number, to: number) => out.push(["Skip",  from, to]);
   const ident = (from: number, to: number) => out.push(["Id",    from, to]);
   const attr  = (from: number, to: number) => out.push(["Attr",  from, to]);
+  const opt   = (from: number, to: number, symbol: string) => out.push(["Opt", from, to, symbol]);
 
   const cursor = tree.cursor();
   do {
@@ -586,8 +619,19 @@ export const compressAST = (code: string, tree: Tree): CompressedNode[] => {
 
       const t = code.slice(sub.from, sub.to);
       if (t.match('@external')) {
-        skip(from, to);
-        while (cursor.lastChild()) {};
+        if (t.match('@optional')) {
+          while (sub.lastChild()) {};
+          sub.next();
+          sub.next();
+          sub.next();
+
+          const arg = code.slice(sub.from, sub.to);
+          opt(from, to, arg);
+        }
+        else {
+          skip(from, to);
+          while (cursor.lastChild()) {};
+        }
       }
       else {
         shake(from, to);

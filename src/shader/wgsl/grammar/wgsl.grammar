@@ -57,8 +57,8 @@ GlobalConstantDeclaration {
 TypeAliasDeclaration { AttributeList k<'type'> Identifier assign TypeDeclaration }
 
 StructDeclaration { AttributeList k<'struct'> Identifier StructBodyDeclaration }
-StructBodyDeclaration { '{' (StructMember)* '}' }
-StructMember { AttributeList variableIdentifierDeclaration semicolon }
+StructBodyDeclaration { '{' ((StructMember comma)* StructMember comma?)? '}' }
+StructMember { AttributeList variableIdentifierDeclaration }
 
 FunctionDeclaration { AttributeList FunctionHeader CompoundStatement }
 FunctionHeader { k<'fn'> Identifier '(' ParamList ')' ReturnType }

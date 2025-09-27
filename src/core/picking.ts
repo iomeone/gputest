@@ -7,15 +7,14 @@ export const PICKING_UNIFORMS: UniformAttribute[] = [
   },
 ];
 
-export const makeIdAllocator = <T>() => {
-  const used = new Map<number, T | undefined>();
+export const makeIdAllocator = () => {
+  const used = new Set<number>();
 
   let i = 1;
   return {
-    get: (i: number): T | undefined => used.get(i),
-    obtain: (t?: T) => {
+    obtain: () => {
       while (used.has(i)) i++;
-      used.set(i, t);
+      used.add(i);
       return i;
     },
     release: (j: number) => {

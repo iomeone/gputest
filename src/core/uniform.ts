@@ -6,11 +6,21 @@ import {
   DataBinding,
   StorageSource,
   TextureSource,
+  Prop,
 } from './types';
 import { UNIFORM_ATTRIBUTE_SIZES } from './constants';
 import { UNIFORM_BYTE_SETTERS } from './bytes';
 import { makeUniformBuffer } from './buffer';
 import { makeSampler, makeTextureView } from './texture';
+
+export const resolve = <T>(x: Prop<T>): T => {
+  if (typeof x === 'function') return x();
+  if (typeof x === 'object') {
+    if ('expr' in x) return x.expr();
+    if ('current' in x) return x.current;
+  }
+  return x;
+};
 
 export const getUniformAttributeSize = (format: UniformType): number => UNIFORM_ATTRIBUTE_SIZES[format];
 export const getUniformByteSetter = (format: UniformType): UniformByteSetter => UNIFORM_BYTE_SETTERS[format];
@@ -82,10 +92,12 @@ export const makeBoundUniforms = <T>(
     entries.push(...uniformEntries);
   }
 
-  if (entries.length) bindGroup = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(set),
-    entries,
-  });
+  if (entries.length) {
+    bindGroup = device.createBindGroup({
+      layout: pipeline.getBindGroupLayout(set),
+      entries,
+    });
+  }
 
   return {pipe, buffer, bindGroup};
 }
@@ -166,9 +178,10 @@ export const makeUniformLayout = (
   let offset = base;
   for (const {name, format} of uniforms) {
     const s = getUniformAttributeSize(format);
+    const align = Math.min(s, 16);
 
-    const o = offset % s;
-    if (o) offset += s - o;
+    const o = offset % align;
+    if (o) offset += align - o;
     out.push({name, offset, format});
 
     offset += s;
@@ -229,8 +242,7 @@ export const makeLayoutFiller = (
       const setter = getUniformByteSetter(format);
 
       const o = item[k];
-      const v = (o && typeof o === 'object' && o.hasOwnProperty('value'))
-        ? o.value : o;
+      const v = resolve(o);
       if (v != null) setter(dataView, base + offset, v);
     }
   }

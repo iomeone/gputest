@@ -54,7 +54,6 @@ export const makeFiberQueue = (init?: LiveFiber<any>[]): FiberQueue => {
     set.delete(f);
 
     let i = 0;
-    let prev = [];
     if (queue.f === f) {
       queue = queue.next;
       if (!queue) tail = null;
@@ -63,9 +62,6 @@ export const makeFiberQueue = (init?: LiveFiber<any>[]): FiberQueue => {
 
     let q = queue;
     while (q) {
-      ++i;
-      // @ts-ignore
-      prev.push(q.f?.f?.displayName ?? q.f?.f?.name)
       if (q.next?.f === f) {
         q.next = q.next.next;
         if (q.next == null) tail = q;

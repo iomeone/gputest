@@ -1,9 +1,8 @@
 import {
   UniformType, UniformAttribute, UniformAttributeValue,
-  ShaderModuleDescriptor, StorageSource, DataBinding, TextureSource,
+  ShaderModuleDescriptor, StorageSource, DataBinding, TextureSource, LambdaSource,
 } from './types';
 import { makeStorageAccessors, checkStorageTypes, checkStorageType } from './storage';
-import { makeShaderModule } from './pipeline';
 import partition from 'lodash/partition';
 
 // Parse a set of sources for a given set of uniforms/attributes
@@ -24,14 +23,18 @@ export const makeShaderBindings = <T>(
 // Parse a source for a given uniform/attribute
 export const makeShaderBinding = <T>(
   uniform: UniformAttributeValue,
-  source?: StorageSource | T | any,
+  source?: StorageSource | TextureSource | LambdaSource<T> | T | any,
 ): DataBinding<T> => {
-  if (source) {
-    if (source.libs || source.table) {
-      const lambda = source as T;
+  if (source != null) {
+    if (source.shader) {
+      const lambda = source as LambdaSource<T>;
       return {uniform, lambda};
     }
-    if (source.buffer) {
+    if (source.module || source.table) {
+      const lambda = {shader: source} as LambdaSource<T>;
+      return {uniform, lambda};
+    }
+    if (source.buffer && (source.buffer instanceof GPUBuffer)) {
       const storage = source as StorageSource;
       checkStorageType(uniform, storage);
       return {uniform, storage};
@@ -44,21 +47,8 @@ export const makeShaderBinding = <T>(
   return {uniform, constant: source ?? uniform.value};
 }
 
-// Bind a shader to a set of data bindings, either as constants or a buffer
-export const makeBoundShader = <A, B>(
-  vertexShader: A,
-  fragmentShader: A,
-  links: Record<string, A>,
-  defines: Record<string, any>,
-  compile: (code: B, stage: string) => any,
-  link: (shader: A, links: Record<string, A>, defines: Record<string, any>, cache: any) => B,
-  cache: any,
-): [ShaderModuleDescriptor, ShaderModuleDescriptor, B, B] => {
-  const vertexLinked = link(vertexShader, links, defines, cache);
-  const fragmentLinked = link(fragmentShader, links, defines, cache);
-
-  const vertex = makeShaderModule(compile(vertexLinked, 'vertex'));
-  const fragment = makeShaderModule(compile(fragmentLinked, 'fragment'));
-
-  return [vertex, fragment, vertexLinked, fragmentLinked];
-};
+// Bind a value ref for a given uniform/attribute
+export const makeRefBinding = <T>(
+  uniform: UniformAttributeValue,
+  value?: {current: T},
+): DataBinding<T> => ({uniform, constant: value ?? uniform.value});

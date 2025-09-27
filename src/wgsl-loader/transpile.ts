@@ -92,10 +92,11 @@ export const transpileWGSL = (source: string, resourcePath: string, esModule: bo
   const module = loadModule(source, name);
 
   // Emit module data
-  const {code, table, tree, shake} = module;
+  const {code, hash, table, tree, shake} = module;
   const def = `const data = {
     "name": ${stringify(name)},
     "code": ${stringify(code)},
+    "hash": ${stringify(hash)},
     "table": ${stringify(table)},
     "shake": ${stringify(shake)},
     "tree": decompressAST(${stringify(compressAST(code, tree!))}),

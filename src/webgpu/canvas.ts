@@ -54,8 +54,9 @@ export const makePresentationContext = (
   const descriptor = {
     device,
     format,
-    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST,
     compositingAlphaMode: "opaque",
+    viewFormats: [format, format + '-srgb'],
   };
 
   // @ts-ignore

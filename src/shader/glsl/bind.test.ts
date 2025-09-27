@@ -55,11 +55,6 @@ describe("bind", () => {
     }
 
     {
-      const linked = linkBundle(module, {getColor: sub, "getSubColor:getColor": getColor}, defines);
-      expect(linked).toMatchSnapshot();
-    }
-
-    {
       const bound = bindBundle(sub, links, defines, 'key');
       const linked = linkBundle(module, {getColor: bound});
       expect(linked).toMatchSnapshot();

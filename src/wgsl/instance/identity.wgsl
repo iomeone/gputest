@@ -1,0 +1,1 @@
+@export fn getIndex(i: u32) -> { return i; }

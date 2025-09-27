@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, Point, Dimension, Margin } from '../types';
 
-import { memo, gather, resume, yeet, useOne } from '../../../live';
+import { memo, gather, yeet, useOne } from '@use-gpu/live';
 import { getBlockMinMax, getBlockMargin, fitBlock } from '../lib/block';
-import { normalizeMargin, makeBoxLayout, parseDimension } from '../lib/util';
+import { normalizeMargin, makeBoxLayout, parseDimension, memoFit } from '../lib/util';
 
 export type BlockProps = {
   direction?: 'x' | 'y',
@@ -34,28 +34,10 @@ export const Block: LiveComponent<BlockProps> = memo((props: BlockProps) => {
     children,
   } = props;
 
-  const margin = normalizeMargin(m);
+  const blockMargin = normalizeMargin(m);
   const padding = normalizeMargin(p);
 
-  const Resume = useOne(() =>
-    makeResume(direction, width, height, grow, shrink, snap, margin, padding),
-    [direction, width, height, grow, shrink, snap, margin, padding]
-  );
-
-  return children ? gather(children, Resume) : null;
-}, 'Block');
-
-const makeResume = (
-  direction: 'x' | 'y',
-  width: Dimension | undefined,
-  height: Dimension | undefined,
-  grow: number,
-  shrink: number,
-  snap: boolean,
-  blockMargin: Margin,
-  padding: Margin,
-) =>
-  resume((els: LayoutElement[]) => {
+  const Resume = (els: LayoutElement[]) => {
     const w = width != null && width === +width ? width : null;
     const h = height != null && height === +height ? height : null;
 
@@ -70,7 +52,7 @@ const makeResume = (
       margin,
       grow,
       shrink,
-      fit: (into: Point) => {
+      fit: memoFit((into: Point) => {
         const w = width != null ? parseDimension(width, into[0], snap) : null;
         const h = height != null ? parseDimension(height, into[1], snap) : null;
         const fixed = [
@@ -83,6 +65,9 @@ const makeResume = (
           size,
           render: makeBoxLayout(sizes, offsets, renders),
         };
-      }
+      })
     });
-  });
+  };
+  
+  return children ? gather(children, Resume) : null;
+}, 'Block');

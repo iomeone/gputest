@@ -1,11 +1,16 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, StorageSource, UniformType, Emitter } from '../../core/types';
-import { DeviceContext, FrameContext } from '../providers';
-import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, StorageSource, UniformType, Emitter } from '@use-gpu/core/types';
+
+import { provide, yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
 import {
   makeDataEmitter, makeDataArray, copyNumberArray, emitIntoNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '../../core';
+} from '@use-gpu/core';
+
+import { DeviceContext } from '../providers/device-provider';
+import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
+import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
+import { useBufferedSize } from '../hooks/useBufferedSize';
 
 export type RawDataProps = {
   length?: number,
@@ -24,13 +29,16 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
     format, length,
     data, expr,
     render,
+    children,
     live = false,
   } = props;
+
+  const count = length ?? (data?.length || 0);
+  const l = useBufferedSize(count);
 
   // Make data buffer
   const [buffer, array, source, dims] = useMemo(() => {
     const f = (format && (format in UNIFORM_DIMS)) ? format as UniformType : UniformType.f32;
-    const l = length ?? (data?.length || 0);
 
     const {array, dims} = makeDataArray(f, l || 1);
     if (dims === 3) throw new Error("Dims must be 1, 2, or 4");
@@ -39,12 +47,13 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
     const source = {
       buffer,
       format: f,
-      length: l,
+      length: 0,
+      size: [0],
       version: 0,
     };
 
     return [buffer, array, source, dims] as [GPUBuffer, TypedArray, StorageSource, number];
-  }, [device, format, length, live]);
+  }, [device, format, l]);
 
   // Refresh and upload data
   const refresh = () => {
@@ -52,19 +61,27 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
     if (expr) emitIntoNumberArray(expr, array, dims);
     if (data || expr) {
       uploadBuffer(device, buffer, array.buffer);
-      source.version = incrementVersion(source.version);
     }
+
+    source.length = count;
+    source.size[0] = count;
+    source.version = incrementVersion(source.version);
   };
 
   if (!live) {
-    useNoContext(FrameContext);
-    useMemo(refresh, [device, buffer, array, data, expr, dims]);
+    useNoPerFrame();
+    useNoAnimationFrame();
+    useMemo(refresh, [device, buffer, array, data, expr, length, dims]);
   }
   else {
-    useContext(FrameContext);
+    usePerFrame();
+    useAnimationFrame();
     useNoMemo();
     refresh();
   }
 
-  return useMemo(() => render ? render(source) : yeet(source), [render, source]);
+  return useMemo(() => {
+    if (render == null && children === undefined) return yeet(source);
+    return render != null ? render(source) : children;
+  }, [render, children, source]);
 };

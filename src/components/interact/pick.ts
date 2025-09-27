@@ -1,10 +1,11 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { useContext, useMemo, useOne, useResource, useNoResource } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { useContext, useMemo, useOne, useResource, useNoResource } from '@use-gpu/live';
 import { EventContext, MouseContext, MouseEventState } from '../providers/event-provider';
 
-type PickState = {id: number, hovered: boolean, clicked: boolean, index: number};
+type PickState = {id: number, hovered: boolean, pressed: boolean, index: number};
 
 export type PickProps = {
+  capture?: boolean,
   render?: (state: PickState) => LiveElement<any>,
   children?: LiveElement<any>,
   onMouseEnter?: (m: MouseEventState) => void,
@@ -17,47 +18,75 @@ export type PickProps = {
 export const Pick: LiveComponent<PickProps> = ({
   render,
   children,
-  onMouseEnter,
-  onMouseLeave,
+  onMouseOver,
+  onMouseOut,
   onMouseDown,
   onMouseUp,
   onMouseMove,
 }) => {
   const { useId } = useContext(EventContext);
-  const { useMouseState } = useContext(MouseContext);
+  const { useMouse } = useContext(MouseContext);
 
   const id = useId();
-  const mouseState = useMouseState(id);
-  const { buttons, x, y, hovered, clicked, index } = mouseState;
+  const mouse = useMouse(id);
+  const { buttons, x, y, hovered, captured, pressed, presses, clicks, index } = mouse;
 
-  const ref = useOne(() => ({mouseState}));
-  ref.mouseState = mouseState;
+  const ref = useOne(() => ({mouse}));
+  ref.mouse = mouse;
 
   if (onMouseMove) {
     useResource(() => {
-      if (onMouseMove) onMouseMove(ref.mouseState);
+      if (hovered || captured) {
+        if (onMouseMove) onMouseMove(ref.mouse);
+      }
     }, [x, y]);
   }
   else {
     useNoResource();
   }
 
-  useResource((dispose) => {
-    if (hovered) {
-      if (onMouseEnter) onMouseEnter(ref.mouseState);
-      if (onMouseLeave) dispose(() => onMouseLeave(ref.mouseState));
-    }
-  }, [hovered]);
+  if (onMouseOver || onMouseOut) {
+    useResource((dispose) => {
+      if (hovered) {
+        if (onMouseOver) onMouseOver(ref.mouse);
+        if (onMouseOut) dispose(() => onMouseOut(ref.mouse));
+      }
+    }, [hovered]);
+  }
+  else {
+    useNoResource();
+  }
 
-  useResource((dispose) => {
-    if (clicked) {
-      if (onMouseDown) onMouseDown(ref.mouseState);
-      if (onMouseUp) dispose(() => onMouseUp(ref.mouseState));
-    }
-  }, [clicked, hovered]);
+  if (onMouseDown || onMouseUp) {
+    const { left, middle, right } = pressed;
+    useResource((dispose) => {
+      if (left) {
+        if (onMouseDown) onMouseDown(ref.mouse);
+        if (onMouseUp) dispose(() => onMouseUp(ref.mouse));
+      }
+    }, [left]);
+    useResource((dispose) => {
+      if (middle) {
+        if (onMouseDown) onMouseDown(ref.mouse);
+        if (onMouseUp) dispose(() => onMouseUp(ref.mouse));
+      }
+    }, [middle]);
+    useResource((dispose) => {
+      if (right) {
+        if (onMouseDown) onMouseDown(ref.mouse);
+        if (onMouseUp) dispose(() => onMouseUp(ref.mouse));
+      }
+    }, [right]);
+  }
+  else {
+    useNoResource();
+  }
+
+  const count = presses.left + clicks.left + presses.middle + clicks.middle + presses.right + clicks.right;
 
   return useMemo(() =>
-    render ? render({id, hovered, clicked, index}) : (children ?? null),
-    [render, children, id, hovered, clicked]
+    render ? render({id, index, hovered, pressed, presses, clicks}) : (children ?? null),
+    [render, children, id, index, hovered, pressed, count]
   );
 };
+

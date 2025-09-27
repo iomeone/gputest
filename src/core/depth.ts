@@ -11,7 +11,7 @@ export const makeDepthTexture = (
 
 export const makeDepthStencilState = (format: GPUTextureFormat): GPUDepthStencilState => ({
   depthWriteEnabled: true,
-  depthCompare: "less" as GPUCompareFunction,
+  depthCompare: "less-equal" as GPUCompareFunction,
   format,
 });
 

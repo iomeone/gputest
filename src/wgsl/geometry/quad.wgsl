@@ -1,15 +1,15 @@
-let QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(
-  vec2<i32>(0, 0),
-  vec2<i32>(1, 0),
-  vec2<i32>(0, 1),
-  vec2<i32>(1, 1),
+let QUAD: array<vec2<u32>, 4> = array<vec2<u32>, 4>(
+  vec2<u32>(0u, 0u),
+  vec2<u32>(1u, 0u),
+  vec2<u32>(0u, 1u),
+  vec2<u32>(1u, 1u),
 );
 
-@export fn getQuadIndex(vertex: i32) -> vec2<i32> {
+@export fn getQuadIndex(vertex: u32) -> vec2<u32> {
   return QUAD[vertex];
 }
 
-@export fn getQuadUV(vertex: i32) -> vec2<f32> {
+@export fn getQuadUV(vertex: u32) -> vec2<f32> {
   return vec2<f32>(getQuadIndex(vertex));
 }
 

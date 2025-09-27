@@ -1,4 +1,4 @@
-import { DataTexture, DataBinding } from './types';
+import { DataTexture, DataBinding, TextureSource } from './types';
 import { TYPED_ARRAYS, TEXTURE_FORMAT_SIZES, TEXTURE_FORMAT_DIMS } from './constants';
 
 type Point = [number, number];
@@ -40,6 +40,25 @@ export const makeRenderTexture = (
   return texture;
 }
 
+export const makeRenderableTexture = (
+  device: GPUDevice,
+  width: number,
+  height: number,
+  format: GPUTextureFormat,
+  samples: number = 1
+): GPUTexture => {
+  const texture = device.createTexture({
+    // @ts-ignore
+    size: [width, height, 1],
+    sampleCount: samples,
+    format,
+    // @ts-ignore
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING ,
+  });
+
+  return texture;
+}
+
 export const makeReadbackTexture = (
   device: GPUDevice,
   width: number,
@@ -74,6 +93,26 @@ export const makeSourceTexture = (
     format,
     // @ts-ignore
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+  });
+
+  return texture;
+}
+
+export const makeDynamicTexture = (
+  device: GPUDevice,
+  width: number,
+  height: number,
+  depth: number,
+  format: GPUTextureFormat,
+  samples: number = 1
+): GPUTexture => {
+  const texture = device.createTexture({
+    // @ts-ignore
+    size: [width, height, depth],
+    sampleCount: samples,
+    format,
+    // @ts-ignore
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC,
   });
 
   return texture;
@@ -145,6 +184,45 @@ export const uploadTexture = (
 
   // @ts-ignore
   device.queue.writeTexture(copy, data, layout, extent);
+}
+
+export const resizeTextureSource = (
+  device: GPUDevice,
+  source: TextureSource,
+  width: number,
+  height: number,
+  depth: number = 1,
+  mipLevel: GPUIntegerCoordinate = 0,
+  aspect: GPUTextureAspect = "all",
+) => {
+  const {format} = source;
+  const newTexture = makeDynamicTexture(device, width, height, depth, format as any, 1);
+
+  const src = {
+    texture: source.texture,
+    origin: [0, 0, 0],
+    mipLevel,
+    aspect,
+  };
+  const dst = {
+    texture: newTexture,
+    origin: [0, 0, 0],
+    mipLevel,
+    aspect,
+  }
+  
+  const [w, h, d] = source.size;
+  const commandEncoder = device.createCommandEncoder();
+  commandEncoder.copyTextureToTexture(src, dst, [w, h, d || 1]);
+  device.queue.submit([commandEncoder.finish()]);
+
+  return {
+    ...source,
+    texture: newTexture,
+    view: makeTextureView(newTexture),
+    size: [width, height, depth],
+    version: 1,
+  };
 }
 
 export const makeTextureBinding = (

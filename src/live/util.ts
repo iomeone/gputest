@@ -3,6 +3,9 @@ import { LiveFiber, Task, Action, Dispatcher, Key, ArrowFunction } from './types
 const RAF = typeof window !== 'undefined' ? window.requestAnimationFrame : setTimeout;
 const NO_DEPS = [] as any[];
 
+// Cyclic version number that skips 0
+export const incrementVersion = (v: number) => (((v + 1) | 0) >>> 0) || 1;
+
 // Schedules actions to be run immediately after the current thread completes
 export const makeActionScheduler = () => {
   const queue = [] as Action<any>[];
@@ -18,6 +21,8 @@ export const makeActionScheduler = () => {
   };
 
   const flush = () => {
+    if (timer) clearTimeout(timer);
+
     const q = queue.slice();
     queue.length = 0;
     timer = null;
@@ -33,9 +38,21 @@ export const makeActionScheduler = () => {
 
 // Tracks long-range dependencies for contexts
 export const makeDependencyTracker = () => {
+  // Used in forward direction
   const dependencies = new WeakMap<LiveFiber<any>, Set<LiveFiber<any>>>();
 
+  // Inspector-only, backward direction
+  const precedents = new WeakMap<LiveFiber<any>, Set<LiveFiber<any>>>();
+
   const depend = (fiber: LiveFiber<any>, root: LiveFiber<any>) => {
+    {
+      let list = precedents.get(fiber);
+      if (!list) precedents.set(fiber, list = new Set());
+
+      let exist = list.has(root);
+      if (!exist) list.add(root);
+    }
+    
     let list = dependencies.get(root);
     if (!list) dependencies.set(root, list = new Set());
 
@@ -45,16 +62,26 @@ export const makeDependencyTracker = () => {
   }
 
   const undepend = (fiber: LiveFiber<any>, root: LiveFiber<any>) => {
+    {
+      let list = precedents.get(fiber);
+      if (list) list.delete(root);
+    }
+
     let list = dependencies.get(root);
     if (list) list.delete(fiber);
   }
 
-  const invalidate = (fiber: LiveFiber<any>) => {
+  const traceDown = (fiber: LiveFiber<any>) => {
     const fibers = dependencies.get(fiber);
-    return fibers ? Array.from(fibers.values()) : NO_DEPS;
+    return fibers ? fibers.values() : NO_DEPS;
   }
 
-  return {depend, undepend, invalidate};
+  const traceUp = (fiber: LiveFiber<any>) => {
+    const fibers = precedents.get(fiber);
+    return fibers ? fibers.values() : NO_DEPS;
+  }
+
+  return {depend, undepend, traceDown, traceUp};
 }
 
 
@@ -68,6 +95,14 @@ export const makeDisposalTracker = () => {
     list.push(t);
   }
 
+  const untrack = (fiber: LiveFiber<any>, t: Task) => {
+    let list = disposal.get(fiber);
+    if (!list) return;
+
+    const i = list.indexOf(t);
+    list.splice(i, 1);
+  }
+
   const dispose = (fiber: LiveFiber<any>) => {
     const tasks = disposal.get(fiber);
     if (tasks) {
@@ -76,7 +111,7 @@ export const makeDisposalTracker = () => {
     }
   }
 
-  return {track, dispose};
+  return {track, untrack, dispose};
 }
 
 // Schedules callback(s) on next paint
@@ -110,6 +145,8 @@ export const isSameDependencies = (
   if (next === undefined && prev === undefined) return true;
   if (prev === undefined) valid = false;
   if (next != null && prev != null) {
+    if (next === prev) return true;
+
     const n = prev.length || 0;
     if (n !== next.length || 0) valid = false;
     else for (let i = 0; i < n; ++i) if (prev[i] !== next[i]) {
@@ -164,7 +201,8 @@ export const compareFibers = (a: LiveFiber<any>, b: LiveFiber<any>) => {
   return (ak.length - bk.length) || (a.depth - b.depth);
 }
 
-export const tagFunction = <F extends ArrowFunction>(f: F) => {
-  (f as any).displayName = `${Math.floor(Math.random() * 10000)}`;
+export const tagFunction = <F extends ArrowFunction>(f: F, name?: string) => {
+  (f as any).displayName = name ?? `${Math.floor(Math.random() * 10000)}`;
   return f;
 }
+

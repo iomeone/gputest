@@ -3,10 +3,11 @@ import {
   ShaderModuleDescriptor, ShaderStageDescriptor,
 } from './types';
 
-import { patch } from '../state';
+import { patch } from '@use-gpu/state';
 
 export const makeShaderModule = (
-  [code, hash]: [TypedArray | string, number | string],
+  code: TypedArray | string,
+  hash: string,
   entryPoint: string = 'main'
 ): ShaderModuleDescriptor => ({code, hash, entryPoint});
 
@@ -20,12 +21,13 @@ export const makeShaderStage = (device: GPUDevice, descriptor: ShaderModuleDescr
 }
 
 export const makeRenderPipeline = (
+  device: GPUDevice,
   renderContext: UseRenderingContextGPU,
   vertexShader: ShaderModuleDescriptor,
   fragmentShader: ShaderModuleDescriptor,
   descriptor: DeepPartial<GPURenderPipelineDescriptor> = {},
 ) => {
-  const {device, colorStates, depthStencilState, samples} = renderContext;
+  const {colorStates, depthStencilState, samples} = renderContext;
 
   const pipelineDescriptor: GPURenderPipelineDescriptor = patch({
     depthStencil: depthStencilState,

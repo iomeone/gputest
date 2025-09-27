@@ -43,8 +43,8 @@ let WAT = true;
 
 `
 struct light {
-  intensity: f32;
-  position: vec3<f32>;
+  intensity: f32,
+  position: vec3<f32>,
 };
 `,
 
@@ -64,8 +64,8 @@ fn main() {}
 
 `
 struct A {
-  @location(0) x: f32;
-  @location(1) y: f32;
+  @location(0) x: f32,
+  @location(1) y: f32,
 }
 
 @stage(fragment)
@@ -78,7 +78,7 @@ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {
 `
 let foo: f32 = 1.0;
 let WAT = true;
-struct s { x: i32; };
+struct s { x: i32 };
 fn main() -> @builtin vec4<f32> {
   var bar: i32 = wat(5, 6);
   let x: i32 = 4 + 5 + -6 + (-7);

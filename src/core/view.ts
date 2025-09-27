@@ -16,6 +16,10 @@ export const VIEW_UNIFORMS: UniformAttribute[] = [
     format: UniformType['vec4<f32>']
   },
   {
+    name: 'viewNearFar',
+    format: UniformType['vec2<f32>']
+  },
+  {
     name: 'viewResolution',
     format: UniformType['vec2<f32>'],
   },

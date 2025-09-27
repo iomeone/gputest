@@ -1,14 +1,21 @@
 import { ParsedBundle, ParsedModule, ShaderModule, ShaderDefine, DataBinding } from '../types';
 
 import { parseLinkAliases } from '../util/link';
-import { getProgramHash, makeKey } from '../util/hash';
-import { toBundle } from '../util/bundle';
+import { getHash, makeKey } from '../util/hash';
+import { toBundle, toModule, getBundleHash } from '../util/bundle';
 import { loadStaticModule } from '../util/shader';
 import { PREFIX_CLOSURE, PREFIX_VIRTUAL, VIRTUAL_BINDINGS } from '../constants';
 
 import { timed } from './timed';
 
 const NO_SYMBOLS = [] as any[];
+3
+export type BindBundle2 = (
+  bundle: ShaderModule,
+  links?: Record<string, ShaderModule>,
+  defines?: Record<string, ShaderDefine> | null,
+  key?: string | number,
+) => string;
 
 export type BindBundle = (
   bundle: ShaderModule,
@@ -36,92 +43,56 @@ export type MakeUniformBlock = (
   binding?: number | string,
 ) => string;
 
-export const makeBindBundle = (
-  bindModule: BindModule,
-) => timed('bindBundle', (
-  bundle: ShaderModule,
-  linkDefs: Record<string, ShaderModule> = {},
-  defines?: Record<string, ShaderDefine> | null,
+export const bindBundle = (
+  subject: ShaderModule,
+  links: Record<string, ShaderModule> | null = null,
+  defines: Record<string, ShaderDefine> | null = null,
   key: string | number = makeKey(),
 ): ParsedBundle => {
-  const {module, libs, virtual} = toBundle(bundle);
-  return bindModule(module, libs, linkDefs, defines, virtual, key);
-});
+  const bundle = toBundle(subject);
+  if (!links && !defines) return bundle;
 
-export const makeBindModule = (
-  defineConstants: DefineConstants,
-) => timed('bindModule', (
-  main: ParsedModule,
-  libs: Record<string, ShaderModule> = {},
-  linkDefs: Record<string, ShaderModule> = {},
-  defines?: Record<string, ShaderDefine> | null,
-  virtual?: ParsedModule[],
-  key: string | number = makeKey(),
-): ParsedBundle => {
-  const [links, aliases] = parseLinkAliases(linkDefs);
+  const hash = getBundleHash(bundle);
+  const external: string[] = [];
+  for (const k in links) if (links[k]) external.push(getBundleHash(links[k]));
 
-  const {name, table} = main;
-  const {hash, modules, externals} = table;
+  const unique = `@closure [${hash}] [${external.join(' ')}]`;
+  const rehash = getHash(unique);
+  const rekey  = getHash(`${rehash} ${key.toString(16)}`);
+  
+  const relinks = bundle.links ? {
+    ...bundle.links,
+    ...links,
+  } : links ?? undefined;
 
-  const rehash = getProgramHash(`#closure [${name}] ${hash} ${key.toString(16)}`);
-  const namespace = `${PREFIX_CLOSURE}${rehash.slice(0, 6)}_`;
+  const redefines = defines && bundle.defines ? {
+    ...bundle.defines,
+    ...defines,
+  } : defines ?? bundle.defines ?? undefined;
 
-  const relinks: Record<string, ShaderModule> = {};
-  const reexternals = [];
-  const revirtual = virtual ? virtual.slice() : [];
-  const reimports = modules?.slice() ?? [];
+  const revirtuals = bundle.virtuals ? bundle.virtuals.slice() : [];
+  if (links) for (const k in links) if (links[k]) {
+    const chunk = links[k] as any;
 
-  if (defines && Object.keys(defines).length) {
-    const def = defineConstants(defines) + "\n";
-    reimports.push({at: -1, symbols: NO_SYMBOLS, name: namespace, imports: NO_SYMBOLS});
-    relinks[namespace] = loadStaticModule(def, 'def');
+    // Copy bundle's sub-virtuals
+    if (chunk.virtuals) revirtuals.push(...chunk.virtuals);
+
+    // Add virtual module to list
+    if (chunk.virtual) revirtuals.push(chunk);
+    if (chunk.module?.virtual) revirtuals.push(chunk.module);
   }
-
-  if (externals) for (const external of externals) if (external.func) {
-    const {flags, func} = external;
-    const {name} = func;
-
-    if (links[name]) {
-      const link = links[name] as any;
-      const entry = link.entry ?? link.module?.entry;
-      const resolved = entry ?? aliases?.get(name) ?? name;
-
-      const imp = namespace + name;
-      relinks[imp] = {...links[name], entry: resolved};
-      reimports.push({at: 0, symbols: NO_SYMBOLS, name: imp, imports: [{name, imported: resolved}]});
-
-      // Collect virtual modules from links for resolving later
-      if ('name' in link) {
-        const {virtual} = link;
-        if (virtual) revirtual.push(link);
-      }
-      else {
-        const {virtual} = link;
-        if (virtual) for (const v of virtual) revirtual.push(v);
-        if (link.module.virtual) revirtual.push(link.module);
-      }
-    }
-    else {
-      reexternals.push(external);
-    }
-  }
-
-  const retable = {
-    ...table,
-    hash: rehash,
-    modules: reimports,
-    externals: reexternals,
-  };
 
   return {
-    module: {
-      ...main,
-      table: retable,
-    },
-    libs: {...libs, ...relinks},
-    virtual: revirtual.length ? revirtual : undefined,
+    ...bundle,
+    links: relinks,
+    defines: redefines,
+    hash: rehash,
+    key: rekey,
+    virtuals: revirtuals,
   };
-});
+};
+
+export const bindModule = bindBundle;
 
 export const makeResolveBindings = (
   makeUniformBlock: MakeUniformBlock,
@@ -142,14 +113,15 @@ export const makeResolveBindings = (
   // Gather all namespaced uniforms and bindings from all virtual modules.
   // Assign base offset to each virtual module in-place.
   let base = 0;
-  for (const {virtual} of modules) {
-    if (virtual) for (const m of virtual) {
+  let index = 0;
+  for (const {virtuals} of modules) {
+    if (virtuals) for (const m of virtuals) {
       if (seen.has(m)) continue;
       seen.add(m);
 
       if (m.virtual) {
         const {uniforms, storages, textures} = m.virtual;
-        const namespace = `${PREFIX_VIRTUAL}${base}_`;
+        const namespace = `${PREFIX_VIRTUAL}${++index}_`;
         if (uniforms) for (const u of uniforms) allUniforms.push(namespaceBinding(namespace, u));
         if (storages) for (const b of storages) allBindings.push(b);
         if (textures) for (const b of textures) allBindings.push(b);
@@ -167,11 +139,14 @@ export const makeResolveBindings = (
   const virtualBindGroup = getVirtualBindGroup(defines);
   const code = makeUniformBlock(allUniforms, virtualBindGroup, base);
   const lib = loadStaticModule(code, VIRTUAL_BINDINGS);
+
   const imported = {at: -1, symbols: NO_SYMBOLS, name: VIRTUAL_BINDINGS, imports: NO_SYMBOLS};
 
   // Append to modules
   const out = modules.map((m: ShaderModule) => {
-    const {module, libs} = toBundle(m);
+    const bundle = toBundle(m);
+
+    const {module, libs} = bundle;
     const {table} = module;
     const {modules} = table;
 
@@ -181,6 +156,7 @@ export const makeResolveBindings = (
     };
 
     return {
+      ...bundle,
       module: {
         ...module,
         table: retable,
@@ -206,6 +182,14 @@ export const namespaceBinding = (namespace: string, binding: DataBinding) => {
   return {...binding, uniform: {...uniform, name: imp}};
 };
 
-export const getBindingArgument = (binding?: ShaderDefine): string | number =>
-  typeof binding === 'string' ? binding.split(/[()]/)[1] :
-  typeof binding === 'number' ? binding : 'VIRTUAL';
+const VIRTUAL = 'VIRTUAL';
+
+export const getBindingArgument = (binding?: ShaderDefine): string | number => {
+  if (typeof binding === 'string') {
+    const a = binding.indexOf('(');
+    const b = binding.indexOf(')');
+    return binding.slice(a + 1, b);
+  }
+  if (typeof binding === 'number') return binding;
+  return VIRTUAL;
+}

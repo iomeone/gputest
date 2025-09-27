@@ -1,9 +1,10 @@
-import { LiveFiber, Hook } from '../../live/types';
-import { formatNode, formatValue, STATE_SLOTS } from '../../live';
+import { LiveFiber, Hook } from '@use-gpu/live/types';
+import { formatNode, formatValue, STATE_SLOTS } from '@use-gpu/live';
 
 import React, { useState } from 'react';
 import { Action } from './types';
 import { SplitRow, Label, Spacer } from './layout';
+import { usePingContext } from './ping';
 
 import { inspectObject } from './props';
 import chunk from 'lodash/chunk';
@@ -19,6 +20,8 @@ export const Call: React.FC<CallProps> = ({fiber}) => {
 
   let props = {id, depth, path, type, context, yeeted, mount, mounts, next, host, '[raw]': fiber} as Record<string, any>;
 
+  usePingContext();
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const toggleExpanded = (id: string) => setExpanded((state) => ({
     ...expanded,
@@ -32,7 +35,7 @@ export const Call: React.FC<CallProps> = ({fiber}) => {
       <div><b>Fiber</b></div>
       <div>{inspectObject(props, expanded, toggleExpanded, '')}</div>
       <Spacer />
-      <div><b>State</b></div>
+      <div><b>Hooks</b></div>
       <div>
         {inspectObject(hooks.map(hookToObject), expanded, toggleExpanded, '')}
       </div>

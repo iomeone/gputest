@@ -1,141 +1,140 @@
-const INF = 1e10;
+import { Font, FontProps, FontMetrics, SpanMetrics, GlyphMetrics, RustTextAPI } from './types';
+import { getHashValue } from '@use-gpu/state';
 
-// src/text/index.ts （或你放最新版的那个文件）
-import { FontMetrics, SpanMetrics, GlyphMetrics, GPUTextContext } from './types';
+export { glyphToRGBA, glyphToSDF, padRectangle } from './sdf';
 
-// 记一次模块初始化，避免重复 init()
-let wasmModPromise: Promise<typeof import('../use-gpu-text/pkg/index.js')> | null = null;
+// @ts-ignore
+let UseRustText: typeof import('../pkg');
 
-export const GPUText = async (): Promise<GPUTextContext> => {
-  // 按你的要求：显式加载 JS + 手动 init wasm（通过 URL 指向 index_bg.wasm）
-  const mod = await (wasmModPromise ??= (async () => {
-    const m = await import('../use-gpu-text/pkg/index.js');
-    await m.default(new URL('../use-gpu-text/pkg/index_bg.wasm', import.meta.url));
-    return m;
-  })());
+const DEFAULT_FONTS = {
+  "0": {
+    family: 'sans-serif',
+    weight: 400,
+    style: 'normal',
+  },
+} as Record<string, FontProps>;
 
-  // 拿到类并实例化
-  const useGPUText = mod.UseGPUText.new();
+export const RustText = async (): Promise<RustTextAPI> => {
+  if (!UseRustText) {
+    // @ts-ignore
+    ({UseRustText} = await import('../pkg'));
+  }
 
-  // 封装与作者一致的上下文 API
-  const measureFont = (size: number): FontMetrics => {
-    return useGPUText.measure_font(size);
-  };
+  // @ts-ignore
+  const useRustText = UseRustText.new();
 
-  const measureSpans = (text: string, size: number): SpanMetrics => {
-    return useGPUText.measure_spans(text, size);
-  };
+  let fontMap = new Map<number, FontProps>();
+  for (let k in DEFAULT_FONTS) fontMap.set(+k, DEFAULT_FONTS[k]);
 
-  const measureGlyph = (id: number, size: number): GlyphMetrics => {
-    return useGPUText.measure_glyph(id, size);
-  };
+  const setFonts = (fonts: Font[]) => {
+    const keys = fonts.map(getHashValue);
 
-  return { measureFont, measureSpans, measureGlyph };
-};
-export const glyphToRGBA = (data: Uint8Array, w: number, h: number) => {
-  const out = new Uint8Array(data.length * 4);
-  let n = data.length, j = 0;
-  let b = 1;
-  let odd = w%2;
-  for (let i = 0; i < n; ++i) {
-    const v = data[i];
+    const remove = new Set<number>(fontMap.keys());
+    remove.delete(0);
 
-    //b = 1 - b;
-    //if (!odd && (i % w) === 0) b = 1 - b;
-
-    out[j++] = b && v;
-    out[j++] = b && v;
-    out[j++] = b && v;
-    out[j++] = b && v;
-  };
-  return {data: out, width: w, height: h};
-};
-
-export const glyphToSDF = (
-  data: Uint8Array,
-  w: number,
-  h: number,
-  pad: number = 4,
-  radius: number = 3,
-  cutoff: number = 0.25,
-) => {
-  const wp = w + pad * 2;
-  const hp = h + pad * 2;
-  const np = wp * hp;
-  const sp = Math.max(wp, hp);
-
-  const out = new Uint8Array(np);
-
-  const outer = new Float64Array(np);
-  const inner = new Float64Array(np);
-
-  const f = new Float64Array(sp);
-  const z = new Float64Array(sp + 1);
-  const v = new Uint16Array(sp);
-  
-  outer.fill(INF, 0, np);
-  inner.fill(0, 0, np);
-
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const a = data[y * w + x] / 255;
-      if (a === 0) continue;
-
-      const j = (y + pad) * wp + x + pad;
-
-      if (a >= 254/255) {
-        outer[j] = 0;
-        inner[j] = INF
-      } else {
-        const d = 0.5 - a;
-        outer[j] = d > 0 ? d * d : 0;
-        inner[j] = d < 0 ? d * d : 0;
+    keys.forEach((k, i) => {
+      if (!fontMap.has(k)) {
+        const font = fonts[i];
+        useRustText.load_font(k, new Uint8Array(font.buffer));
+        fontMap.set(k, font.props);
       }
+      else remove.delete(k);
+    });
+    
+    for (const k of remove.keys()) {
+      fontMap.delete(k);
+      useRustText.unload_font(k);
     }
   }
+
+  const resolveFont = (font: Partial<FontProps>): number => {
+
+    let best: number | null = null;
+    let max = 0;
+
+    const {
+      family = '',
+      weight = 400,
+      style = 'normal',
+    } = font;
+
+    for (const k of fontMap.keys()) {
+      const font = fontMap.get(k)!;
+      const {family: f, style: s, weight: w} = font;
+
+      let score = 0;
+      if (f === family) score += 2;
+      if (s === style) score += 1;
+      score += Math.min(weight / w, w / weight);
+      
+      if (score > max) {
+        max = score;
+        best = k;
+      }
+    }
+    
+    return best;
+  }
   
-  edt(outer, 0, 0, wp, hp, wp, f, v, z);
-  edt(inner, pad, pad, w, h, wp, f, v, z);
+  const resolveFontStack = (fonts: Partial<FontProps>[]): number[] => {
+    const stack = fonts.map(resolveFont).filter(x => x != null) as number[];
+    return stack.length ? stack : [0];
+  }
 
-  for (let i = 0; i < np; i++) {
-      const d = Math.sqrt(outer[i]) - Math.sqrt(inner[i]);
-      out[i] = Math.max(0, Math.min(255, Math.round(255 - 255 * (d / radius + cutoff))));
-  } 
+  const measureFont = (fontId: number, size: number): FontMetrics => {
+    return useRustText.measure_font(fontId, size);
+  }
 
-  return glyphToRGBA(out, wp, hp);
+  const measureSpans = (fontStack: number[], text: Uint16Array, size: number): SpanMetrics => {
+    const s = useRustText.measure_spans(fontStack, text, size);
+    return {
+      breaks: new Uint32Array(s.breaks.buffer),
+      metrics: new Float32Array(s.metrics.buffer),
+      glyphs: new Uint32Array(s.glyphs.buffer),
+    };
+  }
+  
+  const measureGlyph = (fontId: number, glyphId: number, size: number): GlyphMetrics => {
+    return useRustText.measure_glyph(fontId, glyphId, size);
+  }
+  
+  return {measureFont, measureSpans, measureGlyph, resolveFont, resolveFontStack, setFonts};
+}
+
+export const packStrings = (strings: string[] | string): Uint16Array => {
+  if (!Array.isArray(strings)) return packString(strings);
+
+  const ss: string[] = strings;
+  const c = ss.length;
+  const n = ss.reduce((a, b) => a + b.length, 0);
+
+  let pos = 0;
+  const array = new Uint16Array(n + c);
+  for (const s of ss) {
+    const l = s.length;
+    for (let i = 0; i < l; ++i) {
+      const c = s.charCodeAt(i);
+      if (c !== 0) {
+        array[pos++] = c;
+      }
+    }
+    array[pos++] = 0;
+  }
+
+  return array;
 };
 
-// 2D Euclidean squared distance transform by Felzenszwalb & Huttenlocher https://cs.brown.edu/~pff/papers/dt-final.pdf
-function edt(data, x0, y0, width, height, gridWidth, f, v, z) {
-  for (let x = x0; x < x0 + width; x++) edt1d(data, y0 * gridWidth + x, gridWidth, height, f, v, z);
-  for (let y = y0; y < y0 + height; y++) edt1d(data, y * gridWidth + x0, 1, width, f, v, z);
-}
+export const packString = (s: string): Uint16Array => {
+  const n = s.length;
 
-// 1D squared distance transform
-function edt1d(grid, offset, stride, length, f, v, z) {
-  v[0] = 0;
-  z[0] = -INF;
-  z[1] = INF;
-  f[0] = grid[offset];
-
-  for (let q = 1, k = 0, s = 0; q < length; q++) {
-    f[q] = grid[offset + q * stride];
-    const q2 = q * q;
-    do {
-      const r = v[k];
-      s = (f[q] - f[r] + q2 - r * r) / (q - r) / 2;
-    } while (s <= z[k] && --k > -1);
-
-    k++;
-    v[k] = q;
-    z[k] = s;
-    z[k + 1] = INF;
+  let pos = 0;
+  const array = new Uint16Array(n);
+  for (let i = 0; i < n; ++i) {
+    const c = s.charCodeAt(i);
+    if (c !== 0) {
+      array[pos++] = c;
+    }
   }
 
-  for (let q = 0, k = 0; q < length; q++) {
-    while (z[k + 1] < q) k++;
-    const r = v[k];
-    const qr = q - r;
-    grid[offset + q * stride] = f[r] + qr * qr;
-  }
-}
+  return array;
+};

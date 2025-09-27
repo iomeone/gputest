@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, Point } from './types';
 
-import { memo, yeet, resume, provide, gather, useContext, useMemo } from '../../live';
+import { memo, yeet, provide, gather, useContext, useMemo } from '@use-gpu/live';
 import { LayoutContext } from '../providers/layout-provider';
 
 export type LayoutProps = {
@@ -14,7 +14,7 @@ export const Layout: LiveComponent<LayoutProps> = memo((props: LayoutProps) => {
   return gather(children ?? (render ? render() : null), Resume);
 }, 'Layout');
 
-const Resume = resume((els: LayoutElement[]) => {
+const Resume = (els: LayoutElement[]) => {
   const layout = useContext(LayoutContext);
   const [left, top, right, bottom] = layout;
   const size = [right - left, bottom - top] as Point;
@@ -41,4 +41,4 @@ const Resume = resume((els: LayoutElement[]) => {
   */
 
   return out;
-});
+};

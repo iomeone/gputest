@@ -1,5 +1,5 @@
-import { LiveFiber } from '../../live/types';
-import { formatNode, formatValue, renderFibers } from '../../live';
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatNode, formatValue, renderFibers } from '@use-gpu/live';
 import { useUpdateState } from './cursor';
 import { ExpandState, SelectState, HoverState, PingState } from './types';
 
@@ -10,9 +10,11 @@ import { Props } from './props';
 import { Call } from './call';
 import { Shader } from './shader';
 import {
-  InspectContainer, InspectToggle, Button,
+  InspectContainer, InspectToggle, Button, TreeControls,
   SplitRow, RowPanel, Panel, PanelFull, PanelScrollable, Inset, InsetColumnFull,
 } from './layout';
+import { PingProvider } from './ping';
+import { DetailSlider } from './detail';
 
 import * as Tabs from '@radix-ui/react-tabs';
 import "../theme.css";
@@ -29,14 +31,24 @@ type InspectProps = {
 export const Inspect: React.FC<InspectProps> = ({fiber}) => {
   const expandCursor = useUpdateState<ExpandState>({});
   const selectedCursor = useUpdateState<SelectState>(null);
-  const hoveredCursor = useUpdateState<HoverState>(() => ({ fiber: null, deps: [], root: null }));
+  const depthCursor = useUpdateState<number>(10);
+  const hoveredCursor = useUpdateState<HoverState>(() => ({ fiber: null, by: null, deps: [], precs: [], root: null, depth: 0 }));
 
   const [open, updateOpen] = useUpdateState<boolean>(false);
   const toggleOpen = () => updateOpen(!open);
 
   const fibers = new Map<number, LiveFiber<any>>();
   const [selectedFiber, setSelected] = selectedCursor;
-  const ping = usePingTracker(fiber);
+  const [depthLimit, setDepthLimit] = depthCursor;
+  const [{fiber: hoveredFiber}] = hoveredCursor;
+
+  useLayoutEffect(() => {
+    const setHovered = hoveredFiber?.__inspect?.setHovered;
+    if (!setHovered) return;
+    
+    setHovered(true);
+    return () => setHovered(false);
+  }, [hoveredFiber])
 
   const panes = selectedFiber ? [
     {
@@ -56,20 +68,23 @@ export const Inspect: React.FC<InspectProps> = ({fiber}) => {
     if (inspect) {
       const {vertex, fragment} = inspect;
       if (vertex) {
-        vertexTab = <Shader shader={vertex} />;
+        vertexTab = <Shader type="vertex" fiber={selectedFiber} />;
       }
       if (fragment) {
-        fragmentTab = <Shader shader={fragment} />
+        fragmentTab = <Shader type="fragment" fiber={selectedFiber} />
       }
     }
   }
 
   const tree = (
     <InsetColumnFull>
+      <TreeControls>
+        <DetailSlider value={depthLimit} onChange={setDepthLimit} />
+      </TreeControls>
       <FiberTree
         fiber={fiber}
         fibers={fibers}
-        ping={ping}
+        depthLimit={depthLimit}
         expandCursor={expandCursor}
         selectedCursor={selectedCursor}
         hoveredCursor={hoveredCursor}
@@ -103,69 +118,27 @@ export const Inspect: React.FC<InspectProps> = ({fiber}) => {
 
   return (<>
     {open ? (
-      <InspectContainer onMouseDown={onMouseDown} className="ui inverted">
-        <SplitRow>
-          <RowPanel style={{width: '34%'}}>
-            <PanelFull onClick={() => setSelected(null)}>
-              {tree}
-            </PanelFull>
-          </RowPanel>
-          {selectedFiber ? (
-            <RowPanel style={{width: '66%'}}>
-              <PanelScrollable>
-                {props}
-              </PanelScrollable>
+      <PingProvider fiber={fiber}>  
+        <InspectContainer onMouseDown={onMouseDown} className="ui inverted">
+          <SplitRow>
+            <RowPanel style={{width: '34%'}}>
+              <PanelFull onClick={() => setSelected(null)}>
+                {tree}
+              </PanelFull>
             </RowPanel>
-          ) : null}
-        </SplitRow>
-      </InspectContainer>
+            {selectedFiber ? (
+              <RowPanel style={{width: '66%'}}>
+                <PanelScrollable>
+                  {props}
+                </PanelScrollable>
+              </RowPanel>
+            ) : null}
+          </SplitRow>
+        </InspectContainer>
+      </PingProvider>
     ) : null}
     <InspectToggle onClick={toggleOpen}>
       <Button>{open ? ICON("close") : ICON("bug_report")}</Button>
     </InspectToggle>
   </>);
-}
-
-// Track update pings to show highlights in tree
-type Timer = ReturnType<typeof setTimeout>;
-const usePingTracker = (fiber: LiveFiber<any>) => {
-  const [ping, setPing] = useState<PingState>({});
-
-  const [ref] = useState({ ping });
-  ref.ping = ping;
-
-  useEffect(() => {
-    let uTimer: Timer | null = null;
-    let rTimer: Timer | null = null;
-
-    let update: Record<string, number> = {};
-    let reset: Record<string, number> = {};
-
-    const flush = () => {
-      const u = update;
-      uTimer = null;
-      update = {};
-      setPing((s) => ({...s, ...u}));
-
-      for (let k in u) reset[k] = 0;
-      if (!rTimer) rTimer = setTimeout(() => {
-        const r = reset;
-        rTimer = null;
-        reset = {};
-        setPing((s) => ({...s, ...r}))
-      }, 500);
-    }
-
-    if (!fiber.host) return;
-    
-    fiber.host.__ping = (fiber: LiveFiber<any>) => {
-      reset[fiber.id] = update[fiber.id] = ((ref.ping[fiber.id] || 0) % 256) + 1;      
-      if (!uTimer) uTimer = setTimeout(flush, 0);
-    };
-    return () => {
-      if (fiber.host) fiber.host.__ping = () => {};
-    };
-  }, [ref]);
-
-  return ping;
 }

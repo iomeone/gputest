@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, Margin, Dimension, Direction, Alignment, Anchor, Point } from '../types';
 
-import { resume, yeet, memo, gather, useOne, useMemo } from '../../../live';
+import { yeet, memo, gather, useOne, useMemo } from '@use-gpu/live';
 import { getFlexMinMax, fitFlex } from '../lib/flex';
-import { makeBoxLayout, normalizeAlignment, normalizeGap, parseDimension } from '../lib/util';
+import { makeBoxLayout, normalizeAlignment, normalizeGap, parseDimension, memoFit } from '../lib/util';
 
 const NO_MARGIN = [0, 0, 0, 0] as Margin;
 
@@ -44,27 +44,7 @@ export const Flex: LiveComponent<FlexProps> = memo((props: FlexProps) => {
   const gap    = normalizeGap(g);
   const align  = normalizeAlignment(al);
 
-  const Resume = useOne(() =>
-    makeResume(direction, width, height, gap, align, anchor, grow, shrink, wrap, snap),
-    [direction, width, height, gap, align, anchor, grow, shrink, wrap, snap]
-  );
-
-  return children ? gather(children, Resume) : null;
-}, 'Flex');
-
-const makeResume = (
-  direction: Direction,
-  width: Dimension | undefined,
-  height: Dimension | undefined,
-  gap: Point,
-  align: [Alignment, Alignment],
-  anchor: Anchor,
-  grow: number,
-  shrink: number,
-  wrap: boolean,
-  snap: boolean,
-) =>
-  resume((els: LayoutElement[]) => {
+  const Resume = (els: LayoutElement[]) => {
     const w = width != null && width === +width ? width : null;
     const h = height != null && height === +height ? height : null;
 
@@ -78,7 +58,7 @@ const makeResume = (
       margin: NO_MARGIN,
       grow,
       shrink,
-      fit: (into: Point) => {
+      fit: memoFit((into: Point) => {
         const w = width != null ? parseDimension(width, into[0], snap) : null;
         const h = height != null ? parseDimension(height, into[1], snap) : null;
         const fixed = [
@@ -91,6 +71,9 @@ const makeResume = (
           size,
           render: makeBoxLayout(sizes, offsets, renders),
         };
-      }
+      }),
     });
-  });
+  };
+  
+  return children ? gather(children, Resume) : null;
+}, 'Flex');

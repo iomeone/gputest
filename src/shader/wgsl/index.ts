@@ -4,6 +4,9 @@ import {
   loadStaticModule,
   defineConstants,
   makeModuleCache,
+
+  bundleToAttribute,
+  bundleToAttributes,
 } from './shader';
 
 import {
@@ -11,13 +14,21 @@ import {
   bindModule,
   bindingsToLinks,
   bindingToModule,
+  sourceToModule,
   resolveBindings,
 } from './bind';
 
 import {
   castTo,
-  bundleToAttribute,
 } from './cast';
+
+import {
+  chainTo,
+} from './chain';
+
+import {
+  diffBy,
+} from './diff';
 
 import {
   linkBundle,
@@ -33,7 +44,7 @@ import {
 } from './ast';
 
 import {
-  getProgramHash
+  getHash
 } from '../util/hash';
 
 export {
@@ -42,6 +53,9 @@ export {
   loadStaticModule,
   defineConstants,
   makeModuleCache,
+
+  bundleToAttribute,
+  bundleToAttributes,
 } from './shader';
 
 export {
@@ -49,13 +63,21 @@ export {
   bindModule,
   bindingsToLinks,
   bindingToModule,
+  sourceToModule,
   resolveBindings,
 } from './bind';
 
 export {
   castTo,
-  bundleToAttribute,
 } from './cast';
+
+export {
+  chainTo,
+} from './chain';
+
+export {
+  diffBy,
+} from './diff';
 
 export {
   linkBundle,
@@ -71,13 +93,15 @@ export {
 } from './ast';
 
 export {
-  getProgramHash
+  getHash
 } from '../util/hash';
 
 export const WGSLLinker = {
   loadModule,
   loadModuleWithCache,
   loadStaticModule,
+  bundleToAttribute,
+  bundleToAttributes,
 
   defineConstants,
 
@@ -89,10 +113,12 @@ export const WGSLLinker = {
   bindModule,
   bindingsToLinks,
   bindingToModule,
+  sourceToModule,
   resolveBindings,
 
   castTo,
-  bundleToAttribute,
+  chainTo,
+  diffBy,
 
   makeASTParser,
   compressAST,
@@ -101,7 +127,7 @@ export const WGSLLinker = {
 
   makeModuleCache,
 
-  getProgramHash,
+  getHash,
 };
 
 export default WGSLLinker;

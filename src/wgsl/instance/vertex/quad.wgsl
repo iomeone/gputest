@@ -1,41 +1,52 @@
-use '../../../wgsl/use/types'::{ SolidVertex };
-use '../../../wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale }; 
-use '../../../wgsl/geometry/quad'::{ getQuadUV };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale }; 
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
 
-@external fn getPosition(i: i32) -> vec4<f32> {};
-@external fn getColor(i: i32) -> vec4<f32> {};
-@external fn getSize(i: i32) -> vec2<f32> {};
-@external fn getDepth(i: i32) -> f32 {};
+@optional @external fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
+@optional @external fn getRectangle(i: u32) -> vec4<f32> { return vec4<f32>(-1.0, -1.0, 1.0, 1.0); };
+@optional @external fn getColor(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.5, 1.0); };
+@optional @external fn getDepth(i: u32) -> f32 { return 0; };
+@optional @external fn getUV(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 1.0, 1.0); };
 
-@export fn getQuadVertex(vertexIndex: i32, instanceIndex: i32) -> SolidVertex {
+@export fn getQuadVertex(vertexIndex: u32, instanceIndex: u32) -> SolidVertex {
   var position = getPosition(instanceIndex);
+  var rectangle = getRectangle(instanceIndex);
   var color = getColor(instanceIndex);
-  var size = getSize(instanceIndex);
   var depth = getDepth(instanceIndex);
+  var uv4 = getUV(instanceIndex);
 
   var center = worldToClip(position);
 
-  var uv = getQuadUV(vertexIndex);
-  var xy = uv * 2.0 - 1.0;
+  var uv1 = getQuadUV(vertexIndex);
+  var xy1 = uv1 * 2.0 - 1.0;
   
   // Lerp between fixed size and full perspective.
   var pixelScale = getPerspectiveScale(center.w, depth);
-  // TODO: awaiting compound support
-  //size *= pixelScale;
-  size = size * pixelScale;
 
+  // Apply half pixel edge bleed on XY and UV
+  var xy: vec2<f32>;
+  var uv: vec2<f32>;
   if (HAS_EDGE_BLEED) {
-    xy = xy * (size + 0.5) / size;
-    uv = xy * .5 + .5;
+    let bleed = 0.5;
+    var ul = rectangle.xy * pixelScale - bleed;
+    var br = rectangle.zw * pixelScale + bleed;
+    var wh = (rectangle.zw - rectangle.xy) * pixelScale;
+
+    xy = mix(ul, br, uv1);
+    uv = mix(uv4.xy, uv4.zw, uv1 + xy1 * bleed / wh);
+  }
+  else {
+    xy = mix(rectangle.xy, rectangle.zw, uv1) * pixelScale;
+    uv = mix(uv4.xy, uv4.zw, uv1);
   }
 
-  // TODO: awaiting compound support
-  //center.xy += xy * size * viewUniforms.viewResolution * center.w;
-  center = vec4<f32>(center.xy + xy * size * viewUniforms.viewResolution * center.w, center.zw);
+  // Attach to position
+  center = vec4<f32>(center.xy + 2.0 * xy * viewUniforms.viewResolution * center.w, center.zw);
 
   return SolidVertex(
     center,
     color,
-    uv
+    uv,
+    instanceIndex,
   );
 }

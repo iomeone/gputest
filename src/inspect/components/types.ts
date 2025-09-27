@@ -1,4 +1,4 @@
-import { LiveFiber } from '../../live/types';
+import { LiveFiber } from '@use-gpu/live/types';
 
 export type ExpandState = Record<number, boolean>;
 export type PingState = Record<number, number>;
@@ -7,6 +7,7 @@ export type HoverState = {
   fiber: LiveFiber<any> | null,
   root: LiveFiber<any> | null,
   deps: LiveFiber<any>[],
+  precs: LiveFiber<any>[],
 };
 
 export type Action = () => void;

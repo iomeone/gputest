@@ -1,5 +1,8 @@
 import { vec2, vec3, mat4 } from 'gl-matrix';
 
+export type Point = [number, number];
+export type Rectangle = [number, number, number, number];
+
 export type Dictionary<T = string> = Record<string, T>;
 
 export type DeepPartial<T> = T | {
@@ -15,12 +18,19 @@ export type UseRenderingContextGPU = {
   device: GPUDevice,
 
   gpuContext: GPUCanvasContext,
+  colorSpace: ColorSpace,
+  colorInput: ColorSpace,
   colorStates: GPUColorTargetState[],
   colorAttachments: GPURenderPassColorAttachment[],
+  targetTexture: GPUTexture,
   depthTexture: GPUTexture,
   depthStencilState: GPUDepthStencilState,
   depthStencilAttachment: GPURenderPassDepthStencilAttachment,
+
+  swapView: (view: GPUTextureView) => void,
 };
+
+export type ColorSpace = 'linear' | 'srgb' | 'p3';
 
 export type TypedArray =
   Int8Array |
@@ -159,14 +169,26 @@ export type StorageSource = {
   buffer: GPUBuffer,
   format: string,
   length: number,
+  size: number[],
   version: number,
 };
 
+export type LambdaSource<T = any> = {
+  shader: T,
+  length?: number,
+  version?: number,
+  size?: number[],
+};
+
 export type TextureSource = {
+  texture: GPUTexture,
   view: GPUTexture | GPUTextureView,
   sampler: GPUSampler | GPUSamplerDescriptor,
   layout: string,
   format: string,
+  variant?: string,
+  absolute?: boolean,
+  colorSpace?: ColorSpace,
   size: [number, number] | [number, number, number],
   version: number,
 };
@@ -206,6 +228,21 @@ export type PickingUniforms = {
 
 // Data
 
+export type ChunkLayout = {
+  chunks: number[],
+  loops?: boolean[],
+  dataCount: number,
+  indexCount: number,
+};
+
+export type Tuples<N extends number, T = number> = {
+  array: T[],
+  get: (i: number, j: number) => T,
+  iterate: (f: (...args: T[]) => void, start?: number, end?: number) => void;
+  dims: number,
+  length: number,
+};
+
 export type Emitter = (...args: number[]) => void;
 export type Accessor = (o: any) => any;
 export type EmitterExpression = (emit: Emitter, ...args: any[]) => any;
@@ -214,13 +251,15 @@ export type ArrayLike = any[] | TypedArray;
 
 export type AccessorSpec = string | Accessor | ArrayLike;
 export type DataField = [string, AccessorSpec];
-export type DataBinding<T> = {
+export type DataBinding<T = any> = {
   uniform: UniformAttributeValue,
   storage?: StorageSource,
   texture?: TextureSource,
-  constant?: any,
-  lambda?: T,
+  lambda?: LambdaSource<T>,
+  constant?: Prop<T>,
 };
+
+export type Prop<T> = T | {expr: () => T} | {current: T};
 
 export type AggregateBuffer = {
   buffer: GPUBuffer,
@@ -229,16 +268,12 @@ export type AggregateBuffer = {
   source: StorageSource,
 };
 
-export type AtlasMapping = {
-  rect: Rectangle,
-  uv: Rectangle,
-};
-
 export type Atlas = {
   place: (key: number, w: number, h: number) => void,
-  map: Map<number, AtlasMapping>,
+  map: Map<number, Rectangle>,
   width: number,
   height: number,
+  version: number,
 };
 
 // Passes

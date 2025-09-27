@@ -1,11 +1,12 @@
 struct ViewUniforms {
-  projectionMatrix: mat4x4<f32>;
-  viewMatrix: mat4x4<f32>;
-  viewPosition: vec4<f32>;
-  viewResolution: vec2<f32>;
-  viewSize: vec2<f32>;
-  viewWorldUnit: f32;
-  viewPixelRatio: f32;
+  projectionMatrix: mat4x4<f32>,
+  viewMatrix: mat4x4<f32>,
+  viewPosition: vec4<f32>,
+  viewNearFar: vec2<f32>,
+  viewResolution: vec2<f32>,
+  viewSize: vec2<f32>,
+  viewWorldUnit: f32,
+  viewPixelRatio: f32,
 };
 
 @export @group(VIEW) @binding(VIEW) var<uniform> viewUniforms: ViewUniforms;
@@ -31,8 +32,33 @@ struct ViewUniforms {
 }
 
 @export fn worldToClip3D(position: vec4<f32>) -> vec3<f32> {
-  var pos = viewToClip(worldToView(position));
-  return pos.xyz / pos.w;
+  return toClip3D(viewToClip(worldToView(position)));
+}
+
+@export fn toClip3D(position: vec4<f32>) -> vec3<f32> {
+  return position.xyz / position.w;
+}
+
+@export fn clipLineIntoView(anchor: vec4<f32>, head: vec4<f32>, near: f32) -> vec4<f32> {
+  var d = anchor - head;
+  if (dot(d, d) == 0.0) { return worldToView(anchor); }
+
+  var a = worldToView(anchor);
+  var b = worldToView(head);
+
+  if (-a.z < near) {
+    if (abs(b.z - a.z) > 0.001) {
+      let ratio = (near + a.z) / (a.z - b.z);
+      return mix(a, b, ratio);
+    }
+  }
+
+  return a;
+}
+
+@export fn getWorldScale(w: f32, f: f32) -> f32 {
+  var v = viewUniforms.viewResolution;
+  return getPerspectiveScale(w, f) * v.y * w;
 }
 
 @export fn getPerspectiveScale(w: f32, f: f32) -> f32 {

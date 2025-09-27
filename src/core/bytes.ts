@@ -42,58 +42,6 @@ export const setFloat64N = (n: number) => (view: DataView, offset: number, data:
 };
 
 export const UNIFORM_BYTE_SETTERS = {
-  //"bool":        setUint8,
-  "bvec2":       setUint8N(2),
-  "bvec3":       setUint8N(3),
-  "bvec4":       setUint8N(4),
-
-  "uint":        setUint32,
-  "uvec2":       setUint32N(2),
-  "uvec3":       setUint32N(3),
-  "uvec4":       setUint32N(4),
-
-  "int":         setInt32,
-  "ivec2":       setInt32N(2),
-  "ivec3":       setInt32N(3),
-  "ivec4":       setInt32N(4),
-
-  "float":       setFloat32,
-  "vec2":        setFloat32N(2),
-  "vec3":        setFloat32N(3),
-  "vec4":        setFloat32N(4),
-
-  "double":      setFloat64,
-  "dvec2":       setFloat64N(2),
-  "dvec3":       setFloat64N(3),
-  "dvec4":       setFloat64N(4),
-
-  "mat2":        setFloat32N(4),
-  "mat2x2":      setFloat32N(4),
-  "mat3x2":      setFloat32N(6),
-  "mat2x3":      setFloat32N(6),
-  "mat2x4":      setFloat32N(8),
-  "mat4x2":      setFloat32N(8),
-  "mat3":        setFloat32N(9),
-  "mat3x3":      setFloat32N(9),
-  "mat3x4":      setFloat32N(12),
-  "mat4x3":      setFloat32N(12),
-  "mat4":        setFloat32N(16),
-  "mat4x4":      setFloat32N(16),
-
-  "dmat2":       setFloat64N(4),
-  "dmat2x2":     setFloat64N(4),
-  "dmat3x2":     setFloat64N(6),
-  "dmat2x3":     setFloat64N(6),
-  "dmat2x4":     setFloat64N(8),
-  "dmat4x2":     setFloat64N(8),
-  "dmat3":       setFloat64N(9),
-  "dmat3x3":     setFloat64N(9),
-  "dmat3x4":     setFloat64N(12),
-  "dmat4x3":     setFloat64N(12),
-  "dmat4":       setFloat64N(16),
-  "dmat4x4":     setFloat64N(16),
-
-
   "bool":             setUint8,
   "vec2<bool>":       setUint8N(2),
   "vec3<bool>":       setUint8N(3),

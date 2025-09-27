@@ -1,9 +1,12 @@
 import { TypedArray, UniformType, UniformAttribute, EmitterExpression, Emitter, Accessor, AccessorSpec } from './types';
 import { UNIFORM_SIZES, UNIFORM_ARRAY_TYPES, UNIFORM_DIMS } from './constants';
 
+import { vec4 } from 'gl-matrix';
+
 type NumberArray = TypedArray | number[];
 
 const NO_LOOPS = [] as boolean[];
+const NO_ENDS = [] as [boolean, boolean][];
 
 export const makeDataArray = (type: UniformType, length: number) => {
   const ctor = UNIFORM_ARRAY_TYPES[type];
@@ -43,8 +46,57 @@ export const makeDataAccessor = (format: UniformType, accessor: AccessorSpec) =>
 export const emitIntoNumberArray = (expr: EmitterExpression, to: NumberArray, dims: number) => {
   const emit = makeDataEmitter(to, dims);
   const n = to.length / dims;
-  let i = 0;
-  for (let i = 0; i < n; ++i) expr(emit, i, n);
+  for (let i = 0; i < n; i++) expr(emit, i, n);
+}
+
+export const emitIntoMultiNumberArray = (expr: EmitterExpression, to: NumberArray, dims: number, size: number[]) => {
+  const n = size.length;
+
+  const index = size.map(_ => 0);
+  const increment = () => {
+    for (let i = 0; i < n; ++i) {
+      let c = index[i];
+      if (c === size[i] - 1) index[i] = 0;
+      else {
+        index[i] = c + 1;
+        break;
+      }
+    }
+  };
+
+  let nest: Emitter;
+  if (n === 1) {
+    nest = (emit: Emitter) => {
+      expr(emit, index[0], size);
+      increment();
+    };
+  }
+  else if (n === 2) {
+    nest = (emit: Emitter) => {
+      expr(emit, index[0], index[1], size);
+      increment();
+    };
+  }
+  else if (n === 3) {
+    nest = (emit: Emitter) => {
+      expr(emit, index[0], index[1], index[2], size);
+      increment();
+    };
+  }
+  else if (n === 4) {
+    nest = (emit: Emitter) => {
+      expr(emit, index[0], index[1], index[2], index[3], size);
+      increment();
+    };
+  }
+  else {
+    nest = (emit: Emitter) => {
+      expr(emit, ...index, size);
+      increment();
+    };
+  }
+  
+  emitIntoNumberArray(nest, to, dims);
 }
 
 export const copyNumberArray = (from: NumberArray, to: NumberArray) => {
@@ -160,10 +212,29 @@ export const copyDataArrays = (from: any[], to: NumberArray, dims: number, acces
   }
 }
 
-export const copyChunksToSegments = (
+export const getChunkCount = (
+  chunks: number[],
+  loops: boolean[] = NO_LOOPS,
+) => {
+  let length = 0;
+  let n = chunks.length;
+
+  let count = 0;
+  for (let i = 0; i < n; ++i) {
+    const c = chunks[i];
+    const l = loops[i];
+    count += c + (l ? 3 : 0);
+  }
+
+  return count;
+};
+
+export const generateChunkSegments = (
   to: NumberArray,
   chunks: number[],
   loops: boolean[] = NO_LOOPS,
+  starts: boolean[] | boolean = false,
+  ends: boolean[] | boolean = false,
 ) => {
   let pos = 0;
   let n = chunks.length;
@@ -171,21 +242,86 @@ export const copyChunksToSegments = (
   for (let i = 0; i < n; ++i) {
     const c = chunks[i];
     const l = loops[i];
+    const s = starts === true || (starts as any)[i];
+    const e = ends === true || (ends as any)[i];
 
     if (l) to[pos++] = 0;
     if (c) {
       if (c === 1) to[pos++] = 0;
       else {
-        to[pos++] = l ? 3 : 1;
-        for (let i = 2; i < c; ++i) to[pos++] = 3;
-        to[pos++] = l ? 3 : 2;
+        if (l && !s && !e) {
+          for (let i = 0; i < c; ++i) to[pos++] = 3;
+          if (l) to[pos++] = 0;
+        }
+        else if (l) {
+          to[pos++] = 1;
+          for (let i = 1; i < c; ++i) to[pos++] = 3;
+          to[pos++] = 2;
+        }
+        else {
+          to[pos++] = 1;
+          for (let i = 2; i < c; ++i) to[pos++] = 3;
+          to[pos++] = 2;
+        }
       }
     }
-    if (l) to[pos++] = 0;
     if (l) to[pos++] = 0;
   }
 
   while (pos < to.length) to[pos++] = 0;
+}
+
+export const generateChunkAnchors = (
+  anchors: NumberArray,
+  trims: NumberArray,
+  chunks: number[],
+  loops: boolean[] = NO_LOOPS,
+  starts: boolean[] | boolean = false,
+  ends: boolean[] | boolean = false,
+) => {
+
+  const n = chunks.length;
+  for (let i = 0; i < trims.length; ++i) trims[i] = 0;
+
+  const hasStart = !!starts;
+  const hasEnd = !!ends;
+
+  let o = 0;
+  let pos = 0;
+  if (hasStart || hasEnd) for (let i = 0; i < n; ++i) {
+    const c = chunks[i];
+    const l = loops[i];
+
+    const s = hasStart && (starts === true || starts[i]);
+    const e = hasEnd && (ends === true || ends[i]);
+
+    const both = s && e ? 1 : 0;
+    const bits = +s + (+e << 1);
+
+    const start = pos + (l ? 1 : 0);
+    const end = pos + c - 1 + (l ? 2 : 0);
+    pos += c + (l ? 3 : 0);
+
+    for (let j = start; j <= end; ++j) {
+      trims[j * 4] = start;
+      trims[j * 4 + 1] = end;
+      trims[j * 4 + 2] = bits;
+      trims[j * 4 + 3] = 0;
+    }
+
+    if (s) {
+      anchors[o++] = start;
+      anchors[o++] = start + 1;
+      anchors[o++] = end;
+      anchors[o++] = both;
+    }
+    if (e) {
+      anchors[o++] = end;
+      anchors[o++] = end - 1;
+      anchors[o++] = start;
+      anchors[o++] = both;
+    }
+  }
 }
 
 export const copyNumberArrayRepeatedRange = (

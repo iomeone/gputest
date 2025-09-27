@@ -1,16 +1,17 @@
-import { LiveComponent, LiveFunction, LiveElement } from '../../live/types';
-import { AggregateBuffer, UniformType, TypedArray, StorageSource } from '../../core/types';
+import { LiveComponent, LiveFunction, LiveElement } from '@use-gpu/live/types';
+import { AggregateBuffer, UniformType, TypedArray, StorageSource } from '@use-gpu/core/types';
 import { UIAggregate } from './types';
 
-import { RenderContext } from '../providers/render-provider';
-import { use, resume, gather, useContext, useOne, useMemo } from '../../live';
+import { DeviceContext } from '../providers/device-provider';
+import { SDFFontProvider, SDF_FONT_ATLAS } from '../text/providers/sdf-font-provider';
+import { use, keyed, resume, gather, useContext, useOne, useMemo } from '@use-gpu/live';
 import {
   makeAggregateBuffer,
   updateAggregateBuffer,
   updateAggregateSegments,
-} from '../../core';
+} from '@use-gpu/core';
 
-import { UIRectangles } from '../geometry/ui-rectangles';
+import { UIRectangles } from '../primitives/ui-rectangles';
 
 export type AggregateProps = {
   children: LiveElement<any>,
@@ -33,16 +34,34 @@ const getItemSummary = (items: UIAggregate[]) => {
 
 export const UI: LiveComponent<AggregateProps> = (props) => {
   const {children} = props;
-  return gather(children, Resume);
+  return use(SDFFontProvider, {
+    children,
+    then: Resume,
+  });
 };
 
-const Resume = resume((items: UIAggregate[]) => {
+const Resume = (
+  atlas: Atlas,
+  source: TextureSource,
+  items: (UIAggregate | null)[],
+) => {
   const layers = [] as UIAggregate[][];
   const ids = [] as number[];
 
+  const {width, height} = atlas;
+  const mapUV = (xs: number[]) => xs.map((x, i) => (i % 2) ? x / height : x / width);
+
   let layer = null;
   let texture = null;
-  for (const item of items) {
+  for (let item of items) if (item) {
+
+    if (item.texture === SDF_FONT_ATLAS) {
+      item = {
+        ...item,
+        texture: source,
+      };
+    }
+
     if (!layer || item.texture !== texture) {
       texture = item.texture;
 
@@ -53,13 +72,13 @@ const Resume = resume((items: UIAggregate[]) => {
     layer.push(item);
   }
 
-  return layers.map((layer, i) => use(Layer, ids[i])(layer));
-});
+  return layers.map((layer, i) => keyed(Layer, ids[i], layer));
+};
 
 const Layer: LiveFunction<any> = (
   items: LayerAggregate[],
 ) => {
-  const {device} = useContext(RenderContext);
+  const device = useContext(DeviceContext);
   const {keys, count, memoKey} = getItemSummary(items);
 
   // Invalidate storage if too small, or set of keys changes.
@@ -123,6 +142,6 @@ const makeUIAccumulator = (
 
     if (hasTexture) props.texture = items[0].texture;
 
-    return use(UIRectangles)(props);
+    return use(UIRectangles, props);
   };
 };

@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, Point, Alignment, Base, Margin } from '../types';
 
-import { memo, gather, resume, yeet, useOne } from '../../../live';
+import { memo, gather, yeet, useOne } from '@use-gpu/live';
 import { getInlineMinMax, fitInline } from '../lib/inline';
-import { normalizeMargin, makeInlineLayout, parseDimension } from '../lib/util';
+import { normalizeMargin, makeInlineLayout, parseDimension, memoFit } from '../lib/util';
 
 export type InlineProps = {
   direction?: 'x' | 'y',
@@ -38,26 +38,7 @@ export const Inline: LiveComponent<InlineProps> = memo((props: BlockProps) => {
   const margin = normalizeMargin(m);
   const padding = normalizeMargin(p);
 
-  const Resume = useOne(() =>
-    makeResume(direction, align, anchor, grow, shrink, wrap, snap, margin, padding),
-    [direction, align, anchor, grow, shrink, wrap, snap, margin, padding]
-  );
-
-  return children ? gather(children, Resume) : null;
-}, 'Inline');
-
-const makeResume = (
-  direction: 'x' | 'y',
-  align: Alignment,
-  anchor: Base,
-  grow: number,
-  shrink: number,
-  wrap: boolean,
-  snap: boolean,
-  margin: Margin,
-  padding: Margin,
-) =>
-  resume((els: LayoutElement[]) => {
+  const Resume = (els: LayoutElement[]) => {
     const sizing = getInlineMinMax(els, direction, wrap, snap);
 
     return yeet({
@@ -65,15 +46,16 @@ const makeResume = (
       margin,
       grow,
       shrink,
-      fit: (into: Point) => {
+      fit: memoFit((into: Point) => {
         const {size, ranges, offsets, renders} = fitInline(els, into, direction, align, anchor, wrap, snap);
-        
-        console.log({size, ranges, offsets})
         
         return {
           size,
           render: makeInlineLayout(ranges, offsets, renders),
         };
-      }
+      })
     });
-  });
+  };
+  
+  return children ? gather(children, Resume) : null;
+}, 'Inline');

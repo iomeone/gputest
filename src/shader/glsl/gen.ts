@@ -1,5 +1,7 @@
 import { ParsedBundle, ParsedModule, DataBinding, RefFlags as RF } from './types';
 
+import { getHash, makeKey, mixBits, scrambleBits } from '../util/hash';
+import { getBundleHash } from '../util/bundle';
 import { loadVirtualModule } from './shader';
 import { PREFIX_VIRTUAL } from '../constants';
 
@@ -7,13 +9,13 @@ const NO_SYMBOLS = [] as string[];
 const INT_ARG = ['int'];
 const UV_ARG = ['vec2'];
 
-const getBindingKey = (b: DataBinding) => (+!!b.constant) + ((+!!b.storage) << 8) + ((+!!b.lambda) << 16);
-const getBindingsKey = (bs: DataBinding[]) => bs.reduce((a, b) => a + getBindingKey(b), 0);
+const getBindingKey = (b: DataBinding) => (+!!b.constant) + (+!!b.storage) * 2 + (+!!b.lambda) * 4 + (+!!b.texture) * 8;
+const getBindingsKey = (bs: DataBinding[]) => scrambleBits(bs.reduce((a, b) => mixBits(a, getBindingKey(b)), 0)) >>> 0;
 
 export const makeBindingAccessors = (
   bindings: DataBinding[],
   set: number | string = 0,
-  key: number | string = getBindingsKey(bindings),
+  key: string | number = makeKey(),
 ): Record<string, ParsedBundle | ParsedModule> => {
 
   // Extract uniforms
@@ -25,6 +27,7 @@ export const makeBindingAccessors = (
   // Virtual module symbols
   const virtuals = [...constants, ...storages, ...textures];
   const symbols = virtuals.map(({uniform}) => uniform.name);
+  const types = virtuals.map(({uniform}) => uniform.format);
   const declarations = virtuals.map(({uniform}) => ({
     at: 0,
     symbols: NO_SYMBOLS,
@@ -35,6 +38,15 @@ export const makeBindingAccessors = (
     },
     flags: 0,
   }));
+
+  // Hash + readable representation
+  const readable = symbols.join(' ');
+  const signature = getBindingsKey(bindings).toString(16);
+  const external = lambdas.map(l => getBundleHash(l.lambda!.shader));
+  const unique = `@access [${signature}] [${external}] [${readable}] [${types.join(' ')}]`;
+
+  const hash = getHash(unique);
+  const code = `@access [${readable}] [${hash}]`;
 
   // Code generator
   const render = (namespace: string, rename: Map<string, string>, base: number = 0) => {
@@ -63,13 +75,13 @@ export const makeBindingAccessors = (
   }, {
     symbols,
     declarations,
-  }, undefined, key);
+  }, undefined, hash, code);
 
   const links: Record<string, ParsedBundle | ParsedModule> = {};
   for (const binding of constants) links[binding.uniform.name] = virtual;
   for (const binding of storages)  links[binding.uniform.name] = virtual;
   for (const binding of textures)  links[binding.uniform.name] = virtual;
-  for (const lambda  of lambdas)   links[lambda.uniform.name]  = lambda.lambda!;
+  for (const lambda  of lambdas)   links[lambda.uniform.name]  = lambda.lambda!.shader;
 
   return links;
 };

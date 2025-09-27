@@ -1,5 +1,5 @@
-import { LiveFiber, LiveComponent, LiveElement, Task } from '../../live/types';
-import { memo, morph, use, provide, makeContext, useContext, useOne, useMemo } from '../../live';
+import { LiveFiber, LiveComponent, LiveElement, Task } from '@use-gpu/live/types';
+import { memo, morph, use, provide, makeContext, useContext, useOne, useMemo } from '@use-gpu/live';
 import { RouterContext, Route } from './router';
 
 export type RouteState = {
@@ -20,6 +20,7 @@ type Matcher = {
 export type RoutesProps = {
   base?: string,
   routes?: Record<string, Route> | null,
+  morph?: boolean,
 };
 
 const NO_PATH = '';
@@ -35,15 +36,16 @@ const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const Outlet = () => {
   const context = useContext(RouteContext);
-  return context.routes ? use(Routes)(context) : null;
+  return context.routes ? use(Routes, context) : null;
 }
 
-const USE_OUTLET = use(Outlet)();
+const USE_OUTLET = use(Outlet);
 
 export const Routes: LiveComponent<RoutesProps> = memo((props: RoutesProps) => {
   const {
     routes,
     base = NO_PATH,
+    morph: shouldMorph = true
   } = props;
 
   const {route: routeState} = useContext(RouterContext);
@@ -53,10 +55,10 @@ export const Routes: LiveComponent<RoutesProps> = memo((props: RoutesProps) => {
     const matchers = [] as Matcher[];
 
     for (const path in routes) {
-      const {element, routes: rs} = routes[path];
+      const {element, routes: rs, exact} = routes[path];
 
       const fullPath = joinPath(base, path);
-      const regexp = pathSpecToRegexp(fullPath);
+      const regexp = pathSpecToRegexp(fullPath, exact);
 
       matchers.push({
         regexp,
@@ -92,12 +94,12 @@ export const Routes: LiveComponent<RoutesProps> = memo((props: RoutesProps) => {
     return [{routes, base, params}, element];
   }, [base, matchers, currentPath]);
 
-  if (element) return provide(RouteContext, context, morph(element));
-  if (context.routes) return use(Routes)(context);
+  if (element) return provide(RouteContext, context, shouldMorph ? morph(element) : element);
+  if (context.routes) return use(Routes, context);
   return null;
 }, 'Routes');
 
-export const pathSpecToRegexp = (s: string) => {
+export const pathSpecToRegexp = (s: string, exact: boolean = false) => {
   const segments = s.split('/').filter(s => s.length);
   let regexp = '^';
 
@@ -113,6 +115,10 @@ export const pathSpecToRegexp = (s: string) => {
     else {
       regexp += escapeRegExp(segment);
     }
+  }
+  
+  if (exact) {
+    return new RegExp('^' + regexp + '$');
   }
 
   const isFolder = s[s.length - 1] === '/';

@@ -1,139 +1,130 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { PickingUniforms } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { PickingUniforms } from '@use-gpu/core/types';
 
-import { memo, provide, provideMemo, makeContext, useContext, useMemo, useOne, useResource, useState } from '../../live';
-import { makeIdAllocator, PICKING_UNIFORMS } from '../../core';
+import { memo, provide, makeContext, useContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { makeIdAllocator, PICKING_UNIFORMS } from '@use-gpu/core';
 import { PickingContext } from '../render/picking';
+import { RenderContext } from '../providers/render-provider';
 
 const CAPTURE_EVENT = {capture: true};
 
-export const EventContext = makeContext(null, 'EventContext');
-export const MouseContext = makeContext(null, 'MouseContext');
+export const EventContext = makeContext(undefined, 'EventContext');
+export const MouseContext = makeContext(undefined, 'MouseContext');
 
 export type EventProviderProps = {
   element: HTMLElement,
   children: LiveElement<any>,
 };
 
-export type MouseEventState = {
-  buttons: number,
+export type MouseState = {
+  buttons: { left: boolean, middle: boolean, right: boolean },
+  button: 'left' | 'middle' | 'right',
   x: number,
   y: number,
+};
+
+export type MouseEventState = MouseState & {
   index: number,
   hovered: boolean,
-  clicked: boolean,
+  pressed: boolean,
+  clicks: { left: number, middle: number, right: number },
+  presses: { left: number, middle: number, right: number },
+  capture: () => void,
+  uncapture: () => void,
 };
 
-export type MouseState = {
-  buttons: number,
-  x: number,
-  y: number,
+const toButton = (button: number) => {
+  if (button === 0) return 'left';
+  if (button === 1) return 'middle';
+  if (button === 2) return 'right';
+  return 'none';
 };
 
-export const EventProvider: LiveComponent<EventProviderProps> = memo(({element, children}: EventProviderProps) => {
-  const dpi = window.devicePixelRatio;
+const toButtons = (buttons: number) => ({
+  left: buttons & 1,
+  middle: buttons & 3,
+  right: buttons & 2,
+});
+
+const makeMouseState = () => ({
+  buttons: toButtons(0),
+  button: toButton(-1),
+  x: 0,
+  y: 0,
+});
+
+const makeMouseRef = () => ({
+  buttons: toButtons(0),
+  pressed: { left: false, middle: false, right: false },
+  presses: { left: 0, middle: 0, right: 0 },
+  clicks:  { left: 0, middle: 0, right: 0 },
+});
+
+const makeCaptureRef = () => ({
+  current: null,
+});
+
+export const EventProvider: LiveComponent<EventProviderProps> = memo(({mouse, children}: EventProviderProps) => {
+  const {pixelRatio} = useContext(RenderContext);
   const {sampleTexture} = useContext(PickingContext);
+  const [captureId, setCaptureId] = useState<number | null>(null);
 
-  const [mouseState, setMouseState] = useState<MouseState>({
-    buttons: 0,
-    x: 0,
-    y: 0,
-  });
+  const captureRef = useOne(makeCaptureRef);
+  captureRef.current = captureId;
 
   const allocId = useOne(() => makeIdAllocator<any>());
-  const [mouseTargetId, mouseTargetIndex] = sampleTexture(mouseState.x * dpi, mouseState.y * dpi);
+  const [targetId, targetIndex] = sampleTexture(mouse.x * pixelRatio, mouse.y * pixelRatio);
 
   const eventApi = useOne(() => ({
     useId: () => useResource((dispose) => {
       const id = allocId.obtain();
-      dispose(() => allocId.release(id));
+      dispose(() => {
+        allocId.release(id);
+        if (captureRef.current === id) setCaptureId(null);
+      });
       return id;
     }),
   }));
-
+  
   const mouseContext = useMemo(() => ({
-    mouse: mouseState,
-    targetId: mouseTargetId,
-    targetIndex: mouseTargetIndex,
-    useMouseState: (id: number): MouseEventState => {
-      const index   = mouseTargetIndex;
-      const hovered = mouseTargetId == id;
-      const clicked = hovered && !!(mouseState.buttons & 1);
+    mouse,
+    captureId,
+    targetId,
+    targetIndex,
+    beginCapture: (id: number) => setCaptureId(id),
+    endCapture: () => setCaptureId(null),
+    useMouse: (id: number): MouseEventState => {
+      const ref = useOne(makeMouseRef);
+      const {pressed, presses, clicks, buttons: lastButtons} = ref;
+      const {buttons, button} = mouse;
 
-      return {...mouseState, hovered, clicked, index};
+      const index    = targetIndex;
+      const captured = captureId === id;
+      const hovered  = (captureId == null || captured) && (targetId === id);
+
+      useOne(() => {
+        if (hovered) {
+          if ((buttons.left)   && !(lastButtons.left))   { presses.left++;   pressed.left   = true; }
+          if ((buttons.middle) && !(lastButtons.middle)) { presses.middle++; pressed.middle = true; }
+          if ((buttons.right)  && !(lastButtons.right))  { presses.right++;  pressed.right  = true; }
+
+          if (!(buttons.left)   && pressed.left)   { clicks.left++;   pressed.left   = false; }
+          if (!(buttons.middle) && pressed.middle) { clicks.middle++; pressed.middle = false; }
+          if (!(buttons.right)  && pressed.right)  { clicks.right++;  pressed.right  = false; }
+        }
+        else {
+          if (pressed.left   && !(buttons.left)   && (lastButtons.left))   pressed.left   = false;
+          if (pressed.middle && !(buttons.middle) && (lastButtons.middle)) pressed.middle = false;
+          if (pressed.right  && !(buttons.right)  && (lastButtons.right))  pressed.right  = false;
+        }
+        ref.buttons = buttons;
+      }, buttons);
+
+      return {...mouse, index, hovered, captured, pressed, presses, clicks};
     },
-  }), [mouseState, mouseTargetId]);
-
-  useResource((dispose) => {
-  }, mouseTargetId);
-
-  useResource((dispose) => {
-    let left: number;
-    let top: number;
-
-    const onSnapshot = () => ({left, top} = element.getBoundingClientRect());
-    onSnapshot();
-
-    const onMove = (buttons: number, clientX: number, clientY: number) => {
-      setMouseState({
-        buttons,
-        x: clientX - left,
-        y: clientY - top,
-      });
-    };
-
-    const onTouchStart = (e: TouchEvent) => {
-      const {targetTouches: [touch]} = e as any;
-      const {clientX, clientY} = touch;
-      onMove(1, clientX, clientY);
-    }
-
-    const onTouchMove = (e: TouchEvent) => {
-      const {targetTouches: [touch]} = e as any;
-      const {clientX, clientY} = touch;
-      onMove(1, clientX, clientY);
-    }
-
-    const onTouchEnd = (e: TouchEvent) => {
-      const {targetTouches: [touch]} = e as any;
-      if (!touch.length) setMouseState((state) => ({...state, buttons: 0}));
-    }
-
-    const onMouseDown = (e: MouseEvent) => {
-      const {buttons, clientX, clientY} = e;
-      onMove(buttons, clientX, clientY);
-    };
-
-    const onMouseMove = (e: MouseEvent) => {
-      const {buttons, clientX, clientY} = e;
-      onMove(buttons, clientX, clientY);
-    };
-
-    const onMouseUp = (e: MouseEvent) => {
-      const {buttons, clientX, clientY} = e;
-      onMove(buttons, clientX, clientY);
-    };
-
-    element.addEventListener('mousedown', onMouseDown, CAPTURE_EVENT);
-    element.addEventListener('mousemove', onMouseMove, CAPTURE_EVENT);
-    element.addEventListener('mouseup', onMouseUp, CAPTURE_EVENT);
-
-    element.addEventListener('touchstart', onTouchStart, CAPTURE_EVENT);
-    element.addEventListener('touchmove', onTouchMove, CAPTURE_EVENT);
-    element.addEventListener('touchend', onTouchEnd, CAPTURE_EVENT);
-
-    dispose(() => {
-      element.removeEventListener('mousedown', onMouseDown, CAPTURE_EVENT);
-      element.removeEventListener('mousemove', onMouseMove, CAPTURE_EVENT);
-      element.removeEventListener('mouseup', onMouseUp, CAPTURE_EVENT);
-
-      element.removeEventListener('touchstart', onTouchStart, CAPTURE_EVENT);
-      element.removeEventListener('touchmove', onTouchMove, CAPTURE_EVENT);
-      element.removeEventListener('touchend', onTouchEnd, CAPTURE_EVENT);
-    });
-  }, [element]);
+  }), [mouse, targetId, captureId]);
 
   return provide(MouseContext, mouseContext,
-    provideMemo(EventContext, eventApi, children)
+    provide(EventContext, eventApi, children)
   );
 }, 'EventProvider');

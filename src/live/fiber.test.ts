@@ -24,7 +24,7 @@ it('returns a deferred call', () => {
   };
 
   const F: Component<FooProps> = ({foo}) => {
-    return use(G)(foo);
+    return use(G, foo);
   };
 
   const result = bind(F)({foo: 'wat'}) as any as DeferredCall<any>;
@@ -36,7 +36,7 @@ it('returns a deferred call', () => {
 
 it("renders a fiber recursively", () => {
 
-  const Root = () => use(Node)();
+  const Root = () => use(Node);
   const Node = () => {};
 
   const fiber = makeFiber(Root, null);

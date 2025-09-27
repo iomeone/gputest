@@ -1,5 +1,5 @@
-import { mountGPU } from '../webgpu';
-import { use, render, formatTree } from '../live';
+import { mountGPU } from '@use-gpu/webgpu';
+import { use, render, formatTree } from '@use-gpu/live';
 
 import { App } from './app';
 
@@ -15,7 +15,7 @@ export const main = async (): Promise<void> => {
     );
 
     const root = await render(
-      use(App)({adapter, device, canvas})
+      use(App, {adapter, device, canvas})
     );
   
   } catch (e: any) {

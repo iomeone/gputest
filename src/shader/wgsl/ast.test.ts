@@ -1,4 +1,4 @@
-//import { GLSLModules } from '../../glsl';
+//import { GLSLModules } from '@use-gpu/glsl';
 import { parseShader } from './shader';
 import { makeASTParser /*, rewriteUsingAST, resolveShakeOps, compressAST, decompressAST*/ } from './ast';
 import { formatAST, hasErrorNode } from '../util/tree';
@@ -84,8 +84,8 @@ describe('ast', () => {
   it('gets test struct declaration', () => {
     const code = `
       struct light {
-        intensity: f32;
-        @annotate position: vec3<f32>;
+        intensity: f32,
+        @annotate position: vec3<f32>,
       }
     `;
 
@@ -122,8 +122,8 @@ describe('ast', () => {
       override b: i32;
 
       @exported struct light {
-        intensity: f32;
-        @annotate position: vec3<f32>;
+        intensity: f32,
+        @annotate position: vec3<f32>,
       }
 
       let QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(

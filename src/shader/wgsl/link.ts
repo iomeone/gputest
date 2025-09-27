@@ -3,7 +3,7 @@ import { ShaderDefine } from '../types';
 
 import { defineConstants, loadModule, loadModuleWithCache, DEFAULT_CACHE } from './shader';
 import { rewriteUsingAST } from './ast';
-import { makeLinkCode, makeLinkBundle, makeLinkModule } from '../util/link';
+import { makeLinker, makeLinkCode, makeLinkBundle, makeLinkModule } from '../util/link';
 
 // No preamble
 const getPreambles = () => [];
@@ -17,11 +17,7 @@ const getRenames = (
   return rename;
 }
 
-// Link a parsed module with static modules, dynamic links
-export const linkModule = makeLinkModule(getPreambles, getRenames, defineConstants, rewriteUsingAST);
-
-// Link a source module with static modules and dynamic links.
-export const linkCode = makeLinkCode(loadModuleWithCache, linkModule, DEFAULT_CACHE);
-
-// Link a bundle of parsed module + libs, dynamic links
-export const linkBundle = makeLinkBundle(linkModule);
+export const linker     = makeLinker(getPreambles, getRenames, defineConstants, rewriteUsingAST);
+export const linkBundle = makeLinkBundle(linker);
+export const linkModule = makeLinkModule(linker);
+export const linkCode   = makeLinkCode(linker, loadModuleWithCache, DEFAULT_CACHE);

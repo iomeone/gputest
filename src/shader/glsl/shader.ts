@@ -2,8 +2,11 @@ import { Tree } from '@lezer/common';
 import { ParsedModule, ParsedModuleCache, ShaderDefine } from './types';
 
 import { makeLoadModule, makeLoadModuleWithCache } from '../util/shader';
-import { makeASTParser, compressAST } from './ast';
+import { makeBundleToAttribute, makeBundleToAttributes } from '../util/bundle';
 import { decompressAST } from '../util/tree';
+
+import { makeASTParser, compressAST } from './ast';
+import { toTypeString, toTypeArgs } from './type';
 import { parser } from './grammar/glsl';
 import LRU from 'lru-cache';
 
@@ -33,3 +36,6 @@ export const defineConstants = (defs: Record<string, ShaderDefine>): string => {
   for (let k in defs) if (defs[k] !== false && defs[k] !== null) out.push(`#define ${k} ${defs[k]}`);
   return out.join("\n");
 }
+
+export const bundleToAttribute = makeBundleToAttribute(toTypeString, toTypeArgs);
+export const bundleToAttributes = makeBundleToAttributes(toTypeString, toTypeArgs);

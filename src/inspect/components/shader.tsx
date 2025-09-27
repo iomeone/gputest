@@ -1,5 +1,5 @@
-import { LiveFiber } from '../../live/types';
-import { formatNode, formatValue } from '../../live';
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatNode, formatValue } from '@use-gpu/live';
 import { styled } from "@stitches/react";
 
 import React, { Fragment, useState } from 'react';
@@ -7,6 +7,7 @@ import { Action } from './types';
 import { SplitRow, Label, Selectable } from './layout';
 
 import { inspectObject } from './props';
+import { usePingContext } from './ping';
 
 const StyledShader = styled('div', {
   background: 'rgba(255, 255, 255, 0.1)',
@@ -37,15 +38,19 @@ const StyledCode = styled('div', {
 });
 
 type ShaderProps = {
-  shader: string,
+  type: string,
+  fiber: LiveFiber<any>,
 };
 
-export const Shader: React.FC<ShaderProps> = ({shader}) => {
+export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
+  usePingContext();
+
+  const shader = fiber.__inspect?.[type];
 
   return (<>
-    <div><b>Shader</b></div>
+    <div><b>Shader</b> (<code>{shader.hash}</code>)</div>
     <StyledShader><Selectable>
-      {inspectCode(shader)}
+      {inspectCode(shader.code)}
     </Selectable></StyledShader>
   </>);
 }

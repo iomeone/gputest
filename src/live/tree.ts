@@ -10,6 +10,7 @@ const DEFAULT_RENDER_OPTIONS = {
 };
 
 let DEBUG = false;
+let START = +new Date();
 //setTimeout((() => DEBUG = false), 4000);
 
 const NO_ARGS = [] as any[];
@@ -31,12 +32,16 @@ export const makeHost = (
 
   const host = {
     schedule: scheduler.schedule,
+    flush: scheduler.flush,
+
     track: disposal.track,
+    untrack: disposal.untrack,
     dispose: disposal.dispose,
+
     depend: dependency.depend,
     undepend: dependency.undepend,
-    invalidate: dependency.invalidate,
-    flush: scheduler.flush,
+    traceDown: dependency.traceDown,
+    traceUp: dependency.traceUp,
 
     visit: queue.insert,
     unvisit: queue.remove,
@@ -80,7 +85,7 @@ export const renderWithDispatch = <T>(
       const fibers = dedupe(as.map(({fiber}) => fiber));
 
       DEBUG && console.log('----------------------------');
-      DEBUG && console.log('Dispatch to Roots', fibers.map(formatNode));
+      DEBUG && console.log('Dispatch to Roots', fibers.map(formatNode), +new Date() - START, 'ms');
 
       if (fibers.length) renderFibers(host, fibers);
     });

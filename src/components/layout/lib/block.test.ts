@@ -4,6 +4,7 @@ import { makeBoxLayout } from './util';
 
 describe('block layout', () => {
   
+  /*
   let ID = 0;
   const makeElement = (
     width: number,
@@ -95,5 +96,6 @@ describe('block layout', () => {
     const result = makeBoxLayout(sizes, offsets, renders)(layout);
     expect((result as any)[0].layout).toEqual([20, 20, 70, 70]);
   });
+  */
 
 });

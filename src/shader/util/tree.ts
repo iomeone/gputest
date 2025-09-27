@@ -72,7 +72,7 @@ export const decompressAST = (nodes: CompressedNode[]) => {
         if (!hasNext) return false;
         
         const node = nodes[i];
-        [self.type.name, self.from, self.to] = node;
+        [self.type.name, self.from, self.to, self.arg] = node;
 
         return true;
       };
@@ -91,6 +91,7 @@ export const decompressAST = (nodes: CompressedNode[]) => {
         node: {parent: {type: {name: 'Program'}}},
         from: 0,
         to: 0,
+        arg: undefined,
         next,
         lastChild,
       } as any;

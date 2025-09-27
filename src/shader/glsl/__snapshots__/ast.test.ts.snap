@@ -70,7 +70,6 @@ Object {
   ],
   "externals": undefined,
   "globals": undefined,
-  "hash": "vz5280ybh9",
   "modules": undefined,
   "symbols": Array [
     "QUAD",
@@ -434,7 +433,6 @@ Object {
     },
   ],
   "globals": undefined,
-  "hash": "4ty31mhjri",
   "modules": Array [
     Object {
       "at": 0,
@@ -923,7 +921,6 @@ Object {
   ],
   "externals": undefined,
   "globals": undefined,
-  "hash": "3wmin9gcu9",
   "modules": undefined,
   "symbols": Array [
     "SolidVertex",
@@ -1236,7 +1233,6 @@ Object {
   ],
   "externals": undefined,
   "globals": undefined,
-  "hash": "q3u45dtwd2",
   "modules": undefined,
   "symbols": Array [
     "viewUniforms",

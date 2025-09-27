@@ -1,6 +1,7 @@
 declare module "@use-gpu/wgsl/geometry/line.wgsl" {
-  type ParsedBundle = import('../../shader/wgsl/types').ParsedBundle;
+  type ParsedBundle = import('@use-gpu/shader/wgsl/types').ParsedBundle;
   const __module: ParsedBundle;
+  export const getLineSegment: ParsedBundle;
   export const lineJoinBevel: ParsedBundle;
   export const lineJoinMiter: ParsedBundle;
   export const lineJoinRound: ParsedBundle;

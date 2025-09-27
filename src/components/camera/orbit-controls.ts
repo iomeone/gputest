@@ -1,16 +1,11 @@
-import { LiveComponent, LiveElement } from '../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 
-import { useResource, useState } from '../../live';
+import { useResource, useState } from '@use-gpu/live';
 
 const CAPTURE_EVENT = {capture: true};
 
 const π = Math.PI;
 const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
-
-const DEFAULT_OPTIONS = {
-  bearingSpeed: 5,
-  pitchSpeed: 5,
-};
 
 export type OrbitControlsProps = {
   bearingSpeed?: number,
@@ -21,16 +16,18 @@ export type OrbitControlsProps = {
 
 export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
   const {
-    bearingSpeed = DEFAULT_OPTIONS.bearingSpeed,
-    pitchSpeed   = DEFAULT_OPTIONS.pitchSpeed, 
+    radius: initialRadius = 1,
+    bearing: initialBearing = 0,
+    pitch: initialPitch = 0,
+    bearingSpeed = 5,
+    pitchSpeed   = 5,
     canvas,
     render,
   } = props;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [radius, setRadius]   = useState<number>(5);
-  const [bearing, setBearing] = useState<number>(0.6);
-  const [pitch, setPitch]     = useState<number>(0.4);
+  const [radius, setRadius]   = useState<number>(initialRadius);
+  const [bearing, setBearing] = useState<number>(initialBearing);
+  const [pitch, setPitch]     = useState<number>(initialPitch);
 
   useResource((dispose) => {
     const onWheel = (e: WheelEvent) => {
@@ -113,5 +110,6 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
       canvas.removeEventListener('wheel', onWheel);
     });
   }, [canvas]);
+
   return render(radius, bearing, pitch);
 };

@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 html {
   --background: #000;
 
@@ -6,16 +10,50 @@ html {
   --backgroundHover: #555;
   --backgroundActive: #666;
 
+  --trackBackground: #666;
+  --trackActive: #aaa;
+
+  --thumbBackground: #999;
+  --thumbHover: #aaa;
+  --thumbActive: #bbb;
+
+  --focusShadow: rgba(0, 0, 0, .25);
   --borderThin: #444;
 
   --shim: rgba(0, 0, 0, 0.85);
   --shimGray: rgba(255, 255, 255, 0.1);
 
-  --colorTextMuted: rgba(255, 255, 255, .5);
+  --colorLinkText: rgba(190, 210, 255, 1);
+
+  --colorTextMuted: rgba(128, 128, 128, 1);
   --colorTextSemi: rgba(255, 255, 255, .65);
   --colorText: #ddd;
   --colorTextHover: #eee;
   --colorTextActive: #fff;
+
+  --colorTextLevel1: rgba(255, 255, 255, 1.0);
+  --colorTextLevel2: rgba(255, 255, 255, 0.93);
+  --colorTextLevel3: rgba(255, 255, 255, 0.88);
+  --colorTextLevel4: rgba(255, 255, 255, 0.82);
+  --colorTextLevel5: rgba(255, 255, 255, 0.76);
+  --colorTextLevel6: rgba(255, 255, 255, 0.71);
+  --colorTextLevel7: rgba(255, 255, 255, 0.63);
+  --colorTextLevel8: rgba(255, 255, 255, 0.54);
+  --colorTextLevel9: rgba(255, 255, 255, 0.43);
+  --colorTextLevel10: rgba(255, 255, 255, 0.31);
+
+  /*
+  --colorTextLevel1: rgba(255, 255, 255, 1);
+  --colorTextLevel2: rgba(239, 239, 239, 1);
+  --colorTextLevel3: rgba(226, 226, 226, 1);
+  --colorTextLevel4: rgba(211, 211, 211, 1);
+  --colorTextLevel5: rgba(196, 196, 196, 1);
+  --colorTextLevel6: rgba(181, 181, 181, 1);
+  --colorTextLevel7: rgba(160, 160, 160, 1);
+  --colorTextLevel8: rgba(137, 137, 137, 1);
+  --colorTextLevel9: rgba(112, 112, 112, 1);
+  --colorTextLevel10: rgba(80, 80, 80, 1);
+  */
 }
 
 html > body {
@@ -25,7 +63,7 @@ html > body {
 }
 
 div[role="tablist"] {
-  height: 38px;
+  height: 40px;
   border-bottom: 2px solid var(--backgroundInactive);
   margin-bottom: 10px;
 }
@@ -50,32 +88,6 @@ button[role="tab"][data-state="active"] {
   border-bottom: 2px solid var(--backgroundActive);  
 }
 
-/*
-body .ui.secondary.pointing.menu {
-  border-color: var(--backgroundEmpty);  
-}
-
-body .ui.secondary.pointing.menu a.item {
-  color: var(--text);
-  border-color: var(--backgroundInactive);
-}
-
-body .ui.secondary.pointing.menu a.active.item {
-  color: var(--textHover);
-  border-color: var(--backgroundActive);
-}
-
-body .ui.secondary.pointing.menu a.item:hover {
-  color: var(--textActive);
-  border-color: var(--backgroundHover); 
-}
-
-body .ui.secondary.pointing.menu a.active.item:hover {
-  color: var(--textActive);
-  border-color: var(--backgroundActive); 
-}
-*/
-
 html > body ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, .1);
   border-radius: 0;
@@ -97,4 +109,157 @@ html > body ::-webkit-scrollbar {
   -webkit-appearance: none;
   width: 6px;
   height: 6px;
+}
+
+.cover-parent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+
+
+/* Fiber tree (optimized) */
+@keyframes pingAnimation {
+  0% { background: rgba(10, 170, 85, 0.9); }
+  100% { background: rgba(10, 170, 85, 0.0); }
+}
+
+@keyframes mountAnimation {
+  0% { background: rgba(120, 120, 120, 0.9); }
+  100% { background: rgba(120, 120, 120, 0.0); }
+}
+
+@keyframes shadeAnimation {
+  0% { background: rgba(0, 0, 0, 1.0); }
+  30% { background: rgba(0, 0, 0, 1.0); }
+  60% { background: rgba(0, 0, 0, 0.4); }
+  100% { background: rgba(0, 0, 0, 0.0); }
+}
+
+div.fiber-tree-label {
+  position: relative;
+  z-Index: 1;
+  
+  transition: 0.25s ease-in-out color;
+}
+
+div.fiber-tree-label.depth--1 { color: var(--colorTextLevel8); }
+div.fiber-tree-label.depth-0 { color: var(--colorTextLevel1); }
+div.fiber-tree-label.depth-1 { color: var(--colorTextLevel3); }
+div.fiber-tree-label.depth-2 { color: var(--colorTextLevel5); }
+div.fiber-tree-label.depth-3 { color: var(--colorTextLevel7); }
+div.fiber-tree-label.depth-4 { color: var(--colorTextLevel8); }
+
+div.fiber-tree-label.builtin.depth--1 { color: var(--colorTextLevel10); }
+div.fiber-tree-label.builtin.depth-0 { color: var(--colorTextLevel8); }
+div.fiber-tree-label.builtin.depth-1 { color: var(--colorTextLevel9); }
+div.fiber-tree-label.builtin.depth-2 { color: var(--colorTextLevel10); }
+div.fiber-tree-label.builtin.depth-3 { color: var(--colorTextLevel10); }
+div.fiber-tree-label.builtin.depth-4 { color: var(--colorTextLevel10); }
+
+div.fiber-tree-label.selected.selected,
+div.fiber-tree-label.hovered.hovered,
+div.fiber-tree-label.by.by,
+div.fiber-tree-label.parents.parents,
+div.fiber-tree-label.depends.depends,
+div.fiber-tree-label.precedes.precedes { color: var(--colorTextLevel1); }
+
+div.fiber-tree-label.builtin.parents, div.fiber-tree-label.builtin.precedes {
+  color: var(--colorTextLevel3);
+  transition: none;
+}
+  
+div.fiber-tree-node {
+  white-space: nowrap;
+  margin: -2px -5px;
+  padding: 2px 5px;
+  position: relative;
+}
+
+div.fiber-tree-node.mounted,
+div.fiber-tree-node.pinged {
+  background: rgba(0, 0, 0, 1.0);
+}
+
+div.fiber-tree-node.mounted.cold,
+div.fiber-tree-node.pinged.cold {
+  background: rgba(0, 0, 0, 0.0);
+
+  animation-name: shadeAnimation;
+  animation-duration: 1.0s;
+  animation-iteration-count: 1;
+}
+
+div.fiber-tree-node.selected {
+  z-index: 2;
+}
+
+div.fiber-tree-node.hovered {
+  z-index: 3;
+}
+  
+div.fiber-tree-node.builtin {
+  color: var(--colorTextMuted);
+}
+
+
+div.fiber-tree-highlight.selected {
+  background: rgba(50, 130, 200, 1.0);
+}
+div.fiber-tree-highlight.hovered {
+  background: rgba(70, 180, 220, 1.0);
+}
+div.fiber-tree-highlight.by {
+  background: rgba(30, 120, 180, 1.0);
+}
+div.fiber-tree-highlight.parents {
+  background: rgba(30, 120, 180, 1.0);
+}
+div.fiber-tree-highlight.depends {
+  background: rgba(75, 70, 200, 1.0);
+}
+div.fiber-tree-highlight.precedes {
+  background: rgba(75, 70, 200, 1.0);
+}
+div.fiber-tree-highlight.staticMount {
+  background: rgba(120, 120, 120, 1.0);
+}
+div.fiber-tree-highlight.staticPing {
+  background: rgba(10, 170, 85, 1.0);
+}
+  
+div.fiber-tree-ping {
+  transition: 0.25s ease-in-out opacity;
+}
+div.fiber-tree-ping.hovering {
+  opacity: 0.65;
+}
+div.fiber-tree-ping.cold {
+  animation-duration: 1.0s;
+  animation-iteration-count: 1;
+}
+
+div.fiber-tree-ping.mounted {
+  background: rgba(120, 120, 120, 0.9);
+}
+    
+div.fiber-tree-ping.mounted.cold {
+  background: rgba(120, 120, 120, 0.0);
+  animation-name: mountAnimation;
+}
+
+div.fiber-tree-ping.pinged {
+  background: rgba(10, 170, 85, 0.9);
+}
+
+div.fiber-tree-ping.pinged.cold {
+  background: rgba(10, 170, 85, 0.0);
+  animation-name: pingAnimation;
+}
+
+a, a:hover, a:visited, a:active {
+  color: var(--colorLinkText);
 }

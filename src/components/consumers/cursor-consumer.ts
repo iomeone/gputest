@@ -1,8 +1,8 @@
-import { LiveFiber, LiveComponent, LiveElement } from '../../live/types';
+import { LiveFiber, LiveComponent, LiveElement } from '@use-gpu/live/types';
 
-import { memo, consume, resume, makeContext, useConsumer, useOne, useMemo, getTailValue } from '../../live';
+import { memo, consume, makeContext, useConsumer, useOne, useMemo, getTailValue } from '@use-gpu/live';
 
-export const CursorContext = makeContext(null, 'CursorContext');
+export const CursorContext = makeContext(undefined, 'CursorContext');
 
 export type CursorProps = {
   cursor?: string,
@@ -17,10 +17,10 @@ export const CursorConsumer: LiveComponent<CursorConsumerProps> = (props) => {
   const {element, children} = props;
   
   const Resume = useOne(() => 
-    resume((registry: Map<LiveFiber<any>, string>) => {
+    (registry: Map<LiveFiber<any>, string>) => {
       const cursor = getTailValue(registry) ?? 'default';
       if (element.style.cursor !== cursor) element.style.cursor = cursor;
-    }),
+    },
     element);
 
   return consume(CursorContext, children, Resume);

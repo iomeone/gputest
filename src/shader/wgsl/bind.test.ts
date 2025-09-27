@@ -8,6 +8,49 @@ addASTSerializer(expect);
 
 describe("bind", () => {
   
+  it("bind produces a bound bundle", () => {
+    
+    const codeMain = `
+    @external fn getColor() -> vec4<f32> {};
+    fn main() {
+      var v: vec4<f32>;
+      v = getColor();
+      return v;
+    }
+    `
+
+    const codeSub = `
+    @external fn getSubColor() -> vec4<f32> {};
+
+    fn colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
+    fn colorNotUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 1.0); }
+
+    @export fn getColor() -> vec4<f32> {
+      return getSubColor() + colorUsed();
+    }
+    `
+
+    const codeColor = `
+    @export fn getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    `
+
+    const module = loadModule(codeMain, 'main');
+    const sub = loadModule(codeSub, 'sub');
+    const getColor = loadModule(codeColor, 'getColor');
+
+    const links = {"getSubColor:getColor": getColor};
+    const defines = {'TEST': true};
+
+    const bound = bindBundle(sub, links, defines, 'key');
+
+    expect(bound.hash).not.toEqual(sub.table.hash);
+    expect(bound.hash).toBeTruthy();
+    expect(bound.links).toEqual(links);
+    expect(bound.defines).toEqual(defines);
+
+    expect(bound.hash).toMatchSnapshot();
+  });
+  
   it("binds an external", () => {
     
     const codeMain = `
@@ -49,11 +92,6 @@ describe("bind", () => {
     {
       const bound = bindBundle(sub, links, defines, 'key');
       const linked = linkBundle(bound);
-      expect(linked).toMatchSnapshot();
-    }
-
-    {
-      const linked = linkBundle(module, {getColor: sub, "getSubColor:getColor": getColor}, defines);
       expect(linked).toMatchSnapshot();
     }
 

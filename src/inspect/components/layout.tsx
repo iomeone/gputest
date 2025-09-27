@@ -39,6 +39,17 @@ export const InspectToggle = styled('div', {
   pointerEvents: 'auto',
 });
 
+export const TreeControls = styled('div', {
+  position: 'absolute',
+  padding: '10px 20px',
+  right: '6px',
+  top: 0,
+  width: 160,
+  pointerEvents: 'auto',
+  background: 'rgba(0, 0, 0, 0.75)',
+  zIndex: 10,
+});
+
 export const Muted = styled('span', {
   color: 'var(--colorTextMuted)',
 });
@@ -127,6 +138,8 @@ export const TreeToggle = styled('div', {
 });
 
 export const TreeLegend = styled('div', {
+  position: 'sticky',
+  left: 0,
   color: 'var(--colorTextSemi)',
   paddingTop: '30px',
   display: 'flex',
@@ -138,6 +151,7 @@ export const TreeLegendItem = styled('div', {
   margin: '2px 0',
   padding: '0 10px',
   display: 'flex',
+  alignItems: 'center',
 
   '& > div': {
     width: '16px',
@@ -146,7 +160,7 @@ export const TreeLegendItem = styled('div', {
     padding: 0,
   },
   '& > span': {
-    marginLeft: '5px',
+    marginLeft: '10px',
   },
 });
 
@@ -155,12 +169,24 @@ export const TreeLine = styled('div', {
   borderLeft: '2px dotted var(--borderThin)',
 });
 
+export const TreeRowOmittedChunk = styled('div', {
+  height: 20,
+  paddingBottom: 20,
+  '& + &': {
+    marginTop: -20,
+  },
+});
+
 export const TreeRow: React.FC<TreeIndentProps> = ({ indent, children }) => (
   <TreeRowInner css={{
     paddingLeft: indent ? `${indent * 20}px` : 0,
   }}>
     {children}
   </TreeRowInner>
+);
+
+export const TreeRowOmitted: React.FC<TreeIndentProps> = ({ indent, children }) => (
+  <TreeRowOmittedChunk />
 );
 
 export const TreeIndent: React.FC<TreeIndentProps> = ({ indent, children }) => (

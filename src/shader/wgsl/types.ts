@@ -20,6 +20,7 @@ export type {
   ShakeOp,
   ShaderDefine,
   StorageSource,
+  LambdaSource,
   UniformAttribute,
   UniformAttributeValue,
   VirtualRender,
@@ -33,7 +34,6 @@ export type VirtualTable = VirtualTableT<SymbolTable>;
 export type DataBinding = DataBindingT<SymbolTable>;
 
 export type SymbolTable = {
-  hash: string,
   modules?: ModuleRef[],
   declarations?: DeclarationRef[],
   externals?: DeclarationRef[],

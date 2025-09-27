@@ -1,5 +1,5 @@
 struct PickingUniforms {
-  pickingId: u32;
+  pickingId: u32,
 };
 
 @group(PICKING) @binding(PICKING) var<uniform> pickingUniforms: PickingUniforms;

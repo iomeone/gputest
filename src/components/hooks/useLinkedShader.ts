@@ -1,12 +1,22 @@
-import { ShaderModuleDescriptor } from '../../core/types';
-import { ParsedModule, ParsedBundle, ShaderDefine } from '../../shader/types';
+import { ShaderModuleDescriptor } from '@use-gpu/core/types';
+import { ParsedModule, ParsedBundle, ShaderDefine } from '@use-gpu/shader/types';
 
-import { resolveBindings, linkBundle, getProgramHash } from '../../shader/wgsl';
-import { makeShaderModule } from '../../core';
-import { useFiber, useMemo, useOne } from '../../live';
+import { resolveBindings, linkBundle, getHash } from '@use-gpu/shader/wgsl';
+import { makeShaderModule } from '@use-gpu/core';
+import { useFiber, useMemo, useOne } from '@use-gpu/live';
+import LRU from 'lru-cache';
 
 const NO_DEPS = [] as any[];
 const NO_LIBS = {} as Record<string, any>;
+
+type RenderShader = [ShaderModuleDescriptor, ShaderModuleDescriptor];
+
+export const makeShaderCache = (options: Record<number, any> = {}) => new LRU<string, any>({
+  max: 100,
+  ...options,
+});
+
+const CACHE = new LRU<string, any>();
 
 export const useLinkedShader = (
   vertex: ParsedBundle,
@@ -28,28 +38,36 @@ export const useLinkedShader = (
   // Keep static set of bindings
   const ref = useOne(() => ({ uniforms, bindings }));
 
-  // Memoize on specific keys to refresh shader
-  const keys = [];
-  for (const u of uniforms) keys.push(u.uniform.name);
-  keys.push('/');
-  for (const b of bindings) keys.push(b.uniform.name);
-
   // Link final WGSL
+  const [{hash: vHash}, {hash: fHash}] = modules;
   const shader = useMemo(() => {
-    const v = linkBundle(modules[0], NO_LIBS, defines);
-    const f = linkBundle(modules[1], NO_LIBS, defines);
-    const vertex   = makeShaderModule([v, getProgramHash(v)]);
-    const fragment = makeShaderModule([f, getProgramHash(f)]);
+    const dHash = getHash(defines);
+    const vKey = vHash +'-'+ dHash;
+    const fKey = fHash +'-'+ dHash;
 
+    let vertex = CACHE.get(vKey);
+    if (vertex == null) {
+      const v = linkBundle(modules[0], NO_LIBS, defines);
+      vertex = makeShaderModule(v, vKey);
+      CACHE.set(vKey, vertex);
+    }
+
+    let fragment = CACHE.get(fKey);
+    if (fragment == null) {
+      const f = linkBundle(modules[1], NO_LIBS, defines);
+      fragment = makeShaderModule(f, fKey);
+      CACHE.set(fKey, fragment);
+    }
+    
     fiber.__inspect = fiber.__inspect || {};
-    fiber.__inspect.vertex = v;
-    fiber.__inspect.fragment = f;
+    fiber.__inspect.vertex = vertex;
+    fiber.__inspect.fragment = fragment;
 
     ref.uniforms = uniforms;
     ref.bindings = bindings;
 
-    return [vertex, fragment, v, f] as [ShaderModuleDescriptor, ShaderModuleDescriptor, string, string];
-  }, [...deps ?? NO_DEPS, ...keys]);
+    return [vertex, fragment] as [ShaderModuleDescriptor, ShaderModuleDescriptor];
+  }, [...deps ?? NO_DEPS, vHash, fHash]);
 
   // Update bound uniform values in-place from latest
   useOne(() => {
@@ -64,7 +82,9 @@ export const useLinkedShader = (
 
   // Refresh bindings if buffer assignment changed
   const buffers = [] as GPUBuffer[];
-  for (const b of bindings) buffers.push(b.storage?.buffer);  
+  for (const {storage, texture} of bindings) {
+    buffers.push(storage?.buffer ?? texture?.texture);
+  }
   useMemo(() => {
     ref.bindings = bindings;
   }, buffers);

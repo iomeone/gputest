@@ -30,6 +30,7 @@ export enum Hook {
   RESOURCE = 4,
   CONTEXT = 5,
   CONSUMER = 6,
+  VERSION = 7,
 };
 
 // Deferred actions
@@ -88,6 +89,9 @@ export type LiveFiber<F extends Function> = FunctionCall<F> & {
   // Yeeting state
   yeeted: FiberYeet<any> | null,
 
+  // Count number of runs for inspector
+  runs: number,
+
   __inspect?: Record<string, any> | null,
 };
 
@@ -143,6 +147,7 @@ export type HostInterface = {
 
   // Track a future cleanup on a fiber
   track: (fiber: LiveFiber<any>, task: Task) => void,
+  untrack: (fiber: LiveFiber<any>, task: Task) => void,
 
   // Dispose of a fiber by running all tracked cleanups
   dispose: (fiber: LiveFiber<any>) => void,
@@ -150,7 +155,8 @@ export type HostInterface = {
   // Track a long-range dependency for contexts
   depend: (fiber: LiveFiber<any>, root: LiveFiber<any>) => boolean,
   undepend: (fiber: LiveFiber<any>, root: LiveFiber<any>) => void,
-  invalidate: (fiber: LiveFiber<any>) => LiveFiber<any>[],
+  traceDown: (fiber: LiveFiber<any>) => LiveFiber<any>[],
+  traceUp: (fiber: LiveFiber<any>) => LiveFiber<any>[],
 
   // Fiber update queue
   visit: (fiber: LiveFiber<any>) => void,
@@ -163,5 +169,5 @@ export type HostInterface = {
   depth: (d: number) => void,
 
   __stats: {mounts: number, unmounts: number, updates: number, dispatch: number},
-  __ping: (fiber: LiveFiber<any>) => void,
+  __ping: (fiber: LiveFiber<any>, active?: boolean) => void,
 };

@@ -55,14 +55,14 @@ it("tracks dependencies", () => {
   dependency.depend(fiber1, root);
   dependency.depend(fiber2, root);
 
-  let visit = new Set(dependency.invalidate(root));
+  let visit = new Set(dependency.traceDown(root));
   expect(visit.size).toBe(2);
   expect(visit.has(fiber1)).toBe(true);
   expect(visit.has(fiber2)).toBe(true);
 
   dependency.undepend(fiber1, root);
 
-  visit = new Set(dependency.invalidate(root));
+  visit = new Set(dependency.traceDown(root));
   expect(visit.size).toBe(1);
   expect(visit.has(fiber2)).toBe(true);
 

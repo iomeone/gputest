@@ -1,6 +1,6 @@
 import { Tree } from '@lezer/common';
 import { ASTParser, VirtualTable, SymbolTable, ParsedModule, ParsedModuleCache, CompressedNode } from '../types';
-import { getProgramHash, makeKey } from './hash';
+import { getHash, makeKey } from './hash';
 import { decompressAST } from './tree';
 import { PREFIX_VIRTUAL } from '../constants';
 
@@ -9,7 +9,7 @@ const EMPTY_TABLE = {} as any;
 
 // Parse a code module into its in-memory representation
 // (AST + symbol table)
-export const makeLoadModule = <T extends SymbolTable>(
+export const makeLoadModule = <T>(
   parseShader: (code: string) => Tree,
   makeASTParser: (code: string, tree: Tree, name?: string) => ASTParser<T>,
   compressAST: (code: string, tree: Tree) => CompressedNode[],
@@ -29,7 +29,9 @@ export const makeLoadModule = <T extends SymbolTable>(
 
   if (compressed) tree = decompressAST(compressAST(code, tree));
 
-  return {name, code, table, entry, shake, tree};
+  const hash = getHash(code);
+
+  return {name, code, hash, table, entry, shake, tree};
 }
 
 // Use cache to load modules
@@ -44,7 +46,7 @@ export const makeLoadModuleWithCache = (
 ): ParsedModule => {
   if (!cache) return loadModule(code, name, entry, true);
 
-  const hash = getProgramHash(code);
+  const hash = getHash(code);
   const cached = cache.get(hash);
   if (cached) return {...cached, entry};
   
@@ -55,10 +57,8 @@ export const makeLoadModuleWithCache = (
 
 // Load a static (inert) module
 export const loadStaticModule = (code: string, name: string, entry?: string) => {
-  const table = {
-    hash: getProgramHash(code),
-  };
-  return { name, code, table, entry };
+  const hash = getHash(code);
+  return { name, code, hash, entry, table: EMPTY_TABLE };
 }
 
 // Load a virtual (generated) module
@@ -66,19 +66,22 @@ export const loadVirtualModule = <T extends SymbolTable = any>(
   virtual: VirtualTable,
   initTable: Partial<T> = EMPTY_TABLE,
   entry?: string,
-  key: string | number = makeKey(),
+  hash?: string,
+  code?: string,
+  key?: string,
 ) => {
   let symbols = initTable.symbols ?? EMPTY_LIST;
-  const code = `#virtual [${symbols.join(' ')}] ${key.toString(16)}`;
 
-  const hash = getProgramHash(code);
-  const name = `${PREFIX_VIRTUAL}${hash.slice(0, 6)}_`;
+  code = code ?? `@virtual [${symbols.join(' ')}]`;
+  hash = hash ?? getHash(code);
+  key  = key  ?? hash;
+
+  const name = `${PREFIX_VIRTUAL}${key.slice(0, 6)}`;
 
   const table = {
-    hash,
     symbols,
     visibles: symbols,
     ...initTable,
   };
-  return { name, code, table, entry, virtual };
+  return { name, code, hash, table, entry, virtual, key };
 }

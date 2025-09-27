@@ -1,10 +1,10 @@
-@export fn getStripIndex(vertex: i32) -> vec2<i32> {
+@export fn getStripIndex(vertex: u32) -> vec2<u32> {
   var x = vertex >> 1u;
-  var y = vertex & 1;
-  return vec2<i32>(x, y);
+  var y = vertex & 1u;
+  return vec2<u32>(x, y);
 }
 
-@export fn getStripUV(vertex: i32) -> vec2<f32> {
+@export fn getStripUV(vertex: u32) -> vec2<f32> {
   return vec2<f32>(getStripIndex(vertex));
 }
 

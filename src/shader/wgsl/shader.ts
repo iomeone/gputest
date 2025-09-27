@@ -2,13 +2,15 @@ import { Tree } from '@lezer/common';
 import { ParsedModule, ParsedModuleCache, ShaderDefine } from './types';
 
 import { makeLoadModule, makeLoadModuleWithCache } from '../util/shader';
-import { makeASTParser, compressAST } from './ast';
+import { makeBundleToAttribute, makeBundleToAttributes } from '../util/bundle';
 import { decompressAST } from '../util/tree';
+
+import { makeASTParser, compressAST } from './ast';
+import { toTypeString, toTypeArgs } from './type';
 import { parser } from './grammar/wgsl';
 import LRU from 'lru-cache';
 
 export { loadStaticModule, loadVirtualModule } from '../util/shader';
-
 
 // LRU cache for parsed shader code
 export const makeModuleCache = (options: Record<string, any> = {}) => new LRU<string, ParsedModule>({
@@ -31,6 +33,9 @@ export const loadModuleWithCache = makeLoadModuleWithCache(loadModule, DEFAULT_C
 // Make WGSL definitions
 export const defineConstants = (defs: Record<string, ShaderDefine>): string => {
   const out = [];
-  for (let k in defs) if (k[0] !== '@' && defs[k] !== false && defs[k] !== null) out.push(`let ${k} = ${defs[k]};`);
+  for (let k in defs) if (k[0] !== '@' && defs[k] != null) out.push(`let ${k} = ${defs[k]};`);
   return out.join("\n");
 }
+
+export const bundleToAttribute = makeBundleToAttribute(toTypeString, toTypeArgs);
+export const bundleToAttributes = makeBundleToAttributes(toTypeString, toTypeArgs);

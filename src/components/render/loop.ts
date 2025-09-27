@@ -1,40 +1,104 @@
-import { LiveComponent, LiveElement, Task } from '../../live/types';
-import { use, detach, useCallback, useOne, useResource } from '../../live';
+import { LiveComponent, LiveElement, Task } from '@use-gpu/live/types';
+import { use, detach, provide, useCallback, useOne, useResource } from '@use-gpu/live';
+
+import { FrameContext, usePerFrame, useNoPerFrame } from '../providers/frame-provider';
+import { TimeContext } from '../providers/time-provider';
+import { LoopContext } from '../providers/loop-provider';
+
+const NOP = () => {};
 
 export type LoopProps = {
-  gpuContext: GPUCanvasContext,
-  colorAttachments: GPURenderPassColorAttachment[],
+  live?: boolean,
   children?: LiveElement<any>,
   render?: () => LiveElement<any>,
 };
 
 export type LoopRef = {
+  time: {
+    timestamp: number,
+    delta: number,
+    elapsed: number,
+    start: number,
+  },
+  frame: {
+    current: number,
+    request?: (fiber?: LiveFiber<any>) => void,
+  },
   children?: LiveElement<any>,
   render?: () => LiveElement<any>,
+
   dispatch?: () => void,
 };
 
-const Dispatch = (props: LoopRef) => props.children ?? (props.render ? props.render() : null);
-
 export const Loop: LiveComponent<LoopProps> = (props) => {
-  const {children, render} = props;
+  const {live, children, render} = props;
 
-  const ref: LoopRef = useOne(() => ({children, render}));
+  if (!live) usePerFrame();
+  else useNoPerFrame();
+
+  const ref: LoopRef = useOne(() => ({
+    time: {
+      start: 0,
+      timestamp: -Infinity,
+      elapsed: 0,
+      delta: 0,
+    },
+    frame: {
+      current: 0,
+    },
+    loop: {
+      request: () => {},
+    },
+    children,
+    render,
+  }));
+
   ref.children = children;
   ref.render = render;
 
-  useResource((dispose) => {
-    let running = true;
+  const request = useResource((dispose) => {
+    const {time, frame, loop} = ref;
+    let running = live;
+    let pending = false;
 
-    const loop = () => {
-      if (ref.dispatch) ref.dispatch();
-      if (running) requestAnimationFrame(loop);
-    }
+    const render = (timestamp: number) => {
+      frame.current++;
+      pending = false;
 
-    requestAnimationFrame(loop);
+      if (time.timestamp === -Infinity) time.start = timestamp;
+      else time.delta = timestamp - time.timestamp;
+
+      time.elapsed = timestamp - time.start;
+      time.timestamp = timestamp;
+
+      const {dispatch} = ref;
+      if (dispatch) dispatch();
+      if (running) request(render);
+    };
+
+    const request = (fiber?: LiveFiber<any>) => {
+      if (fiber) requestAnimationFrame(() => fiber.host?.schedule(fiber, NOP));
+      if (!pending) requestAnimationFrame(render);
+      pending = true;
+    };
     dispose(() => running = false);
-  });
 
-  const fork = useOne(() => use(Dispatch)(ref));
-  return detach(fork, (render: Task) => ref.dispatch = render);
+    return loop.request = request;
+  }, live);
+
+  request();
+
+  const Dispatch = useCallback(() => {
+    const {time, frame, loop, render, children, request} = ref;
+    return (
+      provide(LoopContext, loop,
+        provide(FrameContext, {...frame},
+          provide(TimeContext, {...time}, render ? render() : children ?? null)
+        )
+      )
+    );
+  });
+  Dispatch.displayName = 'Dispatch';
+
+  return detach(use(Dispatch), (render: Task) => ref.dispatch = render);
 }

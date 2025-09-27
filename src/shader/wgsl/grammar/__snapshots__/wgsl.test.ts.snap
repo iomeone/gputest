@@ -28,19 +28,19 @@ Program                                                     ⮐ let WAT = true;�
 `;
 
 exports[`WGSL grammar snapshots parses a test program 3`] = `
-Program                                                     ⮐ struct light {⮐   intensity: f32;⮐   position: vec3<f32>;⮐ };⮐ 
-  LocalDeclaration                                          ⮐ struct light {⮐   intensity: f32;⮐   position: vec3<f32>;⮐ }
-    StructDeclaration                                       ⮐ struct light {⮐   intensity: f32;⮐   position: vec3<f32>;⮐ }
+Program                                                     ⮐ struct light {⮐   intensity: f32,⮐   position: vec3<f32>,⮐ };⮐ 
+  LocalDeclaration                                          ⮐ struct light {⮐   intensity: f32,⮐   position: vec3<f32>,⮐ }
+    StructDeclaration                                       ⮐ struct light {⮐   intensity: f32,⮐   position: vec3<f32>,⮐ }
       AttributeList                                         
       struct                                                struct
       Identifier                                            light
-      StructBodyDeclaration                                 {⮐   intensity: f32;⮐   position: vec3<f32>;⮐ }
-        StructMember                                        ⮐   intensity: f32;
+      StructBodyDeclaration                                 {⮐   intensity: f32,⮐   position: vec3<f32>,⮐ }
+        StructMember                                        ⮐   intensity: f32
           AttributeList                                     
           Identifier                                        intensity
           TypeDeclaration                                   f32
             f32                                             f32
-        StructMember                                        ⮐   position: vec3<f32>;
+        StructMember                                        ⮐   position: vec3<f32>
           AttributeList                                     
           Identifier                                        position
           TypeDeclaration                                   vec3<f32>
@@ -78,14 +78,14 @@ Program                                                     ⮐ @external fn mai
 `;
 
 exports[`WGSL grammar snapshots parses a test program 6`] = `
-Program                                                     ⮐ struct A {⮐   @location(0) x: f32;⮐   @location(1) y: f32;⮐ }⮐ ⮐ @stage(fragment)⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }⮐ 
-  LocalDeclaration                                          ⮐ struct A {⮐   @location(0) x: f32;⮐   @location(1) y: f32;⮐ }
-    StructDeclaration                                       ⮐ struct A {⮐   @location(0) x: f32;⮐   @location(1) y: f32;⮐ }
+Program                                                     ⮐ struct A {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }⮐ ⮐ @stage(fragment)⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }⮐ 
+  LocalDeclaration                                          ⮐ struct A {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }
+    StructDeclaration                                       ⮐ struct A {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }
       AttributeList                                         
       struct                                                struct
       Identifier                                            A
-      StructBodyDeclaration                                 {⮐   @location(0) x: f32;⮐   @location(1) y: f32;⮐ }
-        StructMember                                        @location(0) x: f32;
+      StructBodyDeclaration                                 {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }
+        StructMember                                        @location(0) x: f32
           AttributeList                                     @location(0)
             Attribute                                       @location(0)
               Identifier                                    location
@@ -93,7 +93,7 @@ Program                                                     ⮐ struct A {⮐   
           Identifier                                        x
           TypeDeclaration                                   f32
             f32                                             f32
-        StructMember                                        @location(1) y: f32;
+        StructMember                                        @location(1) y: f32
           AttributeList                                     @location(1)
             Attribute                                       @location(1)
               Identifier                                    location
@@ -137,7 +137,7 @@ Program                                                     ⮐ struct A {⮐   
 `;
 
 exports[`WGSL grammar snapshots parses a test program 7`] = `
-Program                                                     ⮐ let foo: f32 = 1.0;⮐ let WAT = true;⮐ struct s { x: i32; };⮐ fn main() -> @builtin vec4<f32> {⮐   var bar: i32 = wat(5, 6);⮐   let x: i32 = 4 + 5 + -6 + (-7);⮐   return vec4<f32>(0.1, 0.2, 0.3, 1.0);⮐ }⮐ 
+Program                                                     ⮐ let foo: f32 = 1.0;⮐ let WAT = true;⮐ struct s { x: i32 };⮐ fn main() -> @builtin vec4<f32> {⮐   var bar: i32 = wat(5, 6);⮐   let x: i32 = 4 + 5 + -6 + (-7);⮐   return vec4<f32>(0.1, 0.2, 0.3, 1.0);⮐ }⮐ 
   LocalDeclaration                                          ⮐ let foo: f32 = 1.0;
     GlobalConstantDeclaration                               ⮐ let foo: f32 = 1.0
       EmptyToken                                            
@@ -156,13 +156,13 @@ Program                                                     ⮐ let foo: f32 = 1
         Identifier                                          WAT
       Value                                                 true
         true                                                true
-  LocalDeclaration                                          ⮐ struct s { x: i32; }
-    StructDeclaration                                       ⮐ struct s { x: i32; }
+  LocalDeclaration                                          ⮐ struct s { x: i32 }
+    StructDeclaration                                       ⮐ struct s { x: i32 }
       AttributeList                                         
       struct                                                struct
       Identifier                                            s
-      StructBodyDeclaration                                 { x: i32; }
-        StructMember                                         x: i32;
+      StructBodyDeclaration                                 { x: i32 }
+        StructMember                                         x: i32
           AttributeList                                     
           Identifier                                        x
           TypeDeclaration                                   i32

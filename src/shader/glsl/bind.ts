@@ -2,8 +2,10 @@ import { ShaderModule, DataBinding } from './types';
 
 import { defineConstants } from './shader';
 import { makeBindingAccessors, makeUniformBlock } from './gen';
-import { makeBindModule, makeBindBundle, makeResolveBindings, namespaceBinding } from '../util/bind';
+import { makeResolveBindings, namespaceBinding } from '../util/bind';
 import { VIRTUAL_BINDGROUP } from './constants';
+
+export { bindBundle, bindModule } from '../util/bind';
 
 const NO_SYMBOLS = [] as any[];
 
@@ -23,9 +25,5 @@ export const bindingsToLinks = (
 ): Record<string, ShaderModule> => {
   return makeBindingAccessors(bindings, VIRTUAL_BINDGROUP);
 }
-
-export const bindModule = makeBindModule(defineConstants);
-
-export const bindBundle = makeBindBundle(bindModule);
 
 export const resolveBindings = makeResolveBindings(makeUniformBlock, getVirtualBindGroup);

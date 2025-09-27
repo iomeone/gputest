@@ -10,6 +10,12 @@ export type SymbolTable = {
   symbols?: string[],
 };
 
+export type TypeLike = {
+  name: string,
+  type?: TypeLike,
+  args?: TypeLike[],
+};
+
 export type ParsedModuleCache<T extends SymbolTable = any> = LRU<string, ParsedModule<T>>;
 
 export type ShaderModule<T extends SymbolTable = any> = ParsedBundle<T> | ParsedModule<T>;
@@ -17,18 +23,27 @@ export type ShaderModule<T extends SymbolTable = any> = ParsedBundle<T> | Parsed
 export type ParsedBundle<T extends SymbolTable = any> = {
   module: ParsedModule<T>,
   libs?: Record<string, ShaderModule<T>>,
+  links?: Record<string, ShaderModule<T>>,
   entry?: string,
-  virtual?: ParsedModule<T>[],
+
+  hash?: string,
+  key?: string,
+  defines?: Record<string, any>,
+  virtuals?: ParsedModule<T>[],
 };
 
 export type ParsedModule<T extends SymbolTable = any> = {
   name: string,
   code: string,
+  hash: string,
   table: T,
+
   tree?: Tree,
   shake?: ShakeTable,
   virtual?: VirtualTable<T>,
   entry?: string,
+
+  key?: string,
 };
 
 export type VirtualTable<T extends SymbolTable = any> = {
@@ -44,11 +59,11 @@ export type DataBinding<T extends SymbolTable = any> = {
   uniform: UniformAttributeValue,
   storage?: StorageSource,
   texture?: TextureSource,
-  lambda?: ShaderModule<T>,
+  lambda?: LambdaSource<T>,
   constant?: any,
 };
 
-export type CompressedNode = [string, number, number];
+export type CompressedNode = [string, number, number] | [string, number, number, string];
 
 export type ImportRef = {
   name: string,
@@ -81,14 +96,23 @@ export type StorageSource = {
   version: number,
 };
 
+export type LambdaSource<T> = {
+  shader: ShaderModule<T>,
+  size: [number, number] | [number, number, number] | [number, number, number, number],
+};
+
 export type TextureSource = {
   view: GPUTexture | GPUTextureView,
   sampler: GPUSampler | GPUSamplerDescriptor,
   layout: string,
   format: string,
+  variant?: string,
+  absolute?: boolean,
   size: [number, number] | [number, number, number],
   version: number,
 };
+
+export type ShaderSource = StorageSource | LambdaSource<ShaderModule> | ShaderModule;
 
 export type UniformAttribute = {
   name: string,

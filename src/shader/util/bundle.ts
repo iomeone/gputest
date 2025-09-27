@@ -1,73 +1,82 @@
-import { ParsedBundle, ParsedModule } from '../types';
+import { UniformAttribute, ParsedBundle, ParsedModule, TypeLike, RefFlags as RF } from '../types';
 
 const NO_LIBS = {};
 
-// Accept direct module or bundle, with entry point on either.
+export const getBundleKey = (bundle: ParsedBundle | ParsedModule) => {
+  return (('module' in bundle) ? bundle.key ?? bundle.module.key : bundle.key) ?? getBundleHash(bundle);
+};
+
+export const getBundleHash = (bundle: ParsedBundle | ParsedModule) => {
+  return ('module' in bundle) ? bundle.hash ?? bundle.module.hash : bundle.hash;
+};
+
+// Force module/bundle to bundle
 export const toBundle = (bundle: ParsedBundle | ParsedModule): ParsedBundle => {
   if (typeof bundle === 'string') throw new Error("Bundle is a string instead of an object");
 
-  if ('name' in bundle) return {
+  if ('table' in bundle) return {
     module: bundle as ParsedModule,
-    libs: NO_LIBS,
   } as ParsedBundle;
 
-  let {module, libs, virtual, entry} = bundle;
-  if (entry != null) {
-    module = {...module, entry};
-    return {module, libs, virtual} as ParsedBundle;
-  }
   return bundle;
 }
 
-// Accept direct module or bundle, with entry point on either.
+// Force module/bundle to module
 export const toModule = (bundle: ParsedBundle | ParsedModule) => {
   if (typeof bundle === 'string') throw new Error("Bundle is a string instead of an object");
 
-  if ('name' in bundle) return bundle as ParsedModule;
-
-  let {module, entry} = bundle;
-  if (entry != null) {
-    return {...module, entry} as ParsedModule;
-  }
-  return module;
-}
-
-// Parse bundle of imports into main + libs
-export const parseBundle = (bundle: ParsedBundle | ParsedModule): [ParsedModule, Record<string, ParsedModule>, ParsedModule[]] => {
-  let {module, libs, virtual} = toBundle(bundle);
-
-  const out = {} as Record<string, ParsedModule>;
-  const traverse = (libs: Record<string, ParsedBundle | ParsedModule>) => {
-    for (let k in libs) {
-      const {module, libs: subs} = toBundle(libs[k]);
-      out[k] = module;
-      if (subs) traverse(subs);
-    }
-  };
-  if (libs) traverse(libs);
-
-  return [module, out, virtual ?? []];
-}
-
-// Visit every module in a bundle
-export const forBundleModules = (
-  bundle: ParsedBundle | ParsedModule,
-  callback: (m: ParsedModule) => void,
-) => {
-  const traverse = (lib: ParsedBundle | ParsedModule) => {
-    if ('name' in lib) {
-      callback(lib);
-      return;
-    }
-
-    let {module, libs} = lib;
-    callback(module);
-
-    if (libs) for (let k in libs) traverse(libs[k]);
-  }
-
-  traverse(bundle);
+  if ('table' in bundle) return bundle as ParsedModule;
+  return bundle.module;
 }
 
 // Parse escaped C-style string
 export const parseString = (s: string) => s.slice(1, -1).replace(/\\(.)/g, '$1');
+
+type ToTypeString = (t: TypeLike | string) => string;
+type ToArgTypes = (t: (TypeLike | string)[]) => string[];
+
+// Convert bundle to attributes for its external declarations
+export const makeBundleToAttributes = (
+  toTypeString: ToTypeString,
+  toArgTypes: ToArgTypes,
+) => (
+  bundle: ParsedBundle | ParsedModule,
+): UniformAttribute[] => {
+  const module = toModule(bundle);
+  const {table: {declarations}} = module;
+
+  const out: UniformAttribute[] = [];
+  for (const fn of declarations) if (fn.func) {
+    const {func, flags} = fn;
+    if (flags & RF.External) {
+      const {type, name, parameters} = func;
+      out.push({name, format: toTypeString(type), args: toArgTypes(parameters)});
+    }
+  }
+
+  return out;
+}
+
+// Convert bundle to attribute for entry point (or named declaration)
+export const makeBundleToAttribute = (
+  toTypeString: ToTypeString,
+  toArgTypes: ToArgTypes,
+) => (
+  bundle: ParsedBundle | ParsedModule,
+  name?: string,
+): UniformAttribute => {
+  const module = toModule(bundle);
+  const {table: {declarations}} = module;
+
+  const entry = name ?? bundle.entry ?? module.entry;
+
+  for (const fn of declarations) if (fn.func) {
+    const {func} = fn;
+    const {type, name, parameters} = func;
+    if (name === entry) {
+      return {name, format: toTypeString(type), args: toArgTypes(parameters)};
+    }
+  }
+
+  return {name: name ?? 'main', format: 'void', args: []};
+}

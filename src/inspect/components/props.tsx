@@ -1,10 +1,11 @@
-import { LiveFiber } from '../../live/types';
-import { formatNode, formatValue, formatNodeName } from '../../live';
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatNode, formatValue, formatNodeName, YEET } from '@use-gpu/live';
 import { styled } from "@stitches/react";
 
 import React, { useState } from 'react';
 import { Action } from './types';
 import { SplitRow, TreeRow, TreeIndent, Label, Spacer } from './layout';
+import { usePingContext } from './ping';
 
 const ICON = (s: string) => <span className="m-icon">{s}</span>
 
@@ -29,6 +30,8 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
   const {id, f, arg, args, yeeted} = fiber;
   const name = formatNodeName(fiber);
   let props = {} as Record<string, any>;
+
+  usePingContext();
 
   const [state, setState] = useState<Record<string, boolean>>({});
   const toggleState = (id: string) => setState((state) => ({
@@ -65,11 +68,12 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
     }
   }
 
-	let yt = yeeted?.value != null ? (<>
-		<Spacer />
-	  <div><b>Yeeted</b></div>
-	  <div>{inspectObject(yeeted?.value, state, toggleState, '')}</div>
-	</>) : null;
+  let yt = yeeted?.value != null ? (<>
+    <div><b>Yeeted</b></div>
+    <div>{inspectObject(yeeted?.value, state, toggleState, '')}</div>
+  </>) : null;
+
+  let showProps = f !== YEET;
 
   let history = null as React.ReactNode | null;
   let parent = fiber;
@@ -87,9 +91,14 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
   }
 
   return (<>
-    <div><b>{name}</b></div>
-    <div>{inspectObject(props, state, toggleState, '')}</div>
-		{yt}
+    {showProps ? (
+      <>
+        <div><b>{name}</b></div>
+        <div>{inspectObject(props, state, toggleState, '')}</div>
+      </>
+    ) : null}
+    {showProps && yt ? <Spacer /> : null}
+    {yt}
     <Spacer />
     <div><b>Rendered By</b></div>
     <div>{history}</div>

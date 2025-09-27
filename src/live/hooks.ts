@@ -5,7 +5,7 @@ import {
 } from './types';
 
 import { bind, bustFiberMemo, getCurrentFiber } from './fiber';
-import { isSameDependencies } from './util';
+import { isSameDependencies, incrementVersion } from './util';
 import { formatNode } from './debug';
 
 export const NOP = () => {};
@@ -73,6 +73,16 @@ export const useNoHook = (hookType: Hook) => () => {
   state![i + 1] = undefined;
 };
 
+const getArgCount = <F extends Function>(f: F) => {
+  let s = Function.toString.call(f).split(/\)|=>/)[0];
+  if (s == null) return 0;
+
+  s = s.replace(/\s+/g, '').replace(/^\(/, '').replace(/,$/, '');
+  if (s.length === 0) return 0;
+
+  return s.split(',').length;
+}
+
 // Memoize a live function on all its arguments (shallow comparison per arg)
 // Unlike <Memo> this does not create a new sub-fiber
 export const memoArgs = <F extends Function>(
@@ -98,7 +108,7 @@ export const memoArgs = <F extends Function>(
   };
 
   const memoName = `Memo(${name ?? f.name})`;
-  const {length} = f;
+  const length = getArgCount(f);
   return new Proxy(inner, { get: (target: any, s: string) => {
     if (s === 'length') return length;
     if (s === 'name') return memoName;
@@ -134,7 +144,7 @@ export const memoProps = <F extends Function>(
   };
 
   const memoName = `Memo(${name ?? f.name})`;
-  const {length} = f;
+  const length = getArgCount(f);
   return new Proxy(inner, { get: (target: any, s: string) => {
     if (s === 'length') return length;
     if (s === 'name') return memoName;
@@ -160,14 +170,21 @@ export const useState = <T>(
   let value    = state![i];
   let setValue = state![i + 1];
 
-  if (value === undefined) {
+  if (setValue === undefined) {
     value = (initialState instanceof Function) ? initialState() : initialState;
     setValue = host
       ? (value: Reducer<T>) => {
           host!.schedule(fiber, () => {
-            if (value instanceof Function) state![i] = value(state![i]);
-            else state![i] = value;
-            bustFiberMemo(fiber);
+            const prev = state![i];
+
+            let next: any;
+            if (value instanceof Function) next = value(prev);
+            else next = value;
+
+            if (prev !== next) {
+              state![i] = next;
+              bustFiberMemo(fiber);
+            }
           });
         }
       : NOP;
@@ -248,6 +265,23 @@ export const useCallback = <T extends Function>(
   return value as unknown as T;
 }
 
+// Version counter
+export const useVersion = <T>(nextValue: T) => {
+  const fiber = useFiber();
+
+  const i = pushState(fiber, Hook.VERSION);
+  let {state, host, yeeted} = fiber;
+
+  let value   = state![i];
+  let version = state![i + 1] || 0;
+  if (value !== nextValue) {
+    state![i] = nextValue;
+    state![i + 1] = version = incrementVersion(state![i + 1]);
+  }
+
+  return version;
+}
+
 // Bind immediately to a resource, with auto-cleanup on dep change or unmount
 export const useResource = <R>(
   callback: (dispose: (f: Function) => void) => R,
@@ -258,7 +292,7 @@ export const useResource = <R>(
   const i = pushState(fiber, Hook.RESOURCE);
   let {state, host} = fiber;
 
-  let {tag} = state![i] || NO_RESOURCE;
+  let {tag} = state![i] ?? NO_RESOURCE;
   const deps = state![i + 1];
 
   if (!isSameDependencies(deps, dependencies)) {
@@ -290,8 +324,11 @@ export const useNoResource = () => {
   const i = pushState(fiber, Hook.RESOURCE);
   let {state, host} = fiber;
 
-  let {tag} = state![i] || NO_RESOURCE;
-  if (tag) tag(null);
+  let {tag} = state![i] ?? NO_RESOURCE;
+  if (tag) {
+    tag(null);
+    if (host) host.untrack(fiber, tag);
+  }
 
   state![i] = undefined;
   state![i + 1] = undefined;
@@ -300,37 +337,19 @@ export const useNoResource = () => {
 // Grab a context from the fiber (optional mode)
 export const useContext = <C>(
   context: LiveContext<C>,
-) => {
+): C => {
   const fiber = useFiber();
 
   const i = pushState(fiber, Hook.CONTEXT);
   const {state, host, context: {values, roots}} = fiber;
   const root = roots.get(context);
-  if (!root) throw new Error(`Context '${context.displayName}' was used without being provided.`);
-
-  if (host) {
-    if (!state![i]) {
-      state![i] = true;
-      state![i + 1] = context;
-      host.track(fiber, () => host.undepend(fiber, root));
+  if (!root) {
+    const {initialValue, displayName} = context;
+    if (initialValue === undefined) {
+      throw new Error(`Required context '${displayName}' was used without being provided.`);
     }
-
-    host.depend(fiber, root);
+    return initialValue;
   }
-
-  return values.get(context).current ?? context.initialValue;
-}
-
-// Grab an optional context from the fiber
-export const useOptionalContext = <C>(
-  context: LiveContext<C>,
-) => {
-  const fiber = useFiber();
-
-  const i = pushState(fiber, Hook.CONTEXT);
-  const {state, host, context: {values, roots}} = fiber;
-  const root = roots.get(context);
-  if (!root) return context.initialValue ?? null;
 
   if (host) {
     if (!state![i]) {
@@ -357,7 +376,7 @@ export const useConsumer = <C>(
   const root = roots.get(context);
   if (!root || !root.next) throw new Error(`Consumer '${context.displayName}' was used without being consumed.`);
 
-  const next= root.next;
+  const {next} = root;
   if (host) {
     if (!state![i]) {
       state![i] = true;
@@ -370,7 +389,8 @@ export const useConsumer = <C>(
 
       host.depend(next, fiber);
     }
-    host.schedule(next, NOP);
+
+    host.visit(next);
   }
 
   const registry = values.get(context).current;
@@ -385,9 +405,11 @@ export const useNoContext = <C>(
 
   const i = pushState(fiber, Hook.CONTEXT);
   const {state, host, context: {values, roots}} = fiber;
-  const root = roots.get(context)!;
-  if (!context) throw new Error(`Context was not provided.`);
+  if (!context) {
+    throw new Error(`Context is undefined.`);
+  }
 
+  const root = roots.get(context)!;
   if (state![i]) {
     if (host) host.undepend(fiber, root);
     state![i] = false;
@@ -402,9 +424,9 @@ export const useNoConsumer = <C>(
 
   const i = pushState(fiber, Hook.CONSUMER);
   const {state, host, context: {values, roots}} = fiber;
-  const root = roots.get(context)!;
-  if (!context) throw new Error(`Consumer was not provided.`);
+  if (!context) throw new Error(`Consumer is undefined.`);
 
+  const root = roots.get(context)!;
   const next = root.next;
   if (state![i] && next) {
     if (host) host.undepend(next, fiber);
@@ -417,13 +439,14 @@ export const useNoState = useNoHook(Hook.STATE);
 export const useNoMemo = useNoHook(Hook.MEMO);
 export const useNoOne = useNoHook(Hook.ONE);
 export const useNoCallback = useNoHook(Hook.CALLBACK);
+export const useNoVersion = useNoHook(Hook.VERSION);
 
 // Async wrapper
-export const useAsync = <T>(f: () => Promise<T>, deps: any[] = NO_DEPS): T | null => {
-  const [value, setValue] = useState<T | null>(null);
-  const cancelled = false;
+export const useAsync = <T>(f: () => Promise<T>, deps: any[] = NO_DEPS): T | undefined => {
+  const [value, setValue] = useState<T | undefined>(undefined);
 
   const ref = useResource((dispose) => {
+    let cancelled = false;
     f().then((value) => {
       if (!cancelled) setValue(value);
     });

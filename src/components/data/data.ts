@@ -1,11 +1,16 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '../../core/types';
-import { DeviceContext, FrameContext } from '../../components';
-import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '@use-gpu/core/types';
+
+import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
 import {
   makeDataArray, makeDataAccessor, copyDataArray, copyNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '../../core';
+} from '@use-gpu/core';
+
+import { DeviceContext } from '../providers/device-provider';
+import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
+import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
+import { useBufferedSize } from '../hooks/useBufferedSize';
 
 export type DataProps = {
   length?: number,
@@ -28,7 +33,8 @@ export const Data: LiveComponent<DataProps> = (props) => {
     live = false,
   } = props;
 
-  const l = data?.length || 0;
+  const length = data?.length || 0;
+  const l = useBufferedSize(length);
   const fs = fields ?? NO_FIELDS;
 
   // Make data buffers
@@ -47,10 +53,11 @@ export const Data: LiveComponent<DataProps> = (props) => {
       const source = {
         buffer,
         format,
-        length,
+        length: 0,
+        size: [0],
         version: 0,
       };
-      
+
       return {buffer, array, source, dims, accessor, raw};
     });
     const fieldSources = fieldBuffers.map(f => f.source);
@@ -64,16 +71,21 @@ export const Data: LiveComponent<DataProps> = (props) => {
       else if (data) copyDataArray(data, array, dims, accessor as Accessor);
 
       uploadBuffer(device, buffer, array.buffer);
+
+      source.length = length;
+      source.size[0] = length;
       source.version = incrementVersion(source.version);
     }
   };
 
   if (!live) {
-    useNoContext(FrameContext);
-    useMemo(refresh, [device, data, fieldBuffers]);
+    useNoPerFrame();
+    useNoAnimationFrame();
+    useMemo(refresh, [device, data, fieldBuffers, length]);
   }
   else {
-    useContext(FrameContext);
+    usePerFrame();
+    useAnimationFrame();
     useNoMemo();
     refresh();
   }

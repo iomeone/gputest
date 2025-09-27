@@ -1,9 +1,10 @@
-import { ShaderModuleDescriptor, DeepPartial } from '../../core/types';
+import { ShaderModuleDescriptor, DeepPartial } from '@use-gpu/core/types';
 
-import { CanvasRenderingContextGPU } from '../../webgpu/types';
-import { makeRenderPipeline } from '../../core';
-import { useMemo, useOne } from '../../live';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { makeRenderPipeline } from '@use-gpu/core';
+import { useContext, useMemo, useOne } from '@use-gpu/live';
 import { useMemoKey } from './useMemoKey';
+import { DeviceContext } from '../providers/device-provider';
 import LRU from 'lru-cache';
 
 const DEBUG = false;
@@ -25,7 +26,8 @@ export const useRenderPipeline = (
   shader: RenderShader,
   props: DeepPartial<GPURenderPipelineDescriptor>,
 ) => {
-  const {device, colorStates, depthStencilState, samples} = renderContext;
+  const device = useContext(DeviceContext);
+  const {colorStates, depthStencilState, samples} = renderContext;
 
   const memoKey = useMemoKey(
     [device, colorStates, depthStencilState, props]
@@ -40,6 +42,7 @@ export const useRenderPipeline = (
 
     const [vertex, fragment] = shader;
     const key = vertex.hash.toString() + fragment.hash.toString();
+
     const cached = cache.get(key);
     if (cached) {
       DEBUG && console.log('pipeline cache hit', key)
@@ -47,6 +50,7 @@ export const useRenderPipeline = (
     }
 
     const pipeline = makeRenderPipeline(
+      device,
       renderContext,
       vertex,
       fragment,
@@ -55,5 +59,5 @@ export const useRenderPipeline = (
     cache.set(key, pipeline);
     DEBUG && console.log('pipeline cache miss', key)
     return pipeline;
-  }, [memoKey, samples]);
+  }, [memoKey, shader, samples]);
 };
