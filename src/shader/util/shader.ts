@@ -11,7 +11,7 @@ const EMPTY_TABLE = {} as any;
 // (AST + symbol table)
 export const makeLoadModule = <T>(
   parseShader: (code: string) => Tree,
-  makeASTParser: (code: string, tree: Tree, name?: string) => ASTParser<T>,
+  makeASTParser: (code: string, tree: Tree, name?: string) => ASTParser<T extends SymbolTable>,
   compressAST: (code: string, tree: Tree) => CompressedNode[],
 ) => (
   code: string,
