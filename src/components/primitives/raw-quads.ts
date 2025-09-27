@@ -18,8 +18,8 @@ import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { getQuadVertex } from '../../wgsl/instance/vertex/quad.wgsl';
-import { getMaskedFragment } from '../../wgsl/mask/masked.wgsl';
+import { getQuadVertex } from '../../gen-wgsl/instance/vertex/quad';
+import { getMaskedFragment } from '../../gen-wgsl/mask/masked';
 
 export type RawQuadsProps = {
   position?: number[] | TypedArray,

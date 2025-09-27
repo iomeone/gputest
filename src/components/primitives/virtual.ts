@@ -7,16 +7,16 @@ import { resolve } from '../../core';
 import { bindBundle, bindingToModule } from '../../shader/wgsl';
 import { useInspectable } from '../hooks/useInspectable';
 
-import instanceDrawVirtualSolid from '../../wgsl/render/vertex/virtual-solid.wgsl';
-import instanceDrawVirtualPick from '../../wgsl/render/vertex/virtual-pick.wgsl';
-import instanceDrawVirtualUI from '../../wgsl/render/vertex/virtual-ui.wgsl';
+import instanceDrawVirtualSolid from '../../gen-wgsl/render/vertex/virtual-solid';
+import instanceDrawVirtualPick from '../../gen-wgsl/render/vertex/virtual-pick';
+import instanceDrawVirtualUI from '../../gen-wgsl/render/vertex/virtual-ui';
 
-import instanceFragmentSolid from '../../wgsl/render/fragment/solid.wgsl';
-import instanceFragmentPickGeometry from '../../wgsl/render/fragment/pick-geometry.wgsl';
-import instanceFragmentUI from '../../wgsl/render/fragment/ui.wgsl';
+import instanceFragmentSolid from '../../gen-wgsl/render/fragment/solid';
+import instanceFragmentPickGeometry from '../../gen-wgsl/render/fragment/pick-geometry';
+import instanceFragmentUI from '../../gen-wgsl/render/fragment/ui';
 
-import instanceDrawWireframeStrip from '../../wgsl/render/vertex/wireframe-strip.wgsl';
-import instanceDrawWireframeList from '../../wgsl/render/vertex/wireframe-list.wgsl';
+import instanceDrawWireframeStrip from '../../gen-wgsl/render/vertex/wireframe-strip';
+import instanceDrawWireframeList from '../../gen-wgsl/render/vertex/wireframe-list';
 
 import { render } from './render';
 

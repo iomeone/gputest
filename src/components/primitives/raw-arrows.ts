@@ -22,8 +22,8 @@ import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { getArrowVertex } from '../../wgsl/instance/vertex/arrow.wgsl';
-import { getPassThruFragment } from '../../wgsl/mask/passthru.wgsl';
+import { getArrowVertex } from '../../gen-wgsl/instance/vertex/arrow';
+import { getPassThruFragment } from '../../gen-wgsl/mask/passthru';
 
 export type RawArrowsProps = {
   anchor?: number[] | TypedArray,

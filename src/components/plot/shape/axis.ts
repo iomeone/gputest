@@ -26,7 +26,7 @@ import { LineLayer } from '../../layers/line-layer';
 import { ArrowLayer } from '../../layers/arrow-layer';
 import { useArrowSegments } from '../../layers/arrow-segments';
 
-import { getAxisPosition } from '../../../wgsl/plot/axis.wgsl';
+import { getAxisPosition } from '../../../gen-wgsl/plot/axis';
 
 const AXIS_BINDINGS = [
   { name: 'getAxisOrigin', format: 'vec4<f32>', value: vec4.fromValues(-1, 0, 0, 0) },

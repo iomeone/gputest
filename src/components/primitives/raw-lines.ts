@@ -18,8 +18,8 @@ import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { getLineVertex } from '../../wgsl/instance/vertex/line.wgsl';
-import { getPassThruFragment } from '../../wgsl/mask/passthru.wgsl';
+import { getLineVertex } from '../../gen-wgsl/instance/vertex/line';
+import { getPassThruFragment } from '../../gen-wgsl/mask/passthru';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,

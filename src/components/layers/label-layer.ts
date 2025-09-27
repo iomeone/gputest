@@ -17,7 +17,7 @@ import { GlyphSource } from '../text/glyph-source';
 import { RawLabels } from '../primitives/raw-labels';
 import { UI, Flat } from '../layout';
 
-import { getLabelPosition } from '../../wgsl/instance/vertex/label.wgsl';
+import { getLabelPosition } from '../../gen-wgsl/instance/vertex/label';
 
 export type LabelLayerProps = {
   position?: number[] | TypedArray,

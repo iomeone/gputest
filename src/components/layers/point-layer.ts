@@ -14,7 +14,7 @@ import { bindBundle, bindingToModule, castTo } from '../../shader/wgsl';
 import { makeShaderBinding, makeShaderBindings } from '../../core';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../wgsl/mask/point.wgsl';
+import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../gen-wgsl/mask/point';
 
 export type PointShape = 'circle' | 'diamond' | 'square' | 'circleOutlined' | 'diamondOutlined' | 'squareOutlined';
 
