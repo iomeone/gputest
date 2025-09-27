@@ -1,0 +1,15 @@
+import {parseBundle} from "../../shader";
+import {decompressAST} from "../../shader/wgsl";
+const data = {
+    "name": "layout",
+    "code": "@link fn getFlip(i: u32) -> vec2<f32>;\r\n@link fn getOffset(i: u32) -> vec2<f32>;\r\n\r\n@export fn getLayoutPosition(position: vec4<f32>) -> vec4<f32> {\r\n  let flip = getFlip(0u);\r\n  let offset = getOffset(0u);\r\n\r\n  var x = position.x;\r\n  var y = position.y;\r\n  if (flip.x > 0.0) { x = flip.x - x; }\r\n  if (flip.y > 0.0) { y = flip.y - y; }\r\n  return vec4<f32>(vec2<f32>(x, y) + offset, position.zw);\r\n}\r\n",
+    "hash": 8959091719820939,
+    "table": {"symbols":["getFlip","getOffset","getLayoutPosition"],"visibles":["getLayoutPosition"],"externals":[{"at":0,"symbol":"getFlip","flags":2,"func":{"name":"getFlip","type":{"name":"vec2","args":[{"name":"f32"}]},"attributes":[{"name":"link"}],"parameters":[{"name":"i","type":{"name":"u32"}}],"identifiers":[]}},{"at":40,"symbol":"getOffset","flags":2,"func":{"name":"getOffset","type":{"name":"vec2","args":[{"name":"f32"}]},"attributes":[{"name":"link"}],"parameters":[{"name":"i","type":{"name":"u32"}}],"identifiers":[]}}],"exports":[{"at":84,"symbol":"getLayoutPosition","flags":1,"func":{"name":"getLayoutPosition","type":{"name":"vec4","args":[{"name":"f32"}]},"attributes":[{"name":"export"}],"parameters":[{"name":"position","type":{"name":"vec4","args":[{"name":"f32"}]}}],"identifiers":["getFlip","getOffset"]}}],"declarations":[{"at":0,"symbol":"getFlip","flags":2,"func":{"name":"getFlip","type":{"name":"vec2","args":[{"name":"f32"}]},"attributes":[{"name":"link"}],"parameters":[{"name":"i","type":{"name":"u32"}}],"identifiers":[]}},{"at":40,"symbol":"getOffset","flags":2,"func":{"name":"getOffset","type":{"name":"vec2","args":[{"name":"f32"}]},"attributes":[{"name":"link"}],"parameters":[{"name":"i","type":{"name":"u32"}}],"identifiers":[]}},{"at":84,"symbol":"getLayoutPosition","flags":1,"func":{"name":"getLayoutPosition","type":{"name":"vec4","args":[{"name":"f32"}]},"attributes":[{"name":"export"}],"parameters":[{"name":"position","type":{"name":"vec4","args":[{"name":"f32"}]}}],"identifiers":["getFlip","getOffset"]}}]},
+    "shake": [[0,["getFlip","getLayoutPosition"]],[40,["getOffset","getLayoutPosition"]],[84,["getLayoutPosition"]]],
+    "tree": decompressAST([["Skip",0,37],["Skip",40,79],["Shake",84,399],["Skip",84,91],["Id",95,112],["Id",113,121],["Id",156,160],["Id",163,170],["Id",183,189],["Id",192,201],["Id",216,217],["Id",220,228],["Id",229,230],["Id",239,240],["Id",243,251],["Id",252,253],["Id",262,266],["Id",267,268],["Id",278,279],["Id",282,286],["Id",287,288],["Id",291,292],["Id",303,307],["Id",308,309],["Id",319,320],["Id",323,327],["Id",328,329],["Id",332,333],["Id",367,368],["Id",370,371],["Id",375,381],["Id",383,391],["Id",392,394]]),
+  };
+const libs = {};
+const getSymbol = (entry) => ({module: data, libs, entry});
+export default getSymbol();
+export const getLayoutPosition = getSymbol("getLayoutPosition");
+/* __WGSL_LOADER_GENERATED */
