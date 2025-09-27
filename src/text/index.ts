@@ -4,7 +4,10 @@ import { getHashValue } from '../state';
 export { glyphToRGBA, glyphToSDF, padRectangle } from './sdf';
 
 // @ts-ignore
-let UseRustText: typeof import('../pkg');
+// let UseRustText: typeof import('../pkg');
+
+let wasmModPromise: Promise<typeof import('../use-gpu-text/pkg/index.js')> | null = null;
+
 
 const DEFAULT_FONTS = {
   "0": {
@@ -15,13 +18,19 @@ const DEFAULT_FONTS = {
 } as Record<string, FontProps>;
 
 export const RustText = async (): Promise<RustTextAPI> => {
-  if (!UseRustText) {
-    // @ts-ignore
-    ({UseRustText} = await import('../pkg'));
-  }
+
+
+  const mod = await (wasmModPromise ??= (async () => {
+    const m = await import('../use-gpu-text/pkg/index.js');
+    await m.default(new URL('../use-gpu-text/pkg/index_bg.wasm', import.meta.url));
+    return m;
+  })());
+
+  // 拿到类并实例化
+  const useRustText = mod.UseRustText.new();
 
   // @ts-ignore
-  const useRustText = UseRustText.new();
+  // const useRustText = UseRustText.new();
 
   let fontMap = new Map<number, FontProps>();
   for (let k in DEFAULT_FONTS) fontMap.set(+k, DEFAULT_FONTS[k]);
