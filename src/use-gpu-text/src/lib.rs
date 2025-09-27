@@ -63,7 +63,7 @@ pub struct GlyphMetrics {
 #[wasm_bindgen]
 impl UseRustText {
     pub fn new() -> UseRustText {
-        let ttf = include_bytes!("../../../public/Lato-Regular.ttf") as &[u8];
+        let ttf = include_bytes!("../../../public/fonts/Lato-Regular.ttf") as &[u8];
         let font = FontArc::try_from_slice(ttf).unwrap();
 
         let mut font_map = HashMap::new();

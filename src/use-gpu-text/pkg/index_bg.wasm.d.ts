@@ -1,12 +1,13 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
-export const __wbg_usegputext_free: (a: number, b: number) => void;
-export const usegputext_new: () => number;
-export const usegputext_get_line_breaks: (a: number, b: number, c: number) => [number, number, number];
-export const usegputext_measure_font: (a: number, b: number) => [number, number, number];
-export const usegputext_measure_spans: (a: number, b: number, c: number, d: number) => [number, number, number];
-export const usegputext_measure_glyph: (a: number, b: number, c: number) => [number, number, number];
+export const __wbg_userusttext_free: (a: number, b: number) => void;
+export const userusttext_new: () => number;
+export const userusttext_load_font: (a: number, b: number, c: number, d: number) => [number, number, number];
+export const userusttext_unload_font: (a: number, b: number) => [number, number, number];
+export const userusttext_measure_font: (a: number, b: number, c: number) => [number, number, number];
+export const userusttext_measure_spans: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
+export const userusttext_measure_glyph: (a: number, b: number, c: number, d: number) => [number, number, number];
 export const init_panic_hook: () => void;
 export const __wbindgen_free: (a: number, b: number, c: number) => void;
 export const __wbindgen_malloc: (a: number, b: number) => number;

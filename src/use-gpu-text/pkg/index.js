@@ -30,6 +30,22 @@ function getStringFromWasm0(ptr, len) {
     return decodeText(ptr, len);
 }
 
+function logError(f, args) {
+    try {
+        return f.apply(this, args);
+    } catch (e) {
+        let error = (function () {
+            try {
+                return e instanceof Error ? `${e.message}\n\nStack:\n${e.stack}` : e.toString();
+            } catch(_) {
+                return "<failed to stringify thrown value>";
+            }
+        }());
+        console.error("wasm-bindgen: imported JS function that was not marked as `catch` threw an error:", error);
+        throw e;
+    }
+}
+
 let WASM_VECTOR_LEN = 0;
 
 const cachedTextEncoder = new TextEncoder();
@@ -46,6 +62,8 @@ if (!('encodeInto' in cachedTextEncoder)) {
 }
 
 function passStringToWasm0(arg, malloc, realloc) {
+
+    if (typeof(arg) !== 'string') throw new Error(`expected a string argument, found ${typeof(arg)}`);
 
     if (realloc === undefined) {
         const buf = cachedTextEncoder.encode(arg);
@@ -75,7 +93,7 @@ function passStringToWasm0(arg, malloc, realloc) {
         ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
         const view = getUint8ArrayMemory0().subarray(ptr + offset, ptr + len);
         const ret = cachedTextEncoder.encodeInto(arg, view);
-
+        if (ret.read !== arg.length) throw new Error('failed to pass whole string');
         offset += ret.written;
         ptr = realloc(ptr, len, offset, 1) >>> 0;
     }
@@ -98,100 +116,175 @@ function getArrayU8FromWasm0(ptr, len) {
     return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
 }
 
+function _assertNum(n) {
+    if (typeof(n) !== 'number') throw new Error(`expected a number argument, found ${typeof(n)}`);
+}
+
+function passArray8ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 1, 1) >>> 0;
+    getUint8ArrayMemory0().set(arg, ptr / 1);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_export_3.get(idx);
     wasm.__externref_table_dealloc(idx);
     return value;
 }
 
+let cachedFloat64ArrayMemory0 = null;
+
+function getFloat64ArrayMemory0() {
+    if (cachedFloat64ArrayMemory0 === null || cachedFloat64ArrayMemory0.byteLength === 0) {
+        cachedFloat64ArrayMemory0 = new Float64Array(wasm.memory.buffer);
+    }
+    return cachedFloat64ArrayMemory0;
+}
+
+function passArrayF64ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 8, 8) >>> 0;
+    getFloat64ArrayMemory0().set(arg, ptr / 8);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
+let cachedUint16ArrayMemory0 = null;
+
+function getUint16ArrayMemory0() {
+    if (cachedUint16ArrayMemory0 === null || cachedUint16ArrayMemory0.byteLength === 0) {
+        cachedUint16ArrayMemory0 = new Uint16Array(wasm.memory.buffer);
+    }
+    return cachedUint16ArrayMemory0;
+}
+
+function passArray16ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 2, 2) >>> 0;
+    getUint16ArrayMemory0().set(arg, ptr / 2);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
 export function init_panic_hook() {
     wasm.init_panic_hook();
 }
 
-const UseGPUTextFinalization = (typeof FinalizationRegistry === 'undefined')
+const UseRustTextFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_usegputext_free(ptr >>> 0, 1));
+    : new FinalizationRegistry(ptr => wasm.__wbg_userusttext_free(ptr >>> 0, 1));
 
-export class UseGPUText {
+export class UseRustText {
+
+    constructor() {
+        throw new Error('cannot invoke `new` directly');
+    }
 
     static __wrap(ptr) {
         ptr = ptr >>> 0;
-        const obj = Object.create(UseGPUText.prototype);
+        const obj = Object.create(UseRustText.prototype);
         obj.__wbg_ptr = ptr;
-        UseGPUTextFinalization.register(obj, obj.__wbg_ptr, obj);
+        UseRustTextFinalization.register(obj, obj.__wbg_ptr, obj);
         return obj;
     }
 
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
-        UseGPUTextFinalization.unregister(this);
+        UseRustTextFinalization.unregister(this);
         return ptr;
     }
 
     free() {
         const ptr = this.__destroy_into_raw();
-        wasm.__wbg_usegputext_free(ptr, 0);
+        wasm.__wbg_userusttext_free(ptr, 0);
     }
     /**
-     * @returns {UseGPUText}
+     * @returns {UseRustText}
      */
     static new() {
-        const ret = wasm.usegputext_new();
-        return UseGPUText.__wrap(ret);
+        const ret = wasm.userusttext_new();
+        return UseRustText.__wrap(ret);
     }
     /**
-     * @param {string} text
+     * @param {number} key
+     * @param {Uint8Array} ttf
      * @returns {any}
      */
-    get_line_breaks(text) {
-        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    load_font(key, ttf) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ptr0 = passArray8ToWasm0(ttf, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.usegputext_get_line_breaks(this.__wbg_ptr, ptr0, len0);
+        const ret = wasm.userusttext_load_font(this.__wbg_ptr, key, ptr0, len0);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
     }
     /**
+     * @param {number} key
+     * @returns {any}
+     */
+    unload_font(key) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.userusttext_unload_font(this.__wbg_ptr, key);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @param {number} key
      * @param {number} size
      * @returns {any}
      */
-    measure_font(size) {
-        const ret = wasm.usegputext_measure_font(this.__wbg_ptr, size);
+    measure_font(key, size) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.userusttext_measure_font(this.__wbg_ptr, key, size);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * @param {string} text
+     * @param {Float64Array} stack
+     * @param {Uint16Array} utf16
      * @param {number} size
      * @returns {any}
      */
-    measure_spans(text, size) {
-        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    measure_spans(stack, utf16, size) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ptr0 = passArrayF64ToWasm0(stack, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.usegputext_measure_spans(this.__wbg_ptr, ptr0, len0, size);
+        const ptr1 = passArray16ToWasm0(utf16, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.userusttext_measure_spans(this.__wbg_ptr, ptr0, len0, ptr1, len1, size);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
     }
     /**
+     * @param {number} key
      * @param {number} id
      * @param {number} size
      * @returns {any}
      */
-    measure_glyph(id, size) {
-        const ret = wasm.usegputext_measure_glyph(this.__wbg_ptr, id, size);
+    measure_glyph(key, id, size) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(id);
+        const ret = wasm.userusttext_measure_glyph(this.__wbg_ptr, key, id, size);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
     }
 }
-if (Symbol.dispose) UseGPUText.prototype[Symbol.dispose] = UseGPUText.prototype.free;
+if (Symbol.dispose) UseRustText.prototype[Symbol.dispose] = UseRustText.prototype.free;
 
 const EXPECTED_RESPONSE_TYPES = new Set(['basic', 'cors', 'default']);
 
@@ -231,11 +324,7 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
-    imports.wbg.__wbg_Error_e17e777aac105295 = function(arg0, arg1) {
-        const ret = Error(getStringFromWasm0(arg0, arg1));
-        return ret;
-    };
-    imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
+    imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function() { return logError(function (arg0, arg1) {
         let deferred0_0;
         let deferred0_1;
         try {
@@ -245,59 +334,54 @@ function __wbg_get_imports() {
         } finally {
             wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
         }
-    };
-    imports.wbg.__wbg_new_19c25a3f2fa63a02 = function() {
+    }, arguments) };
+    imports.wbg.__wbg_new_19c25a3f2fa63a02 = function() { return logError(function () {
         const ret = new Object();
         return ret;
-    };
-    imports.wbg.__wbg_new_1f3a344cf3123716 = function() {
+    }, arguments) };
+    imports.wbg.__wbg_new_1f3a344cf3123716 = function() { return logError(function () {
         const ret = new Array();
         return ret;
-    };
-    imports.wbg.__wbg_new_638ebfaedbf32a5e = function(arg0) {
+    }, arguments) };
+    imports.wbg.__wbg_new_638ebfaedbf32a5e = function() { return logError(function (arg0) {
         const ret = new Uint8Array(arg0);
         return ret;
-    };
-    imports.wbg.__wbg_new_8a6f238a6ece86ea = function() {
+    }, arguments) };
+    imports.wbg.__wbg_new_8a6f238a6ece86ea = function() { return logError(function () {
         const ret = new Error();
         return ret;
-    };
-    imports.wbg.__wbg_set_3fda3bac07393de4 = function(arg0, arg1, arg2) {
+    }, arguments) };
+    imports.wbg.__wbg_set_3fda3bac07393de4 = function() { return logError(function (arg0, arg1, arg2) {
         arg0[arg1] = arg2;
-    };
-    imports.wbg.__wbg_set_90f6c0f7bd8c0415 = function(arg0, arg1, arg2) {
+    }, arguments) };
+    imports.wbg.__wbg_set_90f6c0f7bd8c0415 = function() { return logError(function (arg0, arg1, arg2) {
         arg0[arg1 >>> 0] = arg2;
-    };
-    imports.wbg.__wbg_stack_0ed75d68575b0f3c = function(arg0, arg1) {
+    }, arguments) };
+    imports.wbg.__wbg_stack_0ed75d68575b0f3c = function() { return logError(function (arg0, arg1) {
         const ret = arg1.stack;
         const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
         getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
-    };
+    }, arguments) };
     imports.wbg.__wbg_wbindgenthrow_451ec1a8469d7eb6 = function(arg0, arg1) {
         throw new Error(getStringFromWasm0(arg0, arg1));
     };
-    imports.wbg.__wbindgen_cast_2241b6af4c4b2941 = function(arg0, arg1) {
+    imports.wbg.__wbindgen_cast_2241b6af4c4b2941 = function() { return logError(function (arg0, arg1) {
         // Cast intrinsic for `Ref(String) -> Externref`.
         const ret = getStringFromWasm0(arg0, arg1);
         return ret;
-    };
-    imports.wbg.__wbindgen_cast_4625c577ab2ec9ee = function(arg0) {
-        // Cast intrinsic for `U64 -> Externref`.
-        const ret = BigInt.asUintN(64, arg0);
-        return ret;
-    };
-    imports.wbg.__wbindgen_cast_cb9088102bce6b30 = function(arg0, arg1) {
+    }, arguments) };
+    imports.wbg.__wbindgen_cast_cb9088102bce6b30 = function() { return logError(function (arg0, arg1) {
         // Cast intrinsic for `Ref(Slice(U8)) -> NamedExternref("Uint8Array")`.
         const ret = getArrayU8FromWasm0(arg0, arg1);
         return ret;
-    };
-    imports.wbg.__wbindgen_cast_d6cd19b81560fd6e = function(arg0) {
+    }, arguments) };
+    imports.wbg.__wbindgen_cast_d6cd19b81560fd6e = function() { return logError(function (arg0) {
         // Cast intrinsic for `F64 -> Externref`.
         const ret = arg0;
         return ret;
-    };
+    }, arguments) };
     imports.wbg.__wbindgen_init_externref_table = function() {
         const table = wasm.__wbindgen_export_3;
         const offset = table.grow(4);
@@ -320,6 +404,8 @@ function __wbg_finalize_init(instance, module) {
     wasm = instance.exports;
     __wbg_init.__wbindgen_wasm_module = module;
     cachedDataViewMemory0 = null;
+    cachedFloat64ArrayMemory0 = null;
+    cachedUint16ArrayMemory0 = null;
     cachedUint8ArrayMemory0 = null;
 
 
