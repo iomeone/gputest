@@ -13,6 +13,11 @@ export default {
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json']
   },
+
+  experiments: {
+    syncWebAssembly: true,
+  },
+    
   module: {
     rules: [
       {

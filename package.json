@@ -66,7 +66,11 @@
     "build:js": "babel src --out-dir lib --extensions \".ts,.tsx\" --source-maps inline"
   },
   "dependencies": {
-    "yarn": "^1.22.22"
+    "yarn": "^1.22.22",
+    "earcut": "^2.2.3",
+    "mikktspace": "^1.1.1",
+    "@types/earcut": "^2.1.1"
+
   },
   "jest": {
     "preset": "ts-jest",
