@@ -4,7 +4,13 @@
   "collaborators": [
     "Steven Wittens <steven@acko.net>"
   ],
+  "description": "Rust-side of @use-gpu/text",
   "version": "0.1.0",
+  "license": "./LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
   "files": [
     "index_bg.wasm",
     "index.js",
