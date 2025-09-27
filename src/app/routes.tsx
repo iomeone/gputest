@@ -43,7 +43,7 @@ export const PAGES = [
 export const makeRoutes = () => ({
   "/geometry/data":         { element: <GeometryDataPage /> },
   "/geometry/faces":        { element: <GeometryFacesPage /> },
-  "/geometry/gltf":         { element: <GeometryGLTFPage /> },
+  // "/geometry/gltf":         { element: <GeometryGLTFPage /> },
   "/geometry/lines":        { element: <GeometryLinesPage /> },
   "/layout/display":        { element: <LayoutDisplayPage /> },
   "/layout/align":          { element: <LayoutAlignPage /> },

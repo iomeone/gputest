@@ -1,6 +1,9 @@
 import type { Font, FontProps, FontMetrics, SpanMetrics, GlyphMetrics, RustTextAPI } from './types';
 import { toMurmur53 } from '../state';
-import { UseRustText } from '../pkg/use_gpu_text.js';
+// import { UseRustText } from '../use-gpu-text/pkg';
+
+
+let wasmModPromise: Promise<typeof import('../use-gpu-text/pkg/index.js')> | null = null;
 
 const DEFAULT_FONTS = {
   "0": {
@@ -10,9 +13,17 @@ const DEFAULT_FONTS = {
   },
 } as Record<string, FontProps>;
 
-export const RustText = (): RustTextAPI => {
+export const RustText = async (): Promise<RustTextAPI> => {
 
-  const useRustText = UseRustText.new();
+
+  const mod = await (wasmModPromise ??= (async () => {
+    const m = await import('../use-gpu-text/pkg/index.js');
+    await m.default(new URL('../use-gpu-text/pkg/index_bg.wasm', import.meta.url));
+    return m;
+  })());
+
+  // 拿到类并实例化
+  const useRustText = mod.UseRustText.new();
 
   let fontMap = new Map<number, FontProps>();
   for (let k in DEFAULT_FONTS) fontMap.set(+k, DEFAULT_FONTS[k]);
