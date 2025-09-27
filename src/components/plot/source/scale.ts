@@ -15,7 +15,7 @@ import { useProp, useScaleTrait, useAxisTrait } from '../traits';
 import { parsePosition4 } from '../util/parse';
 import { logarithmic, linear } from '../util/domain';
 
-import { getScalePosition } from '../../../wgsl/plot/scale.wgsl';
+import { getScalePosition } from '../../../gen-wgsl/plot/scale';
 
 import { vec4 } from 'gl-matrix';
 

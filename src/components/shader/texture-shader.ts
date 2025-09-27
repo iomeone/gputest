@@ -8,7 +8,7 @@ import { bindingToModule, chainTo } from '../../shader/wgsl';
 
 import { RenderContext } from '../providers/render-provider';
 
-import { toGamma4 } from '../../wgsl/use/gamma.wgsl';
+import { toGamma4 } from '../../gen-wgsl/use/gamma';
 
 export type TextureShaderProps = {
   texture?: TextureSource,

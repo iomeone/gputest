@@ -16,7 +16,7 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getCartesianPosition } from '../../../wgsl/transform/cartesian.wgsl';
+import { getCartesianPosition } from '../../../gen-wgsl/transform/cartesian';
 
 const MATRIX_BINDING = { name: 'getMatrix', format: 'mat4x4<f32>', value: mat4.create() };
 

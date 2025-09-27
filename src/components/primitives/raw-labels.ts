@@ -18,8 +18,8 @@ import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { getLabelVertex } from '../../wgsl/instance/vertex/label.wgsl';
-import { getUIFragment } from '../../wgsl/instance/fragment/ui.wgsl';
+import { getLabelVertex } from '../../gen-wgsl/instance/vertex/label';
+import { getUIFragment } from '../../gen-wgsl/instance/fragment/ui';
 
 export type RawLabelsProps = {
   index?: number,

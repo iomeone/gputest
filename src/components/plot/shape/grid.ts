@@ -26,8 +26,8 @@ import { logarithmic, linear } from '../util/domain';
 import { Data } from '../../data/data';
 import { LineLayer } from '../../layers/line-layer';
 
-import { getGridPosition } from '../../../wgsl/plot/grid.wgsl';
-import { getLineSegment } from '../../../wgsl/geometry/line.wgsl';
+import { getGridPosition } from '../../../gen-wgsl/plot/grid';
+import { getLineSegment } from '../../../gen-wgsl/geometry/line';
 
 const GRID_BINDINGS = [
   { name: 'getGridValue', format: 'f32', value: 0 },

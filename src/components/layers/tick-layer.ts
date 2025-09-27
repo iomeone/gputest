@@ -15,8 +15,8 @@ import { TransformContext, useTransformContext } from '../providers/transform-pr
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getTickPosition } from '../../wgsl/instance/vertex/tick.wgsl';
-import { getLineSegment } from '../../wgsl/geometry/line.wgsl';
+import { getTickPosition } from '../../gen-wgsl/instance/vertex/tick';
+import { getLineSegment } from '../../gen-wgsl/geometry/line';
 
 export type TickLayerProps = {
   position?: number[] | TypedArray,
