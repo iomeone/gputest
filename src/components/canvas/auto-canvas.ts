@@ -1,13 +1,13 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
 
 import { AutoSize } from './auto-size';
 import { Canvas } from './canvas';
 import { CanvasPicking } from './canvas-picking';
 import { CursorConsumer } from '../consumers/cursor-consumer';
 
-import { use, useResource, useNoResource } from '@use-gpu/live';
-import { adoptCanvas } from '@use-gpu/webgpu';
+import { use, useResource, useNoResource } from '../../live';
+import { adoptCanvas } from '../../webgpu';
 
 export type AutoCanvasProps = {
   canvas?: HTMLCanvasElement,

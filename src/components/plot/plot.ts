@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-// import { use, provide, useContext, useOne, useMemo } from '@use-gpu/live';
+import { LiveComponent, LiveElement } from '../../live/types';
+// import { use, provide, useContext, useOne, useMemo } from '../../live';
 
 export type PlotProps = {
   children?: LiveElement<any>,

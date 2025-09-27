@@ -1,9 +1,9 @@
-import { LC } from '@use-gpu/live/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
+import { LC } from '../../../live/types';
+import { CanvasRenderingContextGPU } from '../../../webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../../../core/types';
 
-import { use } from '@use-gpu/live';
-import React from '@use-gpu/live/jsx';
+import { use } from '../../../live';
+import React from '../../../live/jsx';
 
 import {
   Loop, Draw, Pass, Flat,
@@ -13,7 +13,7 @@ import {
   Animation,
   Plot, Cartesian, Axis, Grid, Scale, Tick, Label, Sampled,
   LinearRGB,
-} from '@use-gpu/components';
+} from '../../../components';
 import { Mesh } from '../mesh';
 import { makeMesh, makeTexture } from '../meshes/mesh';
 

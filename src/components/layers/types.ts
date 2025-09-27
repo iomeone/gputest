@@ -1,4 +1,4 @@
-import { LiveFunction, LiveElement } from '@use-gpu/live/types';
+import { LiveFunction, LiveElement } from '../../live/types';
 
 export enum LayerType {
   Point = 'point',

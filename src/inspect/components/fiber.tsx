@@ -1,5 +1,5 @@
-import { LiveFiber } from '@use-gpu/live/types';
-import { formatValue, isSubNode, YEET, DEBUG } from '@use-gpu/live';
+import { LiveFiber } from '../../live/types';
+import { formatValue, isSubNode, YEET, DEBUG } from '../../live';
 
 import React, { memo, useMemo } from 'react';
 

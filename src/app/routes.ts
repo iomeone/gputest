@@ -1,4 +1,4 @@
-import { use } from '@use-gpu/live';
+import { use } from '../live';
 
 import { GeometryDataPage } from './pages/geometry/data';
 import { GeometryLinesPage } from './pages/geometry/lines';

@@ -1,14 +1,14 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { TextureSource } from '@use-gpu/core/types';
-import { ShaderModule } from '@use-gpu/shader/wgsl/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { TextureSource } from '../../core/types';
+import { ShaderModule } from '../../shader/wgsl/types';
 
-import { yeet, useFiber, useMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
-import { makeShaderBindings } from '@use-gpu/core';
-import { bindingToModule, chainTo } from '@use-gpu/shader/wgsl';
+import { yeet, useFiber, useMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { makeShaderBindings } from '../../core';
+import { bindingToModule, chainTo } from '../../shader/wgsl';
 
 import { RenderContext } from '../providers/render-provider';
 
-import { toGamma4 } from '@use-gpu/wgsl/use/gamma.wgsl';
+import { toGamma4 } from '../../wgsl/use/gamma.wgsl';
 
 export type TextureShaderProps = {
   texture?: TextureSource,

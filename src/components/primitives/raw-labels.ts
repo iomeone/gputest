@@ -1,25 +1,25 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial, Prop,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, TextureSource, ShaderSource, RenderPassMode,
-} from '@use-gpu/core/types';
-import { ShaderModule } from '@use-gpu/shader/types';
+} from '../../core/types';
+import { ShaderModule } from '../../shader/types';
 
 import { ViewContext } from '../providers/view-provider';
 import { PickingContext, useNoPicking } from '../render/picking';
 import { Virtual } from './virtual';
 
-import { patch } from '@use-gpu/state';
-import { use, memo, useCallback, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
-import { bindBundle, bindingsToLinks, bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { makeShaderBindings, resolve, BLEND_ALPHA } from '@use-gpu/core';
+import { patch } from '../../state';
+import { use, memo, useCallback, useFiber, useMemo, useOne, useState, useResource } from '../../live';
+import { bindBundle, bindingsToLinks, bundleToAttributes } from '../../shader/wgsl';
+import { makeShaderBindings, resolve, BLEND_ALPHA } from '../../core';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { getLabelVertex } from '@use-gpu/wgsl/instance/vertex/label.wgsl';
-import { getUIFragment } from '@use-gpu/wgsl/instance/fragment/ui.wgsl';
+import { getLabelVertex } from '../../wgsl/instance/vertex/label.wgsl';
+import { getUIFragment } from '../../wgsl/instance/fragment/ui.wgsl';
 
 export type RawLabelsProps = {
   index?: number,

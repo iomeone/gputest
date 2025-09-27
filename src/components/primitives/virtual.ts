@@ -1,22 +1,22 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { RenderPassMode, DeepPartial } from '@use-gpu/core/types';
-import { ShaderModule, ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
-import { memo, use, useContext, useNoContext, useFiber, useMemo, useNoMemo, useOne, useState, useResource, useConsoleLog } from '@use-gpu/live';
-import { resolve } from '@use-gpu/core';
+import { LiveComponent } from '../../live/types';
+import { RenderPassMode, DeepPartial } from '../../core/types';
+import { ShaderModule, ParsedBundle, ParsedModule } from '../../shader/types';
+import { memo, use, useContext, useNoContext, useFiber, useMemo, useNoMemo, useOne, useState, useResource, useConsoleLog } from '../../live';
+import { resolve } from '../../core';
 
-import { bindBundle, bindingToModule } from '@use-gpu/shader/wgsl';
+import { bindBundle, bindingToModule } from '../../shader/wgsl';
 import { useInspectable } from '../hooks/useInspectable';
 
-import instanceDrawVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
-import instanceDrawVirtualPick from '@use-gpu/wgsl/render/vertex/virtual-pick.wgsl';
-import instanceDrawVirtualUI from '@use-gpu/wgsl/render/vertex/virtual-ui.wgsl';
+import instanceDrawVirtualSolid from '../../wgsl/render/vertex/virtual-solid.wgsl';
+import instanceDrawVirtualPick from '../../wgsl/render/vertex/virtual-pick.wgsl';
+import instanceDrawVirtualUI from '../../wgsl/render/vertex/virtual-ui.wgsl';
 
-import instanceFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
-import instanceFragmentPickGeometry from '@use-gpu/wgsl/render/fragment/pick-geometry.wgsl';
-import instanceFragmentUI from '@use-gpu/wgsl/render/fragment/ui.wgsl';
+import instanceFragmentSolid from '../../wgsl/render/fragment/solid.wgsl';
+import instanceFragmentPickGeometry from '../../wgsl/render/fragment/pick-geometry.wgsl';
+import instanceFragmentUI from '../../wgsl/render/fragment/ui.wgsl';
 
-import instanceDrawWireframeStrip from '@use-gpu/wgsl/render/vertex/wireframe-strip.wgsl';
-import instanceDrawWireframeList from '@use-gpu/wgsl/render/vertex/wireframe-list.wgsl';
+import instanceDrawWireframeStrip from '../../wgsl/render/vertex/wireframe-strip.wgsl';
+import instanceDrawWireframeList from '../../wgsl/render/vertex/wireframe-list.wgsl';
 
 import { render } from './render';
 

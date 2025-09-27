@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { FC, provide, wrap, useAsync } from '@use-gpu/live';
-import { mountGPUDevice } from '@use-gpu/webgpu';
+import { FC, provide, wrap, useAsync } from '../../live';
+import { mountGPUDevice } from '../../webgpu';
 
-import { HTML } from '@use-gpu/react';
+import { HTML } from '../../react';
 import { DeviceContext } from '../providers/device-provider';
 
 type ErrorRenderer = (e: Error) => LiveElement<any>;

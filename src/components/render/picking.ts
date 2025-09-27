@@ -1,6 +1,6 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
-import { TypedArray, UniformAttribute } from '@use-gpu/core/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
+import { TypedArray, UniformAttribute } from '../../core/types';
 import {
   PICKING_FORMAT,
   PICKING_COLOR,
@@ -12,7 +12,7 @@ import {
   memo, use, provide, makeContext,
   useMemo, useOne, useNoOne, useResource,
   useContext, useNoContext,
-} from '@use-gpu/live';
+} from '../../live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -24,7 +24,7 @@ import {
   TEXTURE_ARRAY_TYPES,
   TEXTURE_FORMAT_SIZES,
   PICKING_UNIFORMS,
-} from '@use-gpu/core';
+} from '../../core';
 
 const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
 

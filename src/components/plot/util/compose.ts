@@ -1,4 +1,4 @@
-import { TypedArray } from '@use-gpu/core/types';
+import { TypedArray } from '../../../core/types';
 import { vec3, mat4, quat } from 'gl-matrix';
 
 const makeComposeTransform = () => {

@@ -1,12 +1,12 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
+import { LiveComponent } from '../../../live/types';
+import { CanvasRenderingContextGPU } from '../../../webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../../../core/types';
 
-import React from '@use-gpu/live/jsx';
+import React from '../../../live/jsx';
 
 import {
   Draw, Pass, Flat, UI, Layout, Absolute, Block, Flex, Inline, Text, Element,
-} from '@use-gpu/components';
+} from '../../../components';
 import { makeTexture } from '../../meshes/cube';
 
 export const LayoutDisplayPage: LC = () => {

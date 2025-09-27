@@ -1,8 +1,8 @@
-import { ShaderModuleDescriptor, DeepPartial } from '@use-gpu/core/types';
+import { ShaderModuleDescriptor, DeepPartial } from '../../core/types';
 
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
-import { makeRenderPipeline } from '@use-gpu/core';
-import { useContext, useMemo, useOne } from '@use-gpu/live';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
+import { makeRenderPipeline } from '../../core';
+import { useContext, useMemo, useOne } from '../../live';
 import { useMemoKey } from './useMemoKey';
 import { DeviceContext } from '../providers/device-provider';
 import LRU from 'lru-cache';

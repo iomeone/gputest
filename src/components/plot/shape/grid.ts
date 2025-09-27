@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
 import { ColorTrait, GridTrait, LineTrait, ROPTrait, ScaleTrait, VectorLike, Swizzle } from '../types';
 
-import { memo, use, gather, provide, useContext, useOne, useMemo } from '@use-gpu/live';
+import { memo, use, gather, provide, useContext, useOne, useMemo } from '../../../live';
 import { useBoundShader } from '../../hooks/useBoundShader';
 import { useBoundStorage } from '../../hooks/useBoundStorage';
 import { useShaderRef } from '../../hooks/useShaderRef';
@@ -26,8 +26,8 @@ import { logarithmic, linear } from '../util/domain';
 import { Data } from '../../data/data';
 import { LineLayer } from '../../layers/line-layer';
 
-import { getGridPosition } from '@use-gpu/wgsl/plot/grid.wgsl';
-import { getLineSegment } from '@use-gpu/wgsl/geometry/line.wgsl';
+import { getGridPosition } from '../../../wgsl/plot/grid.wgsl';
+import { getLineSegment } from '../../../wgsl/geometry/line.wgsl';
 
 const GRID_BINDINGS = [
   { name: 'getGridValue', format: 'f32', value: 0 },

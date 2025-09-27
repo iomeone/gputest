@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
 import { ColorTrait, PointTrait, ROPTrait, VectorLike } from '../types';
 
-import { use, provide, useCallback, useContext, useOne, useMemo } from '@use-gpu/live';
+import { use, provide, useCallback, useContext, useOne, useMemo } from '../../../live';
 
 import { DataContext } from '../../providers/data-provider';
 import {

@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { TextureSource } from '@use-gpu/core/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
+import { TextureSource } from '../../../core/types';
 
-import { use, yeet, useContext, useMemo, useNoContext } from '@use-gpu/live';
+import { use, yeet, useContext, useMemo, useNoContext } from '../../../live';
 import { LayoutContext } from '../../providers/layout-provider';
 import { LayerType } from '../../layers/types';
 import { Rectangle, ImageAttachment, Fit, Repeat, Anchor, Point4 } from '../types';
