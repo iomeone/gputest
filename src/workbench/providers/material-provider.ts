@@ -12,11 +12,11 @@ import { useBoundShader } from '../hooks/useBoundShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useLightContext, DEFAULT_LIGHT_CONTEXT } from '../providers/light-provider';
 
-import { getShadedFragment } from '../../wgsl/instance/fragment/shaded.wgsl';
-import { getMappedFragment } from '../../wgsl/instance/fragment/mapped.wgsl';
-import { getPBRMaterial } from '../../wgsl/material/pbr-material.wgsl';
-import { getDefaultPBRMaterial } from '../../wgsl/material/pbr-default.wgsl';
-import { applyPBRMaterial } from '../../wgsl/material/pbr-apply.wgsl';
+import { getShadedFragment } from '../../gen-wgsl/instance/fragment/shaded';
+import { getMappedFragment } from '../../gen-wgsl/instance/fragment/mapped';
+import { getPBRMaterial } from '../../gen-wgsl/material/pbr-material';
+import { getDefaultPBRMaterial } from '../../gen-wgsl/material/pbr-default';
+import { applyPBRMaterial } from '../../gen-wgsl/material/pbr-apply';
 
 // Default PBR shader with built-in light
 const applyLights = DEFAULT_LIGHT_CONTEXT.bindMaterial(applyPBRMaterial);

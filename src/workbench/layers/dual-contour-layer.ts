@@ -19,7 +19,7 @@ import { useBoundSource } from '../hooks/useBoundSource';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 
-import { getSurfaceIndex, getSurfaceNormal } from '../../wgsl/plot/surface.wgsl';
+import { getSurfaceIndex, getSurfaceNormal } from '../../gen-wgsl/plot/surface';
 
 /** @hidden */
 export type DualContourLayerProps = {

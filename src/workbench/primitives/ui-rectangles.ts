@@ -18,8 +18,8 @@ import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 
-import { getUIRectangleVertex } from '../../wgsl/instance/vertex/ui-rectangle.wgsl';
-import { getUIFragment } from '../../wgsl/instance/fragment/ui.wgsl';
+import { getUIRectangleVertex } from '../../gen-wgsl/instance/vertex/ui-rectangle';
+import { getUIFragment } from '../../gen-wgsl/instance/fragment/ui';
 
 export type UIRectanglesProps = {
   rectangle?: number[] | TypedArray,

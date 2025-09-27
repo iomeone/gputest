@@ -18,8 +18,8 @@ import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
 
-import { getFaceVertex } from '../../wgsl/instance/vertex/face.wgsl';
-import { getPassThruFragment } from '../../wgsl/mask/passthru.wgsl';
+import { getFaceVertex } from '../../gen-wgsl/instance/vertex/face';
+import { getPassThruFragment } from '../../gen-wgsl/mask/passthru';
 
 export type RawFacesProps = {
   position?: number[] | TypedArray,

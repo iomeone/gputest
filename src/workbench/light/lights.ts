@@ -12,9 +12,9 @@ import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer,
 import { useBufferedSize } from '../hooks/useBufferedSize';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { Light as WGSLLight } from '../../wgsl/use/types.wgsl';
-import { applyLight as applyLightWGSL } from '../../wgsl/material/light.wgsl';
-import { applyLights as applyLightsWGSL } from '../../wgsl/material/lights.wgsl';
+import { Light as WGSLLight } from '../../gen-wgsl/use/types';
+import { applyLight as applyLightWGSL } from '../../gen-wgsl/material/light';
+import { applyLights as applyLightsWGSL } from '../../gen-wgsl/material/lights';
 
 export const LightCapture = makeCapture<Light>('LightCapture');
 

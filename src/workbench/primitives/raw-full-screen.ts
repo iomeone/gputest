@@ -17,8 +17,8 @@ import { makeShaderBindings } from '../../core';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 
-import { getFullScreenVertex } from '../../wgsl/instance/vertex/full-screen.wgsl';
-import { getTextureFragment } from '../../wgsl/mask/textured.wgsl';
+import { getFullScreenVertex } from '../../gen-wgsl/instance/vertex/full-screen';
+import { getTextureFragment } from '../../gen-wgsl/mask/textured';
 
 export type RawFullScreenProps = {
   texture?: TextureSource | LambdaSource | ShaderModule,

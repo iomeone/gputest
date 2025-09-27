@@ -6,8 +6,8 @@ import { resolve } from '../../core';
 import { useMemo, useNoMemo } from '../../live';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { getWireframeListVertex } from '../../wgsl/render/wireframe/wireframe-list.wgsl';
-import { getWireframeStripVertex } from '../../wgsl/render/wireframe/wireframe-strip.wgsl';
+import { getWireframeListVertex } from '../../gen-wgsl/render/wireframe/wireframe-list';
+import { getWireframeStripVertex } from '../../gen-wgsl/render/wireframe/wireframe-strip';
 
 const WIREFRAME_BINDINGS = bundleToAttributes(getWireframeListVertex);
 

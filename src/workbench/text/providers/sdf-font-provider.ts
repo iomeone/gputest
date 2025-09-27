@@ -16,7 +16,7 @@ import { DebugContext } from '../../providers/debug-provider';
 import { DeviceContext } from '../../providers/device-provider';
 import { FontContext } from './font-provider';
 
-import { getLODBiasedTexture } from '../../../wgsl/fragment/lod-bias.wgsl';
+import { getLODBiasedTexture } from '../../../gen-wgsl/fragment/lod-bias';
 
 const LOD_BIAS_BINDINGS = bundleToAttributes(getLODBiasedTexture);
 

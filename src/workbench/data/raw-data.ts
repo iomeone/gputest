@@ -17,7 +17,7 @@ import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
 import { getBoundShader } from '../hooks/useBoundShader';
 
 import { bundleToAttributes, chainTo } from '../../shader/wgsl';
-import { getIndex } from '../../wgsl/instance/interleave.wgsl';
+import { getIndex } from '../../gen-wgsl/instance/interleave';
 
 const INTERLEAVE_BINDINGS = bundleToAttributes(getIndex);
 

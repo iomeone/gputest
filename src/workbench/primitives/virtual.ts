@@ -14,15 +14,15 @@ import { RenderContext } from '../providers/render-provider';
 import { PickingContext } from '../render/picking';
 import { getNativeColor } from '../hooks/useNativeColor';
 
-import instanceDrawVirtualShaded from '../../wgsl/render/vertex/virtual-shaded.wgsl';
-import instanceDrawVirtualSolid from '../../wgsl/render/vertex/virtual-solid.wgsl';
-import instanceDrawVirtualPick from '../../wgsl/render/vertex/virtual-pick.wgsl';
-import instanceDrawVirtualUI from '../../wgsl/render/vertex/virtual-ui.wgsl';
+import instanceDrawVirtualShaded from '../../gen-wgsl/render/vertex/virtual-shaded';
+import instanceDrawVirtualSolid from '../../gen-wgsl/render/vertex/virtual-solid';
+import instanceDrawVirtualPick from '../../gen-wgsl/render/vertex/virtual-pick';
+import instanceDrawVirtualUI from '../../gen-wgsl/render/vertex/virtual-ui';
 
-import instanceFragmentShaded from '../../wgsl/render/fragment/shaded.wgsl';
-import instanceFragmentSolid from '../../wgsl/render/fragment/solid.wgsl';
-import instanceFragmentPick from '../../wgsl/render/fragment/pick.wgsl';
-import instanceFragmentUI from '../../wgsl/render/fragment/ui.wgsl';
+import instanceFragmentShaded from '../../gen-wgsl/render/fragment/shaded';
+import instanceFragmentSolid from '../../gen-wgsl/render/fragment/solid';
+import instanceFragmentPick from '../../gen-wgsl/render/fragment/pick';
+import instanceFragmentUI from '../../gen-wgsl/render/fragment/ui';
 
 import { drawCall } from './draw-call';
 

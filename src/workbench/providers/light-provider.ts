@@ -3,8 +3,8 @@ import type { ShaderModule } from '../../shader';
 import { useContext, useMemo, useOne, makeContext, makeCapture } from '../../live';
 import { bindBundle } from '../../shader/wgsl';
 
-import { applyLight as applyLightWGSL } from '../../wgsl/material/light.wgsl';
-import { applyLights as applyLightsWGSL } from '../../wgsl/material/lights-default.wgsl';
+import { applyLight as applyLightWGSL } from '../../gen-wgsl/material/light';
+import { applyLights as applyLightsWGSL } from '../../gen-wgsl/material/lights-default';
 
 type LightContextProps = {
   bindMaterial: (s: ShaderModule) => ShaderModule,
