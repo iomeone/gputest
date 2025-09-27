@@ -347,7 +347,7 @@ export const mountFiberContinuation = <F extends Function>(
 // Generalized mounting of reduction-like continuations
 export const mountFiberReduction = <F extends Function, R, T>(
   fiber: LiveFiber<F>,
-  calls: DeferredCall<any>[],
+  calls: DeferredCall<any>[] | DeferredCall<any>,
   mapper: ((t: T) => R) | undefined,
   reduction: () => R,
   Next?: LiveFunction<any>,
@@ -360,7 +360,9 @@ export const mountFiberReduction = <F extends Function, R, T>(
     fiber.path = [...fiber.path, 0];
   }
 
-  reconcileFiberCalls(fiber, calls);
+  if (Array.isArray(calls)) reconcileFiberCalls(fiber, calls);
+  else mountFiberCall(fiber, calls);
+
   mountFiberContinuation(fiber, use(fiber.next.f, Next), 1);
 }
 
@@ -446,13 +448,15 @@ export const mapReduceFiberCalls = <F extends Function, R, T>(
   return mountFiberReduction(fiber, calls, mapper, reduction, next);
 }
 
+const toArray = <T>(x: T | T[]): T[] => Array.isArray(x) ? x : x != null ? [x] : []; 
+
 // Gather-reduce a fiber
 export const gatherFiberCalls = <F extends Function, R, T>(
   fiber: LiveFiber<F>,
   calls: DeferredCall<any>[],
   next?: LiveFunction<any>,
 ) => {
-  const reduction = () => gatherFiberValues(fiber, true);
+  const reduction = () => toArray(gatherFiberValues(fiber, true));
   return mountFiberReduction(fiber, calls, undefined, reduction, next);
 }
 
@@ -618,7 +622,7 @@ export const inlineFiberCall = <F extends Function>(
   if (isArray) reconcileFiberCalls(fiber, element as any);
   else {
     const call = element as DeferredCall<any>;
-    if ((call?.f as any).isLiveInline) updateFiber(fiber, call);
+    if (call && (call.f as any).isLiveInline) updateFiber(fiber, call);
     else mountFiberCall(fiber, call);
   }
 }

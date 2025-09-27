@@ -1,11 +1,11 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 
-import { use, useMemo, useOne, useResource, useState } from '../../live';
+import { use, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   Draw, Pass,
   Flat, UI, Layout, Absolute, Block, Flex, Inline, Element, Text,
-} from '../../components';
+} from '@use-gpu/components';
 
 export type LayoutPageProps = {
   _unused?: boolean,
