@@ -1,5 +1,5 @@
-import type { LC } from '@use-gpu/live';
-import { capture, yeet, makeCapture, useCapture, useFiber } from '@use-gpu/live';
+import type { LC } from '../../live';
+import { capture, yeet, makeCapture, useCapture, useFiber } from '../../live';
 
 export const ScrollSignal = makeCapture<null>('ScrollSignal');
 

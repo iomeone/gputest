@@ -1,7 +1,7 @@
-import type { LC } from '@use-gpu/live';
-import type { GLTF } from '@use-gpu/gltf';
+import type { LC } from '../../../live';
+import type { GLTF } from '../../../gltf';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -11,8 +11,8 @@ import {
   Cursor, PointLayer, LineLayer,
   Lights, AmbientLight, DirectionalLight, PointLight,
   Loop, Animate,
-} from '@use-gpu/workbench';
-import { GLTFData, GLTFModel } from '@use-gpu/gltf';
+} from '../../../workbench';
+import { GLTFData, GLTFModel } from '../../../gltf';
 
 export const GeometryGLTFPage: LC = () => {
 

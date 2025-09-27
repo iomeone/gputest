@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/fragment/pbr'::{ PBR };
-use '@use-gpu/wgsl/use/view'::{ viewUniforms };
+use '../../../wgsl/fragment/pbr'::{ PBR };
+use '../../../wgsl/use/view'::{ viewUniforms };
 
 struct LightUniforms {
   lightPosition: vec4<f32>,

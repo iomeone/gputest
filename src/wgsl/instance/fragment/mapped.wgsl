@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ getViewPosition };
+use '../../../wgsl/use/view'::{ getViewPosition };
 
 @infer type T = T;
 @link fn getMaterial(

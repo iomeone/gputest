@@ -1,4 +1,4 @@
-import type { LiveNode } from '@use-gpu/live';
+import type { LiveNode } from '../../live';
 
 export type Route = {
   element?: LiveNode<any>,

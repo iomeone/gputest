@@ -1,4 +1,4 @@
-import { useState, useCallback, incrementVersion } from '@use-gpu/live';
+import { useState, useCallback, incrementVersion } from '../../live';
 
 export const useForceUpdate = () => {
   const [version, setVersion] = useState<number>(0);

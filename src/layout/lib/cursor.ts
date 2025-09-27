@@ -1,7 +1,7 @@
-import type { Point } from '@use-gpu/core';
+import type { Point } from '../../core';
 import type { Alignment } from '../types';
 
-import { makeTuples } from '@use-gpu/core';
+import { makeTuples } from '../../core';
 import { getAlignmentSpacing } from './util';
 
 type InlineReduce = (

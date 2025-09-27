@@ -1,14 +1,14 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 import type { AxesTrait, ObjectTrait, Swizzle } from '../types';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale, useProp } from '@use-gpu/traits';
-import { use, provide, useContext, useOne, useMemo } from '@use-gpu/live';
-import { bundleToAttributes, chainTo, swizzleTo } from '@use-gpu/shader/wgsl';
+import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale, useProp } from '../../traits';
+import { use, provide, useContext, useOne, useMemo } from '../../live';
+import { bundleToAttributes, chainTo, swizzleTo } from '../../shader/wgsl';
 import {
   TransformContext,
   useShaderRef, useBoundShader, useCombinedTransform,
-} from '@use-gpu/workbench';
-import { parseAxes } from '@use-gpu/traits';
+} from '../../workbench';
+import { parseAxes } from '../../traits';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
@@ -18,7 +18,7 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getSphericalPosition } from '@use-gpu/wgsl/transform/spherical.wgsl';
+import { getSphericalPosition } from '../../wgsl/transform/spherical.wgsl';
 
 const POLAR_BINDINGS = bundleToAttributes(getSphericalPosition);
 

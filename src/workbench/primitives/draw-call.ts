@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode, DeepPartial, Lazy, UseRenderingContextGPU,
-} from '@use-gpu/core';
-import type { ShaderModule, ParsedBundle, ParsedModule } from '@use-gpu/shader';
-import { yeet, memo, suspend, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+} from '../../core';
+import type { ShaderModule, ParsedBundle, ParsedModule } from '../../shader';
+import { yeet, memo, suspend, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource } from '../../live';
 
 import { DeviceContext } from '../providers/device-provider';
 import { ViewContext } from '../providers/view-provider';
@@ -13,7 +13,7 @@ import {
   makeMultiUniforms, makeBoundUniforms, makeVolatileUniforms,
   uploadBuffer,
   resolve,
-} from '@use-gpu/core';
+} from '../../core';
 import { useLinkedShader } from '../hooks/useLinkedShader';
 import { useRenderPipelineAsync, setShaderLog, getShaderLog } from '../hooks/useRenderPipeline';
 import { useInspectable } from '../hooks/useInspectable'

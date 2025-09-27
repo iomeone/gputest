@@ -1,5 +1,5 @@
 import type { Font, FontProps, FontMetrics, SpanMetrics, GlyphMetrics, RustTextAPI } from './types';
-import { toMurmur53 } from '@use-gpu/state';
+import { toMurmur53 } from '../state';
 import { UseRustText } from '../pkg/use_gpu_text.js';
 
 const DEFAULT_FONTS = {

@@ -1,7 +1,7 @@
-import type { LC } from '@use-gpu/live';
-import type { Emit, StorageSource } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { Emit, StorageSource } from '../../../core';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 
 import {
   Loop, Draw, Pass, Flat,
@@ -11,10 +11,10 @@ import {
   Animate,
   LinearRGB,
   DualContourLayer, PointLayer,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Cartesian, Axis, Grid, Sampled,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 let t = 0;
 

@@ -1,4 +1,4 @@
-import { makeContext, useContext } from '@use-gpu/live';
+import { makeContext, useContext } from '../../live';
 
 export const DeviceContext = makeContext<GPUDevice>(undefined, 'DeviceContext');
 

@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Atlas, Rectangle } from '@use-gpu/core';
+import type { LiveComponent } from '../../live';
+import type { Atlas, Rectangle } from '../../core';
 
-import { debug, memo, use, yeet, useContext, useNoContext, useFiber, useMemo } from '@use-gpu/live';
-import { TextureSource } from '@use-gpu/core';
+import { debug, memo, use, yeet, useContext, useNoContext, useFiber, useMemo } from '../../live';
+import { TextureSource } from '../../core';
 
 import { SDFFontContext, SDF_FONT_ATLAS } from './providers/sdf-font-provider';
 

@@ -1,4 +1,4 @@
-import React, { render } from '@use-gpu/live';
+import React, { render } from '../live';
 
 window.onload = async () => {
   const { App } = await import('./app');

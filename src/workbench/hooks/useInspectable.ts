@@ -1,4 +1,4 @@
-import { useCallback, useOne, useFiber, useState } from '@use-gpu/live';
+import { useCallback, useOne, useFiber, useState } from '../../live';
 
 export type Inspector = (data: Record<string, any>) => void;
 

@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 
-import { use, memo, useResource, useState } from '@use-gpu/live';
-import { EventProvider, MouseState, WheelState, KeyboardState } from '@use-gpu/workbench';//'/providers/event-provider';
+import { use, memo, useResource, useState } from '../../live';
+import { EventProvider, MouseState, WheelState, KeyboardState } from '../../workbench';//'/providers/event-provider';
 
 const CAPTURE_EVENT = {capture: true};
 const NON_PASSIVE_EVENT = {capture: true, passive: false};

@@ -1,21 +1,21 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode, DataTexture } from '@use-gpu/core';
+import type { LiveComponent } from '../../live';
+import type { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode, DataTexture } from '../../core';
 
-import { ViewContext, DeviceContext, PickingContext, usePickingContext } from '@use-gpu/workbench';
-import { yeet, memo, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { ViewContext, DeviceContext, PickingContext, usePickingContext } from '../../workbench';
+import { yeet, memo, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource } from '../../live';
 import {
   makeVertexBuffers, makeRawTexture, makeMultiUniforms,
   makeRenderPipeline, makeShaderModule, makeShaderBinding, makeSampler, makeTextureBinding,
   uploadBuffer, uploadDataTexture,
-} from '@use-gpu/core';
-import { linkBundle, bindingToModule, bundleToAttribute } from '@use-gpu/shader/wgsl';
-import { useInspectable, useNativeColor } from '@use-gpu/workbench';
+} from '../../core';
+import { linkBundle, bindingToModule, bundleToAttribute } from '../../shader/wgsl';
+import { useInspectable, useNativeColor } from '../../workbench';
 
-import instanceDrawMesh from '@use-gpu/wgsl/render/vertex/mesh.wgsl';
-import instanceDrawMeshPick from '@use-gpu/wgsl/render/vertex/mesh-pick.wgsl';
+import instanceDrawMesh from '../../wgsl/render/vertex/mesh.wgsl';
+import instanceDrawMeshPick from '../../wgsl/render/vertex/mesh-pick.wgsl';
 
-import instanceFragmentMesh from '@use-gpu/wgsl/render/fragment/mesh.wgsl';
-import instanceFragmentPickGeometry from '@use-gpu/wgsl/render/fragment/pick.wgsl';
+import instanceFragmentMesh from '../../wgsl/render/fragment/mesh.wgsl';
+import instanceFragmentPickGeometry from '../../wgsl/render/fragment/pick.wgsl';
 
 //
 // This component shows how to do "raw" rendering with Use.GPU,

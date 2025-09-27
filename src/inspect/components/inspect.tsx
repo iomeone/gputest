@@ -1,8 +1,8 @@
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../../live';
 import type { ExpandState, SelectState, HoverState, PingState } from './types';
 
-import { formatNode, formatValue, YEET } from '@use-gpu/live';
-import { useUpdateState } from '@use-gpu/state';
+import { formatNode, formatValue, YEET } from '../../live';
+import { useUpdateState } from '../../state';
 
 import React, { memo, useLayoutEffect, useEffect, useMemo, useState } from 'react';
 import { Node } from './node';

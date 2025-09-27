@@ -1,6 +1,6 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../../live';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 
 import {
   Loop, Draw, Pass, Flat,
@@ -8,7 +8,7 @@ import {
   OrbitCamera, OrbitControls,
   Pick, Cursor, PointLayer, LineLayer,
   RenderToTexture,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import { Mesh } from '../../components/mesh';
 import { makeMesh, makeTexture } from '../../meshes/cube';
 

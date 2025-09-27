@@ -1,10 +1,10 @@
-import type { StorageSource, LambdaSource, TextureSource, UniformAttributeValue, TypedArray } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { StorageSource, LambdaSource, TextureSource, UniformAttributeValue, TypedArray } from '../../core';
+import type { ShaderModule } from '../../shader';
 
-import { useOne, useVersion } from '@use-gpu/live';
+import { useOne, useVersion } from '../../live';
 import { useTransformContext } from '../providers/transform-provider';
-import { sourceToModule, bindingToModule, castTo, chainTo } from '@use-gpu/shader/wgsl';
-import { makeShaderBinding, makeShaderBindings } from '@use-gpu/core';
+import { sourceToModule, bindingToModule, castTo, chainTo } from '../../shader/wgsl';
+import { makeShaderBinding, makeShaderBindings } from '../../core';
 
 const TRANSFORM_BINDING = { name: 'getPosition', format: 'vec4<f32>', value: [0, 0, 0, 0], args: ['u32'] } as UniformAttributeValue;
 

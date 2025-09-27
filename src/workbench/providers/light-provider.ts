@@ -1,10 +1,10 @@
-import type { ShaderModule } from '@use-gpu/shader';
+import type { ShaderModule } from '../../shader';
 
-import { useContext, useMemo, useOne, makeContext, makeCapture } from '@use-gpu/live';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { useContext, useMemo, useOne, makeContext, makeCapture } from '../../live';
+import { bindBundle } from '../../shader/wgsl';
 
-import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl';
-import { applyLights as applyLightsWGSL } from '@use-gpu/wgsl/material/lights-default.wgsl';
+import { applyLight as applyLightWGSL } from '../../wgsl/material/light.wgsl';
+import { applyLights as applyLightsWGSL } from '../../wgsl/material/lights-default.wgsl';
 
 type LightContextProps = {
   bindMaterial: (s: ShaderModule) => ShaderModule,

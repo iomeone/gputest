@@ -1,15 +1,15 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { TextureSource, UniformAttributeValue } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { TextureSource, UniformAttributeValue } from '../../core';
+import type { ShaderModule } from '../../shader';
 
-import { yeet, useMemo } from '@use-gpu/live';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo } from '../../live';
+import { bindBundle } from '../../shader/wgsl';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { getBoundSource } from '../hooks/useBoundSource';
 
 import { RenderContext } from '../providers/render-provider';
 
-import { toGamma4 } from '@use-gpu/wgsl/use/gamma.wgsl';
+import { toGamma4 } from '../../wgsl/use/gamma.wgsl';
 
 export type TextureShaderProps = {
   shader?: ShaderModule,

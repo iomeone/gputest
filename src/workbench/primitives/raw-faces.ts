@@ -1,25 +1,25 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, RenderPassMode,
-} from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { ViewContext } from '../providers/view-provider';
 import { Virtual } from './virtual';
 
-import { patch } from '@use-gpu/state';
-import { use, yeet, memo, useCallback, useMemo, useOne } from '@use-gpu/live';
-import { bundleToAttribute, bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { resolve, makeShaderBindings } from '@use-gpu/core';
+import { patch } from '../../state';
+import { use, yeet, memo, useCallback, useMemo, useOne } from '../../live';
+import { bundleToAttribute, bundleToAttributes } from '../../shader/wgsl';
+import { resolve, makeShaderBindings } from '../../core';
 import { useMaterialContext } from '../providers/material-provider';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
 
-import { getFaceVertex } from '@use-gpu/wgsl/instance/vertex/face.wgsl';
-import { getPassThruFragment } from '@use-gpu/wgsl/mask/passthru.wgsl';
+import { getFaceVertex } from '../../wgsl/instance/vertex/face.wgsl';
+import { getPassThruFragment } from '../../wgsl/mask/passthru.wgsl';
 
 export type RawFacesProps = {
   position?: number[] | TypedArray,

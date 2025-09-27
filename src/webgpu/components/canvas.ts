@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { UseRenderingContextGPU, ColorSpace } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { UseRenderingContextGPU, ColorSpace } from '../../core';
 
-import { EventProvider } from '@use-gpu/workbench';//'/event-provider';
-import { RenderContext } from '@use-gpu/workbench';//'/providers/render-provider';
-import { LayoutContext } from '@use-gpu/workbench';//'/providers/layout-provider';
-import { DeviceContext } from '@use-gpu/workbench';//'/providers/device-provider';
-import { provide, use, imperative, useCallback, useContext, useMemo, useOne } from '@use-gpu/live';
+import { EventProvider } from '../../workbench';//'/event-provider';
+import { RenderContext } from '../../workbench';//'/providers/render-provider';
+import { LayoutContext } from '../../workbench';//'/providers/layout-provider';
+import { DeviceContext } from '../../workbench';//'/providers/device-provider';
+import { provide, use, imperative, useCallback, useContext, useMemo, useOne } from '../../live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -15,7 +15,7 @@ import {
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLIED,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, BACKGROUND_COLOR } from '../constants';
 import { makePresentationContext } from '../web';

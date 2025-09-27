@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix';
-import { parseAxes } from '@use-gpu/traits';
+import { parseAxes } from '../../traits';
 
 const AXES = ['x', 'y', 'z', 'w'];
 

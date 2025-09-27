@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { UniformAttribute } from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { UniformAttribute } from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
 
-import { use, useMemo } from '@use-gpu/live';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { use, useMemo } from '../../live';
+import { bindBundle } from '../../shader/wgsl';
 import { useFeedbackContext } from '../providers/feedback-provider';
 import { useBoundSource } from '../hooks/useBoundSource';
 import { RawFullScreen } from '../primitives';

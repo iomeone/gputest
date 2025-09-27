@@ -1,5 +1,5 @@
 declare module "@use-gpu/wgsl/plot/surface.wgsl" {
-  type ParsedBundle = import('@use-gpu/shader').ParsedBundle;
+  type ParsedBundle = import('../../shader').ParsedBundle;
   const __module: ParsedBundle;
   export const getSurfaceIndex: ParsedBundle;
   export const getSurfaceNormal: ParsedBundle;

@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/types'::{ Light, Radiance };
-use '@use-gpu/wgsl/fragment/pbr'::{ PBR };
+use '../../wgsl/use/types'::{ Light, Radiance };
+use '../../wgsl/fragment/pbr'::{ PBR };
 
 @optional @link fn getLightCount() -> u32 { return 0u; }
 @optional @link fn getLight(index: u32) -> Light {

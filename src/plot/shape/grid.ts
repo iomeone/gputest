@@ -1,20 +1,20 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { VectorLike } from '../../traits';
 import type { ColorTrait, GridTrait, LineTrait, ROPTrait, ScaleTrait, Swizzle } from '../types';
 
-import { parsePosition4, useProp } from '@use-gpu/traits';
-import { memo, use, gather, provide, useContext, useOne, useMemo } from '@use-gpu/live';
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { parsePosition4, useProp } from '../../traits';
+import { memo, use, gather, provide, useContext, useOne, useMemo } from '../../live';
+import { bundleToAttributes } from '../../shader/wgsl';
 import {
   useBoundShader, useRawSource, useShaderRef,
   Data, LineLayer,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import {
   parseIntegerPositive,
   parseAxis,
-} from '@use-gpu/traits';
+} from '../../traits';
 import {
   useColorTrait,
   useGridTrait,
@@ -26,8 +26,8 @@ import { vec4 } from 'gl-matrix';
 
 import { logarithmic, linear } from '../util/domain';
 
-import { getGridPosition } from '@use-gpu/wgsl/plot/grid.wgsl';
-import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
+import { getGridPosition } from '../../wgsl/plot/grid.wgsl';
+import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
 
 const GRID_BINDINGS = bundleToAttributes(getGridPosition);
 

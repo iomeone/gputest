@@ -1,9 +1,9 @@
-import type { LiveFiber, LC, PropsWithChildren, LiveElement, Task, DeferredCall } from '@use-gpu/live';
+import type { LiveFiber, LC, PropsWithChildren, LiveElement, Task, DeferredCall } from '../../live';
 
 import {
   gather, provide, yeet,
   makeContext, useContext, useNoContext,
-} from '@use-gpu/live';
+} from '../../live';
 import { RenderContext } from '../providers/render-provider';
 import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { PickingContext } from './picking';

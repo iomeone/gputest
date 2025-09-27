@@ -1,13 +1,13 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Point4 } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { ColorLike } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { Point4 } from '../../core';
+import type { ShaderModule } from '../../shader';
+import type { ColorLike } from '../../traits';
 import type { Base, InlineLine } from '../types';
 
-import { useProp, parseColor, parseNumber } from '@use-gpu/traits';
-import { keyed, yeet, useFiber } from '@use-gpu/live';
+import { useProp, parseColor, parseNumber } from '../../traits';
+import { keyed, yeet, useFiber } from '../../live';
 
-import { useFontFamily, useFontText, useFontHeight } from '@use-gpu/workbench';
+import { useFontFamily, useFontText, useFontHeight } from '../../workbench';
 import { Glyphs } from '../shape/glyphs';
 import { memoInline } from '../lib/util';
 

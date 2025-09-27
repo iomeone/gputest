@@ -1,11 +1,11 @@
-import type { ShaderModuleDescriptor } from '@use-gpu/core';
-import type { ParsedModule, ParsedBundle, ShaderDefine } from '@use-gpu/shader';
+import type { ShaderModuleDescriptor } from '../../core';
+import type { ParsedModule, ParsedBundle, ShaderDefine } from '../../shader';
 
-import { toHash } from '@use-gpu/state';
-import { resolveBindings, linkBundle, getBundleHash, getBundleKey } from '@use-gpu/shader/wgsl';
-import { formatMurmur53, mixBits53, toMurmur53 } from '@use-gpu/state';
-import { makeShaderModule } from '@use-gpu/core';
-import { useFiber, useMemo, useOne } from '@use-gpu/live';
+import { toHash } from '../../state';
+import { resolveBindings, linkBundle, getBundleHash, getBundleKey } from '../../shader/wgsl';
+import { formatMurmur53, mixBits53, toMurmur53 } from '../../state';
+import { makeShaderModule } from '../../core';
+import { useFiber, useMemo, useOne } from '../../live';
 import { useInspectable } from './useInspectable'
 import LRU from 'lru-cache';
 

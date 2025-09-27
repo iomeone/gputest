@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement, DeferredCall } from '@use-gpu/live';
-import type { TypedArray } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, DeferredCall } from '../../live';
+import type { TypedArray } from '../../core';
 import type { Keyframe } from './types';
 
-import { useMemo, useOne, reactInterop } from '@use-gpu/live';
+import { useMemo, useOne, reactInterop } from '../../live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 

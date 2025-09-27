@@ -1,11 +1,11 @@
-import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { LC, PropsWithChildren, LiveElement } from '../live';
 import type { GLTF } from './types';
 
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { use, provide, useMemo } from '@use-gpu/live';
+import { bundleToAttributes } from '../shader/wgsl';
+import { use, provide, useMemo } from '../live';
 import { mat4 } from 'gl-matrix';
 
-import { PBRMaterialProps, useBoundShader, useNativeColorTexture } from '@use-gpu/workbench';
+import { PBRMaterialProps, useBoundShader, useNativeColorTexture } from '../workbench';
 
 export const useGLTFMaterial = (
   gltf: GLTF,

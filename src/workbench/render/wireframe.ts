@@ -1,13 +1,13 @@
-import type { Lazy } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { Lazy } from '../../core';
+import type { ShaderModule } from '../../shader';
 
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { resolve } from '@use-gpu/core';
-import { useMemo, useNoMemo } from '@use-gpu/live';
+import { bundleToAttributes } from '../../shader/wgsl';
+import { resolve } from '../../core';
+import { useMemo, useNoMemo } from '../../live';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { getWireframeListVertex } from '@use-gpu/wgsl/render/wireframe/wireframe-list.wgsl';
-import { getWireframeStripVertex } from '@use-gpu/wgsl/render/wireframe/wireframe-strip.wgsl';
+import { getWireframeListVertex } from '../../wgsl/render/wireframe/wireframe-list.wgsl';
+import { getWireframeStripVertex } from '../../wgsl/render/wireframe/wireframe-strip.wgsl';
 
 const WIREFRAME_BINDINGS = bundleToAttributes(getWireframeListVertex);
 

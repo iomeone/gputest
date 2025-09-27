@@ -1,11 +1,11 @@
-import type { LambdaSource, StorageSource, UniformType } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { ArrowFunction } from '@use-gpu/live';
+import type { LambdaSource, StorageSource, UniformType } from '../../core';
+import type { ShaderModule } from '../../shader';
+import type { ArrowFunction } from '../../live';
 
 import { adjustSize } from './useBufferedSize';
 
-import { resolve } from '@use-gpu/core';
-import { useMemo } from '@use-gpu/live';
+import { resolve } from '../../core';
+import { useMemo } from '../../live';
 
 type InputSource = LambdaSource | StorageSource;
 

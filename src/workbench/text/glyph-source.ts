@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Rectangle, StorageSource } from '@use-gpu/core';
+import type { LiveComponent } from '../../live';
+import type { Rectangle, StorageSource } from '../../core';
 
-import { memo, yeet, useContext, useOne } from '@use-gpu/live';
-import { makeTuples } from '@use-gpu/core';
+import { memo, yeet, useContext, useOne } from '../../live';
+import { makeTuples } from '../../core';
 
 import { useFontFamily, useFontText, useFontHeight } from './providers/font-provider';
 import { useSDFGlyphData } from './providers/sdf-font-provider';

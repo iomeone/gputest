@@ -1,4 +1,4 @@
-import type { LiveFunction, LiveElement } from '@use-gpu/live';
+import type { LiveFunction, LiveElement } from '../../live';
 
 export type PointShape = 'circle' | 'diamond' | 'square' | 'circleOutlined' | 'diamondOutlined' | 'squareOutlined';
 

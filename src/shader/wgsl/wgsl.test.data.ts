@@ -1,9 +1,9 @@
 // Testing shaders
 export const WGSLModules = {
   "instance/vertex/quad": `
-use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale }; 
-use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
+use '../../wgsl/use/types'::{ SolidVertex };
+use '../../wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale }; 
+use '../../wgsl/geometry/quad'::{ getQuadUV };
 
 @link fn getPosition(i: i32) -> vec4<f32> {};
 @link fn getColor(i: i32) -> vec4<f32> {};

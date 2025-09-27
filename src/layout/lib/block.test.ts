@@ -1,4 +1,4 @@
-import type { Rectangle, Point } from '@use-gpu/core';
+import type { Rectangle, Point } from '../../core';
 import type { Sizing, Margin } from '../types';
 
 import { getBlockMinMax, getBlockMargin, fitBlock } from './block';

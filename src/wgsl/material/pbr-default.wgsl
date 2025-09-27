@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/fragment/pbr'::{ PBRParams };
+use '../../wgsl/fragment/pbr'::{ PBRParams };
 
 @export fn getDefaultPBRMaterial(
   materialColor: vec3<f32>,

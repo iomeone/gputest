@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement } from '@use-gpu/live';
-import type { UseRenderingContextGPU, RenderPassMode } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveFiber, LiveElement } from '../../live';
+import type { UseRenderingContextGPU, RenderPassMode } from '../../core';
 
-import { use, yeet, memo, multiGather, useContext, useMemo } from '@use-gpu/live';
+import { use, yeet, memo, multiGather, useContext, useMemo } from '../../live';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { PickingContext } from './picking';

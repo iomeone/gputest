@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { StorageSource, LambdaSource, TypedArray, UniformType, Emit, Emitter, Time } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { StorageSource, LambdaSource, TypedArray, UniformType, Emit, Emitter, Time } from '../../core';
+import type { ShaderSource } from '../../shader';
 
-import { provide, yeet, useMemo, useNoMemo, useOne, useNoOne, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
+import { provide, yeet, useMemo, useNoMemo, useOne, useNoOne, useContext, useNoContext, incrementVersion } from '../../live';
 import {
   makeDataArray, copyNumberArray, emitIntoNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
@@ -16,8 +16,8 @@ import { useBufferedSize } from '../hooks/useBufferedSize';
 import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { bundleToAttributes, chainTo } from '@use-gpu/shader/wgsl';
-import { getIndex } from '@use-gpu/wgsl/instance/interleave.wgsl';
+import { bundleToAttributes, chainTo } from '../../shader/wgsl';
+import { getIndex } from '../../wgsl/instance/interleave.wgsl';
 
 const INTERLEAVE_BINDINGS = bundleToAttributes(getIndex);
 

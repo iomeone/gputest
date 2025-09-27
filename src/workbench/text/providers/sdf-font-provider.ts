@@ -1,14 +1,14 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { Atlas, Tuples, Rectangle } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
-import type { FontMetrics, GlyphMetrics } from '@use-gpu/glyph';
+import type { LiveComponent, LiveElement } from '../../../live';
+import type { Atlas, Tuples, Rectangle } from '../../../core';
+import type { ShaderSource } from '../../../shader';
+import type { FontMetrics, GlyphMetrics } from '../../../glyph';
 import type { Alignment } from '../types';
 
-import { gather, provide, memo, useContext, useFiber, useMemo, useOne, useState, makeContext, incrementVersion } from '@use-gpu/live';
-import { glyphToRGBA, glyphToSDF, rgbaToSDF, padRectangle } from '@use-gpu/glyph';
-import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '@use-gpu/core';
-import { scrambleBits53, mixBits53 } from '@use-gpu/state';
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { gather, provide, memo, useContext, useFiber, useMemo, useOne, useState, makeContext, incrementVersion } from '../../../live';
+import { glyphToRGBA, glyphToSDF, rgbaToSDF, padRectangle } from '../../../glyph';
+import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '../../../core';
+import { scrambleBits53, mixBits53 } from '../../../state';
+import { bundleToAttributes } from '../../../shader/wgsl';
 
 import { getBoundShader } from '../../hooks/useBoundShader';
 import { makeInlineCursor } from '../cursor';
@@ -16,7 +16,7 @@ import { DebugContext } from '../../providers/debug-provider';
 import { DeviceContext } from '../../providers/device-provider';
 import { FontContext } from './font-provider';
 
-import { getLODBiasedTexture } from '@use-gpu/wgsl/fragment/lod-bias.wgsl';
+import { getLODBiasedTexture } from '../../../wgsl/fragment/lod-bias.wgsl';
 
 const LOD_BIAS_BINDINGS = bundleToAttributes(getLODBiasedTexture);
 

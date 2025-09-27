@@ -1,24 +1,24 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData,
-} from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { ViewContext } from '../providers/view-provider';
 import { Virtual } from './virtual';
 
-import { patch } from '@use-gpu/state';
-import { use, yeet, memo, useCallback, useOne } from '@use-gpu/live';
-import { bindBundle, bindingsToLinks, bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { RenderPassMode, resolve, makeShaderBindings } from '@use-gpu/core';
+import { patch } from '../../state';
+import { use, yeet, memo, useCallback, useOne } from '../../live';
+import { bindBundle, bindingsToLinks, bundleToAttributes } from '../../shader/wgsl';
+import { RenderPassMode, resolve, makeShaderBindings } from '../../core';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { getLineVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
-import { getPassThruFragment } from '@use-gpu/wgsl/mask/passthru.wgsl';
+import { getLineVertex } from '../../wgsl/instance/vertex/line.wgsl';
+import { getPassThruFragment } from '../../wgsl/mask/passthru.wgsl';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,

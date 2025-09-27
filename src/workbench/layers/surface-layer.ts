@@ -1,24 +1,24 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, RenderPassMode,
-} from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { RawFaces } from '../primitives/raw-faces';
 
-import { patch } from '@use-gpu/state';
-import { use, memo, useMemo, useOne } from '@use-gpu/live';
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { resolve } from '@use-gpu/core';
+import { patch } from '../../state';
+import { use, memo, useMemo, useOne } from '../../live';
+import { bundleToAttributes } from '../../shader/wgsl';
+import { resolve } from '../../core';
 
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundSource } from '../hooks/useBoundSource';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 
-import { getSurfaceIndex, getSurfaceNormal } from '@use-gpu/wgsl/plot/surface.wgsl';
+import { getSurfaceIndex, getSurfaceNormal } from '../../wgsl/plot/surface.wgsl';
 
 export type SurfaceLayerProps = {
   position?: number[] | TypedArray,

@@ -1,4 +1,4 @@
-import type { Point, Rectangle } from '@use-gpu/core';
+import type { Point, Rectangle } from '../../core';
 import type { LayoutElement, LayoutRenderer, LayoutPicker, FitInto, AutoPoint, AutoRectangle, Direction } from '../types';
 
 import { evaluateDimension } from '../parse';

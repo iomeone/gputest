@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { TypedArray, UniformAttribute, TextureSource, UseRenderingContextGPU } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { TypedArray, UniformAttribute, TextureSource, UseRenderingContextGPU } from '../../core';
 
 import {
   PICKING_FORMAT,
@@ -12,7 +12,7 @@ import {
   memo, use, provide, makeContext,
   useMemo, useOne, useNoOne, useResource,
   useContext, useNoContext,
-} from '@use-gpu/live';
+} from '../../live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -24,7 +24,7 @@ import {
   TEXTURE_ARRAY_TYPES,
   TEXTURE_FORMAT_SIZES,
   PICKING_UNIFORMS,
-} from '@use-gpu/core';
+} from '../../core';
 
 const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
 

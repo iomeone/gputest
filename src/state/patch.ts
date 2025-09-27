@@ -6,7 +6,7 @@ const $NOP = {$nop: true};
 /** Set or replace a value without merging.
 
 ```tsx
-import { $set } from "@use-gpu/state";
+import { $set } from "../state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -28,7 +28,7 @@ export const $set = <T>($set: T) => ({$set});
 /** Merge two values. This is the default behavior for objects, so exists mostly for clarity.
 
 ```tsx
-import { $merge } from "@use-gpu/state";
+import { $merge } from "../state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -49,7 +49,7 @@ export const $merge = <T>($merge: T) => ({$merge});
 /** Delete a value.
 
 ```tsx
-import { $delete } from "@use-gpu/state";
+import { $delete } from "../state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -73,7 +73,7 @@ export const $nop = <T>() => $NOP;
 /** Apply a function to a value.
 
 ```tsx
-import { $apply } from "@use-gpu/state";
+import { $apply } from "../state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -95,7 +95,7 @@ export const $apply = <T>($apply: (t: T) => T) => ({$apply});
 /** Apply a function that returns another patch to apply.
 
 ```tsx
-import { $patch, $apply, $delete } from "@use-gpu/state";
+import { $patch, $apply, $delete } from "../state";
 
 const value = {
   hello: {text: 'world', bar: 2, other: 1},

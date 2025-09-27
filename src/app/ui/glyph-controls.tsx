@@ -1,10 +1,10 @@
 import React from 'react';
-import type { LC, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement } from '../../live';
 
 import { PAGES } from '../routes';
-import { use, fragment, useState } from '@use-gpu/live';
-import { HTML } from '@use-gpu/react';
-import { useRouterContext } from '@use-gpu/workbench';
+import { use, fragment, useState } from '../../live';
+import { HTML } from '../../react';
+import { useRouterContext } from '../../workbench';
 
 const STYLE = {
   position: 'absolute',

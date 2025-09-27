@@ -1,22 +1,22 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Point4 } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
-import type { ColorLike } from '@use-gpu/traits';
+import type { LC, PropsWithChildren } from '../../live';
+import type { Point4 } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
+import type { ColorLike } from '../../traits';
 
-import { provide, useOne } from '@use-gpu/live';
-import { parseColor, useProp } from '@use-gpu/traits';
-import { makeContext, useContext } from '@use-gpu/live';
-import { bindBundle, bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { provide, useOne } from '../../live';
+import { parseColor, useProp } from '../../traits';
+import { makeContext, useContext } from '../../live';
+import { bindBundle, bundleToAttributes } from '../../shader/wgsl';
 
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useLightContext, DEFAULT_LIGHT_CONTEXT } from '../providers/light-provider';
 
-import { getShadedFragment } from '@use-gpu/wgsl/instance/fragment/shaded.wgsl';
-import { getMappedFragment } from '@use-gpu/wgsl/instance/fragment/mapped.wgsl';
-import { getPBRMaterial } from '@use-gpu/wgsl/material/pbr-material.wgsl';
-import { getDefaultPBRMaterial } from '@use-gpu/wgsl/material/pbr-default.wgsl';
-import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { getShadedFragment } from '../../wgsl/instance/fragment/shaded.wgsl';
+import { getMappedFragment } from '../../wgsl/instance/fragment/mapped.wgsl';
+import { getPBRMaterial } from '../../wgsl/material/pbr-material.wgsl';
+import { getDefaultPBRMaterial } from '../../wgsl/material/pbr-default.wgsl';
+import { applyPBRMaterial } from '../../wgsl/material/pbr-apply.wgsl';
 
 // Default PBR shader with built-in light
 const applyLights = DEFAULT_LIGHT_CONTEXT.bindMaterial(applyPBRMaterial);

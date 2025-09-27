@@ -1,12 +1,12 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { UniformAttribute } from '@use-gpu/core';
-import type { VectorLike } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { UniformAttribute } from '../../core';
+import type { VectorLike } from '../../traits';
 import type { ColorTrait, LineTrait, ROPTrait } from '../types';
 
-import { parseNumber, parsePosition4, parseIntegerPositive, useProp } from '@use-gpu/traits';
-import { use, provide, useCallback, useContext, useOne, useMemo } from '@use-gpu/live';
-import { diffBy } from '@use-gpu/shader/wgsl';
-import { useBoundSource, TickLayer } from '@use-gpu/workbench';
+import { parseNumber, parsePosition4, parseIntegerPositive, useProp } from '../../traits';
+import { use, provide, useCallback, useContext, useOne, useMemo } from '../../live';
+import { diffBy } from '../../shader/wgsl';
+import { useBoundSource, TickLayer } from '../../workbench';
 
 import { DataContext } from '../providers/data-provider';
 import { RangeContext } from '../providers/range-provider';

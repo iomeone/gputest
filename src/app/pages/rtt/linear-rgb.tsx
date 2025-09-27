@@ -1,14 +1,14 @@
-import type { LC } from '@use-gpu/live';
-import React from '@use-gpu/live';
+import type { LC } from '../../../live';
+import React from '../../../live';
 
 import {
   Draw, Pass, Flat,
   OrbitCamera, OrbitControls,
   Pick, Cursor, LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Text
-} from '@use-gpu/layout';
+} from '../../../layout';
 import { Mesh } from '../../components/mesh';
 import { makeMesh, makeTexture } from '../../meshes/cube';
 

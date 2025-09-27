@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ ShadedVertex };
+use '../../../wgsl/use/types'::{ ShadedVertex };
 
 @link fn getVertex(v: u32, i: u32) -> ShadedVertex {};
 @optional @link fn toColorSpace(c: vec4<f32>) -> vec4<f32> { return c; }

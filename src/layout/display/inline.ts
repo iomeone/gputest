@@ -1,13 +1,13 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { Point, Rectangle } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { Point, Rectangle } from '../../core';
+import type { ShaderModule } from '../../shader';
 import type { InlineElement, LayoutPicker, LayoutRenderer, FitInto, Direction, Alignment, Base, MarginLike } from '../types';
 
-import { useProp } from '@use-gpu/traits';
-import { memo, gather, yeet, useFiber, useOne, useMemo } from '@use-gpu/live';
+import { useProp } from '../../traits';
+import { memo, gather, yeet, useFiber, useOne, useMemo } from '../../live';
 import { getInlineMinMax, fitInline, resolveInlineBlockElements } from '../lib/inline';
 import { makeInlineLayout, makeInlineInspectLayout, makeBoxLayout, makeBoxInspectLayout, makeBoxPicker, memoFit, memoLayout } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
+import { useInspectable, useInspectHoverable } from '../../workbench';
 
 import type { BoxTrait } from '../types';
 import { useBoxTrait } from '../traits';

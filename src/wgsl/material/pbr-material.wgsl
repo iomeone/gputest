@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/fragment/pbr'::{ PBRParams };
+use '../../wgsl/fragment/pbr'::{ PBRParams };
 
 @optional @link fn getAlbedo(uv: vec2<f32>) -> vec4<f32> { return vec4<f32>(1.0, 1.0, 1.0, 1.0); }
 @optional @link fn getMetalness(uv: vec2<f32>) -> f32 { return 0.2; }

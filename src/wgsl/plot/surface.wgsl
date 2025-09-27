@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
+use '../../wgsl/geometry/strip'::{ getStripIndex };
 
 @link fn getSize(i: u32) -> vec4<u32> {};
 @optional @link fn getPosition(index: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); }

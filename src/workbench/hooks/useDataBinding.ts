@@ -1,6 +1,6 @@
-import type { UniformAttribute, ShaderSource } from '@use-gpu/shader';
-import { bundleToAttribute } from '@use-gpu/shader/wgsl';
-import { useOne } from '@use-gpu/live';
+import type { UniformAttribute, ShaderSource } from '../../shader';
+import { bundleToAttribute } from '../../shader/wgsl';
+import { useOne } from '../../live';
 
 // Extract type and size from a source
 export const useDataBinding = (

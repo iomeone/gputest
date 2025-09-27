@@ -1,20 +1,20 @@
-import type { LiveFiber, LiveMap, LC, PropsWithChildren } from '@use-gpu/live';
-import type { TypedArray, StorageSource } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveFiber, LiveMap, LC, PropsWithChildren } from '../../live';
+import type { TypedArray, StorageSource } from '../../core';
+import type { ShaderModule } from '../../shader';
 import type { Light } from './types';
 
 import { LightContext } from '../providers/light-provider';
 import { useDeviceContext } from '../providers/device-provider';
 
-import { capture, provide, gather, keyed, makeCapture, captureValues, useCapture, useMemo, useOne } from '@use-gpu/live';
-import { bindBundle, bundleToAttribute, bundleToAttributes, getBundleKey } from '@use-gpu/shader/wgsl';
-import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '@use-gpu/core';
+import { capture, provide, gather, keyed, makeCapture, captureValues, useCapture, useMemo, useOne } from '../../live';
+import { bindBundle, bundleToAttribute, bundleToAttributes, getBundleKey } from '../../shader/wgsl';
+import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '../../core';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { Light as WGSLLight } from '@use-gpu/wgsl/use/types.wgsl';
-import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl';
-import { applyLights as applyLightsWGSL } from '@use-gpu/wgsl/material/lights.wgsl';
+import { Light as WGSLLight } from '../../wgsl/use/types.wgsl';
+import { applyLight as applyLightWGSL } from '../../wgsl/material/light.wgsl';
+import { applyLights as applyLightsWGSL } from '../../wgsl/material/lights.wgsl';
 
 export const LightCapture = makeCapture<Light>('LightCapture');
 

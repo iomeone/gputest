@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import { yeet, useAsync, useMemo, useOne } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
+import { yeet, useAsync, useMemo, useOne } from '../../live';
 
 const SLOW = 0;
 

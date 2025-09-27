@@ -11,7 +11,7 @@ import type {
 import { UNIFORM_ATTRIBUTE_SIZES, UNIFORM_ATTRIBUTE_ALIGNS } from './constants';
 import { UNIFORM_BYTE_SETTERS } from './bytes';
 
-import { getObjectKey, toMurmur53 } from '@use-gpu/state';
+import { getObjectKey, toMurmur53 } from '../state';
 import { makeUniformBuffer } from './buffer';
 import { makeSampler, makeTextureView } from './texture';
 import { alignSizeTo } from './data';

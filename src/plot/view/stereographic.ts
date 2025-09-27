@@ -1,13 +1,13 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 import type { AxesTrait, ObjectTrait, Axis4, Swizzle } from '../types';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '@use-gpu/traits';
-import { use, provide, useContext, useOne, useMemo } from '@use-gpu/live';
-import { bundleToAttributes, chainTo, swizzleTo } from '@use-gpu/shader/wgsl';
+import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '../../traits';
+import { use, provide, useContext, useOne, useMemo } from '../../live';
+import { bundleToAttributes, chainTo, swizzleTo } from '../../shader/wgsl';
 import {
   TransformContext,
   useShaderRef, useBoundShader, useCombinedTransform,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
@@ -17,7 +17,7 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getStereographicPosition } from '@use-gpu/wgsl/transform/stereographic.wgsl';
+import { getStereographicPosition } from '../../wgsl/transform/stereographic.wgsl';
 
 const STEREOGRAPHIC_BINDINGS = bundleToAttributes(getStereographicPosition);
 

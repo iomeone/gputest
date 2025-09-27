@@ -1,16 +1,16 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { Rectangle } from '@use-gpu/core'; 
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { Rectangle } from '../../core'; 
 
-import { provide, useContext, useNoContext, useOne } from '@use-gpu/live';
-import { bundleToAttributes, chainTo } from '@use-gpu/shader/wgsl';
+import { provide, useContext, useNoContext, useOne } from '../../live';
+import { bundleToAttributes, chainTo } from '../../shader/wgsl';
 import {
   TransformContext, LayoutContext,
   useShaderRef, useBoundShader, useCombinedTransform,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { RangeContext } from '../providers/range-provider';
 
-import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl';
+import { getCartesianPosition } from '../../wgsl/transform/cartesian.wgsl';
 import { mat4, vec3 } from 'gl-matrix';
 
 const MATRIX_BINDINGS = bundleToAttributes(getCartesianPosition);

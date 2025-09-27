@@ -1,7 +1,7 @@
-import type { LC } from '@use-gpu/live';
-import type { DataField } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { DataField } from '../../../core';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 
 import {
   Draw, Pass,
@@ -9,7 +9,7 @@ import {
   CompositeData, LineSegments, ArrowSegments,
   OrbitCamera, OrbitControls,
   LineLayer, ArrowLayer,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 // Line data fields
 

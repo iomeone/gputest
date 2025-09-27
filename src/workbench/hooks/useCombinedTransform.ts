@@ -1,9 +1,9 @@
-import type { ArrowFunction } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { ArrowFunction } from '../../live';
+import type { ShaderModule } from '../../shader';
 
-import { useOne, useVersion } from '@use-gpu/live';
+import { useOne, useVersion } from '../../live';
 import { useTransformContext } from '../providers/transform-provider';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { chainTo } from '../../shader/wgsl';
 import { vec4 } from 'gl-matrix';
 
 export const useCombinedTransform = (

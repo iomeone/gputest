@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/types'::{ ShadedVertex };
-use '@use-gpu/wgsl/use/view'::{ worldToClip, getViewPosition };
+use '../../../wgsl/use/types'::{ ShadedVertex };
+use '../../../wgsl/use/view'::{ worldToClip, getViewPosition };
 
 @optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 @optional @link fn getNormal(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 1.0, 1.0); };

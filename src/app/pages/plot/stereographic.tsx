@@ -1,7 +1,7 @@
-import type { LC } from '@use-gpu/live';
-import type { Keyframe } from '@use-gpu/workbench';
+import type { LC } from '../../../live';
+import type { Keyframe } from '../../../workbench';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 
 import {
   Loop, Draw, Pass, Flat,
@@ -10,10 +10,10 @@ import {
   Pick, Cursor,
   Animate,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Spherical, Stereographic, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 import { PlotControls } from '../../ui/plot-controls';
 

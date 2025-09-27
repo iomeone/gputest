@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ UIVertex };
+use '../../../wgsl/use/types'::{ UIVertex };
 
 @link fn getVertex(v: u32, i: u32) -> UIVertex {};
 @optional @link fn toColorSpace(c: vec4<f32>) -> vec4<f32> { return c; }

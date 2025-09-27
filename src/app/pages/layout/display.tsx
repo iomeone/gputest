@@ -1,16 +1,16 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../../live';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 import { LayoutControls } from '../../ui/layout-controls';
 
 import {
   LinearRGB, Draw, Pass, Flat,
   PanControls,
   DebugProvider,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Overflow, Text, Element,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 export const LayoutDisplayPage: LC = () => {
 

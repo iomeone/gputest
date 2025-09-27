@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { RenderPassMode, DeepPartial, Lazy } from '@use-gpu/core';
-import type { ShaderModule, ParsedBundle, ParsedModule } from '@use-gpu/shader';
-import { memo, use, fragment, useContext, useNoContext, useMemo, useNoMemo, useOne, useState, useResource } from '@use-gpu/live';
-import { resolve } from '@use-gpu/core';
+import type { LiveComponent } from '../../live';
+import type { RenderPassMode, DeepPartial, Lazy } from '../../core';
+import type { ShaderModule, ParsedBundle, ParsedModule } from '../../shader';
+import { memo, use, fragment, useContext, useNoContext, useMemo, useNoMemo, useOne, useState, useResource } from '../../live';
+import { resolve } from '../../core';
 
-import { bindBundle, bindingToModule } from '@use-gpu/shader/wgsl';
+import { bindBundle, bindingToModule } from '../../shader/wgsl';
 import { getWireframe } from '../render/wireframe';
 import { useInspectHoverable } from '../hooks/useInspectable';
 
@@ -14,15 +14,15 @@ import { RenderContext } from '../providers/render-provider';
 import { PickingContext } from '../render/picking';
 import { getNativeColor } from '../hooks/useNativeColor';
 
-import instanceDrawVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
-import instanceDrawVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
-import instanceDrawVirtualPick from '@use-gpu/wgsl/render/vertex/virtual-pick.wgsl';
-import instanceDrawVirtualUI from '@use-gpu/wgsl/render/vertex/virtual-ui.wgsl';
+import instanceDrawVirtualShaded from '../../wgsl/render/vertex/virtual-shaded.wgsl';
+import instanceDrawVirtualSolid from '../../wgsl/render/vertex/virtual-solid.wgsl';
+import instanceDrawVirtualPick from '../../wgsl/render/vertex/virtual-pick.wgsl';
+import instanceDrawVirtualUI from '../../wgsl/render/vertex/virtual-ui.wgsl';
 
-import instanceFragmentShaded from '@use-gpu/wgsl/render/fragment/shaded.wgsl';
-import instanceFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
-import instanceFragmentPick from '@use-gpu/wgsl/render/fragment/pick.wgsl';
-import instanceFragmentUI from '@use-gpu/wgsl/render/fragment/ui.wgsl';
+import instanceFragmentShaded from '../../wgsl/render/fragment/shaded.wgsl';
+import instanceFragmentSolid from '../../wgsl/render/fragment/solid.wgsl';
+import instanceFragmentPick from '../../wgsl/render/fragment/pick.wgsl';
+import instanceFragmentUI from '../../wgsl/render/fragment/ui.wgsl';
 
 import { drawCall } from './draw-call';
 

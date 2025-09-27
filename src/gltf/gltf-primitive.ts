@@ -1,10 +1,10 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { UniformAttribute } from '@use-gpu/core';
+import type { LC, LiveElement } from '../live';
+import type { UniformAttribute } from '../core';
 import type { GLTF, GLTFPrimitiveData } from './types';
 
-import { flattenIndexedArray } from '@use-gpu/core';
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { use, provide, useMemo, useNoMemo, useVersion, useNoVersion } from '@use-gpu/live';
+import { flattenIndexedArray } from '../core';
+import { bundleToAttributes } from '../shader/wgsl';
+import { use, provide, useMemo, useNoMemo, useVersion, useNoVersion } from '../live';
 import { generateTangents } from 'mikktspace';
 import { mat4 } from 'gl-matrix';
 
@@ -14,9 +14,9 @@ import {
   TransformContext,
   useBoundShader, useNoBoundShader,
   useRawSource, useNoRawSource,
-} from '@use-gpu/workbench';
-import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl'
-import { getTransformedNormal } from '@use-gpu/wgsl/transform/normal.wgsl'
+} from '../workbench';
+import { getCartesianPosition } from '../wgsl/transform/cartesian.wgsl'
+import { getTransformedNormal } from '../wgsl/transform/normal.wgsl'
 import { useGLTFMaterial } from './gltf-material';
 
 const CARTESIAN_BINDINGS = bundleToAttributes(getCartesianPosition);

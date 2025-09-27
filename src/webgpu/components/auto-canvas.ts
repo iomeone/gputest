@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 
-import { use, useResource, useNoResource } from '@use-gpu/live';
-import { Picking } from '@use-gpu/workbench';
-import { CursorProvider } from '@use-gpu/workbench';
+import { use, useResource, useNoResource } from '../../live';
+import { Picking } from '../../workbench';
+import { CursorProvider } from '../../workbench';
 
 import { makeOrAdoptCanvas } from '../web';
 import { AutoSize } from './auto-size';

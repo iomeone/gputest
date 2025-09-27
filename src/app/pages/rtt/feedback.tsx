@@ -1,14 +1,14 @@
-import type { LC } from '@use-gpu/live';
-import type { Emit } from '@use-gpu/core';
-import { RenderPassMode } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { Emit } from '../../../core';
+import { RenderPassMode } from '../../../core';
 
-import React from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 
 import {
   Loop, Draw, Pass, OrbitCamera, RawData, PointLayer, Raw,
   LinearRGB, Feedback,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 export const RTTFeedbackPage: LC = () => {
   let t = 0;

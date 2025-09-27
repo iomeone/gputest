@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { TypedArray, DataTexture, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { TypedArray, DataTexture, TextureSource } from '../../core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { yeet, memo, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
-import { makeSampler, makeRawTexture, makeTextureView, uploadDataTexture } from '@use-gpu/core';
+import { yeet, memo, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { makeSampler, makeRawTexture, makeTextureView, uploadDataTexture } from '../../core';
 
 export type RawTextureProps = {
   data?: DataTexture,

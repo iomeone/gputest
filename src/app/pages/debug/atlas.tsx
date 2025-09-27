@@ -1,13 +1,13 @@
-import type { LC } from '@use-gpu/live';
-import React, { Gather, Yeet } from '@use-gpu/live';
+import type { LC } from '../../../live';
+import React, { Gather, Yeet } from '../../../live';
 
 import {
   LinearRGB, Pass, PanControls, Flat,
   DebugAtlas, RawTexture, DebugProvider,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Absolute, Inline, Text,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 import { GlyphControls } from '../../ui/glyph-controls';
 

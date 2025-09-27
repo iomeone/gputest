@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { Point, Point4 } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { Point, Point4 } from '../../core';
 import type { LayoutElement, FitInto, Dimension, Direction, MarginLike, Margin } from '../types';
 
-import { useProp } from '@use-gpu/traits';
-import { use, memo, gather, yeet, useFiber, useMemo } from '@use-gpu/live';
+import { useProp } from '../../traits';
+import { use, memo, gather, yeet, useFiber, useMemo } from '../../live';
 import { getBlockMinMax, getBlockMargin, fitBlock } from '../lib/block';
 import { isHorizontal, makeBoxLayout, makeBoxInspectLayout, makeBoxPicker, memoFit, memoLayout } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
+import { useInspectable, useInspectHoverable } from '../../workbench';
 
 import type { BoxTrait, ElementTrait } from '../types';
 import { useBoxTrait, useElementTrait } from '../traits';

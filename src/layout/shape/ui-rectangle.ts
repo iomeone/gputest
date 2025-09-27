@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { TextureSource, Rectangle, Point4 } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { TextureSource, Rectangle, Point4 } from '../../core';
+import type { ShaderModule } from '../../shader';
 import type { ImageTrait, Fit, Repeat, Anchor } from '../types';
 
-import { use, yeet, memo, useContext, useMemo, useNoContext } from '@use-gpu/live';
-import { LayoutContext, getAlignmentAnchor } from '@use-gpu/workbench';
+import { use, yeet, memo, useContext, useMemo, useNoContext } from '../../live';
+import { LayoutContext, getAlignmentAnchor } from '../../workbench';
 
 import { evaluateDimension, parseAnchorXY } from '../parse';
 

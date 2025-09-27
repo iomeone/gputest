@@ -1,14 +1,14 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { LambdaSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { LambdaSource } from '../../core';
 
-import { yeet, use, gather, provide, useContext, useMemo, useOne, tagFunction } from '@use-gpu/live';
-import { bindBundle, bundleToAttribute, castTo, chainTo } from '@use-gpu/shader/wgsl';
-import { useBoundSource, useDataBinding, useLambdaSource } from '@use-gpu/workbench';
+import { yeet, use, gather, provide, useContext, useMemo, useOne, tagFunction } from '../../live';
+import { bindBundle, bundleToAttribute, castTo, chainTo } from '../../shader/wgsl';
+import { useBoundSource, useDataBinding, useLambdaSource } from '../../workbench';
 
 import { DataContext } from '../providers/data-provider';
-import { parseAxes, parseAxis } from '@use-gpu/traits';
+import { parseAxes, parseAxis } from '../../traits';
 
-import plotArray, { packIndex, unpackIndex } from '@use-gpu/wgsl/plot/array.wgsl';
+import plotArray, { packIndex, unpackIndex } from '../../wgsl/plot/array.wgsl';
 
 const SIZE_BINDING = bundleToAttribute(plotArray, 'getSize');
 

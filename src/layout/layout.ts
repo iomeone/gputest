@@ -1,20 +1,20 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { Point, Point4, Rectangle } from '@use-gpu/core';
-import type { Placement } from '@use-gpu/traits';
+import type { LiveComponent, LiveElement } from '../live';
+import type { Point, Point4, Rectangle } from '../core';
+import type { Placement } from '../traits';
 import type { FitInto, LayoutElement, LayoutPicker } from './types';
 
-import { parsePlacement, useProp } from '@use-gpu/traits';
-import { memo, yeet, provide, gather, use, keyed, fragment, useContext, useCapture, useFiber, useMemo, useOne } from '@use-gpu/live';
+import { parsePlacement, useProp } from '../traits';
+import { memo, yeet, provide, gather, use, keyed, fragment, useContext, useCapture, useFiber, useMemo, useOne } from '../live';
 
 import {
   DebugContext, MouseContext, WheelContext, ViewContext,
   LayoutContext, useTransformContext, useScrollSignal,
   useInspectable, useInspectHoverable, useInspectorSelect, Inspector,
   useBoundShader, useNoBoundShader,
-} from '@use-gpu/workbench';
+} from '../workbench';
 
-import { bundleToAttributes, chainTo } from '@use-gpu/shader/wgsl';
-import { getLayoutPosition } from '@use-gpu/wgsl/layout/layout.wgsl';
+import { bundleToAttributes, chainTo } from '../shader/wgsl';
+import { getLayoutPosition } from '../wgsl/layout/layout.wgsl';
 
 import { makeBoxInspectLayout } from './lib/util';
 import { UIRectangle } from './shape/ui-rectangle';

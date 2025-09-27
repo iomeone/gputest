@@ -1,4 +1,4 @@
-import type { ArrowFunction } from '@use-gpu/live';
+import type { ArrowFunction } from '../live';
 import type { TypedArray, Join, Blending, Color, Placement, ColorLike, VectorLike, ArrayLike, Domain } from './types';
 import { mat4, vec4, vec3, vec2, quat } from 'gl-matrix';
 

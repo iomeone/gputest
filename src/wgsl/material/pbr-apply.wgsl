@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/fragment/pbr'::{ PBR, PBRParams };
+use '../../wgsl/fragment/pbr'::{ PBR, PBRParams };
 
 @export fn applyPBRMaterial(
   N: vec3<f32>,

@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ Light, Radiance };
+use '../../wgsl/use/types'::{ Light, Radiance };
 
 @infer type T;
 @link fn applyMaterial(

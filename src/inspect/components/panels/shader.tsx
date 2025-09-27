@@ -1,7 +1,7 @@
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../../../live';
 import type { Action } from '../types';
 
-import { formatNode, formatValue } from '@use-gpu/live';
+import { formatNode, formatValue } from '../../../live';
 import { styled as _styled } from '@stitches/react';
 
 import React, { Fragment, useState } from 'react';

@@ -9,7 +9,7 @@ import {
   optional,
   parseNumber,
   parseColor,
-} from '@use-gpu/traits';
+} from '../traits';
 import {
   parseAlignmentXY,
   parseAnchor,

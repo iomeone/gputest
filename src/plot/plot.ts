@@ -1,4 +1,4 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../live';
 
 export type PlotProps = {
   children?: LiveElement<any>,

@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 import type { LayoutElement, Margin, Dimension, Direction, Alignment, AlignmentLike, GapLike, Anchor, FitInto } from '../types';
 
-import { useProp } from '@use-gpu/traits';
-import { use, yeet, memo, gather, useFiber, useMemo } from '@use-gpu/live';
+import { useProp } from '../../traits';
+import { use, yeet, memo, gather, useFiber, useMemo } from '../../live';
 import { getFlexMinMax, fitFlex } from '../lib/flex';
 import { makeBoxLayout, makeBoxInspectLayout, makeBoxPicker, memoFit, memoLayout } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
+import { useInspectable, useInspectHoverable } from '../../workbench';
 
 import type { BoxTrait, ElementTrait } from '../types';
 import { useBoxTrait, useElementTrait } from '../traits';

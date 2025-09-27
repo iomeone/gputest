@@ -3,7 +3,7 @@ import type {
   ShaderModuleDescriptor, ShaderStageDescriptor,
 } from './types';
 
-import { patch } from '@use-gpu/state';
+import { patch } from '../state';
 
 export const makeShaderModule = (
   code: TypedArray | string,

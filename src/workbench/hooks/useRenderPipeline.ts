@@ -1,7 +1,7 @@
-import type { UseRenderingContextGPU, ShaderModuleDescriptor, DeepPartial } from '@use-gpu/core';
+import type { UseRenderingContextGPU, ShaderModuleDescriptor, DeepPartial } from '../../core';
 
-import { makeRenderPipeline, makeRenderPipelineAsync } from '@use-gpu/core';
-import { useContext, useMemo, useOne, useState } from '@use-gpu/live';
+import { makeRenderPipeline, makeRenderPipelineAsync } from '../../core';
+import { useContext, useMemo, useOne, useState } from '../../live';
 import { useMemoKey } from './useMemoKey';
 import { DeviceContext } from '../providers/device-provider';
 import LRU from 'lru-cache';
