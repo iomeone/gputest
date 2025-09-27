@@ -1,20 +1,20 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial, Prop,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, LambdaSource, RenderPassMode,
-} from '../../core/types';
-import { ShaderModule } from '../../shader/types';
+} from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/types';
 
 import { RawQuads } from '../primitives/raw-quads';
 
-import { patch } from '../../state';
-import { use, memo, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingToModule, castTo } from '../../shader/wgsl';
-import { makeShaderBinding, makeShaderBindings } from '../../core';
+import { patch } from '@use-gpu/state';
+import { use, memo, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingToModule, castTo } from '@use-gpu/shader/wgsl';
+import { makeShaderBinding, makeShaderBindings } from '@use-gpu/core';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../gen-wgsl/mask/point';
+import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '@use-gpu/wgsl/mask/point.wgsl';
 
 export type PointShape = 'circle' | 'diamond' | 'square' | 'circleOutlined' | 'diamondOutlined' | 'squareOutlined';
 

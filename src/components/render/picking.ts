@@ -1,6 +1,6 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { CanvasRenderingContextGPU } from '../../webgpu/types';
-import { TypedArray, UniformAttribute } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { TypedArray, UniformAttribute } from '@use-gpu/core/types';
 import {
   PICKING_FORMAT,
   PICKING_COLOR,
@@ -12,7 +12,7 @@ import {
   memo, use, provide, makeContext,
   useMemo, useOne, useNoOne, useResource,
   useContext, useNoContext,
-} from '../../live';
+} from '@use-gpu/live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -24,7 +24,7 @@ import {
   TEXTURE_ARRAY_TYPES,
   TEXTURE_FORMAT_SIZES,
   PICKING_UNIFORMS,
-} from '../../core';
+} from '@use-gpu/core';
 
 const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
 
@@ -37,12 +37,7 @@ type PickingContextType = {
   sampleTexture: (x: number, y: number) => number[],
 };
 
-export const PickingContext = makeContext<PickingContextType>({
-  renderContext: {} as CanvasRenderingContextGPU,
-  pickingTexture: {} as GPUTexture,
-  captureTexture: () => {},
-  sampleTexture: () => [0, 0],
-}, 'PickingContext');
+export const PickingContext = makeContext<PickingContextType>(null, 'PickingContext');
 
 export const NO_PICKING = {} as any;
 
@@ -112,10 +107,15 @@ export const Picking: LiveComponent<PickingProps> = (props) => {
     const colorAttachments = [makeColorAttachment(pickingTexture, null, pickingColor)];
     const depthStencilAttachment = makeDepthStencilAttachment(depthTexture);
 
+    let updated = false;
     let waiting = false;
     let captured = null as TypedArray | null;
     const captureTexture = async () => {
       if (waiting) return;
+      if (!updated) {
+        if (captured) captured = null;
+        return;
+      }
 
       const commandEncoder = device.createCommandEncoder();
       commandEncoder.copyTextureToBuffer(
@@ -136,7 +136,12 @@ export const Picking: LiveComponent<PickingProps> = (props) => {
 
       pickingBuffer.unmap();
       waiting = false;
+      updated = false;
     }
+
+    const swapView = () => {
+      updated = true;
+    };
 
     const sampleTexture = (x: number, y: number): number[] => {
       if (!captured) return seq(itemDims).map(i => 0);
@@ -158,6 +163,7 @@ export const Picking: LiveComponent<PickingProps> = (props) => {
         colorStates,
         colorAttachments,
         depthStencilAttachment,
+        swapView,
       } as CanvasRenderingContextGPU,
       pickingTexture,
       captureTexture,

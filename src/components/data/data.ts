@@ -1,11 +1,11 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TypedArray, StorageSource, UniformType, Accessor, DataField } from '@use-gpu/core/types';
 
-import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '@use-gpu/live';
 import {
   makeDataArray, makeDataAccessor, copyDataArray, copyNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_DIMS,
-} from '../../core';
+} from '@use-gpu/core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
@@ -33,8 +33,8 @@ export const Data: LiveComponent<DataProps> = (props) => {
     live = false,
   } = props;
 
-  const length = data?.length || 0;
-  const l = useBufferedSize(length);
+  const length = data?.length || fields?.[0]?.[1]?.length;
+  const l = useBufferedSize(length || 1);
   const fs = fields ?? NO_FIELDS;
 
   // Make data buffers

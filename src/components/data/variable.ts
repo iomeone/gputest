@@ -1,4 +1,4 @@
-import { LiveComponent, LiveElement } from '../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { incrementVersion, useState, useResource, useNoResource } from '@use=gpu/live';
 
 export type VariableProps = {

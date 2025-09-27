@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 import { ArrowTrait, LineTrait, ColorTrait, ROPTrait, VectorLike, Swizzle } from '../types';
 
-import { memo, use, gather, provide, useContext, useOne, useMemo } from '../../../live';
+import { memo, use, gather, provide, useContext, useOne, useMemo } from '@use-gpu/live';
 import { useBoundShader } from '../../hooks/useBoundShader';
 import { useBoundStorage } from '../../hooks/useBoundStorage';
 import { useShaderRef } from '../../hooks/useShaderRef';
@@ -26,7 +26,7 @@ import { LineLayer } from '../../layers/line-layer';
 import { ArrowLayer } from '../../layers/arrow-layer';
 import { useArrowSegments } from '../../layers/arrow-segments';
 
-import { getAxisPosition } from '../../../gen-wgsl/plot/axis';
+import { getAxisPosition } from '@use-gpu/wgsl/plot/axis.wgsl';
 
 const AXIS_BINDINGS = [
   { name: 'getAxisOrigin', format: 'vec4<f32>', value: vec4.fromValues(-1, 0, 0, 0) },

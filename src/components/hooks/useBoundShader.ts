@@ -1,9 +1,9 @@
-import { UniformAttributeValue } from '../../core/types';
-import { ShaderModule } from '../../shader/wgsl/types';
+import { UniformAttributeValue } from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/wgsl/types';
 
-import { useOne, useMemo, useVersion } from '../../live';
-import { makeShaderBindings } from '../../core';
-import { bindingsToLinks, bindBundle } from '../../shader/wgsl';
+import { useOne, useMemo, useVersion } from '@use-gpu/live';
+import { makeShaderBindings } from '@use-gpu/core';
+import { bindingsToLinks, bindBundle } from '@use-gpu/shader/wgsl';
 
 type Ref<T> = { current: T };
 

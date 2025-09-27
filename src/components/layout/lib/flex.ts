@@ -1,4 +1,4 @@
-import { LiveElement } from '../../../live/types';
+import { LiveElement } from '@use-gpu/live/types';
 import { LayoutElement, LayoutRenderer, Direction, Point, Point4, Margin, Rectangle, Alignment, Anchor } from '../types';
 
 import { parseAnchor } from './util';
@@ -174,8 +174,10 @@ export const fitFlex = (
 
     let maxSize = 0;
     for (let i = 0; i < n; ++i) {
-      const {margin, sizing, fit} = main[i];
-      const into = (isX ? [mainSizes[i], 0] : [0, mainSizes[i]]) as Point;
+      const {margin, sizing, fit, ratioX, ratioY} = main[i];
+      const into = (isX
+        ? [mainSizes[i] / (ratioX || 1), containY]
+        : [containX, mainSizes[i] / (ratioY || 1)]) as Point;
 
       const {render, size: fitted} = fit(into);
       const [ml, mt, mr, mb] = margin;
@@ -256,7 +258,7 @@ export const fitFlex = (
   };
 
   for (const el of els) {
-    const {margin, sizing, fit, grow, shrink, absolute} = el;
+    const {margin, sizing, fit, grow, shrink, absolute, ratioX, ratioY} = el;
     const [ml, mt, mr, mb] = margin;
 
     if (absolute) {
@@ -267,9 +269,13 @@ export const fitFlex = (
       offsets.push([ml, mt]);
     }
     else {
-      const size = sizing[isX ? 0 : 1];
+      let size = sizing[isX ? 0 : 1];
       const mOn  = isX ? ml + mr : mt + mb;
-      
+
+      if (isX && ratioX != null) size = spaceMain * ratioX;
+      if (!isX && ratioY != null) size = spaceMain * ratioY;
+      if (snap) size = Math.round(size);
+
       if (wrap && (accumMain + size + mOn > spaceMain)) reduceMain();
       accumMain += size + mOn;
       maxMain = Math.max(maxMain, accumMain);

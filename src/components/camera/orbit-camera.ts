@@ -1,8 +1,8 @@
-import { LiveComponent, LiveElement } from '../../live/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
 
-import { provide, use, useContext, useOne } from '../../live';
-import { ViewUniforms, UniformAttribute } from '../../core/types';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition } from '../../core';
+import { provide, use, useContext, useOne } from '@use-gpu/live';
+import { ViewUniforms, UniformAttribute } from '@use-gpu/core/types';
+import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition } from '@use-gpu/core';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';

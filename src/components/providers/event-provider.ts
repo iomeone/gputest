@@ -1,8 +1,8 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { PickingUniforms } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { PickingUniforms } from '@use-gpu/core/types';
 
-import { memo, provide, makeContext, useContext, useMemo, useOne, useResource, useState } from '../../live';
-import { makeIdAllocator, PICKING_UNIFORMS } from '../../core';
+import { memo, provide, makeContext, useContext, useMemo, useOne, useResource, useState, incrementVersion } from '@use-gpu/live';
+import { makeIdAllocator, PICKING_UNIFORMS } from '@use-gpu/core';
 import { PickingContext } from '../render/picking';
 import { RenderContext } from '../providers/render-provider';
 
@@ -10,6 +10,7 @@ const CAPTURE_EVENT = {capture: true};
 
 export const EventContext = makeContext(undefined, 'EventContext');
 export const MouseContext = makeContext(undefined, 'MouseContext');
+export const WheelContext = makeContext(undefined, 'WheelContext');
 
 export type EventProviderProps = {
   element: HTMLElement,
@@ -21,6 +22,15 @@ export type MouseState = {
   button: 'left' | 'middle' | 'right',
   x: number,
   y: number,
+  moveX: number,
+  moveY: number,
+  version: number,
+};
+
+export type WheelState = {
+  moveX: number,
+  moveY: number,
+  version: number,
 };
 
 export type MouseEventState = MouseState & {
@@ -33,24 +43,14 @@ export type MouseEventState = MouseState & {
   uncapture: () => void,
 };
 
-const toButton = (button: number) => {
-  if (button === 0) return 'left';
-  if (button === 1) return 'middle';
-  if (button === 2) return 'right';
-  return 'none';
+export type WheelEventState = WheelState & {
+  index: number,
 };
 
 const toButtons = (buttons: number) => ({
   left: buttons & 1,
   middle: buttons & 3,
   right: buttons & 2,
-});
-
-const makeMouseState = () => ({
-  buttons: toButtons(0),
-  button: toButton(-1),
-  x: 0,
-  y: 0,
 });
 
 const makeMouseRef = () => ({
@@ -60,11 +60,17 @@ const makeMouseRef = () => ({
   clicks:  { left: 0, middle: 0, right: 0 },
 });
 
+const makeWheelRef = () => ({
+  moveX: 0,
+  moveY: 0,
+  version: 0,
+});
+
 const makeCaptureRef = () => ({
   current: null,
 });
 
-export const EventProvider: LiveComponent<EventProviderProps> = memo(({mouse, children}: EventProviderProps) => {
+export const EventProvider: LiveComponent<EventProviderProps> = memo(({mouse, wheel, children}: EventProviderProps) => {
   const {pixelRatio} = useContext(RenderContext);
   const {sampleTexture} = useContext(PickingContext);
   const [captureId, setCaptureId] = useState<number | null>(null);
@@ -93,14 +99,14 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo(({mouse, ch
     targetIndex,
     beginCapture: (id: number) => setCaptureId(id),
     endCapture: () => setCaptureId(null),
-    useMouse: (id: number): MouseEventState => {
+    useMouse: (id: number | null = null): MouseEventState => {
       const ref = useOne(makeMouseRef);
       const {pressed, presses, clicks, buttons: lastButtons} = ref;
       const {buttons, button} = mouse;
 
       const index    = targetIndex;
       const captured = captureId === id;
-      const hovered  = (captureId == null || captured) && (targetId === id);
+      const hovered  = (captureId == null || captured) && (targetId === id || id === null);
 
       useOne(() => {
         if (hovered) {
@@ -124,7 +130,30 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo(({mouse, ch
     },
   }), [mouse, targetId, captureId]);
 
-  return provide(MouseContext, mouseContext,
-    provide(EventContext, eventApi, children)
+  const wheelContext = useMemo(() => ({
+    wheel,
+    useWheel: (id: number | null = null): WheelEventState => {
+      const ref = useOne(makeWheelRef);
+
+      const index    = targetIndex;
+      const captured = captureId === id;
+      const hovered = (captureId == null || captured) && (targetId === id || id === null);
+
+      if (hovered) {
+        ref.moveX = wheel.moveX;
+        ref.moveY = wheel.moveY;
+        ref.version = wheel.version;
+      }
+
+      return {...ref};
+    },
+  }), [wheel, targetId, captureId]);
+
+  return (
+    provide(MouseContext, mouseContext,
+      provide(WheelContext, wheelContext,
+        provide(EventContext, eventApi, children)
+      )
+    )
   );
 }, 'EventProvider');

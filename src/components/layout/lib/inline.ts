@@ -1,5 +1,5 @@
-import { LiveElement } from '../../../live/types';
-import { FontMetrics } from '../../../text/types';
+import { LiveElement } from '@use-gpu/live/types';
+import { FontMetrics } from '@use-gpu/text/types';
 import { LayoutElement, InlineElement, LayoutRenderer, Direction, Point, Margin, Rectangle, Alignment, Base } from '../types';
 
 import { parseBase, parseAnchor } from './util';

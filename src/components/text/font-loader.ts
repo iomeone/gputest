@@ -1,8 +1,8 @@
-import { LiveComponent } from '../../live/types';
-import { FontSource } from '../../text/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { FontSource } from '@use-gpu/text/types';
 
-import { use, gather, keyed, yeet, useOne } from '../../live';
-import { getHash } from '../../state';
+import { use, gather, keyed, yeet, useOne } from '@use-gpu/live';
+import { getHash } from '@use-gpu/state';
 import { Fetch } from '../data';
 import { FontProvider } from './providers/font-provider';
 

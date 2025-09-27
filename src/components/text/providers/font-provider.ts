@@ -1,11 +1,11 @@
-import { LiveComponent } from '../../../live/types';
-import { RustTextAPI } from '../../../text/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { RustTextAPI } from '@use-gpu/text/types';
 import { Font } from '../types';
 
-import { provide, useAsync, makeContext, useContext, useMemo, useOne } from '../../../live';
+import { provide, useAsync, makeContext, useContext, useMemo, useOne } from '@use-gpu/live';
 import { parseWeight } from '../../plot/util/parse';
-import { makeTuples } from '../../../core';
-import { RustText, packStrings } from '../../../text';
+import { makeTuples } from '@use-gpu/core';
+import { RustText, packStrings } from '@use-gpu/text';
 
 export type FontContextProps = {
   gpuText: RustTextAPI,
@@ -20,7 +20,7 @@ export type FontProviderProps = {
 };
 
 export const FontProvider: LiveComponent<FontProviderProps> = ({fonts, children}) => {
-  const rustText = useAsync(RustText);
+  const [rustText] = useAsync(RustText);
 
   const context = useMemo(() => {
     if (!rustText) return null;

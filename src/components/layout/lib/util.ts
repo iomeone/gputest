@@ -1,4 +1,4 @@
-import { LiveElement } from '../../../live/types';
+import { LiveElement } from '@use-gpu/live/types';
 import { Point, Rectangle, Gap, Margin, Alignment, Anchor, Dimension, LayoutRenderer, InlineRenderer, InlineLine } from '../types';
 
 type Fitter<T> = (into: Point) => T;

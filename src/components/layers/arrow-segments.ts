@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { memo, yeet, useMemo } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { memo, yeet, useMemo } from '@use-gpu/live';
 
-import { getChunkCount, generateChunkSegments, generateChunkAnchors } from '../../core';
+import { getChunkCount, generateChunkSegments, generateChunkAnchors } from '@use-gpu/core';
 import { useBoundStorage } from '../hooks/useBoundStorage';
 
 type ArrowSegmentsProps = {

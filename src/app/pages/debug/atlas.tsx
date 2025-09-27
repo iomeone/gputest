@@ -1,18 +1,13 @@
-import { LiveComponent } from '../../../live/types';
-import React, { Gather, Yeet } from '../../../live/jsx';
+import { LC } from '@use-gpu/live/types';
+import React, { Gather, Yeet } from '@use-gpu/live/jsx';
 
 import {
   Draw, Pass,
   Flat, UI, Layout, Absolute, Inline, Text,
   DebugAtlas, RawTexture,
-} from '../../../components';
+} from '@use-gpu/components';
 
-export type DebugAtlasPageProps = {
-  canvas: HTMLCanvasElement,
-};
-
-export const DebugAtlasPage: LiveComponent<DebugAtlasPageProps> = (props) => {
-  const {canvas} = props;
+export const DebugAtlasPage: LC = () => {
 
   return (
     <Draw>

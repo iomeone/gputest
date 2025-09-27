@@ -1,10 +1,10 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
-import { UniformAttributeValue } from '../../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { UniformAttributeValue } from '@use-gpu/core/types';
 import { VectorLike, Swizzle } from '../types';
 
-import { use, provide, useContext, useOne, useMemo } from '../../../live';
-import { makeRefBinding } from '../../../core';
-import { bindBundle, bindingToModule, chainTo } from '../../../shader/wgsl';
+import { use, provide, useContext, useOne, useMemo } from '@use-gpu/live';
+import { makeRefBinding } from '@use-gpu/core';
+import { bindBundle, bindingToModule, chainTo } from '@use-gpu/shader/wgsl';
 
 import { useShaderRef } from '../../hooks/useShaderRef';
 import { TransformContext } from '../../providers/transform-provider';
@@ -16,7 +16,7 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getCartesianPosition } from '../../../gen-wgsl/transform/cartesian';
+import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl';
 
 const MATRIX_BINDING = { name: 'getMatrix', format: 'mat4x4<f32>', value: mat4.create() };
 

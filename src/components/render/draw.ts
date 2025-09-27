@@ -1,8 +1,8 @@
-import { LiveFiber, LiveComponent, LiveElement, Task } from '../../live/types';
+import { LiveFiber, LiveComponent, LiveElement, Task } from '@use-gpu/live/types';
 import {
   gather, provide, yeet,
   makeContext, useContext, useNoContext,
-} from '../../live';
+} from '@use-gpu/live';
 import { RenderContext } from '../providers/render-provider';
 import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { PickingContext } from './picking';
@@ -25,11 +25,9 @@ export const Draw: LiveComponent<DrawProps> = (props) => {
 };
 
 const Resume = (ts: Task[]) => {
-  const {swapView} = useContext(RenderContext);
   const pickingContext = useContext(PickingContext);
 
   usePerFrame();
-  swapView();
 
   for (let task of ts) task();
 

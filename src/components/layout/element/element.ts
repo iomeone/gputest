@@ -1,8 +1,8 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
-import { TextureSource } from '../../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
 import { ImageAttachment, Dimension, Margin, Fit, Repeat, Rectangle, Anchor, Point, Point4 } from './types';
 
-import { keyed, yeet, useFiber, useMemo } from '../../../live';
+import { keyed, yeet, useFiber, useMemo } from '@use-gpu/live';
 import { parseDimension, normalizeMargin } from '../lib/util';
 
 import { Surface } from '../shape/surface';
@@ -25,18 +25,21 @@ export type ElementProps = {
   children?: LiveElement<any>,
 };
 
+const TRANSPARENT: Point4 = [0, 0, 0, 0];
+
 export const Element: LiveComponent<ElementProps> = (props) => {
   const {
     width,
     height,
+    // -- unpacked below
     // margin
     // radius
     // border
 
     image,
 
-    //stroke,
-    //fill,
+    stroke = TRANSPARENT,
+    fill = TRANSPARENT,
 
     grow = 0,
     shrink = 0,
@@ -44,9 +47,6 @@ export const Element: LiveComponent<ElementProps> = (props) => {
 
     children,
   } = props;
-
-  const stroke = [Math.random(), Math.random(), Math.random(), Math.random() + .5];
-  const fill = [Math.random(), Math.random(), Math.random(), Math.random() + .5];
 
   const w = typeof width === 'number' ? width : 0;
   const h = typeof height === 'number' ? height : 0;

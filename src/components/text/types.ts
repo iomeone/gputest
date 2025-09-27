@@ -1,4 +1,4 @@
-import { StorageSource } from '../../core/types';
+import { StorageSource } from '@use-gpu/core/types';
 
 export type Font = {
   props: FontProps,

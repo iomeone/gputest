@@ -1,25 +1,25 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial, Prop,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, TextureSource, ShaderSource, RenderPassMode,
-} from '../../core/types';
-import { ShaderModule } from '../../shader/types';
+} from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/types';
 
 import { ViewContext } from '../providers/view-provider';
 import { PickingContext, useNoPicking } from '../render/picking';
 import { Virtual } from './virtual';
 
-import { patch } from '../../state';
-import { use, memo, useCallback, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingsToLinks, bundleToAttributes } from '../../shader/wgsl';
-import { makeShaderBindings, resolve } from '../../core';
+import { patch } from '@use-gpu/state';
+import { use, memo, useCallback, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks, bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { makeShaderBindings, resolve } from '@use-gpu/core';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { getQuadVertex } from '../../gen-wgsl/instance/vertex/quad';
-import { getMaskedFragment } from '../../gen-wgsl/mask/masked';
+import { getQuadVertex } from '@use-gpu/wgsl/instance/vertex/quad.wgsl';
+import { getMaskedFragment } from '@use-gpu/wgsl/mask/masked.wgsl';
 
 export type RawQuadsProps = {
   position?: number[] | TypedArray,

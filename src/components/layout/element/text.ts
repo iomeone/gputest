@@ -1,10 +1,10 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
-import { TextureSource, Emitter } from '../../../core/types';
-import { SpanData, PerSpan, PerGlyph } from '../../../text/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TextureSource, Emitter } from '@use-gpu/core/types';
+import { SpanData, PerSpan, PerGlyph } from '@use-gpu/text/types';
 import { Point4, InlineSpan } from './types';
 
-import { keyed, yeet, useContext, useFiber, useOne, useMemo } from '../../../live';
-import { makeTuples, emitIntoNumberArray } from '../../../core';
+import { keyed, yeet, useContext, useFiber, useOne, useMemo } from '@use-gpu/live';
+import { makeTuples, emitIntoNumberArray } from '@use-gpu/core';
 import { parseDimension, normalizeMargin } from '../lib/util';
 
 import { useFontFamily, useFontText, useFontHeight } from '../../text/providers/font-provider';
@@ -31,7 +31,7 @@ export type TextProps = {
   size?: number,
   snap?: boolean,
 
-  content?: string,
+  text?: string,
   children?: string,
 };
 
@@ -48,11 +48,11 @@ export const Text: LiveComponent<TextProps> = (props) => {
     lineHeight,
     size = 16,
     snap = false,
-    content = '',
+    text = '',
     children,
   } = props;
 
-  const strings = children ?? content;
+  const strings = children ?? text;
 
   const font = useFontFamily(family, weight, style);
   const {spans, glyphs, breaks} = useFontText(font, strings, size);

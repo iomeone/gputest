@@ -6,6 +6,10 @@ export type LiveFunction<F extends Function> = F;
 export type LiveComponent<P> = (props: P) => LiveElement<any>;
 export type Component<P> = LiveComponent<P>;
 
+// React types interop
+export type PropsWithChildren<P> = P & { children?: LiveElement<any> };
+export type LC<P = object> = LiveComponent<PropsWithChildren<P>>;
+
 // Mounting key
 export type Key = string | number;
 

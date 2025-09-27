@@ -1,4 +1,4 @@
-import { useOne } from '../../live';
+import { useOne } from '@use-gpu/live';
 
 export const adjustSize = (size: number, alloc: number) => {
   while (size < alloc * 0.125) alloc = Math.floor(alloc / 4);

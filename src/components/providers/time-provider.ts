@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { provide, makeContext, useContext } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { provide, makeContext, useContext } from '@use-gpu/live';
 
 /*
 export type TimeProviderProps = {

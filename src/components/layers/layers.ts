@@ -1,14 +1,14 @@
-import { LiveComponent, LiveFunction, LiveElement } from '../../live/types';
-import { AggregateBuffer, UniformType, TypedArray, StorageSource } from '../../core/types';
+import { LiveComponent, LiveFunction, LiveElement } from '@use-gpu/live/types';
+import { AggregateBuffer, UniformType, TypedArray, StorageSource } from '@use-gpu/core/types';
 import { LayerAggregator, LayerAggregate, PointAggregate, LineAggregate, RectangleAggregate, LayerType } from './types';
 
 import { RenderContext } from '../providers/render-provider';
-import { use, keyed, multiGather, useContext, useOne, useMemo } from '../../live';
+import { use, keyed, multiGather, useContext, useOne, useMemo } from '@use-gpu/live';
 import {
   makeAggregateBuffer,
   updateAggregateBuffer,
   updateAggregateSegments,
-} from '../../core';
+} from '@use-gpu/core';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 
 import { LineLayer } from './line-layer';

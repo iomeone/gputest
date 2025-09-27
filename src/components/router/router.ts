@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { makeContext, memo, provide, use, useContext, useMemo, useOne, useResource, useState } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { makeContext, memo, provide, use, useContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 import { Routes } from './routes';
 
 export type Route = {
@@ -48,14 +48,13 @@ export const Router: LiveComponent<RouterProps> = memo(({source, routes, childre
   });
 
   useResource((dispose) => {
-    src.resource(() => {
-      console.log('set state router');
+    src.resource(() =>
       setState((s) => ({
         ...s,
         path: src.path(),
         query: src.query(),
       }))
-    });
+    );
     dispose(() => src.resource(() => {}));
   }, [src]);
 

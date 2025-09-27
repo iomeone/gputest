@@ -1,8 +1,8 @@
 import React from 'react';
 import { PAGES } from '../routes';
-import { use } from '../../live';
-import { HTML } from '../../react';
-import { useRouterContext } from '../../components';
+import { use } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { useRouterContext } from '@use-gpu/components';
 
 const STYLE = {
   position: 'absolute',
@@ -12,18 +12,18 @@ const STYLE = {
   background: 'rgba(0, 0, 0, .5)',
 };
 
-export const makePicker = (canvas: HTMLCanvasElement) => ({
+export const makePicker = (container: HTMLElement) => ({
   "/": { element: null, exact: true },
-  "*": { element: use(PagePicker, canvas) },
+  "*": { element: use(PagePicker, container) },
 });
 
-export const PagePicker = (canvas: HTMLCanvasElement) => {
+export const PagePicker = (container: HTMLElement) => {
   const {route: {path}, push} = useRouterContext();
   const handleChange = (e: any) => push(e.target.value);
 
   return (
     use(HTML, {
-      container: canvas.parentElement,
+      container,
       style: STYLE,
       children: (
         <select onChange={handleChange} value={path}>

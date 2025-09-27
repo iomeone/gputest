@@ -1,7 +1,7 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { TextureSource } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
 
-import { use, useOne } from '../../live';
+import { use, useOne } from '@use-gpu/live';
 import { Draw } from './draw';
 import { Pass } from './pass';
 import { RenderToTexture } from './render-to-texture';

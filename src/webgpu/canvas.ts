@@ -1,17 +1,5 @@
 import { GPUMount, GPUDeviceMount } from './types';
 
-export const mountGPU = async (
-  selector: string,
-  requiredFeatures: GPUFeatureName[] = [],
-  requiredLimits: Record<string, number> = {},
-): Promise<GPUMount> => {
- 
-  const {adapter, device} = await mountGPUDevice(requiredFeatures, requiredLimits);
-  const canvas = mountCanvas(selector);
-
-  return {adapter, device, canvas};
-}
-
 export const mountGPUDevice = async (
   requiredFeatures: GPUFeatureName[] = [],
   requiredLimits: Record<string, number> = {},
@@ -32,15 +20,18 @@ export const mountGPUDevice = async (
   return {adapter, device};
 }
 
-export const mountCanvas = (selector: string): HTMLCanvasElement => {
+export const adoptCanvas = (selector: string): [HTMLCanvasElement, () => void] => {
 
   const el = document.querySelector(selector);
   if (!el) throw new Error(`Cannot find ${selector} in DOM`);
 
+  const {tagName} = el;
+  if (tagName === 'CANVAS') return [el as HTMLCanvasElement, () => {}];
+
   const canvas = document.createElement('canvas');
   el.appendChild(canvas);
 
-  return canvas;
+  return [canvas, () => el.removeChild(canvas)];
 }
 
 export const makePresentationContext = (

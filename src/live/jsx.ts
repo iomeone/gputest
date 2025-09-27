@@ -1,5 +1,6 @@
+import { formatNodeName } from './debug';
 import { gather, provide, yeet, GATHER, PROVIDE, YEET } from './builtin';
-import { useFiber } from './hooks';
+import { getCurrentFiberID } from './fiber';
 import { ArrowFunction } from './types';
 
 const NO_PROPS: any[] = [{}];
@@ -10,13 +11,11 @@ const toChildren = (t: T[]): T[] | T | undefined => {
   return undefined;
 };
 
-const BUILTIN = new Set([GATHER, PROVIDE, YEET]);
-
 export const React = {
   createElement: (type: ArrowFunction, props: any, ...children: any[]) => {
-    const by = useFiber().id;
+    const by = getCurrentFiberID();
 
-    if (BUILTIN.has(type)) {
+    if ((type as any)?.isLiveBuiltin) {
       if (type === GATHER) {
         return gather(children[0], children[1], props?.key);
       }
@@ -26,6 +25,7 @@ export const React = {
       if (type === YEET) {
         return yeet(children[0], props?.key);
       }
+      throw new Error("Builtin `${formatNodeName({f: type})}` unsupported in JSX. Use raw function syntax instead.");
     }
 
     if (props) {

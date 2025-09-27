@@ -1,6 +1,6 @@
 import { Alignment } from '../types';
 
-import { makeTuples } from '../../../core';
+import { makeTuples } from '@use-gpu/core';
 import { parseAnchor } from './util';
 
 type Reduce = (start: number, end: number, gap: number, lead: number, index: number) => void;

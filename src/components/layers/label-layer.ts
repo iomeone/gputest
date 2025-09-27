@@ -1,11 +1,11 @@
-import { LiveComponent } from '../../live/types';
-import { TypedArray, Prop, RenderPassMode } from '../../core/types';
-import { ShaderSource } from '../../shader/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { TypedArray, Prop, RenderPassMode } from '@use-gpu/core/types';
+import { ShaderSource } from '@use-gpu/shader/types';
 import { SDFGlyphData } from '../text/types';
 
-import { use, keyed, wrap, memo, debug, provide, useCallback, useContext, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
-import { makeShaderBindings } from '../../core';
+import { use, keyed, wrap, memo, debug, provide, useCallback, useContext, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
+import { makeShaderBindings } from '@use-gpu/core';
 import { TransformContext, useTransformContext } from '../providers/transform-provider';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundStorage } from '../hooks/useBoundStorage';
@@ -17,7 +17,7 @@ import { GlyphSource } from '../text/glyph-source';
 import { RawLabels } from '../primitives/raw-labels';
 import { UI, Flat } from '../layout';
 
-import { getLabelPosition } from '../../gen-wgsl/instance/vertex/label';
+import { getLabelPosition } from '@use-gpu/wgsl/instance/vertex/label.wgsl';
 
 export type LabelLayerProps = {
   position?: number[] | TypedArray,

@@ -1,6 +1,6 @@
-import { Atlas } from '../../core/types';
-import { debug, memo, use, yeet, useContext, useNoContext, useFiber, useMemo } from '../../live';
-import { TextureSource } from '../../core';
+import { Atlas } from '@use-gpu/core/types';
+import { debug, memo, use, yeet, useContext, useNoContext, useFiber, useMemo } from '@use-gpu/live';
+import { TextureSource } from '@use-gpu/core';
 
 import { SDFFontContext, SDF_FONT_ATLAS } from './providers/sdf-font-provider';
 import { Surface } from '../layout/shape/surface';

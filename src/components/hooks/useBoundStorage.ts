@@ -1,7 +1,7 @@
-import { UniformType, TypedArray } from '../../core/types';
+import { UniformType, TypedArray } from '@use-gpu/core/types';
 
-import { useContext, useOne, useMemo, useNoOne, useNoMemo, incrementVersion } from '../../live';
-import { makeStorageBuffer, uploadBuffer, UNIFORM_DIMS } from '../../core';
+import { useContext, useOne, useMemo, useNoOne, useNoMemo, incrementVersion } from '@use-gpu/live';
+import { makeStorageBuffer, uploadBuffer, UNIFORM_DIMS } from '@use-gpu/core';
 import { DeviceContext } from '../providers/device-provider';
 import { useBufferedSize } from './useBufferedSize';
 

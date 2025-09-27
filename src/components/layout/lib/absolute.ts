@@ -29,8 +29,13 @@ export const fitAbsoluteBox = (
   const n = els.length;
   for (const el of els) {
     const {margin, fit} = el;
-    const {render, size: fitted} = fit(size);
-    const [ml, mt] = margin;
+    const [ml, mt, mr, mb] = margin;
+    
+    const into = size.slice();
+    into[0] -= ml + mr;
+    into[1] -= mt + mb;
+
+    const {render, size: fitted} = fit(into);
 
     sizes.push(fitted);
     offsets.push([left + ml, top + mt]);

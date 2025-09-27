@@ -1,8 +1,9 @@
-import { LiveComponent } from '../live/types';
-import { CanvasRenderingContextGPU } from '../webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../core/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import { use, wrap, morph, useFiber, useMemo, useOne, useResource, useState } from '../live';
+import React from '@use-gpu/live/jsx';
+import { FC, useFiber, useResource, useState } from '@use-gpu/live';
 
 import {
   AutoCanvas, CanvasPicking,
@@ -17,29 +18,25 @@ import {
   Router, Routes,
   TextProvider,
   ViewProvider,
-} from '../components';
-import { UseInspect } from '../inspect';
+  WebGPU,
+} from '@use-gpu/components';
+import { UseInspect } from '@use-gpu/inspect';
 
 import { makeRoutes } from './routes';
 import { makePicker } from './pages/page-picker';
 
-export type AppProps = {
-  device: GPUDevice,
-  adapter: GPUAdapter,
-  canvas: HTMLCanvasElement,
-};
+import { FALLBACK_MESSAGE } from './fallback';
 
-export const App: LiveComponent<AppProps> = (props) => {
-  const {canvas, device, adapter} = props;
+export const App: FC = () => {
+  
+  const root = document.querySelector('#use-gpu');
 
-  const router = wrap(Router, [
-    use(Routes, {
-      routes: makeRoutes(canvas),
-    }),
-    use(Routes, {
-      routes: makePicker(canvas),
-    }),
-  ]);
+  const router = (
+    <Router>
+      <Routes routes={makeRoutes()} />
+      <Routes routes={makePicker(root)} />
+    </Router>
+  );
   
   const fonts = [
     {
@@ -65,17 +62,21 @@ export const App: LiveComponent<AppProps> = (props) => {
   const fiber = useFiber();
   const inspect = useInspector();
 
-  return [
-    use(AutoCanvas, {
-      canvas, device, adapter, samples: 4,
-      children: 
-        use(FontLoader, {
-          fonts,
-          children: router,
-        })
-    }),
-    inspect ? use(UseInspect, {fiber, canvas}) : null,
-  ];
+  return (
+    <WebGPU
+      fallback={FALLBACK_MESSAGE}
+    >
+      <AutoCanvas
+        selector={'#use-gpu'}
+        samples={4}
+      >
+        <FontLoader fonts={fonts}>
+          {router}
+        </FontLoader>
+      </AutoCanvas>
+      {inspect ? <UseInspect fiber={fiber} container={root} /> : null}
+    </WebGPU>
+  );
 };
 
 // Toggle inspector with ctrl/cmd-I.

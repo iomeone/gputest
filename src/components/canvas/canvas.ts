@@ -1,11 +1,14 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { CanvasRenderingContextGPU } from '../../webgpu/types';
-import { ColorSpace } from '../../core/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { ColorSpace } from '@use-gpu/core/types';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, BACKGROUND_COLOR } from '../constants';
 
-import { EventProvider, RenderContext, DeviceContext } from '../providers';
-import { provide, use, imperative, useCallback, useMemo, useOne } from '../../live';
-import { makePresentationContext } from '../../webgpu';
+import { EventProvider } from '../providers/event-provider';
+import { RenderContext } from '../providers/render-provider';
+import { LayoutContext } from '../providers/layout-provider';
+import { useDeviceContext } from '../providers/device-provider';
+import { provide, use, imperative, useCallback, useMemo, useOne } from '@use-gpu/live';
+import { makePresentationContext } from '@use-gpu/webgpu';
 import {
   makeColorState,
   makeColorAttachment,
@@ -15,12 +18,10 @@ import {
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLIED,
-} from '../../core';
+} from '@use-gpu/core';
 
 export type CanvasProps = {
-  device: GPUDevice,
-  adapter: GPUAdapter,
-  canvas: HTMLCanvasElement,
+  canvas?: HTMLCanvasElement,
 
   format?: GPUTextureFormat,
   depthStencil?: GPUTextureFormat,
@@ -37,7 +38,6 @@ const getPixelRatio = () => typeof window !== 'undefined' ? window.devicePixelRa
 
 export const Canvas: LiveComponent<CanvasProps> = imperative((props) => {
   const {
-    device,
     canvas,
     children,
     pixelRatio = getPixelRatio(),
@@ -49,7 +49,10 @@ export const Canvas: LiveComponent<CanvasProps> = imperative((props) => {
     samples = 1
   } = props;
 
+  const device = useDeviceContext();
+
   const {width, height} = canvas;
+  const layout = useMemo(() => [0, 0, width, height], [width, height]);
 
   const renderTexture = useMemo(() =>
     samples > 1
@@ -115,9 +118,7 @@ export const Canvas: LiveComponent<CanvasProps> = imperative((props) => {
 
   return (
     provide(RenderContext, renderContext,
-      provide(DeviceContext, device,
-        children
-      )
+      provide(LayoutContext, layout, children)
     )
   );
 }, 'Canvas')

@@ -4,7 +4,7 @@ import {
   DeferredCall, HostInterface, Hook,
 } from './types';
 
-import { bind, bustFiberMemo, getCurrentFiber } from './fiber';
+import { bind, bustFiberMemo, getCurrentFiber, getCurrentFiberID } from './fiber';
 import { isSameDependencies, incrementVersion } from './util';
 import { formatNode } from './debug';
 
@@ -174,7 +174,7 @@ export const useState = <T>(
     value = (initialState instanceof Function) ? initialState() : initialState;
     setValue = host
       ? (value: Reducer<T>) => {
-          host!.schedule(fiber, () => {
+          const apply = () => {
             const prev = state![i];
 
             let next: any;
@@ -185,7 +185,15 @@ export const useState = <T>(
               state![i] = next;
               bustFiberMemo(fiber);
             }
-          });
+          };
+
+          if (fiber.id === getCurrentFiberID()) {
+            apply();
+            host!.visit(fiber);
+          }
+          else {
+            host!.schedule(fiber, apply);
+          }
         }
       : NOP;
 
@@ -442,14 +450,14 @@ export const useNoCallback = useNoHook(Hook.CALLBACK);
 export const useNoVersion = useNoHook(Hook.VERSION);
 
 // Async wrapper
-export const useAsync = <T>(f: () => Promise<T>, deps: any[] = NO_DEPS): T | undefined => {
-  const [value, setValue] = useState<T | undefined>(undefined);
+export const useAsync = <T, E>(f: () => Promise<T>, deps: any[] = NO_DEPS): [T | undefined, E | undefined] => {
+  const [value, setValue] = useState<[T | undefined, E | undefined]>([undefined, undefined]);
 
   const ref = useResource((dispose) => {
     let cancelled = false;
-    f().then((value) => {
-      if (!cancelled) setValue(value);
-    });
+    f()
+    .then(value => !cancelled && setValue([value, undefined]))
+    .catch(error => !cancelled && setValue([undefined, error]));
     dispose(() => { cancelled = true; });
   }, deps);
 

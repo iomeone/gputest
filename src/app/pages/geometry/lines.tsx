@@ -1,9 +1,9 @@
-import { LiveComponent } from '../../../live/types';
-import { CanvasRenderingContextGPU } from '../../../webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../../../core/types';
+import { LC } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import React from '../../../live/jsx';
-import { use } from '../../../live';
+import React from '@use-gpu/live/jsx';
+import { use } from '@use-gpu/live';
 
 import {
   Draw, Pass,
@@ -11,11 +11,7 @@ import {
   CompositeData, LineSegments, ArrowSegments,
   OrbitCamera, OrbitControls,
   LineLayer, ArrowLayer,
-} from '../../../components';
-
-export type GeometryLinesPageProps = {
-  canvas: HTMLCanvasElement,
-};
+} from '@use-gpu/components';
 
 const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
 
@@ -64,8 +60,7 @@ const dataFields = [
   ['f32', 'width'],
 ] as DataField[];
 
-export const GeometryLinesPage: LiveComponent<GeometryLinesPageProps> = (props) => {
-  const {canvas} = props;
+export const GeometryLinesPage: LC = () => {
 
   const view = (
     <Draw>
@@ -127,7 +122,6 @@ export const GeometryLinesPage: LiveComponent<GeometryLinesPageProps> = (props) 
 
   return [
     <OrbitControls
-      canvas={canvas}
       radius={3}
       bearing={0.5}
       pitch={0.3}

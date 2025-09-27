@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement } from '../../live/types';
-import { yeet, useAsync, useMemo, useOne } from '../../live';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { yeet, useAsync, useMemo, useOne } from '@use-gpu/live';
 
 const SLOW = 1000;
 
@@ -34,25 +34,19 @@ export const Fetch: LiveComponent<FetchProps<any>> = (props: FetchProps<any>) =>
 
   const run = useMemo(() => {
     const f = async () => {
-      try {
-        const response = await fetch(url ?? request, options);
-        if (type === 'buffer') return response.arrayBuffer();
-        return response;
-      } catch (e) {
-        console.error(e);
-        return fallback;
-      }
+      const response = await fetch(url ?? request, options);
+      if (type === 'buffer') return response.arrayBuffer();
+      return response;
     };
     
     return SLOW ? () => delay(f(), SLOW) : f;
   }, [url, request, JSON.stringify(options), type, version]);
 
-  const resolved = useAsync(run, run);
-  const result = resolved !== undefined ? resolved : loading;
+  const [resolved, error] = useAsync(run, run);
+  const result = resolved !== undefined ? resolved : (error !== undefined ? fallback : loading);
 
   return result !== undefined ? (render ? render(result) : yeet(result)) : null;
 };
-
 
 const delay = <T>(promise: Promise<T>, time: number = 0) =>
   promise.then((value: T) =>

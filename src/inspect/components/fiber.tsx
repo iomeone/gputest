@@ -1,5 +1,5 @@
-import { LiveFiber } from '../../live/types';
-import { formatValue, isSubNode, YEET, DEBUG } from '../../live';
+import { LiveFiber } from '@use-gpu/live/types';
+import { formatValue, isSubNode, YEET, DEBUG } from '@use-gpu/live';
 
 import React, { memo, useMemo } from 'react';
 
@@ -255,7 +255,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   }
 
   // Render attached react root
-  if (__inspect?.react) {
+  if (shouldRender && __inspect?.react) {
     const {react} = __inspect;
     const node = react.root?.current;
     

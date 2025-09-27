@@ -1,6 +1,6 @@
-import { LiveComponent, LiveFiber, LiveElement } from '../../live/types';
-import { UseRenderingContextGPU, RenderPassMode } from '../../core/types';
-import { use, yeet, memo, multiGather, useContext, useMemo } from '../../live';
+import { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live/types';
+import { UseRenderingContextGPU, RenderPassMode } from '@use-gpu/core/types';
+import { use, yeet, memo, multiGather, useContext, useMemo } from '@use-gpu/live';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { PickingContext } from './picking';
@@ -62,8 +62,15 @@ export const Pass: LiveComponent<PassProps> = memo((props: PassProps) => {
     return yeet(() => {
       const commandEncoder = device.createCommandEncoder();
 
+      renderContext.swapView();
       renderToContext(commandEncoder, renderContext, visibles);
-      if (picking && pickingContext) renderToContext(commandEncoder, pickingContext.renderContext, pickings);
+
+      const shouldUpdatePicking = picking && pickingContext && pickings.length;
+      if (shouldUpdatePicking) {
+        const {renderContext} = pickingContext!;
+        renderContext.swapView();
+        renderToContext(commandEncoder, renderContext, pickings);
+      }
 
       device.queue.submit([commandEncoder.finish()]);      
     });

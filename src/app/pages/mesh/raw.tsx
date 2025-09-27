@@ -1,9 +1,8 @@
-import { LiveComponent } from '../../../live/types';
-import { CanvasRenderingContextGPU } from '../../../webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../../../core/types';
+import { LC } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import React from '../../../live/jsx';
-import { use, useMemo, useOne, useResource, useState } from '../../../live';
+import React from '@use-gpu/live/jsx';
 
 import {
   Loop, Draw, Pass, Flat,
@@ -11,18 +10,13 @@ import {
   OrbitCamera, OrbitControls,
   Pick, Cursor, PointLayer, LineLayer,
   RenderToTexture,
-} from '../../../components';
+} from '@use-gpu/components';
 import { Mesh } from '../../components/mesh';
 import { makeMesh, makeTexture } from '../../meshes/cube';
 
-export type MeshRawPage = {
-  canvas: HTMLCanvasElement,
-};
-
-export const MeshRawPage: LiveComponent<MeshRawPageProps> = (props) => {
+export const MeshRawPage: LC = (props) => {
   const mesh = makeMesh();
   const texture = makeTexture();
-  const {canvas} = props;
 
   const view = (
     <Draw>
@@ -41,7 +35,6 @@ export const MeshRawPage: LiveComponent<MeshRawPageProps> = (props) => {
 
   return (
     <OrbitControls
-      canvas={canvas}
       radius={5}
       bearing={0.5}
       pitch={0.3}

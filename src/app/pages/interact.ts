@@ -1,13 +1,13 @@
-import { LiveComponent } from '../../live/types';
-import { TextureSource } from '../../core/types';
+import { LiveComponent } from '@use-gpu/live/types';
+import { TextureSource } from '@use-gpu/core/types';
 
-import { use, gather, resume, useMemo, useOne, useResource, useState } from '../../live';
+import { use, gather, resume, useMemo, useOne, useResource, useState } from '@use-gpu/live';
 
 import {
   Draw, Pass,
   Flat, UI, Layout, Absolute, Block, Flex, Element,
   RawTexture,
-} from '../../components';
+} from '@use-gpu/components';
 import { makeTexture } from '../meshes/cube';
 
 export type InteractPageProps = {

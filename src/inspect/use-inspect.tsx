@@ -1,13 +1,13 @@
-import { LiveFiber, LiveComponent, LiveElement } from '../live/types';
-import { use } from '../live';
-import { HTML } from '../react';
+import { LiveFiber, LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { use } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
 
 import React from 'react';
 import { Inspect } from './components/inspect';
 
 export type UseInspectProps = {
   fiber: LiveFiber<any>,
-  canvas: HTMLCanvasElement,
+  container: HTMLElement,
 };
 
 const STYLE = {
@@ -17,9 +17,9 @@ const STYLE = {
   zIndex: 10000,
 };
 
-export const UseInspect: LiveComponent<UseInspectProps> = ({fiber, canvas}) =>
+export const UseInspect: LiveComponent<UseInspectProps> = ({fiber, container}) =>
   use(HTML, {
-    container: canvas.parentElement,
+    container,
     style: STYLE,
     children: <Inspect fiber={fiber} />,
   });

@@ -1,22 +1,22 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial, Prop,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, LambdaSource, RenderPassMode,
-} from '../../core/types';
-import { ShaderModule } from '../../shader/types';
+} from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/types';
 
 import { RawLines } from '../primitives/raw-lines';
 
-import { use, memo, provide, useCallback, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
-import { resolve, makeShaderBindings } from '../../core';
+import { use, memo, provide, useCallback, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
+import { resolve, makeShaderBindings } from '@use-gpu/core';
 import { TransformContext, useTransformContext } from '../providers/transform-provider';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getTickPosition } from '../../gen-wgsl/instance/vertex/tick';
-import { getLineSegment } from '../../gen-wgsl/geometry/line';
+import { getTickPosition } from '@use-gpu/wgsl/instance/vertex/tick.wgsl';
+import { getLineSegment } from '@use-gpu/wgsl/geometry/line.wgsl';
 
 export type TickLayerProps = {
   position?: number[] | TypedArray,

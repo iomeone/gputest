@@ -1,11 +1,12 @@
-import { use } from '../live';
+import { use } from '@use-gpu/live';
 
 import { GeometryDataPage } from './pages/geometry/data';
 import { GeometryLinesPage } from './pages/geometry/lines';
-import { AtlasPage } from './pages/debug/atlas';
-import { RawMeshPage } from './pages/mesh/raw';
+import { DebugAtlasPage } from './pages/debug/atlas';
+import { LayoutDisplayPage } from './pages/layout/display';
+import { MeshRawPage } from './pages/mesh/raw';
 import { LinearRGBPage } from './pages/rtt/linear-rgb';
-import { SimplePlotPage } from './pages/plot/simple';
+import { PlotSimplePage } from './pages/plot/simple';
 
 import { HomePage } from './pages/home';
 import { EmptyPage } from './pages/empty';
@@ -16,6 +17,7 @@ import { LayoutPage } from './pages/layout';
 export const PAGES = [
   {path: "/geometry/lines", title: "Geometry - 3D Lines and Arrows"},
   {path: "/geometry/data", title: "Geometry - Data-driven Layers"},
+  {path: "/layout/display", title: "Layout - Box model"},
   {path: "/mesh/raw", title: "Mesh - Direct Rendering"},
   {path: "/plot/simple", title: "Plot - Simple"},
   {path: "/rtt/linear-rgb", title: "RTT - Linear RGB"},
@@ -23,17 +25,18 @@ export const PAGES = [
   {path: "/", title: "Index"},
 ];
 
-export const makeRoutes = (canvas: HTMLCanvasElement) => ({
-  "/geometry/data": { element: use(GeometryDataPage, { canvas }) },
-  "/geometry/lines": { element: use(GeometryLinesPage, { canvas }) },
-  "/mesh/raw": { element: use(RawMeshPage, { canvas }) },
-  "/plot/simple": { element: use(SimplePlotPage, { canvas }) },
-  "/rtt/linear-rgb": { element: use(LinearRGBPage, { canvas })},
-  "/debug/atlas": { element: use(AtlasPage, { canvas }) },
+export const makeRoutes = () => ({
+  "/geometry/data": { element: use(GeometryDataPage) },
+  "/geometry/lines": { element: use(GeometryLinesPage) },
+  "/layout/display": { element: use(LayoutDisplayPage) },
+  "/mesh/raw": { element: use(MeshRawPage) },
+  "/plot/simple": { element: use(PlotSimplePage) },
+  "/rtt/linear-rgb": { element: use(LinearRGBPage)},
+  "/debug/atlas": { element: use(DebugAtlasPage) },
 
-  "/layout": { element: use(LayoutPage, { }) },
-  "/interact": { element: use(InteractPage, { }) },
+  "/layout": { element: use(LayoutPage) },
+  "/interact": { element: use(InteractPage) },
 
-  "/": { element: use(HomePage, { container: canvas.parentElement }) },
-  "*": { element: use(EmptyPage, { }) },
+  "/": { element: use(HomePage, { container: document.querySelector('#use-gpu') }) },
+  "*": { element: use(EmptyPage) },
 });

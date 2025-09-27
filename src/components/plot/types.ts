@@ -1,5 +1,5 @@
-import { TypedArray } from '../../core/types';
-import { ShaderModule } from '../../shader/wgsl/types';
+import { TypedArray } from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/wgsl/types';
 
 export type PropParser<A, B> = (t?: A) => B;
 export type PropDef = Record<string, PropParser<A, B>>;

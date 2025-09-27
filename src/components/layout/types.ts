@@ -1,6 +1,6 @@
-import { TextureSource, Tuples } from '../../core/types';
-import { LiveElement, Key } from '../../live/types';
-import { FontMetrics, TextMetrics } from '../../text/types';
+import { TextureSource, Tuples } from '@use-gpu/core/types';
+import { LiveElement, Key } from '@use-gpu/live/types';
+import { FontMetrics, TextMetrics } from '@use-gpu/text/types';
 
 export type Point = [number, number];
 export type Point4 = [number, number, number, number];
@@ -39,6 +39,9 @@ export type LayoutFit = {
 export type LayoutElement = {
   sizing: Sizing,
   margin: Margin,
+
+  ratioX?: number,
+  ratioY?: number,
 
   grow?: number,
   shrink?: number,

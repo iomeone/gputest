@@ -1,9 +1,9 @@
-import { LiveComponent } from '../../../live/types';
-import { CanvasRenderingContextGPU } from '../../../webgpu/types';
-import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '../../../core/types';
+import { LC } from '@use-gpu/live/types';
+import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { DataField, Emitter, StorageSource, ViewUniforms, UniformAttribute, RenderPassMode } from '@use-gpu/core/types';
 
-import { use } from '../../../live';
-import React from '../../../live/jsx';
+import { use } from '@use-gpu/live';
+import React from '@use-gpu/live/jsx';
 
 import {
   Loop, Draw, Pass, Flat,
@@ -13,18 +13,13 @@ import {
   Animation,
   Plot, Cartesian, Axis, Grid, Scale, Tick, Label, Sampled,
   LinearRGB,
-} from '../../../components';
+} from '@use-gpu/components';
 import { Mesh } from '../mesh';
 import { makeMesh, makeTexture } from '../meshes/mesh';
 
-export type PlotSimplePageProps = {
-  canvas: HTMLCanvasElement,
-};
-
 let t = 0;
 
-export const PlotSimplePage: LiveComponent<PlotSimplePageProps> = (props) => {
-  const {canvas} = props;
+export const PlotSimplePage: LC = () => {
   
   const view = (
     <Loop>
@@ -142,7 +137,6 @@ export const PlotSimplePage: LiveComponent<PlotSimplePageProps> = (props) => {
 
   return (
     <OrbitControls
-      canvas={canvas}
       radius={5}
       bearing={0.5}
       pitch={0.3}

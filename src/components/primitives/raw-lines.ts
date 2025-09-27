@@ -1,25 +1,25 @@
-import { LiveComponent } from '../../live/types';
+import { LiveComponent } from '@use-gpu/live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial, Prop,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, ShaderSource, RenderPassMode,
-} from '../../core/types';
-import { ShaderModule } from '../../shader/types';
+} from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/types';
 
 import { ViewContext } from '../providers/view-provider';
 import { PickingContext, useNoPicking } from '../render/picking';
 import { Virtual } from './virtual';
 
-import { patch } from '../../state';
-import { use, yeet, memo, useCallback, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingsToLinks, bundleToAttributes } from '../../shader/wgsl';
-import { resolve, makeShaderBindings } from '../../core';
+import { patch } from '@use-gpu/state';
+import { use, yeet, memo, useCallback, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks, bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { resolve, makeShaderBindings } from '@use-gpu/core';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { getLineVertex } from '../../gen-wgsl/instance/vertex/line';
-import { getPassThruFragment } from '../../gen-wgsl/mask/passthru';
+import { getLineVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
+import { getPassThruFragment } from '@use-gpu/wgsl/mask/passthru.wgsl';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,

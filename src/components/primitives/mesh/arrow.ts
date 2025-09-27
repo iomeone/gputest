@@ -1,5 +1,5 @@
-import { VertexData } from '../../../core/types';
-import { makeVertexAttributeLayout } from '../../../core';
+import { VertexData } from '@use-gpu/core/types';
+import { makeVertexAttributeLayout } from '@use-gpu/core';
 
 const τ = Math.PI * 2;
 

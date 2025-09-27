@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '../../../live/types';
-import { StorageSource, LambdaSource, UniformType } from '../../../core/types';
-import { ShaderModule } from '../../../shader/wgsl/types';
+import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { StorageSource, LambdaSource, UniformType } from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/wgsl/types';
 import { ScaleTrait, AxisTrait } from '../types'; 
 
-import { yeet, provide, useOne, useMemo, useNoMemo, useContext, incrementVersion } from '../../../live';
+import { yeet, provide, useOne, useMemo, useNoMemo, useContext, incrementVersion } from '@use-gpu/live';
 
 import { DataContext, ValuesContext } from '../../providers/data-provider';
 import { RangeContext } from '../../providers/range-provider';
@@ -15,7 +15,7 @@ import { useProp, useScaleTrait, useAxisTrait } from '../traits';
 import { parsePosition4 } from '../util/parse';
 import { logarithmic, linear } from '../util/domain';
 
-import { getScalePosition } from '../../../gen-wgsl/plot/scale';
+import { getScalePosition } from '@use-gpu/wgsl/plot/scale.wgsl';
 
 import { vec4 } from 'gl-matrix';
 

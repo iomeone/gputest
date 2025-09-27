@@ -1,10 +1,10 @@
-import { StorageSource, LambdaSource } from '../../core/types';
-import { ShaderModule } from '../../shader/wgsl/types';
+import { StorageSource, LambdaSource } from '@use-gpu/core/types';
+import { ShaderModule } from '@use-gpu/shader/wgsl/types';
 
-import { useOne, useVersion } from '../../live';
+import { useOne, useVersion } from '@use-gpu/live';
 import { useTransformContext } from '../providers/transform-provider';
-import { sourceToModule, bindingToModule, chainTo } from '../../shader/wgsl';
-import { makeShaderBinding, makeShaderBindings } from '../../core';
+import { sourceToModule, bindingToModule, chainTo } from '@use-gpu/shader/wgsl';
+import { makeShaderBinding, makeShaderBindings } from '@use-gpu/core';
 
 const TRANSFORM_BINDING = { name: 'getPosition', format: 'vec4<f32>', value: [0, 0, 0, 0], args: ['u32'] } as UniformAttributeValue;
 

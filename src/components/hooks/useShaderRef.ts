@@ -1,5 +1,5 @@
-import { ShaderSource } from '../../shader/types';
-import { useOne, useNoOne } from '../../live';
+import { ShaderSource } from '@use-gpu/shader/types';
+import { useOne, useNoOne } from '@use-gpu/live';
 
 export const useShaderRef = <T>(value?: T, source?: ShaderSource) => {
   if (source) {

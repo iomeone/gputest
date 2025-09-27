@@ -1,4 +1,4 @@
-import { useOne } from '../../live';
+import { useOne } from '@use-gpu/live';
 import {
   parseFloat,
   parseInteger,

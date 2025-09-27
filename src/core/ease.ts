@@ -2,7 +2,6 @@ import { makeTuples } from './tuple';
 
 const sqr = (x: number) => x * x;
 const cub = (x: number) => x * x * x;
-const cmp = (a: number, b: number) => a - b;
 
 // Cubic bezier 1D
 export const cubicBezier = (t: number, a: number, b: number, c: number, d: number) =>
