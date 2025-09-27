@@ -18,7 +18,7 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getSphericalPosition } from '../../wgsl/transform/spherical.wgsl';
+import { getSphericalPosition } from '../../gen-wgsl/transform/spherical';
 
 const POLAR_BINDINGS = bundleToAttributes(getSphericalPosition);
 

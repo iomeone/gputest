@@ -17,7 +17,7 @@ import { UIRectangle } from '../shape/ui-rectangle';
 import { bundleToAttributes, chainTo } from '../../shader/wgsl';
 import { useBoundShader } from '../../workbench';
 
-import { getScrolledPosition } from '../../wgsl/layout/scroll.wgsl';
+import { getScrolledPosition } from '../../gen-wgsl/layout/scroll';
 
 const OFFSET_BINDINGS = bundleToAttributes(getScrolledPosition);
 

@@ -15,8 +15,8 @@ import {
   useBoundShader, useNoBoundShader,
   useRawSource, useNoRawSource,
 } from '../workbench';
-import { getCartesianPosition } from '../wgsl/transform/cartesian.wgsl'
-import { getTransformedNormal } from '../wgsl/transform/normal.wgsl'
+import { getCartesianPosition } from '../gen-wgsl/transform/cartesian'
+import { getTransformedNormal } from '../gen-wgsl/transform/normal'
 import { useGLTFMaterial } from './gltf-material';
 
 const CARTESIAN_BINDINGS = bundleToAttributes(getCartesianPosition);

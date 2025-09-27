@@ -26,8 +26,8 @@ import { vec4 } from 'gl-matrix';
 
 import { logarithmic, linear } from '../util/domain';
 
-import { getGridPosition } from '../../wgsl/plot/grid.wgsl';
-import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
+import { getGridPosition } from '../../gen-wgsl/plot/grid';
+import { getLineSegment } from '../../gen-wgsl/geometry/segment';
 
 const GRID_BINDINGS = bundleToAttributes(getGridPosition);
 

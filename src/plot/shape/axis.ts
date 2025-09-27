@@ -21,7 +21,7 @@ import {
 import { vec4 } from 'gl-matrix';
 
 import { bundleToAttributes } from '../../shader/wgsl';
-import { getAxisPosition } from '../../wgsl/plot/axis.wgsl';
+import { getAxisPosition } from '../../gen-wgsl/plot/axis';
 
 const AXIS_BINDINGS = bundleToAttributes(getAxisPosition);
 

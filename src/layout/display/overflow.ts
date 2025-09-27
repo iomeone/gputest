@@ -9,8 +9,8 @@ import { makeShaderBinding } from '../../core';
 import { bindBundle, bindingToModule, bundleToAttribute, castTo, chainTo } from '../../shader/wgsl';
 import { useInspectable } from '../../workbench';
 
-import { getScrolledPosition } from '../../wgsl/layout/scroll.wgsl';
-import { getShiftedRectangle } from '../../wgsl/layout/shift.wgsl';
+import { getScrolledPosition } from '../../gen-wgsl/layout/scroll';
+import { getShiftedRectangle } from '../../gen-wgsl/layout/shift';
 
 import { fitAbsoluteBox } from '../lib/absolute';
 import { getBlockMinMax } from '../lib/block';

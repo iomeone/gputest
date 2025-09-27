@@ -15,7 +15,7 @@ import { RangeContext } from '../providers/range-provider';
 import { useScaleTrait, useAxisTrait } from '../traits';
 import { logarithmic, linear } from '../util/domain';
 
-import { getScalePosition } from '../../wgsl/plot/scale.wgsl';
+import { getScalePosition } from '../../gen-wgsl/plot/scale';
 
 import { vec4 } from 'gl-matrix';
 
