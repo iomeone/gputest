@@ -1,11 +1,11 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import React, { Gather, Yeet } from '@use-gpu/live/jsx';
+import { LiveComponent } from '../../../live/types';
+import React, { Gather, Yeet } from '../../../live/jsx';
 
 import {
   Draw, Pass,
   Flat, UI, Layout, Absolute, Inline, Text,
   DebugAtlas, RawTexture,
-} from '@use-gpu/components';
+} from '../../../components';
 
 export type DebugAtlasPageProps = {
   canvas: HTMLCanvasElement,

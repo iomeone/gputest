@@ -1,7 +1,7 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { use } from '@use-gpu/live';
+import { LiveComponent } from '../../live/types';
+import { use } from '../../live';
 
-import { Draw, Pass } from '@use-gpu/components';
+import { Draw, Pass } from '../../components';
 
 export type EmptyPageProps = {
   _unused?: boolean,
