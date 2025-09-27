@@ -50,7 +50,8 @@
     "wsrun": "^5.2.4",
     "@babel/preset-react": "^7.16.0",
     "@radix-ui/react-tabs": "^0.1.5",
-    "@stitches/react": "^1.2.7"
+    "@stitches/react": "^1.2.7",
+    "@radix-ui/react-slider": "^0.1.4"
   },
   "scripts": {
     "start": "NODE_ENV=development webpack serve",
