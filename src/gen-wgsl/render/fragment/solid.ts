@@ -1,0 +1,14 @@
+import {parseBundle} from "../../../shader";
+import {decompressAST} from "../../../shader/wgsl";
+const data = {
+    "name": "solid",
+    "code": "@optional @external fn getFragment(color: vec4<f32>, uv: vec2<f32>) -> vec4<f32> { return color; }\r\n\r\n@stage(fragment)\r\nfn main(\r\n  @location(0) fragColor: vec4<f32>,\r\n  @location(1) fragUV: vec2<f32>,  \r\n) -> @location(0) vec4<f32> {\r\n  var outColor = fragColor;\r\n\r\n  // TODO: awaiting compound support\r\n  //outColor.xyz *= outColor.a;\r\n  outColor = vec4<f32>(outColor.xyz, outColor.a);\r\n  outColor = getFragment(outColor, fragUV);\r\n\r\n  if (outColor.a <= 0.0) { discard; }\r\n\r\n  return outColor;\r\n}\r\n",
+    "hash": "77m2xnotaj",
+    "table": {"symbols":["getFragment","main"],"declarations":[{"at":0,"symbol":"getFragment","flags":6,"func":{"name":"getFragment","type":{"name":"vec4","args":[{"name":"f32"}]},"attributes":[{"name":"optional"},{"name":"external"}],"parameters":[{"name":"color","type":{"name":"vec4","args":[{"name":"f32"}]}},{"name":"uv","type":{"name":"vec2","args":[{"name":"f32"}]}}],"identifiers":[]}},{"at":102,"symbol":"main","flags":0,"func":{"name":"main","type":{"name":"vec4","args":[{"name":"f32"}],"attributes":[{"name":"location","args":["0"]}]},"attributes":[{"name":"stage","args":["fragment"]}],"parameters":[{"name":"fragColor","type":{"name":"vec4","args":[{"name":"f32"}]},"attributes":[{"name":"location","args":["0"]}]},{"name":"fragUV","type":{"name":"vec2","args":[{"name":"f32"}]},"attributes":[{"name":"location","args":["1"]}]}],"identifiers":["getFragment"]}}],"externals":[{"at":0,"symbol":"getFragment","flags":6,"func":{"name":"getFragment","type":{"name":"vec4","args":[{"name":"f32"}]},"attributes":[{"name":"optional"},{"name":"external"}],"parameters":[{"name":"color","type":{"name":"vec4","args":[{"name":"f32"}]}},{"name":"uv","type":{"name":"vec2","args":[{"name":"f32"}]}}],"identifiers":[]}}]},
+    "shake": [[0,["getFragment","main"]],[102,["main"]]],
+    "tree": decompressAST([["Opt",0,98,"getFragment"],["Skip",0,9],["Skip",10,19],["Id",23,34],["Id",35,40],["Id",53,55],["Id",90,95],["Shake",102,498],["Attr",102,118],["Id",103,108],["Id",109,117],["Id",123,127],["Attr",132,144],["Id",133,141],["Id",145,154],["Attr",170,182],["Id",171,179],["Id",183,189],["Attr",210,222],["Id",211,219],["Id",242,250],["Id",253,262],["Id",340,348],["Id",361,369],["Id",370,373],["Id",375,383],["Id",384,385],["Id",391,399],["Id",402,413],["Id",414,422],["Id",424,430],["Id",442,450],["Id",451,452],["Id",486,494]]),
+  };
+const libs = {};
+const getSymbol = (entry) => ({module: data, libs, entry});
+export default getSymbol();
+/* __WGSL_LOADER_GENERATED */

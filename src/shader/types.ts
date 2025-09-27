@@ -96,7 +96,7 @@ export type StorageSource = {
   version: number,
 };
 
-export type LambdaSource<T> = {
+export type LambdaSource<T extends SymbolTable> = {
   shader: ShaderModule<T>,
   size: [number, number] | [number, number, number] | [number, number, number, number],
 };
@@ -112,7 +112,12 @@ export type TextureSource = {
   version: number,
 };
 
-export type ShaderSource = StorageSource | LambdaSource<ShaderModule> | ShaderModule;
+// export type ShaderSource = StorageSource | LambdaSource<ShaderModule> | ShaderModule;
+
+export type ShaderSource<T extends SymbolTable = any> =
+  | StorageSource
+  | LambdaSource<T>
+  | ShaderModule<T>;
 
 export type UniformAttribute = {
   name: string,
