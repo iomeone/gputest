@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToClip3D };
-use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize, getArrowCorrection };
+use '../../../wgsl/use/types'::{ SolidVertex };
+use '../../../wgsl/use/view'::{ worldToClip, worldToClip3D };
+use '../../../wgsl/geometry/arrow'::{ getArrowSize, getArrowCorrection };
 
 @optional @external fn getVertex(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 

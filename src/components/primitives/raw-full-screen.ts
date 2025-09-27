@@ -1,24 +1,24 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 import {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode,
-} from '@use-gpu/core/types';
-import { ShaderModule } from '@use-gpu/shader/types';
+} from '../../core/types';
+import { ShaderModule } from '../../shader/types';
 
 import { ViewContext } from '../providers/view-provider';
 import { PickingContext, useNoPicking } from '../render/picking';
 import { Virtual } from './virtual';
 
-import { patch } from '@use-gpu/state';
-import { use, yeet, memo, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
-import { bindBundle, bindingsToLinks, bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { makeShaderBindings } from '@use-gpu/core';
+import { patch } from '../../state';
+import { use, yeet, memo, useFiber, useMemo, useOne, useState, useResource } from '../../live';
+import { bindBundle, bindingsToLinks, bundleToAttributes } from '../../shader/wgsl';
+import { makeShaderBindings } from '../../core';
 
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen.wgsl';
-import { getTextureFragment } from '@use-gpu/wgsl/mask/textured.wgsl';
+import { getFullScreenVertex } from '../../wgsl/instance/vertex/full-screen.wgsl';
+import { getTextureFragment } from '../../wgsl/mask/textured.wgsl';
 
 export type RawFullScreenProps = {
   texture?: TextureSource | LambdaSource | ShaderModule,

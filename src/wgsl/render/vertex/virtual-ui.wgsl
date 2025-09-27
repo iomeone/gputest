@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/types'::{ UIVertex };
-use "@use-gpu/wgsl/use/color"::{ toColorSpace };
+use '../../../wgsl/use/types'::{ UIVertex };
+use "../../../wgsl/use/color"::{ toColorSpace };
 
 @external fn getVertex(v: u32, i: u32) -> UIVertex {};
 

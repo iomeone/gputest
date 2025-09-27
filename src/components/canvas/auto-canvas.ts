@@ -1,12 +1,12 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
 
 import { AutoSize } from './auto-size';
 import { Canvas } from './canvas';
 import { CanvasPicking } from './canvas-picking';
 import { CursorConsumer } from '../consumers/cursor-consumer';
 
-import { use } from '@use-gpu/live';
+import { use } from '../../live';
 
 export type AutoCanvasProps = {
   device: GPUDevice,

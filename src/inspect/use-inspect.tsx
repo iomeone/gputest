@@ -1,6 +1,6 @@
-import { LiveFiber, LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { use } from '@use-gpu/live';
-import { HTML } from '@use-gpu/react';
+import { LiveFiber, LiveComponent, LiveElement } from '../live/types';
+import { use } from '../live';
+import { HTML } from '../react';
 
 import React from 'react';
 import { Inspect } from './components/inspect';

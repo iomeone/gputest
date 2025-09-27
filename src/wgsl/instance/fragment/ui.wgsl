@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/fragment/sdf-2d'::{ SDF, getUVScale };
+use '../../../wgsl/fragment/sdf-2d'::{ SDF, getUVScale };
 
 @external fn getTexture(uv: vec2<f32>) -> vec4<f32> {};
  

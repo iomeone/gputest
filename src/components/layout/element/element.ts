@@ -1,8 +1,8 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { TextureSource } from '@use-gpu/core/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
+import { TextureSource } from '../../../core/types';
 import { ImageAttachment, Dimension, Margin, Fit, Repeat, Rectangle, Anchor, Point, Point4 } from './types';
 
-import { keyed, yeet, useFiber, useMemo } from '@use-gpu/live';
+import { keyed, yeet, useFiber, useMemo } from '../../../live';
 import { parseDimension, normalizeMargin } from '../lib/util';
 
 import { Surface } from '../shape/surface';

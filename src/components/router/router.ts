@@ -1,5 +1,5 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { makeContext, memo, provide, use, useContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { makeContext, memo, provide, use, useContext, useMemo, useOne, useResource, useState } from '../../live';
 import { Routes } from './routes';
 
 export type Route = {

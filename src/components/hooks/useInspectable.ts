@@ -1,4 +1,4 @@
-import { useFiber, useState } from '@use-gpu/live';
+import { useFiber, useState } from '../../live';
 
 export const useInspectable = () => {
   const fiber = useFiber();

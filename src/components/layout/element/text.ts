@@ -1,10 +1,10 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { TextureSource, Emitter } from '@use-gpu/core/types';
-import { SpanData, PerSpan, PerGlyph } from '@use-gpu/text/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
+import { TextureSource, Emitter } from '../../../core/types';
+import { SpanData, PerSpan, PerGlyph } from '../../../text/types';
 import { Point4, InlineSpan } from './types';
 
-import { keyed, yeet, useContext, useFiber, useOne, useMemo } from '@use-gpu/live';
-import { makeTuples, emitIntoNumberArray } from '@use-gpu/core';
+import { keyed, yeet, useContext, useFiber, useOne, useMemo } from '../../../live';
+import { makeTuples, emitIntoNumberArray } from '../../../core';
 import { parseDimension, normalizeMargin } from '../lib/util';
 
 import { useFontFamily, useFontText, useFontHeight } from '../../text/providers/font-provider';

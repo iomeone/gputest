@@ -1,6 +1,6 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../live/types';
 
-import { use, memo, useResource, useState } from '@use-gpu/live';
+import { use, memo, useResource, useState } from '../../live';
 import { EventProvider } from '../providers/event-provider';
 
 const CAPTURE_EVENT = {capture: true};

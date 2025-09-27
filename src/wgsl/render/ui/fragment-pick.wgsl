@@ -1,4 +1,4 @@
-use '@use-gpu/glsl/use/picking'::{ getPickingColor };
+use '../../../glsl/use/picking'::{ getPickingColor };
 use './sdf'::{ SDF, getBorderBoxSDF, getRoundedBorderBoxSDF };
 
 @external fn getTexture(uv: vec2<f32>) -> vec4<f32> {};

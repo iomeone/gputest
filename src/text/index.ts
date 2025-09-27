@@ -1,5 +1,5 @@
 import { Font, FontProps, FontMetrics, SpanMetrics, GlyphMetrics, RustTextAPI } from './types';
-import { getHashValue } from '@use-gpu/state';
+import { getHashValue } from '../state';
 
 export { glyphToRGBA, glyphToSDF, padRectangle } from './sdf';
 

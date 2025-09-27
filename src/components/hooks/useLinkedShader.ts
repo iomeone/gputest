@@ -1,9 +1,9 @@
-import { ShaderModuleDescriptor } from '@use-gpu/core/types';
-import { ParsedModule, ParsedBundle, ShaderDefine } from '@use-gpu/shader/types';
+import { ShaderModuleDescriptor } from '../../core/types';
+import { ParsedModule, ParsedBundle, ShaderDefine } from '../../shader/types';
 
-import { resolveBindings, linkBundle, getHash } from '@use-gpu/shader/wgsl';
-import { makeShaderModule } from '@use-gpu/core';
-import { useFiber, useMemo, useOne } from '@use-gpu/live';
+import { resolveBindings, linkBundle, getHash } from '../../shader/wgsl';
+import { makeShaderModule } from '../../core';
+import { useFiber, useMemo, useOne } from '../../live';
 import LRU from 'lru-cache';
 
 const NO_DEPS = [] as any[];

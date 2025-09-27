@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { TextureSource, Tuples } from '@use-gpu/core/types';
-import { FontMetrics } from '@use-gpu/text/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
+import { TextureSource, Tuples } from '../../../core/types';
+import { FontMetrics } from '../../../text/types';
 import { Point4, InlineLine } from './types';
 
-import { use, yeet, useContext } from '@use-gpu/live';
+import { use, yeet, useContext } from '../../../live';
 import { LayoutContext } from '../../providers/layout-provider';
 import { SDFFontProvider, useSDFFontContext, SDF_FONT_ATLAS } from '../../text/providers/sdf-font-provider';
 import { parseDimension, normalizeMargin } from '../lib/util';

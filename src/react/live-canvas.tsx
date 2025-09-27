@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef } from 'react';
 
-import { render as renderLive } from '@use-gpu/live';
-import { LiveElement } from '@use-gpu/live/types';
+import { render as renderLive } from '../live';
+import { LiveElement } from '../live/types';
 
 export type LiveCanvasProps = {
   style?: Record<string, any>,

@@ -1,5 +1,5 @@
-import { LiveComponent } from '@use-gpu/live/types';
-import { useFiber, useResource, useNoResource } from '@use-gpu/live';
+import { LiveComponent } from '../live/types';
+import { useFiber, useResource, useNoResource } from '../live';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

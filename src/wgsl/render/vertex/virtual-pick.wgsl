@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ PickVertex };
+use '../../../wgsl/use/types'::{ PickVertex };
 
 @external fn getVertex(v: u32, i: u32) -> PickVertex {};
 

@@ -1,12 +1,12 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../../live/types';
 
-import { gather, use, wrap, yeet, resume, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { gather, use, wrap, yeet, resume, useMemo, useOne, useResource, useState } from '../../../live';
 
 import {
   Draw, Pass,
   Flat, UI, Layout, Absolute, Inline, Text,
   DebugAtlas, RawTexture,
-} from '@use-gpu/components';
+} from '../../../components';
 
 export type AtlasPageProps = {
   canvas: HTMLCanvasElement,

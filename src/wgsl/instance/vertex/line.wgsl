@@ -1,8 +1,8 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/use/view'::{ viewUniforms, worldToClip, worldToView, viewToClip, toClip3D, clipLineIntoView, getPerspectiveScale };
-use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
-use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
-use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
+use '../../../wgsl/use/types'::{ SolidVertex };
+use '../../../wgsl/use/view'::{ viewUniforms, worldToClip, worldToView, viewToClip, toClip3D, clipLineIntoView, getPerspectiveScale };
+use '../../../wgsl/geometry/strip'::{ getStripIndex };
+use '../../../wgsl/geometry/line'::{ getLineJoin };
+use '../../../wgsl/geometry/arrow'::{ getArrowSize };
 
 @optional @external fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 @optional @external fn getSegment(i: u32) -> i32 { return 0; };

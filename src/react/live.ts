@@ -1,5 +1,5 @@
-import { render } from '@use-gpu/live';
-import { LiveElement } from '@use-gpu/live/types';
+import { render } from '../live';
+import { LiveElement } from '../live/types';
 
 export type LiveProps = {
   children: LiveElement<any>,

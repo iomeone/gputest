@@ -1,6 +1,6 @@
-import { TextureSource, Tuples } from '@use-gpu/core/types';
-import { LiveElement, Key } from '@use-gpu/live/types';
-import { FontMetrics, TextMetrics } from '@use-gpu/text/types';
+import { TextureSource, Tuples } from '../../core/types';
+import { LiveElement, Key } from '../../live/types';
+import { FontMetrics, TextMetrics } from '../../text/types';
 
 export type Point = [number, number];
 export type Point4 = [number, number, number, number];

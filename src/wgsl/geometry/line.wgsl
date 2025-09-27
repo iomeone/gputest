@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ viewUniforms };
+use '../../wgsl/use/view'::{ viewUniforms };
 
 // segments
 //

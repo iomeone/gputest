@@ -1,5 +1,5 @@
-import { mountGPU } from '@use-gpu/webgpu';
-import { use, render, formatTree } from '@use-gpu/live';
+import { mountGPU } from '../webgpu';
+import { use, render, formatTree } from '../live';
 
 import { App } from './app';
 

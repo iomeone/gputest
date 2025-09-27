@@ -1,8 +1,8 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
 import { ColorTrait, LineTrait, ROPTrait, VectorLike } from '../types';
 
-import { use, provide, useCallback, useContext, useOne, useMemo } from '@use-gpu/live';
-import { mapChunksToSegments, mapChunksToAnchors } from '@use-gpu/core';
+import { use, provide, useCallback, useContext, useOne, useMemo } from '../../../live';
+import { mapChunksToSegments, mapChunksToAnchors } from '../../../core';
 
 import { DataContext } from '../../providers/data-provider';
 import { RangeContext } from '../../providers/range-provider';

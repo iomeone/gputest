@@ -1,11 +1,11 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
-import { CanvasRenderingContextGPU } from '@use-gpu/webgpu/types';
-import { ColorSpace } from '@use-gpu/core/types';
+import { LiveComponent, LiveElement } from '../../live/types';
+import { CanvasRenderingContextGPU } from '../../webgpu/types';
+import { ColorSpace } from '../../core/types';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, BACKGROUND_COLOR } from '../constants';
 
 import { EventProvider, RenderContext, DeviceContext } from '../providers';
-import { provide, use, imperative, useCallback, useMemo, useOne } from '@use-gpu/live';
-import { makePresentationContext } from '@use-gpu/webgpu';
+import { provide, use, imperative, useCallback, useMemo, useOne } from '../../live';
+import { makePresentationContext } from '../../webgpu';
 import {
   makeColorState,
   makeColorAttachment,
@@ -15,7 +15,7 @@ import {
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLIED,
-} from '@use-gpu/core';
+} from '../../core';
 
 export type CanvasProps = {
   device: GPUDevice,

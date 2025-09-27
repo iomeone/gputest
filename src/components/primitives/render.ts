@@ -1,17 +1,17 @@
-import { LiveComponent } from '@use-gpu/live/types';
+import { LiveComponent } from '../../live/types';
 import {
   TypedArray, ViewUniforms, UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, StorageSource, RenderPassMode, DeepPartial,
-} from '@use-gpu/core/types';
-import { ShaderModule, ParsedBundle, ParsedModule } from '@use-gpu/shader/types';
-import { DeviceContext, ViewContext, RenderContext, PickingContext, usePickingContext } from '@use-gpu/components';
-import { yeet, memo, useContext, useNoContext, useMemo, useOne, useState, useResource, useConsoleLog } from '@use-gpu/live';
+} from '../../core/types';
+import { ShaderModule, ParsedBundle, ParsedModule } from '../../shader/types';
+import { DeviceContext, ViewContext, RenderContext, PickingContext, usePickingContext } from '../../components';
+import { yeet, memo, useContext, useNoContext, useMemo, useOne, useState, useResource, useConsoleLog } from '../../live';
 import {
   makeMultiUniforms, makeBoundUniforms,
   getColorSpace,
   uploadBuffer,
   resolve,
-} from '@use-gpu/core';
+} from '../../core';
 import { useLinkedShader } from '../hooks/useLinkedShader';
 import { useRenderPipeline } from '../hooks/useRenderPipeline';
 

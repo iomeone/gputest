@@ -1,4 +1,4 @@
-use "@use-gpu/wgsl/use/gamma"::{toLinear4};
+use "../../wgsl/use/gamma"::{toLinear4};
 
 @export fn toColorSpace(color: vec4<f32>) -> vec4<f32> {
   var out = color;

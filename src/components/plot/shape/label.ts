@@ -1,9 +1,9 @@
-import { LiveComponent, LiveElement } from '@use-gpu/live/types';
+import { LiveComponent, LiveElement } from '../../../live/types';
 import { AnchorTrait, ColorTrait, FontTrait, LabelTrait, ROPTrait, VectorLike } from '../types';
 
-import { use, provide, useCallback, useContext, useOne, useMemo } from '@use-gpu/live';
-import { mapChunksToSegments, mapChunksToAnchors } from '@use-gpu/core';
-import { diffBy } from '@use-gpu/shader/wgsl';
+import { use, provide, useCallback, useContext, useOne, useMemo } from '../../../live';
+import { mapChunksToSegments, mapChunksToAnchors } from '../../../core';
+import { diffBy } from '../../../shader/wgsl';
 import { DataContext, ValuesContext } from '../../providers/data-provider';
 import { RangeContext } from '../../providers/range-provider';
 import {

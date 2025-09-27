@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
-use '@use-gpu/wgsl/use/view'::{ viewUniforms };
+use '../../../wgsl/use/types'::{ SolidVertex };
+use '../../../wgsl/geometry/quad'::{ getQuadUV };
+use '../../../wgsl/use/view'::{ viewUniforms };
 
 @export fn getFullScreenVertex(vertexIndex: u32, instanceIndex: u32) -> SolidVertex {
   var uv = getQuadUV(vertexIndex);
