@@ -53,6 +53,10 @@ export const checkStorageType = (
 
   const f = toTypeName(from);
   const t = toTypeName(to);
+
+  if (!link || typeof f !== 'string' || typeof t !== 'string' || f === t) return;
+
+
   
   if (link && t != null && f !== t) {
     // Remove vec<..> to allow for automatic widening/narrowing
