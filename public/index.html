@@ -9,22 +9,56 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      font: 16px/24px sans-serif;
+      background: #000;
+      color: #fff;
+      overscroll-behavior-x: none;
+      overflow: hidden;
     }
-    #use-gpu {
-      position: relative;
-      height: 100%;
+    #use-gpu, #use-gpu .canvas {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
     }
-    .error {
-      background: rgba(255, 100, 100, .2);
-      color: #500;
+    .error-message {
+      background: rgba(255, 0, 0, .2);
+      color: #f99;
+      font-weight: bold;
       padding: 40px;
+    }
+    pre, code {
+      font-family: 'Fira Code', monospace;
+    }
+    @font-face {
+      font-family: 'Fira Code';
+      font-style: normal;
+      font-weight: 400;
+      src: url(/fonts/FiraCode-Regular.otf) format('opentype');
+    }
+    @font-face {
+      font-family: 'Lato';
+      font-style: normal;
+      font-weight: 400;
+      src: url(/fonts/Lato-Regular.ttf) format('truetype');
+    }
+    @font-face {
+      font-family: 'Lato';
+      font-style: normal;
+      font-weight: 700;
+      src: url(/fonts/Lato-Bold.ttf) format('truetype');
+    }
+    @font-face {
+      font-family: 'Lato';
+      font-style: italic;
+      font-weight: 400;
+      src: url(/fonts/Lato-Italic.ttf) format('truetype');
     }
     @font-face {
       font-family: 'Material Icons';
       font-style: normal;
       font-weight: 400;
-      src: url(./fonts/MaterialIcons-Regular.ttf) format('truetype');
+      src: url(/fonts/MaterialIcons-Regular.ttf) format('truetype');
     }
     .m-icon {
       font-family: 'Material Icons';
@@ -50,9 +84,44 @@
       /* Support for IE. */
       font-feature-settings: 'liga';
     }
+    .m-icon.m-icon-small {
+      font-size: 16px;
+      padding: 0 2px;
+      position: relative;
+      top: 3px;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font: 14px/20px Lato, sans-serif;
+    }    
+    a, a:hover, a:visited, a:active {
+      color: rgba(190, 210, 255, 1);
+    }
+    
+    button.round {
+      border-radius: 100%;
+      width: 32px;
+      height: 32px;
+      line-height: 20px;
+      background: #888;
+      border: 0;
+      color: #fff;
+    }
+    button.round:hover {
+      background: #aaa;
+    } 
+    button.round .m-icon {
+      vertical-align: middle;
+    }
+    
   </style>
   <body>
-    <div id="use-gpu"></div>
+    <div id="use-gpu">
+      <div class="canvas"></div>
+    </div>
   </body>
   <script src="/dist/use.bundle.js"></script>
 </html>
