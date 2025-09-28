@@ -14,9 +14,10 @@ export default {
     extensions: ['.ts', '.tsx', '.js', '.json']
   },
 
-  // experiments: {
-  //   syncWebAssembly: true,
-  // },
+  experiments: {
+    asyncWebAssembly: true,   
+    // syncWebAssembly: true,
+  },
     
   module: {
     rules: [
@@ -35,7 +36,18 @@ export default {
         use: ["style-loader", "css-loader"],
       },
 
+      // A. 你的 Rust 包（用 new URL 加载的 wasm）→ 当成静态资源 URL
+      {
+        test: /src[\/\\]use-gpu-text[\/\\]pkg[\/\\].*\.wasm$/,
+        type: 'asset/resource',
+      },
 
+      // B. 其余第三方 wasm（如 mikktspace）→ 真·webassembly/async
+      {
+        test: /\.wasm$/,
+        type: 'webassembly/async',
+        exclude: /src[\/\\]use-gpu-text[\/\\]pkg[\/\\].*\.wasm$/,
+      },
 
     ],
   },

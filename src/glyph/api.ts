@@ -11,7 +11,7 @@ export const initRustText = () =>
   (__rtReady ??= (async () => {
     const { default: init, UseRustText } =
       await import('../use-gpu-text/pkg/index.js');
-    await init(new URL('../use-gpu-text/pkg/index_bg.wasm', import.meta.url));
+      await init(new URL('../use-gpu-text/pkg/index_bg.wasm', import.meta.url));
     __rtInstance = UseRustText.new();
   })());
 
