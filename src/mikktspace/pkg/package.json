@@ -1,0 +1,24 @@
+{
+  "name": "mikktspace",
+  "type": "module",
+  "collaborators": [
+    "Don McCurdy <dm@donmccurdy.com>"
+  ],
+  "description": "MikkTSpace vertex tangent calculation, in Web Assembly.",
+  "version": "1.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/donmccurdy/mikktspace-wasm"
+  },
+  "files": [
+    "index_bg.wasm",
+    "index.js",
+    "index.d.ts"
+  ],
+  "main": "index.js",
+  "types": "index.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
