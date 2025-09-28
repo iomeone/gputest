@@ -14,9 +14,9 @@ export default {
     extensions: ['.ts', '.tsx', '.js', '.json']
   },
 
-  experiments: {
-    syncWebAssembly: true,
-  },
+  // experiments: {
+  //   syncWebAssembly: true,
+  // },
     
   module: {
     rules: [
