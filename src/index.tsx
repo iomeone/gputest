@@ -13,10 +13,12 @@ import { render } from './live';
 
 
 import { initRustText } from './glyph'; // 路径按你的实际位置改
-
+import { initMikkt } from './vendor/mikkt';
 window.onload = () => {
   (async () => {
     try {
+      console.log("initMikkt start...");
+      await initMikkt();
       console.log("initRustText start...");
       await initRustText();           // 预热 wasm + 实例
       console.log("initRustText end...");

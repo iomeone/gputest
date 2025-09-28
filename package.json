@@ -68,7 +68,6 @@
   "dependencies": {
     "yarn": "^1.22.22",
     "earcut": "^2.2.3",
-    "mikktspace": "^1.1.1",
     "@types/earcut": "^2.1.1"
 
   },
