@@ -42,12 +42,17 @@ export default {
         type: 'asset/resource',
       },
 
-      // B. 其余第三方 wasm（如 mikktspace）→ 真·webassembly/async
       {
-        test: /\.wasm$/,
-        type: 'webassembly/async',
-        exclude: /src[\/\\]use-gpu-text[\/\\]pkg[\/\\].*\.wasm$/,
+        test: /src[\/\\]mikktspace[\/\\]pkg[\/\\].*\.wasm$/,
+        type: 'asset/resource',
       },
+
+      // B. 其余第三方 wasm（如 mikktspace）→ 真·webassembly/async
+      // {
+      //   test: /\.wasm$/,
+      //   type: 'webassembly/async',
+      //   exclude: /src[\/\\]use-gpu-text[\/\\]pkg[\/\\].*\.wasm$/,
+      // },
 
     ],
   },
