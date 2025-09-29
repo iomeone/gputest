@@ -40,7 +40,7 @@ const USE_MAPBOX = false;
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 // @ts-ignore
-const accessToken = process.env.MAPBOX_TOKEN;
+const accessToken = "pk......";
 
 export const MapWebMercatorPage: LC = () => {
 
