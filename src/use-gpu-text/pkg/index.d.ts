@@ -8,8 +8,14 @@ export class UseRustText {
   static new(): UseRustText;
   load_font(key: number, ttf: Uint8Array): any;
   unload_font(key: number): any;
+  load_image_font(key: number, utf16: Uint16Array): any;
+  unload_image_font(key: number): any;
+  load_image_rgba(key: number, glyph: number, rgba: Uint8Array, width: number, height: number): any;
+  load_image_png(key: number, glyph: number, png: Uint8Array): any;
+  unload_image(key: number, glyph: number): any;
   measure_font(key: number, size: number): any;
   measure_spans(stack: Float64Array, utf16: Uint16Array, size: number): any;
+  find_glyph(key: number, utf16: Uint16Array): any;
   measure_glyph(key: number, id: number, size: number): any;
 }
 
@@ -21,8 +27,14 @@ export interface InitOutput {
   readonly userusttext_new: () => number;
   readonly userusttext_load_font: (a: number, b: number, c: number, d: number) => [number, number, number];
   readonly userusttext_unload_font: (a: number, b: number) => [number, number, number];
+  readonly userusttext_load_image_font: (a: number, b: number, c: number, d: number) => [number, number, number];
+  readonly userusttext_unload_image_font: (a: number, b: number) => [number, number, number];
+  readonly userusttext_load_image_rgba: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number];
+  readonly userusttext_load_image_png: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
+  readonly userusttext_unload_image: (a: number, b: number, c: number) => [number, number, number];
   readonly userusttext_measure_font: (a: number, b: number, c: number) => [number, number, number];
   readonly userusttext_measure_spans: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
+  readonly userusttext_find_glyph: (a: number, b: number, c: number, d: number) => [number, number, number];
   readonly userusttext_measure_glyph: (a: number, b: number, c: number, d: number) => [number, number, number];
   readonly init_panic_hook: () => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
