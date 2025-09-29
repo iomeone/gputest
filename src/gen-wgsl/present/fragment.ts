@@ -1,0 +1,16 @@
+import {decompressAST, bindEntryPoint} from "../../shader/wgsl";
+import m0 from "../../gen-wgsl/fragment/sdf-2d";
+import m1 from "../../gen-wgsl/use/color";
+const t = {"symbols":["getTexture","getMask","getScreenFragment"],"visibles":["getScreenFragment"],"modules":[{"at":0,"name":"../../wgsl/fragment/sdf-2d","symbols":["SDF","getUVScale","getBoxSDF","getBorderBoxSDF","getRoundedBorderBoxSDF"],"imports":[{"name":"SDF","imported":"SDF"},{"name":"getUVScale","imported":"getUVScale"},{"name":"getBoxSDF","imported":"getBoxSDF"},{"name":"getBorderBoxSDF","imported":"getBorderBoxSDF"},{"name":"getRoundedBorderBoxSDF","imported":"getRoundedBorderBoxSDF"}]},{"at":0,"name":"../../wgsl/use/color","symbols":["premultiply"],"imports":[{"name":"premultiply","imported":"premultiply"}]}],"externals":[{"at":156,"symbol":"getTexture","flags":6,"func":{"name":"getTexture","type":"vec4<f32>","attr":["optional","link"],"parameters":[{"name":"uv","type":"vec2<f32>"}]}},{"at":258,"symbol":"getMask","flags":6,"func":{"name":"getMask","type":"vec4<f32>","attr":["optional","link"],"parameters":[{"name":"color","type":"vec4<f32>"},{"name":"uv","type":"vec4<f32>"},{"name":"st","type":"vec4<f32>"}]}}],"exports":[{"at":367,"symbol":"getScreenFragment","flags":1,"func":{"name":"getScreenFragment","type":"vec4<f32>","attr":["export"],"parameters":[{"name":"fill","type":"vec4<f32>"},{"name":"uv","type":"vec4<f32>"},{"name":"st","type":"vec4<f32>"}],"identifiers":["getTexture","getMask"]}}],"linkable":{"getTexture":true,"getMask":true}}; const data = {
+  "name": "fragment",
+  "code": "use '../../wgsl/fragment/sdf-2d'::{ SDF, getUVScale, getBoxSDF, getBorderBoxSDF, getRoundedBorderBoxSDF };\r\nuse '../../wgsl/use/color'::{ premultiply };\r\n\r\n@optional @link fn getTexture(uv: vec2<f32>) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); };\r\n@optional @link fn getMask(color: vec4<f32>, uv: vec4<f32>, st: vec4<f32>) -> vec4<f32> { return color; }\r\n\r\n@export fn getScreenFragment(\r\n  fill: vec4<f32>,\r\n  uv: vec4<f32>,\r\n  st: vec4<f32>,\r\n) -> vec4<f32> {\r\n  var texture = getTexture(uv.xy);\r\n\r\n  var color = vec4<f32>(\r\n    premultiply(fill).rgb * (1.0 - texture.a) + texture.rgb,\r\n    mix(fill.a, 1.0, texture.a),\r\n  );\r\n\r\n  if (HAS_MASK) {\r\n    color = getMask(color, uv, st);\r\n  }\r\n\r\n  return color;\r\n}\r\n",
+  "hash": 159509714757646,
+  "table": t,
+  "shake": [[156,[0,2]],[258,[1,2]],[367,[2]]],
+  "tree": decompressAST([[1,0,105],[1,108,151],[4,48,147,0],[1,0,9],[1,10,15],[2,9,19],[2,11,13],[4,72,177,1],[1,0,9],[1,10,15],[2,9,16],[2,8,13],[2,18,20],[2,15,17],[2,37,42],[0,12,366],[1,0,7],[2,11,28],[2,22,26],[2,20,22],[2,18,20],[2,40,47],[2,10,20],[2,11,13],[2,3,5],[2,14,19],[2,24,35],[2,12,16],[2,6,9],[2,13,20],[2,8,9],[2,5,12],[2,8,11],[2,10,13],[2,4,8],[2,5,6],[2,8,15],[2,8,9],[2,19,27],[2,17,22],[2,8,15],[2,8,13],[2,7,9],[2,4,6],[2,22,27]], t.symbols),
+};
+const libs = {"../../wgsl/fragment/sdf-2d": m0, "../../wgsl/use/color": m1};
+const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });
+export default getSymbol();
+export const getScreenFragment = getSymbol("getScreenFragment");
+/* __WGSL_LOADER_GENERATED */

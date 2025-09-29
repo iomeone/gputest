@@ -1,0 +1,15 @@
+import {decompressAST, bindEntryPoint} from "../../shader/wgsl";
+import m0 from "../../gen-wgsl/geometry/normal";
+const t = {"symbols":["transformPosition","getEpsilon","getEpsilonDifferential"],"visibles":["getEpsilonDifferential"],"modules":[{"at":0,"name":"../../wgsl/geometry/normal","symbols":["getOrthoVector"],"imports":[{"name":"getOrthoVector","imported":"getOrthoVector"}]}],"externals":[{"at":57,"symbol":"transformPosition","flags":2,"func":{"name":"transformPosition","type":"vec4<f32>","attr":["link"],"parameters":[{"name":"position","type":"vec4<f32>"}]}},{"at":120,"symbol":"getEpsilon","flags":6,"func":{"name":"getEpsilon","type":"f32","attr":["optional","link"]}}],"exports":[{"at":181,"symbol":"getEpsilonDifferential","flags":1,"func":{"name":"getEpsilonDifferential","type":"vec4<f32>","attr":["export"],"parameters":[{"name":"vector","type":"vec4<f32>"},{"name":"origin","type":"vec4<f32>"},{"name":"contravariant","type":"bool"}],"identifiers":["getEpsilon","transformPosition"]}}],"linkable":{"transformPosition":true,"getEpsilon":true}}; const data = {
+  "name": "diff-epsilon",
+  "code": "use '../../wgsl/geometry/normal'::{ getOrthoVector };\r\n\r\n@link fn transformPosition(position: vec4<f32>) -> vec4<f32>;\r\n@optional @link fn getEpsilon() -> f32 { return 0.001; };\r\n\r\n@export fn getEpsilonDifferential(vector: vec4<f32>, origin: vec4<f32>, contravariant: bool) -> vec4<f32> {\r\n  let e = getEpsilon();\r\n\r\n  if (contravariant) {\r\n    let nt = getOrthoVector(vector.xyz);\r\n    let nb = cross(vector.xyz, nt);\r\n\r\n    let a = transformPosition(origin).xyz;\r\n    let b = transformPosition(origin + vec4<f32>(nt.xyz * e, 0.0)).xyz;\r\n    let c = transformPosition(origin + vec4<f32>(nb.xyz * e, 0.0)).xyz;\r\n\r\n    let n = cross(b - a, c - a);\r\n    return vec4<f32>(normalize(n), vector.w);\r\n  }\r\n\r\n  let a = transformPosition(origin).xyz;\r\n  let b = transformPosition(origin + vec4<f32>(vector.xyz * e, 0.0)).xyz;\r\n\r\n  return vec4<f32>((b - a) / e, vector.w);\r\n}\r\n",
+  "hash": 287886718612838,
+  "table": t,
+  "shake": [[57,[0,2]],[120,[1,2]],[181,[2]]],
+  "tree": decompressAST([[1,0,52],[1,57,117],[4,63,119,1],[1,0,9],[1,10,15],[2,9,19],[0,42,727],[1,0,7],[2,11,33],[2,23,29],[2,19,25],[2,19,32],[2,43,44],[2,4,14],[2,23,36],[2,26,28],[2,5,19],[2,15,21],[2,7,10],[2,15,17],[2,5,10],[2,6,12],[2,7,10],[2,5,7],[2,16,17],[2,4,21],[2,18,24],[2,8,11],[2,14,15],[2,4,21],[2,18,24],[2,19,21],[2,3,6],[2,6,7],[2,9,12],[2,14,15],[2,4,21],[2,18,24],[2,19,21],[2,3,6],[2,6,7],[2,9,12],[2,16,17],[2,4,9],[2,6,7],[2,4,5],[2,3,4],[2,4,5],[2,26,35],[2,10,11],[2,4,10],[2,7,8],[2,18,19],[2,4,21],[2,18,24],[2,8,11],[2,12,13],[2,4,21],[2,18,24],[2,19,25],[2,7,10],[2,6,7],[2,9,12],[2,28,29],[2,4,5],[2,5,6],[2,3,9],[2,7,8]], t.symbols),
+};
+const libs = {"../../wgsl/geometry/normal": m0};
+const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });
+export default getSymbol();
+export const getEpsilonDifferential = getSymbol("getEpsilonDifferential");
+/* __WGSL_LOADER_GENERATED */

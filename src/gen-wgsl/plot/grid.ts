@@ -1,0 +1,14 @@
+import {decompressAST, bindEntryPoint} from "../../shader/wgsl";
+const t = {"symbols":["getGridValue","getGridDirection","getGridMin","getGridMax","getGridShift","STEP","getGridPosition"],"visibles":["getGridPosition"],"externals":[{"at":0,"symbol":"getGridValue","flags":2,"func":{"name":"getGridValue","type":"f32","attr":["link"],"parameters":[{"name":"i","type":"u32"}]}},{"at":39,"symbol":"getGridDirection","flags":2,"func":{"name":"getGridDirection","type":"i32","attr":["link"]}},{"at":76,"symbol":"getGridMin","flags":2,"func":{"name":"getGridMin","type":"vec4<f32>","attr":["link"]}},{"at":113,"symbol":"getGridMax","flags":2,"func":{"name":"getGridMax","type":"vec4<f32>","attr":["link"]}},{"at":150,"symbol":"getGridShift","flags":6,"func":{"name":"getGridShift","type":"vec4<f32>","attr":["optional","link"]}}],"exports":[{"at":265,"symbol":"getGridPosition","flags":1,"func":{"name":"getGridPosition","type":"vec4<f32>","attr":["export"],"parameters":[{"name":"index","type":"u32"}],"identifiers":["getGridMin","getGridMax","getGridShift","getGridDirection","STEP","getGridValue"]}}],"linkable":{"getGridValue":true,"getGridDirection":true,"getGridMin":true,"getGridMax":true,"getGridShift":true}}; const data = {
+  "name": "grid",
+  "code": "@link fn getGridValue(i: u32) -> f32;\r\n@link fn getGridDirection() -> i32;\r\n@link fn getGridMin() -> vec4<f32>;\r\n@link fn getGridMax() -> vec4<f32>;\r\n@optional @link fn getGridShift() -> vec4<f32> { return vec4<f32>(0.0); };\r\n\r\nconst STEP = vec2<f32>(0.0, 1.0);\r\n\r\n@export fn getGridPosition(index: u32) -> vec4<f32> {\r\n  let n = u32(LINE_DETAIL + 1);\r\n\r\n  let i = index / n;\r\n  let v = f32(index % n) / f32(n - 1u);\r\n\r\n  let base = mix(getGridMin(), getGridMax(), v) + getGridShift();\r\n\r\n  let dir = getGridDirection();\r\n  var step: vec4<f32>;\r\n  if      (dir == 0) { step = STEP.yxxx; }\r\n  else if (dir == 1) { step = STEP.xyxx; }\r\n  else if (dir == 2) { step = STEP.xxyx; }\r\n  else               { step = STEP.xxxy; }\r\n\r\n  return base + step * getGridValue(i);\r\n}\r\n",
+  "hash": 8566736644794748,
+  "table": t,
+  "shake": [[0,[0,6]],[39,[1,6]],[76,[2,6]],[113,[3,6]],[150,[4,6]],[224,[5,6]],[265,[6]]],
+  "tree": decompressAST([[1,0,36],[1,39,73],[1,37,71],[1,37,71],[4,37,110,4],[1,0,9],[1,10,15],[2,9,21],[0,55,92],[2,10,14],[0,31,532],[1,0,7],[2,11,26],[2,16,21],[2,34,35],[2,8,19],[2,27,28],[2,4,9],[2,8,9],[2,10,11],[2,8,13],[2,8,9],[2,9,10],[2,18,22],[2,7,10],[2,4,14],[2,14,24],[2,14,15],[2,5,17],[2,25,28],[2,6,22],[2,27,31],[2,29,32],[2,12,16],[2,7,11],[2,5,9],[2,20,23],[2,12,16],[2,7,11],[2,5,9],[2,20,23],[2,12,16],[2,7,11],[2,5,9],[2,32,36],[2,7,11],[2,5,9],[2,20,24],[2,7,11],[2,7,19],[2,13,14]], t.symbols),
+};
+const libs = {};
+const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });
+export default getSymbol();
+export const getGridPosition = getSymbol("getGridPosition");
+/* __WGSL_LOADER_GENERATED */
