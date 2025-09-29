@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { ColorLike, VectorLike } from '@use-gpu/traits';
-import { parseColor, parseNumber, parsePosition, useProp } from '@use-gpu/traits';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { ColorLike, VectorLike } from '../../traits';
+import { parseColor, parseNumber, parsePosition, useProp } from '../../traits';
 
-import { memo, useMemo } from '@use-gpu/live';
+import { memo, useMemo } from '../../live';
 
 import { useLightContext } from '../providers/light-provider';
 import { useMatrixContext } from '../providers/matrix-provider';

@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, Task } from '@use-gpu/live';
-import type { StorageTarget, TextureTarget } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveFiber, LiveElement, Task } from '../../live';
+import type { StorageTarget, TextureTarget } from '../../core';
 
-import { memo, provide, useMemo } from '@use-gpu/live';
+import { memo, provide, useMemo } from '../../live';
 import { ComputeContext } from '../providers/compute-provider';
 
 const NO_TARGETS: any[] = [];

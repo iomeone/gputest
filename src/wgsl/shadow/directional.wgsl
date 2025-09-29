@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
+use '../../wgsl/use/types'::{ Light, SurfaceFragment };
 
 @optional @link fn sampleShadow(uv: vec2<f32>, index: u32, level: f32) -> f32 { return 1.0; }
 

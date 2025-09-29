@@ -1,7 +1,7 @@
-import type { LiveFiber, LiveComponent, LiveElement, ArrowFunction, PropsWithChildren } from '@use-gpu/live';
-import type { UseGPURenderContext, ColorSpace, TextureTarget } from '@use-gpu/core';
+import type { LiveFiber, LiveComponent, LiveElement, ArrowFunction, PropsWithChildren } from '../../live';
+import type { UseGPURenderContext, ColorSpace, TextureTarget } from '../../core';
 
-import { use, provide, fence, quote, yeet, useCallback, useContext, useFiber, useMemo, useOne, useNoContext, incrementVersion } from '@use-gpu/live';
+import { use, provide, fence, quote, yeet, useCallback, useContext, useFiber, useMemo, useOne, useNoContext, incrementVersion } from '../../live';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 
@@ -13,7 +13,7 @@ import {
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLY,
-} from '@use-gpu/core';
+} from '../../core';
 
 const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
 

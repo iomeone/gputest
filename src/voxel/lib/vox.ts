@@ -1,4 +1,4 @@
-import type { Point3 } from '@use-gpu/core';
+import type { Point3 } from '../../core';
 import type {
   RawVox,
   RawChunk,

@@ -1,23 +1,23 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { TextureSource, Point, Point4, Rectangle } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { ColorLike } from '@use-gpu/traits';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { TextureSource, Point, Point4, Rectangle } from '../../core';
+import type { ShaderModule } from '../../shader';
+import type { ColorLike } from '../../traits';
 import type { Direction, OverflowMode, FitInto, UIAggregate } from '../types';
 
-import { parseColor, useProp } from '@use-gpu/traits';
-import { keyed, yeet, use, useFiber, useMemo } from '@use-gpu/live';
-import { makeShaderBinding } from '@use-gpu/core';
+import { parseColor, useProp } from '../../traits';
+import { keyed, yeet, use, useFiber, useMemo } from '../../live';
+import { makeShaderBinding } from '../../core';
 import { evaluateDimension } from '../parse';
 import { isHorizontal, memoFit } from '../lib/util';
-import { useInspectHoverable } from '@use-gpu/workbench';
+import { useInspectHoverable } from '../../workbench';
 
 import { INSPECT_STYLE } from '../lib/constants';
 
 import { UIRectangle } from '../shape/ui-rectangle';
-import { chainTo } from '@use-gpu/shader/wgsl';
-import { useBoundShader } from '@use-gpu/workbench';
+import { chainTo } from '../../shader/wgsl';
+import { useBoundShader } from '../../workbench';
 
-import { getScrolledPosition } from '@use-gpu/wgsl/layout/scroll.wgsl';
+import { getScrolledPosition } from '../../wgsl/layout/scroll.wgsl';
 
 export type ScrollBarProps = {
   direction?: Direction,

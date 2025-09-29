@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import { useOne, useResource, useState } from '@use-gpu/live';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import { useOne, useResource, useState } from '../../live';
 
 export type AutoSizeProps = {
   canvas: HTMLCanvasElement,

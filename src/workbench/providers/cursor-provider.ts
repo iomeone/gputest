@@ -1,6 +1,6 @@
-import type { LiveFiber, LiveComponent, LiveElement, LiveMap } from '@use-gpu/live';
+import type { LiveFiber, LiveComponent, LiveElement, LiveMap } from '../../live';
 
-import { memo, capture, makeCapture, useCapture, useOne, useMemo } from '@use-gpu/live';
+import { memo, capture, makeCapture, useCapture, useOne, useMemo } from '../../live';
 
 export const CursorState = makeCapture('CursorState');
 

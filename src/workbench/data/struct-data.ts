@@ -1,13 +1,13 @@
-import type { LiveElement, LC, PropsWithChildren } from '@use-gpu/live';
-import type { TypedArray, StorageSource, Emit, Time } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { LiveElement, LC, PropsWithChildren } from '../../live';
+import type { TypedArray, StorageSource, Emit, Time } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
 
 import { useDeviceContext } from '../providers/device-provider';
 
-import { yeet, signal, useMemo, useNoMemo, useOne, useYolo } from '@use-gpu/live';
-import { bundleToAttribute } from '@use-gpu/shader/wgsl';
-import { incrementVersion } from '@use-gpu/live';
-import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '@use-gpu/core';
+import { yeet, signal, useMemo, useNoMemo, useOne, useYolo } from '../../live';
+import { bundleToAttribute } from '../../shader/wgsl';
+import { incrementVersion } from '../../live';
+import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '../../core';
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { useBufferedSize } from '../hooks/useBufferedSize';

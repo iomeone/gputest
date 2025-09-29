@@ -1,5 +1,5 @@
-import type { ShaderModule } from '@use-gpu/shader';
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import type { ShaderModule } from '../../shader';
+import { makeContext, useContext, useNoContext } from '../../live';
 import { mat4 } from 'gl-matrix';
 
 export type MatrixContextProps = mat4;

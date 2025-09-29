@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { UseGPURenderContext, TextureSource, ColorSpace } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { UseGPURenderContext, TextureSource, ColorSpace } from '../../core';
+import type { ShaderModule } from '../../shader';
 
-import { gather, use, useMemo, useOne } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { gather, use, useMemo, useOne } from '../../live';
+import { chainTo } from '../../shader/wgsl';
 
 import { Pass } from './pass';
 import { RenderTarget } from './render-target';
@@ -13,8 +13,8 @@ import { RawFullScreen } from '../primitives';
 import { getBoundShader } from '../hooks/useBoundShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { gainColor } from '@use-gpu/wgsl/fragment/gain.wgsl';
-import { tonemapACES } from '@use-gpu/wgsl/fragment/aces.wgsl';
+import { gainColor } from '../../wgsl/fragment/gain.wgsl';
+import { tonemapACES } from '../../wgsl/fragment/aces.wgsl';
 
 export type LinearRGBProps = {
   width?: number,

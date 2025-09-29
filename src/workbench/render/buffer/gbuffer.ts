@@ -1,10 +1,10 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '@use-gpu/live';
-import type { TextureTarget, UseGPURenderContext } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '../../../live';
+import type { TextureTarget, UseGPURenderContext } from '../../../core';
 
-import { yeet, memo, provide, fence, useMemo, useOne } from '@use-gpu/live';
+import { yeet, memo, provide, fence, useMemo, useOne } from '../../../live';
 import {
   makeColorAttachment, makeColorState, makeDepthTexture, makeDepthStencilAttachment, makeDepthStencilState, makeTargetTexture,
-} from '@use-gpu/core';
+} from '../../../core';
 
 import { useDeviceContext } from '../../providers/device-provider';
 import { useRenderContext } from '../../providers/render-provider';

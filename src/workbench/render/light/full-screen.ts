@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../../live';
 import type { LightKindProps } from './light';
 
-import { yeet, useMemo } from '@use-gpu/live';
+import { yeet, useMemo } from '../../../live';
 
 import { useBoundShader } from '../../hooks/useBoundShader';
 
-import { getLightVertex } from '@use-gpu/wgsl/instance/vertex/light.wgsl';
-import { getLightFragment } from '@use-gpu/wgsl/instance/fragment/light.wgsl';
+import { getLightVertex } from '../../../wgsl/instance/vertex/light.wgsl';
+import { getLightFragment } from '../../../wgsl/instance/fragment/light.wgsl';
 
 import { FULLSCREEN_PIPELINE, FULLSCREEN_DEFS, useLightDraw } from './light';
 

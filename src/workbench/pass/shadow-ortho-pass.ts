@@ -1,13 +1,13 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement } from '@use-gpu/live';
-import type { TextureSource, ViewUniforms } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveFiber, LiveElement } from '../../live';
+import type { TextureSource, ViewUniforms } from '../../core';
 import type { LightEnv, Renderable } from '../pass';
 import type { BoundLight } from '../light/types';
 import { mat4 } from 'gl-matrix';
 
-import { use, quote, yeet, wrap, memo, useMemo, useOne } from '@use-gpu/live';
+import { use, quote, yeet, wrap, memo, useMemo, useOne } from '../../live';
 import {
   makeFrustumPlanes, makeGlobalUniforms, makeOrthogonalMatrix, uploadBuffer,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';

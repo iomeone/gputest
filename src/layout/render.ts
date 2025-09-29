@@ -1,11 +1,11 @@
-import type { LiveElement } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { Point, Point4, Rectangle } from '@use-gpu/core';
+import type { LiveElement } from '../live';
+import type { ShaderModule } from '../shader';
+import type { Point, Point4, Rectangle } from '../core';
 import type { LayoutRenderer, LayoutPicker, RenderInside, RenderOutside, RenderInline, InlineRenderer, InlineLine, UIAggregate } from './types';
 
-import { memoArgs, yeet, fragment, use, useFiber, useMemo, useNoMemo } from '@use-gpu/live';
-import { bindBundle, chainTo } from '@use-gpu/shader/wgsl';
-import { getCombinedClip, getTransformedClip } from '@use-gpu/wgsl/layout/clip.wgsl';
+import { memoArgs, yeet, fragment, use, useFiber, useMemo, useNoMemo } from '../live';
+import { bindBundle, chainTo } from '../shader/wgsl';
+import { getCombinedClip, getTransformedClip } from '../wgsl/layout/clip.wgsl';
 import { INSPECT_STYLE } from './lib/constants';
 
 const NO_OBJECT: any = {};

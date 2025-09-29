@@ -1,5 +1,5 @@
-import type { Geometry } from '@use-gpu/core';
-import { makeDataEmitter } from '@use-gpu/core';
+import type { Geometry } from '../../../core';
+import { makeDataEmitter } from '../../../core';
 
 const τ = Math.PI * 2;
 

@@ -1,6 +1,6 @@
-import type { LiveComponent, LiveFiber, LiveElement, Task } from '@use-gpu/live';
+import type { LiveComponent, LiveFiber, LiveElement, Task } from '../../live';
 
-import { useAwait, useOne } from '@use-gpu/live';
+import { useAwait, useOne } from '../../live';
 
 type AwaitProps<T> = {
   promise?: Promise<LiveElement>,

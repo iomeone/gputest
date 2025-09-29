@@ -1,4 +1,4 @@
-import { makeTuples } from '@use-gpu/core';
+import { makeTuples } from '../../core';
 import { makeInlineCursor } from './cursor';
 
 describe('layout cursor', () => {

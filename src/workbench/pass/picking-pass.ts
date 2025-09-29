@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '@use-gpu/live';
+import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '../../live';
 import type { Culler, Renderable } from '../pass';
 
-import { use, quote, yeet, memo, useMemo } from '@use-gpu/live';
+import { use, quote, yeet, memo, useMemo } from '../../live';
 
 import { usePickingContext } from '../providers/picking-provider';
 import { useDeviceContext } from '../providers/device-provider';

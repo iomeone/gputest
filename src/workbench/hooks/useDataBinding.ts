@@ -1,8 +1,8 @@
-import type { Lazy } from '@use-gpu/core';
-import type { UniformAttribute, ShaderSource } from '@use-gpu/shader';
-import { bundleToAttribute } from '@use-gpu/shader/wgsl';
-import { resolve } from '@use-gpu/core';
-import { useMemo, useOne } from '@use-gpu/live';
+import type { Lazy } from '../../core';
+import type { UniformAttribute, ShaderSource } from '../../shader';
+import { bundleToAttribute } from '../../shader/wgsl';
+import { resolve } from '../../core';
+import { useMemo, useOne } from '../../live';
 
 // Extract type and size from a source
 export const useDataBinding = (

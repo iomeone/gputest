@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
+use '../../../wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
 
 @optional @link fn transformPosition(p: vec4<f32>) -> vec4<f32> { return p; };
 @optional @link fn transformDifferential(v: vec4<f32>, b: vec4<f32>, c: bool) -> vec4<f32> { return v; };

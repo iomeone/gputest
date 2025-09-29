@@ -1,11 +1,11 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LC, PropsWithChildren } from '../../live';
+import type { ShaderModule } from '../../shader';
 
-import { provide, makeContext, useContext, useNoContext, useOne } from '@use-gpu/live';
+import { provide, makeContext, useContext, useNoContext, useOne } from '../../live';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useShaderRefs } from '../hooks/useShaderRef';
 
-import { getScissorLevel } from '@use-gpu/wgsl/transform/scissor.wgsl';
+import { getScissorLevel } from '../../wgsl/transform/scissor.wgsl';
 
 export type ScissorContextProps = ShaderModule;
 

@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveElement } from '../../live';
+import type { UseGPURenderContext } from '../../core';
 import type { LightEnv, RenderComponents, VirtualDraw } from '../pass/types';
 
-import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { use, yeet, memo, useMemo, useOne } from '../../live';
 
 import { DebugRender } from './forward/debug';
 import { PickingRender } from './forward/picking';

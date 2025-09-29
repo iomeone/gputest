@@ -1,10 +1,10 @@
-import type { LiveFiber } from '@use-gpu/live';
-import type { Cursor } from '@use-gpu/state';
-import { formatValue, isSubNode, YEET, DEBUG } from '@use-gpu/live';
+import type { LiveFiber } from '../../live';
+import type { Cursor } from '../../state';
+import { formatValue, isSubNode, YEET, DEBUG } from '../../live';
 
 import React, { memo, useMemo, useLayoutEffect, useRef, PropsWithChildren } from 'react';
 
-import { useRefineCursor } from '@use-gpu/state';
+import { useRefineCursor } from '../../state';
 import { usePingTracker, usePingContext } from '../providers/ping-provider';
 import { Node } from './node';
 import { ReactNode } from './react-node';

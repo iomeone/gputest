@@ -1,15 +1,15 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { UniformType, Rectangle, Point, Point4 } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { ShaderModule } from '../../shader';
+import type { UniformType, Rectangle, Point, Point4 } from '../../core';
 import type { FitInto, Direction, Margin, OverflowMode, LayoutElement, LayoutPicker, LayoutRenderer } from '../types';
 
-import { useProp } from '@use-gpu/traits';
-import { memo, use, gather, yeet, extend, useFiber, useOne, useMemo } from '@use-gpu/live';
-import { bindBundle, bundleToAttribute, castTo, chainTo } from '@use-gpu/shader/wgsl';
-import { useForceUpdate, useInspectable, getBoundSource } from '@use-gpu/workbench';
+import { useProp } from '../../traits';
+import { memo, use, gather, yeet, extend, useFiber, useOne, useMemo } from '../../live';
+import { bindBundle, bundleToAttribute, castTo, chainTo } from '../../shader/wgsl';
+import { useForceUpdate, useInspectable, getBoundSource } from '../../workbench';
 
-import { getScrolledPosition } from '@use-gpu/wgsl/layout/scroll.wgsl';
-import { getShiftedRectangle } from '@use-gpu/wgsl/layout/shift.wgsl';
+import { getScrolledPosition } from '../../wgsl/layout/scroll.wgsl';
+import { getShiftedRectangle } from '../../wgsl/layout/shift.wgsl';
 
 import { fitAbsoluteBox } from '../lib/absolute';
 import { getBlockMinMax } from '../lib/block';

@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { ShaderSource } from '@use-gpu/shader';
-import type { VectorLike } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { ShaderSource } from '../../shader';
+import type { VectorLike } from '../../traits';
 import type { ColorTrait, PointTrait, ROPTrait } from '../types';
 
-import { PointLayer } from '@use-gpu/workbench';
-import { use, provide, useCallback, useContext, useOne, useMemo } from '@use-gpu/live';
+import { PointLayer } from '../../workbench';
+import { use, provide, useCallback, useContext, useOne, useMemo } from '../../live';
 
 import { DataContext } from '../providers/data-provider';
 import {

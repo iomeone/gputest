@@ -1,17 +1,17 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { DataBounds } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../live';
+import type { DataBounds } from '../core';
 
-import { memo, provide, useCallback, useOne } from '@use-gpu/live';
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { memo, provide, useCallback, useOne } from '../live';
+import { bundleToAttributes } from '../shader/wgsl';
 import { vec3, mat3, mat4 } from 'gl-matrix';
 
 import {
   TransformContext, useMatrixContext,
   useShaderRef, useBoundShader, useBoundSource, useCombinedTransform,
- } from '@use-gpu/workbench';
+ } from '../workbench';
 
-import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl';
-import { getMatrixDifferential } from '@use-gpu/wgsl/transform/diff-matrix.wgsl';
+import { getCartesianPosition } from '../wgsl/transform/cartesian.wgsl';
+import { getMatrixDifferential } from '../wgsl/transform/diff-matrix.wgsl';
 
 const MATRIX_BINDINGS = bundleToAttributes(getCartesianPosition);
 

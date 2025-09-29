@@ -1,7 +1,7 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, PropsWithChildren } from '../../live';
 
-import { use, memo, useMemo, useOne, useResource, useState } from '@use-gpu/live';
-import { EventProvider, MouseState, WheelState, KeyboardState } from '@use-gpu/workbench';//'/providers/event-provider';
+import { use, memo, useMemo, useOne, useResource, useState } from '../../live';
+import { EventProvider, MouseState, WheelState, KeyboardState } from '../../workbench';//'/providers/event-provider';
 
 const WHEEL_STEP = 120;
 const PIXEL_STEP = 10;

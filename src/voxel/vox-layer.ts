@@ -1,18 +1,18 @@
-import type { LC, LiveElement, Ref } from '@use-gpu/live';
-import type { TextureSource, StorageSource } from '@use-gpu/core';
+import type { LC, LiveElement, Ref } from '../live';
+import type { TextureSource, StorageSource } from '../core';
 
-import { gather, use, quote, yeet, memo, useCallback, useOne } from '@use-gpu/live';
+import { gather, use, quote, yeet, memo, useCallback, useOne } from '../live';
 import {
   useMatrixContext,
   useBoundShader, useLambdaSource, useDebugContext, useShaderRef,
   FaceLayer, GeometryData, ShaderLitMaterial,
   makeBoxGeometry,
-} from '@use-gpu/workbench';
-import { wgsl, bindBundle, bindEntryPoint } from '@use-gpu/shader/wgsl';
+} from '../workbench';
+import { wgsl, bindBundle, bindEntryPoint } from '../shader/wgsl';
 
-import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
-import { getViewPosition, worldToDepth } from '@use-gpu/wgsl/use/view.wgsl';
-import { SurfaceFragment, DepthFragment } from '@use-gpu/wgsl/use/types.wgsl';
+import { applyPBRMaterial } from '../wgsl/material/pbr-apply.wgsl';
+import { getViewPosition, worldToDepth } from '../wgsl/use/view.wgsl';
+import { SurfaceFragment, DepthFragment } from '../wgsl/use/types.wgsl';
 
 import { vec3, mat3, mat4 } from 'gl-matrix';
 

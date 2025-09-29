@@ -1,4 +1,4 @@
-import { useOne, useNoOne } from '@use-gpu/live';
+import { useOne, useNoOne } from '../../live';
 
 // Return enough space to hold at least `size` items while resizing exponentially.
 export const useBufferedSize = (size: number) => {

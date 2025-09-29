@@ -1,14 +1,14 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { Lazy, TextureSource } from '@use-gpu/core';
-import type { Update } from '@use-gpu/state';
+import type { LiveComponent, LiveElement } from '../../../live';
+import type { ShaderModule } from '../../../shader';
+import type { Lazy, TextureSource } from '../../../core';
+import type { Update } from '../../../state';
 import type { VirtualDraw } from '../../pass/types';
 import type { BoundLight } from '../../light/types';
 
-import { memo, use, yeet, keyed, useCallback, useMemo, useOne, useRef } from '@use-gpu/live';
-import { resolve, uploadBuffer, BLEND_ADD } from '@use-gpu/core';
-import { bindBundle } from '@use-gpu/shader/wgsl';
-import { $delete } from '@use-gpu/state';
+import { memo, use, yeet, keyed, useCallback, useMemo, useOne, useRef } from '../../../live';
+import { resolve, uploadBuffer, BLEND_ADD } from '../../../core';
+import { bindBundle } from '../../../shader/wgsl';
+import { $delete } from '../../../state';
 
 import { drawCall } from '../../queue/draw-call';
 import { useBufferedSize } from '../../hooks/useBufferedSize';
@@ -27,16 +27,16 @@ import { EmissiveLightRender } from './emissive';
 import { FullScreenLightRender } from './full-screen';
 import { PointLightRender } from './point';
 
-import { getLight } from '@use-gpu/wgsl/use/light.wgsl';
-import { sampleShadow } from '@use-gpu/wgsl/use/shadow.wgsl';
+import { getLight } from '../../../wgsl/use/light.wgsl';
+import { sampleShadow } from '../../../wgsl/use/shadow.wgsl';
 
-import instanceDrawVirtualLight from '@use-gpu/wgsl/render/vertex/virtual-light.wgsl';
-import instanceFragmentLight from '@use-gpu/wgsl/render/fragment/deferred-light.wgsl';
+import instanceDrawVirtualLight from '../../../wgsl/render/vertex/virtual-light.wgsl';
+import instanceFragmentLight from '../../../wgsl/render/fragment/deferred-light.wgsl';
 
-import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl';
-import { applyPBRMaterial as applyMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
-import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '@use-gpu/wgsl/shadow/directional.wgsl';
-import { applyPointShadow as applyPointShadowWGSL } from '@use-gpu/wgsl/shadow/point.wgsl';
+import { applyLight as applyLightWGSL } from '../../../wgsl/material/light.wgsl';
+import { applyPBRMaterial as applyMaterial } from '../../../wgsl/material/pbr-apply.wgsl';
+import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directional.wgsl';
+import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/point.wgsl';
 
 export type LightRenderProps = {
   lights: Map<number, BoundLight>,

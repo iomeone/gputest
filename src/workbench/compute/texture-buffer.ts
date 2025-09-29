@@ -1,13 +1,13 @@
-import type { LiveFiber, LiveComponent, LiveElement, Task, PropsWithChildren } from '@use-gpu/live';
-import type { ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
+import type { LiveFiber, LiveComponent, LiveElement, Task, PropsWithChildren } from '../../live';
+import type { ColorSpace, TextureSource, TextureTarget } from '../../core';
 
-import { use, provide, gather, yeet, fence, useCallback, useContext, useFiber, useMemo, useOne, incrementVersion } from '@use-gpu/live';
+import { use, provide, gather, yeet, fence, useCallback, useContext, useFiber, useMemo, useOne, incrementVersion } from '../../live';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { ComputeContext } from '../providers/compute-provider';
 
-import { makeStorageTexture } from '@use-gpu/core';
+import { makeStorageTexture } from '../../core';
 
 const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
 

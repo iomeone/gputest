@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { PickingUniforms } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { PickingUniforms } from '../../core';
 
-import { memo, provide, makeContext, useContext, useMemo, useOne, useResource, useState, incrementVersion } from '@use-gpu/live';
-import { makeIdAllocator } from '@use-gpu/core';
+import { memo, provide, makeContext, useContext, useMemo, useOne, useResource, useState, incrementVersion } from '../../live';
+import { makeIdAllocator } from '../../core';
 import { PickingContext } from '../providers/picking-provider';
 import { RenderContext } from '../providers/render-provider';
 

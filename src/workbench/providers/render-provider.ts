@@ -1,5 +1,5 @@
-import type { UseGPURenderContext } from '@use-gpu/core';
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import type { UseGPURenderContext } from '../../core';
+import { makeContext, useContext, useNoContext } from '../../live';
 
 export const RenderContext = makeContext<UseGPURenderContext>(undefined, 'RenderContext');
 

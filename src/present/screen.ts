@@ -1,18 +1,18 @@
-import type { LC } from '@use-gpu/live';
-import type { TextureSource } from '@use-gpu/core';
+import type { LC } from '../live';
+import type { TextureSource } from '../core';
 import type { ParsedEffect } from './types';
-import type { ColorLike } from '@use-gpu/traits';
+import type { ColorLike } from '../traits';
 
-import { memo, use, useOne, useMemo } from '@use-gpu/live';
-import { useBoundShader, useCombinedTransform, useLayoutContext, usePipelineOptions, useShaderRef, UIRectangles, Virtual } from '@use-gpu/workbench';
-import { getBundleKey } from '@use-gpu/shader/wgsl';
+import { memo, use, useOne, useMemo } from '../live';
+import { useBoundShader, useCombinedTransform, useLayoutContext, usePipelineOptions, useShaderRef, UIRectangles, Virtual } from '../workbench';
+import { getBundleKey } from '../shader/wgsl';
 
 import { usePresentTransition } from './hooks';
 
-import { transformRectangle } from '@use-gpu/wgsl/layout/rectangle.wgsl';
+import { transformRectangle } from '../wgsl/layout/rectangle.wgsl';
 
-import { getScreenVertex } from '@use-gpu/wgsl/present/screen.wgsl';
-import { getScreenFragment } from '@use-gpu/wgsl/present/fragment.wgsl';
+import { getScreenVertex } from '../wgsl/present/screen.wgsl';
+import { getScreenFragment } from '../wgsl/present/fragment.wgsl';
 
 export type ScreenProps = {
   id: number,

@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { StorageSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../live';
+import type { StorageSource } from '../core';
+import type { ShaderSource } from '../shader';
 import type { ObjectTrait } from './types';
 
-import { use, memo, provide, yeet, useCallback, useMemo, useOne, tagFunction } from '@use-gpu/live';
-import { bindEntryPoint } from '@use-gpu/shader/wgsl';
+import { use, memo, provide, yeet, useCallback, useMemo, useOne, tagFunction } from '../live';
+import { bindEntryPoint } from '../shader/wgsl';
 
 import {
   FaceLayer,
@@ -14,14 +14,14 @@ import {
   useMatrixContext,
   useCombinedTransform,
   getBoundShader,
-} from '@use-gpu/workbench';
+} from '../workbench';
 
 import { useObjectTrait } from './traits';
 import { composeTransform } from './lib/compose';
 
-import { loadInstance } from '@use-gpu/wgsl/transform/instance.wgsl';
-import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl';
-import { getMatrixDifferential } from '@use-gpu/wgsl/transform/diff-matrix.wgsl';
+import { loadInstance } from '../wgsl/transform/instance.wgsl';
+import { getCartesianPosition } from '../wgsl/transform/cartesian.wgsl';
+import { getMatrixDifferential } from '../wgsl/transform/diff-matrix.wgsl';
 
 import { mat3, mat4 } from 'gl-matrix';
 

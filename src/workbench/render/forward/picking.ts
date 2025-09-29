@@ -1,17 +1,17 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { memo, use, fragment, yeet, useContext, useNoContext, useMemo, useNoMemo, useOne, useNoOne } from '@use-gpu/live';
-import { resolve } from '@use-gpu/core';
-import { bindBundle, bindingToModule } from '@use-gpu/shader/wgsl';
+import { memo, use, fragment, yeet, useContext, useNoContext, useMemo, useNoMemo, useOne, useNoOne } from '../../../live';
+import { resolve } from '../../../core';
+import { bindBundle, bindingToModule } from '../../../shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
 
 import { usePassContext } from '../../providers/pass-provider';
 import { useViewContext } from '../../providers/view-provider';
 
-import instanceDrawVirtualPicking from '@use-gpu/wgsl/render/vertex/virtual-pick.wgsl';
-import instanceFragmentPicking from '@use-gpu/wgsl/render/fragment/pick.wgsl';
+import instanceDrawVirtualPicking from '../../../wgsl/render/vertex/virtual-pick.wgsl';
+import instanceFragmentPicking from '../../../wgsl/render/fragment/pick.wgsl';
 
 export type PickingRenderProps = VirtualDraw;
 

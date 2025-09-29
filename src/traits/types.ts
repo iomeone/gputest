@@ -1,4 +1,4 @@
-import type { ArrowFunction } from '@use-gpu/live';
+import type { ArrowFunction } from '../live';
 import { vec4 } from 'gl-matrix';
 
 export type TypedArray =

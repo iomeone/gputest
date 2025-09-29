@@ -1,8 +1,8 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipLineIntoView, getPerspectiveScale, applyZBias3 };
-use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
-use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
-use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
+use '../../../wgsl/use/types'::{ SolidVertex };
+use '../../../wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipLineIntoView, getPerspectiveScale, applyZBias3 };
+use '../../../wgsl/geometry/strip'::{ getStripIndex };
+use '../../../wgsl/geometry/line'::{ getLineJoin };
+use '../../../wgsl/geometry/arrow'::{ getArrowSize };
 
 @optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 @optional @link fn getScissor(i: u32) -> vec4<f32> { return vec4<f32>(1.0); };

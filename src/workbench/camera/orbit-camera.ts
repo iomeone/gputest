@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/traits';
-import { ViewUniforms, UniformAttribute } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { VectorLike } from '../../traits';
+import { ViewUniforms, UniformAttribute } from '../../core';
 
-import { parsePosition, useProp } from '@use-gpu/traits';
-import { provide, use, useContext, useOne, incrementVersion } from '@use-gpu/live';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition, makeFrustumPlanes } from '@use-gpu/core';
+import { parsePosition, useProp } from '../../traits';
+import { provide, use, useContext, useOne, incrementVersion } from '../../live';
+import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition, makeFrustumPlanes } from '../../core';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';

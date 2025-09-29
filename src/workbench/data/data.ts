@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { TypedArray, StorageSource, UniformType, Accessor, DataField, DataBounds } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { TypedArray, StorageSource, UniformType, Accessor, DataField, DataBounds } from '../../core';
 
-import { yeet, signal, useOne, useMemo, useNoMemo, useContext, useNoContext, useYolo, incrementVersion } from '@use-gpu/live';
+import { yeet, signal, useOne, useMemo, useNoMemo, useContext, useNoContext, useYolo, incrementVersion } from '../../live';
 import {
   makeDataArray, makeDataAccessor, copyDataArray, copyNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
   getBoundingBox, toDataBounds,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';

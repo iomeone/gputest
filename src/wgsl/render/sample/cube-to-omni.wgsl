@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/octahedral'::{ decodeOctahedral, wrapOctahedral };
+use '../../../wgsl/codec/octahedral'::{ decodeOctahedral, wrapOctahedral };
 
 @link fn getTexture(uvw: vec3<f32>) -> vec4<f32>;
 @optional @link fn getScale() -> vec2<f32> { return vec2<f32>(1.0); };

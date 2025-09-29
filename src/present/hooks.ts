@@ -1,14 +1,14 @@
-import type { Rectangle, Point4 } from '@use-gpu/core';
+import type { Rectangle, Point4 } from '../core';
 import type { ParsedEffect } from './types';
 import { SLIDE_EFFECTS } from './traits';
 
-import { useContext, useMemo, useOne, useRef, useFiber } from '@use-gpu/live';
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { useTimeContext, LoopContext, useBoundSource, useBoundShader, useShaderRef } from '@use-gpu/workbench';
+import { useContext, useMemo, useOne, useRef, useFiber } from '../live';
+import { bundleToAttributes } from '../shader/wgsl';
+import { useTimeContext, LoopContext, useBoundSource, useBoundShader, useShaderRef } from '../workbench';
 import { usePresentContext } from './providers/present-provider';
 
-import { getSlideMask } from '@use-gpu/wgsl/present/mask.wgsl';
-import { getSlideMotion } from '@use-gpu/wgsl/present/motion.wgsl';
+import { getSlideMask } from '../wgsl/present/mask.wgsl';
+import { getSlideMotion } from '../wgsl/present/motion.wgsl';
 
 const ATTRIBUTES = bundleToAttributes(getSlideMotion);
 const NO_VEC4: Point4 = [0, 0, 0, 0];

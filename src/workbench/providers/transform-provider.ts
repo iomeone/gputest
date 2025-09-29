@@ -1,6 +1,6 @@
-import type { ShaderModule } from '@use-gpu/shader';
-import type { DataBounds } from '@use-gpu/core';
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import type { ShaderModule } from '../../shader';
+import type { DataBounds } from '../../core';
+import { makeContext, useContext, useNoContext } from '../../live';
 import { vec4 } from 'gl-matrix';
 
 export type TransformContextProps = {

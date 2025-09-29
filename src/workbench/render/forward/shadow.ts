@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { memo, use, fragment, yeet, useContext, useNoContext, useMemo, useNoMemo, useOne, useNoOne } from '@use-gpu/live';
-import { resolve } from '@use-gpu/core';
-import { patch, $apply } from '@use-gpu/state';
-import { bindBundle, bindingToModule } from '@use-gpu/shader/wgsl';
+import { memo, use, fragment, yeet, useContext, useNoContext, useMemo, useNoMemo, useOne, useNoOne } from '../../../live';
+import { resolve } from '../../../core';
+import { patch, $apply } from '../../../state';
+import { bindBundle, bindingToModule } from '../../../shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
 
@@ -14,11 +14,11 @@ import { useViewContext } from '../../providers/view-provider';
 import {
   main as instanceDrawVirtualDepth,
   mainWithDepth as instanceDrawVirtualDepthDepth,
-} from '@use-gpu/wgsl/render/vertex/virtual-depth.wgsl';
-import instanceFragmentDepth from '@use-gpu/wgsl/render/fragment/depth.wgsl';
-import instanceFragmentDepthDepth from '@use-gpu/wgsl/render/fragment/depth-frag.wgsl';
+} from '../../../wgsl/render/vertex/virtual-depth.wgsl';
+import instanceFragmentDepth from '../../../wgsl/render/fragment/depth.wgsl';
+import instanceFragmentDepthDepth from '../../../wgsl/render/fragment/depth-frag.wgsl';
 
-import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
 
 export type ShadowRenderProps = VirtualDraw;
 

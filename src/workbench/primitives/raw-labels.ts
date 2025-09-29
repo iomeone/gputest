@@ -1,16 +1,16 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, TextureSource, LambdaSource, DataBounds,
-} from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
 
 import { Virtual } from './virtual';
 
-import { use, memo, useCallback, useMemo, useOne, useNoCallback } from '@use-gpu/live';
-import { bindBundle, bindingsToLinks, getBundleKey } from '@use-gpu/shader/wgsl';
-import { makeShaderBindings, resolve, BLEND_ALPHA } from '@use-gpu/core';
+import { use, memo, useCallback, useMemo, useOne, useNoCallback } from '../../live';
+import { bindBundle, bindingsToLinks, getBundleKey } from '../../shader/wgsl';
+import { makeShaderBindings, resolve, BLEND_ALPHA } from '../../core';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
@@ -18,8 +18,8 @@ import { useDataLength } from '../hooks/useDataBinding';
 import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getLabelVertex } from '@use-gpu/wgsl/instance/vertex/label.wgsl';
-import { getUIFragment } from '@use-gpu/wgsl/instance/fragment/ui.wgsl';
+import { getLabelVertex } from '../../wgsl/instance/vertex/label.wgsl';
+import { getUIFragment } from '../../wgsl/instance/fragment/ui.wgsl';
 
 const DEFINES = {DEBUG_SDF: false};
 

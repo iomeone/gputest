@@ -1,4 +1,4 @@
-import type { Point4 } from '@use-gpu/core';
+import type { Point4 } from '../core';
 
 export type SlideEffect = 'none' | 'fade' | 'wipe' | 'move';
 export type SlideEase = 'cosine' | 'linear';

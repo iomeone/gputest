@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { TypedArray, StorageSource, UniformType, DataField } from '@use-gpu/core';
-import { capture, yeet, makeContext, useCapture, useContext, useNoContext, useMemo, useOne, useRef, useResource, incrementVersion, makeCapture } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { TypedArray, StorageSource, UniformType, DataField } from '../../core';
+import { capture, yeet, makeContext, useCapture, useContext, useNoContext, useMemo, useOne, useRef, useResource, incrementVersion, makeCapture } from '../../live';
 import {
   makeIdAllocator,
   makeDataArray, copyNumberArrayRange,
   makeStorageBuffer, uploadBuffer, uploadBufferRange, UNIFORM_ARRAY_DIMS,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useBufferedSize } from '../hooks/useBufferedSize';

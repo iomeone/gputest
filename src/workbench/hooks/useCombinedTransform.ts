@@ -1,13 +1,13 @@
-import type { Lazy, DataBounds } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { Lazy, DataBounds } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
 
-import { useMemo } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { useMemo } from '../../live';
+import { chainTo } from '../../shader/wgsl';
 import { useTransformContext } from '../providers/transform-provider';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { getChainDifferential } from '@use-gpu/wgsl/transform/diff-chain.wgsl';
-import { getEpsilonDifferential } from '@use-gpu/wgsl/transform/diff-epsilon.wgsl';
+import { getChainDifferential } from '../../wgsl/transform/diff-chain.wgsl';
+import { getEpsilonDifferential } from '../../wgsl/transform/diff-epsilon.wgsl';
 
 export const useCombinedTransform = (
   transform?: ShaderModule | null,

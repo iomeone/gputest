@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { ShaderSource } from '@use-gpu/shader';
-import type { StorageSource, Geometry } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { ShaderSource } from '../../shader';
+import type { StorageSource, Geometry } from '../../core';
 
-import { use, yeet, useOne } from '@use-gpu/live';
+import { use, yeet, useOne } from '../../live';
 import zipObject from 'lodash/zipObject';
 
 import { Data } from './data';

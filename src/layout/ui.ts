@@ -1,5 +1,5 @@
-import type { LC, LiveFunction, LiveElement } from '@use-gpu/live';
-import type { AggregateBuffer, Atlas, Rectangle, TextureSource, UniformType, TypedArray, StorageSource } from '@use-gpu/core';
+import type { LC, LiveFunction, LiveElement } from '../live';
+import type { AggregateBuffer, Atlas, Rectangle, TextureSource, UniformType, TypedArray, StorageSource } from '../core';
 import type { UIAggregate } from './types';
 
 import {
@@ -7,14 +7,14 @@ import {
   SDFFontProvider, 
   useBufferedSize,
   UIRectangles,
-} from '@use-gpu/workbench';
-import { use, keyed, wrap, fragment, signal, yeet, gather, useCallback, useContext, useOne, useMemo } from '@use-gpu/live';
-import { hashBits53, getObjectKey } from '@use-gpu/state';
-import { getBundleKey } from '@use-gpu/shader';
+} from '../workbench';
+import { use, keyed, wrap, fragment, signal, yeet, gather, useCallback, useContext, useOne, useMemo } from '../live';
+import { hashBits53, getObjectKey } from '../state';
+import { getBundleKey } from '../shader';
 import {
   makeAggregateBuffer,
   updateAggregateBuffer,
-} from '@use-gpu/core';
+} from '../core';
 import { overlapBounds, joinBounds } from './lib/util';
 
 export type UIProps = {

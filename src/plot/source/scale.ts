@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { StorageSource, LambdaSource, UniformType } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { VectorLike } from '@use-gpu/traits';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { StorageSource, LambdaSource, UniformType } from '../../core';
+import type { ShaderModule } from '../../shader';
+import type { VectorLike } from '../../traits';
 import type { ScaleTrait, AxisTrait } from '../types';
 
-import { parseVec4, useProp } from '@use-gpu/traits';
-import { yeet, provide, useOne, useMemo, useNoMemo, useContext, incrementVersion } from '@use-gpu/live';
-import { useRawSource, useBoundShader, useShaderRef } from '@use-gpu/workbench';
+import { parseVec4, useProp } from '../../traits';
+import { yeet, provide, useOne, useMemo, useNoMemo, useContext, incrementVersion } from '../../live';
+import { useRawSource, useBoundShader, useShaderRef } from '../../workbench';
 
 import { DataContext, ValuesContext } from '../providers/data-provider';
 import { RangeContext } from '../providers/range-provider';
@@ -14,7 +14,7 @@ import { RangeContext } from '../providers/range-provider';
 import { useScaleTrait, useAxisTrait } from '../traits';
 import { logarithmic, linear } from '../util/domain';
 
-import { getScalePosition } from '@use-gpu/wgsl/plot/scale.wgsl';
+import { getScalePosition } from '../../wgsl/plot/scale.wgsl';
 
 import { vec4 } from 'gl-matrix';
 

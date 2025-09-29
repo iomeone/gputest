@@ -1,4 +1,4 @@
-import type { Point3, StorageSource, TextureSource, TypedArray } from '@use-gpu/core';
+import type { Point3, StorageSource, TextureSource, TypedArray } from '../core';
 import { mat4, vec3, quat } from 'gl-matrix';
 
 export type VoxFile = {

@@ -1,18 +1,18 @@
-import type { LiveComponent, Ref } from '@use-gpu/live';
+import type { LiveComponent, Ref } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, RenderPassMode, StorageSource, DataBounds,
-} from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
-import type { VectorLike } from '@use-gpu/traits';
+} from '../../core';
+import type { ShaderSource } from '../../shader';
+import type { VectorLike } from '../../traits';
 
 import { Virtual } from '../primitives/virtual';
 import { Readback } from '../primitives/readback';
 
-import { patch } from '@use-gpu/state';
-import { use, memo, yeet, debug, fragment, useCallback, useMemo, useOne, useRef, useVersion, useNoCallback, incrementVersion } from '@use-gpu/live';
-import { resolve, uploadBuffer, toDataBounds } from '@use-gpu/core';
+import { patch } from '../../state';
+import { use, memo, yeet, debug, fragment, useCallback, useMemo, useOne, useRef, useVersion, useNoCallback, incrementVersion } from '../../live';
+import { resolve, uploadBuffer, toDataBounds } from '../../core';
 
 import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
 import { useComputePipeline } from '../hooks/useComputePipeline';
@@ -28,12 +28,12 @@ import { useTransformContext } from '../providers/transform-provider';
 
 import { useInspectable } from '../hooks/useInspectable'
 
-import { main as scanVolume } from '@use-gpu/wgsl/contour/scan.wgsl';
-import { main as fitContourLinear } from '@use-gpu/wgsl/contour/fit-linear.wgsl';
-import { main as fitContourQuadratic } from '@use-gpu/wgsl/contour/fit-quadratic.wgsl';
-import { getDualContourVertex } from '@use-gpu/wgsl/instance/vertex/dual-contour.wgsl';
-import { getPassThruColor } from '@use-gpu/wgsl/mask/passthru.wgsl';
-import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
+import { main as scanVolume } from '../../wgsl/contour/scan.wgsl';
+import { main as fitContourLinear } from '../../wgsl/contour/fit-linear.wgsl';
+import { main as fitContourQuadratic } from '../../wgsl/contour/fit-quadratic.wgsl';
+import { getDualContourVertex } from '../../wgsl/instance/vertex/dual-contour.wgsl';
+import { getPassThruColor } from '../../wgsl/mask/passthru.wgsl';
+import { getScissorColor } from '../../wgsl/mask/scissor.wgsl';
 
 import { Dispatch } from '../queue/dispatch';
 

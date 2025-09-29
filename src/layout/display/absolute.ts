@@ -1,12 +1,12 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { Rectangle } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { ShaderModule } from '../../shader';
+import type { Rectangle } from '../../core';
 import type { FitInto, Dimension, Direction, LayoutElement } from '../types';
 
-import { use, memo, gather, yeet, useFiber, useMemo } from '@use-gpu/live';
+import { use, memo, gather, yeet, useFiber, useMemo } from '../../live';
 import { fitAbsoluteBox } from '../lib/absolute';
 import { makeBoxPicker, memoFit, memoLayout } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
+import { useInspectable, useInspectHoverable } from '../../workbench';
 
 import type { ElementTrait } from '../types';
 import { useElementTrait } from '../traits';

@@ -1,17 +1,17 @@
-import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { Rectangle, Point4 } from '@use-gpu/core';
+import type { LC, LiveElement, PropsWithChildren } from '../live';
+import type { Rectangle, Point4 } from '../core';
 import type { ParsedEffect, SlideInfo, SlideEase, ResolvedSlide } from './types';
-import type { ColorLike } from '@use-gpu/traits';
+import type { ColorLike } from '../traits';
 
-import { reconcile, quote, gather, provide, use, keyed, useMemo, useOne, useRef, useState } from '@use-gpu/live';
+import { reconcile, quote, gather, provide, use, keyed, useMemo, useOne, useRef, useState } from '../live';
 import {
   useTimeContext,
   LoopContext,
   SDFFontProvider,
   Pass, RawFullScreen, RenderTarget,
-} from '@use-gpu/workbench';
-import { UI, UILayers } from '@use-gpu/layout';
-import { makeParseColor, parseColor, useProp } from '@use-gpu/traits';
+} from '../workbench';
+import { UI, UILayers } from '../layout';
+import { makeParseColor, parseColor, useProp } from '../traits';
 
 import { resolveSlides } from './lib/slides';
 import { PresentContext, PresentAPI } from './providers/present-provider';

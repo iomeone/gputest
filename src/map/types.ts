@@ -1,5 +1,5 @@
-import type { VectorLike, ColorLike, Placement, Blending, Domain, Join } from '@use-gpu/traits';
-import type { PointShape } from '@use-gpu/workbench';
+import type { VectorLike, ColorLike, Placement, Blending, Domain, Join } from '../traits';
+import type { PointShape } from '../workbench';
 
 export type GeographicTrait = {
   long: number,

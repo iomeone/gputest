@@ -1,7 +1,7 @@
-import type { LiveComponent, ArrowFunction } from '@use-gpu/live';
-import type { TypedArray, StorageSource, RenderPassMode, DeepPartial, Lazy } from '@use-gpu/core';
-import type { ShaderModule, ParsedBundle, ParsedModule } from '@use-gpu/shader';
-import { yeet, memo, useContext, useNoContext, useMemo, useOne, useState, useResource, SUSPEND } from '@use-gpu/live';
+import type { LiveComponent, ArrowFunction } from '../../live';
+import type { TypedArray, StorageSource, RenderPassMode, DeepPartial, Lazy } from '../../core';
+import type { ShaderModule, ParsedBundle, ParsedModule } from '../../shader';
+import { yeet, memo, useContext, useNoContext, useMemo, useOne, useState, useResource, SUSPEND } from '../../live';
 
 import uniq from 'lodash/uniq';
 
@@ -12,7 +12,7 @@ import {
   makeBoundUniforms, makeVolatileUniforms,
   uploadBuffer,
   resolve,
-} from '@use-gpu/core';
+} from '../../core';
 import { useLinkedShader } from '../hooks/useLinkedShader';
 import { useComputePipelineAsync } from '../hooks/useComputePipeline';
 import { useInspectable } from '../hooks/useInspectable'

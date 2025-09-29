@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Tracks } from '@use-gpu/workbench';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Tracks } from '../../../workbench';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 
 import {
   Loop, Pass, Flat,
@@ -9,13 +9,13 @@ import {
   Cursor, OrbitCamera, OrbitControls,
   Animate,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Spherical, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import {
   WebMercator, MVTiles, MapboxProvider, MapTileProvider,
-} from '@use-gpu/map';
+} from '../../../map';
 
 import { PlotControls } from '../../ui/plot-controls';
 

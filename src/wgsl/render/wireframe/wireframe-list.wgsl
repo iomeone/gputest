@@ -1,7 +1,7 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/geometry/quad'::{ getQuadIndex };
-use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
-use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
+use '../../../wgsl/use/types'::{ SolidVertex };
+use '../../../wgsl/geometry/quad'::{ getQuadIndex };
+use '../../../wgsl/geometry/strip'::{ getStripIndex };
+use '../../../wgsl/geometry/line'::{ getLineJoin };
 
 @link fn getVertex(v: u32, i: u32) -> SolidVertex {};
 @link fn getInstanceSize() -> u32 {};

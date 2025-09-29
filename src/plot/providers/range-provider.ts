@@ -1,4 +1,4 @@
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import { makeContext, useContext, useNoContext } from '../../live';
 
 export type RangeContextProps = [number, number][];
 const DEFAULT_RANGE: RangeContextProps = [[-1, 1], [-1, 1], [-1, 1], [-1, 1]];

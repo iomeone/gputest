@@ -1,4 +1,4 @@
-import type { Geometry } from '@use-gpu/core';
+import type { Geometry } from '../../../core';
 import { vec3 } from 'gl-matrix';
 
 export const forMeshTriangles = (() => {

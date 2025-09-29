@@ -1,6 +1,6 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type { VirtualDraw } from '../pass/types';
-import { memo, use, useMemo } from '@use-gpu/live';
+import { memo, use, useMemo } from '../../live';
 
 import { useInspectHoverable } from '../hooks/useInspectable';
 import { usePassContext } from '../providers/pass-provider';

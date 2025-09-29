@@ -1,11 +1,11 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { TypedArray, TextureSource, Atlas, Lazy, RenderPassMode } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { TypedArray, TextureSource, Atlas, Lazy, RenderPassMode } from '../../core';
+import type { ShaderSource } from '../../shader';
 import type { SDFGlyphData } from '../text/types';
 
-import { gather, use, yeet, keyed, wrap, memo, debug, fragment, provide, useFiber, useOne, useState, useResource } from '@use-gpu/live';
-import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
-import { makeShaderBindings } from '@use-gpu/core';
+import { gather, use, yeet, keyed, wrap, memo, debug, fragment, provide, useFiber, useOne, useState, useResource } from '../../live';
+import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
+import { makeShaderBindings } from '../../core';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useRawSource } from '../hooks/useRawSource';
 

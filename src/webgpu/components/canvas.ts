@@ -1,11 +1,11 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { UseGPURenderContext, ColorSpace } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { UseGPURenderContext, ColorSpace } from '../../core';
 
-import { EventProvider } from '@use-gpu/workbench';//'/event-provider';
-import { RenderContext } from '@use-gpu/workbench';//'/providers/render-provider';
-import { LayoutContext } from '@use-gpu/workbench';//'/providers/layout-provider';
-import { DeviceContext } from '@use-gpu/workbench';//'/providers/device-provider';
-import { provide, use, signal, imperative, useCallback, useContext, useMemo, useOne, useFiber } from '@use-gpu/live';
+import { EventProvider } from '../../workbench';//'/event-provider';
+import { RenderContext } from '../../workbench';//'/providers/render-provider';
+import { LayoutContext } from '../../workbench';//'/providers/layout-provider';
+import { DeviceContext } from '../../workbench';//'/providers/device-provider';
+import { provide, use, signal, imperative, useCallback, useContext, useMemo, useOne, useFiber } from '../../live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -15,7 +15,7 @@ import {
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLY,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { DEPTH_STENCIL_FORMAT, COLOR_SPACE, BACKGROUND_COLOR } from '../constants';
 import { makePresentationContext } from '../web';

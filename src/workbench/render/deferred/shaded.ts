@@ -1,9 +1,9 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { memo, use, fragment, yeet, useContext, useNoContext, useMemo, useNoMemo, useOne, useNoOne } from '@use-gpu/live';
-import { resolve } from '@use-gpu/core';
-import { bindBundle, bindingToModule } from '@use-gpu/shader/wgsl';
+import { memo, use, fragment, yeet, useContext, useNoContext, useMemo, useNoMemo, useOne, useNoOne } from '../../../live';
+import { resolve } from '../../../core';
+import { bindBundle, bindingToModule } from '../../../shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
 import { getNativeColor } from '../../hooks/useNativeColor';
@@ -12,13 +12,13 @@ import { useRenderContext } from '../../providers/render-provider';
 import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
+import instanceDrawVirtualShaded from '../../../wgsl/render/vertex/virtual-shaded.wgsl';
 import {
   main as instanceFragmentShaded,
   mainWithDepth as instanceFragmentShadedDepth,
-} from '@use-gpu/wgsl/render/fragment/deferred-shaded.wgsl';
+} from '../../../wgsl/render/fragment/deferred-shaded.wgsl';
 
-import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
 
 export type DeferredShadedRenderProps = VirtualDraw;
 

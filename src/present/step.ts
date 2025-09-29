@@ -1,10 +1,10 @@
-import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { DeepPartial } from '@use-gpu/core';
+import type { LC, LiveElement, PropsWithChildren } from '../live';
+import type { DeepPartial } from '../core';
 import type { ParsedEffect, SlideTrait, TransitionTrait } from './types';
 
-import { unquote, fence, yeet, use, useMemo, useOne, useFiber } from '@use-gpu/live';
-import { useLayoutContext } from '@use-gpu/workbench';
-import { Transform } from '@use-gpu/layout';
+import { unquote, fence, yeet, use, useMemo, useOne, useFiber } from '../live';
+import { useLayoutContext } from '../workbench';
+import { Transform } from '../layout';
 
 import { merge } from './lib/slides';
 import { usePresentTransition } from './hooks';

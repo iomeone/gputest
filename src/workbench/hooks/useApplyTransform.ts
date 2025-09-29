@@ -1,10 +1,10 @@
-import type { DataBounds, StorageSource, LambdaSource, TextureSource, TypedArray, UniformAttributeValue } from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
-import type { Ref } from '@use-gpu/live';
+import type { DataBounds, StorageSource, LambdaSource, TextureSource, TypedArray, UniformAttributeValue } from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
+import type { Ref } from '../../live';
 
-import { useOne, useVersion, useNoOne, useNoVersion } from '@use-gpu/live';
-import { makeShaderBinding } from '@use-gpu/core';
-import { chainTo, sourceToModule, bindingToModule } from '@use-gpu/shader/wgsl';
+import { useOne, useVersion, useNoOne, useNoVersion } from '../../live';
+import { makeShaderBinding } from '../../core';
+import { chainTo, sourceToModule, bindingToModule } from '../../shader/wgsl';
 import { useTransformContext, useNoTransformContext } from '../providers/transform-provider';
 import { useScissorContext, useNoScissorContext } from '../providers/scissor-provider';
 

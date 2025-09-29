@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { TextureSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { TextureSource } from '../../../core';
+import type { ShaderSource } from '../../../shader';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React, { Gather, memo, useOne } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -17,11 +17,11 @@ import {
 
   makeSphereGeometry,
   useBoundShader,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 import {
   Scene, Node, Mesh,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 const cubeMaterial = wgsl`
 @optional @link fn getCubeMap(uvw: vec3<f32>) -> vec4<f32> { return vec4<f32>(0.0); };

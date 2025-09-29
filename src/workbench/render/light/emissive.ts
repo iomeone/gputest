@@ -1,14 +1,14 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { TextureSource } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent } from '../../../live';
+import type { TextureSource } from '../../../core';
+import type { ShaderModule } from '../../../shader';
 import type { LightKindProps } from './light';
 
-import { yeet, useMemo } from '@use-gpu/live';
+import { yeet, useMemo } from '../../../live';
 
 import { useBoundShader } from '../../hooks/useBoundShader';
 
-import { getLightVertex } from '@use-gpu/wgsl/instance/vertex/light.wgsl';
-import { getEmissiveFragment } from '@use-gpu/wgsl/instance/fragment/emissive.wgsl';
+import { getLightVertex } from '../../../wgsl/instance/vertex/light.wgsl';
+import { getEmissiveFragment } from '../../../wgsl/instance/fragment/emissive.wgsl';
 
 import { FULLSCREEN_PIPELINE, FULLSCREEN_DEFS, useLightDraw } from './light';
 

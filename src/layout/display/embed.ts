@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { Rectangle, Point, Point4 } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { Rectangle, Point, Point4 } from '../../core';
+import type { ShaderModule } from '../../shader';
 import type { FitInto, LayoutElement, Dimension, Margin } from '../types';
 
-import { useProp } from '@use-gpu/traits';
-import { use, memo, gather, provide, yeet, useContext, useFiber } from '@use-gpu/live';
-import { LayoutContext, TransformContext } from '@use-gpu/workbench';
+import { useProp } from '../../traits';
+import { use, memo, gather, provide, yeet, useContext, useFiber } from '../../live';
+import { LayoutContext, TransformContext } from '../../workbench';
 import { getBlockMinMax, getBlockMargin, fitBlock } from '../lib/block';
 import { memoFit, memoLayout } from '../lib/util';
 import { evaluateDimension } from '../parse';

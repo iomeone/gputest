@@ -1,5 +1,5 @@
 declare module "@use-gpu/wgsl/transform/instance.wgsl" {
-  type ParsedBundle = import('@use-gpu/shader').ParsedBundle;
+  type ParsedBundle = import('../../shader').ParsedBundle;
   const __module: ParsedBundle;
   export const loadInstance: ParsedBundle;
   export const getTransformMatrix: ParsedBundle;

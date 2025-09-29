@@ -1,15 +1,15 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { UniformAttributeValue } from '@use-gpu/core';
-import type { VectorLike } from '@use-gpu/traits';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { UniformAttributeValue } from '../../core';
+import type { VectorLike } from '../../traits';
 import type { AxesTrait, ObjectTrait, Swizzle } from '../types';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '@use-gpu/traits';
-import { use, provide, signal, useContext, useOne, useMemo } from '@use-gpu/live';
-import { bundleToAttributes, chainTo } from '@use-gpu/shader/wgsl';
+import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '../../traits';
+import { use, provide, signal, useContext, useOne, useMemo } from '../../live';
+import { bundleToAttributes, chainTo } from '../../shader/wgsl';
 import {
   TransformContext,
   useShaderRef, useBoundShader, useBoundSource, useCombinedTransform,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
@@ -18,8 +18,8 @@ import { mat3, mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl';
-import { getMatrixDifferential } from '@use-gpu/wgsl/transform/diff-matrix.wgsl';
+import { getCartesianPosition } from '../../wgsl/transform/cartesian.wgsl';
+import { getMatrixDifferential } from '../../wgsl/transform/diff-matrix.wgsl';
 
 const MATRIX_BINDINGS = bundleToAttributes(getCartesianPosition);
 

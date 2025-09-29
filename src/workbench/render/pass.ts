@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../live';
+import type { UseGPURenderContext } from '../../core';
 
-import { use, multiGather, memo, useMemo } from '@use-gpu/live';
+import { use, multiGather, memo, useMemo } from '../../live';
 
 import { FullScreenRenderer } from './full-screen-renderer';
 import { ForwardRenderer } from './forward-renderer';

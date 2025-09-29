@@ -1,21 +1,21 @@
-import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { Point4 } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
-import type { ColorLike, VectorLike } from '@use-gpu/traits';
+import type { LC, LiveElement, PropsWithChildren } from '../../live';
+import type { Point4 } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
+import type { ColorLike, VectorLike } from '../../traits';
 
-import { provide, yeet, signal, useMemo, useOne } from '@use-gpu/live';
-import { parseColor, useProp } from '@use-gpu/traits';
+import { provide, yeet, signal, useMemo, useOne } from '../../live';
+import { parseColor, useProp } from '../../traits';
 
 import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getPBRMaterial } from '@use-gpu/wgsl/material/pbr-material.wgsl';
-import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { getPBRMaterial } from '../../wgsl/material/pbr-material.wgsl';
+import { applyPBRMaterial } from '../../wgsl/material/pbr-apply.wgsl';
 
-import { getMaterialSurface } from '@use-gpu/wgsl/instance/surface/material.wgsl';
-import { getNormalMapSurface } from '@use-gpu/wgsl/instance/surface/normal-map.wgsl';
-import { getBasicMaterial } from '@use-gpu/wgsl/material/basic-material.wgsl';
+import { getMaterialSurface } from '../../wgsl/instance/surface/material.wgsl';
+import { getNormalMapSurface } from '../../wgsl/instance/surface/normal-map.wgsl';
+import { getBasicMaterial } from '../../wgsl/material/basic-material.wgsl';
 
 import { ShaderLitMaterial } from './shader-lit-material';
 

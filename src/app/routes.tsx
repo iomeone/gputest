@@ -1,4 +1,4 @@
-import React from '@use-gpu/live';
+import React from '../live';
 
 import { GeometryDataPage } from './pages/geometry/data';
 import { GeometryFacesPage } from './pages/geometry/faces';

@@ -1,4 +1,4 @@
-import type { Point4 } from '@use-gpu/core';
+import type { Point4 } from '../core';
 import type {
   EffectTrait,
   SlideTrait,
@@ -8,7 +8,7 @@ import type {
   SlideEffect,
 } from './types';
 
-import { useOne } from '@use-gpu/live';
+import { useOne } from '../live';
 import {
   makeUseTrait,
   makeParseTrait,
@@ -17,7 +17,7 @@ import {
   parseInteger,
   parseNumber,
   optional,
-} from '@use-gpu/traits';
+} from '../traits';
 
 import { vec4 } from 'gl-matrix';
 import mapValues from 'lodash/mapValues';

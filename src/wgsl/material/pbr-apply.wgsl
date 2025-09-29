@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/fragment/pbr'::{ PBR };
-use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
+use '../../wgsl/fragment/pbr'::{ PBR };
+use '../../wgsl/use/types'::{ SurfaceFragment };
 
 @export fn applyPBRMaterial(
   N: vec3<f32>,

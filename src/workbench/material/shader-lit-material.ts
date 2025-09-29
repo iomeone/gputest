@@ -1,9 +1,9 @@
-import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { Point4 } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
-import type { ColorLike } from '@use-gpu/traits';
+import type { LC, LiveElement, PropsWithChildren } from '../../live';
+import type { Point4 } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
+import type { ColorLike } from '../../traits';
 
-import { provide, yeet, signal, useMemo, useOne } from '@use-gpu/live';
+import { provide, yeet, signal, useMemo, useOne } from '../../live';
 
 import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
@@ -11,7 +11,7 @@ import { useShaderRef } from '../hooks/useShaderRef';
 import { useLightContext } from '../providers/light-provider';
 import { MaterialContext } from '../providers/material-provider';
 
-import { getShadedFragment } from '@use-gpu/wgsl/instance/fragment/shaded.wgsl';
+import { getShadedFragment } from '../../wgsl/instance/fragment/shaded.wgsl';
 
 export type ShaderLitMaterialProps = {
   /** Flat shader, for unlit passes (e.g. shadow map)

@@ -1,10 +1,10 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { Point, TextureSource } from '@use-gpu/core';
+import type { LC, LiveElement } from '../live';
+import type { Point, TextureSource } from '../core';
 import type { Vox, VoxShape } from './types';
 
-import { gather, use, yeet, useMemo, useYolo } from '@use-gpu/live';
-import { makeTexture, uploadDataTexture } from '@use-gpu/core';
-import { useDeviceContext, useRawSource, Fetch } from '@use-gpu/workbench';
+import { gather, use, yeet, useMemo, useYolo } from '../live';
+import { makeTexture, uploadDataTexture } from '../core';
+import { useDeviceContext, useRawSource, Fetch } from '../workbench';
 
 import { parseVox, getMipShape } from './lib/vox';
 

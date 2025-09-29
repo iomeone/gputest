@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { StorageSource, TextureSource, UniformType } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { StorageSource, TextureSource, UniformType } from '../../../core';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
+import React, { Gather, memo, useOne } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -12,11 +12,11 @@ import {
   DirectionalLight, PointLight, AmbientLight,
   Data, PointLayer,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 import {
   Scene, Node, Mesh, Instances,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 const SHADOW_MAP_DIRECTIONAL = {
   size: [2048, 2048],

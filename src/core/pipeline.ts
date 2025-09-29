@@ -2,9 +2,9 @@ import type {
   TypedArray, UseGPURenderContext,
   ShaderModuleDescriptor, ShaderStageDescriptor,
 } from './types';
-import type { Update } from '@use-gpu/state';
+import type { Update } from '../state';
 
-import { patch, $delete } from '@use-gpu/state';
+import { patch, $delete } from '../state';
 
 export const makeShaderModuleDescriptor = (
   code: TypedArray | string,

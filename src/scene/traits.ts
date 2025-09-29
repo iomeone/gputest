@@ -8,7 +8,7 @@ import {
   parseScale,
   parseMatrix,
   optional,
-} from '@use-gpu/traits';
+} from '../traits';
 import type {
   ObjectTrait,
 } from './types';

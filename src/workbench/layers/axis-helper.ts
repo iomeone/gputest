@@ -1,6 +1,6 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { StorageSource } from '@use-gpu/core';
-import { memo, use, useOne } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
+import type { StorageSource } from '../../core';
+import { memo, use, useOne } from '../../live';
 
 import { ArrowSegments } from './arrow-segments';
 import { ArrowLayer } from './arrow-layer';

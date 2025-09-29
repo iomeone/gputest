@@ -1,7 +1,7 @@
-import type { StorageSource } from '@use-gpu/core';
+import type { StorageSource } from '../../core';
 
-import { proxy } from '@use-gpu/core';
-import { useOne } from '@use-gpu/live';
+import { proxy } from '../../core';
+import { useOne } from '../../live';
 
 export const useDerivedSource = (
   source: StorageSource,

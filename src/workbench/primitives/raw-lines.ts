@@ -1,16 +1,16 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, DataBounds,
-} from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { Virtual } from './virtual';
 
-import { use, yeet, memo, useCallback, useMemo, useOne, useNoCallback } from '@use-gpu/live';
-import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
-import { resolve, makeShaderBindings } from '@use-gpu/core';
+import { use, yeet, memo, useCallback, useMemo, useOne, useNoCallback } from '../../live';
+import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
+import { resolve, makeShaderBindings } from '../../core';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
@@ -20,7 +20,7 @@ import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 import { useMaterialContext } from '../providers/material-provider';
 
-import { getLineVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
+import { getLineVertex } from '../../wgsl/instance/vertex/line.wgsl';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,

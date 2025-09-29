@@ -1,16 +1,16 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, DataBounds,
-} from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { Virtual } from './virtual';
 
-import { use, yeet, memo, useCallback, useOne, useNoCallback } from '@use-gpu/live';
-import { bindBundle, bindingsToLinks, getBundleKey } from '@use-gpu/shader/wgsl';
-import { makeShaderBindings, resolve } from '@use-gpu/core';
+import { use, yeet, memo, useCallback, useOne, useNoCallback } from '../../live';
+import { bindBundle, bindingsToLinks, getBundleKey } from '../../shader/wgsl';
+import { makeShaderBindings, resolve } from '../../core';
 
 import { makeArrowGeometry } from './geometry/arrow';
 import { RawData } from '../data/raw-data';
@@ -22,8 +22,8 @@ import { useDataLength } from '../hooks/useDataBinding';
 import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getArrowVertex } from '@use-gpu/wgsl/instance/vertex/arrow.wgsl';
-import { getPassThruColor } from '@use-gpu/wgsl/mask/passthru.wgsl';
+import { getArrowVertex } from '../../wgsl/instance/vertex/arrow.wgsl';
+import { getPassThruColor } from '../../wgsl/mask/passthru.wgsl';
 
 export type RawArrowsProps = {
   anchor?: number[] | TypedArray,

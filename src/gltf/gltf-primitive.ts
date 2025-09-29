@@ -1,10 +1,10 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { UniformAttribute, DataBounds } from '@use-gpu/core';
+import type { LC, LiveElement } from '../live';
+import type { UniformAttribute, DataBounds } from '../core';
 import type { GLTF, GLTFPrimitiveData } from './types';
 
-import { flattenIndexedArray } from '@use-gpu/core';
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { use, provide, useCallback, useOne, useNoOne, useMemo, useNoMemo, useVersion, useNoCallback, useNoVersion } from '@use-gpu/live';
+import { flattenIndexedArray } from '../core';
+import { bundleToAttributes } from '../shader/wgsl';
+import { use, provide, useCallback, useOne, useNoOne, useMemo, useNoMemo, useVersion, useNoCallback, useNoVersion } from '../live';
 import { generateTangents } from 'mikktspace';
 import { vec3, mat3, mat4 } from 'gl-matrix';
 
@@ -16,9 +16,9 @@ import {
   useBoundShader, useNoBoundShader,
   useRawSource, useNoRawSource,
   useShaderRef, useNoShaderRef,
-} from '@use-gpu/workbench';
-import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl'
-import { getMatrixDifferential } from '@use-gpu/wgsl/transform/diff-matrix.wgsl'
+} from '../workbench';
+import { getCartesianPosition } from '../wgsl/transform/cartesian.wgsl'
+import { getMatrixDifferential } from '../wgsl/transform/diff-matrix.wgsl'
 import { useGLTFMaterial } from './gltf-material';
 
 const MATRIX_BINDINGS = bundleToAttributes(getCartesianPosition);

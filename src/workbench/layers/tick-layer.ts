@@ -1,21 +1,21 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformType,
   VertexData, RenderPassMode,
-} from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { RawLines } from '../primitives/raw-lines';
 
-import { use, memo, provide, useCallback, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
-import { resolve } from '@use-gpu/core';
+import { use, memo, provide, useCallback, useFiber, useMemo, useOne, useState, useResource } from '../../live';
+import { resolve } from '../../core';
 import { TransformContext, useTransformContext, DEFAULT_TRANSFORM } from '../providers/transform-provider';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getTickPosition } from '@use-gpu/wgsl/instance/vertex/tick.wgsl';
-import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
+import { getTickPosition } from '../../wgsl/instance/vertex/tick.wgsl';
+import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
 
 export type TickLayerProps = {
   position?: number[] | TypedArray,

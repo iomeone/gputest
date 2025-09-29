@@ -1,13 +1,13 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { StorageSource, LambdaSource, TypedArray, UniformType, Emit, Emitter, Time, DataBounds } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { StorageSource, LambdaSource, TypedArray, UniformType, Emit, Emitter, Time, DataBounds } from '../../core';
+import type { ShaderSource } from '../../shader';
 
-import { provide, yeet, signal, useMemo, useNoMemo, useOne, useNoOne, useContext, useNoContext, useYolo, incrementVersion } from '@use-gpu/live';
+import { provide, yeet, signal, useMemo, useNoMemo, useOne, useNoOne, useContext, useNoContext, useYolo, incrementVersion } from '../../live';
 import {
   makeDataArray, copyNumberArray, emitIntoNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
   getBoundingBox, toDataBounds,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
@@ -16,8 +16,8 @@ import { useBufferedSize } from '../hooks/useBufferedSize';
 import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { chainTo } from '@use-gpu/shader/wgsl';
-import { getIndex } from '@use-gpu/wgsl/instance/interleave.wgsl';
+import { chainTo } from '../../shader/wgsl';
+import { getIndex } from '../../wgsl/instance/interleave.wgsl';
 
 const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
 

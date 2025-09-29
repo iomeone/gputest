@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveElement } from '../../live';
+import type { UseGPURenderContext } from '../../core';
 import type { LightEnv, RenderComponents, VirtualDraw, AggregatedCalls } from '../pass/types';
 
-import { use, yeet, provide, multiGather, memo, useMemo, useOne } from '@use-gpu/live';
+import { use, yeet, provide, multiGather, memo, useMemo, useOne } from '../../live';
 
 import { PassContext } from '../providers/pass-provider';
 

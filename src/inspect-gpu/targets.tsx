@@ -1,21 +1,21 @@
-import type { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live';
-import type { LambdaSource, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveFiber, LiveElement } from '../live';
+import type { LambdaSource, TextureSource } from '../core';
 
-import { memo, use, wrap, provide, signal, useFiber, useMemo, useOne, makeContext } from '@use-gpu/live';
-import { LiveCanvas } from '@use-gpu/react';
-import { wgsl } from '@use-gpu/shader/wgsl';
-import { Pass, Flat, FontLoader, Queue, DeviceContext, getBoundShader, getLambdaSource } from '@use-gpu/workbench';
-import { AutoCanvas } from '@use-gpu/webgpu';
-import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '@use-gpu/layout';
+import { memo, use, wrap, provide, signal, useFiber, useMemo, useOne, makeContext } from '../live';
+import { LiveCanvas } from '../react';
+import { wgsl } from '../shader/wgsl';
+import { Pass, Flat, FontLoader, Queue, DeviceContext, getBoundShader, getLambdaSource } from '../workbench';
+import { AutoCanvas } from '../webgpu';
+import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '../layout';
 
 import { styled as _styled } from '@stitches/react';
 
 import React, { Fragment } from 'react';
 
-import { UseInspect } from '@use-gpu/inspect';
+import { UseInspect } from '../inspect';
 import { inspectGPU } from '.';
 
-import { decodeOctahedral } from '@use-gpu/wgsl/codec/octahedral.wgsl';
+import { decodeOctahedral } from '../wgsl/codec/octahedral.wgsl';
 
 const NO_OPS: any[] = [];
 const toArray = <T,>(x?: T | T[]): T[] => Array.isArray(x) ? x : x ? [x] : NO_OPS; 

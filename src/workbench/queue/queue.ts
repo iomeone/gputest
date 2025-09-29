@@ -1,9 +1,9 @@
-import type { LiveFiber, LC, PropsWithChildren, LiveElement, ArrowFunction, DeferredCall } from '@use-gpu/live';
+import type { LiveFiber, LC, PropsWithChildren, LiveElement, ArrowFunction, DeferredCall } from '../../live';
 
 import {
   gather, provide, yeet, reconcile, quote, unquote,
   makeContext, useContext, useNoContext,
-} from '@use-gpu/live';
+} from '../../live';
 import { RenderContext } from '../providers/render-provider';
 
 export type QueueProps = {

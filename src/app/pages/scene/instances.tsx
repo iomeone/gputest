@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { StorageSource, TextureSource } from '@use-gpu/core';
-import type { Keyframe } from '@use-gpu/workbench';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { StorageSource, TextureSource } from '../../../core';
+import type { Keyframe } from '../../../workbench';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
+import React, { Gather, memo, useOne } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -13,11 +13,11 @@ import {
   PointLight, AmbientLight,
 
   makeBoxGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 import {
   Scene, Node, Instances,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 const COLOR_ON = [1, 1, 1, 1];
 const COLOR_OFF = [0.5, 0.5, 0.5, 1.0];

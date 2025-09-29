@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { Font, LazyFontSource } from '@use-gpu/glyph';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { Font, LazyFontSource } from '../../glyph';
 
-import { use, gather, keyed, yeet, useOne } from '@use-gpu/live';
-import { toHash } from '@use-gpu/state';
-import { parseWeight } from '@use-gpu/traits';
+import { use, gather, keyed, yeet, useOne } from '../../live';
+import { toHash } from '../../state';
+import { parseWeight } from '../../traits';
 import { Fetch } from '../data';
 import { FontProvider } from './providers/font-provider';
 

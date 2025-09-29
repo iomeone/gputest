@@ -1,5 +1,5 @@
 declare module "@use-gpu/wgsl/use/array.wgsl" {
-  type ParsedBundle = import('@use-gpu/shader').ParsedBundle;
+  type ParsedBundle = import('../../shader').ParsedBundle;
   const __module: ParsedBundle;
   export const sizeToModulus2: ParsedBundle;
   export const sizeToModulus3: ParsedBundle;

@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { DataField, StorageSource } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { DataField, StorageSource } from '../../../core';
 
-import React, { Gather, yeet, use, useMemo } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React, { Gather, yeet, use, useMemo } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 
 import {
   Loop, Pass, Flat,
@@ -11,10 +11,10 @@ import {
   Pick, Cursor, Fetch,
   PointLayer,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Cartesian, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import { BinaryControls } from '../../ui/binary-controls';
 import { vec3 } from 'gl-matrix';
 

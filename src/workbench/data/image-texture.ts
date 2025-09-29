@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { Point, ColorSpace, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { Point, ColorSpace, TextureSource } from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
-import { use, yeet, gather, memo, useMemo, useYolo } from '@use-gpu/live';
-import { makeDynamicTexture, uploadExternalTexture, updateMipTextureChain } from '@use-gpu/core';
+import { use, yeet, gather, memo, useMemo, useYolo } from '../../live';
+import { makeDynamicTexture, uploadExternalTexture, updateMipTextureChain } from '../../core';
 import { Fetch } from './fetch';
 
 export type ImageTextureProps = {

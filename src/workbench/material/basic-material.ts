@@ -1,11 +1,11 @@
-import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { Point4 } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
-import type { ColorLike } from '@use-gpu/traits';
+import type { LC, LiveElement, PropsWithChildren } from '../../live';
+import type { Point4 } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
+import type { ColorLike } from '../../traits';
 
-import { provide, yeet, signal, useMemo, useOne } from '@use-gpu/live';
-import { parseColor, useProp } from '@use-gpu/traits';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { provide, yeet, signal, useMemo, useOne } from '../../live';
+import { parseColor, useProp } from '../../traits';
+import { bindBundle } from '../../shader/wgsl';
 
 import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
@@ -15,9 +15,9 @@ import { MaterialContext } from '../providers/material-provider';
 
 import { ShaderFlatMaterial } from './shader-flat-material';
 
-import { getBasicMaterial } from '@use-gpu/wgsl/material/basic-material.wgsl';
-import { getSolidSurface } from '@use-gpu/wgsl/instance/surface/solid.wgsl';
-import { getSolidFragment } from '@use-gpu/wgsl/instance/fragment/solid.wgsl';
+import { getBasicMaterial } from '../../wgsl/material/basic-material.wgsl';
+import { getSolidSurface } from '../../wgsl/instance/surface/solid.wgsl';
+import { getSolidFragment } from '../../wgsl/instance/fragment/solid.wgsl';
 
 export type BasicMaterialProps = {
   color?: ColorLike,

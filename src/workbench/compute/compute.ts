@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren, ArrowFunction } from '@use-gpu/live';
+import type { LC, PropsWithChildren, ArrowFunction } from '../../live';
 import type { AggregatedCalls } from '../pass/types';
 
-import { use, memo, multiGather, useOne } from '@use-gpu/live';
+import { use, memo, multiGather, useOne } from '../../live';
 import { useInspectable } from '../hooks/useInspectable'
 
 import { ComputePass } from '../pass/compute-pass';

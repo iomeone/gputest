@@ -1,6 +1,6 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -10,10 +10,10 @@ import {
   Pick, Cursor,
   Animate,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Spherical, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 const π = Math.PI;
 const τ = π * 2;

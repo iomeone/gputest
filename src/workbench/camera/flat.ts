@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { ViewUniforms, Rectangle } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { ViewUniforms, Rectangle } from '../../core';
 
-import { use, provide, useContext, useOne, useMemo, incrementVersion } from '@use-gpu/live';
-import { VIEW_UNIFORMS, makeOrthogonalMatrix, makeFrustumPlanes } from '@use-gpu/core';
+import { use, provide, useContext, useOne, useMemo, incrementVersion } from '../../live';
+import { VIEW_UNIFORMS, makeOrthogonalMatrix, makeFrustumPlanes } from '../../core';
 import { LayoutContext } from '../providers/layout-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { RenderContext } from '../providers/render-provider';

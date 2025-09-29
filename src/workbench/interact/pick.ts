@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import { extend, useContext, useMemo, useNoMemo, useOne, useResource, useNoResource, useYolo } from '@use-gpu/live';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import { extend, useContext, useMemo, useNoMemo, useOne, useResource, useNoResource, useYolo } from '../../live';
 import { EventContext, MouseContext, MouseEventState } from '../providers/event-provider';
 
 export type PickState = {

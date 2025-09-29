@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GLTF } from '@use-gpu/gltf';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GLTF } from '../../../gltf';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -11,10 +11,10 @@ import {
   Cursor, PointLayer, LineLayer,
   AmbientLight, DirectionalLight, PointLight, DomeLight,
   Loop, Animate,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
-import { GLTFData, GLTFModel } from '@use-gpu/gltf';
-import { Scene, Node } from '@use-gpu/scene';
+import { GLTFData, GLTFModel } from '../../../gltf';
+import { Scene, Node } from '../../../scene';
 
 // @ts-ignore
 const isDevelopment = process.env.NODE_ENV === 'development';

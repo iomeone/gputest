@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../../live';
 
 export type ExpandState = Record<number, boolean>;
 export type PingState = Record<number, number>;

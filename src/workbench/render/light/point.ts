@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement } from '../../../live';
+import type { ShaderModule } from '../../../shader';
 import type { LightKindProps } from './light';
 import type { BoundLight } from '../../light/types';
 
-import { use, yeet, useCallback, useMemo, useOne, useRef } from '@use-gpu/live';
-import { uploadBuffer } from '@use-gpu/core';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { use, yeet, useCallback, useMemo, useOne, useRef } from '../../../live';
+import { uploadBuffer } from '../../../core';
+import { bindBundle } from '../../../shader/wgsl';
 
 import { useBufferedSize } from '../../hooks/useBufferedSize';
 import { useBoundShader } from '../../hooks/useBoundShader';
@@ -17,8 +17,8 @@ import { useViewContext } from '../../providers/view-provider';
 import { makeSphereGeometry } from '../../primitives/geometry/sphere';
 import { forMeshTriangles } from '../../primitives/geometry/util';
 
-import { getLightVertex } from '@use-gpu/wgsl/instance/vertex/light.wgsl';
-import { getLightFragment } from '@use-gpu/wgsl/instance/fragment/light.wgsl';
+import { getLightVertex } from '../../../wgsl/instance/vertex/light.wgsl';
+import { getLightFragment } from '../../../wgsl/instance/fragment/light.wgsl';
 
 import { vec3 } from 'gl-matrix';
 

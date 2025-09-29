@@ -1,13 +1,13 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Atlas, Rectangle } from '@use-gpu/core';
+import type { LiveComponent } from '../../live';
+import type { Atlas, Rectangle } from '../../core';
 
-import { debug, memo, use, yeet, useContext, useNoContext, useFiber, useMemo } from '@use-gpu/live';
-import { TextureSource } from '@use-gpu/core';
-import { useBoundShader, useLambdaSource } from '@use-gpu/workbench';
+import { debug, memo, use, yeet, useContext, useNoContext, useFiber, useMemo } from '../../live';
+import { TextureSource } from '../../core';
+import { useBoundShader, useLambdaSource } from '../../workbench';
 
 import { SDFFontContext } from './providers/sdf-font-provider';
 
-import { wgsl } from '@use-gpu/shader/wgsl';
+import { wgsl } from '../../shader/wgsl';
 
 export type DebugAtlasProps = {
   atlas: Atlas,

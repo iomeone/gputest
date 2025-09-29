@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { DataField, Emit, Time } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { DataField, Emit, Time } from '../../../core';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -9,7 +9,7 @@ import {
   CompositeData, Data, RawData, Raw, LineSegments,
   OrbitCamera, OrbitControls, FPSControls,
   Cursor, PointLayer, LineLayer,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 // Line data fields
 

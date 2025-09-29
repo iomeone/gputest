@@ -1,4 +1,4 @@
-import { useOne } from '@use-gpu/live';
+import { useOne } from '../live';
 import {
   makeUseTrait,
   useProp,
@@ -27,10 +27,10 @@ import {
   parseIntegerPositive,
   parseDomain,
   optional,
-} from '@use-gpu/traits';
+} from '../traits';
 import {
   parsePointShape,
-} from '@use-gpu/workbench';
+} from '../workbench';
 import type {
   GeographicTrait,
   ObjectTrait,

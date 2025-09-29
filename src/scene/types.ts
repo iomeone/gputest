@@ -1,5 +1,5 @@
-import type { VectorLike } from '@use-gpu/traits';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { VectorLike } from '../traits';
+import type { ShaderSource } from '../shader';
 
 export type ObjectTrait = {
   position: VectorLike,

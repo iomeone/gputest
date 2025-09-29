@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import { makeDepthStencilState } from '@use-gpu/core';
-import { yeet, memo } from '@use-gpu/live';
+import { makeDepthStencilState } from '../../../core';
+import { yeet, memo } from '../../../live';
 
 import { usePickingContext } from '../../providers/picking-provider';
 import { useInspectable } from '../../hooks/useInspectable';

@@ -1,8 +1,8 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { DataBounds, ViewUniforms, UniformAttribute } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { DataBounds, ViewUniforms, UniformAttribute } from '../../core';
 
-import { provide, signal, yeet, makeContext, useCallback, useContext, useNoContext, useMemo, useRef } from '@use-gpu/live';
-import { VIEW_UNIFORMS, makeGlobalUniforms, uploadBuffer, makeBindGroupLayout } from '@use-gpu/core';
+import { provide, signal, yeet, makeContext, useCallback, useContext, useNoContext, useMemo, useRef } from '../../live';
+import { VIEW_UNIFORMS, makeGlobalUniforms, uploadBuffer, makeBindGroupLayout } from '../../core';
 import { useDeviceContext } from '../providers/device-provider';
 import { useFrustumCuller } from '../hooks/useFrustumCuller';
 

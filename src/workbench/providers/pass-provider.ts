@@ -1,8 +1,8 @@
 import type { VirtualDraw } from '../pass/types';
-import type { UseGPURenderContext } from '@use-gpu/core';
-import type { LiveComponent } from '@use-gpu/live';
+import type { UseGPURenderContext } from '../../core';
+import type { LiveComponent } from '../../live';
 
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import { makeContext, useContext, useNoContext } from '../../live';
 
 export type PassContextProps = {
   useVariants: (virtual: VirtualDraw, hovered: boolean) => null | LiveComponent | LiveComponent[],

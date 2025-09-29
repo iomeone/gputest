@@ -1,6 +1,6 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -9,7 +9,7 @@ import {
   OrbitCamera, OrbitControls,
   Pick, Cursor, PointLayer, LineLayer,
   RenderToTexture,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import { RawMesh } from './components/raw-mesh';
 import { makeMesh, makeTexture } from '../../meshes/cube';
 

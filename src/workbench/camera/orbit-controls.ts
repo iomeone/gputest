@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/traits';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { VectorLike } from '../../traits';
 
-import { parsePosition, useProp } from '@use-gpu/traits';
-import { useContext, useOne, useResource, useState, useYolo } from '@use-gpu/live';
-import { makeOrbitMatrix } from '@use-gpu/core';
+import { parsePosition, useProp } from '../../traits';
+import { useContext, useOne, useResource, useState, useYolo } from '../../live';
+import { makeOrbitMatrix } from '../../core';
 import { KeyboardContext, MouseContext, WheelContext } from '../providers/event-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { useDerivedState } from '../hooks/useDerivedState';

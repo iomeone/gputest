@@ -1,6 +1,6 @@
-import type { VectorLike } from '@use-gpu/traits';
-import type { TypedArray } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { VectorLike } from '../../traits';
+import type { TypedArray } from '../../core';
+import type { ShaderModule } from '../../shader';
 
 import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 

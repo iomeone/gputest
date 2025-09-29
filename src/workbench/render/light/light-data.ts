@@ -1,22 +1,22 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { StorageSource, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../../live';
+import type { StorageSource, TextureSource } from '../../../core';
 import type { Light, BoundLight } from '../../light/types';
 import type { LightEnv } from '../../pass/types';
 
-import { provide, capture, yeet, signal, makeCapture, useCallback, useCapture, useFiber, useMemo, useOne, useRef, useResource, incrementVersion } from '@use-gpu/live';
+import { provide, capture, yeet, signal, makeCapture, useCallback, useCapture, useFiber, useMemo, useOne, useRef, useResource, incrementVersion } from '../../../live';
 import {
   makeIdAllocator,
   makeUniformLayout, makeLayoutData, makeLayoutFiller,
   makeStorageBuffer, uploadBuffer, uploadBufferRange,
   makeAtlas, makeTexture, seq,
-} from '@use-gpu/core';
-import { scrambleBits53, mixBits53 } from '@use-gpu/state';
-import { bindBundle, bundleToAttribute, getBundleKey } from '@use-gpu/shader/wgsl';
+} from '../../../core';
+import { scrambleBits53, mixBits53 } from '../../../state';
+import { bindBundle, bundleToAttribute, getBundleKey } from '../../../shader/wgsl';
 
 import { useDeviceContext } from '../../providers/device-provider';
 import { useBufferedSize } from '../../hooks/useBufferedSize';
 
-import { Light as WGSLLight } from '@use-gpu/wgsl/use/types.wgsl';
+import { Light as WGSLLight } from '../../../wgsl/use/types.wgsl';
 
 import { POINT_LIGHT } from '../../light/types';
 

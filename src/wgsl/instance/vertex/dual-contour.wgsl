@@ -1,8 +1,8 @@
-use '@use-gpu/wgsl/use/types'::{ ShadedVertex };
-use '@use-gpu/wgsl/use/array'::{ sizeToModulus3, packIndex3 };
-use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale, getViewScale, applyZBias }; 
-use '@use-gpu/wgsl/geometry/quad'::{ getQuadIndex };
-use '@use-gpu/wgsl/geometry/normal'::{ getOrthoVector };
+use '../../../wgsl/use/types'::{ ShadedVertex };
+use '../../../wgsl/use/array'::{ sizeToModulus3, packIndex3 };
+use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale, getViewScale, applyZBias }; 
+use '../../../wgsl/geometry/quad'::{ getQuadIndex };
+use '../../../wgsl/geometry/normal'::{ getOrthoVector };
 
 @link fn getEdgeId(i: u32) -> u32 { };
 @link fn getVertexIndex(i: u32) -> u32 { };

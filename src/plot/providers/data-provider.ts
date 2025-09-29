@@ -1,6 +1,6 @@
-import type { StorageSource, LambdaSource, TypedArray } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
-import { makeContext, useContext } from '@use-gpu/live';
+import type { StorageSource, LambdaSource, TypedArray } from '../../core';
+import type { ShaderModule } from '../../shader';
+import { makeContext, useContext } from '../../live';
 
 export type DataContextProps = StorageSource | LambdaSource | ShaderModule | null;
 export type ValuesContextProps = number[] | TypedArray;

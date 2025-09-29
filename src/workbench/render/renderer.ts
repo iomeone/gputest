@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { StorageSource, TextureSource, UseGPURenderContext } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveElement } from '../../live';
+import type { StorageSource, TextureSource, UseGPURenderContext } from '../../core';
 import type { AggregatedCalls, RenderComponents, VirtualDraw } from '../pass/types';
 
-import { use, memo, provide, multiGather, extend, useMemo } from '@use-gpu/live';
-import { makeBindGroupLayout, makeBindGroup, makeDataBindingsEntries } from '@use-gpu/core';
+import { use, memo, provide, multiGather, extend, useMemo } from '../../live';
+import { makeBindGroupLayout, makeBindGroup, makeDataBindingsEntries } from '../../core';
 
 import { PassContext } from '../providers/pass-provider';
 import { useDeviceContext } from '../providers/device-provider';

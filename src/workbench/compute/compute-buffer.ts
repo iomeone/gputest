@@ -1,8 +1,8 @@
-import type { LiveFiber, LiveComponent, LiveElement, Task, PropsWithChildren } from '@use-gpu/live';
-import type { StorageSource, StorageTarget, UniformType } from '@use-gpu/core';
+import type { LiveFiber, LiveComponent, LiveElement, Task, PropsWithChildren } from '../../live';
+import type { StorageSource, StorageTarget, UniformType } from '../../core';
 
-import { getDataArrayByteLength, makeDataBuffer } from '@use-gpu/core';
-import { use, wrap, provide, fence, yeet, useCallback, useContext, useFiber, useMemo, useOne, incrementVersion } from '@use-gpu/live';
+import { getDataArrayByteLength, makeDataBuffer } from '../../core';
+import { use, wrap, provide, fence, yeet, useCallback, useContext, useFiber, useMemo, useOne, incrementVersion } from '../../live';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { FeedbackContext } from '../providers/feedback-provider';

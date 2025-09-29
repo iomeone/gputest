@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 import type { MVTStyleSheet, MVTStyleProperties } from '../types';
 
-import { gather, use, yeet, useMemo, useOne } from '@use-gpu/live';
+import { gather, use, yeet, useMemo, useOne } from '../../live';
 import { cutPolygon, cutPolygons, getRingArea } from './tess';
 import earcut from 'earcut';
 import { VectorTile } from 'mapbox-vector-tile';

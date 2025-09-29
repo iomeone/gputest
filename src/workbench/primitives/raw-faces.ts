@@ -1,15 +1,15 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, DataBounds,
-} from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { Virtual } from './virtual';
 
-import { use, yeet, memo, useCallback, useMemo, useOne, useNoOne, useNoCallback } from '@use-gpu/live';
-import { resolve, makeShaderBindings } from '@use-gpu/core';
+import { use, yeet, memo, useCallback, useMemo, useOne, useNoOne, useNoCallback } from '../../live';
+import { resolve, makeShaderBindings } from '../../core';
 import { useMaterialContext } from '../providers/material-provider';
 import { useScissorContext } from '../providers/scissor-provider';
 import { usePickingShader } from '../providers/picking-provider';
@@ -20,7 +20,7 @@ import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
 
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getFaceVertex } from '@use-gpu/wgsl/instance/vertex/face.wgsl';
+import { getFaceVertex } from '../../wgsl/instance/vertex/face.wgsl';
 
 export type RawFacesProps = {
   position?: number[] | TypedArray,

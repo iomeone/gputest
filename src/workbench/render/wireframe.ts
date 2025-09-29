@@ -1,13 +1,13 @@
-import type { StorageSource, Lazy } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { StorageSource, Lazy } from '../../core';
+import type { ShaderModule } from '../../shader';
 
-import { resolve, makeDataBuffer } from '@use-gpu/core';
-import { useMemo, useNoMemo } from '@use-gpu/live';
+import { resolve, makeDataBuffer } from '../../core';
+import { useMemo, useNoMemo } from '../../live';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { getWireframeListVertex } from '@use-gpu/wgsl/render/wireframe/wireframe-list.wgsl';
-import { getWireframeStripVertex } from '@use-gpu/wgsl/render/wireframe/wireframe-strip.wgsl';
-import { main as makeWireframeIndirectCommand } from '@use-gpu/wgsl/render/wireframe/wireframe-indirect.wgsl';
+import { getWireframeListVertex } from '../../wgsl/render/wireframe/wireframe-list.wgsl';
+import { getWireframeStripVertex } from '../../wgsl/render/wireframe/wireframe-strip.wgsl';
+import { main as makeWireframeIndirectCommand } from '../../wgsl/render/wireframe/wireframe-indirect.wgsl';
 
 /** Produce a wireframe vertex shader for a given solid vertex shader. */
 export const getWireframe = (

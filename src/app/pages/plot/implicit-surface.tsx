@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Emit, StorageSource, Time } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Emit, StorageSource, Time } from '../../../core';
+import type { ShaderModule } from '../../../shader';
 
-import React, { Provide, Gather } from '@use-gpu/live';
+import React, { Provide, Gather } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -13,11 +13,11 @@ import {
   Animate, Keyframe,
   LinearRGB,
   PointLayer, DataShader,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Cartesian, Polar, Axis, Grid, Sampled, ImplicitSurface, DataContext,
-} from '@use-gpu/plot';
-import { wgsl } from '@use-gpu/shader/wgsl';
+} from '../../../plot';
+import { wgsl } from '../../../shader/wgsl';
 import { SurfaceControls } from '../../ui/surface-controls';
 
 let t = 0;

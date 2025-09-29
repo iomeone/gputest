@@ -1,6 +1,6 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '@use-gpu/live';
+import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '../../live';
 
-import { use, quote, yeet, memo, useContext, useMemo } from '@use-gpu/live';
+import { use, quote, yeet, memo, useContext, useMemo } from '../../live';
 import { useInspectable } from '../hooks/useInspectable'
 
 export type DispatchPassProps = {

@@ -1,5 +1,5 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { TypedArray, UniformAttribute, TextureSource, OffscreenTarget } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { TypedArray, UniformAttribute, TextureSource, OffscreenTarget } from '../../core';
 
 import {
   PICKING_FORMAT,
@@ -12,7 +12,7 @@ import {
   memo, use, provide, quote, yeet, makeContext,
   useMemo, useOne, useNoOne, useResource,
   useContext, useNoContext, incrementVersion,
-} from '@use-gpu/live';
+} from '../../live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -23,7 +23,7 @@ import {
   makeTextureReadbackBuffer,
   TEXTURE_ARRAY_TYPES,
   TEXTURE_FORMAT_SIZES,
-} from '@use-gpu/core';
+} from '../../core';
 
 const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
 

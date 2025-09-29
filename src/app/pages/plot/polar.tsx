@@ -1,6 +1,6 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../../live';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 
 import {
   Loop, Pass, Flat,
@@ -9,10 +9,10 @@ import {
   Pick, Cursor,
   Animate,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Polar, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '@use-gpu/plot';
+} from '../../../plot';
 const π = Math.PI;
 const EPS = 1e-3;
 

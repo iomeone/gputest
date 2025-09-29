@@ -1,5 +1,5 @@
 declare module "@use-gpu/wgsl/geometry/quad.wgsl" {
-  type ParsedBundle = import('@use-gpu/shader').ParsedBundle;
+  type ParsedBundle = import('../../shader').ParsedBundle;
   const __module: ParsedBundle;
   export const getQuadIndex: ParsedBundle;
   export const getQuadUV: ParsedBundle;

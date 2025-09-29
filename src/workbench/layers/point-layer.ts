@@ -1,22 +1,22 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, RenderPassMode,
-} from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource } from '../../shader';
 import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { RawQuads } from '../primitives/raw-quads';
 
-import { patch } from '@use-gpu/state';
-import { use, memo, useMemo, useOne, useState, useResource } from '@use-gpu/live';
-import { bindBundle, bindingToModule, castTo } from '@use-gpu/shader/wgsl';
-import { makeShaderBinding, makeShaderBindings } from '@use-gpu/core';
+import { patch } from '../../state';
+import { use, memo, useMemo, useOne, useState, useResource } from '../../live';
+import { bindBundle, bindingToModule, castTo } from '../../shader/wgsl';
+import { makeShaderBinding, makeShaderBindings } from '../../core';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '@use-gpu/wgsl/mask/point.wgsl';
+import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../wgsl/mask/point.wgsl';
 import { PointShape } from './types';
 
 const MASK_SHADER = {

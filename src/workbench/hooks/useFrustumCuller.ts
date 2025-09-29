@@ -1,8 +1,8 @@
-import type { ViewUniforms } from '@use-gpu/core';
-import type { Ref } from '@use-gpu/live';
+import type { ViewUniforms } from '../../core';
+import type { Ref } from '../../live';
 
-import { useCallback, useNoCallback } from '@use-gpu/live';
-import { distanceToFrustum } from '@use-gpu/core';
+import { useCallback, useNoCallback } from '../../live';
+import { distanceToFrustum } from '../../core';
 import { mat4, vec3, vec4 } from 'gl-matrix';
 
 const sqr = (x: number) => x * x;

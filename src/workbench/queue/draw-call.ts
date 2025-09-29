@@ -1,17 +1,17 @@
-import type { LiveComponent, ArrowFunction, Ref } from '@use-gpu/live';
-import type { DataBounds, TypedArray, StorageSource, RenderPassMode, Lazy, UniformLayout, UniformAttribute, UseGPURenderContext, VolatileAllocation } from '@use-gpu/core';
-import type { ShaderModule, ParsedBundle, ParsedModule } from '@use-gpu/shader';
-import type { Update } from '@use-gpu/state';
+import type { LiveComponent, ArrowFunction, Ref } from '../../live';
+import type { DataBounds, TypedArray, StorageSource, RenderPassMode, Lazy, UniformLayout, UniformAttribute, UseGPURenderContext, VolatileAllocation } from '../../core';
+import type { ShaderModule, ParsedBundle, ParsedModule } from '../../shader';
+import type { Update } from '../../state';
 import type { Culler } from '../pass/types';
 
-import { yeet, memo, useMemo, useNoMemo, useOne, useNoOne, useState, SUSPEND } from '@use-gpu/live';
-import { patch, $apply } from '@use-gpu/state';
+import { yeet, memo, useMemo, useNoMemo, useOne, useNoOne, useState, SUSPEND } from '../../live';
+import { patch, $apply } from '../../state';
 import {
   makeMultiUniforms, makeBoundUniforms, makeVolatileUniforms,
   VIEW_UNIFORMS,
   uploadBuffer,
   resolve,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';

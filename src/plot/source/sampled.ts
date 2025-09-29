@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { StorageSource, Emit } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { StorageSource, Emit } from '../../core';
 
-import { yeet, use, gather, provide, useContext, useMemo, useOne, tagFunction } from '@use-gpu/live';
-import { SampledData } from '@use-gpu/workbench';
+import { yeet, use, gather, provide, useContext, useMemo, useOne, tagFunction } from '../../live';
+import { SampledData } from '../../workbench';
 import { DataContext } from '../providers/data-provider';
 import { RangeContext } from '../providers/range-provider';
-import { parseAxis } from '@use-gpu/traits';
+import { parseAxis } from '../../traits';
 
 export type SampledProps = {
   axis?: string,

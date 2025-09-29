@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
-use '@use-gpu/wgsl/use/array'::{ sizeToModulus3, packIndex3, unpackIndex3 }
+use '../../wgsl/geometry/strip'::{ getStripIndex };
+use '../../wgsl/use/array'::{ sizeToModulus3, packIndex3, unpackIndex3 }
 
 @link fn getSize() -> vec3<u32> {};
 @optional @link fn getPosition(index: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); }

@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../live';
 
-import { gather, use, keyed, yeet, memo, useAwait, useCallback, useOne, useMemo } from '@use-gpu/live';
-import { VirtualLayers, useLayoutContext, useForceUpdate } from '@use-gpu/workbench';
-import { useRangeContext } from '@use-gpu/plot';
+import { gather, use, keyed, yeet, memo, useAwait, useCallback, useOne, useMemo } from '../live';
+import { VirtualLayers, useLayoutContext, useForceUpdate } from '../workbench';
+import { useRangeContext } from '../plot';
 
 import { useTileContext } from './providers/tile-provider';
 import { MVTStyleContextProps, useMVTStyleContext } from './providers/mvt-style-provider';

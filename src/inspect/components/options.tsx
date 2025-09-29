@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRefineCursor, Cursor } from '@use-gpu/state';
+import { useRefineCursor, Cursor } from '../../state';
 import { SmallButton, OptionsContainer, Spacer } from './layout';
 import { OptionState } from './types';
 

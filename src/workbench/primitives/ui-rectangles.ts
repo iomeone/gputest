@@ -1,16 +1,16 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, TextureSource, LambdaSource,
-} from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+} from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
 
 import { Virtual } from './virtual';
 
-import { use, memo, useCallback, useMemo, useOne } from '@use-gpu/live';
-import { getBundleKey } from '@use-gpu/shader/wgsl';
-import { resolve } from '@use-gpu/core';
+import { use, memo, useCallback, useMemo, useOne } from '../../live';
+import { getBundleKey } from '../../shader/wgsl';
+import { resolve } from '../../core';
 import { useCombinedTransform } from '../hooks/useCombinedTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
@@ -19,8 +19,8 @@ import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getUIRectangleVertex } from '@use-gpu/wgsl/instance/vertex/ui-rectangle.wgsl';
-import { getUIFragment } from '@use-gpu/wgsl/instance/fragment/ui.wgsl';
+import { getUIRectangleVertex } from '../../wgsl/instance/vertex/ui-rectangle.wgsl';
+import { getUIFragment } from '../../wgsl/instance/fragment/ui.wgsl';
 
 export type UIRectanglesProps = {
   rectangle?: number[] | TypedArray,

@@ -1,16 +1,16 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { VectorLike } from '../../traits';
 import type { ArrowTrait, AxisTrait, LineTrait, ColorTrait, ROPTrait } from '../types';
 
-import { memo, use, gather, provide, useContext, useOne, useMemo } from '@use-gpu/live';
+import { memo, use, gather, provide, useContext, useOne, useMemo } from '../../live';
 import {
   useBoundShader, useBoundSource, useShaderRef,
   LineLayer, ArrowLayer, useArrowSegments,
-} from '@use-gpu/workbench';
-import { parseIntegerPositive } from '@use-gpu/traits';
+} from '../../workbench';
+import { parseIntegerPositive } from '../../traits';
 
 import { RangeContext } from '../providers/range-provider';
-import { parseVec4, useProp } from '@use-gpu/traits';
+import { parseVec4, useProp } from '../../traits';
 import {
   useAxisTrait,
   useArrowTrait,
@@ -20,7 +20,7 @@ import {
 } from '../traits';
 import { vec4 } from 'gl-matrix';
 
-import { getAxisPosition } from '@use-gpu/wgsl/plot/axis.wgsl';
+import { getAxisPosition } from '../../wgsl/plot/axis.wgsl';
 
 export type AxisProps =
   Partial<AxisTrait> &

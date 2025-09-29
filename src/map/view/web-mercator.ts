@@ -1,26 +1,26 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { AxesTrait, ObjectTrait, Swizzle } from '@use-gpu/plot';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { AxesTrait, ObjectTrait, Swizzle } from '../../plot';
 import type { GeographicTrait } from '../types';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '@use-gpu/traits';
-import { use, provide, signal, useContext, useOne, useMemo } from '@use-gpu/live';
-import { chainTo, swizzleTo } from '@use-gpu/shader/wgsl';
+import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '../../traits';
+import { use, provide, signal, useContext, useOne, useMemo } from '../../live';
+import { chainTo, swizzleTo } from '../../shader/wgsl';
 import {
   Scissor, TransformContext,
   useShaderRef, useBoundShader, useCombinedTransform,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import {
   RangeContext,
   composeTransform, swizzleMatrix, toBasis, toOrder, rotateBasis, invertBasis,
   useAxesTrait, useObjectTrait,
-} from '@use-gpu/plot';
+} from '../../plot';
 import { mat4 } from 'gl-matrix';
 
 import { useGeographicTrait } from '../traits';
 import { EARTH_CIRCUMFERENCE, toRad } from '../util/tiles';
 
-import { getWebMercatorPosition } from '@use-gpu/wgsl/transform/web-mercator.wgsl';
+import { getWebMercatorPosition } from '../../wgsl/transform/web-mercator.wgsl';
 
 const π = Math.PI;
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;

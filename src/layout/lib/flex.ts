@@ -1,4 +1,4 @@
-import type { Point, Point4, Rectangle } from '@use-gpu/core';
+import type { Point, Point4, Rectangle } from '../../core';
 import type { LayoutElement, LayoutRenderer, LayoutPicker, Direction, FitInto, AutoPoint, Margin, Alignment, Anchor } from '../types';
 
 import { makeFlexCursor } from './cursor';

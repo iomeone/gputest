@@ -1,14 +1,14 @@
-import type { ColorSpace, TextureSource } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { ColorSpace, TextureSource } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
 
-import { bindingToModule, bundleToAttribute, chainTo } from '@use-gpu/shader/wgsl';
-import { useContext, useMemo, useNoContext, useNoMemo } from '@use-gpu/live';
+import { bindingToModule, bundleToAttribute, chainTo } from '../../shader/wgsl';
+import { useContext, useMemo, useNoContext, useNoMemo } from '../../live';
 
 import { RenderContext } from '../providers/render-provider';
 import { getBoundSource } from '../hooks/useBoundSource';
 
-import { getUIFragment } from '@use-gpu/wgsl/instance/fragment/ui.wgsl';
-import { toLinear4, toGamma4 } from '@use-gpu/wgsl/use/gamma.wgsl';
+import { getUIFragment } from '../../wgsl/instance/fragment/ui.wgsl';
+import { toLinear4, toGamma4 } from '../../wgsl/use/gamma.wgsl';
 
 const TEXTURE_BINDING = bundleToAttribute(getUIFragment, 'getTexture');
 

@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement, LiveNode, LiveFiber, Task, PropsWithChildren } from '@use-gpu/live';
-import { use, signal, detach, provide, useCallback, useOne, useResource, tagFunction, formatNodeName } from '@use-gpu/live';
+import type { LiveComponent, LiveElement, LiveNode, LiveFiber, Task, PropsWithChildren } from '../../live';
+import { use, signal, detach, provide, useCallback, useOne, useResource, tagFunction, formatNodeName } from '../../live';
 
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { TimeContext } from '../providers/time-provider';

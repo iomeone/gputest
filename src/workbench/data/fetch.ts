@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import { yeet, suspend, useAwait, useMemo, useOne } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
+import { yeet, suspend, useAwait, useMemo, useOne } from '../../live';
 import { useSuspenseContext } from '../providers/suspense-provider';
 
 const SLOW = 0;

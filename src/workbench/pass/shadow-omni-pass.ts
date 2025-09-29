@@ -1,14 +1,14 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement } from '@use-gpu/live';
-import type { TextureSource, ViewUniforms } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveFiber, LiveElement } from '../../live';
+import type { TextureSource, ViewUniforms } from '../../core';
 import type { LightEnv, Renderable } from '../pass';
 import type { BoundLight } from '../light/types';
 import { mat4, vec3 } from 'gl-matrix';
 
-import { use, quote, yeet, wrap, memo, useMemo, useOne } from '@use-gpu/live';
+import { use, quote, yeet, wrap, memo, useMemo, useOne } from '../../live';
 import {
   makeDepthStencilAttachments, makeFrustumPlanes, makeGlobalUniforms, makeOrthogonalMatrix, makeTexture, uploadBuffer,
-} from '@use-gpu/core';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+} from '../../core';
+import { bindBundle } from '../../shader/wgsl';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
@@ -22,7 +22,7 @@ import { useShaderRef } from '../hooks/useShaderRef';
 import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
 import { drawToPass, reverseZ } from './util';
 
-import { getCubeToOmniSample } from '@use-gpu/wgsl/render/sample/cube-to-omni.wgsl';
+import { getCubeToOmniSample } from '../../wgsl/render/sample/cube-to-omni.wgsl';
 
 import { useDepthBlit } from './depth-blit';
 

@@ -1,9 +1,9 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent, PropsWithChildren } from '../live';
+import type { ShaderSource } from '../shader';
 import type { ObjectTrait } from './types';
-import { memo, use, wrap, useOne } from '@use-gpu/live';
+import { memo, use, wrap, useOne } from '../live';
 
-import { FaceLayer } from '@use-gpu/workbench';
+import { FaceLayer } from '../workbench';
 
 import { Primitive } from './primitive';
 

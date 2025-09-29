@@ -1,17 +1,17 @@
-import type { LC } from '@use-gpu/live';
-import type { Point4 } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { Point4 } from '../../../core';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 import { LayoutControls } from '../../ui/layout-controls';
 
 import {
   LinearRGB, Pass, Flat,
   PanControls,
   DebugProvider,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Overflow, Text, Element,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 const TRANSPARENT = [1, 1, 1, 0.1] as Point4;
 const BACKGROUND = [0.0, 0.0, 0.09, 1.0] as Point4;

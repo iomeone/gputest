@@ -1,9 +1,9 @@
-import type { UseGPURenderContext, ShaderModuleDescriptor, DeepPartial } from '@use-gpu/core';
-import type { Update } from '@use-gpu/state';
+import type { UseGPURenderContext, ShaderModuleDescriptor, DeepPartial } from '../../core';
+import type { Update } from '../../state';
 
-import { makeRenderPipeline, makeRenderPipelineAsync } from '@use-gpu/core';
-import { useMemo, useNoMemo, useOne, useNoOne, useState, useNoState } from '@use-gpu/live';
-import { toMurmur53 } from '@use-gpu/state';
+import { makeRenderPipeline, makeRenderPipelineAsync } from '../../core';
+import { useMemo, useNoMemo, useOne, useNoOne, useState, useNoState } from '../../live';
+import { toMurmur53 } from '../../state';
 import { useMemoKey } from './useMemoKey';
 import { DeviceContext } from '../providers/device-provider';
 import LRU from 'lru-cache';

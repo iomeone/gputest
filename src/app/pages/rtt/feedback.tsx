@@ -1,13 +1,13 @@
-import type { LC } from '@use-gpu/live';
-import type { Emit, Time } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { Emit, Time } from '../../../core';
 
-import React from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 
 import {
   Loop, Pass, OrbitCamera, RawData, PointLayer,
   LinearRGB, FullScreen,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 export const RTTFeedbackPage: LC = () => {
   return (

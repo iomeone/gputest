@@ -1,12 +1,12 @@
-import type { LiveElement } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { Point, Point4, Rectangle } from '@use-gpu/core';
+import type { LiveElement } from '../../live';
+import type { ShaderModule } from '../../shader';
+import type { Point, Point4, Rectangle } from '../../core';
 import type { FitInto, AutoPoint, Direction, Gap, MarginLike, Margin, Alignment, Anchor, Dimension, LayoutRenderer, LayoutPicker, InlineRenderer, InlineLine, UIAggregate } from '../types';
 
-import { yeet, fragment, morph, use } from '@use-gpu/live';
-import { toMurmur53 } from '@use-gpu/state';
-import { bindBundle, chainTo } from '@use-gpu/shader/wgsl';
-import { getCombinedClip, getTransformedClip } from '@use-gpu/wgsl/layout/clip.wgsl';
+import { yeet, fragment, morph, use } from '../../live';
+import { toMurmur53 } from '../../state';
+import { bindBundle, chainTo } from '../../shader/wgsl';
+import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clip.wgsl';
 import { INSPECT_STYLE } from './constants';
 
 export const isHorizontal = (d: Direction) => d === 'x' || d === 'lr' || d === 'rl';
