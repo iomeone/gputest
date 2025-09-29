@@ -6,8 +6,8 @@ import { chainTo } from '../../shader/wgsl';
 import { useTransformContext } from '../providers/transform-provider';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { getChainDifferential } from '../../wgsl/transform/diff-chain.wgsl';
-import { getEpsilonDifferential } from '../../wgsl/transform/diff-epsilon.wgsl';
+import { getChainDifferential } from '../../wgsl/transform/diff-chainwgsl';
+import { getEpsilonDifferential } from '../../wgsl/transform/diff-epsilonwgsl';
 
 export const useCombinedTransform = (
   transform?: ShaderModule | null,

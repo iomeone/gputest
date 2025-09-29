@@ -10,12 +10,12 @@ import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getPBRMaterial } from '../../wgsl/material/pbr-material.wgsl';
-import { applyPBRMaterial } from '../../wgsl/material/pbr-apply.wgsl';
+import { getPBRMaterial } from '../../wgsl/material/pbr-materialwgsl';
+import { applyPBRMaterial } from '../../wgsl/material/pbr-applywgsl';
 
-import { getMaterialSurface } from '../../wgsl/instance/surface/material.wgsl';
-import { getNormalMapSurface } from '../../wgsl/instance/surface/normal-map.wgsl';
-import { getBasicMaterial } from '../../wgsl/material/basic-material.wgsl';
+import { getMaterialSurface } from '../../wgsl/instance/surface/materialwgsl';
+import { getNormalMapSurface } from '../../wgsl/instance/surface/normal-mapwgsl';
+import { getBasicMaterial } from '../../wgsl/material/basic-materialwgsl';
 
 import { ShaderLitMaterial } from './shader-lit-material';
 

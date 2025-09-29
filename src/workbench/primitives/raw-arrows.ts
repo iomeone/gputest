@@ -22,8 +22,8 @@ import { useDataLength } from '../hooks/useDataBinding';
 import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getArrowVertex } from '../../wgsl/instance/vertex/arrow.wgsl';
-import { getPassThruColor } from '../../wgsl/mask/passthru.wgsl';
+import { getArrowVertex } from '../../wgsl/instance/vertex/arrowwgsl';
+import { getPassThruColor } from '../../wgsl/mask/passthruwgsl';
 
 export type RawArrowsProps = {
   anchor?: number[] | TypedArray,

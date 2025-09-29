@@ -13,13 +13,13 @@ import {
   UI, Layout, Absolute, Block, Element, Inline, Text,
 } from '../../../layout';
 
-import { main as generateInitial }  from './cfd-texture/initial.wgsl';
-import { main as pushVelocity }     from './cfd-texture/push.wgsl';
-import { main as updateDivCurl }    from './cfd-texture/divergence-curl.wgsl';
-import { main as updatePressure }   from './cfd-texture/pressure.wgsl';
-import { main as projectVelocity }  from './cfd-texture/project.wgsl';
-import { main as advectVelocity }   from './cfd-texture/advect.wgsl';
-import { main as advectMcCormack }  from './cfd-texture/mccormack.wgsl';
+import { main as generateInitial }  from './cfd-texture/initialwgsl';
+import { main as pushVelocity }     from './cfd-texture/pushwgsl';
+import { main as updateDivCurl }    from './cfd-texture/divergence-curlwgsl';
+import { main as updatePressure }   from './cfd-texture/pressurewgsl';
+import { main as projectVelocity }  from './cfd-texture/projectwgsl';
+import { main as advectVelocity }   from './cfd-texture/advectwgsl';
+import { main as advectMcCormack }  from './cfd-texture/mccormackwgsl';
 
 import { CFDControls } from '../../ui/cfd-controls';
 

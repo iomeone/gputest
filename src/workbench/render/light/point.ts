@@ -17,8 +17,8 @@ import { useViewContext } from '../../providers/view-provider';
 import { makeSphereGeometry } from '../../primitives/geometry/sphere';
 import { forMeshTriangles } from '../../primitives/geometry/util';
 
-import { getLightVertex } from '../../../wgsl/instance/vertex/light.wgsl';
-import { getLightFragment } from '../../../wgsl/instance/fragment/light.wgsl';
+import { getLightVertex } from '../../../wgsl/instance/vertex/lightwgsl';
+import { getLightFragment } from '../../../wgsl/instance/fragment/lightwgsl';
 
 import { vec3 } from 'gl-matrix';
 

@@ -17,7 +17,7 @@ import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
 import { getBoundShader } from '../hooks/useBoundShader';
 
 import { chainTo } from '../../shader/wgsl';
-import { getIndex } from '../../wgsl/instance/interleave.wgsl';
+import { getIndex } from '../../wgsl/instance/interleavewgsl';
 
 const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
 

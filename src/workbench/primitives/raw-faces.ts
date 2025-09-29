@@ -20,7 +20,7 @@ import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
 
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getFaceVertex } from '../../wgsl/instance/vertex/face.wgsl';
+import { getFaceVertex } from '../../wgsl/instance/vertex/facewgsl';
 
 export type RawFacesProps = {
   position?: number[] | TypedArray,

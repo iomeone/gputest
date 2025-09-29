@@ -18,7 +18,7 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getSphericalPosition } from '../../wgsl/transform/spherical.wgsl';
+import { getSphericalPosition } from '../../wgsl/transform/sphericalwgsl';
 
 export type SphericalProps = Partial<AxesTrait> & Partial<ObjectTrait> & {
   bend?: number,

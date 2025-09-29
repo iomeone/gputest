@@ -20,7 +20,7 @@ import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 import { useMaterialContext } from '../providers/material-provider';
 
-import { getLineVertex } from '../../wgsl/instance/vertex/line.wgsl';
+import { getLineVertex } from '../../wgsl/instance/vertex/linewgsl';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,

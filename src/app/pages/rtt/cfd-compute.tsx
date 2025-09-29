@@ -13,13 +13,13 @@ import {
   UI, Layout, Absolute, Block, Element, Inline, Text,
 } from '../../../layout';
 
-import { main as generateInitial }  from './cfd-compute/initial.wgsl';
-import { main as pushVelocity }     from './cfd-compute/push.wgsl';
-import { main as updateDivCurl }    from './cfd-compute/divergence-curl.wgsl';
-import { main as updatePressure }   from './cfd-compute/pressure.wgsl';
-import { main as projectVelocity }  from './cfd-compute/project.wgsl';
-import { main as advectVelocity }   from './cfd-compute/advect.wgsl';
-import { main as advectMcCormack }  from './cfd-compute/mccormack.wgsl';
+import { main as generateInitial }  from './cfd-compute/initialwgsl';
+import { main as pushVelocity }     from './cfd-compute/pushwgsl';
+import { main as updateDivCurl }    from './cfd-compute/divergence-curlwgsl';
+import { main as updatePressure }   from './cfd-compute/pressurewgsl';
+import { main as projectVelocity }  from './cfd-compute/projectwgsl';
+import { main as advectVelocity }   from './cfd-compute/advectwgsl';
+import { main as advectMcCormack }  from './cfd-compute/mccormackwgsl';
 
 import { CFDControls } from '../../ui/cfd-controls';
 

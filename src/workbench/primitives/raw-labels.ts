@@ -18,8 +18,8 @@ import { useDataLength } from '../hooks/useDataBinding';
 import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getLabelVertex } from '../../wgsl/instance/vertex/label.wgsl';
-import { getUIFragment } from '../../wgsl/instance/fragment/ui.wgsl';
+import { getLabelVertex } from '../../wgsl/instance/vertex/labelwgsl';
+import { getUIFragment } from '../../wgsl/instance/fragment/uiwgsl';
 
 const DEFINES = {DEBUG_SDF: false};
 

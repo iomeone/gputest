@@ -1,0 +1,16 @@
+import {decompressAST, bindEntryPoint} from "../../../shader/wgsl";
+import m0 from "../../use/typeswgsl";
+import m1 from "../../use/colorwgsl";
+const t = {"symbols":["getVertex","toColorSpace","VertexOutput","main"],"visibles":["main"],"modules":[{"at":0,"name":"../../../wgsl/use/types","symbols":["SolidVertex"],"imports":[{"name":"SolidVertex","imported":"SolidVertex"}]},{"at":0,"name":"../../../wgsl/use/color","symbols":["premultiply"],"imports":[{"name":"premultiply","imported":"premultiply"}]}],"externals":[{"at":100,"symbol":"getVertex","flags":2,"func":{"name":"getVertex","type":"SolidVertex","attr":["link"],"parameters":[{"name":"v","type":"u32"},{"name":"i","type":"u32"}]}},{"at":155,"symbol":"toColorSpace","flags":6,"func":{"name":"toColorSpace","type":"vec4<f32>","attr":["optional","link"],"parameters":[{"name":"c","type":"vec4<f32>"}]}}],"exports":[{"at":451,"symbol":"main","flags":1,"func":{"name":"main","type":"VertexOutput","attr":["vertex"],"parameters":[{"name":"vertexIndex","type":"u32","attr":["builtin(vertex_index)"]},{"name":"instanceIndex","type":"u32","attr":["builtin(instance_index)"]}],"identifiers":["getVertex","VertexOutput","toColorSpace"]}}],"linkable":{"getVertex":true,"toColorSpace":true}}; const data = {
+  "name": "virtual-solid",
+  "code": "use '../../../wgsl/use/types'::{ SolidVertex };\r\nuse '../../../wgsl/use/color'::{ premultiply };\r\n\r\n@link fn getVertex(v: u32, i: u32) -> SolidVertex {};\r\n@optional @link fn toColorSpace(c: vec4<f32>) -> vec4<f32> { return c; }\r\n\r\nstruct VertexOutput {\r\n  @builtin(position) position: vec4<f32>,\r\n  @location(0) fragColor: vec4<f32>,\r\n  @location(1) fragUV: vec4<f32>,\r\n  @location(2) fragST: vec4<f32>,\r\n  @location(3) fragScissor: vec4<f32>,\r\n};\r\n\r\n@vertex\r\nfn main(\r\n  @builtin(vertex_index) vertexIndex: u32,\r\n  @builtin(instance_index) instanceIndex: u32,\r\n) -> VertexOutput {\r\n  let v = getVertex(vertexIndex, instanceIndex);\r\n\r\n  return VertexOutput(\r\n    v.position,\r\n    toColorSpace(v.color),\r\n    v.uv,\r\n    v.st,\r\n    v.scissor,\r\n  );\r\n}\r\n",
+  "hash": 3573370997573731,
+  "table": t,
+  "shake": [[100,[0,3]],[155,[1,3]],[227,[2,3]],[451,[3]]],
+  "tree": decompressAST([[1,0,46],[1,49,95],[1,51,103],[4,55,127,1],[1,0,9],[1,10,15],[2,9,21],[2,13,14],[2,36,37],[0,4,223],[2,11,23],[3,18,36],[2,1,8],[2,8,16],[2,10,18],[3,24,36],[2,1,9],[2,12,21],[3,25,37],[2,1,9],[2,12,18],[3,22,34],[2,1,9],[2,12,18],[3,22,34],[2,1,9],[2,12,23],[0,31,329],[3,0,7],[2,1,7],[2,11,15],[3,9,31],[2,1,8],[2,8,20],[2,14,25],[3,21,45],[2,1,8],[2,8,22],[2,16,29],[2,26,38],[2,22,23],[2,4,13],[2,10,21],[2,13,26],[2,28,40],[2,19,20],[2,2,10],[2,15,27],[2,13,14],[2,2,7],[2,13,14],[2,2,4],[2,9,10],[2,2,4],[2,9,10],[2,2,9]], t.symbols),
+};
+const libs = {"../../../wgsl/use/types": m0, "../../../wgsl/use/color": m1};
+const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });
+export default getSymbol();
+export const main = getSymbol("main");
+/* __WGSL_LOADER_GENERATED */

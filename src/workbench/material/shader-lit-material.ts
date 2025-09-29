@@ -11,7 +11,7 @@ import { useShaderRef } from '../hooks/useShaderRef';
 import { useLightContext } from '../providers/light-provider';
 import { MaterialContext } from '../providers/material-provider';
 
-import { getShadedFragment } from '../../wgsl/instance/fragment/shaded.wgsl';
+import { getShadedFragment } from '../../wgsl/instance/fragment/shadedwgsl';
 
 export type ShaderLitMaterialProps = {
   /** Flat shader, for unlit passes (e.g. shadow map)

@@ -17,8 +17,8 @@ import {
   useRawSource, useNoRawSource,
   useShaderRef, useNoShaderRef,
 } from '../workbench';
-import { getCartesianPosition } from '../wgsl/transform/cartesian.wgsl'
-import { getMatrixDifferential } from '../wgsl/transform/diff-matrix.wgsl'
+import { getCartesianPosition } from '../wgsl/transform/cartesianwgsl'
+import { getMatrixDifferential } from '../wgsl/transform/diff-matrixwgsl'
 import { useGLTFMaterial } from './gltf-material';
 
 const MATRIX_BINDINGS = bundleToAttributes(getCartesianPosition);

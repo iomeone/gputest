@@ -17,9 +17,9 @@ import {
 } from '../traits';
 import { vec4 } from 'gl-matrix';
 
-import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
-import { getLineAnchor } from '../../wgsl/geometry/anchor.wgsl';
-import { getLineTrim } from '../../wgsl/geometry/trim.wgsl';
+import { getLineSegment } from '../../wgsl/geometry/segmentwgsl';
+import { getLineAnchor } from '../../wgsl/geometry/anchorwgsl';
+import { getLineTrim } from '../../wgsl/geometry/trimwgsl';
 
 const ARROW_ATTRIBUTES = bundleToAttributes(getLineAnchor);
 const [, START_ATTRIBUTE, END_ATTRIBUTE] = ARROW_ATTRIBUTES;

@@ -6,13 +6,13 @@ import { bindBundle } from '../../shader/wgsl';
 
 import { DEFAULT_LIGHT_CONTEXT } from '../providers/light-provider';
 
-import { getPassThruColor } from '../../wgsl/mask/passthru.wgsl';
+import { getPassThruColor } from '../../wgsl/mask/passthruwgsl';
 
-import { getDefaultPBRMaterial } from '../../wgsl/material/pbr-default.wgsl';
-import { applyPBRMaterial } from '../../wgsl/material/pbr-apply.wgsl';
+import { getDefaultPBRMaterial } from '../../wgsl/material/pbr-defaultwgsl';
+import { applyPBRMaterial } from '../../wgsl/material/pbr-applywgsl';
 
-import { getShadedFragment } from '../../wgsl/instance/fragment/shaded.wgsl';
-import { getMaterialSurface } from '../../wgsl/instance/surface/material.wgsl';
+import { getShadedFragment } from '../../wgsl/instance/fragment/shadedwgsl';
+import { getMaterialSurface } from '../../wgsl/instance/surface/materialwgsl';
 
 // Default PBR shader with built-in light
 const getSurface = bindBundle(getMaterialSurface, {

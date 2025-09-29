@@ -4,8 +4,8 @@ import type { Light } from '../light/types';
 import { useContext, useMemo, useOne, makeContext, makeCapture } from '../../live';
 import { bindBundle } from '../../shader/wgsl';
 
-import { applyLight as applyLightWGSL } from '../../wgsl/material/light.wgsl';
-import { applyLights as applyLightsWGSL } from '../../wgsl/material/lights-default.wgsl';
+import { applyLight as applyLightWGSL } from '../../wgsl/material/lightwgsl';
+import { applyLights as applyLightsWGSL } from '../../wgsl/material/lights-defaultwgsl';
 
 export type LightContextProps = {
   useLight: (l: Light) => void,

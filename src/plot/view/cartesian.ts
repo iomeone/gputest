@@ -18,8 +18,8 @@ import { mat3, mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getCartesianPosition } from '../../wgsl/transform/cartesian.wgsl';
-import { getMatrixDifferential } from '../../wgsl/transform/diff-matrix.wgsl';
+import { getCartesianPosition } from '../../wgsl/transform/cartesianwgsl';
+import { getMatrixDifferential } from '../../wgsl/transform/diff-matrixwgsl';
 
 const MATRIX_BINDINGS = bundleToAttributes(getCartesianPosition);
 

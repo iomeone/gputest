@@ -16,7 +16,7 @@ import { makeShaderBinding, makeShaderBindings } from '../../core';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
 
-import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../wgsl/mask/point.wgsl';
+import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../wgsl/mask/pointwgsl';
 import { PointShape } from './types';
 
 const MASK_SHADER = {

@@ -13,8 +13,8 @@ import { RawFullScreen } from '../primitives';
 import { getBoundShader } from '../hooks/useBoundShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { gainColor } from '../../wgsl/fragment/gain.wgsl';
-import { tonemapACES } from '../../wgsl/fragment/aces.wgsl';
+import { gainColor } from '../../wgsl/fragment/gainwgsl';
+import { tonemapACES } from '../../wgsl/fragment/aceswgsl';
 
 export type LinearRGBProps = {
   width?: number,

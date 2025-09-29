@@ -14,8 +14,8 @@ import { useRenderContext } from '../../providers/render-provider';
 import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualSolid from '../../../wgsl/render/vertex/virtual-solid.wgsl';
-import instanceFragmentSolid from '../../../wgsl/render/fragment/solid.wgsl';
+import instanceDrawVirtualSolid from '../../../wgsl/render/vertex/virtual-solidwgsl';
+import instanceFragmentSolid from '../../../wgsl/render/fragment/solidwgsl';
 
 export type DebugRenderProps = VirtualDraw;
 

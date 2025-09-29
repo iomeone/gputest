@@ -19,8 +19,8 @@ import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getUIRectangleVertex } from '../../wgsl/instance/vertex/ui-rectangle.wgsl';
-import { getUIFragment } from '../../wgsl/instance/fragment/ui.wgsl';
+import { getUIRectangleVertex } from '../../wgsl/instance/vertex/ui-rectanglewgsl';
+import { getUIFragment } from '../../wgsl/instance/fragment/uiwgsl';
 
 export type UIRectanglesProps = {
   rectangle?: number[] | TypedArray,

@@ -30,9 +30,9 @@ import { vec4 } from 'gl-matrix';
 
 import { logarithmic, linear } from '../util/domain';
 
-import { getGridPosition } from '../../wgsl/plot/grid.wgsl';
-import { getGridAutoPosition } from '../../wgsl/plot/grid-auto.wgsl';
-import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
+import { getGridPosition } from '../../wgsl/plot/gridwgsl';
+import { getGridAutoPosition } from '../../wgsl/plot/grid-autowgsl';
+import { getLineSegment } from '../../wgsl/geometry/segmentwgsl';
 
 const NO_POINT4: Point4 = [0, 0, 0, 0];
 

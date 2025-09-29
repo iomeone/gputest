@@ -15,7 +15,7 @@ import React, { Fragment } from 'react';
 import { UseInspect } from '../inspect';
 import { inspectGPU } from '.';
 
-import { decodeOctahedral } from '../wgsl/codec/octahedral.wgsl';
+import { decodeOctahedral } from '../wgsl/codec/octahedralwgsl';
 
 const NO_OPS: any[] = [];
 const toArray = <T,>(x?: T | T[]): T[] => Array.isArray(x) ? x : x ? [x] : NO_OPS; 

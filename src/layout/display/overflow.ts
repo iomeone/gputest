@@ -8,8 +8,8 @@ import { memo, use, gather, yeet, extend, useFiber, useOne, useMemo } from '../.
 import { bindBundle, bundleToAttribute, castTo, chainTo } from '../../shader/wgsl';
 import { useForceUpdate, useInspectable, getBoundSource } from '../../workbench';
 
-import { getScrolledPosition } from '../../wgsl/layout/scroll.wgsl';
-import { getShiftedRectangle } from '../../wgsl/layout/shift.wgsl';
+import { getScrolledPosition } from '../../wgsl/layout/scrollwgsl';
+import { getShiftedRectangle } from '../../wgsl/layout/shiftwgsl';
 
 import { fitAbsoluteBox } from '../lib/absolute';
 import { getBlockMinMax } from '../lib/block';

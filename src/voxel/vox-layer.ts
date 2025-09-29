@@ -10,9 +10,9 @@ import {
 } from '../workbench';
 import { wgsl, bindBundle, bindEntryPoint } from '../shader/wgsl';
 
-import { applyPBRMaterial } from '../wgsl/material/pbr-apply.wgsl';
-import { getViewPosition, worldToDepth } from '../wgsl/use/view.wgsl';
-import { SurfaceFragment, DepthFragment } from '../wgsl/use/types.wgsl';
+import { applyPBRMaterial } from '../wgsl/material/pbr-applywgsl';
+import { getViewPosition, worldToDepth } from '../wgsl/use/viewwgsl';
+import { SurfaceFragment, DepthFragment } from '../wgsl/use/typeswgsl';
 
 import { vec3, mat3, mat4 } from 'gl-matrix';
 

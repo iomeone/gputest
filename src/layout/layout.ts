@@ -14,7 +14,7 @@ import {
 } from '../workbench';
 
 import { chainTo } from '../shader/wgsl';
-import { getLayoutPosition } from '../wgsl/layout/layout.wgsl';
+import { getLayoutPosition } from '../wgsl/layout/layoutwgsl';
 
 import { makeBoxInspectLayout } from './lib/util';
 import { UIRectangle } from './shape/ui-rectangle';

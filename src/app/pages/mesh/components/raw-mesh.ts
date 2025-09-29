@@ -11,11 +11,11 @@ import {
 import { linkBundle, bindingToModule, bundleToAttribute } from '../../../../shader/wgsl';
 import { useInspectable, useNativeColor } from '../../../../workbench';
 
-import instanceDrawMesh from '../../../../wgsl/app/vertex/mesh.wgsl';
-import instanceDrawMeshPick from '../../../../wgsl/app/vertex/mesh-pick.wgsl';
+import instanceDrawMesh from '../../../../wgsl/app/vertex/meshwgsl';
+import instanceDrawMeshPick from '../../../../wgsl/app/vertex/mesh-pickwgsl';
 
-import instanceFragmentMesh from '../../../../wgsl/app/fragment/mesh.wgsl';
-import instanceFragmentPickGeometry from '../../../../wgsl/render/fragment/pick.wgsl';
+import instanceFragmentMesh from '../../../../wgsl/app/fragment/meshwgsl';
+import instanceFragmentPickGeometry from '../../../../wgsl/render/fragment/pickwgsl';
 
 //
 // This component shows how to do "raw" rendering with Use.GPU,

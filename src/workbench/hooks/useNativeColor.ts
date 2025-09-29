@@ -7,8 +7,8 @@ import { useContext, useMemo, useNoContext, useNoMemo } from '../../live';
 import { RenderContext } from '../providers/render-provider';
 import { getBoundSource } from '../hooks/useBoundSource';
 
-import { getUIFragment } from '../../wgsl/instance/fragment/ui.wgsl';
-import { toLinear4, toGamma4 } from '../../wgsl/use/gamma.wgsl';
+import { getUIFragment } from '../../wgsl/instance/fragment/uiwgsl';
+import { toLinear4, toGamma4 } from '../../wgsl/use/gammawgsl';
 
 const TEXTURE_BINDING = bundleToAttribute(getUIFragment, 'getTexture');
 

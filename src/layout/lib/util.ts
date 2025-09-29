@@ -6,7 +6,7 @@ import type { FitInto, AutoPoint, Direction, Gap, MarginLike, Margin, Alignment,
 import { yeet, fragment, morph, use } from '../../live';
 import { toMurmur53 } from '../../state';
 import { bindBundle, chainTo } from '../../shader/wgsl';
-import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clip.wgsl';
+import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clipwgsl';
 import { INSPECT_STYLE } from './constants';
 
 export const isHorizontal = (d: Direction) => d === 'x' || d === 'lr' || d === 'rl';

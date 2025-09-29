@@ -1,0 +1,14 @@
+import {decompressAST, bindEntryPoint} from "../../shader/wgsl";
+const t = {"symbols":["getTransformMatrix","getStereographicBend","getStereographicNormalize","getStereographicPosition"],"visibles":["getStereographicPosition"],"externals":[{"at":0,"symbol":"getTransformMatrix","flags":2,"func":{"name":"getTransformMatrix","type":"mat4x4<f32>","attr":["link"]}},{"at":49,"symbol":"getStereographicBend","flags":6,"func":{"name":"getStereographicBend","type":"f32","attr":["optional","link"]}},{"at":116,"symbol":"getStereographicNormalize","flags":6,"func":{"name":"getStereographicNormalize","type":"f32","attr":["optional","link"]}}],"exports":[{"at":190,"symbol":"getStereographicPosition","flags":1,"func":{"name":"getStereographicPosition","type":"vec4<f32>","attr":["export"],"parameters":[{"name":"position","type":"vec4<f32>"}],"identifiers":["getStereographicBend","getStereographicNormalize","getTransformMatrix"]}}],"linkable":{"getTransformMatrix":true,"getStereographicBend":true,"getStereographicNormalize":true}}; const data = {
+  "name": "stereographic",
+  "code": "@link fn getTransformMatrix() -> mat4x4<f32>;\r\n\r\n@optional @link fn getStereographicBend() -> f32 { return 0.0; };\r\n@optional @link fn getStereographicNormalize() -> f32 { return 1.0; };\r\n\r\n@export fn getStereographicPosition(position: vec4<f32>) -> vec4<f32> {\r\n  let stereoBend = getStereographicBend();\r\n  let stereoNormalize = getStereographicNormalize();\r\n\r\n  let matrix = getTransformMatrix();\r\n\r\n  if (stereoBend > 0.0001) {\r\n    if (position.z == -1.0) {\r\n      return vec4<f32>(0.0);\r\n    }\r\n\r\n    let pos = position.xyz;\r\n    let r = mix(1.0, length(pos), stereoNormalize);\r\n\r\n    let z = (pos.z + r);\r\n    let iz = 1.0/z;\r\n    let proj = pos.xy * iz;\r\n\r\n    var f = stereoBend;\r\n    let mixed = mix(pos.xy, proj, f);\r\n    let out = vec3<f32>(mixed, mix(pos.z, r, f));\r\n\r\n    return matrix * vec4<f32>(out, 1.0);\r\n  }\r\n  return matrix * vec4<f32>(position.xyz, 1.0);\r\n}\r\n",
+  "hash": 6897852858066032,
+  "table": t,
+  "shake": [[0,[0,3]],[49,[1,3]],[116,[2,3]],[190,[3]]],
+  "tree": decompressAST([[1,0,44],[4,49,113,1],[1,0,9],[1,10,15],[2,9,29],[4,48,117,2],[1,0,9],[1,10,15],[2,9,34],[0,55,744],[1,0,7],[2,11,35],[2,25,33],[2,43,53],[2,13,33],[2,31,46],[2,18,43],[2,38,44],[2,9,27],[2,31,41],[2,32,40],[2,9,10],[2,61,64],[2,6,14],[2,9,12],[2,14,15],[2,4,7],[2,9,15],[2,7,10],[2,6,21],[2,29,30],[2,5,8],[2,4,5],[2,4,5],[2,13,15],[2,9,10],[2,12,16],[2,7,10],[2,4,6],[2,5,7],[2,15,16],[2,4,14],[2,21,26],[2,8,11],[2,4,7],[2,4,6],[2,4,8],[2,6,7],[2,13,16],[2,16,21],[2,7,10],[2,4,7],[2,4,5],[2,3,4],[2,3,4],[2,19,25],[2,19,22],[2,26,32],[2,19,27],[2,9,12]], t.symbols),
+};
+const libs = {};
+const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });
+export default getSymbol();
+export const getStereographicPosition = getSymbol("getStereographicPosition");
+/* __WGSL_LOADER_GENERATED */
