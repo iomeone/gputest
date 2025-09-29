@@ -1,7 +1,7 @@
-import type { LC, LiveElement } from '../live';
+import type { LC, LiveElement } from '@use-gpu/live';
 import type { GLTF, GLTFPrimitiveData } from './types';
 
-import { use, memo, useMemo } from '../live';
+import { use, memo, useMemo } from '@use-gpu/live';
 import { mat4 } from 'gl-matrix';
 import { GLTFPrimitive } from './gltf-primitive';
 

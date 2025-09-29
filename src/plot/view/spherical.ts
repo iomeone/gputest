@@ -1,14 +1,14 @@
-import type { LiveComponent, LiveElement } from '../../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import type { AxesTrait, ObjectTrait, Swizzle } from '../types';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale, useProp } from '../../traits';
-import { use, provide, useContext, useOne, useMemo } from '../../live';
-import { bundleToAttributes, chainTo, swizzleTo } from '../../shader/wgsl';
+import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale, useProp } from '@use-gpu/traits';
+import { use, provide, signal, useContext, useOne, useMemo } from '@use-gpu/live';
+import { chainTo, swizzleTo } from '@use-gpu/shader/wgsl';
 import {
   TransformContext,
   useShaderRef, useBoundShader, useCombinedTransform,
-} from '../../workbench';
-import { parseAxes } from '../../traits';
+} from '@use-gpu/workbench';
+import { parseAxes } from '@use-gpu/traits';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
@@ -18,19 +18,15 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getSphericalPosition } from '../../gen-wgsl/transform/spherical';
-
-const POLAR_BINDINGS = bundleToAttributes(getSphericalPosition);
+import { getSphericalPosition } from '@use-gpu/wgsl/transform/spherical.wgsl';
 
 export type SphericalProps = Partial<AxesTrait> & Partial<ObjectTrait> & {
   bend?: number,
   helix?: number,
   on?: Swizzle,
-
-  children?: LiveElement<any>,
 };
 
-export const Spherical: LiveComponent<SphericalProps> = (props) => {
+export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildren<SphericalProps>) => {
   const {
     bend = 1,
     helix = 0,
@@ -39,9 +35,9 @@ export const Spherical: LiveComponent<SphericalProps> = (props) => {
 
   const on = useProp(props.on, parseAxes);
   const {range: g, axes: a} = useAxesTrait(props);
-  const {position: p, scale: s, quaterion: q, rotation: r, matrix: m} = useObjectTrait(props);
+  const {position: p, scale: s, quaternion: q, rotation: r, matrix: m} = useObjectTrait(props);
 
-  const [focus, aspectX, aspectY, scaleY, matrix, swizzle, range] = useMemo(() => {
+  const [focus, aspectX, aspectY, scaleY, matrix, swizzle, range, epsilon] = useMemo(() => {
     const x = g[0][0];
     let   y = g[1][0];
     let   z = g[2][0];
@@ -54,6 +50,9 @@ export const Spherical: LiveComponent<SphericalProps> = (props) => {
     const sx = s ? s[inv.indexOf('x')] : 1;
     const sy = s ? s[inv.indexOf('y')] : 1;
     const sz = s ? s[inv.indexOf('z')] : 1;
+
+    // Epsilon for differential transport
+    const epsilon = (Math.abs(dx) + Math.abs(dy) + Math.abs(dz)) / 3000;
 
     // Watch for negative scales.
     const idx = dx > 0 ? 1 : -1;
@@ -103,6 +102,9 @@ export const Spherical: LiveComponent<SphericalProps> = (props) => {
     }
 
     // Then apply transform (so these are always relative to the world basis, not the internal basis)
+    if (m) {
+      mat4.multiply(matrix, m, matrix);
+    }
     if (p || r || q || s) {
       const t = mat4.create();
       composeTransform(t, p, r, q, s);
@@ -111,7 +113,7 @@ export const Spherical: LiveComponent<SphericalProps> = (props) => {
 
     // Swizzle active spherical axes
     let swizzle: string | null = null;
-    if (on.slice(0, 2) !== 'xy') {
+    if (on.slice(0, 3) !== 'xyz') {
       const order = swizzle = on;
       const t = mat4.create();
 
@@ -128,30 +130,35 @@ export const Spherical: LiveComponent<SphericalProps> = (props) => {
       const min = Math.max(-focus / aspectX, from);
       range[2] = [min, max];
     }
-
-    return [focus, aspectX, aspectY, scaleY, matrix, swizzle, range];
+    
+    return [focus, aspectX, aspectY, scaleY, matrix, swizzle, range, epsilon];
   }, [g, a, p, r, q, s, bend, helix]);
+
+  const t = useShaderRef(matrix);
 
   const b = useShaderRef(bend);
   const f = useShaderRef(focus);
   const u = useShaderRef(aspectX);
   const v = useShaderRef(aspectY);
   const c = useShaderRef(scaleY);
-  const t = useShaderRef(matrix);
+  const e = useShaderRef(epsilon);
 
-  const bound = useBoundShader(getSphericalPosition, POLAR_BINDINGS, [b, f, u, v, c, t]);
+  const bound = useBoundShader(getSphericalPosition, [t, b, f, u, v, c]);
 
   // Apply input basis as a cast
-  const position = useMemo(() => {
+  const xform = useMemo(() => {
     if (!swizzle) return bound;
     return chainTo(swizzleTo('vec4<f32>', 'vec4<f32>', swizzle), bound);
   }, [bound, swizzle]);
 
-  const transform = useCombinedTransform(position);
+  const context = useCombinedTransform(xform, null, null, e);
 
-  return (
-    provide(TransformContext, transform,
-      provide(RangeContext, range, children ?? [])
+  const rangeMemo = useOne(() => range, JSON.stringify(range));
+
+  return [
+    signal(),
+    provide(TransformContext, context,
+      provide(RangeContext, rangeMemo, children ?? [])
     )
-  );
+  ];
 };

@@ -1,14 +1,13 @@
-import type { LiveComponent, LiveElement } from '../../../live';
-import type { Atlas, Tuples, Rectangle } from '../../../core';
-import type { ShaderSource } from '../../../shader';
-import type { FontMetrics, GlyphMetrics } from '../../../glyph';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { Atlas, Tuples, Rectangle } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { FontMetrics, GlyphMetrics } from '@use-gpu/glyph';
 import type { Alignment } from '../types';
 
-import { gather, provide, memo, useContext, useFiber, useMemo, useOne, useState, makeContext, incrementVersion } from '../../../live';
-import { glyphToRGBA, glyphToSDF, rgbaToSDF, padRectangle } from '../../../glyph';
-import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '../../../core';
-import { scrambleBits53, mixBits53 } from '../../../state';
-import { bundleToAttributes } from '../../../shader/wgsl';
+import { fence, provide, memo, yeet, useContext, useFiber, useMemo, useOne, useState, makeContext, incrementVersion } from '@use-gpu/live';
+import { glyphToRGBA, glyphToSDF, rgbaToSDF, padRectangle } from '@use-gpu/glyph';
+import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '@use-gpu/core';
+import { scrambleBits53, mixBits53 } from '@use-gpu/state';
 
 import { getBoundShader } from '../../hooks/useBoundShader';
 import { makeInlineCursor } from '../cursor';
@@ -16,24 +15,20 @@ import { DebugContext } from '../../providers/debug-provider';
 import { DeviceContext } from '../../providers/device-provider';
 import { FontContext } from './font-provider';
 
-import { getLODBiasedTexture } from '../../../gen-wgsl/fragment/lod-bias';
-
-const LOD_BIAS_BINDINGS = bundleToAttributes(getLODBiasedTexture);
+import { getLODBiasedTexture } from '@use-gpu/wgsl/fragment/lod-bias.wgsl';
 
 export const SDFFontContext = makeContext<SDFFontContextProps>(undefined, 'SDFFontContext');
 export const useSDFFontContext = () => useContext(SDFFontContext);
 
-export const SDF_FONT_ATLAS = 'SDF_FONT_ATLAS' as any as ShaderSource;
-
 export type SDFFontContextProps = {
   __debug: {
     atlas: Atlas,
-    source: {current: ShaderSource},
   },
 
   getRadius: () => number,
   getScale: (size: number) => number,
   getGlyph: (font: number, id: number, size: number) => CachedGlyph,
+  getTexture: () => ShaderSource,
 };
 
 export type SDFFontProviderProps = {
@@ -41,8 +36,8 @@ export type SDFFontProviderProps = {
   height?: number,
   radius?: number,
   pad?: number,
-  children?: LiveElement<any>,
-  then?: (atlas: Atlas, source: ShaderSource, gathered: any) => LiveElement<any>
+  fence?: (c: LiveElement, then: (t: any) => LiveElement) => LiveElement,
+  then?: (atlas: Atlas, source: ShaderSource, gathered: any) => LiveElement
 };
 
 const NO_MAPPING = [0, 0, 0, 0] as Rectangle;
@@ -72,24 +67,40 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
   height = 256,
   radius = 16,
   pad = 0,
+  fence: op = fence,
   children,
   then,
-}: SDFFontProviderProps) => {
+}: PropsWithChildren<SDFFontProviderProps>) => {
   pad += Math.ceil(radius * 0.75);
 
   const device = useContext(DeviceContext);
   const rustText = useContext(FontContext);
 
-  const {sdf2d: {subpixel, preprocess, postprocess}} = useContext(DebugContext);
+  const {sdf2d: {subpixel, solidify, preprocess, postprocess}} = useContext(DebugContext);
 
   // Allocate font atlas + backing texture
   const format = "rgba8unorm" as GPUTextureFormat;
+  const [glyphs, atlas, source, biasable, biasedSource] = useMemo(() => {
+    const glyphs   = new Map<number, CachedGlyph>();
+    const atlas    = makeAtlas(width, height);
+    const source   = makeAtlasSource(device, atlas, format, 1);
+    const biasable = {
+      ...source,
+      variant: 'textureSampleBias',
+      args: ['vec2<f32>', 'f32'],
+    };
 
-  const opts = [subpixel, preprocess, postprocess];
-  const glyphs = useMemo(() => new Map<number, CachedGlyph>(), opts);
-  const atlas = useMemo(() => makeAtlas(width, height), opts);
-  const sourceRef = useMemo(() => ({ current: makeAtlasSource(device, atlas, format) }), opts);
+    const biasedSource = {
+      ...getBoundShader(getLODBiasedTexture, [biasable, -0.5]),
+      colorSpace: 'srgb',
+    };
+
+    return [glyphs, atlas, source, biasable, biasedSource];
+  }, [width, height, radius, pad, subpixel, solidify, preprocess, postprocess]);
+
   const bounds = useMemo(() => makeBoundsTracker());
+
+  // Read-out with LOD bias for sharper SDFs
 
   // Provide context to map glyphs on-demand
   const context = useMemo(() => {
@@ -97,6 +108,7 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
 
     const getRadius = () => radius;
     const getScale = (size: number) => size / getNearestScale(size);
+    const getTexture = () => biasedSource;
 
     const getGlyph = (font: number, id: number, size: number): CachedGlyph => {
       const scale = getNearestScale(size);
@@ -106,8 +118,11 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
       if (cache) return cache;
 
       // Measure glyph and get image
-      let {current: source} = sourceRef;
       let glyph = rustText.measureGlyph(font, id, scale);
+      return mapGlyph(key, glyph);
+    };
+
+    const mapGlyph = (key: number, glyph: GlyphMetrics) => {
       let mapping: Rectangle = NO_MAPPING;
 
       const {image, width: w, height: h, outlineBounds: ob, rgba} = glyph;
@@ -118,7 +133,7 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
         let data: Uint8Array;
 
         // Convert to SDF
-        ({data, width, height} = (rgba ? rgbaToSDF : glyphToSDF)(image, w, h, pad, radius, undefined, subpixel, preprocess, postprocess));
+        ({data, width, height} = (rgba ? rgbaToSDF : glyphToSDF)(image, w, h, pad, radius, undefined, subpixel, solidify, preprocess, postprocess));
         glyph.outlineBounds = padRectangle(ob, pad);
         glyph.image = data;
         
@@ -128,7 +143,7 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
         }
         catch (e) {
           mapping = [0, 0, 0, 0];
-          console.warn('atlas place failed', key, width, height);
+          console.warn('atlas place failed', key, width, height, e);
           /*
           debugger;
           throw new Error('atlas place failed', key, width, height);
@@ -137,8 +152,12 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
 
         // If atlas resized, resize the texture backing it
         const [sw, sh] = source.size;
-        if (atlas.width !== sw && atlas.height !== sh) {
-          source = sourceRef.current = resizeTextureSource(device, source, atlas.width, atlas.height, 1, 'auto');
+        if (atlas.width !== sw || atlas.height !== sh) {
+          const newSource = resizeTextureSource(device, source, atlas.width, atlas.height, 1, 'auto');
+          biasable.texture = source.texture = newSource.texture;
+          biasable.view    = source.view    = newSource.view;
+          biasable.size    = source.size    = newSource.size;
+
           updateMipTextureChain(device, source, [[0, 0, sw, sh]]);
         }
 
@@ -161,41 +180,26 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
     return {
       __debug: {
         atlas,
-        sourceRef,
+        source,
       },
 
       getRadius,
       getScale,
       getGlyph,
+      getTexture,
     };
-  }, [rustText, atlas]);
+  }, [rustText, atlas, source]);
+
+  const {yeeted} = useFiber();
 
   return rustText ? (
-    gather(
+    op(
       provide(SDFFontContext, context, children),
       (gathered: any) => {
-        const source = sourceRef.current;
-
         const rects = bounds.flush();
-        if (rects.length) {
-          atlas.uploads.push(rects);
-          updateMipTextureChain(device, source, rects);
-        }
-        
-        const biasedSource = useOne(() => {
-          const biasable = {
-            ...source,
-            variant: 'textureSampleBias',
-            args: ['vec2<f32>', 'f32'],
-          };
-          const shader = {
-            ...getBoundShader(getLODBiasedTexture, LOD_BIAS_BINDINGS, [biasable, -0.5]),
-            colorSpace: 'srgb',
-          };
-          return shader;
-        }, source);
+        if (rects.length) updateMipTextureChain(device, source, rects);
 
-        return then ? then(atlas, biasedSource, gathered) : null;
+        return then ? then(atlas, biasedSource, gathered) : yeet(gathered);
       },
     )
   ) : null;

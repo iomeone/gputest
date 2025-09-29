@@ -1,22 +1,26 @@
-import type { LiveComponent } from '../../live';
-import type { Atlas, Rectangle } from '../../core';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Atlas, Rectangle } from '@use-gpu/core';
 
-import { debug, memo, use, yeet, useContext, useNoContext, useFiber, useMemo } from '../../live';
-import { TextureSource } from '../../core';
+import { debug, memo, use, yeet, useContext, useNoContext, useFiber, useMemo } from '@use-gpu/live';
+import { TextureSource } from '@use-gpu/core';
+import { useBoundShader, useLambdaSource } from '@use-gpu/workbench';
 
-import { SDFFontContext, SDF_FONT_ATLAS } from './providers/sdf-font-provider';
+import { SDFFontContext } from './providers/sdf-font-provider';
+
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 export type DebugAtlasProps = {
   atlas: Atlas,
   source: TextureSource,
+  size?: number,
   version: number,
 };
 
 export const DebugAtlas: LiveComponent<Partial<DebugAtlasProps> | undefined> = (props: Partial<DebugAtlasProps> = {}) => {
-  let {atlas, source} = props;
-  console.log({props, atlas, source})
+  let {atlas, source, size} = props;
   if (!atlas && !source) {
-    ({__debug: {atlas, sourceRef: {current: source}}} = useContext(SDFFontContext) as any);
+    let getTexture;
+    ({__debug: {atlas, source}} = useContext(SDFFontContext) as any);
   }
   else useNoContext(SDFFontContext);
 
@@ -24,6 +28,7 @@ export const DebugAtlas: LiveComponent<Partial<DebugAtlasProps> | undefined> = (
     atlas: atlas!,
     source: source!,
     version: atlas!.version,
+    size,
   }));
 };
 
@@ -36,17 +41,28 @@ const COLORS = [
   [1, .5, 0.5, 1],
 ];
 
-export const DebugAtlasView: LiveComponent<DebugAtlasProps> = memo(({atlas, source}: DebugAtlasProps) => {
+const premultiply = wgsl`
+@link fn getTexture(uv: vec2<f32>) -> vec4<f32>;
+
+fn main(uv: vec2<f32>) -> vec4<f32> {
+  let c = getTexture(uv);
+  return vec4<f32>(pow(c.rgb, vec3<f32>(2.2)) * c.a, c.a);
+}
+`;
+
+export const DebugAtlasView: LiveComponent<DebugAtlasProps> = memo(({atlas, source, size = 500}: DebugAtlasProps) => {
   const {map, width: w, height: h, debugPlacements, debugSlots, debugValidate, debugUploads} = atlas as any;  
   const {id} = useFiber();
 
   const yeets = [];
   const pos = [] as number[];
   
-  const width = w / 2;
-  const height = h / 2;
-  const fit = ([l, t, r, b]: Rectangle) => [l / 2, t / 2, r / 2, b / 2];
-  
+  const width = size * w / h;
+  const height = size;
+  const sx = width / w;
+  const sy = height / h;
+  const fit = ([l, t, r, b]: Rectangle) => [l * sx, t * sy, r * sx, b * sy];
+
   let ID = 0;
   const next = () => `${id}-${ID++}`;
 
@@ -99,6 +115,8 @@ export const DebugAtlasView: LiveComponent<DebugAtlasProps> = memo(({atlas, sour
     });
   }
 
+  const boundSource = useLambdaSource(useBoundShader(premultiply, [source]), source);
+
   for (const anchor of debugValidate()) {
     const {x, y, dx, dy} = anchor;
     yeets.push({
@@ -126,35 +144,18 @@ export const DebugAtlasView: LiveComponent<DebugAtlasProps> = memo(({atlas, sour
     });
   }
 
+  const aspect = h / w;
+
   yeets.push({
     id: next(),
-    rectangle: [width, 0, 500 + width, 500],
+    rectangle: [width, 0, width + width, height],
     uv: [0, 0, w, h],
     radius: [0, 0, 0, 0],
-    texture: source ?? SDF_FONT_ATLAS,
+    texture: boundSource,
     fill: [0, 0, 0, 1],
     count: 1,
     repeat: 3,
   });
-  
-  /*
-  let i = 0;
-  for (const rects of debugUploads()) {
-    for (const [l, t, r, b] of rects) {
-      yeets.push({
-        id: next(),
-        rectangle: fit([l + w, t, r + w, b]),
-        uv: [0, 0, 1, 1],
-        fill: [0, 0, 0, 0],
-        stroke: COLORS[i % COLORS.length],
-        border: [2, 2, 2, 2],
-        count: 1,
-        repeat: 0,
-      });
-    }
-    ++i;
-  }
-  */
   
   return yeet(yeets);
 }, 'DebugAtlasView');

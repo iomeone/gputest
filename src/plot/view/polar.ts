@@ -1,13 +1,13 @@
-import type { LiveComponent, LiveElement } from '../../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import type { AxesTrait, ObjectTrait, Axis4, Swizzle } from '../types';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '../../traits';
-import { use, provide, useContext, useOne, useMemo } from '../../live';
-import { bundleToAttributes, swizzleTo, chainTo } from '../../shader/wgsl';
+import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '@use-gpu/traits';
+import { use, provide, signal, useContext, useOne, useMemo } from '@use-gpu/live';
+import { swizzleTo, chainTo } from '@use-gpu/shader/wgsl';
 import {
   TransformContext,
   useShaderRef, useBoundShader, useCombinedTransform,
-} from '../../workbench';
+} from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
@@ -17,19 +17,15 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getPolarPosition } from '../../gen-wgsl/transform/polar';
-
-const POLAR_BINDINGS = bundleToAttributes(getPolarPosition);
+import { getPolarPosition } from '@use-gpu/wgsl/transform/polar.wgsl';
 
 export type PolarProps = Partial<AxesTrait> & Partial<ObjectTrait> & {
   bend?: number,
   helix?: number,
   on?: Axis4,
-
-  children?: LiveElement<any>,
 };
 
-export const Polar: LiveComponent<PolarProps> = (props) => {
+export const Polar: LiveComponent<PolarProps> = (props: PropsWithChildren<PolarProps>) => {
   const {
     bend = 1,
     helix = 0,
@@ -38,9 +34,9 @@ export const Polar: LiveComponent<PolarProps> = (props) => {
   } = props;
 
   const {range: g, axes: a} = useAxesTrait(props);
-  const {position: p, scale: s, quaterion: q, rotation: r, matrix: m} = useObjectTrait(props);
+  const {position: p, scale: s, quaternion: q, rotation: r, matrix: m} = useObjectTrait(props);
 
-  const [focus, aspect, matrix, swizzle, range] = useMemo(() => {
+  const [focus, aspect, matrix, swizzle, range, epsilon] = useMemo(() => {
     const x = g[0][0];
     let   y = g[1][0];
     const z = g[2][0];
@@ -53,6 +49,9 @@ export const Polar: LiveComponent<PolarProps> = (props) => {
     const sx = s ? s[inv.indexOf('x')] : 1;
     const sy = s ? s[inv.indexOf('y')] : 1;
     const sz = s ? s[inv.indexOf('z')] : 1;
+
+    // Epsilon for differential transport
+    const epsilon = (Math.abs(dx) + Math.abs(dy) + Math.abs(dz)) / 3000;
 
     // Watch for negative scales
     const idx = Math.sign(dx);
@@ -91,6 +90,9 @@ export const Polar: LiveComponent<PolarProps> = (props) => {
     }
 
     // Then apply transform (so these are always relative to the world basis, not the internal basis)
+    if (m) {
+      mat4.multiply(matrix, m, matrix);
+    }
     if (p || r || q || s) {
       const t = mat4.create();
       composeTransform(t, p, r, q, s);
@@ -117,28 +119,33 @@ export const Polar: LiveComponent<PolarProps> = (props) => {
       range[1] = [min, max];
     }
 
-    return [focus, aspect, matrix, swizzle, range];
+    return [focus, aspect, matrix, swizzle, range, epsilon];
   }, [g, a, p, r, q, s, bend, helix, on]);
+
+  const t = useShaderRef(matrix);
 
   const b = useShaderRef(bend);
   const f = useShaderRef(focus);
   const c = useShaderRef(aspect);
   const h = useShaderRef(helix);
-  const t = useShaderRef(matrix);
+  const e = useShaderRef(epsilon);
 
-  const bound = useBoundShader(getPolarPosition, POLAR_BINDINGS, [b, f, c, h, t]);
+  const bound = useBoundShader(getPolarPosition, [t, b, f, c, h]);
 
   // Apply input basis as a cast
-  const position = useMemo(() => {
+  const xform = useMemo(() => {
     if (!swizzle) return bound;
     return chainTo(swizzleTo('vec4<f32>', 'vec4<f32>', swizzle), bound);
   }, [bound, swizzle]);
 
-  const transform = useCombinedTransform(position);
+  const context = useCombinedTransform(xform, null, null, e);
 
-  return (
-    provide(TransformContext, transform,
-      provide(RangeContext, range, children ?? [])
+  const rangeMemo = useOne(() => range, JSON.stringify(range));
+
+  return [
+    signal(),
+    provide(TransformContext, context,
+      provide(RangeContext, rangeMemo, children ?? [])
     )
-  );
+  ];
 };

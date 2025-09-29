@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { PickingUniforms } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { PickingUniforms } from '@use-gpu/core';
 
-import { memo, provide, makeContext, useContext, useMemo, useOne, useResource, useState, incrementVersion } from '../../live';
-import { makeIdAllocator, PICKING_UNIFORMS } from '../../core';
-import { PickingContext } from '../render/picking';
+import { memo, provide, makeContext, useContext, useMemo, useOne, useResource, useState, incrementVersion } from '@use-gpu/live';
+import { makeIdAllocator } from '@use-gpu/core';
+import { PickingContext } from '../providers/picking-provider';
 import { RenderContext } from '../providers/render-provider';
 
 const CAPTURE_EVENT = {capture: true};
@@ -23,6 +23,10 @@ export type MouseContextProps = {
   targetId: number,
   targetIndex: number,
   stopPropagation: () => void,
+
+  hasLock: boolean,
+  beginLock: () => void,
+  endLock: () => void,
   beginCapture: (id: number) => void,
   endCapture: () => void,
   useMouse: (id?: number | null) => MouseEventState,
@@ -42,12 +46,19 @@ export type EventProviderProps = {
   mouse: MouseState,
   wheel: WheelState,
   keyboard: KeyboardState,
-  children: LiveElement<any>,
+  pointerLock: PointerLockAPI,
+  children: LiveElement,
+};
+
+export type PointerLockAPI = {
+  isLocked: () => boolean,
+  beginLock: () => void,
+  endLock: () => void,
 };
 
 export type MouseState = {
   buttons: { left: boolean, middle: boolean, right: boolean },
-  button: 'left' | 'middle' | 'right' | 'none',
+  button: 'left' | 'middle' | 'right' | null,
   x: number,
   y: number,
   moveX: number,
@@ -72,6 +83,8 @@ export type KeyboardState = {
     shift: boolean,
     meta: boolean,
   },
+  keys: Record<string, boolean>,
+  key: string | null,
   stopped: boolean,
 };
 
@@ -127,7 +140,9 @@ const makeCaptureRef = () => ({
   current: null as number | null,
 });
 
-export const EventProvider: LiveComponent<EventProviderProps> = memo(({mouse, wheel, keyboard, children}: EventProviderProps) => {
+export const EventProvider: LiveComponent<EventProviderProps> = memo((props: EventProviderProps) => {
+  const {mouse, wheel, keyboard, pointerLock, children} = props;
+
   const {pixelRatio} = useContext(RenderContext);
   const pickingContext = useContext(PickingContext);
   const [captureId, setCaptureId] = useState<number | null>(null);
@@ -166,6 +181,7 @@ export const EventProvider: LiveComponent<EventProviderProps> = memo(({mouse, wh
     captureId,
     targetId,
     targetIndex,
+    ...pointerLock,
     beginCapture: (id: number) => setCaptureId(id),
     endCapture: () => setCaptureId(null),
     useMouse: (id: number | null = null): MouseEventState => {

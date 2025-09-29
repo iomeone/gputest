@@ -1,35 +1,31 @@
-import type { LiveComponent, LiveElement } from '../../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import type { AxesTrait, ObjectTrait, Axis4, Swizzle } from '../types';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '../../traits';
-import { use, provide, useContext, useOne, useMemo } from '../../live';
-import { bundleToAttributes, chainTo, swizzleTo } from '../../shader/wgsl';
+import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '@use-gpu/traits';
+import { use, provide, signal, useContext, useOne, useMemo } from '@use-gpu/live';
+import { chainTo, swizzleTo } from '@use-gpu/shader/wgsl';
 import {
   TransformContext,
   useShaderRef, useBoundShader, useCombinedTransform,
-} from '../../workbench';
+} from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
-import { composeTransform } from '../util/compose';
 import { recenterAxis } from '../util/axis';
+import { composeTransform } from '../util/compose';
 import { swizzleMatrix, toBasis, rotateBasis, invertBasis } from '../util/swizzle';
 import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getStereographicPosition } from '../../gen-wgsl/transform/stereographic';
-
-const STEREOGRAPHIC_BINDINGS = bundleToAttributes(getStereographicPosition);
+import { getStereographicPosition } from '@use-gpu/wgsl/transform/stereographic.wgsl';
 
 export type StereographicProps = Partial<AxesTrait> & Partial<ObjectTrait> & {
   bend?: number,
   normalize?: number | boolean,
   on?: Axis4,
-
-  children?: LiveElement<any>,
 };
 
-export const Stereographic: LiveComponent<StereographicProps> = (props) => {
+export const Stereographic: LiveComponent<StereographicProps> = (props: PropsWithChildren<StereographicProps>) => {
   const {
     on = 'z',
     bend = 1,
@@ -38,9 +34,9 @@ export const Stereographic: LiveComponent<StereographicProps> = (props) => {
   } = props;
 
   const {range: g, axes: a} = useAxesTrait(props);
-  const {position: p, scale: s, quaterion: q, rotation: r, matrix: m} = useObjectTrait(props);
+  const {position: p, scale: s, quaternion: q, rotation: r, matrix: m} = useObjectTrait(props);
 
-  const [matrix, swizzle] = useMemo(() => {
+  const [matrix, swizzle, epsilon] = useMemo(() => {
     const x = g[0][0];
     const y = g[1][0];
     let   z = g[2][0];
@@ -48,11 +44,8 @@ export const Stereographic: LiveComponent<StereographicProps> = (props) => {
     const dy = (g[1][1] - y) || 1;
     let   dz = (g[2][1] - z) || 1;
 
-    // Make scale adjustments relative to inverse swizzled output scale
-    const inv = invertBasis(a);
-    const sx = s ? s[inv.indexOf('x')] : 1;
-    const sy = s ? s[inv.indexOf('y')] : 1;
-    const sz = s ? s[inv.indexOf('z')] : 1;
+    // Epsilon for differential transport
+    const epsilon = (Math.abs(dx) + Math.abs(dy) + Math.abs(dz)) / 3000;
 
     // Recenter viewport on origin the more it's bent
     [z, dz] = recenterAxis(z, dz, bend, 1);
@@ -77,6 +70,9 @@ export const Stereographic: LiveComponent<StereographicProps> = (props) => {
     }
 
     // Then apply transform (so these are always relative to the world basis, not the internal basis)
+    if (m) {
+      mat4.multiply(matrix, m, matrix);
+    }
     if (p || r || q || s) {
       const t = mat4.create();
       composeTransform(t, p, r, q, s);
@@ -93,26 +89,31 @@ export const Stereographic: LiveComponent<StereographicProps> = (props) => {
       mat4.multiply(matrix, matrix, t);
     }
 
-    return [matrix, swizzle];
+    return [matrix, swizzle, epsilon];
   }, [g, a, p, r, q, s, bend]);
 
-  const b = useShaderRef(bend);
-  const n = useShaderRef(+normalize);
   const t = useShaderRef(matrix);
+
+  const b = useShaderRef(bend);
+  const o = useShaderRef(+normalize);
+  const e = useShaderRef(epsilon);
   
-  const bound = useBoundShader(getStereographicPosition, STEREOGRAPHIC_BINDINGS, [b, n, t]);
+  const bound = useBoundShader(getStereographicPosition, [t, b, o]);
 
   // Apply input basis as a cast
-  const position = useMemo(() => {
+  const xform = useMemo(() => {
     if (!swizzle) return bound;
     return chainTo(swizzleTo('vec4<f32>', 'vec4<f32>', swizzle), bound);
   }, [bound, swizzle]);
 
-  const transform = useCombinedTransform(position);
+  const context = useCombinedTransform(xform, null, null, e);
 
-  return (
-    provide(TransformContext, transform,
-      provide(RangeContext, g, children ?? [])
+  const rangeMemo = useOne(() => g, JSON.stringify(g));
+
+  return [
+    signal(),
+    provide(TransformContext, context,
+      provide(RangeContext, rangeMemo, children ?? [])
     )
-  );
+  ];
 };

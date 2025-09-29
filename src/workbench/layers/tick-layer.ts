@@ -1,22 +1,21 @@
-import type { LiveComponent } from '../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformType,
   VertexData, RenderPassMode,
-} from '../../core';
-import type { ShaderSource } from '../../shader';
+} from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
 import { RawLines } from '../primitives/raw-lines';
 
-import { use, memo, provide, useCallback, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
-import { resolve } from '../../core';
-import { TransformContext, useTransformContext } from '../providers/transform-provider';
+import { use, memo, provide, useCallback, useFiber, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { resolve } from '@use-gpu/core';
+import { TransformContext, useTransformContext, DEFAULT_TRANSFORM } from '../providers/transform-provider';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getTickPosition } from '../../gen-wgsl/instance/vertex/tick';
-import { getLineSegment } from '../../gen-wgsl/geometry/segment';
+import { getTickPosition } from '@use-gpu/wgsl/instance/vertex/tick.wgsl';
+import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
 
 export type TickLayerProps = {
   position?: number[] | TypedArray,
@@ -46,8 +45,6 @@ export type TickLayerProps = {
   mode?: RenderPassMode | string,
   id?: number,
 };
-
-const TICK_BINDINGS = bundleToAttributes(getTickPosition);
 
 /** Draws tick marks on a scale, oriented along to the local transform at each point. */
 export const TickLayer: LiveComponent<TickLayerProps> = memo((props: TickLayerProps) => {
@@ -87,15 +84,15 @@ export const TickLayer: LiveComponent<TickLayerProps> = memo((props: TickLayerPr
   const t = useShaderRef(tangent, tangents);
   const b = useShaderRef(base, bases);
 
-  const xf = useTransformContext();
+  const {transform: xf, differential: xd} = useTransformContext();
 
   const c = useCallback(() => ((positions as any)?.length ?? resolve(count) ?? 1) * (detail + 1), [positions, count, detail]);
 
   const defines = useOne(() => ({ LINE_DETAIL: detail }), detail);
-  const bound = useBoundShader(getTickPosition, TICK_BINDINGS, [xf, p, o, d, s, t, b], defines);
+  const bound = useBoundShader(getTickPosition, [xf, xd, p, o, d, s, t, b], defines);
 
   return (
-    provide(TransformContext, null,
+    provide(TransformContext, DEFAULT_TRANSFORM,
       use(RawLines, {
         positions: bound,
         segments: getLineSegment,

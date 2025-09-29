@@ -1,4 +1,4 @@
-import type { Point, Rectangle } from '../../core';
+import type { Point, Rectangle } from '@use-gpu/core';
 import type { LayoutElement, LayoutRenderer, LayoutPicker, FitInto, AutoPoint, AutoRectangle, Direction } from '../types';
 
 import { evaluateDimension } from '../parse';
@@ -16,11 +16,12 @@ export const fitAbsoluteBox = (
   b?: string | number | null,
   w?: string | number | null,
   h?: string | number | null,
+  a?: number | null,
   direction: Direction = 'y',
   snap?: boolean,
 ) => {
   const [iw, ih, fw, fh] = into;
-  const box = resolveAbsoluteBox([0, 0, iw ?? fw, ih ?? fh], l, t, r, b, w, h, snap);
+  const box = resolveAbsoluteBox([0, 0, iw ?? fw, ih ?? fh], l, t, r, b, w, h, a, snap);
   let [left, top, right, bottom] = box;
 
   const fixed = [
@@ -52,6 +53,7 @@ export const resolveAbsoluteBox = (
   b?: string | number | null,
   w?: string | number | null,
   h?: string | number | null,
+  a?: number | null,
   snap?: boolean,
 ) => {
   let [
@@ -84,6 +86,11 @@ export const resolveAbsoluteBox = (
     if (t != null || b == null) bottom = top + height;
     else top = bottom - height;
     favorH = true;
+  }
+
+  if (a != null) {
+    if (w != null && h == null) height = width / a;
+    else if (h != null && w == null) width = height * a;
   }
 
   if (snap) {

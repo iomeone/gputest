@@ -1,8 +1,11 @@
 import { GLSLModules } from './glsl.test.data';
 import { linkCode, linkModule } from './link';
-import { loadModule } from './shader';
+import { loadModule, glsl } from './shader';
 import { formatAST } from '../util/tree'; 
 import { addASTSerializer } from '../test/snapshot';
+import mapValues from 'lodash/mapValues';
+
+const loadedModules = mapValues(GLSLModules, (v, k) => loadModule(v, k, k));
 
 addASTSerializer(expect);
 
@@ -31,34 +34,33 @@ describe("link", () => {
 
   it("links quad vertex", () => {
 
-    const getPosition = `
+    const getPosition = glsl`
     #pragma export
     vec4 getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
     `
 
-    const getPerspective = `
+    const getPerspective = glsl`
     #pragma export
     vec4 getPerspective(int index) { return 1.0; }
     `
 
-    const getColor = `
+    const getColor = glsl`
     #pragma export
     vec4 getColor(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
     `
 
-    const getSize = `
+    const getSize = glsl`
     #pragma export
     float getSize(int index) { return 1.0; }
     `
 
-    const getDepth = `
+    const getDepth = glsl`
     #pragma export
     float getDepth(int index) { return 0.5; }
     `
 
-    const code = GLSLModules['instance/vertex/quad'];
-    const modules = GLSLModules;
-    const linked = linkCode(code, modules, {getPosition, getPerspective, getColor, getSize, getDepth});
+    const module = loadedModules['getQuadVertex'];
+    const linked = linkModule(module, loadedModules, {getPosition, getPerspective, getColor, getSize, getDepth});
     expect(linked).toMatchSnapshot();
 
   });

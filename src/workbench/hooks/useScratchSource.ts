@@ -1,40 +1,65 @@
-import type { LambdaSource, StorageSource, UniformType } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { ArrowFunction } from '../../live';
+import type { LambdaSource, StorageSource, UniformType } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { ArrowFunction, Task } from '@use-gpu/live';
+
+import { useMemo, useOne, incrementVersion } from '@use-gpu/live';
+import { resolve, makeDataBuffer, getDataArrayByteLength, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
 
 import { adjustSize } from './useBufferedSize';
+import { useDeviceContext } from '../providers/device-provider';
 
-import { resolve } from '../../core';
-import { useMemo } from '../../live';
+const NO_OPTIONS: ScratchSourceOptions = {};
 
-type InputSource = LambdaSource | StorageSource;
+type ScratchSourceOptions = {
+  flags?: GPUFlagsConstant,
+  readWrite?: boolean,
+  reserve?: number,
+};
 
-export const useScratchSource = (source: InputSource, format: UniformType, reserve?: number) => {
+export const useScratchSource = (
+  format: UniformType,
+  options: ScratchSourceOptions = NO_OPTIONS,
+) => {
+  const {
+    readWrite = false,
+    reserve = 16,
+    flags = GPUBufferUsage.STORAGE,
+  } = options;
 
-  /*
-  const sizeRef = useOne(() => ({current: reserve || 16}));
-  
+  const device = useDeviceContext();
 
-  const [allocate, source, dims] = useMemo(() => {
+  return useMemo(() => {
     const f = (format && (format in UNIFORM_ARRAY_DIMS)) ? format as UniformType : 'f32';
+    let alloc = 0;
 
-    const allocate = () => {
-      const 
-      const buffer = makeStorageBuffer(device, array.byteLength);      
+    const allocate = (
+      length: number,
+    ) => {
+      const newAlloc = adjustSize(length, alloc);
+
+      if (alloc !== newAlloc) {
+        alloc = newAlloc;
+        const byteLength = getDataArrayByteLength(f, alloc || 1);
+        source.buffer = makeDataBuffer(device, byteLength, flags);
+      }
+
+      source.length = length;
+      source.size = [length];
+      source.version = incrementVersion(source.version);
     };
-    const {array, dims} = makeDataArray(f, l || 1);
 
-    const buffer = makeStorageBuffer(device, array.byteLength);
     const source = {
-      buffer,
+      buffer: null as any,
       format: f,
       length: 0,
       size: [0],
       version: 0,
-    };
+      readWrite,
+      volatile: 1,
+    } as StorageSource;
 
-    return [buffer, array, source, dims] as [GPUBuffer, TypedArray, StorageSource, number];
-  }, [device, format, l]);
-  */
-  
-}
+    allocate(reserve);
+
+    return [source, allocate] as [StorageSource, (x: number) => void];
+  }, [device, format, readWrite, flags]);
+};

@@ -37,7 +37,7 @@ describe("bind", () => {
     `
     
     const module = loadModule(codeMain, 'main');
-    const sub = loadModule(codeSub, 'sub');
+    const sub = loadModule(codeSub, 'sub', 'getColor');
     const getColor = loadModule(codeColor, 'getColor');
 
     const links = {"getSubColor:getColor": getColor};

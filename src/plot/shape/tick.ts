@@ -1,12 +1,12 @@
-import type { LiveComponent } from '../../live';
-import type { UniformAttribute } from '../../core';
-import type { VectorLike } from '../../traits';
+import type { LiveComponent } from '@use-gpu/live';
+import type { UniformAttribute } from '@use-gpu/core';
+import type { VectorLike } from '@use-gpu/traits';
 import type { ColorTrait, LineTrait, ROPTrait } from '../types';
 
-import { parseNumber, parsePosition4, parseIntegerPositive, useProp } from '../../traits';
-import { use, provide, useCallback, useContext, useOne, useMemo } from '../../live';
-import { diffBy } from '../../shader/wgsl';
-import { useBoundSource, TickLayer } from '../../workbench';
+import { parseNumber, parseVec4, parseIntegerPositive, useProp } from '@use-gpu/traits';
+import { use, provide, useCallback, useContext, useOne, useMemo } from '@use-gpu/live';
+import { diffBy } from '@use-gpu/shader/wgsl';
+import { useBoundSource, TickLayer } from '@use-gpu/workbench';
 
 import { DataContext } from '../providers/data-provider';
 import { RangeContext } from '../providers/range-provider';
@@ -44,11 +44,11 @@ export const Tick: LiveComponent<TickProps> = (props) => {
 
   const {width, depth, join} = useLineTrait(props);
   const color = useColorTrait(props);
-  const {zBias} = useROPTrait(props);
+  const rop = useROPTrait(props);
 
   const s = useProp(size, parseNumber);
   const d = useProp(detail, parseIntegerPositive);
-  const o = useProp(offset, parsePosition4);
+  const o = useProp(offset, parseVec4);
 
   const getPosition = useBoundSource(GET_POSITION, positions);
   const getSize = useBoundSource(GET_SIZE, count);
@@ -66,9 +66,9 @@ export const Tick: LiveComponent<TickProps> = (props) => {
       color,
       width,
       depth,
-      zBias,
       size: s,
       join,
+      ...rop,
     })
   );
 };

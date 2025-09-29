@@ -1,32 +1,33 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { ColorLike, VectorLike } from '../../traits';
-import { parseColor, parseNumber, useProp } from '../../traits';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { ColorLike, VectorLike } from '@use-gpu/traits';
+import { parseColor, parseNumber, useProp } from '@use-gpu/traits';
 
-import { useMemo } from '../../live';
+import { memo, useMemo } from '@use-gpu/live';
+import { useLightContext } from '../providers/light-provider';
 
-import { useLightCapture } from './lights';
-import { useTransformContext } from '../providers/transform-provider';
+import { AMBIENT_LIGHT } from './types';
+import { vec4 } from 'gl-matrix';
+
+const WHITE = vec4.fromValues(1, 1, 1, 1);
 
 export type AmbientLightProps = {
   color?: ColorLike,
   intensity?: number,
 };
 
-export const AmbientLight = (props: AmbientLightProps) => {
+export const AmbientLight = memo((props: AmbientLightProps) => {
   
-  const color = useProp(props.color, parseColor);
+  const color = useProp(props.color, parseColor, WHITE);
   const intensity = useProp(props.intensity, parseNumber, 1);
 
-  const transform = useTransformContext();
-
   const light = useMemo(() => ({
-    kind: 0,
-    position: [0, 0, 0, 0],
+    kind: AMBIENT_LIGHT,
     color,
     intensity,
-    transform,
   }), [color, intensity]);
 
-  useLightCapture(light);
+  const {useLight} = useLightContext();
+  useLight(light);
+
   return null;
-};
+}, 'AmbientLight');

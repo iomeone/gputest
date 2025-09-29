@@ -63,10 +63,10 @@ When combined with `${useRefineCursor}`, this allows for zero-hassle state manag
 Compose this hook with other `useState` variants using `useStateHook`, e.g. the classic `useLocalState` that saves to Local Storage.
 */
 export const useUpdateState = <T>(initialState: InitialState<T>, useStateHook: UseState<T> = useState): Cursor<T> => {
-  const [state, setState] = useState(initialState);
+  const [state, setState] = useStateHook(initialState);
 
   const updateState = useCallback((update: Update<T>) =>
-    setState((s) => patch(s, update)),
+    setState((s: T) => patch(s, update)),
     []);
 
   // eslint-disable-next-line

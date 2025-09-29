@@ -9,7 +9,7 @@ addASTSerializer(expect);
 describe('shader', () => {
   
   it('parses', () => {
-    const code = GLSLModules['instance/vertex/quad'];
+    const code = GLSLModules['getQuadVertex'];
     const tree = parseShader(code);
     expect(tree).toBeTruthy();
   });

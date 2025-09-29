@@ -43,7 +43,7 @@ export const makeShaderBinding = <T>(
       checkStorageType(uniform, storage);
       return {uniform, storage};
     }
-    if (source.texture) {
+    if (source.texture || source.view) {
       const texture = source as TextureSource;
       return {uniform, texture};
     }

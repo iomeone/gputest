@@ -16,6 +16,6 @@
 @export fn getFaceSegment(index: u32) -> i32 {
   let n = u32(getFaceDetail() + 2);
   let i = index % n;
-  if (i + 2u >= n) return 0;
+  if (i + 2u >= n) { return 0; }
   return i + 1;
 };

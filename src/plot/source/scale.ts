@@ -1,13 +1,12 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { StorageSource, LambdaSource, UniformType } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { VectorLike } from '../../traits';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { StorageSource, LambdaSource, UniformType } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { VectorLike } from '@use-gpu/traits';
 import type { ScaleTrait, AxisTrait } from '../types';
 
-import { parsePosition4, useProp } from '../../traits';
-import { yeet, provide, useOne, useMemo, useNoMemo, useContext, incrementVersion } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
-import { useRawSource, useBoundShader, useShaderRef } from '../../workbench';
+import { parseVec4, useProp } from '@use-gpu/traits';
+import { yeet, provide, useOne, useMemo, useNoMemo, useContext, incrementVersion } from '@use-gpu/live';
+import { useRawSource, useBoundShader, useShaderRef } from '@use-gpu/workbench';
 
 import { DataContext, ValuesContext } from '../providers/data-provider';
 import { RangeContext } from '../providers/range-provider';
@@ -15,19 +14,16 @@ import { RangeContext } from '../providers/range-provider';
 import { useScaleTrait, useAxisTrait } from '../traits';
 import { logarithmic, linear } from '../util/domain';
 
-import { getScalePosition } from '../../gen-wgsl/plot/scale';
+import { getScalePosition } from '@use-gpu/wgsl/plot/scale.wgsl';
 
 import { vec4 } from 'gl-matrix';
 
-const SCALE_BINDINGS = bundleToAttributes(getScalePosition);
-
 export type ScaleProps = Partial<ScaleTrait> & Partial<AxisTrait> & {
   origin?: VectorLike,
-  render?: (positions: LambdaSource, values: Float32Array) => LiveElement<any>,
-  children?: LiveElement<any>,
+  render?: (positions: LambdaSource, values: Float32Array) => LiveElement,
 };
 
-export const Scale: LiveComponent<ScaleProps> = (props) => {
+export const Scale: LiveComponent<ScaleProps> = (props: PropsWithChildren<ScaleProps>) => {
 
   const {
     origin,
@@ -40,7 +36,7 @@ export const Scale: LiveComponent<ScaleProps> = (props) => {
 
   const parentRange = useContext(RangeContext);
   const r = range ?? parentRange[axis];
-  const p = useProp(origin, parsePosition4);
+  const p = useProp(origin, parseVec4);
 
   // Generate tick scale
   const newValues = useMemo(() => {
@@ -58,7 +54,7 @@ export const Scale: LiveComponent<ScaleProps> = (props) => {
 
   const o = useShaderRef(og);
   const a = useShaderRef(axis);
-  const bound = useBoundShader(getScalePosition, SCALE_BINDINGS, [data, a, o]);
+  const bound = useBoundShader(getScalePosition, [data, a, o]);
 
   // Expose position source
   const source = useMemo(() => ({

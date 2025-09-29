@@ -1,12 +1,12 @@
 import type {
   Initial, Setter, Reducer, Key, Task,
-  LiveFunction, LiveComponent, LiveFiber, LiveCapture, LiveContext, LiveElement, LiveMap, LiveNode,
+  LiveFunction, LiveComponent, LiveFiber, LiveCapture, LiveContext, LiveElement, LiveNode,
   FunctionCall, DeferredCall, HostInterface, ArrowFunction,
   ReactElementInterop,
 } from './types';
 
-import { compareFibers } from './util';
-import { makeFiber, makeImperativeFunction } from './fiber';
+import { compareFibers, tagFunction } from './util';
+import { bustFiberMemo } from './fiber';
 import { getCurrentFiberID } from './current';
 
 /** @hidden */
@@ -33,6 +33,14 @@ export const CAPTURE      = () => {};
 export const DEBUG        = () => {};
 /** @hidden */
 export const SUSPEND      = () => {};
+/** @hidden */
+export const RECONCILE    = () => {};
+/** @hidden */
+export const QUOTE        = () => {};
+/** @hidden */
+export const UNQUOTE      = () => {};
+/** @hidden */
+export const SIGNAL       = () => {};
 
 (MORPH        as any).isLiveBuiltin = true;
 (DETACH       as any).isLiveBuiltin = true;
@@ -46,8 +54,15 @@ export const SUSPEND      = () => {};
 (CAPTURE      as any).isLiveBuiltin = true;
 (DEBUG        as any).isLiveBuiltin = true;
 (SUSPEND      as any).isLiveBuiltin = true;
+(RECONCILE    as any).isLiveBuiltin = true;
+(QUOTE        as any).isLiveBuiltin = true;
+(UNQUOTE      as any).isLiveBuiltin = true;
+(SIGNAL       as any).isLiveBuiltin = true;
 
 (FRAGMENT     as any).isLiveInline = true;
+
+/** @hidden */
+export const EMPTY_FRAGMENT = {f: FRAGMENT, args: []};
 
 // Inline render ops
 type UseArgs<F> = F extends ArrowFunction ? Parameters<F> : any[];
@@ -80,7 +95,7 @@ export const wrap = <F extends ArrowFunction>(
 export const extend = (
   calls: LiveNode<any>,
   props: Record<string, any>,
-): LiveElement<any> => {
+): LiveElement => {
   if (typeof calls === 'string') return null;
   if (typeof calls === 'function') return null;
   if (!calls) return calls;
@@ -142,30 +157,34 @@ export const mapReduce = <R, T>(
   calls?: LiveNode<any>,
   map?: (t: T) => R,
   reduce?: (a: R, b: R) => R,
-  then?: LiveFunction<(r: R) => LiveElement<any>>,
+  then?: LiveFunction<(r: R) => LiveElement>,
+  fallback?: R,
   key?: Key,
-): DeferredCall<() => void> => ({f: MAP_REDUCE, args: [calls, map, reduce, then], key, by: getCurrentFiberID()} as any);
+): DeferredCall<() => void> => ({f: MAP_REDUCE, args: [calls, map, reduce, then, fallback], key, by: getCurrentFiberID()} as any);
 
 /** Gather items from a subtree, into a flat array. */
 export const gather = <T>(
   calls?: LiveNode<any>,
-  then?: LiveFunction<(r: T[]) => LiveElement<any>>,
+  then?: LiveFunction<(r: T[]) => LiveElement>,
+  fallback?: T[],
   key?: Key,
-): DeferredCall<() => void> => ({f: GATHER, args: [calls, then], key, by: getCurrentFiberID()} as any);
+): DeferredCall<() => void> => ({f: GATHER, args: [calls, then, fallback], key, by: getCurrentFiberID()} as any);
 
 /** Multi-gather items from a subtree, by object key. */
 export const multiGather = <T>(
   calls?: LiveNode<any>,
-  then?: LiveFunction<(r: Record<string, T[]>) => LiveElement<any>>,
+  then?: LiveFunction<(r: Record<string, T[]>) => LiveElement>,
+  fallback?: Record<string, T[]>,
   key?: Key,
-): DeferredCall<() => void> => ({f: MULTI_GATHER, args: [calls, then], key, by: getCurrentFiberID()} as any);
+): DeferredCall<() => void> => ({f: MULTI_GATHER, args: [calls, then, fallback], key, by: getCurrentFiberID()} as any);
 
 /** Fence gathered items from a subtree. */
 export const fence = <T>(
   calls?: LiveNode<any>,
-  then?: LiveFunction<(r: T[]) => LiveElement<any>>,
+  then?: LiveFunction<(r: T) => LiveElement>,
+  fallback?: T,
   key?: Key,
-): DeferredCall<() => void> => ({f: FENCE, args: [calls, then], key, by: getCurrentFiberID()} as any);
+): DeferredCall<() => void> => ({f: FENCE, args: [calls, then, fallback], key, by: getCurrentFiberID()} as any);
 
 /** Yeet value(s) upstream. */
 export const yeet = <T>(
@@ -189,15 +208,31 @@ export const capture = <T, C>(
   key?: Key,
 ): DeferredCall<() => void> => ({f: CAPTURE, args: [context, calls, then], key, by: getCurrentFiberID()} as any);
 
-/** Component has side-effects, and will re-render even if props object is identical. */
-export const imperative = makeImperativeFunction;
+/** Reconcile quoted calls to a separate tree. */
+export const reconcile = <T>(
+  calls?: LiveNode<any>,
+  key?: Key,
+): DeferredCall<() => void> => ({f: RECONCILE, args: calls, key, by: getCurrentFiberID()} as any);
+
+/** Quote a subtree and reconcile it. */
+export const quote = <T>(
+  calls?: LiveNode<any>,
+  key?: Key,
+): DeferredCall<() => void> => ({f: QUOTE, args: calls, key, by: getCurrentFiberID()} as any);
+
+/** Escape from quote. */
+export const unquote = <T>(
+  calls?: LiveNode<any>,
+  key?: Key,
+): DeferredCall<() => void> => ({f: UNQUOTE, args: calls, key, by: getCurrentFiberID()} as any);
 
 /** Yeet a suspend symbol. */
-export const suspend = () => yeet(SUSPEND);
+export const suspend = (key?: Key) => yeet(SUSPEND, key);
 
-/** LOL.
+/** Yeet a fast signal() signal. */
+export const signal = (key?: Key) => ({f: SIGNAL, args: null, key, by: getCurrentFiberID()} as any);
 
-Look, _you_ go try to make JSX.Element polymorphic. */
+/** LOL. Look, _you_ go try to make JSX.Element polymorphic. */
 export const into = (children: any): any => children;
 
 export interface MakeContext<T> {
@@ -219,34 +254,15 @@ export const makeCapture = <T>(displayName?: string): LiveCapture<T> => ({
   capture: true,
 });
 
-/** Flatten a captured value map into an ordered array. */
-export const captureFibers = <T>(map: Map<LiveFiber<any>, T>): [LiveFiber<any>, T][] => {
-  const entries = Array.from(map.entries());
-  entries.sort((a, b) => compareFibers(a[0], b[0]));
-  return entries;
+// Tag a component as imperative, always re-rendered from above even if props/state didn't change
+export const makeImperativeFunction = (
+  component: LiveFunction<any>,
+  displayName?: string,
+): LiveFunction<any> => {
+  (component as any).isImperativeFunction = true;
+  tagFunction(component, displayName);
+  return component;
 }
 
-/** Flatten a captured value map into an ordered array. */
-export const captureValues = <T>(
-  map: LiveMap<T>,
-): T[] => {
-  const keys = Array.from(map.keys());
-  keys.sort((a, b) => compareFibers(a, b));
-  return keys.map(k => map.get(k)!);
-}
-
-/** Get last node of captured value map. */
-export const captureLastFiber = <T>(
-  map: LiveMap<T>,
-): [LiveFiber<any>, T] | null => {
-  const keys = Array.from(map.keys());
-  keys.sort((a, b) => compareFibers(a, b));
-  
-  const key = keys[keys.length - 1];
-  return key ? [key, map.get(key)!] : null;
-}
-
-/** Get last value yielded from captured value map. */
-export const captureTail = <T>(
-  map: LiveMap<T>
-): T | null => captureLastFiber(map)?.[1] ?? null;
+/** Component has side-effects, and will re-render even if props object is identical. */
+export const imperative = makeImperativeFunction;

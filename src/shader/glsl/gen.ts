@@ -135,9 +135,9 @@ export const makeUniformFieldAccessor = (
   ns: string,
   type: string,
   name: string,
-  args: string[] = INT_ARG,
+  args: any[] | null = INT_ARG,
 ) => `
-${type} ${ns}${name}(${args.join(', ')}) {
+${type} ${ns}${name}(${args ? args.join(', ') : ''}) {
   return ${uniform}Uniform.${ns}${name};
 }
 `;

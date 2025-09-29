@@ -1,45 +1,56 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { StorageSource, LambdaSource, TypedArray, UniformType, Emit, Emitter, Time } from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { StorageSource, LambdaSource, TypedArray, UniformType, Emit, Emitter, Time, DataBounds } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import { provide, yeet, useMemo, useNoMemo, useOne, useNoOne, useContext, useNoContext, incrementVersion } from '../../live';
+import { provide, yeet, signal, useMemo, useNoMemo, useOne, useNoOne, useContext, useNoContext, useYolo, incrementVersion } from '@use-gpu/live';
 import {
   makeDataArray, copyNumberArray, emitIntoNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
-} from '../../core';
+  getBoundingBox, toDataBounds,
+} from '@use-gpu/core';
 
 import { DeviceContext } from '../providers/device-provider';
-import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { bundleToAttributes, chainTo } from '../../shader/wgsl';
-import { getIndex } from '../../gen-wgsl/instance/interleave';
-
-const INTERLEAVE_BINDINGS = bundleToAttributes(getIndex);
+import { chainTo } from '@use-gpu/shader/wgsl';
+import { getIndex } from '@use-gpu/wgsl/instance/interleave.wgsl';
 
 const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
 
 export type RawDataProps = {
+  /** Set/override input length */
   length?: number,
-  data?: number[] | TypedArray,
 
-  sparse?: boolean,
-  expr?: Emitter<Time>,
-  items?: number,
-  interleaved?: boolean,
-
+  /** WGSL format per sample */
   format?: string,
+  
+  /** Input data */
+  data?: number[] | TypedArray,
+  /** Input emitter expression */
+  expr?: Emitter<Time>,
+  /** Emit N items per expr call. Output size is `[items, N]` if items > 1. */
+  items?: number,
+  /** Emit 0 or N items per expr call. Output size is `[N]` or `[items, N]`. */
+  sparse?: boolean,
+  /** Resample `data` on every animation frame. */
   live?: boolean,
+  /** Add current `TimeContext` to the `expr` arguments. */
   time?: boolean,
 
-  render?: (...source: ShaderSource[]) => LiveElement<any>,
-  children?: LiveElement<any>,
+  /** Split output into 1 source per item. */
+  interleaved?: boolean,
+
+  /** Leave empty to yeet source(s) instead. */
+  render?: (...source: ShaderSource[]) => LiveElement,
 };
 
+const NO_BOUNDS = {center: [], radius: 0, min: [], max: []} as DataBounds;
+
+/** 1D array of a WGSL type. Reads input `data` or samples a given `expr` of WGSL type `format`. */
 export const RawData: LiveComponent<RawDataProps> = (props) => {
   const device = useContext(DeviceContext);
 
@@ -71,6 +82,7 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
       length: 0,
       size: [0],
       version: 0,
+      bounds: {...NO_BOUNDS},
     };
 
     return [buffer, array, source, dims] as [GPUBuffer, TypedArray, StorageSource, number];
@@ -83,10 +95,11 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
     const getData = useBoundSource(binding, source);
     sources = useMemo(() => (
       seq(t).map(i => ({
-        shader: chainTo(getBoundShader(getIndex, INTERLEAVE_BINDINGS, [i, t]), getData),
+        shader: chainTo(getBoundShader(getIndex, [i, t]), getData),
         length: 0,
         size: [0],
         version: 0,
+        bounds: source.bounds,
       }))
     ), [t, getData]);
   }
@@ -113,6 +126,13 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
     source.size    = !sparse ? (items > 1 ? [items, count] : [count]) : [items, emitted / items];
     source.version = incrementVersion(source.version);
 
+    const {bounds} = source;
+    const {center, radius, min, max} = toDataBounds(getBoundingBox(array, Math.ceil(dims)));
+    bounds!.center = center;
+    bounds!.radius = radius;
+    bounds!.min = min;
+    bounds!.max = max;
+
     if (sources) {
       for (const s of sources) {
         s.length  = source.length / t;
@@ -123,17 +143,18 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
   };
 
   if (!live) {
-    useNoPerFrame();
     useNoAnimationFrame();
     useMemo(refresh, [device, buffer, array, data, expr, count, dims]);
   }
   else {
-    usePerFrame();
     useAnimationFrame();
     useNoMemo();
     refresh();
   }
 
-  if (sources) return useMemo(() => render ? render(...sources!) : yeet(sources!), [render, sources]);
-  return useMemo(() => render ? render(source) : yeet(source), [render, source]);
+  const trigger = useOne(() => signal(), source.version);
+  const view = sources
+    ? useYolo(() => render ? render(...sources!) : yeet(sources!), [render, sources])
+    : useYolo(() => render ? render(source) : yeet(source), [render, source]);
+  return [trigger, view];
 };

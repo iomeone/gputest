@@ -1,5 +1,5 @@
 import type { Image } from './types';
-import { glyphToEDT } from './sdf-edt'; 
+import { glyphToEDT } from './sdf-edt';
 import { glyphToESDT } from './sdf-esdt';
 import { fill } from './fill';
 
@@ -76,10 +76,12 @@ export const glyphToSDF = (
   radius: number = 3,
   cutoff: number = 0.25,
   subpixel: boolean = true,
+  solidify: boolean = true,
   preprocess: boolean = false,
   postprocess: boolean = false,
   debug?: (image: Image) => void,
 ): Image => {
+  if (solidify) solidifyAlpha(data, w, h);
   if (subpixel) return glyphToESDT(data, null, w, h, pad, radius, cutoff, preprocess, postprocess, debug);
   else return glyphToEDT(data, w, h, pad, radius, cutoff, debug);
 }
@@ -93,20 +95,47 @@ export const rgbaToSDF = (
   radius: number = 3,
   cutoff: number = 0.25,
   subpixel: boolean = true,
+  solidify: boolean = true,
   preprocess: boolean = false,
   postprocess: boolean = false,
   debug?: (image: Image) => void,
 ): Image => {
   const alpha = rgbaToGlyph(data, w, h).data;
+  if (solidify) solidifyAlpha(alpha, w, h);
 
   // ESDT can resolve RGBA directly
   if (subpixel) return glyphToESDT(alpha, data, w, h, pad, radius, cutoff, preprocess, postprocess, debug);
 
   // EDT color is resolved separately
   const color = rgbaToColor(data, w, h, pad).data;
-  const sdf   = glyphToSDF(alpha, w, h, pad, radius, cutoff, false, false, false, debug);
+  const sdf   = glyphToSDF(alpha, w, h, pad, radius, cutoff, false, false, false, false, debug);
   return {...sdf, data: combineRGBA(sdf.data, color)};
 }
+
+// Pad color image
+export const padRGBA = (data: Uint8Array, w: number, h: number, pad: number = 0): Image => {
+  const wp = w + pad * 2;
+  const hp = h + pad * 2;
+  const out = new Uint8Array(wp * hp * 4);
+
+  let i = 0;
+  let j = (pad + pad * wp) * 4;
+  for (let y = 0; y < h; ++y) {
+    for (let x = 0; x < w; ++x) {
+      const r = data[i++];
+      const g = data[i++];
+      const b = data[i++];
+      const a = data[i++];
+
+      out[j++] = r;
+      out[j++] = g;
+      out[j++] = b;
+      out[j++] = a;
+    }
+    j += pad * 2 * 4;
+  };
+  return {data: out, width: wp, height: hp};
+};
 
 // Convert grayscale glyph to rgba
 export const glyphToRGBA = (data: Uint8Array, w: number, h: number, pad: number = 0): Image => {
@@ -228,12 +257,81 @@ export const sdfToGradient = (
       const dx = Math.min(Math.abs(c - l), Math.abs(c - r));
       const dy = Math.min(Math.abs(c - t), Math.abs(c - b));
       const dl = Math.sqrt(dx * dx + dy * dy);
-      
+
       const e = Math.abs(dl - 1);
-      
+
       out[j] = Math.max(0, Math.min(255, 64 + e * 192));
     }
   }
 
   return glyphToRGBA(out, wp, hp);
 };
+
+// Solidify semi-transparent areas
+export const solidifyAlpha = (
+  data: Uint8Array | number[],
+  w: number,
+  h: number,
+) => {
+
+  const mask = new Uint8Array(w * h);
+
+  const getData = (x: number, y: number) => (data[y * w + x] ?? 0);
+  const getMask = (x: number, y: number) => (mask[y * w + x] ?? 0);
+
+  let masked = 0;
+
+  // Mask pixels whose alpha matches their 4 adjacent neighbors (within 16 steps)
+  // and who don't have black or white neighbors.
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let o = x + y * w;
+
+      const a = getData(x, y);
+      if (!a || a >= 254) continue;
+
+      const l = getData(x - 1, y);
+      const r = getData(x + 1, y);
+      const t = getData(x, y - 1);
+      const b = getData(x, y + 1);
+
+      const min = Math.min(a, l, r, t, b);
+      const max = Math.max(a, l, r, t, b);
+
+      if ((max - min) < 16 && min > 0 && max < 254) {
+        // Spread to 4 neighbors with max
+        mask[o - 1] = Math.max(mask[o - 1], a);
+        mask[o - w] = Math.max(mask[o - w], a);
+        mask[o] = a;
+        mask[o + 1] = Math.max(mask[o + 1], a);
+        mask[o + w] = Math.max(mask[o + w], a);
+        masked++;
+      }
+    }
+  }
+
+  if (!masked) return;
+
+  // Sample 3x3 area for alpha normalization factor
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const a = getData(x, y);
+      if (!a || a >= 254) continue;
+
+      const c = getMask(x, y);
+
+      const l = getMask(x - 1, y);
+      const r = getMask(x + 1, y);
+      const t = getMask(x, y - 1);
+      const b = getMask(x, y + 1);
+
+      const tl = getMask(x - 1, y - 1);
+      const tr = getMask(x + 1, y - 1);
+      const bl = getMask(x - 1, y + 1);
+      const br = getMask(x + 1, y + 1);
+
+      const m = c || l || r || t || b || tl || tr || bl || br;
+      if (m) data[x + y * w] = Math.min(255, data[x + y * w] / m * 255);
+    }
+  }
+}

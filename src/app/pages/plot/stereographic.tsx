@@ -1,19 +1,20 @@
-import type { LC } from '../../../live';
-import type { Keyframe } from '../../../workbench';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { use } from '../../../live';
+import React, { use } from '@use-gpu/live';
+import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Draw, Pass, Flat,
+  Loop, Pass, Flat,
   ArrayData, Data, RawData,
   OrbitCamera, OrbitControls,
   Pick, Cursor,
   Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
   Plot, Spherical, Stereographic, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '../../../plot';
+} from '@use-gpu/plot';
 
 import { PlotControls } from '../../ui/plot-controls';
 
@@ -41,7 +42,7 @@ export const PlotStereographicPage: LC = () => {
 
   const view = (normalize: number) => (
     <Loop>
-      <Draw>
+      <Camera>
         <Pass>
           <Plot>
             <Animate
@@ -140,7 +141,7 @@ export const PlotStereographicPage: LC = () => {
                     />
                   </Sampled>
                 </Spherical>
-                
+              
                 <Spherical
                   rotation={[45, 22.5, 0]}
                   scale={[0.25, 0.25, 0.25]}
@@ -163,7 +164,7 @@ export const PlotStereographicPage: LC = () => {
             </Animate>
           </Plot>
         </Pass>
-      </Draw>
+      </Camera>
     </Loop>
   );
 
@@ -174,21 +175,26 @@ export const PlotStereographicPage: LC = () => {
       container={root}
       hasNormalize
       render={({normalize}) => 
-        <OrbitControls
-          radius={5}
-          bearing={0.5}
-          pitch={0.3}
-          render={(radius: number, phi: number, theta: number) =>
-            <OrbitCamera
-              radius={radius}
-              phi={phi}
-              theta={theta}
-            >
-              {view(+normalize)}
-            </OrbitCamera>
-          }
-        />
+        view(+normalize)
       }
     />
   );
 };
+
+const Camera = ({children}: PropsWithChildren<object>) => (
+  <OrbitControls
+    radius={5}
+    bearing={0.5}
+    pitch={0.3}
+    render={(radius: number, phi: number, theta: number, target: vec3) =>
+      <OrbitCamera
+        radius={radius}
+        phi={phi}
+        theta={theta}
+        target={target}
+      >
+        {children}
+      </OrbitCamera>
+    }
+  />
+);

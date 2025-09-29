@@ -1,18 +1,18 @@
-import type { LC } from '../../../live';
-import type { DataField } from '../../../core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { DataField } from '@use-gpu/core';
 
-import React, { use } from '../../../live';
+import React, { use } from '@use-gpu/live';
 
 import { PickingOverlay } from '../../ui/picking-overlay';
 import earcut from 'earcut';
 
 import {
-  Draw, Pass,
+  Pass, Flat,
   Cursor, Pick, Raw,
   CompositeData, LineSegments, FaceSegments,
   OrbitCamera, OrbitControls,
   LineLayer, FaceLayer,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 
 // Convex and concave polygon data
 
@@ -96,9 +96,10 @@ let lineData = seq(22).map((i) => (
 export const GeometryFacesPage: LC = () => {
 
   // Render polygons
-  const view = (
-    <Draw>
-      <Pass>
+  const view = (<>
+    <Camera>
+      <Pass picking>
+
         <CompositeData
           fields={convexDataFields}
           data={convexFaceData}
@@ -114,6 +115,7 @@ export const GeometryFacesPage: LC = () => {
                   segments={segments}
                   colors={colors}
                   lookups={lookups}
+                  side="both"
                 />,
                 hovered ? (
                   <CompositeData
@@ -125,6 +127,8 @@ export const GeometryFacesPage: LC = () => {
                         positions={positions}
                         segments={segments}
                         color={[1, 1, 1, 1]}
+                        side="both"
+                        zBias={1}
                       />
                     }
                   />
@@ -148,6 +152,7 @@ export const GeometryFacesPage: LC = () => {
                   indices={indices}
                   colors={colors}
                   lookups={lookups}
+                  side="both"
                 />,
                 hovered ? (
                   <CompositeData
@@ -158,6 +163,8 @@ export const GeometryFacesPage: LC = () => {
                         positions={positions}
                         indices={indices}
                         color={[1, 1, 1, 1]}
+                        side="both"
+                        zBias={1}
                       />
                     }
                   />
@@ -178,30 +185,39 @@ export const GeometryFacesPage: LC = () => {
               width={3}
               segments={segments}
               depth={0.5}
+              mode="transparent"
             />
           }
         />
+      </Pass>
+    </Camera>
 
+    <Flat>
+      <Pass overlay>
         <PickingOverlay />
       </Pass>
-    </Draw>
-  );
+    </Flat>
+  </>);
 
   return [
     <Cursor cursor='move' />,
-    <OrbitControls
-      radius={3}
-      bearing={0.5}
-      pitch={0.3}
-      render={(radius: number, phi: number, theta: number) =>
-        <OrbitCamera
-          radius={radius}
-          phi={phi}
-          theta={theta}
-        >
-          {view}
-        </OrbitCamera>
-      }
-    />,
+    view,
   ];
 };
+
+const Camera = ({children}: PropsWithChildren<object>) => (
+  <OrbitControls
+    radius={3}
+    bearing={0.5}
+    pitch={0.3}
+    render={(radius: number, phi: number, theta: number) =>
+      <OrbitCamera
+        radius={radius}
+        phi={phi}
+        theta={theta}
+      >
+        {children}
+      </OrbitCamera>
+    }
+  />
+);

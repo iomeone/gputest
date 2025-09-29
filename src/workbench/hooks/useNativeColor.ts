@@ -1,18 +1,21 @@
-import type { ColorSpace, TextureSource } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
+import type { ColorSpace, TextureSource } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { bindingToModule, bundleToAttribute, chainTo } from '../../shader/wgsl';
-import { useContext, useMemo, useNoContext, useNoMemo } from '../../live';
+import { bindingToModule, bundleToAttribute, chainTo } from '@use-gpu/shader/wgsl';
+import { useContext, useMemo, useNoContext, useNoMemo } from '@use-gpu/live';
 
 import { RenderContext } from '../providers/render-provider';
 import { getBoundSource } from '../hooks/useBoundSource';
 
-import { getUIFragment } from '../../gen-wgsl/instance/fragment/ui';
-import { toLinear4, toGamma4 } from '../../gen-wgsl/use/gamma';
+import { getUIFragment } from '@use-gpu/wgsl/instance/fragment/ui.wgsl';
+import { toLinear4, toGamma4 } from '@use-gpu/wgsl/use/gamma.wgsl';
 
 const TEXTURE_BINDING = bundleToAttribute(getUIFragment, 'getTexture');
 
-export const useNativeColorTexture = (texture?: ShaderSource) => {
+export const useNativeColorTexture = (
+  texture?: ShaderSource,
+  filter?: ShaderModule,
+) => {
   if (!texture || (texture as any).colorSpace == null || (texture as any).colorSpace === 'native') {
     useNoContext(RenderContext);
     useNoMemo();
@@ -21,16 +24,21 @@ export const useNativeColorTexture = (texture?: ShaderSource) => {
 
   const { colorSpace } = useContext(RenderContext);
   const getTexture = useMemo(() => {
-    const getTexture = getBoundSource(TEXTURE_BINDING, texture);
+    let getTexture = getBoundSource(TEXTURE_BINDING, texture);
+    if (filter) getTexture = chainTo(getTexture, filter);
+
     const {colorSpace: colorInput} = (texture as any);
     const convert = getNativeColor(colorInput, colorSpace);
     return convert ? chainTo(getTexture, convert) : getTexture;
-  }, [texture, colorSpace]);
+  }, [texture, filter, colorSpace]);
 
   return getTexture;
 };
 
-export const useNativeColor = (colorInput: ColorSpace, colorOutput: ColorSpace) => {
+export const useNativeColor = (
+  colorInput: ColorSpace,
+  colorOutput: ColorSpace,
+) => {
   return useMemo(() => getNativeColor(colorInput, colorOutput), [colorInput, colorOutput]);
 };
 

@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { VectorLike } from '../../traits';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { VectorLike } from '@use-gpu/traits';
 
-import { parsePosition, useProp } from '../../traits';
-import { useContext, useMemo, useOne, useResource, useState } from '../../live';
-import { makeOrbitMatrix } from '../../core';
-import { MouseContext, WheelContext } from '../providers/event-provider';
+import { parsePosition, useProp } from '@use-gpu/traits';
+import { useContext, useOne, useResource, useState, useYolo } from '@use-gpu/live';
+import { makeOrbitMatrix } from '@use-gpu/core';
+import { KeyboardContext, MouseContext, WheelContext } from '../providers/event-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { useDerivedState } from '../hooks/useDerivedState';
 import { mat4, vec3 } from 'gl-matrix';
@@ -13,6 +13,11 @@ const CAPTURE_EVENT = {capture: true};
 
 const π = Math.PI;
 const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
+const maybeClamp = (x: number, a?: number, b?: number) => {
+  if (a != null) x = Math.max(x, a);
+  if (b != null) x = Math.min(x, b);
+  return x;
+};
 
 export type OrbitControlsProps = {
   radius?: number,
@@ -26,7 +31,15 @@ export type OrbitControlsProps = {
   pitchSpeed?: number,
   moveSpeed?: number,
 
-  render: (phi: number, theta: number, radius: number, target: vec3) => LiveElement<any>,
+  minRadius?: number,
+  maxRadius?: number,
+  minBearing?: number,
+  maxBearing?: number,
+  minPitch?: number,
+  maxPitch?: number,
+
+  active?: boolean,
+  render: (radius: number, bearing: number, pitch: number, target: vec3) => LiveElement,
 };
 
 export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
@@ -40,7 +53,15 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
     bearingSpeed = 5,
     pitchSpeed   = 5,
     moveSpeed    = 1,
-    
+
+    minRadius,
+    maxRadius,
+    minBearing,
+    maxBearing,
+    minPitch,
+    maxPitch,
+
+    active = true,
     render,
   } = props;
 
@@ -53,45 +74,64 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
 
   const { useMouse } = useContext(MouseContext);
   const { useWheel } = useContext(WheelContext);
+  const { useKeyboard } = useContext(KeyboardContext);
+
   const layout = useContext(LayoutContext);
 
   const { mouse } = useMouse();
   const { wheel } = useWheel();
+  const { keyboard } = useKeyboard();
+
   const size = Math.min(Math.abs(layout[2] - layout[0]), Math.abs(layout[3] - layout[1]));
 
+  const handleMove = (moveX: number, moveY: number) => {
+    const m = makeOrbitMatrix(radius, bearing, pitch, [0, 0, 0], 1);
+    m[12] = m[13] = m[14] = 0;
+    mat4.invert(m, m);
+
+    const speed = moveSpeed * radius / size;
+    const move = vec3.fromValues(moveX * speed, -moveY * speed, 0);
+    vec3.transformMat4(move, move, m);
+
+    vec3.add(move, move, target);
+    setTarget(move);
+  }
+
   useOne(() => {
-    const { x, y, moveX, moveY, buttons } = mouse;
+    const { x, y, moveX, moveY, buttons, stopped } = mouse;
+    if (!active || stopped) return;
 
     const speedX = bearingSpeed / size;
     const speedY = pitchSpeed   / size;
 
-    if (buttons.left) {
+    if (buttons.right || (buttons.left && keyboard.modifiers.shift)) {
       if (moveX || moveY) {
-        setBearing((phi: number) => phi + moveX * speedX);
-        setPitch((theta: number) => clamp(theta + moveY * speedY, -π/2, π/2));
+        handleMove(-moveX, -moveY);
       }
     }
-    if (buttons.right) {
+    else if (buttons.left) {
       if (moveX || moveY) {
-        const m = makeOrbitMatrix(radius, bearing, pitch, [0, 0, 0], 1);
-        m[12] = m[13] = m[14] = 0;
-        mat4.invert(m, m);
-
-        const speed = moveSpeed * radius;
-        const move = vec3.fromValues(moveX * speed, -moveY * speed, 0);
-        vec3.transformMat4(move, move, m);
-
-        vec3.add(move, move, target);
-        setTarget(move);
+        setBearing((phi: number) => maybeClamp(phi + moveX * speedX, minBearing, maxBearing));
+        setPitch((theta: number) => clamp(theta + moveY * speedY, minPitch ?? (-π/2 + 1e-5), maxPitch ?? (π/2 - 1e-5)));
       }
     }
   }, mouse);
 
   useOne(() => {
-    const {spinY} = wheel;
+    const {moveX, moveY, spinY, stop, stopped} = wheel;
     const speedY = radiusSpeed;
-    if (spinY) setRadius((radius: number) => radius * Math.pow(2, spinY * speedY));
+    if (!active || stopped) return;
+
+    if (keyboard.modifiers.shift) {
+      if (moveX || moveY) {
+        handleMove(moveX, moveY);
+      }
+    }
+    else if (spinY) setRadius((radius: number) => maybeClamp(radius * Math.pow(2, spinY * speedY), minRadius, maxRadius));
+
+    stop();
   }, wheel);
 
-  return useMemo(() => render(radius, bearing, pitch, target), [render, radius, bearing, pitch, target]);
+  return useYolo(() => render(radius, bearing, pitch, target), [render, radius, bearing, pitch, target]);
 };
+

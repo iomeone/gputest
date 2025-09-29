@@ -1,5 +1,5 @@
-import type { ArrowFunction } from '../live';
-import type { TypedArray, Join, Blending, Color, Placement, ColorLike, VectorLike, ArrayLike, Domain } from './types';
+import type { ArrowFunction } from '@use-gpu/live';
+import type { TypedArray, Join, Blending, Placement, ColorLike, VectorLike, ArrayLike, Domain } from './types';
 import { mat4, vec4, vec3, vec2, quat } from 'gl-matrix';
 
 const NO_VEC2 = vec2.fromValues(0, 0);
@@ -8,7 +8,7 @@ const NO_VEC4 = vec4.fromValues(0, 0, 0, 0);
 const NO_QUAT = quat.create();
 const NO_MAT4 = mat4.create();
 
-const GRAY = [0.5, 0.5, 0.5, 1] as Color;
+const GRAY = vec4.fromValues(0.5, 0.5, 0.5, 1);
 
 const NO_VECTOR: number[] = [];
 const NO_STRINGS: string[] = [];
@@ -164,7 +164,7 @@ const u4ToFloat = (s: string) => parseInt(s, 16) / 15;
 const u8ToFloat = (s: string) => parseInt(s, 16) / 255;
 const strToFloat = (s: string) => s.match('%') ? +s / 100 : +s;
 
-export const makeParseColor = (def: Color = GRAY) => (color?: ColorLike): Color => {
+export const makeParseColor = (def: vec4 = GRAY) => (color?: ColorLike): vec4 => {
   const c = color as any;
   if (c == null) return def;
 
@@ -172,7 +172,7 @@ export const makeParseColor = (def: Color = GRAY) => (color?: ColorLike): Color 
     const r = ((c >> 16) & 255) / 255;
     const g = ((c >> 8) & 255) / 255;
     const b = ((c & 255)) / 255;
-    return [r, g, b, 1] as Color;
+    return vec4.fromValues(r, g, b, 1);
   }
   if (typeof c === 'string') {
     if (c[0] === '#') {
@@ -180,34 +180,34 @@ export const makeParseColor = (def: Color = GRAY) => (color?: ColorLike): Color 
         const r = u4ToFloat(c[1]);
         const g = u4ToFloat(c[2]);
         const b = u4ToFloat(c[3]);
-        return [r, g, b, 1] as Color;
+        return vec4.fromValues(r, g, b, 1);
       }
       if (c.length === 7) {
         const r = u8ToFloat(c.slice(1, 3));
         const g = u8ToFloat(c.slice(3, 5));
         const b = u8ToFloat(c.slice(5, 7));
-        return [r, g, b, 1] as Color;
+        return vec4.fromValues(r, g, b, 1);
       }
       if (c.length === 9) {
         const r = u8ToFloat(c.slice(1, 3));
         const g = u8ToFloat(c.slice(3, 5));
         const b = u8ToFloat(c.slice(5, 7));
         const a = u8ToFloat(c.slice(7, 9));
-        return [r, g, b, a] as Color;
+        return vec4.fromValues(r, g, b, a);
       }
     }
     if (c[0] === 'r') {
       const cs = c.split('(')[1].split(')')[0].split(',').map(strToFloat);
-      if (c[3] === 'a') return [cs[0] / 255, cs[1] / 255, cs[2] / 255, cs[3]];
-      else return [cs[0] / 255, cs[1] / 255, cs[2] / 255, 1];
+      if (c[3] === 'a') return vec4.fromValues(cs[0] / 255, cs[1] / 255, cs[2] / 255, cs[3]);
+      else return vec4.fromValues(cs[0] / 255, cs[1] / 255, cs[2] / 255, 1);
     }
   }
   if (c.rgba ?? c.rgb) {
     const [r, g, b, a] = c.rgba ?? c.rgb;
-    return [r / 255, g / 255, b / 255, a ? a / 255 : 1] as Color;
+    return vec4.fromValues(r / 255, g / 255, b / 255, a ? a / 255 : 1);
   }
   if (c.length) {
-    return [c[0] ?? def[0], c[1] ?? def[1], c[2] ?? def[2], c[3] ?? def[3] ] as Color;
+    return vec4.fromValues(c[0] ?? def[0], c[1] ?? def[1], c[2] ?? def[2], c[3] ?? def[3]);
   }
   return def;
 };
@@ -227,7 +227,9 @@ export const parseStringArray     = makeParseArray(NO_STRINGS, parseString);
 export const parseVector     = makeParseArray(NO_VECTOR, parseNumber);
 
 export const parseColor      = makeParseColor();
-export const parsePosition4  = makeParseVec4();
+export const parseVec4       = makeParseVec4();
+export const parseVec3       = makeParseVec3();
+export const parseVec2       = makeParseVec2();
 
 export const parsePosition   = makeParseVec3();
 export const parseRotation   = makeParseVec3();
@@ -236,7 +238,7 @@ export const parseScale      = makeParseVec3(vec3.fromValues(1, 1, 1));
 export const parseMatrix     = makeParseMat4();
 
 export const parseJoin       = makeParseEnum<Join>(['bevel', 'miter', 'round']);
-export const parseBlending   = makeParseEnum<Blending>(['none', 'normal', 'add', 'subtract', 'multiply', 'custom']);
+export const parseBlending   = makeParseEnum<Blending>(['none', 'premultiply', 'alpha', 'add', 'subtract', 'multiply']);
 
 export const parsePlacement  = makeParseMap({
   'center':      vec2.fromValues( 0,  0),

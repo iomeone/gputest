@@ -1,28 +1,32 @@
-import type { LiveComponent } from '../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData,
-} from '../../core';
-import type { ShaderSource } from '../../shader';
+  VertexData, DataBounds,
+} from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import { ViewContext } from '../providers/view-provider';
 import { Virtual } from './virtual';
 
-import { patch } from '../../state';
-import { use, yeet, memo, useCallback, useOne } from '../../live';
-import { bindBundle, bindingsToLinks, bundleToAttributes } from '../../shader/wgsl';
-import { RenderPassMode, resolve, makeShaderBindings } from '../../core';
+import { use, yeet, memo, useCallback, useMemo, useOne, useNoCallback } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
+import { resolve, makeShaderBindings } from '@use-gpu/core';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
+import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
+import { useDataLength } from '../hooks/useDataBinding';
+import { usePickingShader } from '../providers/picking-provider';
+import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
+import { useMaterialContext } from '../providers/material-provider';
 
-import { getLineVertex } from '../../gen-wgsl/instance/vertex/line';
-import { getPassThruFragment } from '../../gen-wgsl/mask/passthru';
+import { getLineVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
 
 export type RawLinesProps = {
   position?: number[] | TypedArray,
   segment?: number,
+  uv?: number[] | TypedArray,
+  st?: number[] | TypedArray,
   color?: number[] | TypedArray,
   width?: number,
   depth?: number,
@@ -32,6 +36,8 @@ export type RawLinesProps = {
 
   positions?: ShaderSource,
   segments?: ShaderSource,
+  uvs?: ShaderSource,
+  sts?: ShaderSource,
   colors?: ShaderSource,
   widths?: ShaderSource,
   depths?: ShaderSource,
@@ -40,18 +46,17 @@ export type RawLinesProps = {
   sizes?: ShaderSource,
 
   lookups?: ShaderSource,
+  ids?:     ShaderSource,
+  lookup?:  number,
+  id?:      number,
 
   join?: 'miter' | 'round' | 'bevel',
 
   count?: Lazy<number>,
-  pipeline?: DeepPartial<GPURenderPipelineDescriptor>,
-  mode?: RenderPassMode | string,
-  id?: number,
-};
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 const ZERO = [0, 0, 0, 1];
-
-const VERTEX_BINDINGS = bundleToAttributes(getLineVertex);
+const POSITION: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 
 const LINE_JOIN_SIZE = {
   'bevel': 1,
@@ -65,41 +70,32 @@ const LINE_JOIN_STYLE = {
   'round': 2,
 } as Record<string, number>;
 
-const PIPELINE = {
-  primitive: {
-    topology: 'triangle-strip',
-    stripIndexFormat: 'uint16',
-  },
-} as DeepPartial<GPURenderPipelineDescriptor>;
-
 export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps) => {
   const {
-    pipeline: propPipeline,
-    count = 2,
     mode = 'opaque',
-    id = 0,
+    alphaToCoverage,
+    depthTest,
+    depthWrite,
+    blend,
+    count = null,
+    depth = 0,
+    join,
   } = props;
 
   // Customize line shader
-  let {join, depth = 0} = props;
   const j = (join! in LINE_JOIN_SIZE) ? join! : 'bevel';
 
   const style = LINE_JOIN_STYLE[j];
   const segments = LINE_JOIN_SIZE[j];
   const tris = (1+segments) * 2;
 
-  const defines = useOne(() => ({
-    LINE_JOIN_STYLE: style,
-    LINE_JOIN_SIZE: segments,
-  }), j);
-
   // Set up draw
   const vertexCount = 2 + tris;
-  const instanceCount = useCallback(() => (((props.positions as any)?.length ?? resolve(count)) || 2) - 1, [props.positions, count]);
-
-  const pipeline = useOne(() => patch(PIPELINE, propPipeline), propPipeline);
+  const instanceCount = useDataLength(count, props.positions, -1);
 
   const p = useShaderRef(props.position, props.positions);
+  const u = useShaderRef(props.uv, props.uvs);
+  const s = useShaderRef(props.st, props.sts);
   const g = useShaderRef(props.segment, props.segments);
   const c = useShaderRef(props.color, props.colors);
   const w = useShaderRef(props.width, props.widths);
@@ -110,22 +106,57 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
   
   const l = useShaderRef(null, props.lookups);
 
-  const xf = useApplyTransform(p);
+  const ps = p && props.sts == null ? useBoundSource(POSITION, p) : useNoBoundSource();
 
-  const getVertex = useBoundShader(getLineVertex, VERTEX_BINDINGS, [xf, g, c, w, d, z, t, e, l]);
-  const getFragment = getPassThruFragment;
+  const [xf, scissor, getBounds] = useApplyTransform(ps ?? p);
+
+  let bounds: Lazy<DataBounds> | null = null;
+  if (getBounds && (props.positions as any)?.bounds) {
+    bounds = useCallback(() => getBounds((props.positions! as any).bounds), [props.positions, getBounds]);
+  }
+  else {
+    useNoCallback();
+  }
+
+  const material = useMaterialContext().solid;
+
+  const getVertex = useBoundShader(getLineVertex, [xf, scissor, u, ps ?? s, g, c, w, d, z, t, e, l, instanceCount]);
+  const getPicking = usePickingShader(props);
+
+  const links = useMemo(() => ({
+    getVertex,
+    getPicking,
+    ...material,
+  }), [getVertex, getPicking, material]);
+
+  const [pipeline, defs] = usePipelineOptions({
+    mode,
+    topology: 'triangle-strip',
+    stripIndexFormat: 'uint16',
+    side: 'both',
+    scissor,
+    alphaToCoverage,
+    depthTest,
+    depthWrite,
+    blend,
+  });
+
+  const defines = useMemo(() => ({
+    ...defs,
+    LINE_JOIN_STYLE: style,
+    LINE_JOIN_SIZE: segments,
+  }), [defs, style, segments]);
   
   return use(Virtual, {
     vertexCount,
     instanceCount,
+    bounds,
 
-    getVertex,
-    getFragment,
-
+    links,
     defines,
 
+    renderer: 'solid',
     pipeline,
     mode,
-    id,
   });
 }, 'RawLines');

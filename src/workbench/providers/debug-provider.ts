@@ -1,14 +1,18 @@
-import type { DeepPartial, StorageSource, LambdaSource, TypedArray } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { LC, PropsWithChildren } from '../../live';
+import type { DeepPartial, StorageSource, LambdaSource, TypedArray } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import { provide, memo, makeContext, useContext, useMemo } from '../../live';
-import { patch } from '../../state';
+import { provide, memo, makeContext, useContext, useMemo } from '@use-gpu/live';
+import { patch } from '@use-gpu/state';
 
 export const DEBUG_DEFAULTS = {
+  voxel: {
+    iterations: false,
+  },
   sdf2d: {
     contours: false,
     subpixel: true,
+    solidify: true,
     preprocess: false,
     postprocess: false,
   },
@@ -18,9 +22,13 @@ export const DEBUG_DEFAULTS = {
 } as DebugContextProps;
 
 export type DebugContextProps = {
+  voxel: {
+    iterations: boolean,
+  },
   sdf2d: {
     contours: boolean,
     subpixel: boolean,
+    solidify: boolean,
     preprocess: boolean,
     postprocess: boolean,
   },

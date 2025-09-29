@@ -6,25 +6,27 @@ Program                                                     ⮐ var foo: f32 = 1
     GlobalVariableDeclaration                               ⮐ var foo: f32 = 1.0
       AttributeList                                         
       VariableDeclaration                                   var foo: f32
-        var                                                 var
+        Keyword                                             var
         VariableIdentifier                                  foo: f32
           Identifier                                        foo
           TypeDeclaration                                   f32
-            f32                                             f32
+            Type                                            f32
+      Assign                                                =
       Value                                                 1.0
         FloatLiteral                                        1.0
 `;
 
 exports[`WGSL grammar snapshots parses a test program 2`] = `
-Program                                                     ⮐ let WAT = true;⮐ 
-  LocalDeclaration                                          ⮐ let WAT = true;
-    GlobalConstantDeclaration                               ⮐ let WAT = true
-      EmptyToken                                            
-      let                                                   let
+Program                                                     ⮐ const WAT = true;⮐ 
+  LocalDeclaration                                          ⮐ const WAT = true;
+    GlobalConstantDeclaration                               ⮐ const WAT = true
+      AttributeList                                         
+      Keyword                                               const
       VariableIdentifier                                    WAT
         Identifier                                          WAT
+      Assign                                                =
       Value                                                 true
-        true                                                true
+        Boolean                                             true
 `;
 
 exports[`WGSL grammar snapshots parses a test program 3`] = `
@@ -32,21 +34,21 @@ Program                                                     ⮐ struct light {�
   LocalDeclaration                                          ⮐ struct light {⮐   intensity: f32,⮐   position: vec3<f32>,⮐ }
     StructDeclaration                                       ⮐ struct light {⮐   intensity: f32,⮐   position: vec3<f32>,⮐ }
       AttributeList                                         
-      struct                                                struct
+      Keyword                                               struct
       Identifier                                            light
       StructBodyDeclaration                                 {⮐   intensity: f32,⮐   position: vec3<f32>,⮐ }
         StructMember                                        ⮐   intensity: f32
           AttributeList                                     
           Identifier                                        intensity
           TypeDeclaration                                   f32
-            f32                                             f32
+            Type                                            f32
         StructMember                                        ⮐   position: vec3<f32>
           AttributeList                                     
           Identifier                                        position
           TypeDeclaration                                   vec3<f32>
-            vec3                                            vec3
+            Type                                            vec3
             TypeDeclaration                                 f32
-              f32                                           f32
+              Type                                          f32
 `;
 
 exports[`WGSL grammar snapshots parses a test program 4`] = `
@@ -55,7 +57,7 @@ Program                                                     ⮐ fn main() {}⮐
     FunctionDeclaration                                     ⮐ fn main() {}
       AttributeList                                         
       FunctionHeader                                        fn main()
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          main
         ParamList                                           
         ReturnType                                          
@@ -70,7 +72,7 @@ Program                                                     ⮐ @link fn main() 
         Attribute                                           @link
           Identifier                                        link
       FunctionHeader                                        fn main()
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          main
         ParamList                                           
         ReturnType                                          
@@ -82,7 +84,7 @@ Program                                                     ⮐ struct A {⮐   
   LocalDeclaration                                          ⮐ struct A {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }
     StructDeclaration                                       ⮐ struct A {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }
       AttributeList                                         
-      struct                                                struct
+      Keyword                                               struct
       Identifier                                            A
       StructBodyDeclaration                                 {⮐   @location(0) x: f32,⮐   @location(1) y: f32,⮐ }
         StructMember                                        @location(0) x: f32
@@ -92,7 +94,7 @@ Program                                                     ⮐ struct A {⮐   
               IntLiteral                                    0
           Identifier                                        x
           TypeDeclaration                                   f32
-            f32                                             f32
+            Type                                            f32
         StructMember                                        @location(1) y: f32
           AttributeList                                     @location(1)
             Attribute                                       @location(1)
@@ -100,14 +102,14 @@ Program                                                     ⮐ struct A {⮐   
               IntLiteral                                    1
           Identifier                                        y
           TypeDeclaration                                   f32
-            f32                                             f32
+            Type                                            f32
   LocalDeclaration                                          @fragment⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }
     FunctionDeclaration                                     @fragment⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }
       AttributeList                                         @fragment
         Attribute                                           @fragment
           Identifier                                        fragment
       FunctionHeader                                        fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32>
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          fragShader
         ParamList                                           in1: A, @location(2) in2: f32
           Param                                             in1: A
@@ -122,55 +124,57 @@ Program                                                     ⮐ struct A {⮐   
                 IntLiteral                                  2
             Identifier                                      in2
             TypeDeclaration                                 f32
-              f32                                           f32
+              Type                                          f32
         ReturnType                                          -> @location(0) vec4<f32>
           AttributeList                                     @location(0)
             Attribute                                       @location(0)
               Identifier                                    location
               IntLiteral                                    0
           TypeDeclaration                                   vec4<f32>
-            vec4                                            vec4
+            Type                                            vec4
             TypeDeclaration                                 f32
-              f32                                           f32
+              Type                                          f32
       CompoundStatement                                     {⮐ }
 `;
 
 exports[`WGSL grammar snapshots parses a test program 7`] = `
-Program                                                     ⮐ let foo: f32 = 1.0;⮐ let WAT = true;⮐ struct s { x: i32 };⮐ fn main() -> @builtin vec4<f32> {⮐   var bar: i32 = wat(5, 6);⮐   let x: i32 = 4 + 5 + -6 + (-7);⮐   return vec4<f32>(0.1, 0.2, 0.3, 1.0);⮐ }⮐ 
-  LocalDeclaration                                          ⮐ let foo: f32 = 1.0;
-    GlobalConstantDeclaration                               ⮐ let foo: f32 = 1.0
-      EmptyToken                                            
-      let                                                   let
+Program                                                     ⮐ const foo: f32 = 1.0;⮐ const WAT = true;⮐ struct s { x: i32 };⮐ fn main() -> @builtin vec4<f32> {⮐   var bar: i32 = wat(5, 6);⮐   let x: i32 = 4 + 5 + -6 + (-7);⮐   return vec4<f32>(0.1, 0.2, 0.3, 1.0);⮐ }⮐ 
+  LocalDeclaration                                          ⮐ const foo: f32 = 1.0;
+    GlobalConstantDeclaration                               ⮐ const foo: f32 = 1.0
+      AttributeList                                         
+      Keyword                                               const
       VariableIdentifier                                    foo: f32
         Identifier                                          foo
         TypeDeclaration                                     f32
-          f32                                               f32
+          Type                                              f32
+      Assign                                                =
       Value                                                 1.0
         FloatLiteral                                        1.0
-  LocalDeclaration                                          ⮐ let WAT = true;
-    GlobalConstantDeclaration                               ⮐ let WAT = true
-      EmptyToken                                            
-      let                                                   let
+  LocalDeclaration                                          ⮐ const WAT = true;
+    GlobalConstantDeclaration                               ⮐ const WAT = true
+      AttributeList                                         
+      Keyword                                               const
       VariableIdentifier                                    WAT
         Identifier                                          WAT
+      Assign                                                =
       Value                                                 true
-        true                                                true
+        Boolean                                             true
   LocalDeclaration                                          ⮐ struct s { x: i32 }
     StructDeclaration                                       ⮐ struct s { x: i32 }
       AttributeList                                         
-      struct                                                struct
+      Keyword                                               struct
       Identifier                                            s
       StructBodyDeclaration                                 { x: i32 }
         StructMember                                         x: i32
           AttributeList                                     
           Identifier                                        x
           TypeDeclaration                                   i32
-            i32                                             i32
+            Type                                            i32
   LocalDeclaration                                          ⮐ fn main() -> @builtin vec4<f32> {⮐   var bar: i32 = wat(5, 6);⮐   let x: i32 = 4 + 5 + -6 + (-7);⮐   return vec4<f32>(0.1, 0.2, 0.3, 1.0);⮐ }
     FunctionDeclaration                                     ⮐ fn main() -> @builtin vec4<f32> {⮐   var bar: i32 = wat(5, 6);⮐   let x: i32 = 4 + 5 + -6 + (-7);⮐   return vec4<f32>(0.1, 0.2, 0.3, 1.0);⮐ }
       AttributeList                                         
       FunctionHeader                                        fn main() -> @builtin vec4<f32>
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          main
         ParamList                                           
         ReturnType                                          -> @builtin vec4<f32>
@@ -178,42 +182,46 @@ Program                                                     ⮐ let foo: f32 = 1
             Attribute                                       @builtin
               Identifier                                    builtin
           TypeDeclaration                                   vec4<f32>
-            vec4                                            vec4
+            Type                                            vec4
             TypeDeclaration                                 f32
-              f32                                           f32
+              Type                                          f32
       CompoundStatement                                     {⮐   var bar: i32 = wat(5, 6);⮐   let x: i32 = 4 + 5 + -6 + (-7);⮐   return vec4<f32>(0.1, 0.2, 0.3, 1.0);⮐ }
         Statement                                           var bar: i32 = wat(5, 6);
           VariableDeclaration                               var bar: i32
-            var                                             var
+            Keyword                                         var
             VariableIdentifier                              bar: i32
               Identifier                                    bar
               TypeDeclaration                               i32
-                i32                                         i32
+                Type                                        i32
+          Assign                                            =
           Value                                             wat(5, 6)
-            TypeDeclaration                                 wat
+            FunctionCall                                    wat
               Identifier                                    wat
             IntLiteral                                      5
             IntLiteral                                      6
         Statement                                           let x: i32 = 4 + 5 + -6 + (-7);
-          let                                               let
+          Keyword                                           let
           VariableIdentifier                                x: i32
             Identifier                                      x
             TypeDeclaration                                 i32
-              i32                                           i32
+              Type                                          i32
+          Assign                                            =
           Value                                             4 + 5 + -6 + (-7)
             IntLiteral                                      4
             Add                                             +
             IntLiteral                                      5
             Add                                             +
-            IntLiteral                                      -6
+            Sub                                             -
+            IntLiteral                                      6
             Add                                             +
-            IntLiteral                                      -7
+            Sub                                             -
+            IntLiteral                                      7
         Statement                                           return vec4<f32>(0.1, 0.2, 0.3, 1.0);
-          return                                            return
+          Keyword                                           return
           TypeDeclaration                                   vec4<f32>
-            vec4                                            vec4
+            Type                                            vec4
             TypeDeclaration                                 f32
-              f32                                           f32
+              Type                                          f32
           FloatLiteral                                      0.1
           FloatLiteral                                      0.2
           FloatLiteral                                      0.3
@@ -226,46 +234,48 @@ Program                                                     ⮐ fn main() {⮐  
     FunctionDeclaration                                     ⮐ fn main() {⮐   let x: i32 = 1;⮐   let y: i32 = 2;⮐   if (x) { if (y) { } } else { }⮐   if (x) { if (y) { } else { } }⮐ }
       AttributeList                                         
       FunctionHeader                                        fn main()
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          main
         ParamList                                           
         ReturnType                                          
       CompoundStatement                                     {⮐   let x: i32 = 1;⮐   let y: i32 = 2;⮐   if (x) { if (y) { } } else { }⮐   if (x) { if (y) { } else { } }⮐ }
         Statement                                           let x: i32 = 1;
-          let                                               let
+          Keyword                                           let
           VariableIdentifier                                x: i32
             Identifier                                      x
             TypeDeclaration                                 i32
-              i32                                           i32
+              Type                                          i32
+          Assign                                            =
           Value                                             1
             IntLiteral                                      1
         Statement                                           let y: i32 = 2;
-          let                                               let
+          Keyword                                           let
           VariableIdentifier                                y: i32
             Identifier                                      y
             TypeDeclaration                                 i32
-              i32                                           i32
+              Type                                          i32
+          Assign                                            =
           Value                                             2
             IntLiteral                                      2
         Statement                                           if (x) { if (y) { } } else { }
-          if                                                if
+          Keyword                                           if
           Identifier                                        x
           CompoundStatement                                 { if (y) { } }
             Statement                                       if (y) { }
-              if                                            if
+              Keyword                                       if
               Identifier                                    y
               CompoundStatement                             { }
-          else                                              else
+          Keyword                                           else
           CompoundStatement                                 { }
         Statement                                           if (x) { if (y) { } else { } }
-          if                                                if
+          Keyword                                           if
           Identifier                                        x
           CompoundStatement                                 { if (y) { } else { } }
             Statement                                       if (y) { } else { }
-              if                                            if
+              Keyword                                       if
               Identifier                                    y
               CompoundStatement                             { }
-              else                                          else
+              Keyword                                       else
               CompoundStatement                             { }
 `;
 
@@ -275,17 +285,18 @@ Program                                                     ⮐ fn main() {⮐  
     FunctionDeclaration                                     ⮐ fn main() {⮐   let x: i32 = 1;⮐   /*⮐     /*⮐     let y: i32 = 2;⮐     */⮐   if (x) { if (y) { } else { } }⮐   */⮐   wat();⮐ }
       AttributeList                                         
       FunctionHeader                                        fn main()
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          main
         ParamList                                           
         ReturnType                                          
       CompoundStatement                                     {⮐   let x: i32 = 1;⮐   /*⮐     /*⮐     let y: i32 = 2;⮐     */⮐   if (x) { if (y) { } else { } }⮐   */⮐   wat();⮐ }
         Statement                                           let x: i32 = 1;
-          let                                               let
+          Keyword                                           let
           VariableIdentifier                                x: i32
             Identifier                                      x
             TypeDeclaration                                 i32
-              i32                                           i32
+              Type                                          i32
+          Assign                                            =
           Value                                             1
             IntLiteral                                      1
         Statement                                           wat();
@@ -295,13 +306,13 @@ Program                                                     ⮐ fn main() {⮐  
 exports[`WGSL grammar snapshots parses a test program 10`] = `
 Program                                                     ⮐ import {MeshVertex} from 'use/types';⮐ import {viewUniforms as view, worldToClip} from 'use/view';⮐ import {getQuadUV} from 'geometry/quad';⮐ ⮐ import 'test';⮐ ⮐ @optional @link fn getInt() -> i32 {}⮐ ⮐ @export fn main() {}⮐ 
   ImportDeclaration                                         import {MeshVertex} from 'use/types'
-    import                                                  import
+    Keyword                                                 import
     ImportDeclarationList                                   {MeshVertex}
       ImportDeclarationIdentifier                           MeshVertex
         Identifier                                          MeshVertex
     String                                                  'use/types'
   ImportDeclaration                                         import {viewUniforms as view, worldToClip} from 'use/view'
-    import                                                  import
+    Keyword                                                 import
     ImportDeclarationList                                   {viewUniforms as view, worldToClip}
       ImportDeclarationIdentifier                           viewUniforms as view
         Identifier                                          viewUniforms
@@ -310,13 +321,13 @@ Program                                                     ⮐ import {MeshVert
         Identifier                                          worldToClip
     String                                                  'use/view'
   ImportDeclaration                                         import {getQuadUV} from 'geometry/quad'
-    import                                                  import
+    Keyword                                                 import
     ImportDeclarationList                                   {getQuadUV}
       ImportDeclarationIdentifier                           getQuadUV
         Identifier                                          getQuadUV
     String                                                  'geometry/quad'
   ImportDeclaration                                         import 'test'
-    import                                                  import
+    Keyword                                                 import
     String                                                  'test'
   LocalDeclaration                                          @optional @link fn getInt() -> i32 {}
     FunctionDeclaration                                     @optional @link fn getInt() -> i32 {}
@@ -326,13 +337,13 @@ Program                                                     ⮐ import {MeshVert
         Attribute                                           @link
           Identifier                                        link
       FunctionHeader                                        fn getInt() -> i32
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          getInt
         ParamList                                           
         ReturnType                                          -> i32
           AttributeList                                     
           TypeDeclaration                                   i32
-            i32                                             i32
+            Type                                            i32
       CompoundStatement                                     {}
   LocalDeclaration                                          @export fn main() {}
     FunctionDeclaration                                     @export fn main() {}
@@ -340,7 +351,7 @@ Program                                                     ⮐ import {MeshVert
         Attribute                                           @export
           Identifier                                        export
       FunctionHeader                                        fn main()
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          main
         ParamList                                           
         ReturnType                                          
@@ -350,13 +361,13 @@ Program                                                     ⮐ import {MeshVert
 exports[`WGSL grammar snapshots parses a test program 11`] = `
 Program                                                     ⮐ use 'use/types'::{MeshVertex};⮐ use 'use/view'::{viewUniforms as view, worldToClip};⮐ use 'geometry/quad'::{getQuadUV};⮐ ⮐ use 'test';⮐ ⮐ @optional @link fn getInt() -> i32 {}⮐ ⮐ @export fn main() {}⮐ 
   ImportDeclaration                                         use 'use/types'::{MeshVertex}
-    use                                                     use
+    Keyword                                                 use
     String                                                  'use/types'
     ImportDeclarationList                                   {MeshVertex}
       ImportDeclarationIdentifier                           MeshVertex
         Identifier                                          MeshVertex
   ImportDeclaration                                         use 'use/view'::{viewUniforms as view, worldToClip}
-    use                                                     use
+    Keyword                                                 use
     String                                                  'use/view'
     ImportDeclarationList                                   {viewUniforms as view, worldToClip}
       ImportDeclarationIdentifier                           viewUniforms as view
@@ -365,13 +376,13 @@ Program                                                     ⮐ use 'use/types':
       ImportDeclarationIdentifier                           worldToClip
         Identifier                                          worldToClip
   ImportDeclaration                                         use 'geometry/quad'::{getQuadUV}
-    use                                                     use
+    Keyword                                                 use
     String                                                  'geometry/quad'
     ImportDeclarationList                                   {getQuadUV}
       ImportDeclarationIdentifier                           getQuadUV
         Identifier                                          getQuadUV
   ImportDeclaration                                         use 'test'
-    use                                                     use
+    Keyword                                                 use
     String                                                  'test'
   LocalDeclaration                                          @optional @link fn getInt() -> i32 {}
     FunctionDeclaration                                     @optional @link fn getInt() -> i32 {}
@@ -381,13 +392,13 @@ Program                                                     ⮐ use 'use/types':
         Attribute                                           @link
           Identifier                                        link
       FunctionHeader                                        fn getInt() -> i32
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          getInt
         ParamList                                           
         ReturnType                                          -> i32
           AttributeList                                     
           TypeDeclaration                                   i32
-            i32                                             i32
+            Type                                            i32
       CompoundStatement                                     {}
   LocalDeclaration                                          @export fn main() {}
     FunctionDeclaration                                     @export fn main() {}
@@ -395,7 +406,7 @@ Program                                                     ⮐ use 'use/types':
         Attribute                                           @export
           Identifier                                        export
       FunctionHeader                                        fn main()
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          main
         ParamList                                           
         ReturnType                                          
@@ -408,44 +419,46 @@ Program                                                     ⮐ fn getQuad(verte
     FunctionDeclaration                                     ⮐ fn getQuad(vertex: i32) -> MeshVertex {⮐   let uv: vec2<f32> = getQuadUV(vertex);⮐   let position: vec4<f32> = vec4<f32>(uv * 2.0 - 1.0, 0.0, 1.0);⮐   let color: vec4<f32> = vec4<f32>(1.0, 0.0, 1.0, 1.0);⮐   return MeshVertex(position, color, uv);⮐ }
       AttributeList                                         
       FunctionHeader                                        fn getQuad(vertex: i32) -> MeshVertex
-        fn                                                  fn
+        Keyword                                             fn
         Identifier                                          getQuad
         ParamList                                           vertex: i32
           Param                                             vertex: i32
             AttributeList                                   
             Identifier                                      vertex
             TypeDeclaration                                 i32
-              i32                                           i32
+              Type                                          i32
         ReturnType                                          -> MeshVertex
           AttributeList                                     
           TypeDeclaration                                   MeshVertex
             Identifier                                      MeshVertex
       CompoundStatement                                     {⮐   let uv: vec2<f32> = getQuadUV(vertex);⮐   let position: vec4<f32> = vec4<f32>(uv * 2.0 - 1.0, 0.0, 1.0);⮐   let color: vec4<f32> = vec4<f32>(1.0, 0.0, 1.0, 1.0);⮐   return MeshVertex(position, color, uv);⮐ }
         Statement                                           let uv: vec2<f32> = getQuadUV(vertex);
-          let                                               let
+          Keyword                                           let
           VariableIdentifier                                uv: vec2<f32>
             Identifier                                      uv
             TypeDeclaration                                 vec2<f32>
-              vec2                                          vec2
+              Type                                          vec2
               TypeDeclaration                               f32
-                f32                                         f32
+                Type                                        f32
+          Assign                                            =
           Value                                             getQuadUV(vertex)
-            TypeDeclaration                                 getQuadUV
+            FunctionCall                                    getQuadUV
               Identifier                                    getQuadUV
             Identifier                                      vertex
         Statement                                           let position: vec4<f32> = vec4<f32>(uv * 2.0 - 1.0, 0.0, 1.0);
-          let                                               let
+          Keyword                                           let
           VariableIdentifier                                position: vec4<f32>
             Identifier                                      position
             TypeDeclaration                                 vec4<f32>
-              vec4                                          vec4
+              Type                                          vec4
               TypeDeclaration                               f32
-                f32                                         f32
+                Type                                        f32
+          Assign                                            =
           Value                                             vec4<f32>(uv * 2.0 - 1.0, 0.0, 1.0)
             TypeDeclaration                                 vec4<f32>
-              vec4                                          vec4
+              Type                                          vec4
               TypeDeclaration                               f32
-                f32                                         f32
+                Type                                        f32
             Identifier                                      uv
             Mul                                             *
             FloatLiteral                                    2.0
@@ -454,25 +467,26 @@ Program                                                     ⮐ fn getQuad(verte
             FloatLiteral                                    0.0
             FloatLiteral                                    1.0
         Statement                                           let color: vec4<f32> = vec4<f32>(1.0, 0.0, 1.0, 1.0);
-          let                                               let
+          Keyword                                           let
           VariableIdentifier                                color: vec4<f32>
             Identifier                                      color
             TypeDeclaration                                 vec4<f32>
-              vec4                                          vec4
+              Type                                          vec4
               TypeDeclaration                               f32
-                f32                                         f32
+                Type                                        f32
+          Assign                                            =
           Value                                             vec4<f32>(1.0, 0.0, 1.0, 1.0)
             TypeDeclaration                                 vec4<f32>
-              vec4                                          vec4
+              Type                                          vec4
               TypeDeclaration                               f32
-                f32                                         f32
+                Type                                        f32
             FloatLiteral                                    1.0
             FloatLiteral                                    0.0
             FloatLiteral                                    1.0
             FloatLiteral                                    1.0
         Statement                                           return MeshVertex(position, color, uv);
-          return                                            return
-          TypeDeclaration                                   MeshVertex
+          Keyword                                           return
+          FunctionCall                                      MeshVertex
             Identifier                                      MeshVertex
           Identifier                                        position
           Identifier                                        color
@@ -484,10 +498,11 @@ Program                                                     ⮐ type integer = i
   LocalDeclaration                                          ⮐ type integer = i32;
     TypeAliasDeclaration                                    ⮐ type integer = i32
       AttributeList                                         
-      type                                                  type
+      Keyword                                               type
       Identifier                                            integer
+      Assign                                                =
       TypeDeclaration                                       i32
-        i32                                                 i32
+        Type                                                i32
 `;
 
 exports[`WGSL grammar snapshots parses a test program 14`] = `
@@ -496,14 +511,39 @@ Program                                                     ⮐ var foo;⮐ // v
     GlobalVariableDeclaration                               ⮐ var foo
       AttributeList                                         
       VariableDeclaration                                   var foo
-        var                                                 var
+        Keyword                                             var
         VariableIdentifier                                  foo
           Identifier                                        foo
   LocalDeclaration                                          ⮐ // var foo;⮐ var foo;
     GlobalVariableDeclaration                               ⮐ // var foo;⮐ var foo
       AttributeList                                         
       VariableDeclaration                                   var foo
-        var                                                 var
+        Keyword                                             var
         VariableIdentifier                                  foo
           Identifier                                        foo
+`;
+
+exports[`WGSL grammar snapshots parses a test program 15`] = `
+Program                                                     ⮐ struct __underscore {⮐   foo: f32,⮐   _bar: f32,⮐   __baz: f32,⮐ };⮐ 
+  LocalDeclaration                                          ⮐ struct __underscore {⮐   foo: f32,⮐   _bar: f32,⮐   __baz: f32,⮐ }
+    StructDeclaration                                       ⮐ struct __underscore {⮐   foo: f32,⮐   _bar: f32,⮐   __baz: f32,⮐ }
+      AttributeList                                         
+      Keyword                                               struct
+      Identifier                                            __underscore
+      StructBodyDeclaration                                 {⮐   foo: f32,⮐   _bar: f32,⮐   __baz: f32,⮐ }
+        StructMember                                        ⮐   foo: f32
+          AttributeList                                     
+          Identifier                                        foo
+          TypeDeclaration                                   f32
+            Type                                            f32
+        StructMember                                        ⮐   _bar: f32
+          AttributeList                                     
+          Identifier                                        _bar
+          TypeDeclaration                                   f32
+            Type                                            f32
+        StructMember                                        ⮐   __baz: f32
+          AttributeList                                     
+          Identifier                                        __baz
+          TypeDeclaration                                   f32
+            Type                                            f32
 `;

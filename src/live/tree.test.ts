@@ -1,8 +1,15 @@
 import type { LiveFiber, Task } from './types';
-import { use, keyed, detach, provide, PROVIDE, makeContext } from './builtin';
+import {
+  use, keyed, detach, provide, capture, gather, yeet, reconcile, quote, unquote,
+  PROVIDE,
+  makeContext, makeCapture,
+} from './builtin';
 import { renderFiber } from './fiber';
-import { memoArgs, useState, useContext } from './hooks';
+import { memoArgs, useState, useContext, useCapture } from './hooks';
 import { renderSync } from './tree';
+import { formatTree } from './debug';
+
+const seq = (n: number, s: number = 0, d: number = 1): number[] => Array.from({ length: n }).map((_, i: number) => s + d * i);
 
 it("mounts", () => {
 
@@ -44,11 +51,11 @@ it("mounts multiple", () => {
 
 it("detaches a subfiber", () => {
 
-  let captureSubFiber: LiveFiber<any> | null = null;
+  let keepSubFiber: LiveFiber<any> | null = null;
 
   const Root = () =>
     detach(use(Sub), (render: () => void, mount: LiveFiber<any>) => {
-      captureSubFiber = mount;
+      keepSubFiber = mount;
       render();
     });
 
@@ -61,14 +68,80 @@ it("detaches a subfiber", () => {
   expect(result.mount).toBeTruthy();
   expect(result.mount!.next).toBeTruthy();
 
-  expect(captureSubFiber).toBeTruthy();
-  if (captureSubFiber != null) {
-    const {mount} = captureSubFiber;
+  expect(keepSubFiber).toBeTruthy();
+  if (keepSubFiber != null) {
+    const {mount} = keepSubFiber;
     // @ts-ignore
-    expect(captureSubFiber.f).toBe(Sub);
+    expect(keepSubFiber.f).toBe(Sub);
     // @ts-ignore
     expect(mount && mount.f).toBe(Node);
   }
+
+});
+
+it("renders implicit keys with nulls", () => {
+
+  const rendered = {
+    root: 0,
+    node: 0,
+  };
+  let trigger = null as Task | null;
+  const setTrigger = (f: Task) => trigger = f;
+
+  const Root = () => {
+    const [value, setValue] = useState(0);
+    setTrigger(() => setValue(1));
+
+    rendered.root++;
+    return [
+      use(Node),
+      null,
+      value ? null : use(Node),
+      value ? use(Node) : null,
+      use(Node),
+    ];
+  };
+
+  const Node = (x?: number) => {
+    rendered.node++;
+  };
+
+  const result = renderSync(use(Root));
+  expect(result.host).toBeTruthy();
+  if (!result.host) return;
+
+  const {host: {flush, __stats: stats}} = result;
+
+  expect(result.f).toBe(Root);
+  expect(result.mounts).toBeTruthy();
+  if (result.mounts) {
+    expect(result.order).toEqual([0, 2, 4]);
+  }
+
+  expect(rendered.root).toBe(1);
+  expect(rendered.node).toBe(3);
+
+  expect(stats.mounts).toBe(4);
+  expect(stats.unmounts).toBe(0);
+  expect(stats.updates).toBe(0);
+  expect(stats.dispatch).toBe(1);
+
+  if (trigger) trigger();
+  if (flush) flush();
+
+  expect(result.f).toBe(Root);
+  expect(result.mounts).toBeTruthy();
+  if (result.mounts) {
+    expect(result.order).toEqual([0, 3, 4]);
+  }
+
+  expect(rendered.root).toBe(2);
+  expect(rendered.node).toBe(6);
+
+  expect(stats.mounts).toBe(5);
+  expect(stats.unmounts).toBe(1);
+  expect(stats.updates).toBe(2);
+  expect(stats.dispatch).toBe(2);
 
 });
 
@@ -603,5 +676,220 @@ it("does not update context if value is the same", () => {
   expect(rendered.memo).toBe(1);
   expect(rendered.node).toBe(1);
   expect(rendered.value).toBe(0);
+
+});
+
+it("gathers yeeted values", () => {
+  
+  const Root = () => {
+    return gather([
+      yeet(1),
+      use(Value),
+      yeet(3),
+    ], (values: number[]) => use(Node, values));
+  };
+
+  const Value = () => {
+    return yeet(2);
+  };
+
+  const Node = () => {};
+  
+  const result = renderSync(use(Root));
+  if (!result.host) return;
+
+  const {host: {flush}} = result;
+  if (flush) flush();
+  
+  expect(formatTree(result)).toMatchSnapshot();
+});
+
+it("captures values", () => {
+  
+  const context = makeCapture<number>();
+
+  const Root = () => {
+    return capture(context, [
+      use(Value(1)),
+      use(Value(2)),
+      use(Value(3)),
+    ], (list: number[]) => use(Node, list));
+  };
+
+  const Value = (value: number) => () => useCapture(context, value);
+  const Node = () => {};
+
+  const result = renderSync(use(Root));
+  if (!result.host) return;
+
+  const {host: {flush}} = result;
+  if (flush) flush();
+
+  expect(formatTree(result)).toMatchSnapshot();
+});
+
+it("yeets from capture", () => {
+
+  const context = makeCapture<number>();
+
+  const Root = () => {
+    return gather(capture(context, [
+      yeet(1),
+      yeet(2),
+      use(Value(3)),
+      use(Value(4)),
+    ], (list: number[]) => yeet(list)), (values: number[]) => use(Node, values));
+  };
+
+  const Value = (value: number) => () => useCapture(context, value);
+  const Node = () => {};
+
+  const result = renderSync(use(Root));
+  if (!result.host) return;
+
+  const {host: {flush}} = result;
+  if (flush) flush();
+
+  expect(formatTree(result)).toMatchSnapshot();
+});
+
+it("renders quoted tree", () => {
+  
+  const Root = () => {
+    return reconcile([
+      use(Node),
+      quote(use(Tree)),
+      use(Node),
+    ]);
+  };
+
+  const Tree = () => use(Node, use(Node, use(Node)));
+
+  const Node = (children) => {
+    return children;
+  };
+  
+  const result = renderSync(use(Root));
+  if (!result.host) return;
+
+  const {host: {flush}} = result;
+  if (flush) flush();
+  
+  expect(formatTree(result)).toMatchSnapshot();
+});
+
+it("renders quoted/unquoted trees", () => {
+  
+  const Root = () => {
+    return [
+      reconcile(quote(
+        use(Second,
+          use(Second,
+            unquote(use(First, quote(use(Second, unquote(use(First, use(First, quote(use(Second)))))))))
+          )
+        )
+      )),
+    ];
+  };
+
+  const First = (children) => children;
+  const Second = (children) => children;
+  
+  const result = renderSync(use(Root));
+  if (!result.host) return;
+
+  const {host: {flush}} = result;
+  if (flush) flush();
+  
+  expect(formatTree(result)).toMatchSnapshot();
+});
+
+it("renders quote/unquote pairs", () => {
+  
+  const Root = () => {
+    return reconcile(use(First,
+      quote(
+        use(Second,
+          use(Second,
+            unquote(quote(use(Second, unquote(
+              use(First, quote(unquote(use(First, use(First, quote(
+                use(Second)
+              ))))))
+            ))))
+          )
+        )
+      )),
+    );
+  };
+
+  const First = (children) => children;
+  const Second = (children) => children;
+  
+  const result = renderSync(use(Root));
+  if (!result.host) return;
+
+  const {host: {flush}} = result;
+  if (flush) flush();
+  
+  expect(formatTree(result)).toMatchSnapshot();
+});
+
+it("render reordering", () => {
+  // insert 3 distant fibers in the queue via a context invalidation
+  // then change their order mid-render
+  //
+  // priority queue should be reordered
+  // use stack slice depth 0 to ensure fenced operation
+
+  const context = makeContext<number>(-1);
+
+  const rendered = {
+    root: 0,
+    order: 0,
+    node: 0,
+    ids: [],
+  };
+  let trigger = null as Task | null;
+  const setTrigger = (f: Task) => trigger = f;
+
+  const Root = () => {
+    rendered.root++;
+
+    const [value, setValue] = useState(0);
+    setTrigger(() => setValue(1));
+
+    return provide(context, value, use(Order));
+  };
+
+  const N = 3;
+  const Order = memoArgs(() => {
+    rendered.order++;
+
+    const value = useContext(context);
+    const getKey = (i: number) => (i + value) % N;
+    const order = seq(N).map(getKey);
+
+    return order.map(key => keyed(Node, key, {id: key}));
+  });
+
+  const Node = ({id}) => {
+    rendered.node++;
+    const value = useContext(context);
+    rendered.ids.push(id);
+  };
+
+  const result = renderSync(use(Root), null, {stackSliceDepth: 0, strictQueueOrder: true});
+  expect(result.host).toBeTruthy();
+  if (!result.host) return;
+
+  const {host: {flush}} = result;
+  expect(formatTree(result)).toMatchSnapshot();
+  expect(rendered.ids).toEqual([0, 1, 2]);
+  
+  if (trigger) trigger();
+  if (flush) flush();
+
+  expect(formatTree(result)).toMatchSnapshot();
+  expect(rendered.ids).toEqual([0, 1, 2, 1, 2, 0]);
 
 });

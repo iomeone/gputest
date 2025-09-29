@@ -1,31 +1,35 @@
-import type { LiveComponent, LiveFunction, LiveElement } from '../live';
-import type { AggregateBuffer, Atlas, Rectangle, TextureSource, UniformType, TypedArray, StorageSource } from '../core';
+import type { LC, LiveFunction, LiveElement } from '@use-gpu/live';
+import type { AggregateBuffer, Atlas, Rectangle, TextureSource, UniformType, TypedArray, StorageSource } from '@use-gpu/core';
 import type { UIAggregate } from './types';
 
 import {
   DeviceContext, DebugContext,
-  SDFFontProvider, ScrollProvider, SDF_FONT_ATLAS, 
+  SDFFontProvider, 
   useBufferedSize,
   UIRectangles,
-} from '../workbench';
-import { use, keyed, wrap, fragment, yeet, useCallback, useContext, useOne, useMemo } from '../live';
-import { hashBits53, getObjectKey } from '../state';
-import { getBundleKey } from '../shader';
+} from '@use-gpu/workbench';
+import { use, keyed, wrap, fragment, signal, yeet, gather, useCallback, useContext, useOne, useMemo } from '@use-gpu/live';
+import { hashBits53, getObjectKey } from '@use-gpu/state';
+import { getBundleKey } from '@use-gpu/shader';
 import {
   makeAggregateBuffer,
   updateAggregateBuffer,
-  updateAggregateSegments,
-} from '../core';
+} from '@use-gpu/core';
 import { overlapBounds, joinBounds } from './lib/util';
 
 export type UIProps = {
-  children: LiveElement<any>,
+  children: LiveElement,
+};
+
+export type UILayersProps = {
+  items: (UIAggregate | null)[],        
 };
 
 const allCount = (a: number, b: UIAggregate): number => a + b.count + ((b as any).isLoop ? 3 : 0);
 
 const allKeys = (a: Set<string>, b: UIAggregate): Set<string> => {
-  for (let k in b) a.add(k);
+  let k: keyof UIAggregate;
+  for (k in b) if (b[k] != null) a.add(k);
   return a;
 }
 
@@ -33,47 +37,41 @@ const getItemSummary = (items: UIAggregate[]) => {
   const keys = items.reduce(allKeys, new Set());
   const count = items.reduce(allCount, 0);
   const memoKey = Array.from(keys).join('/');
+  if (typeof count === 'string') debugger;
 
   return {keys, count, memoKey};
 }
 
-export const UI: LiveComponent<UIProps> = (props) => {
+export const UI: LC<UIProps> = (props) => {
   const {children} = props;
 
   return (
-    wrap(ScrollProvider, 
-      use(SDFFontProvider, {
-        children,
-        then: Resume,
-      })
+    gather(
+      wrap(SDFFontProvider, children),
+      (items: (UIAggregate | null)[]) => {
+        if (!Array.isArray(items)) items = [items];
+        return UILayers({items});
+      },
     )
   );
 };
 
-const Resume = (
-  atlas: Atlas,
-  source: TextureSource,
-  items: (UIAggregate | null)[],
-) => {
-  const partitioner = makePartitioner();
+export const UILayers: LC<UILayersProps> = ({
+  items,
+}: UILayersProps) => {
+  if (items.length === 0) return null;
 
+  const partitioner = makePartitioner();
   for (let item of items) if (item) {
-    if (item.texture === SDF_FONT_ATLAS) {
-      item = {
-        ...item,
-        texture: source,
-      };
-    }
     partitioner.push(item);
   }
-
   const layers = partitioner.resolve();
 
-  const els = layers.flatMap((layer, i): LiveElement<any> => {
+  const els = layers.flatMap((layer, i): LiveElement => {
     if ((layer[0] as any)?.f) return (layer as any);
     return keyed(Layer, layer[0]?.id, layer);
   });
-  els.push(yeet([]));
+  els.push(signal());
 
   return fragment(els);
 };
@@ -110,12 +108,14 @@ const makeUIAccumulator = (
   const hasStroke = keys.has('strokes') || keys.has('stroke');
   const hasFill = keys.has('fills') || keys.has('fill');
   const hasUV = keys.has('uvs') || keys.has('uv');
+  const hasST = keys.has('sts') || keys.has('st');
   const hasRepeat = keys.has('repeats') || keys.has('repeat');
   const hasSDF = keys.has('sdfs') || keys.has('sdf');
 
   const hasTexture = keys.has('texture');
   const hasTransform = keys.has('transform');
   const hasClip = keys.has('clip');
+  const hasMask = keys.has('mask');
 
   if (hasRectangle) storage.rectangles = makeAggregateBuffer(device, 'vec4<f32>', count);
   if (hasRadius) storage.radiuses = makeAggregateBuffer(device, 'vec4<f32>', count);
@@ -123,6 +123,7 @@ const makeUIAccumulator = (
   if (hasStroke) storage.strokes = makeAggregateBuffer(device, 'vec4<f32>', count);
   if (hasFill) storage.fills = makeAggregateBuffer(device, 'vec4<f32>', count);
   if (hasUV) storage.uvs = makeAggregateBuffer(device, 'vec4<f32>', count);
+  if (hasST) storage.sts = makeAggregateBuffer(device, 'vec4<f32>', count);
   if (hasRepeat) storage.repeats = makeAggregateBuffer(device, 'i8', count);
   if (hasSDF) storage.sdfs = makeAggregateBuffer(device, 'vec4<f32>', count);
 
@@ -138,22 +139,38 @@ const makeUIAccumulator = (
     if (hasStroke) props.strokes = updateAggregateBuffer(device, storage.strokes, items, count, 'stroke', 'strokes');
     if (hasFill) props.fills = updateAggregateBuffer(device, storage.fills, items, count, 'fill', 'fills');
     if (hasUV) props.uvs = updateAggregateBuffer(device, storage.uvs, items, count, 'uv', 'uvs');
+    if (hasST) props.sts = updateAggregateBuffer(device, storage.sts, items, count, 'st', 'sts');
     if (hasRepeat) props.repeats = updateAggregateBuffer(device, storage.repeats, items, count, 'repeat', 'repeats');
     if (hasSDF) props.sdfs = updateAggregateBuffer(device, storage.sdfs, items, count, 'sdf', 'sdfs');
 
     if (hasTexture) props.texture = items[0].texture;
     if (hasTransform) props.transform = items[0].transform;
     if (hasClip) props.clip = items[0].clip;
+    if (hasMask) props.mask = items[0].mask;
 
     return use(UIRectangles, props);
   };
 };
 
 const getItemTypeKey = (item: UIAggregate) =>
-  (item as any).f ? -1 :
-  hashBits53(getObjectKey(item.texture)) ^
-  hashBits53(item.transform ? getBundleKey(item.transform) : 0) ^
-  hashBits53(item.clip ? getBundleKey(item.clip) : 0);
+  (item as any).f ? -1 : (
+    hashBits53(getObjectKey(item.texture)) ^
+    (item.transform ? getBundleKey(item.transform) : 0) ^
+    (item.clip ? getBundleKey(item.clip) : 0) ^
+    (item.mask ? getBundleKey(item.mask) : 0) ^
+
+    (item.archetype != null ? item.archetype : (
+      (+(item.rectangle != null || item.rectangles != null))    |
+      (+(item.radius != null    || item.radiuses != null) << 1) |
+      (+(item.border != null    || item.borders != null) << 2)  |
+      (+(item.stroke != null    || item.strokes != null) << 3)  |
+      (+(item.fill != null      || item.fills != null) << 4)    |
+      (+(item.uv != null        || item.uvs != null) << 5)      |
+      (+(item.st != null        || item.sts != null) << 6)      |
+      (+(item.repeat != null    || item.repeats != null) << 7)  |
+      (+(item.sdf != null       || item.sdfs != null) << 8)
+    ))
+  );
 
 type Partition = {
   key: number,

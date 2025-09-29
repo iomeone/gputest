@@ -1,17 +1,19 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { Point, Point4 } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { Rectangle, Point, Point4 } from '@use-gpu/core';
 import type { LayoutElement, FitInto, Dimension, Direction, MarginLike, Margin } from '../types';
 
-import { useProp } from '../../traits';
-import { use, memo, gather, yeet, useFiber, useMemo } from '../../live';
+import { useProp } from '@use-gpu/traits';
+import { use, memo, gather, yeet, useFiber, useMemo } from '@use-gpu/live';
 import { getBlockMinMax, getBlockMargin, fitBlock } from '../lib/block';
-import { isHorizontal, makeBoxLayout, makeBoxInspectLayout, makeBoxPicker, memoFit, memoLayout } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '../../workbench';
+import { isHorizontal, makeBoxPicker, memoFit, memoLayout } from '../lib/util';
+import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
 
 import type { BoxTrait, ElementTrait } from '../types';
 import { useBoxTrait, useElementTrait } from '../traits';
 import { evaluateDimension, parseDirectionY, parseMargin } from '../parse';
 import { useImplicitElement } from '../element/element';
+import { BoxLayout } from '../render';
 
 export type BlockProps =
   Partial<BoxTrait> &
@@ -22,17 +24,15 @@ export type BlockProps =
   padding?: MarginLike,
   snap?: boolean,
   contain?: boolean,
-
-  children?: LiveElement<any>,
 };
 
-export const Block: LiveComponent<BlockProps> = memo((props: BlockProps) => {
+export const Block: LiveComponent<BlockProps> = memo((props: PropsWithChildren<BlockProps>) => {
   const {
     snap = true,
     children,
   } = props;
 
-  const { width, height, radius, border, stroke, fill, image } = useElementTrait(props);
+  const { width, height, aspect, radius, border, stroke, fill, image } = useElementTrait(props);
   const { margin: blockMargin, grow, shrink, inline, flex } = useBoxTrait(props);
 
   const direction = useProp(props.direction, parseDirectionY);
@@ -50,8 +50,13 @@ export const Block: LiveComponent<BlockProps> = memo((props: BlockProps) => {
 
   const Resume = (els: LayoutElement[]) => {
     return useMemo(() => {
-      const w = width != null && width === +width ? width : null;
-      const h = height != null && height === +height ? height : null;
+      let w = width != null && width === +width ? width : null;
+      let h = height != null && height === +height ? height : null;
+
+      if (aspect != null) {
+        if (w != null && h == null) h = w / aspect;
+        else if (h != null && w == null) w = h * aspect;
+      }
 
       const fixed = [w, h] as [number | null, number | null];
 
@@ -64,31 +69,49 @@ export const Block: LiveComponent<BlockProps> = memo((props: BlockProps) => {
       if (typeof height === 'string') ratioY = evaluateDimension(height, 1, false);
 
       const fit = (into: FitInto) => {
-          const w = width != null ? evaluateDimension(width, into[2], snap) : null;
-          const h = height != null ? evaluateDimension(height, into[3], snap) : null;
-          const fixed = [
-            width != null ? w : null,
-            height != null ? h : null,
-          ] as [number | number, number | null];
+        let w = width  != null ? evaluateDimension(width,  into[2], snap) : null;
+        let h = height != null ? evaluateDimension(height, into[3], snap) : null;
 
-          const {size, sizes, offsets, renders, pickers} = fitBlock(els, into, fixed, padding, direction, contain);
+        if (aspect != null) {
+          if (w != null && h == null) {
+            h = w / aspect;
+            if (snap) h = Math.round(h);
+          }
+          else if (h != null && w == null) {
+            w = h * aspect;
+            if (snap) w = Math.round(w);
+          }
+        }
 
-          inspect({
-            layout: {
-              into,
-              fixed,
-              size,
-              sizes,
-              offsets,
-            },
-          });
+        const fixed = [w, h] as [number | number, number | null];
 
-          return {
+        const {size, sizes, offsets, renders, pickers} = fitBlock(els, into, fixed, padding, direction, contain);
+
+        inspect({
+          layout: {
+            into,
+            fixed,
             size,
-            render: memoLayout(hovered ? makeBoxInspectLayout(id, sizes, offsets, renders) : makeBoxLayout(sizes, offsets, renders)),
-            pick: makeBoxPicker(id, sizes, offsets, pickers),
-          };
+            sizes,
+            offsets,
+          },
+        });
+
+        const inside = {sizes, offsets, renders};
+        return {
+          size,
+          render: (
+            box: Rectangle,
+            origin: Rectangle,
+            clip?: ShaderModule | null,
+            mask?: ShaderModule | null,
+            transform?: ShaderModule | null,
+          ) => (
+            sizes.length ? use(BoxLayout, inside, {box, origin, clip, mask, transform}, hovered) : null
+          ),
+          pick: makeBoxPicker(id, sizes, offsets, pickers),
         };
+      };
 
       return yeet({        
         sizing,

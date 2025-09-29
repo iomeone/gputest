@@ -28,10 +28,10 @@ export const formatAST = (node: SyntaxNode, code?: string, depth: number = 0) =>
   const prefix = '  '.repeat(depth);
 
   let child = node.firstChild;
-  
+
   const text = code != null ? code.slice(node.from, node.to).replace(/\n/g, "⮐ ") : '';
   let out = [] as string[];
-  
+
   let line = `${prefix}${type.name}`;
   const n = line.length;
   line += ' '.repeat(60 - n);
@@ -58,21 +58,72 @@ export const formatASTNode = (node: SyntaxNode) => {
   return `(${type.name}${space}${inner.join(" ")})`;
 }
 
+const getOpsMap = (ops: string[]) => {
+  const opToIndex = new Map<string, number>();
+  const indexToOp = new Map<number, string>();
+  ops.forEach((op, i) => {
+    opToIndex.set(op, i);
+    indexToOp.set(i, op);
+  });
+  return {opToIndex, indexToOp};
+};
+
+// Compress AST node
+export const makeASTEmitter = (
+  out: any[],
+  ops: string[],
+  symbols: string[] = [],
+) => {
+  let offset = 0;
+  const encode = (x: number) => x - offset;
+  const {opToIndex} = getOpsMap(ops);
+
+  return (
+    type: string,
+    from: number,
+    to: number,
+    arg?: any,
+  ) => {
+
+    const i = opToIndex.get(type)!;
+    const row = [i, encode(from), encode(to)];
+    if (arg != null) row.push(symbols.indexOf(arg));
+
+    offset = from;
+    out.push(row);
+  };
+};
 
 // Decompress a compressed AST on the fly by returning a pseudo-tree-cursor.
-export const decompressAST = (nodes: CompressedNode[]) => {
+export const makeASTDecompressor = (
+  ops: string[]
+) => (
+  nodes: CompressedNode[],
+  symbols: string[] = [],
+): Tree => {
+  const {indexToOp} = getOpsMap(ops);
+
   const tree = {
     __nodes: () => nodes,
     cursor: () => {
+      let offset = 0;
+      const decode = (d: number) => d + offset;
+
       let i = -1;
       const n = nodes.length;
 
       const next = () => {
         const hasNext = ++i < n;
         if (!hasNext) return false;
-        
+
         const node = nodes[i];
-        [self.type.name, self.from, self.to, self.arg] = node;
+        const [op, d1, d2, arg] = node;
+
+        self.type.name = indexToOp.get(op)!;
+        self.from = decode(d1);
+        self.to = decode(d2);
+        self.arg = arg != null ? symbols[arg] : null;
+        offset = self.from;
 
         return true;
       };
@@ -81,7 +132,7 @@ export const decompressAST = (nodes: CompressedNode[]) => {
         const {to} = self;
         do {
           const node = nodes[i + 1];
-          if (node && node[1] >= to) return false;
+          if (node && decode(node[1]) >= to) return false;
         } while (next());
         return false;
       }

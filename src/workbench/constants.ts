@@ -1,4 +1,4 @@
-export const PRESENTATION_FORMAT = "bgra8unorm" as GPUTextureFormat;
+export const PRESENTATION_FORMAT = "rgba8unorm" as GPUTextureFormat;
 export const PICKING_FORMAT = "rg32uint" as GPUTextureFormat;
 export const DEPTH_STENCIL_FORMAT = "depth32float" as GPUTextureFormat;
 export const COLOR_SPACE = "srgb";

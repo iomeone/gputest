@@ -1,15 +1,27 @@
-import { TypeLike } from '../types';
+import { TypeLike, ParameterLike } from '../types';
 
-export const toTypeString = (t: TypeLike | string): string => {
-  if (typeof t === 'object') {
-    if (t.type) return toTypeString(t.type);
-    if (t.args) return `${t.name}<${t.args.map(t => toTypeString(t)).join(',')}>`;
-    else return t.name;
-  }
+export const getTypeName = (s: string) => {
+  const i = s.indexOf('<');
+  return i >= 0 ? s.slice(0, i) : s;
+};
+
+export const getAttributeName = (s: string) => {
+  const i = s.indexOf('(');
+  return i >= 0 ? s.slice(0, i) : s;
+};
+
+export const getAttributeArgs = (s: string) => {
+  const i = s.indexOf('(');
+  const j = s.lastIndexOf(')');
+  if (i >= 0 && j >= 0) return s.slice(i + 1, j);
+  return null;
+};
+
+export const toTypeString = (t: TypeLike): string => {
+  if (typeof t === 'object') return t.name;
   return t;
-}
+};
 
-export const toTypeArgs = (t: (TypeLike | string)[]): string[] => {
-  return t?.map(toTypeString) ?? [];
-}
-
+export const toTypeArgs = (t: ParameterLike[]): string[] => {
+  return t?.map(p => typeof p === 'object' ? toTypeString(p.type) : p) ?? [];
+};

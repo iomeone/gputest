@@ -1,6 +1,8 @@
-import type { UniformAttribute, ShaderSource } from '../../shader';
-import { bundleToAttribute } from '../../shader/wgsl';
-import { useOne } from '../../live';
+import type { Lazy } from '@use-gpu/core';
+import type { UniformAttribute, ShaderSource } from '@use-gpu/shader';
+import { bundleToAttribute } from '@use-gpu/shader/wgsl';
+import { resolve } from '@use-gpu/core';
+import { useMemo, useOne } from '@use-gpu/live';
 
 // Extract type and size from a source
 export const useDataBinding = (
@@ -22,3 +24,29 @@ export const useDataBinding = (
   return [binding, length, size];
 }
 
+const NO_OFFSET = [0, 0, 0, 0];
+
+export const useDataSize = (
+  size?: Lazy<number[]> | null,
+  source?: ShaderSource | null,
+  offset: number[] = NO_OFFSET,
+): Lazy<number[]> =>
+  useMemo(() => () => {
+    const s = (source as any)?.size ?? resolve(size) ?? [];
+    return [
+      Math.max(0, (s[0] || 1) + offset[0]),
+      Math.max(0, (s[1] || 1) + offset[1]),
+      Math.max(0, (s[2] || 1) + offset[2]),
+      Math.max(0, (s[3] || 1) + offset[3]),
+    ];
+  }, [size, source]);
+
+export const useDataLength = (
+  length?: Lazy<number> | null,
+  source?: ShaderSource | null,
+  extra: number = 0,
+): Lazy<number> =>
+  useMemo(() => () => Math.max(0, (
+    length != null ? resolve(length) :
+    ((source as any)?.length ?? 0)
+  ) + extra), [length, source, extra]);

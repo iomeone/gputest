@@ -1,7 +1,14 @@
 // https://www.shadertoy.com/view/XlKSDR
 
-let PI = 3.141592;
-let F_DIELECTRIC = 0.04;
+const PI = 3.141592;
+const F_DIELECTRIC = 0.04;
+
+@export struct PBRParams {
+  albedo: vec4<f32>,
+  emissive: vec4<f32>,
+  material: vec4<f32>,
+  occlusion: f32,
+};
 
 fn saturate(x: f32) -> f32 {
   return max(x, 0.0);
@@ -61,18 +68,11 @@ fn geometricGGX(dotNL: f32, dotNV: f32, alpha: f32) -> f32 {
   return G1X(dotNL, k) * G1X(dotNV, k);
 }
 
-@export struct PBRParams {
-  albedo: vec3<f32>,
-  metalness: f32,
-  roughness: f32,
-};
-
 // N, L, V must be normalized
 @export fn PBR(
   N: vec3<f32>,
   L: vec3<f32>,
   V: vec3<f32>,
-  radiance: vec3<f32>,
   albedo: vec3<f32>,
   metalness: f32,
   roughness: f32,
@@ -97,6 +97,6 @@ fn geometricGGX(dotNL: f32, dotNV: f32, alpha: f32) -> f32 {
   var Fd = diffuseColor * fdBurley(dotNL, dotNV, dotLH, alpha);
   var Fs = F * D * G;
 
-  var direct = max(vec3<f32>(0.0), Fd + Fs) * radiance * dotNL;
+  var direct = max(vec3<f32>(0.0), Fd + Fs) * dotNL;
   return direct;
 }

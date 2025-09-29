@@ -1,14 +1,17 @@
-import type { LiveComponent, LiveElement } from '../../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { Rectangle } from '@use-gpu/core';
 import type { FitInto, Dimension, Direction, LayoutElement } from '../types';
 
-import { use, memo, gather, yeet, useFiber, useMemo } from '../../live';
+import { use, memo, gather, yeet, useFiber, useMemo } from '@use-gpu/live';
 import { fitAbsoluteBox } from '../lib/absolute';
-import { makeBoxLayout, makeBoxInspectLayout, makeBoxPicker, memoFit, memoLayout } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '../../workbench';
+import { makeBoxPicker, memoFit, memoLayout } from '../lib/util';
+import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
 
 import type { ElementTrait } from '../types';
 import { useElementTrait } from '../traits';
 import { useImplicitElement } from '../element/element';
+import { BoxLayout } from '../render';
 
 const NO_POINT4 = [0, 0, 0, 0];
 
@@ -23,10 +26,9 @@ export type AbsoluteProps = Partial<ElementTrait> &
 
   under?: boolean,
   snap?: boolean,
-  children?: LiveElement<any>,
 };
 
-export const Absolute: LiveComponent<AbsoluteProps> = memo((props: AbsoluteProps) => {
+export const Absolute: LiveComponent<AbsoluteProps> = memo((props: PropsWithChildren<AbsoluteProps>) => {
   const {
     left: l,
     top: t,
@@ -38,7 +40,7 @@ export const Absolute: LiveComponent<AbsoluteProps> = memo((props: AbsoluteProps
     children,
   } = props;
 
-  const { width, height, radius, border, stroke, fill, image } = useElementTrait(props);
+  const { width, height, aspect, radius, border, stroke, fill, image } = useElementTrait(props);
 
   const {id} = useFiber();
   const inspect = useInspectable();
@@ -47,20 +49,30 @@ export const Absolute: LiveComponent<AbsoluteProps> = memo((props: AbsoluteProps
   const Resume = (els: LayoutElement[]) => {
     return useMemo(() => {
       const fit = (into: FitInto) => {
-        const {size, sizes, offsets, renders, pickers} = fitAbsoluteBox(els, into, l, t, r, b, width, height, direction, snap);
+        const {size, sizes, offsets, renders, pickers} = fitAbsoluteBox(els, into, l, t, r, b, width, height, aspect, direction, snap);
 
         inspect({
           layout: {
             into,
+            self: [l, t],
             size,
             sizes,
             offsets,
           },
         });
-  
+        
+        const inside = {sizes, offsets, renders};
         return {
           size,
-          render: memoLayout(hovered ? makeBoxInspectLayout(id, sizes, offsets, renders) : makeBoxLayout(sizes, offsets, renders)),
+          render: (
+            box: Rectangle,
+            origin: Rectangle,
+            clip?: ShaderModule | null,
+            mask?: ShaderModule | null,
+            transform?: ShaderModule | null,
+          ) => (
+            sizes.length ? use(BoxLayout, inside, {box, origin, clip, mask, transform}, hovered) : null
+          ),
           pick: makeBoxPicker(id, sizes, offsets, pickers, undefined, undefined, false),
         };
       };

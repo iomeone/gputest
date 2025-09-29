@@ -1,34 +1,51 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TypedArray, StorageSource, UniformType, Emit, Emitter } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { DataBounds, TypedArray, StorageSource, UniformType, Emit, Emitter } from '@use-gpu/core';
 
-import { provide, yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { provide, yeet, signal, useOne, useMemo, useNoMemo, useContext, useNoContext, useYolo, incrementVersion } from '@use-gpu/live';
 import {
   makeDataArray, copyNumberArray, emitIntoMultiNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
-} from '../../core';
+  getBoundingBox, toDataBounds,
+} from '@use-gpu/core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
-import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 
 export type SampledDataProps = {
-  range: [number, number][],
+  /** Sample count up to [width, height, depth, layers] */
   size: number[],
 
-  sparse?: boolean,
-  centered?: boolean[] | boolean,
-  expr?: Emitter,
-  items?: number,
-
+  /** WGSL type per sample */
   format?: string,
-  live?: boolean,
-  time?: boolean,
 
-  render?: (source: StorageSource) => LiveElement<any>,
+  /** Input emitter expression */
+  expr?: Emitter,
+  /** Input range to sample on each axis */
+  range: [number, number][],
+  /** Extra padding samples to add outside the input range. */
+  padding?: number,
+  /** Emit N items per `expr` call. Output size is `[items, ...size]` if > 1. */
+  items?: number,
+  /** Emit 0 or N items per `expr` call. Output size is `[N]` or `[items, N]`. */
+  sparse?: boolean,
+  /** Use centered samples (0.5, 1.5, ..., N-0.5) instead of edge-to-edge samples (0, 1, ..., N). */
+  centered?: boolean[] | boolean,
+  /** Add current indices `i`, `j`, `k`, `l` to the `expr` arguments. */
+  index?: boolean,
+  /** Add current `TimeContext` to the `expr` arguments. */
+  time?: boolean,
+  /** Resample `data` or `expr` on every animation frame. */
+  live?: boolean,
+
+  /** Leave empty to yeet source instead. */
+  render?: (source: StorageSource) => LiveElement,
 };
 
+const NO_BOUNDS = {center: [], radius: 0, min: [], max: []} as DataBounds;
+
+/** Up-to-4D array of a WGSL type. Samples a given `expr` on the given `range`. */
 export const SampledData: LiveComponent<SampledDataProps> = (props) => {
   const device = useContext(DeviceContext);
 
@@ -39,14 +56,17 @@ export const SampledData: LiveComponent<SampledDataProps> = (props) => {
     expr,
     items = 1,
     render,
+    padding = 0,
     sparse = false,
     centered = false,
     live = false,
+    index = false,
     time = false,
   } = props;
 
   const t = Math.max(1, Math.round(items) || 0);
-  const length = t * (size.length ? size.reduce((a, b) => a * b, 1) : 1);
+  const s = size.map(n => n + padding * 2);
+  const length = t * (s.length ? s.reduce((a, b) => a * b, 1) : 1);
   const l = useBufferedSize(length);
 
   // Make data buffer
@@ -63,6 +83,7 @@ export const SampledData: LiveComponent<SampledDataProps> = (props) => {
       length: 0,
       size: [],
       version: 0,
+      bounds: {...NO_BOUNDS},
     };
 
     return [buffer, array, source, dims] as [GPUBuffer, TypedArray, StorageSource, number];
@@ -82,9 +103,16 @@ export const SampledData: LiveComponent<SampledDataProps> = (props) => {
         let [min, max] = range[0];
         let step = (max - min) / (size[0] - 1 + c);
         if (c) min += step / 2;
+        min -= step * padding;
 
-        sampled = (<T>(emit: Emit, i: number, n: number, t: T) =>
-          expr(emit, min + i * step, i, t)) as any;
+        if (index) {
+          sampled = (<T>(emit: Emit, i: number, t: T) =>
+            expr(emit, min + i * step, i - padding, t)) as any;
+        }
+        else {
+          sampled = (<T>(emit: Emit, i: number, t: T) =>
+            expr(emit, min + i * step, i - padding, t)) as any;
+        }
       }
       else if (n === 2) {
         const cx = +!!(centered === true || (centered as any)[0]);
@@ -96,16 +124,29 @@ export const SampledData: LiveComponent<SampledDataProps> = (props) => {
         let stepY = (maxY - minY) / (size[1] - 1 + cy);
         if (cx) minX += stepX / 2;
         if (cy) minY += stepY / 2;
+        minX -= stepX * padding;
+        minY -= stepY * padding;
 
-        sampled = (<T>(emit: Emit, i: number, j: number, w: number, h: number, t: T) =>
-          expr(
-            emit,
-            minX + i * stepX,
-            minY + j * stepY,
-            i,
-            j,
-            t,
-          )) as any;
+        if (index) {
+          sampled = (<T>(emit: Emit, i: number, j: number, t: T) =>
+            expr(
+              emit,
+              minX + i * stepX,
+              minY + j * stepY,
+              i - padding,
+              j - padding,
+              t,
+            )) as any;
+        }
+        else {
+          sampled = (<T>(emit: Emit, i: number, j: number, t: T) =>
+            expr(
+              emit,
+              minX + i * stepX,
+              minY + j * stepY,
+              t,
+            )) as any;
+        }
       }
       else if (n === 3) {
         const cx = +!!(centered === true || (centered as any)[0]);
@@ -121,18 +162,33 @@ export const SampledData: LiveComponent<SampledDataProps> = (props) => {
         if (cx) minX += stepX / 2;
         if (cy) minY += stepY / 2;
         if (cz) minZ += stepZ / 2;
+        minX -= stepX * padding;
+        minY -= stepY * padding;
+        minZ -= stepZ * padding;
 
-        sampled = (<T>(emit: Emit, i: number, j: number, k: number, w: number, h: number, d: number, t: T) =>
-          expr(
-            emit,
-            minX + i * stepX,
-            minY + j * stepY,
-            minZ + k * stepZ,
-            i,
-            j,
-            k,
-            t,
-          )) as any;
+        if (index) {
+          sampled = (<T>(emit: Emit, i: number, j: number, k: number, t: T) =>
+            expr(
+              emit,
+              minX + i * stepX,
+              minY + j * stepY,
+              minZ + k * stepZ,
+              i - padding,
+              j - padding,
+              k - padding,
+              t,
+            )) as any;
+        }
+        else {
+          sampled = (<T>(emit: Emit, i: number, j: number, k: number, t: T) =>
+            expr(
+              emit,
+              minX + i * stepX,
+              minY + j * stepY,
+              minZ + k * stepZ,
+              t,
+            )) as any;
+        }
       }
       else if (n === 4) {
         const cx = +!!(centered === true || (centered as any)[0]);
@@ -152,51 +208,73 @@ export const SampledData: LiveComponent<SampledDataProps> = (props) => {
         if (cy) minY += stepY / 2;
         if (cz) minZ += stepZ / 2;
         if (cw) minW += stepW / 2;
+        minX -= stepX * padding;
+        minY -= stepY * padding;
+        minZ -= stepZ * padding;
+        minW -= stepW * padding;
 
-        sampled = (<T>(emit: Emit, i: number, j: number, k: number, l: number, w: number, h: number, d: number, q: number, t: T) =>
-          expr(
-            emit,
-            minX + i * stepX,
-            minY + j * stepY,
-            minZ + k * stepZ,
-            minW + l * stepW,
-            i,
-            j,
-            k,
-            l,
-            t,
-          )) as any;
+        if (index) {
+          sampled = (<T>(emit: Emit, i: number, j: number, k: number, l: number, t: T) =>
+            expr(
+              emit,
+              minX + i * stepX,
+              minY + j * stepY,
+              minZ + k * stepZ,
+              minW + l * stepW,
+              i - padding,
+              j - padding,
+              k - padding,
+              l - padding,
+              t,
+            )) as any;
+        }
+        else {
+          sampled = (<T>(emit: Emit, i: number, j: number, k: number, l: number, t: T) =>
+            expr(
+              emit,
+              minX + i * stepX,
+              minY + j * stepY,
+              minZ + k * stepZ,
+              minW + l * stepW,
+              t,
+            )) as any;
+        }
       }
       else {
         throw new Error("Cannot sample across more than 4 dimensions");
       }
 
       if (sampled) {
-        emitted = emitIntoMultiNumberArray(sampled, array, dims, size, clock!);
+        emitted = emitIntoMultiNumberArray(sampled, array, dims, s, clock!);
       }
     }
     if (expr) {
       uploadBuffer(device, buffer, array.buffer);
+      source.version = incrementVersion(source.version);
     }
 
     source.length  = !sparse ? length : emitted;
-    source.size    = !sparse ? (items > 1 ? [items, ...size] : size) : [items, emitted / items];
-    source.version = incrementVersion(source.version);
+    source.size    = !sparse ? (items > 1 ? [items, ...s] : s) : [items, emitted / items];
+
+    const {bounds} = source;
+    const {center, radius, min, max} = toDataBounds(getBoundingBox(array, Math.ceil(dims)));
+    bounds!.center = center;
+    bounds!.radius = radius;
+    bounds!.min = min;
+    bounds!.max = max;
   };
 
   if (!live) {
-    useNoPerFrame();
     useNoAnimationFrame();
     useMemo(refresh, [device, buffer, array, expr, dims, length, items, range]);
   }
   else {
-    usePerFrame();
     useAnimationFrame();
     useNoMemo();
     refresh();
   }
 
-  return useMemo(() => {
-    return render ? render(source) : yeet(source);
-  }, [render, source]);
+  const trigger = useOne(() => signal(), source.version);
+  const view = useYolo(() => render ? render(source) : yeet(source), [render, source]);
+  return [trigger, view];
 };

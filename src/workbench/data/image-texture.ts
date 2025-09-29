@@ -1,24 +1,36 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { Point, ColorSpace, TextureSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { Point, ColorSpace, TextureSource } from '@use-gpu/core';
 
-import { DeviceContext } from '../providers/device-provider';
-import { use, yeet, gather, memo, useOne, useMemo, useContext } from '../../live';
-import { makeCopyableTexture, makeTextureView, uploadExternalTexture } from '../../core';
+import { useDeviceContext } from '../providers/device-provider';
+import { use, yeet, gather, memo, useMemo, useYolo } from '@use-gpu/live';
+import { makeDynamicTexture, uploadExternalTexture, updateMipTextureChain } from '@use-gpu/core';
 import { Fetch } from './fetch';
 
 export type ImageTextureProps = {
-  url?: string,
+  /** URL to image */
+  url: string,
+  /** Color space to tag texture as. Does not convert input data. */
   colorSpace?: ColorSpace,
+  /** MIPs */
+  mip?: number | boolean,
+  /** Texture sampler */
   sampler?: GPUSamplerDescriptor,
-  render?: (source: TextureSource) => LiveElement<any>,
+  /** Leave empty to yeet texture instead. */
+  render?: (source: TextureSource) => LiveElement,
 };
 
+const countMips = (width: number, height: number): number => {
+  const max = Math.max(width, height);
+  return Math.floor(Math.log2(max));
+}
+
 export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
-  const device = useContext(DeviceContext);
+  const device = useDeviceContext();
 
   const {
     url,
     sampler,
+    mip = true,
     colorSpace = 'srgb',
     render,
   } = props;
@@ -40,29 +52,50 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
   );
 
   return gather(fetch, ([bitmap]: ImageBitmap[]) => {
-    const source = useOne(() => {
-      const size = [bitmap.width, bitmap.height] as Point;
-      const format = 'rgba8unorm';
+    if (!bitmap) return null;
 
-      const texture = makeCopyableTexture(device, bitmap.width, bitmap.height, format);
+    const source = useMemo(() => {
+      const {width, height} = bitmap;
+      const size = [width, height] as Point;
+
+      let format: GPUTextureFormat = 'rgba8unorm';
+      let cs = colorSpace;
+      if (colorSpace === 'srgb') {
+        format = 'rgba8unorm-srgb';
+        cs = 'linear';
+      }
+
+      const mips = (
+        typeof mip === 'number' ? mip :
+        mip ? countMips(width, height) : 1
+      );
+
+      const texture = makeDynamicTexture(device, width, height, 1, format, 1, mips);
       uploadExternalTexture(device, texture, bitmap, size);
 
-      return {
+      const source = {
         texture,
-        view: makeTextureView(texture),
+        view: texture.createView(),
         sampler: {
-          minFilter: 'nearest',
-          magFilter: 'nearest',
+          minFilter: 'linear',
+          magFilter: 'linear',
+          mipmapFilter: 'linear',
+          maxAnisotropy: 4,
           ...sampler,
         } as GPUSamplerDescriptor,
         layout: 'texture_2d<f32>',
+        mips,
         format,
         size,
-        colorSpace,
+        colorSpace: cs,
         version: 1,
       };
+
+      updateMipTextureChain(device, source);
+
+      return source;
     }, [bitmap, sampler]);
 
-    return useMemo(() => source ? (render ? render(source) : yeet(source)) : null, [render, source]);
+    return useYolo(() => render ? (source ? render(source) : null) : yeet(source), [render, source]);
   });
 };

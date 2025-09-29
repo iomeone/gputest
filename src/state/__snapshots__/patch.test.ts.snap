@@ -1,5 +1,39 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`patch diffs values 1`] = `
+Object {
+  "foo": Object {
+    "a": Object {
+      "$delete": true,
+    },
+    "b": Object {
+      "$delete": true,
+    },
+    "c": Object {
+      "$delete": true,
+    },
+    "d": true,
+  },
+  "n": Array [
+    2,
+  ],
+  "s": "hello world",
+  "x": "xy",
+}
+`;
+
+exports[`patch gets update keys 1`] = `
+Array [
+  "d",
+  "s",
+  "x",
+  "foo",
+  "bar.obj.baz",
+  "n",
+  "list.0.foo",
+]
+`;
+
 exports[`patch patches primitives 1`] = `
 Object {
   "foo": Object {
@@ -23,5 +57,30 @@ Object {
   "n": 1,
   "s": "hello world",
   "x": "xy",
+}
+`;
+
+exports[`patch revises diffs 1`] = `
+Object {
+  "bar": Object {
+    "obj": Object {
+      "baz": true,
+    },
+  },
+  "d": true,
+  "foo": Object {
+    "a": false,
+    "b": true,
+  },
+  "list": Object {
+    "0": Object {
+      "foo": false,
+    },
+  },
+  "n": Array [
+    1,
+  ],
+  "s": "hello",
+  "x": "x",
 }
 `;

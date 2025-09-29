@@ -6,7 +6,7 @@ Object {
     Object {
       "at": 0,
       "flags": 0,
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "QUAD",
       ],
@@ -68,8 +68,53 @@ Object {
       ],
     },
   ],
+  "exports": Array [
+    Object {
+      "at": 102,
+      "flags": 1,
+      "func": Object {
+        "name": "getQuadIndex",
+        "parameters": Array [
+          "int",
+          "vertex",
+        ],
+        "type": Object {
+          "name": "ivec2",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "QUAD",
+      ],
+      "symbols": Array [
+        "getQuadIndex",
+      ],
+    },
+    Object {
+      "at": 176,
+      "flags": 1,
+      "func": Object {
+        "name": "getQuadUV",
+        "parameters": Array [
+          "int",
+          "vertex",
+        ],
+        "type": Object {
+          "name": "vec2",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "getQuadIndex",
+      ],
+      "symbols": Array [
+        "getQuadUV",
+      ],
+    },
+  ],
   "externals": undefined,
   "globals": undefined,
+  "linkable": undefined,
   "modules": undefined,
   "symbols": Array [
     "QUAD",
@@ -274,7 +319,7 @@ Object {
           "qualifiers": Array [],
         },
       },
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "getPosition",
       ],
@@ -292,7 +337,7 @@ Object {
           "qualifiers": Array [],
         },
       },
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "getColor",
       ],
@@ -310,7 +355,7 @@ Object {
           "qualifiers": Array [],
         },
       },
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "getSize",
       ],
@@ -328,11 +373,37 @@ Object {
           "qualifiers": Array [],
         },
       },
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "getDepth",
       ],
     },
+    Object {
+      "at": 274,
+      "flags": 1,
+      "func": Object {
+        "name": "getQuadVertex",
+        "parameters": Array [
+          "int",
+          "vertexIndex",
+        ],
+        "type": Object {
+          "name": "SolidVertex",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "getPosition",
+        "getColor",
+        "getSize",
+        "getDepth",
+      ],
+      "symbols": Array [
+        "getQuadVertex",
+      ],
+    },
+  ],
+  "exports": Array [
     Object {
       "at": 274,
       "flags": 1,
@@ -372,7 +443,7 @@ Object {
           "qualifiers": Array [],
         },
       },
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "getPosition",
       ],
@@ -390,7 +461,7 @@ Object {
           "qualifiers": Array [],
         },
       },
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "getColor",
       ],
@@ -408,7 +479,7 @@ Object {
           "qualifiers": Array [],
         },
       },
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "getSize",
       ],
@@ -426,13 +497,19 @@ Object {
           "qualifiers": Array [],
         },
       },
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "getDepth",
       ],
     },
   ],
   "globals": undefined,
+  "linkable": Object {
+    "getColor": true,
+    "getDepth": true,
+    "getPosition": true,
+    "getSize": true,
+  },
   "modules": Array [
     Object {
       "at": 0,
@@ -502,61 +579,61 @@ Array [
   Array [
     0,
     Array [
-      "QUAD",
-      "getQuadIndex",
-      "getQuadUV",
+      0,
+      1,
+      2,
     ],
   ],
   Array [
     102,
     Array [
-      "getQuadIndex",
-      "getQuadUV",
+      1,
+      2,
     ],
   ],
   Array [
     176,
     Array [
-      "getQuadUV",
+      2,
     ],
   ],
 ]
 `;
 
-exports[`ast gets shake information for instance/vertex/quad AST 1`] = `
+exports[`ast gets shake information for getQuadVertex AST 1`] = `
 Array [
   Array [
     175,
     Array [
-      "getPosition",
-      "getQuadVertex",
+      0,
+      4,
     ],
   ],
   Array [
     198,
     Array [
-      "getColor",
-      "getQuadVertex",
+      1,
+      4,
     ],
   ],
   Array [
     218,
     Array [
-      "getSize",
-      "getQuadVertex",
+      2,
+      4,
     ],
   ],
   Array [
     237,
     Array [
-      "getDepth",
-      "getQuadVertex",
+      3,
+      4,
     ],
   ],
   Array [
     274,
     Array [
-      "getQuadVertex",
+      4,
     ],
   ],
 ]
@@ -567,13 +644,13 @@ Array [
   Array [
     15,
     Array [
-      "SolidVertex",
+      0,
     ],
   ],
   Array [
     97,
     Array [
-      "MeshVertex",
+      1,
     ],
   ],
 ]
@@ -815,7 +892,6 @@ Array [
   Object {
     "at": 7,
     "flags": 0,
-    "identifiers": Array [],
     "symbols": Array [
       "unknown",
     ],
@@ -845,7 +921,7 @@ Object {
     Object {
       "at": 15,
       "flags": 1,
-      "identifiers": Array [],
+      "identifiers": undefined,
       "symbols": Array [
         "SolidVertex",
       ],
@@ -880,7 +956,85 @@ Object {
     Object {
       "at": 97,
       "flags": 1,
-      "identifiers": Array [],
+      "identifiers": undefined,
+      "symbols": Array [
+        "MeshVertex",
+      ],
+      "variable": Object {
+        "locals": Array [],
+        "type": Object {
+          "members": Array [
+            Object {
+              "name": "position",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "normal",
+              "type": Object {
+                "name": "vec3",
+              },
+            },
+            Object {
+              "name": "color",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "uv",
+              "type": Object {
+                "name": "vec2",
+              },
+            },
+          ],
+          "name": "MeshVertex",
+          "qualifiers": Array [],
+        },
+      },
+    },
+  ],
+  "exports": Array [
+    Object {
+      "at": 15,
+      "flags": 1,
+      "identifiers": undefined,
+      "symbols": Array [
+        "SolidVertex",
+      ],
+      "variable": Object {
+        "locals": Array [],
+        "type": Object {
+          "members": Array [
+            Object {
+              "name": "position",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "color",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "uv",
+              "type": Object {
+                "name": "vec2",
+              },
+            },
+          ],
+          "name": "SolidVertex",
+          "qualifiers": Array [],
+        },
+      },
+    },
+    Object {
+      "at": 97,
+      "flags": 1,
+      "identifiers": undefined,
       "symbols": Array [
         "MeshVertex",
       ],
@@ -921,6 +1075,7 @@ Object {
   ],
   "externals": undefined,
   "globals": undefined,
+  "linkable": undefined,
   "modules": undefined,
   "symbols": Array [
     "SolidVertex",
@@ -1019,7 +1174,223 @@ Object {
     Object {
       "at": 15,
       "flags": 1,
-      "identifiers": Array [],
+      "identifiers": undefined,
+      "struct": Object {
+        "name": "viewUniforms",
+        "struct": Object {
+          "members": Array [
+            Object {
+              "name": "projectionMatrix",
+              "type": Object {
+                "name": "mat4",
+              },
+            },
+            Object {
+              "name": "viewMatrix",
+              "type": Object {
+                "name": "mat4",
+              },
+            },
+            Object {
+              "name": "viewPosition",
+              "type": Object {
+                "name": "vec4",
+              },
+            },
+            Object {
+              "name": "viewResolution",
+              "type": Object {
+                "name": "vec2",
+              },
+            },
+            Object {
+              "name": "viewSize",
+              "type": Object {
+                "name": "vec2",
+              },
+            },
+            Object {
+              "name": "viewWorldDepth",
+              "type": Object {
+                "name": "float",
+              },
+            },
+            Object {
+              "name": "viewPixelRatio",
+              "type": Object {
+                "name": "float",
+              },
+            },
+          ],
+        },
+        "type": Object {
+          "name": "ViewUniforms",
+          "qualifiers": Array [
+            "layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING)",
+            "uniform",
+          ],
+        },
+      },
+      "symbols": Array [
+        "viewUniforms",
+        "ViewUniforms",
+      ],
+    },
+    Object {
+      "at": 276,
+      "flags": 1,
+      "func": Object {
+        "name": "worldToView",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
+      "symbols": Array [
+        "worldToView",
+      ],
+    },
+    Object {
+      "at": 373,
+      "flags": 1,
+      "func": Object {
+        "name": "viewToClip",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
+      "symbols": Array [
+        "viewToClip",
+      ],
+    },
+    Object {
+      "at": 475,
+      "flags": 1,
+      "func": Object {
+        "name": "worldToClip",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec4",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "viewToClip",
+        "worldToView",
+      ],
+      "symbols": Array [
+        "worldToClip",
+      ],
+    },
+    Object {
+      "at": 571,
+      "flags": 1,
+      "func": Object {
+        "name": "clipToScreen3D",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec3",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
+      "symbols": Array [
+        "clipToScreen3D",
+      ],
+    },
+    Object {
+      "at": 690,
+      "flags": 1,
+      "func": Object {
+        "name": "screenToClip3D",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec3",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
+      "symbols": Array [
+        "screenToClip3D",
+      ],
+    },
+    Object {
+      "at": 815,
+      "flags": 1,
+      "func": Object {
+        "name": "worldToClip3D",
+        "parameters": Array [
+          "vec4",
+          "position",
+        ],
+        "type": Object {
+          "name": "vec3",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "viewToClip",
+        "worldToView",
+      ],
+      "symbols": Array [
+        "worldToClip3D",
+      ],
+    },
+    Object {
+      "at": 953,
+      "flags": 1,
+      "func": Object {
+        "name": "getPerspectiveScale",
+        "parameters": Array [
+          "float",
+          "w",
+        ],
+        "type": Object {
+          "name": "float",
+          "qualifiers": Array [],
+        },
+      },
+      "identifiers": Array [
+        "viewUniforms",
+      ],
+      "symbols": Array [
+        "getPerspectiveScale",
+      ],
+    },
+  ],
+  "exports": Array [
+    Object {
+      "at": 15,
+      "flags": 1,
+      "identifiers": undefined,
       "struct": Object {
         "name": "viewUniforms",
         "struct": Object {
@@ -1233,6 +1604,7 @@ Object {
   ],
   "externals": undefined,
   "globals": undefined,
+  "linkable": undefined,
   "modules": undefined,
   "symbols": Array [
     "viewUniforms",
@@ -1262,164 +1634,164 @@ Object {
 exports[`ast rewrites a lot of code using the compressed AST 1`] = `
 Array [
   Array [
-    "Skip",
+    1,
     1,
     46,
   ],
   Array [
-    "Shake",
+    0,
+    47,
+    79,
+  ],
+  Array [
+    2,
+    0,
+    11,
+  ],
+  Array [
+    2,
+    12,
+    21,
+  ],
+  Array [
+    0,
+    40,
+    85,
+  ],
+  Array [
+    2,
+    7,
+    15,
+  ],
+  Array [
+    2,
+    28,
+    37,
+  ],
+  Array [
+    0,
+    17,
+    57,
+  ],
+  Array [
+    2,
+    7,
+    15,
+  ],
+  Array [
+    2,
+    23,
+    32,
+  ],
+  Array [
+    0,
+    11,
     48,
-    80,
   ],
   Array [
-    "Id",
-    48,
-    59,
+    2,
+    7,
+    15,
   ],
   Array [
-    "Id",
-    60,
-    69,
+    2,
+    23,
+    29,
   ],
   Array [
-    "Shake",
-    100,
-    145,
+    0,
+    16,
+    300,
   ],
   Array [
-    "Id",
-    107,
-    115,
+    2,
+    5,
+    9,
   ],
   Array [
-    "Id",
-    135,
-    144,
+    2,
+    15,
+    26,
   ],
   Array [
-    "Shake",
-    152,
-    192,
+    2,
+    14,
+    28,
   ],
   Array [
-    "Id",
-    159,
-    167,
+    2,
+    22,
+    35,
   ],
   Array [
-    "Id",
-    182,
-    191,
+    2,
+    16,
+    32,
   ],
   Array [
-    "Shake",
-    193,
-    230,
+    2,
+    21,
+    32,
   ],
   Array [
-    "Id",
-    200,
-    208,
+    2,
+    12,
+    13,
   ],
   Array [
-    "Id",
-    223,
-    229,
+    2,
+    4,
+    13,
   ],
   Array [
-    "Shake",
-    239,
-    523,
+    2,
+    10,
+    21,
   ],
   Array [
-    "Id",
-    244,
-    248,
+    2,
+    13,
+    26,
   ],
   Array [
-    "Id",
-    259,
-    270,
+    2,
+    19,
+    30,
   ],
   Array [
-    "Id",
-    273,
-    287,
+    2,
+    14,
+    15,
   ],
   Array [
-    "Id",
-    295,
-    308,
+    2,
+    32,
+    41,
   ],
   Array [
-    "Id",
-    311,
-    327,
+    2,
+    17,
+    30,
   ],
   Array [
-    "Id",
-    332,
-    343,
+    2,
+    24,
+    33,
   ],
   Array [
-    "Id",
-    344,
-    345,
+    2,
+    12,
+    13,
   ],
   Array [
-    "Id",
-    348,
-    357,
+    2,
+    11,
+    17,
   ],
   Array [
-    "Id",
-    358,
-    369,
-  ],
-  Array [
-    "Id",
-    371,
-    384,
-  ],
-  Array [
-    "Id",
-    390,
-    401,
-  ],
-  Array [
-    "Id",
-    404,
-    405,
-  ],
-  Array [
-    "Id",
-    436,
-    445,
-  ],
-  Array [
-    "Id",
-    453,
-    466,
-  ],
-  Array [
-    "Id",
-    477,
-    486,
-  ],
-  Array [
-    "Id",
-    489,
-    490,
-  ],
-  Array [
-    "Id",
-    500,
-    506,
-  ],
-  Array [
-    "Id",
-    509,
-    510,
+    2,
+    9,
+    10,
   ],
 ]
 `;
@@ -1444,54 +1816,54 @@ exports[`ast rewrites code using the AST 1`] = `
 exports[`ast rewrites code using the compressed AST 1`] = `
 Array [
   Array [
-    "Shake",
+    0,
     5,
     31,
   ],
   Array [
-    "Id",
-    11,
-    19,
+    2,
+    6,
+    14,
   ],
   Array [
-    "Id",
+    2,
+    13,
+    18,
+  ],
+  Array [
+    0,
+    12,
+    108,
+  ],
+  Array [
+    2,
+    5,
+    9,
+  ],
+  Array [
+    2,
+    21,
+    22,
+  ],
+  Array [
+    2,
+    21,
+    22,
+  ],
+  Array [
+    2,
+    4,
+    12,
+  ],
+  Array [
+    2,
     24,
-    29,
+    25,
   ],
   Array [
-    "Shake",
-    36,
-    132,
-  ],
-  Array [
-    "Id",
-    41,
-    45,
-  ],
-  Array [
-    "Id",
-    62,
-    63,
-  ],
-  Array [
-    "Id",
-    83,
-    84,
-  ],
-  Array [
-    "Id",
-    87,
-    95,
-  ],
-  Array [
-    "Id",
-    111,
-    112,
-  ],
-  Array [
-    "Id",
-    120,
-    121,
+    2,
+    9,
+    10,
   ],
 ]
 `;
@@ -1508,21 +1880,21 @@ Array [
   Array [
     1,
     Array [
-      "x",
-      "getA",
-      "getB",
+      0,
+      1,
+      2,
     ],
   ],
   Array [
     38,
     Array [
-      "getA",
+      1,
     ],
   ],
   Array [
     83,
     Array [
-      "getB",
+      2,
     ],
   ],
 ]
@@ -1544,61 +1916,61 @@ Array [
   Array [
     15,
     Array [
-      "viewUniforms",
-      "worldToView",
-      "worldToClip",
-      "worldToClip3D",
-      "viewToClip",
-      "clipToScreen3D",
-      "screenToClip3D",
-      "getPerspectiveScale",
-      "ViewUniforms",
+      0,
+      2,
+      4,
+      7,
+      3,
+      5,
+      6,
+      8,
+      1,
     ],
   ],
   Array [
     276,
     Array [
-      "worldToView",
-      "worldToClip",
-      "worldToClip3D",
+      2,
+      4,
+      7,
     ],
   ],
   Array [
     373,
     Array [
-      "viewToClip",
-      "worldToClip",
-      "worldToClip3D",
+      3,
+      4,
+      7,
     ],
   ],
   Array [
     475,
     Array [
-      "worldToClip",
+      4,
     ],
   ],
   Array [
     571,
     Array [
-      "clipToScreen3D",
+      5,
     ],
   ],
   Array [
     690,
     Array [
-      "screenToClip3D",
+      6,
     ],
   ],
   Array [
     815,
     Array [
-      "worldToClip3D",
+      7,
     ],
   ],
   Array [
     953,
     Array [
-      "getPerspectiveScale",
+      8,
     ],
   ],
 ]
@@ -1635,61 +2007,61 @@ Array [
   Array [
     15,
     Array [
-      "viewUniforms",
-      "worldToView",
-      "worldToClip",
-      "worldToClip3D",
-      "viewToClip",
-      "clipToScreen3D",
-      "screenToClip3D",
-      "getPerspectiveScale",
-      "ViewUniforms",
+      0,
+      2,
+      4,
+      7,
+      3,
+      5,
+      6,
+      8,
+      1,
     ],
   ],
   Array [
     276,
     Array [
-      "worldToView",
-      "worldToClip",
-      "worldToClip3D",
+      2,
+      4,
+      7,
     ],
   ],
   Array [
     373,
     Array [
-      "viewToClip",
-      "worldToClip",
-      "worldToClip3D",
+      3,
+      4,
+      7,
     ],
   ],
   Array [
     475,
     Array [
-      "worldToClip",
+      4,
     ],
   ],
   Array [
     571,
     Array [
-      "clipToScreen3D",
+      5,
     ],
   ],
   Array [
     690,
     Array [
-      "screenToClip3D",
+      6,
     ],
   ],
   Array [
     815,
     Array [
-      "worldToClip3D",
+      7,
     ],
   ],
   Array [
     953,
     Array [
-      "getPerspectiveScale",
+      8,
     ],
   ],
 ]

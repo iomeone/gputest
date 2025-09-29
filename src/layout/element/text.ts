@@ -1,13 +1,13 @@
-import type { LiveComponent } from '../../live';
-import type { Point4 } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { ColorLike } from '../../traits';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Point4, Rectangle } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { ColorLike } from '@use-gpu/traits';
 import type { Base, InlineLine } from '../types';
 
-import { useProp, parseColor, parseNumber } from '../../traits';
-import { keyed, yeet, useFiber } from '../../live';
+import { useProp, parseColor, parseNumber } from '@use-gpu/traits';
+import { memo, keyed, yeet, useFiber } from '@use-gpu/live';
 
-import { useFontFamily, useFontText, useFontHeight } from '../../workbench';
+import { useFontFamily, useFontText, useFontHeight } from '@use-gpu/workbench';
 import { Glyphs } from '../shape/glyphs';
 import { memoInline } from '../lib/util';
 
@@ -44,7 +44,7 @@ const BLACK: Point4 = [0, 0, 0, 1];
 const NO_MARGIN: Point4 = [0, 0, 0, 0];
 const NO_STROKE: Point4 = [0.0, 0.0, 0.0, 0.0];
 
-export const Text: LiveComponent<TextProps> = (props) => {
+export const Text: LiveComponent<TextProps> = memo((props) => {
   const {
     family,
     style,
@@ -73,11 +73,17 @@ export const Text: LiveComponent<TextProps> = (props) => {
     spans,
     height,
     inline,
-    render: memoInline((lines: InlineLine[], clip?: ShaderModule, transform?: ShaderModule) => (
+    render: memoInline((
+      lines: InlineLine[],
+      origin: Rectangle,
+      clip: ShaderModule | null,
+      mask: ShaderModule | null,
+      transform: ShaderModule | null,
+    ) => (
       keyed(Glyphs, id, {
         id,
         font,
-        color,
+        color: color as any,
         opacity,
         size,
         detail,
@@ -89,9 +95,11 @@ export const Text: LiveComponent<TextProps> = (props) => {
         snap,
         expand,
 
+        origin,
         clip,
+        mask,
         transform,
       })
     )),
   });
-};
+}, 'Text');

@@ -1,13 +1,13 @@
-import type { LiveComponent } from '../../live';
+import type { LiveComponent } from '@use-gpu/live';
 
-import { use } from '../../live';
-import { HTML } from '../../react';
-import { useRouterContext } from '../../workbench';
+import { use } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { useRouterContext } from '@use-gpu/workbench';
 
 import React from 'react';
 import { styled } from '@stitches/react';
 
-import { PAGES } from '../routes';
+import { makePages } from '../routes';
 
 export const Title = styled('h1', {
   margin: 0,
@@ -26,9 +26,9 @@ const PANEL_STYLE = {
   left: '50%',
   top: '50%',
   width: '400px',
-  height: '500px',
+  height: '600px',
   marginLeft: '-200px',
-  marginTop: '-250px',
+  marginTop: '-300px',
   background: 'rgba(0, 0, 0, .75)',
   zIndex: 1,
 };
@@ -37,12 +37,14 @@ export const HomePage: LiveComponent<HomePageProps> = (props) => {
   const {container} = props;
   const {linkTo} = useRouterContext();
 
+  const PAGES = makePages();
+
   return (
     use(HTML, {
       container,
       style: PANEL_STYLE,
       children: (<>
-        <Title>Use.GPU Prototype</Title>
+        <Title>Use.GPU Demos</Title>
         
         <ul>
           {PAGES.slice(0, -1).map(({title, path}) => (

@@ -1,48 +1,78 @@
-use '../../wgsl/use/types'::{ Light, Radiance };
+use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
 
-@infer type T;
 @link fn applyMaterial(
   N: vec3<f32>,
   L: vec3<f32>,
   V: vec3<f32>,
-  radiance: vec3<f32>,
-  @infer(T) params: T,
+  surface: SurfaceFragment,
 ) -> vec3<f32> {}
+
+@optional @link fn applyDirectionalShadow(
+  light: Light,
+  surface: SurfaceFragment,
+) -> f32 { return 1.0; }
+
+@optional @link fn applyPointShadow(
+  light: Light,
+  surface: SurfaceFragment,
+) -> f32 { return 1.0; }
 
 @export fn applyLight(
   N: vec3<f32>,
   V: vec3<f32>,
   light: Light,
-  position: vec3<f32>,
-  ao: f32,
-  params: T,
-) -> Radiance {
+  surface: SurfaceFragment,
+) -> vec3<f32> {
   var L: vec3<f32>;
 
-  var radiance = light.intensity * light.color.rgb;
+  var intensity: f32 = light.intensity * 3.1415;
+  var radiance: vec3<f32>;
 
   let kind = light.kind;
   if (kind == 0) {
     // Ambient
-    return Radiance(vec3<f32>(radiance * ao), true);
+    return (surface.occlusion * light.intensity) * surface.albedo.rgb * light.color.rgb;
   }
   else if (kind == 1) {
     // Directional
     L = normalize(-light.normal.xyz);
-    radiance *= 3.1415;
+
+    if (light.shadowMap >= 0) {
+      intensity *= applyDirectionalShadow(light, surface);
+    }
+
+    radiance = light.color.rgb * intensity;
   }
   else if (kind == 2) {
+    // Dome
+    L = normalize(-light.normal.xyz);
+    let f = clamp(dot(L, N), 0.0, 1.0);
+    let color = mix(light.opts.rgb, light.color.rgb, f);
+    let bleed = light.normal.w;
+    if (bleed > 0.0) { L = mix(L, N, bleed); };
+
+    radiance = color * intensity;
+  }
+  else if (kind == 3) {
     // Point
-    let s = light.size.x;
-    let d = light.position.xyz - position;
+    let d = light.position.xyz - surface.position.xyz;
     L = normalize(d);
-    if (s >= 0.0) { radiance *= s*s / dot(d, d); }
-    radiance *= 3.1415;
+
+    var r = intensity / dot(d, d) - light.cutoff;
+    if (r > 0.0) {
+      if (light.shadowMap >= 0) {
+        r *= applyPointShadow(light, surface);
+      }
+      radiance = light.color.rgb * r;
+    }
+    else {
+      return vec3<f32>(0.0);
+    }
   }
   else {
-    return Radiance(vec3<f32>(0.0), false);
+    return vec3<f32>(0.0);
   }
 
-  let direct = applyMaterial(N, L, V, radiance, params);
-  return Radiance(direct, false);
+  let direct = radiance * applyMaterial(N, L, V, surface);
+  return direct;
 }

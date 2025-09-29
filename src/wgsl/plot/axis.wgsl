@@ -1,6 +1,6 @@
-@link fn getAxisStep(i: u32) -> vec4<f32>;
-@link fn getAxisOrigin(i: u32) -> vec4<f32>;
+@link fn getAxisStep() -> vec4<f32>;
+@link fn getAxisOrigin() -> vec4<f32>;
 
 @export fn getAxisPosition(index: u32) -> vec4<f32> {
-  return getAxisStep(0u) * f32(index) + getAxisOrigin(0u);
+  return getAxisStep() * f32(index) + getAxisOrigin();
 }

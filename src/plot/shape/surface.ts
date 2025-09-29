@@ -1,9 +1,9 @@
-import type { LiveComponent } from '../../live';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { ShaderSource } from '@use-gpu/shader';
 import type { ColorTrait, LineTrait, ROPTrait, SurfaceTrait } from '../types';
 
-import { use, useContext } from '../../live';
-import { SurfaceLayer } from '../../workbench';
+import { use, useContext } from '@use-gpu/live';
+import { SurfaceLayer } from '@use-gpu/workbench';
 
 import { DataContext } from '../providers/data-provider';
 import {
@@ -17,11 +17,13 @@ export type SurfaceProps =
   Partial<LineTrait> &
   Partial<ROPTrait> &
   Partial<SurfaceTrait> & {
+  shadow?: boolean,
+  side?: 'front' | 'back' | 'both',
   colors?: ShaderSource,
 };
 
 export const Surface: LiveComponent<SurfaceProps> = (props) => {
-  const {colors} = props;
+  const {side, shadow, colors} = props;
 
   const positions = useContext(DataContext) ?? undefined;
 
@@ -36,7 +38,10 @@ export const Surface: LiveComponent<SurfaceProps> = (props) => {
       colors,
       loopX,
       loopY,
+      shadow,
       shaded,
+      side,
+      ...rop,
     })
   );
 };

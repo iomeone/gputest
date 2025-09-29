@@ -1,4 +1,4 @@
-import type { Point, Point4, Rectangle } from '../../core';
+import type { Point, Point4, Rectangle } from '@use-gpu/core';
 import type { LayoutElement, LayoutRenderer, LayoutPicker, Direction, FitInto, AutoPoint, Margin, Alignment, Anchor } from '../types';
 
 import { makeFlexCursor } from './cursor';
@@ -167,8 +167,8 @@ export const fitFlex = (
         ? [mainSize, intoY, mainSize, intoY ?? into[3]]
         : [intoX, mainSize, intoX ?? into[2], mainSize]
       ) as FitInto;
-      if (ratioX != null) flex[2] /= ratioX;
-      if (ratioY != null) flex[3] /= ratioY;
+      if (isX && ratioX != null) flex[2] /= ratioX;
+      if (!isX && ratioY != null) flex[3] /= ratioY;
       const {size, render, pick} = fit(flex);
 
       maxCross = Math.max(maxCross, isX ? size[1] + my : size[0] + mx);
@@ -185,7 +185,7 @@ export const fitFlex = (
     for (let i = start; i < end; ++i) {
       const {flex, margin} = flowEls[i];
       const [ml, mt, mr, mb] = margin;
-      const m = isX ? ml + mr : mt + mb;
+      const m = isX ? mt + mb : ml + mr;
 
       const resolvedAnchor = flex ?? anchor;
       const [gap, lead] = getAlignmentSpacing(maxCross - sizes[i][isX ? 1 : 0] - m, 1, false, resolvedAnchor as any);
@@ -206,7 +206,8 @@ export const fitFlex = (
 
       let i = 0;
       for (let offset of offsets) {
-        offset[isX ? 1 : 0] += rowIndex[i++] * gap + lead;
+        const d = rowIndex[i++] * gap + lead;
+        offset[isX ? 1 : 0] += isSnap ? Math.round(d) : d;
       }
     }
     caretCross = spaceCross;

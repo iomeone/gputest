@@ -1,11 +1,11 @@
-import type { LiveComponent } from '../../live';
-import type { VectorLike } from '../../traits';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike } from '@use-gpu/traits';
 import type { AnchorTrait, ColorTrait, FontTrait, LabelTrait, ROPTrait } from '../types';
 
-import { use, provide, useCallback, useContext, useOne, useMemo } from '../../live';
+import { use, provide, useCallback, useContext, useOne, useMemo } from '@use-gpu/live';
 import { DataContext, ValuesContext } from '../providers/data-provider';
 import { RangeContext } from '../providers/range-provider';
-import { LayoutContext, LabelLayer } from '../../workbench';
+import { LayoutContext, LabelLayer } from '@use-gpu/workbench';
 import {
   useAnchorTrait,
   useColorTrait,
@@ -71,6 +71,7 @@ export const Label: LiveComponent<LabelProps> = (props) => {
       color,
       expand,
       flip,
+      ...rop,
     })
   );
 };

@@ -1,72 +1,86 @@
-import type { LiveComponent } from '../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type {
   TypedArray, ViewUniforms, DeepPartial,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData, TextureSource, LambdaSource, RenderPassMode,
-} from '../../core';
-import type { ShaderModule } from '../../shader';
+  VertexData, TextureSource, LambdaSource,
+} from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 
-import { ViewContext } from '../providers/view-provider';
 import { Virtual } from './virtual';
 
-import { patch } from '../../state';
-import { use, yeet, memo, useOne } from '../../live';
-import { bindBundle, bindingsToLinks, bundleToAttributes } from '../../shader/wgsl';
-import { makeShaderBindings } from '../../core';
+import { use, yeet, memo, useOne, useNoOne, useRef } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks, getBundleKey } from '@use-gpu/shader/wgsl';
+import { makeShaderBindings } from '@use-gpu/core';
 
 import { useBoundShader } from '../hooks/useBoundShader';
+import { usePickingShader } from '../providers/picking-provider';
+import { useRenderContext, useNoRenderContext } from '../providers/render-provider';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
+import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getFullScreenVertex } from '../../gen-wgsl/instance/vertex/full-screen';
-import { getTextureFragment } from '../../gen-wgsl/mask/textured';
+import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen.wgsl';
+import { getTextureColor } from '@use-gpu/wgsl/mask/textured.wgsl';
 
 export type RawFullScreenProps = {
   texture?: TextureSource | LambdaSource | ShaderModule,
+  filter?: ShaderModule,
+  initial?: boolean,
 
   pipeline?: DeepPartial<GPURenderPipelineDescriptor>,
-  mode?: RenderPassMode,
   id?: number,
-};
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'blend'>;
 
 const ZERO = [0, 0, 0, 1];
 
-const FRAGMENT_BINDINGS = bundleToAttributes(getTextureFragment);
-
-const PIPELINE = {
-  primitive: {
-    topology: 'triangle-list',
-  },
-  depthStencil: {
-    depthWriteEnabled: false,
-  },
-} as DeepPartial<GPURenderPipelineDescriptor>;
-
 export const RawFullScreen: LiveComponent<RawFullScreenProps> = memo((props: RawFullScreenProps) => {
   const {
-    pipeline: propPipeline,
     mode = 'opaque',
+    alphaToCoverage,
+    blend,
     id = 0,
+    initial = false,
   } = props;
 
   const vertexCount = 3;
   const instanceCount = 1;
 
-  const pipeline = useOne(() => patch(PIPELINE, propPipeline), propPipeline);
-
-  const t = useNativeColorTexture(props.texture);
+  const t = useNativeColorTexture(props.texture, props.filter);
 
   const getVertex = getFullScreenVertex;
-  const getFragment = useBoundShader(getTextureFragment, FRAGMENT_BINDINGS, [t]);
+  const getPicking = usePickingShader({id});
+  const getFragment = useBoundShader(getTextureColor, [t]);
+  const links = useOne(() => ({getVertex, getFragment, getPicking}),
+    getBundleKey(getVertex) + getBundleKey(getFragment) + (getPicking ? getBundleKey(getPicking) : 0));
+
+  const renderContext = initial ? useRenderContext() : useNoRenderContext(); 
+  let first = useRef(true);
+  initial ? useOne(() => { first.current = true; }, renderContext) : useNoOne();
+
+  const shouldDispatch = initial ? () => {
+    if (!first.current) return false;
+    first.current = false;
+  } : undefined;
+
+  const [pipeline, defines] = usePipelineOptions({
+    mode,
+    topology: 'triangle-list',
+    side: 'both',
+    alphaToCoverage,
+    depthTest: false,
+    depthWrite: false,
+    blend,
+  });
 
   return use(Virtual, {
     vertexCount,
     instanceCount,
 
-    getVertex,
-    getFragment,
+    links,
+    defines,
+    shouldDispatch,
 
+    renderer: 'solid',
     pipeline,
     mode,
-    id,
   });
 }, 'RawFullScreen');

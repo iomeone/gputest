@@ -1,4 +1,4 @@
-import { useOne } from '../live';
+import { useOne } from '@use-gpu/live';
 import {
   makeUseTrait,
   useProp,
@@ -9,7 +9,7 @@ import {
   parseStringArray,
   parseStringFormatter,
   parseVector,
-  parsePosition4,
+  parseVec4,
   parsePosition,
   parseRotation,
   parseQuaternion,
@@ -27,10 +27,10 @@ import {
   parseIntegerPositive,
   parseDomain,
   optional,
-} from '../traits';
+} from '@use-gpu/traits';
 import {
   parsePointShape,
-} from '../workbench';
+} from '@use-gpu/workbench';
 import type {
   AnchorTrait,
   ArrowTrait,
@@ -165,17 +165,16 @@ const POINT_DEFAULTS = {
 };
 
 const ROP_TRAIT = {
-  blending: parseBlending,
-  zWrite:   parseBoolean,
-  zTest:    parseBoolean,
-  zBias:    parseNumber,
-  zIndex:   parseInteger,
+  alphaToCoverage: optional(parseBoolean),
+  blend:           optional(parseBlending),
+  depthWrite:      optional(parseBoolean),
+  depthTest:       optional(parseBoolean),
+  mode:            optional(parseString),
+  zBias:           parseNumber,
+  zIndex:          parseInteger,
 };
 
 const ROP_DEFAULTS = {
-  blending: 'normal',
-  zWrite: true,
-  zTest: true,
   zBias: 0,
   zIndex: 0,
 };

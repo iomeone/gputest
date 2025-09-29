@@ -1,14 +1,15 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { VectorLike } from '../../traits';
-import { ViewUniforms, UniformAttribute } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { VectorLike } from '@use-gpu/traits';
+import { ViewUniforms, UniformAttribute } from '@use-gpu/core';
 
-import { parsePosition, useProp } from '../../traits';
-import { provide, use, useContext, useOne } from '../../live';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition } from '../../core';
+import { parsePosition, useProp } from '@use-gpu/traits';
+import { provide, use, useContext, useOne, incrementVersion } from '@use-gpu/live';
+import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition, makeFrustumPlanes } from '@use-gpu/core';
+import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
-import { FrameContext, usePerFrame } from '../providers/frame-provider';
+import { vec2, mat4 } from 'gl-matrix';
 
 const DEFAULT_ORBIT_CAMERA = {
   phi: 0,
@@ -36,8 +37,6 @@ export type OrbitCameraProps = {
 
   focus?: number,
   scale?: number | null,
-
-  children?: LiveElement<any>,
 };
 
 let t = 0;
@@ -68,9 +67,13 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
 
   const uniforms = useOne(() => ({
     projectionMatrix: { current: null },
+    projectionViewMatrix: { current: null },
+    projectionViewFrustum: { current: null },
+    inverseViewMatrix: { current: mat4.create() },
+    inverseProjectionViewMatrix: { current: mat4.create() },
     viewMatrix: { current: null },
-    viewNearFar: { current: null },
     viewPosition: { current: null },
+    viewNearFar: { current: null },
     viewResolution: { current: null },
     viewSize: { current: null },
     viewWorldDepth: { current: null },
@@ -82,23 +85,33 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
   uniforms.projectionMatrix.current = makeProjectionMatrix(width, height, fov, near, far, radius, dolly);
   uniforms.viewMatrix.current = makeOrbitMatrix(radius, phi, theta, target, dolly);
   uniforms.viewPosition.current = makeOrbitPosition(radius, phi, theta, target, dolly);
-  uniforms.viewNearFar.current = [ near, far ];
-  uniforms.viewResolution.current = [ 1 / width, 1 / height ];
-  uniforms.viewSize.current = [ width, height ];
-  uniforms.viewWorldDepth.current = [focus * Math.tan(fov / 2), 1];
+  uniforms.viewNearFar.current = vec2.fromValues(near, far);
+  uniforms.viewResolution.current = vec2.fromValues(1 / width, 1 / height);
+  uniforms.viewSize.current = vec2.fromValues(width, height);
+  uniforms.viewWorldDepth.current = vec2.fromValues(focus * Math.tan(fov / 2), 1);
   uniforms.viewPixelRatio.current = pixelRatio * unit;
 
-  usePerFrame();
-  const frame = useOne(() => ({ current: 0 }));
-  frame.current++;
+  const {
+    inverseProjectionViewMatrix,
+    inverseViewMatrix,
+    projectionMatrix,
+    projectionViewMatrix,
+    projectionViewFrustum,
+    viewMatrix,
+  } = uniforms;
+  projectionViewMatrix.current = mat4.multiply(mat4.create(), projectionMatrix.current, viewMatrix.current);
+  projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
+  mat4.invert(inverseProjectionViewMatrix.current, projectionViewMatrix.current);
+  mat4.invert(inverseViewMatrix.current, viewMatrix.current);
 
-  return (
-    provide(FrameContext, {...frame},
-      use(ViewProvider, {
-        defs: VIEW_UNIFORMS,
-        uniforms,
-        children: provide(LayoutContext, layout, children),
-      })
-    )
+  const frame = useOne(() => ({current: 0}));
+  frame.current = incrementVersion(frame.current);
+
+  return provide(FrameContext, frame.current, 
+    use(ViewProvider, {
+      defs: VIEW_UNIFORMS,
+      uniforms,
+      children: provide(LayoutContext, layout, children),
+    })
   );
 };

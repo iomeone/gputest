@@ -1,33 +1,26 @@
-import type { LC } from '../../../live';
-import type { Emit } from '../../../core';
-import { RenderPassMode } from '../../../core';
+import type { LC } from '@use-gpu/live';
+import type { Emit, Time } from '@use-gpu/core';
 
-import React from '../../../live';
-import { wgsl } from '../../../shader/wgsl';
+import React from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, Draw, Pass, OrbitCamera, RawData, PointLayer, Raw,
-  LinearRGB, Feedback,
-} from '../../../workbench';
+  Loop, Pass, OrbitCamera, RawData, PointLayer,
+  LinearRGB, FullScreen,
+} from '@use-gpu/workbench';
 
 export const RTTFeedbackPage: LC = () => {
-  let t = 0;
   return (
     <Loop>
-      <Raw>
-        {() => {
-          t = t + 1/60;
-        }}
-      </Raw>
       <LinearRGB history={1} sampler={{minFilter: 'linear', magFilter: 'linear'}}>
-        <Pass>
-          <OrbitCamera scale={1080}>
-            <Feedback shader={
+        <OrbitCamera scale={1080}>
+          <Pass>
+            <FullScreen shader={
               wgsl`
-                @link fn getFeedback(uv: vec2<f32>) -> vec4<f32> {}
+                @link fn getTexture(uv: vec2<f32>) -> vec4<f32> {}
                 @export fn main(uv: vec2<f32>) -> vec4<f32> {
                   let advectedUV = (uv - 0.5) * 0.99 + 0.5;
-                  return getFeedback(advectedUV);
+                  return getTexture(advectedUV);
                 }
               `
             }/>
@@ -38,7 +31,9 @@ export const RTTFeedbackPage: LC = () => {
               items={2}
               interleaved
               live
-              expr={(emit: Emit, i: number) => {
+              time
+              expr={(emit: Emit, i: number, time: Time) => {
+                const t = time.elapsed / 1000;
                 const s = ((i*i + i) % 13133.371) % 1000;
 
                 const x = Math.cos(t * 1.31 + Math.sin((t + s) * 0.31) + s) * 2;
@@ -64,8 +59,8 @@ export const RTTFeedbackPage: LC = () => {
               )}
             />
 
-          </OrbitCamera>
-        </Pass>
+          </Pass>
+        </OrbitCamera>
       </LinearRGB>
     </Loop>
   );

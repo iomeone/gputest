@@ -10,8 +10,6 @@ exports[`bind binds an external 1`] = `
     vec4 _01_getColor();
     
     vec4 colorUsed() { return vec4(0.0, 0.1, 0.2, 0.0); }
-    vec4 colorNotUsed() { return vec4(0.0, 0.1, 0.2, 1.0); }
-
     vec4 getColor() {
       return _01_getColor() + colorUsed();
     }
@@ -28,8 +26,6 @@ exports[`bind binds an external 2`] = `
     vec4 _01_getColor();
     
     vec4 colorUsed() { return vec4(0.0, 0.1, 0.2, 0.0); }
-    vec4 colorNotUsed() { return vec4(0.0, 0.1, 0.2, 1.0); }
-
     vec4 getColor() {
       return _01_getColor() + colorUsed();
     }

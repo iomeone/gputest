@@ -155,6 +155,9 @@ export const UNIFORM_ATTRIBUTE_SIZES: {[t in UniformType]: number} = {
   "mat4x3<f64>": 128,
   "mat4x4<f64>": 128,
 
+  "atomic<u32>": 4,
+  "atomic<i32>": 4,
+
   // Virtual types
   "u8": 1,
   "i8": 1,
@@ -249,6 +252,9 @@ export const UNIFORM_ATTRIBUTE_ALIGNS: {[t in UniformType]: number} = {
   "mat4x3<f64>": 32,
   "mat4x4<f64>": 32,
 
+  "atomic<u32>": 4,
+  "atomic<i32>": 4,
+
   // Virtual types (not implemented for struct fields, only raw arrays)
   "u8": 0,
   "i8": 0,
@@ -309,53 +315,56 @@ export const UNIFORM_ARRAY_DIMS = {
 
   "mat2x2<u32>":  4,
   "mat3x2<u32>":  6,
-  "mat2x3<u32>":  6,
+  "mat2x3<u32>":  7.5,
   "mat2x4<u32>":  8,
   "mat4x2<u32>":  8,
-  "mat3x3<u32>":  9,
+  "mat3x3<u32>":  11.5,
   "mat3x4<u32>":  12,
-  "mat4x3<u32>":  12,
+  "mat4x3<u32>":  15.5,
   "mat4x4<u32>":  16,
 
   "mat2x2<i32>":  4,
   "mat3x2<i32>":  6,
-  "mat2x3<i32>":  6,
+  "mat2x3<i32>":  7.5,
   "mat2x4<i32>":  8,
   "mat4x2<i32>":  8,
-  "mat3x3<i32>":  9,
+  "mat3x3<i32>":  11.5,
   "mat3x4<i32>":  12,
-  "mat4x3<i32>":  12,
+  "mat4x3<i32>":  15.5,
   "mat4x4<i32>":  16,
 
   "mat2x2<f16>":  4,
   "mat3x2<f16>":  6,
-  "mat2x3<f16>":  6,
+  "mat2x3<f16>":  7.5,
   "mat2x4<f16>":  8,
   "mat4x2<f16>":  8,
-  "mat3x3<f16>":  9,
+  "mat3x3<f16>":  11.5,
   "mat3x4<f16>":  12,
-  "mat4x3<f16>":  12,
+  "mat4x3<f16>":  15.5,
   "mat4x4<f16>":  16,
 
   "mat2x2<f32>":  4,
   "mat3x2<f32>":  6,
-  "mat2x3<f32>":  6,
+  "mat2x3<f32>":  7.5,
   "mat2x4<f32>":  8,
   "mat4x2<f32>":  8,
-  "mat3x3<f32>":  9,
+  "mat3x3<f32>":  11.5,
   "mat3x4<f32>":  12,
-  "mat4x3<f32>":  12,
+  "mat4x3<f32>":  15.5,
   "mat4x4<f32>":  16,
 
   "mat2x2<f64>":  4,
   "mat3x2<f64>":  6,
-  "mat2x3<f64>":  6,
+  "mat2x3<f64>":  7.5,
   "mat2x4<f64>":  8,
   "mat4x2<f64>":  8,
-  "mat3x3<f64>":  9,
+  "mat3x3<f64>":  11.5,
   "mat3x4<f64>":  12,
-  "mat4x3<f64>":  12,
+  "mat4x3<f64>":  15.5,
   "mat4x4<f64>":  16,
+
+  "atomic<u32>": 1,
+  "atomic<i32>": 1,
 
   // Virtual types
   "u8": 1,
@@ -464,6 +473,9 @@ export const UNIFORM_ARRAY_TYPES = {
   "mat3x4<f64>": Float64Array,
   "mat4x3<f64>": Float64Array,
   "mat4x4<f64>": Float64Array,
+
+  "atomic<u32>": Uint32Array,
+  "atomic<i32>": Int32Array,
 
   // Virtual types
   "u8": Uint8Array,
@@ -804,11 +816,50 @@ export const BLEND_ALPHA = {
   },
 } as any as GPUBlendState;
 
-export const BLEND_PREMULTIPLIED = {
+export const BLEND_PREMULTIPLY = {
   color: {
     operation: "add",
     srcFactor: "one",
     dstFactor: "one-minus-src-alpha",
+  },
+  alpha: {
+    operation: "add",
+    srcFactor: "one",
+    dstFactor: "one-minus-src-alpha",      
+  },
+} as any as GPUBlendState;
+
+export const BLEND_ADD = {
+  color: {
+    operation: "add",
+    srcFactor: "one",
+    dstFactor: "one",
+  },
+  alpha: {
+    operation: "add",
+    srcFactor: "one",
+    dstFactor: "one-minus-src-alpha",      
+  },
+} as any as GPUBlendState;
+
+export const BLEND_SUBTRACT = {
+  color: {
+    operation: "subtract",
+    srcFactor: "one",
+    dstFactor: "one",
+  },
+  alpha: {
+    operation: "add",
+    srcFactor: "one",
+    dstFactor: "one-minus-src-alpha",      
+  },
+} as any as GPUBlendState;
+
+export const BLEND_MULTIPLY = {
+  color: {
+    operation: "add",
+    srcFactor: "zero",
+    dstFactor: "src",
   },
   alpha: {
     operation: "add",

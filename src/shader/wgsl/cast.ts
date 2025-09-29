@@ -34,7 +34,6 @@ export const makeCastAccessor = (
   swizzle: string | CastTo,
 ) => {
   const symbols = args.map((t, i) => `${arg(i)}`);
-  const isScalar = !from.match(/vec</)
 
   const ret = makeSwizzle(from, to, 'v', swizzle);
 

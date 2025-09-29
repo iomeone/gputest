@@ -11,13 +11,6 @@ import { timed } from './timed';
 const NO_SYMBOLS = [] as any[];
 const DEBUG = false;
 
-export type BindBundle2 = (
-  bundle: ShaderModule,
-  links?: Record<string, ShaderModule | null>,
-  defines?: Record<string, ShaderDefine> | null,
-  key?: string | number,
-) => string;
-
 export type BindBundle = (
   bundle: ShaderModule,
   linkDefs?: Record<string, ShaderModule | null>,
@@ -55,16 +48,18 @@ export const bindBundle = (
   const hash = getBundleHash(bundle);
   const key = getBundleKey(bundle);
 
+  // External hash
   let external: number = 0;
   for (const k in links) if (links[k]) external = mixBits53(external, getBundleHash(links[k]!));
 
-  const defs = defines ? toMurmur53(defines) : '';
+  const defs = defines ? toMurmur53(defines) : 0;
   const code = `@closure`;
-  const rehash = scrambleBits53(mixBits53(hash, mixBits53(external, toMurmur53(defs))));
+  const rehash = scrambleBits53(mixBits53(hash, mixBits53(external, defs)));
 
+  // External key
   external = 0;
   for (const k in links) if (links[k]) external = mixBits53(external, getBundleKey(links[k]!));
-  const rekey = scrambleBits53(mixBits53(key, external));
+  const rekey = scrambleBits53(mixBits53(key, mixBits53(external, defs)));
 
   const relinks = bundle.links ? {
     ...bundle.links,
@@ -76,8 +71,14 @@ export const bindBundle = (
   } : defines ?? bundle.defines ?? undefined;
 
   const revirtuals = bundle.virtuals ? bundle.virtuals.slice() : [];
-  if (links) for (const k in links) if (links[k]) {
+
+  const {module: {table: {linkable}}} = bundle;
+  if (links && linkable) for (const k in links) if (links[k]) {
     const chunk = links[k] as any;
+
+    // Ensure link exists in module
+    let check = k.indexOf(':') > 0 ? k.split(':')[0] : k;
+    if (!linkable[check]) continue;
 
     // Copy bundle's sub-virtuals
     if (chunk.virtuals) revirtuals.push(...chunk.virtuals);
@@ -105,23 +106,26 @@ export const makeResolveBindings = (
   makeUniformBlock: MakeUniformBlock,
   getVirtualBindGroup: (defines?: Record<string, ShaderDefine>) => string | number,
 ) => timed('resolveBindings', (
-  modules: ParsedBundle[],
+  modules: (ParsedBundle | null)[],
   defines?: Record<string, ShaderDefine>,
   lazy?: boolean,
 ): {
-  modules: ParsedBundle[],
+  modules: (ParsedBundle | null)[],
   uniforms: DataBinding[],
   bindings: DataBinding[],
   volatiles: DataBinding[],
+  visibilities: Map<DataBinding, GPUShaderStageFlags>,
 } => {
   const allUniforms  = [] as DataBinding[];
   const allBindings  = [] as DataBinding[];
   const allVolatiles = [] as DataBinding[];
 
+  const allVisibilities = new Map<DataBinding, GPUShaderStageFlags>();
+
   const seen = new Set<number>();
   DEBUG && console.log('------------')
 
-  const addBinding = (b: DataBinding, slots: number) => {
+  const addBinding = (b: DataBinding, slots: number, visibility: GPUShaderStageFlags) => {
     const s = (b.storage ?? b.texture) as any;
     if (s && s.volatile) {
       allVolatiles.push(b);
@@ -131,19 +135,44 @@ export const makeResolveBindings = (
       allBindings.push(b);
       bindingBase += slots;
     }
+    addVisibility(b, visibility);
   }
 
+  const addVisibility = (b: DataBinding, visibility: GPUShaderStageFlags) => {
+    allVisibilities.set(b, (allVisibilities.get(b) || 0) | visibility);
+  }
+  
   // Gather all namespaced uniforms and bindings from all virtual modules.
   // Assign base offset to each virtual module in-place.
   let bindingBase = 0;
   let volatileBase = 0;
   let index = 0;
-  for (const {virtuals} of modules) {
+  let stage = 0;
+  for (const m of modules) if (m) {
+    const {virtuals} = m;
+
+    const visibles = new Set<number>();
+    const visibility = modules.length === 2
+      ? (stage ? GPUShaderStage.FRAGMENT : GPUShaderStage.VERTEX)
+      : GPUShaderStage.COMPUTE;
+
     if (virtuals) for (const m of virtuals) {
       const key = getBundleKey(m);
 
-      if (seen.has(key)) continue;
+      if (seen.has(key)) {
+        if (visibles.has(key)) continue;
+        visibles.add(key);
+
+        if (m.virtual) {
+          const {storages, textures} = m.virtual;
+          if (storages) for (const b of storages) addVisibility(b, visibility);
+          if (textures) for (const b of textures) addVisibility(b, visibility);
+        }        
+
+        continue;
+      }
       seen.add(key);
+      visibles.add(key);
 
       DEBUG && console.log('virtual', m.code, m.hash, m.key);
 
@@ -159,10 +188,11 @@ export const makeResolveBindings = (
         }
 
         if (uniforms) for (const u of uniforms) allUniforms.push(namespaceBinding(namespace, u));
-        if (storages) for (const b of storages) addBinding(b, 1);
-        if (textures) for (const b of textures) addBinding(b, 1 + +!!b.texture!.sampler);
+        if (storages) for (const b of storages) addBinding(b, 1, visibility);
+        if (textures) for (const b of textures) addBinding(b, 1 + +!!(b.texture!.sampler && (b.uniform!.args !== null)), visibility);
       }
     };
+    stage++;
   }
 
   let out = modules;
@@ -176,7 +206,9 @@ export const makeResolveBindings = (
     const imported = {at: -1, symbols: NO_SYMBOLS, name: VIRTUAL_BINDINGS, imports: NO_SYMBOLS};
 
     // Append to modules
-    out = modules.map((m: ShaderModule) => {
+    out = modules.map((m: ParsedBundle | null) => {
+      if (!m) return null;
+
       const bundle = toBundle(m);
 
       const {module, libs} = bundle;
@@ -201,12 +233,15 @@ export const makeResolveBindings = (
       };
     });
   }
+  
+  DEBUG && console.log('visibility', allVisibilities);
 
   return {
     modules: out,
     uniforms: allUniforms,
     bindings: allBindings,
     volatiles: allVolatiles,
+    visibilities: allVisibilities,
   };
 });
 

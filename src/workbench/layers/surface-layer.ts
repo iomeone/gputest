@@ -1,42 +1,45 @@
-import type { LiveComponent } from '../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, RenderPassMode,
-} from '../../core';
-import type { ShaderSource } from '../../shader';
+} from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { RawFaces } from '../primitives/raw-faces';
 
-import { patch } from '../../state';
-import { use, memo, useMemo, useOne } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
-import { resolve } from '../../core';
+import { patch } from '@use-gpu/state';
+import { use, memo, useMemo, useOne } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { resolve } from '@use-gpu/core';
 
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundSource } from '../hooks/useBoundSource';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 
-import { getSurfaceIndex, getSurfaceNormal } from '../../gen-wgsl/plot/surface';
+import { getSurfaceIndex, getSurfaceNormal, getSurfaceUV } from '@use-gpu/wgsl/plot/surface.wgsl';
 
 export type SurfaceLayerProps = {
   position?: number[] | TypedArray,
   color?: number[] | TypedArray,
+  st?: number[] | TypedArray,
 
   positions?: ShaderSource,
   colors?: ShaderSource,
+  sts?: ShaderSource,
 
   loopX?: boolean,
   loopY?: boolean,
   shaded?: boolean,
 
   size?: Lazy<[number, number] | [number, number, number] | [number, number, number, number]>,
-  mode?: RenderPassMode | string,
+  side?: 'front' | 'back' | 'both',
   id?: number,
-};
+} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
 
-const [SIZE_BINDING, POSITION_BINDING] = bundleToAttributes(getSurfaceIndex);
+const [SIZE_BINDING] = bundleToAttributes(getSurfaceIndex);
 
 /** Draws 2D surfaces across the X and Y data dimension. */
 export const SurfaceLayer: LiveComponent<SurfaceLayerProps> = memo((props: SurfaceLayerProps) => {
@@ -45,14 +48,18 @@ export const SurfaceLayer: LiveComponent<SurfaceLayerProps> = memo((props: Surfa
     positions,
     color,
     colors,
+    st,
+    sts,
 
     loopX = false,
     loopY = false,
     shaded = true,
+    side = 'both',
 
     size,
     mode = 'opaque',
     id = 0,
+    ...rest
   } = props;
 
   const sizeExpr = useMemo(() => () =>
@@ -66,24 +73,30 @@ export const SurfaceLayer: LiveComponent<SurfaceLayerProps> = memo((props: Surfa
   }, sizeExpr);
 
   const defines = useMemo(() => ({LOOP_X: !!loopX, LOOP_Y: !!loopY}), [loopX, loopY]);
-  const indices = useBoundShader(getSurfaceIndex, [SIZE_BINDING], [boundSize], defines);
+  const indices = useBoundShader(getSurfaceIndex, [boundSize], defines);
 
   const p = useShaderRef(props.position, props.positions);
-  const xf = useApplyTransform(p);
-  const normals = useBoundShader(getSurfaceNormal, [SIZE_BINDING, POSITION_BINDING], [boundSize, xf], defines);
+  const normals = useBoundShader(getSurfaceNormal, [boundSize, p], defines);
+
+  const uvs = useBoundShader(getSurfaceUV, [boundSize]);
 
   return use(RawFaces, {
     position,
     positions,
     color,
     colors,
+    st,
 
     indices,
     normals,
+    uvs,
+    sts,
 
     shaded,
+    side,
     count: countExpr,
     mode,
     id,
+    ...rest,
   });
 }, 'SurfaceLayer');

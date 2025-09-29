@@ -1,12 +1,11 @@
-import type { LC, LiveElement } from '../live';
-import type { Point, StorageSource, TextureSource, TypedArray, UniformType } from '../core';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { Point, StorageSource, TextureSource, TypedArray, UniformType } from '@use-gpu/core';
 import type { GLTF, GLTFAccessorData, GLTFBufferData, GLTFBufferViewData, GLTFImageData, GLTFNodeData, GLTFMeshData, GLTFMaterialData, GLTFSceneData, GLTFTextureData } from './types';
 
-import { use, gather, fence, suspend, yeet, useCallback, useContext, useOne, useMemo, useState } from '../live';
+import { use, gather, fence, suspend, yeet, useCallback, useContext, useOne, useMemo, useState } from '@use-gpu/live';
 
-import { DeviceContext, Fetch, getBoundShader } from '../workbench';
-import { bundleToAttributes } from '../shader/wgsl';
-import { makeCopyableTexture, makeStorageBuffer, uploadBuffer, uploadExternalTexture, UNIFORM_ARRAY_TYPES } from '../core';
+import { DeviceContext, Fetch, getBoundShader } from '@use-gpu/workbench';
+import { makeDynamicTexture, makeStorageBuffer, uploadBuffer, uploadExternalTexture, toDataBounds, UNIFORM_ARRAY_TYPES } from '@use-gpu/core';
 
 import { toScene, toNode, toMesh, toMaterial } from './parse';
 import { generateTangents } from 'mikktspace';
@@ -23,7 +22,7 @@ export type GLTFDataProps = {
   data?: ArrayBuffer | string | Record<string, any>,
   base?: string,
   
-  render?: (gltf: GLTF) => LiveElement<any>,
+  render?: (gltf: GLTF) => LiveElement,
 };
 
 const resolveURL = (base: string, url: string) => new URL(url, base).href;
@@ -170,8 +169,7 @@ export const GLTFData: LC<GLTFDataProps> = (props) => {
             format: accessorToType(type, componentType),
             length: count,
             size: [count],
-            min,
-            max,
+            bounds: min && max ? toDataBounds([min, max]) : undefined,
           };
         },
         ({bufferView}) => bufferSources[bufferView ?? -1],
@@ -203,7 +201,7 @@ export const GLTFData: LC<GLTFDataProps> = (props) => {
             const format = 'rgba8unorm';
             const colorSpace = 'auto';
 
-            const texture = makeCopyableTexture(device, bitmap.width, bitmap.height, format);
+            const texture = makeDynamicTexture(device, bitmap.width, bitmap.height, 1, format);
             uploadExternalTexture(device, texture, bitmap, size);
 
             return {
@@ -360,7 +358,7 @@ const accessorToType = (boxType: string, componentType: number): UniformType => 
 type Timeout = ReturnType<typeof setTimeout>;
 
 // If model is partially loaded, wait to see if more textures arrive before rendering.
-const Throttle = <T>(children: LiveElement<any>, delay: number = 300) => {
+const Throttle = <T>(children: LiveElement, delay: number = 300) => {
 
   let timer: Timeout | null = null;
 
@@ -369,6 +367,7 @@ const Throttle = <T>(children: LiveElement<any>, delay: number = 300) => {
   return fence(children, (value: (T | null)[]) => {
     valueRef.current = value;
 
+    // If everything is loaded, resolve immediately
     const notNull = value.indexOf(null) < 0;
     if (notNull) {
       if (timer) {
@@ -377,7 +376,8 @@ const Throttle = <T>(children: LiveElement<any>, delay: number = 300) => {
       }
       return yeet(value);
     }
-    
+
+    // If nothing is loaded, resolve immediately
     const entirelyNull = value.findIndex(v => v != null) < 0;
     if (entirelyNull) {
       if (timer) {
@@ -387,6 +387,7 @@ const Throttle = <T>(children: LiveElement<any>, delay: number = 300) => {
       return yeet(value);
     }
 
+    // Wait before resolving
     const [resolved, setResolved] = useState<(T | null)[] | null>(null);
     if (resolved !== value && !timer) {
       timer = setTimeout(() => {

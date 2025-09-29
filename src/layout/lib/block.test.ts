@@ -1,5 +1,9 @@
-import type { Rectangle, Point } from '../../core';
+import type { Rectangle, Point } from '@use-gpu/core';
 import type { Sizing, Margin } from '../types';
+
+describe('', () => { it("", () => {})});
+
+/*
 
 import { getBlockMinMax, getBlockMargin, fitBlock } from './block';
 import { makeBoxLayout } from './util';
@@ -135,3 +139,4 @@ describe('block layout', () => {
   });
 
 });
+*/

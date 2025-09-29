@@ -1,11 +1,14 @@
-import type { LC, PropsWithChildren, LiveElement } from '../live';
+import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
 import type { GLTF } from './types';
 
-import { bundleToAttributes } from '../shader/wgsl';
-import { use, provide, useMemo } from '../live';
+import { use, provide, useMemo } from '@use-gpu/live';
 import { mat4 } from 'gl-matrix';
 
-import { PBRMaterialProps, useBoundShader, useNativeColorTexture } from '../workbench';
+import { PBRMaterialProps, useBoundShader, useNativeColorTexture } from '@use-gpu/workbench';
+
+type Props = PBRMaterialProps & {
+  doubleSided: boolean,
+};
 
 export const useGLTFMaterial = (
   gltf: GLTF,
@@ -16,7 +19,7 @@ export const useGLTFMaterial = (
     useNativeColorTexture();
     useNativeColorTexture();
     useNativeColorTexture();
-//    useNativeColorTexture();
+    useNativeColorTexture();
     return {};
   }
   
@@ -25,13 +28,13 @@ export const useGLTFMaterial = (
     normalTexture,
     occlusionTexture,
     emissiveTexture,
-    //emissiveFactor,
+    emissiveFactor,
     //alphaMode,
     //alphaCutoff,
-    //doubleSided,
+    doubleSided,
   } = gltf.materials[material];
 
-  const props: Partial<PBRMaterialProps> = {
+  const props: Partial<Props> = {
     metalness: 0.0,
     roughness: 0.5,
   };
@@ -88,6 +91,9 @@ export const useGLTFMaterial = (
       }
     }
 
+    if (emissiveFactor != null) {
+      props.emissive = emissiveFactor;
+    }
     if (emissiveTexture != null) {
       let map = gltf.bound.texture[emissiveTexture.index];
       if (map) {
@@ -101,6 +107,7 @@ export const useGLTFMaterial = (
   props.normalMap = useNativeColorTexture(props.normalMap);
   props.occlusionMap = useNativeColorTexture(props.occlusionMap);
   props.emissiveMap = useNativeColorTexture(props.emissiveMap);
+  props.doubleSided = !!doubleSided;
 
   return props;
 };

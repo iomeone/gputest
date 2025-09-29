@@ -1,5 +1,7 @@
 export type Ease = 'cosine' | 'linear' | 'zero' | 'auto' | 'bezier';
 
+export type Tracks = Record<string, Keyframe<any>[]>;
+
 export type Keyframe<T> = 
 | [
   number,

@@ -1,180 +1,27 @@
-import type { LiveComponent } from '../../live';
-import type { RenderPassMode, DeepPartial, Lazy } from '../../core';
-import type { ShaderModule, ParsedBundle, ParsedModule } from '../../shader';
-import { memo, use, fragment, useContext, useNoContext, useMemo, useNoMemo, useOne, useState, useResource } from '../../live';
-import { resolve } from '../../core';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VirtualDraw } from '../pass/types';
+import { memo, use, useMemo } from '@use-gpu/live';
 
-import { bindBundle, bindingToModule } from '../../shader/wgsl';
-import { getWireframe } from '../render/wireframe';
 import { useInspectHoverable } from '../hooks/useInspectable';
+import { usePassContext } from '../providers/pass-provider';
 
-import { DeviceContext } from '../providers/device-provider';
-import { ViewContext } from '../providers/view-provider';
-import { RenderContext } from '../providers/render-provider';
-import { PickingContext } from '../render/picking';
-import { getNativeColor } from '../hooks/useNativeColor';
-
-import instanceDrawVirtualShaded from '../../gen-wgsl/render/vertex/virtual-shaded';
-import instanceDrawVirtualSolid from '../../gen-wgsl/render/vertex/virtual-solid';
-import instanceDrawVirtualPick from '../../gen-wgsl/render/vertex/virtual-pick';
-import instanceDrawVirtualUI from '../../gen-wgsl/render/vertex/virtual-ui';
-
-import instanceFragmentShaded from '../../gen-wgsl/render/fragment/shaded';
-import instanceFragmentSolid from '../../gen-wgsl/render/fragment/solid';
-import instanceFragmentPick from '../../gen-wgsl/render/fragment/pick';
-import instanceFragmentUI from '../../gen-wgsl/render/fragment/ui';
-
-import { drawCall } from './draw-call';
-
-const PICK_RENDERER = [
-  instanceDrawVirtualPick,
-  instanceFragmentPick,
-] as VirtualRenderer;
-
-const SOLID_RENDERER = [
-  instanceDrawVirtualSolid,
-  instanceFragmentSolid,
-] as VirtualRenderer;
-
-const SHADED_RENDERER = [
-  instanceDrawVirtualShaded,
-  instanceFragmentShaded,
-] as VirtualRenderer;
-
-const UI_RENDERER = [
-  instanceDrawVirtualUI,
-  instanceFragmentUI,
-] as VirtualRenderer;
-
-const BUILTIN = {
-  solid: SOLID_RENDERER,
-  shaded: SHADED_RENDERER,
-  ui: UI_RENDERER,
-} as Record<string, VirtualRenderer>;
-
-type VirtualRenderer = [ParsedBundle, ParsedBundle];
-
-export type VirtualProps = {
-  pipeline: DeepPartial<GPURenderPipelineDescriptor>,
-  mode?: RenderPassMode | string,
-  id?: number,
-
-  vertexCount: Lazy<number>,
-  instanceCount: Lazy<number>,
-
-  getVertex: ShaderModule,
-  getFragment: ShaderModule,
-
-  renderer?: VirtualRenderer | string,
-  defines: Record<string, any>,
-};
-
-const DEBUG_BINDING = { name: 'getInstanceSize', format: 'u32', value: 0, args: [] };
-const ID_BINDING = { name: 'getId', format: 'u32', value: 0, args: [] };
+export type VirtualProps = VirtualDraw;
 
 export const Virtual: LiveComponent<VirtualProps> = memo((props: VirtualProps) => {
-  const {
-    mode = 'opaque',
-    id = 0,
-  } = props;
+  const {useVariants} = usePassContext();
 
-  if (id && mode !== 'picking') {
-    return fragment([
-      use(Variant, {...props, id: 0}),
-      use(Variant, {...props, mode: 'picking'}),
-    ]);
-  }
-  
-  return Variant(props);
-}, 'Virtual'); 
-
-export const Variant: LiveComponent<VirtualProps> = (props: VirtualProps) => {
-  let {
-    getVertex: gV,
-    vertexCount: vC,
-    instanceCount: iC,
-
-    getFragment,
-
-    pipeline,
-    defines,
-
-    renderer = SOLID_RENDERER,
-    mode = 'opaque',
-    id = 0,
-  } = props;
-
-  let m = mode;
   const hovered = useInspectHoverable();
-  if (hovered) m = 'debug';
+  const variants = useVariants(props, hovered);
 
-  const isDebug = m === 'debug';
-  const isPicking = m === 'picking';
-  const topology = pipeline.primitive?.topology ?? 'triangle-list';
-
-  const renderContext = useContext(RenderContext);
-  const pickingContext = useContext(PickingContext);
-  const resolvedContext = isPicking ? pickingContext?.renderContext : renderContext;
-  if (!resolvedContext) throw new Error("GPU picking is not available");
-
-  const {colorInput, colorSpace} = resolvedContext;
-
-  const [
-    vertexShader,
-    fragmentShader,
-    getVertex,
-    vertexCount,
-    instanceCount
-  ] = useMemo(() => {
-    let vertexShader: ShaderModule;
-    let fragmentShader: ShaderModule;
-
-    let getVertex: ShaderModule = gV;
-    let vertexCount: Lazy<number> = vC;
-    let instanceCount: Lazy<number> = iC;
-
-    if (isDebug) {
-      [vertexShader, fragmentShader] = SOLID_RENDERER;
-      ({getVertex, vertexCount, instanceCount} = getWireframe(gV, vC, iC, topology));
+  if (Array.isArray(variants)) {
+    if (variants.length === 1) {
+      const [component] = variants;
+      return use(component, props);
     }
-    else if (isPicking) {
-      [vertexShader, fragmentShader] = PICK_RENDERER;
-    }
-    else {
-      let r: VirtualRenderer | undefined;
-      r = (typeof renderer == 'string') ? BUILTIN[renderer] : renderer;
-      if (!r) throw new Error(`Unknown renderer '${renderer}'`);
-      [vertexShader, fragmentShader] = r;
-    }
-
-    return [vertexShader, fragmentShader, getVertex, vertexCount, instanceCount];
-  }, [gV, vC, iC, m, topology]);
-
-  const getId = useOne(() => isPicking ? bindingToModule({uniform: ID_BINDING, constant: id}) : null, id);
-
-  // Binds links into shader
-  const [v, f] = useMemo(() => {
-    const links = {
-      getId,
-      getVertex,
-      getFragment: isDebug ? null : getFragment,
-      toColorSpace: getNativeColor(colorInput, colorSpace),
-    };
-    const v = bindBundle(vertexShader, links, undefined);
-    const f = bindBundle(fragmentShader, links, undefined);
-    return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getFragment, getId, isDebug, colorInput, colorSpace]);
-  
-  // Inline the render fiber to avoid another memo()
-  return drawCall({
-    vertexCount,
-    instanceCount,
-    vertex: v,
-    fragment: f,
-    defines,
-    pipeline,
-    renderContext: resolvedContext,
-    mode: m,
-    id,
-  });
-};
+    return variants.map(component => use(component, props));
+  }
+  else if (variants) {
+    const component = variants;
+    return component(props);
+  }
+}, 'Virtual');

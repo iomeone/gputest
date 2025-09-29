@@ -18,6 +18,7 @@ export const untilCommentCloseToken = new ExternalTokenizer(
     let nesting = 1;
     while (true) {
       const v = input.next;
+      if (v === -1) break;
 
       // /*
       if (v === 47 && input.peek(1) === 42) {
@@ -35,7 +36,7 @@ export const untilCommentCloseToken = new ExternalTokenizer(
         }
       }
       else {
-        input.advance();        
+        input.advance();
       }
     }
   }

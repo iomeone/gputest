@@ -43,7 +43,7 @@ const CAST_EXTERNALS = [{
 const makeDeclarations = (name: string, type: any, parameters: any) => [{
   func: {name, type, parameters},
   flags: RF.Exported,
-}];
+}] as any[];
 
 export const makeSwizzleTo = (
   makeSwizzleAccessor: MakeSwizzleAccessor,
@@ -66,11 +66,11 @@ export const makeSwizzleTo = (
     return makeSwizzleAccessor(name, from, to, swizzle);
   }
 
-  const declarations = makeDeclarations(entry, to, [from]);
+  const exports = makeDeclarations(entry, to, [from]);
 
   const module = loadVirtualModule(
     { render },
-    { symbols: SWIZZLE_SYMBOLS, declarations },
+    { symbols: SWIZZLE_SYMBOLS, exports },
     entry,
     hash,
     code,
@@ -110,11 +110,11 @@ export const makeCastTo = (
     return makeCastAccessor(name, accessor, args ?? [], format, type, swizzle);
   }
 
-  const declarations = makeDeclarations(entry, type, args);
+  const exports = makeDeclarations(entry, type, args);
 
   const cast = loadVirtualModule(
     { render },
-    { symbols: CAST_SYMBOLS, declarations, externals: CAST_EXTERNALS },
+    { symbols: CAST_SYMBOLS, exports, externals: CAST_EXTERNALS },
     entry,
     rehash,
     code,

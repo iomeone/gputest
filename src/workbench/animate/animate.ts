@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement, DeferredCall } from '../../live';
-import type { TypedArray } from '../../core';
+import type { LiveComponent, LiveElement, DeferredCall, PropsWithChildren } from '@use-gpu/live';
+import type { TypedArray } from '@use-gpu/core';
 import type { Keyframe } from './types';
 
-import { useMemo, useOne, reactInterop } from '../../live';
+import { use, extend, fence, useMemo, useOne, useRef } from '@use-gpu/live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 
@@ -12,21 +12,24 @@ export type AnimateProps<T> = {
   loop?: boolean,
   mirror?: boolean,
   repeat?: number,
-  ease?: 'cosine' | 'linear' | 'bezier',
+  ease?: 'ease' | 'cosine' | 'linear' | 'bezier',
 
   delay?: number,
   pause?: number,
+  duration?: number,
+  speed?: number,
 
   tracks?: Record<string, Keyframe<T>[]>,
   keyframes?: Keyframe<T>[],
   prop?: string,
 
-  children?: LiveElement<any>,
-  render?: (value: any) => LiveElement<any>,
+  render?: (value: any) => LiveElement,
 };
 
 const evaluateKeyframes = <T>(keyframes: Keyframe<T>[], time: number, ease: string) => {
-  const [a, b] = getActiveKeyframes(keyframes, time);
+  let [a, b] = getActiveKeyframes(keyframes, time);
+  if (!b) b = a;
+
   const [start] = a;
   const [end] = b;
 
@@ -51,7 +54,7 @@ const evaluateKeyframes = <T>(keyframes: Keyframe<T>[], time: number, ease: stri
 const getActiveKeyframes = <T>(keyframes: Keyframe<T>[], time: number) => {
   const n = keyframes.length;
   let i = 0;
-  for (; i < n - 1; ++i) {
+  for (; i < n - 2; ++i) {
     if (time < keyframes[i + 1][0]) break;
   }
   return [keyframes[i], keyframes[i + 1]];
@@ -95,30 +98,11 @@ const interpolateValue: Interpolator = <T>(a: any, b: any, t: number) => {
   return a;
 };
 
-const injectProp = (prop: string, value: any) => (call: LiveElement<any>): LiveElement<any> => {
-  if (typeof call === 'string') return null;
-  if (!call) return call;
-
-  const c = reactInterop(call);
-  if (Array.isArray(c)) return c.map(injectProp(prop, value)) as any as LiveElement<any>;
-  if (c?.args) {
-    const [props] = c.args;
-    if (props) {
-      c.args = [{
-        ...props,
-        [prop]: value,
-      }];
-    }
-  }
-
-  return c;
-};
-
 // causes typescript docgen to crash if defined as recursive
 type NestedNumberArray = any[];
 type Numberish = number | TypedArray | NestedNumberArray;
 
-export const Animate: LiveComponent<AnimateProps<Numberish>> = <T extends Numberish>(props: AnimateProps<T>) => {
+export const Animate: LiveComponent<AnimateProps<Numberish>> = <T extends Numberish>(props: PropsWithChildren<AnimateProps<T>>) => {
   const {
     loop = false,
     mirror = false,
@@ -127,6 +111,8 @@ export const Animate: LiveComponent<AnimateProps<Numberish>> = <T extends Number
 
     delay = 0,
     pause = 0,
+    speed = 1,
+    duration = null,
 
     tracks,
     keyframes,
@@ -136,38 +122,52 @@ export const Animate: LiveComponent<AnimateProps<Numberish>> = <T extends Number
     children,
   } = props;
 
-  const {
-    timestamp,
-    elapsed,
-    delta,
-  } = useTimeContext();
-
   const script = useMemo(() => (
     tracks ??
     ((keyframes && prop) ? {[prop]: keyframes} : null)
   ), [tracks, keyframes, prop]);
   if (!script) return null;
 
-  const started = useOne(() => elapsed, script);
-  const duration = useOne(() => {
+  const startedRef = useOne(() => ({current: -1}), script);
+  const length = useMemo(() => {
+    if (duration) return duration;
     const tracks = Array.from(Object.values(script));
     return tracks.reduce((length, keyframes) => Math.max(length, keyframes[keyframes.length - 1][0]), 0)
-  }, script);
+  }, [script, duration]);
 
-  let time = Math.max(0, (elapsed - started) / 1000 - delay);
-  let [t, max] = getLoopedTime(time, duration, pause, repeat, mirror);
+  const Run = useMemo(() => {
+    let props1 = mapValues(script, () => null);
+    let props2 = mapValues(script, () => null);
+    let flip = false;
 
-  const values = mapValues(script, (keyframes: Keyframe<T>[]) => evaluateKeyframes(keyframes, t, ease));
+    return () => {
+      const {
+        timestamp,
+        elapsed,
+        delta,
+      } = useTimeContext();
 
-  if (time < max) useAnimationFrame();
-  else useNoAnimationFrame();
+      let {current: started} = startedRef;
+      if (started < 0) started = startedRef.current = elapsed;
 
-  if (render) return tracks ? render(values) : (prop ? render(values[prop]) : null);
-  if (children) {
-    const list = Array.isArray(children) ? children.slice() : [children];
-    for (const k in values) list.map(injectProp(k, values[k]));
-    return list;
-  }
+      flip = !flip;
+      const props = flip ? props1 : props2;
 
-  return children ?? null;
+      const time = Math.max(0, (elapsed - started) / 1000 - delay) * speed;
+      const [t, max] = getLoopedTime(time, length, pause, repeat, mirror);
+
+      for (let k in props) props[k] = evaluateKeyframes(script[k], t, ease);
+
+      if (time < max) useAnimationFrame();
+      else useNoAnimationFrame();
+
+      if (render) return tracks ? render(props) : (prop ? render(props[prop]) : null);
+      if (children) return extend(children, props);
+
+      return (children as any) ?? null;
+    };
+  }, [script, length, render, children]);
+
+  // Fence so that continuation can change closure state
+  return fence(null, Run);
 };

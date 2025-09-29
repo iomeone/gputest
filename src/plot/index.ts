@@ -23,3 +23,5 @@ export * from './view/stereographic';
 
 export * from './traits';
 export * from './types';
+
+export * from './util';

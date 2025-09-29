@@ -5,5 +5,5 @@ import WGSL from './wgsl';
 export const GLSLLinker = GLSL;
 export const WGSLLinker = WGSL;
 
-export * from './util';
+export { getBundleHash, getBundleKey, getBundleEntry, toBundle, toModule } from './util';
 export * from './types';

@@ -1,7 +1,7 @@
-import type { Point } from '../../core';
+import type { Point } from '@use-gpu/core';
 import type { Alignment } from './types';
 
-import { makeTuples } from '../../core';
+import { makeTuples } from '@use-gpu/core';
 
 // Alignment to relative anchor position [0...1]
 export const getAlignmentAnchor = (x: Alignment): number => {

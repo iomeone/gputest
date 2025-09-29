@@ -1,35 +1,36 @@
-use '../../wgsl/use/types'::{ Light, Radiance };
-use '../../wgsl/fragment/pbr'::{ PBR };
+use '@use-gpu/wgsl/use/types'::{ Light };
 
 @infer type T;
 @link fn applyLight(
   N: vec3<f32>,
   V: vec3<f32>,
   light: Light,
-  position: vec3<f32>,
-  ao: f32,
-  @infer(T) params: T,
-) -> Radiance {}
+  @infer(T) surface: T,
+) -> f32 {}
 
 @export fn applyLights(
   N: vec3<f32>,
   V: vec3<f32>,
-  position: vec3<f32>,
-  ao: f32,
-  params: T,
+  surface: T,
 ) -> vec3<f32> {
 
   var radiance: vec3<f32> = vec3<f32>(0.0);
 
   var light = Light(
-    vec4<f32>(0.0, 0.0, 0.0, 1.0),
-    vec4<f32>(-0.267, -3*0.267, -2*0.267, 0.0),
+    mat4x4<f32>(),
     vec4<f32>(0.0),
-    vec4<f32>(-1.0, 0.0, 0.0, 0.0),
+    vec4<f32>(-0.267, -3*0.267, -2*0.267, 0.0),
     vec4<f32>(1.0),
-    1.0,
+    vec4<f32>(0.0),
+    2.0,
+    0.0,
     1,
+    -1,
+    0,
+    vec2<f32>(0.0),
+    vec2<f32>(0.0),
+    vec4<f32>(0.0),
   );
 
-  return applyLight(N, V, light, position, ao, params).light;
+  return 0.05 * surface.occlusion * surface.albedo.rgb + applyLight(N, V, light, surface);
 }

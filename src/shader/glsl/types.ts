@@ -39,12 +39,14 @@ export type ShaderCompiler = (code: string, stage: string) => Uint8Array | Uint3
 export type ComboRef = ModuleRef | FunctionRef | DeclarationRef;
 
 export type SymbolTable = {
-  symbols?: SymbolRef[],
-  visibles?: SymbolRef[],
-  globals?: SymbolRef[],
   modules?: ModuleRef[],
   declarations?: DeclarationRef[],
   externals?: DeclarationRef[],
+  exports?: DeclarationRef[],
+  symbols?: SymbolRef[],
+  visibles?: SymbolRef[],
+  globals?: SymbolRef[],
+  linkable?: Record<string, true>,
 };
 
 export type SymbolRef = string;

@@ -1,36 +1,41 @@
-import type { Key, Action, Task, LiveFiber, LiveElement, LiveNode, LivePure, DeferredCall, DeferredCallInterop, FiberQueue, HostInterface, RenderCallbacks, RenderOptions, ArrowFunction, ReactElementInterop } from './types';
+import type { Key, Task, LiveFiber, LiveElement, LiveNode, LivePure, DeferredCall, DeferredCallInterop, FiberQueue, HostInterface, RenderCallbacks, RenderOptions, ArrowFunction, ReactElementInterop } from './types';
 
 import { makeFiber, renderFiber, updateFiber, disposeFiber, reactInterop } from './fiber';
-import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, getOnPaint } from './util';
+import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, makeStackSlicer, getOnPaint } from './util';
 import { makeFiberQueue } from './queue';
 import { LOGGING, formatNode } from './debug';
 import { use, morph } from './builtin';
 
 const DEFAULT_RENDER_OPTIONS = {
   stackSliceDepth: 20,
+  strictQueueOrder: true,
+  strictSliceOrder: true,
 };
 
 const START = +new Date();
 
 const NO_NODE = () => null;
 const NO_ARGS = [] as any[];
-const dedupe = <T>(list: T[]): T[] => Array.from(new Set<T>(list));
 
 // Create new runtime host
 export const makeHost = (
   options: RenderOptions = DEFAULT_RENDER_OPTIONS,
   dispatch: (t: Task) => void,
-  flush: (as: Action[]) => void,
+  flush: (fs: LiveFiber<any>[]) => void,
 ) => {
+  const {
+    stackSliceDepth,
+    strictQueueOrder,
+    strictSliceOrder,
+  } = {...DEFAULT_RENDER_OPTIONS, ...options};
+
   const scheduler  = makeActionScheduler(dispatch, flush);
   const disposal   = makeDisposalTracker();
   const dependency = makeDependencyTracker();
   const queue      = makeFiberQueue();
+  const slicer     = makeStackSlicer(stackSliceDepth, strictSliceOrder);
 
-  let DEPTH = 0;
-  const {stackSliceDepth} = options;
-  const depth = (depth: number) => DEPTH = depth;
-  const slice = (f: LiveFiber<any>) => f.depth - DEPTH > stackSliceDepth;
+  let ID = 0;
 
   const host = {
     schedule: scheduler.schedule,
@@ -49,10 +54,13 @@ export const makeHost = (
     unvisit: queue.remove,
     pop: queue.pop,
     peek: queue.peek,
+    reorder: strictQueueOrder ? queue.reorder : () => {},
+    all: queue.all,
 
-    depth,
-    slice,
+    depth: slicer.depth,
+    slice: slicer.slice,
 
+    id: () => ++ID,
     options,
 
     __ping: () => {},
@@ -68,7 +76,7 @@ export const makeHostFiber = (
   node: DeferredCall<any>,
   options: RenderOptions = DEFAULT_RENDER_OPTIONS,
   dispatch: (t: Task) => void,
-  flush: (as: Action[]) => void,
+  flush: (fibers: LiveFiber<any>[]) => void,
 ) => {
   const {host, scheduler, disposal, dependency} = makeHost(options, dispatch, flush);
   const fiber = makeFiber(node.f, host, null, node.args);
@@ -100,10 +108,8 @@ export const renderWithDispatch = (
     LOG && console.log('Rendering Root', formatNode(node));
 
     // Set up batched flush for all actions
-    const flush = (as: Action[]) => {
-      const fibers = dedupe(as.map(({fiber}) => fiber));
-
-      LOG && console.log('----------------------------');
+    const flush = (fibers: LiveFiber<any>[]) => {
+      (LOG || LOGGING.tick) && console.log('----------------------------');
       LOG && console.log('Dispatch to Roots', fibers.map(formatNode), +new Date() - START, 'ms');
       if (!fibers.length) debugger;
 
@@ -111,7 +117,7 @@ export const renderWithDispatch = (
     };
 
     // Make new root
-    ({fiber, host} = makeHostFiber(node, options, dispatch ?? setTimeout, flush));
+    ({fiber, host} = makeHostFiber(node, options, dispatch ?? queueMicrotask, flush));
 
     host.__stats.mounts++;
   }
@@ -181,3 +187,4 @@ export const renderAsync = renderWithDispatch((t: Task) => { setTimeout(t, 0); }
 export const renderOnPaint = renderWithDispatch((t: Task) => { onPaint(t); });
 
 export const render = renderSync;
+export const unmount = (fiber: LiveFiber<any>) => disposeFiber(fiber);

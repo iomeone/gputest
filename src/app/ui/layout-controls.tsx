@@ -1,10 +1,9 @@
 import React from 'react';
-import type { LC, LiveElement } from '../../live';
+import type { LC, LiveElement } from '@use-gpu/live';
 
-import { PAGES } from '../routes';
-import { use, fragment, useState } from '../../live';
-import { HTML } from '../../react';
-import { useRouterContext } from '../../workbench';
+import { use, fragment, useState } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { useRouterContext } from '@use-gpu/workbench';
 
 const STYLE = {
   position: 'absolute',
@@ -21,7 +20,7 @@ const STYLE = {
 
 type LayoutControlsProps = {
   container?: Element | null,
-  render?: (mode: string) => LiveElement<any>,
+  render?: (mode: string) => LiveElement,
 };
 
 export const LayoutControls: LC<LayoutControlsProps> = (props: LayoutControlsProps) => {

@@ -42,6 +42,7 @@ export type SymbolTable = {
   symbols?: string[],
   visibles?: string[],
   globals?: string[],
+  linkable?: Record<string, true>,
 };
 
 export type ModuleRef = {
@@ -62,10 +63,6 @@ export type DeclarationRef = {
   struct?: StructRef,
 };
 
-export type AttributesRef = {
-  attributes?: AttributeRef[],
-};
-
 export type IdentifiersRef = {
   identifiers?: string[],
 };
@@ -79,15 +76,26 @@ export type InferRef = {
   at: number,
 };
 
-export type AttributeRef = {
-  name: string,
-  args?: string[],
+// These are parsed just-in-time to save on structs
+export type AttributeRef = string;
+export type TypeRef = string;
+
+export type AttributesRef = {
+  attr?: AttributeRef[],
 };
 
+export type AnnotatedTypeRef = AttributesRef & {
+  name: TypeRef,
+};
+
+export type ReturnTypeRef = TypeRef | AnnotatedTypeRef;
+
+/*
 export type TypeRef = {
   name: string,
   args?: TypeRef[],
 };
+*/
 
 export type TypeAliasRef = AttributesRef & {
   name: string,
@@ -100,8 +108,6 @@ export type QualifiedTypeAliasRef = TypeAliasRef & {
 
 export type FunctionRef = AttributesRef & IdentifiersRef & FunctionHeaderRef & InferrableRef;
 export type VariableRef = AttributesRef & IdentifiersRef & VariableDeclarationRef;
-export type AnnotatedTypeRef = AttributesRef & TypeRef;
-
 export type ParameterRef = AttributesRef & {
   name: string,
   type: TypeRef,
@@ -109,7 +115,7 @@ export type ParameterRef = AttributesRef & {
 
 export type FunctionHeaderRef = {
   name: string,
-  type: AnnotatedTypeRef,
+  type: ReturnTypeRef,
   parameters?: ParameterRef[] | string[],
 };
 

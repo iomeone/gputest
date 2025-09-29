@@ -1,21 +1,22 @@
-import type { LC } from '../../../live';
-import type { DataField } from '../../../core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { DataField } from '@use-gpu/core';
 
-import React, { use } from '../../../live';
+import React, { use } from '@use-gpu/live';
+import { vec3 } from 'gl-matrix';
 
 import {
-  Draw, Pass,
+  Pass,
   Cursor,
   CompositeData, LineSegments, ArrowSegments,
   OrbitCamera, OrbitControls,
   LineLayer, ArrowLayer,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 
 // Line data fields
 
 const dataFields = [
   // Accessor syntax
-  ['array<vec3<f32>>', (o: any) => o.path],
+  ['array<vec3<f32>>', (o: any) => o.path, 'position'],
   // Shorthand => o.color
   ['vec4<f32>', 'color'],
   ['f32', 'width'],
@@ -68,8 +69,9 @@ let arrowData = seq(9).map((i) => ({
 
 export const GeometryLinesPage: LC = () => {
 
-  const view = (
-    <Draw>
+  return (
+    <Camera>
+      <Cursor cursor='move' />
       <Pass>
         <CompositeData
           fields={dataFields}
@@ -123,25 +125,25 @@ export const GeometryLinesPage: LC = () => {
           }
         />
       </Pass>
-    </Draw>
+    </Camera>
   );
-
-  return [
-    <OrbitControls
-      radius={3}
-      bearing={0.5}
-      pitch={0.3}
-      render={(radius: number, phi: number, theta: number) =>
-        <OrbitCamera
-          radius={radius}
-          phi={phi}
-          theta={theta}
-          scale={2160}
-        >
-          {view}
-        </OrbitCamera>
-      }
-    />,
-    <Cursor cursor='move' />
-  ];
 };
+
+const Camera = ({children}: PropsWithChildren<object>) => (
+  <OrbitControls
+    radius={3}
+    bearing={0.5}
+    pitch={0.3}
+    render={(radius: number, phi: number, theta: number, target: vec3) =>
+      <OrbitCamera
+        radius={radius}
+        phi={phi}
+        theta={theta}
+        target={target}
+        scale={2160}
+      >
+        {children}
+      </OrbitCamera>
+    }
+  />
+);

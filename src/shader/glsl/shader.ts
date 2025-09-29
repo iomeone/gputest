@@ -3,10 +3,9 @@ import { ParsedModule, ParsedModuleCache, ShaderDefine } from './types';
 
 import { makeLoadModule, makeLoadModuleWithCache } from '../util/shader';
 import { makeBundleToAttribute, makeBundleToAttributes } from '../util/bundle';
-import { decompressAST } from '../util/tree';
 import { makeTranspile } from '../util/transpile';
 
-import { makeASTParser, compressAST } from './ast';
+import { makeASTParser, compressAST, decompressAST } from './ast';
 import { toTypeString, toTypeArgs } from './type';
 import { parser } from './grammar/glsl';
 import LRU from 'lru-cache';
@@ -26,7 +25,7 @@ export const DEFAULT_CACHE = makeModuleCache();
 export const parseShader = (code: string): Tree => parser.parse(code);
 
 /** Parse a code module into its in-memory representation (AST + symbol table) */
-export const loadModule = makeLoadModule(parseShader, makeASTParser, compressAST);
+export const loadModule = makeLoadModule(parseShader, makeASTParser, compressAST, decompressAST);
 
 /** Use cache to load modules */
 export const loadModuleWithCache = makeLoadModuleWithCache(loadModule, DEFAULT_CACHE);
@@ -44,8 +43,15 @@ export const bundleToAttribute = makeBundleToAttribute(toTypeString, toTypeArgs)
 /** Convert a bundle to a definition for all its attributes. */
 export const bundleToAttributes = makeBundleToAttributes(toTypeString, toTypeArgs);
 
+// Simple whitespace removal
+const minifyCode = (code: string) => {
+  code = code.replace(/ +/g, ' ');
+  code = code.replace(/\n+/g, '\n');
+  return code;
+};
+
 /** ES/CommonJS Transpiler */
-export const transpileGLSL = makeTranspile('glsl', 'glsl', loadModule, compressAST);
+export const transpileGLSL = makeTranspile('glsl', 'glsl', loadModule, compressAST, minifyCode);
 
 /** Templated literal syntax:
 

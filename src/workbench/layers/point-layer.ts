@@ -1,20 +1,22 @@
-import type { LiveComponent } from '../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
   VertexData, RenderPassMode,
-} from '../../core';
-import type { ShaderSource } from '../../shader';
+} from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { RawQuads } from '../primitives/raw-quads';
 
-import { patch } from '../../state';
-import { use, memo, useMemo, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingToModule, castTo } from '../../shader/wgsl';
-import { makeShaderBinding, makeShaderBindings } from '../../core';
+import { patch } from '@use-gpu/state';
+import { use, memo, useMemo, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingToModule, castTo } from '@use-gpu/shader/wgsl';
+import { makeShaderBinding, makeShaderBindings } from '@use-gpu/core';
 import { useShaderRef } from '../hooks/useShaderRef';
+import { useBoundShader } from '../hooks/useBoundShader';
 
-import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '../../gen-wgsl/mask/point';
+import { circle, diamond, square, circleOutlined, diamondOutlined, squareOutlined } from '@use-gpu/wgsl/mask/point.wgsl';
 import { PointShape } from './types';
 
 const MASK_SHADER = {
@@ -28,23 +30,27 @@ const MASK_SHADER = {
 
 export type PointLayerProps = {
   position?: number[] | TypedArray,
+  uv?: number[] | TypedArray,
+  st?: number[] | TypedArray,
   size?: number,
   color?: number[] | TypedArray,
   depth?: number,
   zBias?: number,
 
   positions?: ShaderSource,
+  uvs?: ShaderSource,
+  sts?: ShaderSource,
   sizes?: ShaderSource,
   colors?: ShaderSource,
   depths?: ShaderSource,
   zBiases?: ShaderSource,
 
   shape?: PointShape,
+  stroke?: number,
 
   count?: Lazy<number>,
-  mode?: RenderPassMode | string,
   id?: number,
-};
+} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
 
 const SIZE_BINDING = { name: 'getSize', format: 'f32', value: 1, args: ['u32'] } as UniformAttributeValue;
 
@@ -53,6 +59,10 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
   const {
     position,
     positions,
+    uv,
+    uvs,
+    st,
+    sts,
     color,
     colors,
     size,
@@ -63,9 +73,12 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
     zBiases,
 
     count,
+    stroke = 0,
     shape = 'circle',
     mode = 'opaque',
     id = 0,
+
+    ...rest
   } = props;
 
   const s = useShaderRef(size, sizes);
@@ -78,11 +91,16 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
       gain: 0.5,
     });
   }, s);
-  const masks = (MASK_SHADER as any)[shape] ?? MASK_SHADER.circle;
+  const mask = (MASK_SHADER as any)[shape] ?? MASK_SHADER.circle;
+  const boundMask = useBoundShader(mask, [stroke]);
 
   return use(RawQuads, {
     position,
     positions,
+    uv,
+    uvs,
+    st,
+    sts,
     color,
     colors,
     depth,
@@ -91,7 +109,10 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
     zBiases,
 
     rectangles,
-    masks,
+    masks: boundMask,
+
+    ...rest,
+    alphaToCoverage: rest.alphaToCoverage ?? true,
 
     count,
     mode,

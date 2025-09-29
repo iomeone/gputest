@@ -1,5 +1,5 @@
 import type {
-  UniformAllocation, VirtualAllocation, VolatileAllocation, ResourceAllocation,
+  UniformAllocation, VirtualAllocation, VolatileAllocation, GlobalAllocation, SharedAllocation,
   UniformAttribute, UniformAttributeDescriptor,
   UniformLayout, UniformType,
   UniformPipe, UniformByteSetter, UniformFiller, UniformDataSetter, UniformValueSetter,
@@ -11,23 +11,45 @@ import type {
 import { UNIFORM_ATTRIBUTE_SIZES, UNIFORM_ATTRIBUTE_ALIGNS } from './constants';
 import { UNIFORM_BYTE_SETTERS } from './bytes';
 
-import { getObjectKey, toMurmur53 } from '../state';
+import { getObjectKey, toMurmur53, mixBits53 } from '@use-gpu/state';
+import { makeBindGroupLayout, makeBindGroupLayoutEntries } from './bindgroup';
 import { makeUniformBuffer } from './buffer';
-import { makeSampler, makeTextureView } from './texture';
+import { makeSampler } from './texture';
 import { alignSizeTo } from './data';
+import { resolve } from './lazy';
 
-export const resolve = <T>(x: Lazy<T>): T => {
-  if (typeof x === 'function') return (x as any)();
-  if (typeof x === 'object' && x != null) {
-    if ('expr' in x) return x.expr();
-    if ('current' in x) return x.current;
-  }
-  return x;
-};
+const NO_BINDINGS = {} as any;
 
 export const getUniformAttributeSize = (format: UniformType): number => UNIFORM_ATTRIBUTE_SIZES[format];
 export const getUniformAttributeAlign = (format: UniformType): number => UNIFORM_ATTRIBUTE_ALIGNS[format];
 export const getUniformByteSetter = (format: UniformType): UniformByteSetter => UNIFORM_BYTE_SETTERS[format];
+
+export const makeGlobalUniforms = (
+  device: GPUDevice,
+  uniformGroups: UniformAttribute[][],
+): GlobalAllocation => {
+  const VISIBILITY_ALL = GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE;
+
+  const group = uniformGroups.map((_, binding) => ({binding, visibility: VISIBILITY_ALL, buffer: {}}));
+  const layout = makeBindGroupLayout(device, group);
+
+  const pipe = makeMultiUniformPipe(uniformGroups);
+  const buffer = makeUniformBuffer(device, pipe.data);
+
+  const {layout: {offsets}} = pipe;
+  const bindings = offsets.map((offset) => ({buffer, offset}));
+
+  const label = uniformGroups.flatMap(uniforms => uniforms.map(u => u.name)).join(' ');
+  const entries = makeResourceEntries(bindings);
+
+  const bindGroup = device.createBindGroup({
+    label,
+    layout,
+    entries,
+  });
+
+  return {pipe, buffer, layout, bindGroup};
+}
 
 export const makeUniforms = (
   device: GPUDevice,
@@ -82,7 +104,7 @@ export const makeBoundUniforms = <T>(
   const hasBindings = !!bindings.length;
   const hasUniforms = !!uniforms.length;
 
-  if (!hasBindings && !hasUniforms && !force) return {};
+  if (!hasBindings && !hasUniforms && !force) return NO_BINDINGS;
 
   const entries = [] as GPUBindGroupEntry[];
   let pipe, buffer;
@@ -116,19 +138,51 @@ export const makeVolatileUniforms = <T>(
   set: number = 0,
 ): VolatileAllocation => {
   const hasBindings = !!bindings.length;
-  if (!hasBindings) return {};
+  if (!hasBindings) return NO_BINDINGS;
 
-  let depth = 1;
+  let depths = [];
   for (const b of bindings) {
-    if (b.storage?.volatile) depth = Math.max(depth, +b.storage.volatile);
-    else if (b.texture?.volatile) depth = Math.max(depth, +b.texture.volatile);
+    if (b.storage?.volatile) depths.push(+b.storage.volatile);
+    else if (b.texture?.volatile) depths.push(+b.texture.volatile);
+  }
+  let depth = depths.length > 1 ? lcm(depths) : depths[0];
+  
+  if (depth === 1) {
+    let lastKey = -1;
+    let cached: GPUBindGroup | null = null;
+  
+    const bindGroup = () => {
+
+      let key = 0;
+      for (const b of bindings) {
+        let v: any = undefined;
+        if (b.texture) v = b.texture.view ?? b.texture.texture;
+        else if (b.storage) v = b.storage.buffer;
+
+        key = mixBits53(key, getObjectKey(v));
+      }
+
+      if (key === lastKey && cached) return cached;
+
+      const entries = bindings.length ? makeDataBindingsEntries(device, bindings, 0) : [];
+      const bindGroup = device.createBindGroup({
+        layout: pipeline.getBindGroupLayout(set),
+        entries,
+      });
+
+      cached = bindGroup;
+      lastKey = key;
+
+      return bindGroup;
+    };
+
+    return {bindGroup};
   }
 
-  const cache = miniLRU<GPUBindGroup>(depth + 1);
+  const cache = miniLRU<GPUBindGroup>(depth);
 
   const ids: number[] = [];
   const bindGroup = () => {
-
     ids.length = 0;
     for (const b of bindings) {
       let v: any = undefined;
@@ -157,9 +211,18 @@ export const makeVolatileUniforms = <T>(
   return {bindGroup};
 }
 
+export const getTextureDimension = (layout: string): GPUTextureViewDimension | undefined => {
+  if (!layout) return undefined;
+
+  const type = layout.match(/[1-3]d|cube/)?.[0];
+  if (!type) return undefined;
+
+  return (layout.match(/array/) ? type + '-array' : type) as GPUTextureViewDimension;
+};
+
 export const makeDataBindingsEntries = <T>(
   device: GPUDevice,
-  bindings: DataBinding<T>[],
+  bindings: DataBinding<T>[] | Omit<DataBinding<T>, 'uniform'>[],
   binding: number = 0,
 ): GPUBindGroupEntry[] => {
   const entries = [] as any[];
@@ -168,23 +231,28 @@ export const makeDataBindingsEntries = <T>(
     if (b.storage) {
       const {storage} = b;
       entries.push({binding, resource: {
-        buffer:     storage.buffer,
-        offset:     storage.byteOffset,
-        byteLength: storage.byteLength,
+        buffer: storage.buffer,
+        offset: storage.byteOffset,
+        size:   storage.byteLength,
       }});
       binding++;
     }
     else if (b.texture) {
       const {texture} = b;
-      const {texture: t, view, sampler} = texture;
+      const {texture: t, view, sampler, layout, aspect} = texture;
+      const hasSampler = sampler && (b as any).uniform?.args !== null;
 
-      const textureResource = view ?? makeTextureView(t);
-      const samplerResource = sampler ? ((sampler instanceof GPUSampler) ? sampler : makeSampler(device, sampler)) : null;
-
+      const textureResource = view ?? t.createView({
+        mipLevelCount: 1,
+        baseMipLevel: 0,
+        dimension: getTextureDimension(layout),
+        aspect,
+      });
       entries.push({binding, resource: textureResource});
       binding++;
 
-      if (sampler) {
+      if (hasSampler) {
+        const samplerResource = (sampler instanceof GPUSampler) ? sampler : makeSampler(device, sampler);
         entries.push({binding, resource: samplerResource});
         binding++;
       }
@@ -230,6 +298,27 @@ export const makeResourceEntries = (
   return entries;
 };
 
+export const makePackedLayout = (
+  uniforms: UniformAttribute[],
+  align: number = 1,
+): UniformLayout => {
+  const out = [] as any[];
+
+  let offset = 0;
+  for (const {name, format} of uniforms) {
+    if (typeof format === 'object') throw new Error(`Struct cannot be used as uniform member types`);
+
+    const s = getUniformAttributeSize(format);
+    const o = alignSizeTo(offset, align);
+    out.push({name, offset: o, format});
+
+    offset = o + s;
+  }
+
+  const s = alignSizeTo(offset, align);
+  return {length: s, attributes: out, offsets: [0]};
+};
+
 export const makeUniformLayout = (
   uniforms: UniformAttribute[],
   base: number = 0,
@@ -239,6 +328,8 @@ export const makeUniformLayout = (
   let max = 0;
   let offset = base;
   for (const {name, format} of uniforms) {
+    if (typeof format === 'object') throw new Error(`Struct cannot be used as uniform member types`);
+
     const s = getUniformAttributeSize(format);
     const a = getUniformAttributeAlign(format);
     if (a === 0) throw new Error(`Type ${format} is not host-shareable or unimplemented`);
@@ -360,4 +451,17 @@ const miniLRU = <T>(max: number) => {
       h = (h + 1) % max;
     },
   };
+}
+
+const lcm = (xs: number[]) => xs.reduce(mul) / xs.reduce(gcd);
+const mul = (a: number, b: number) => a * b;
+const gcd = (a: number, b: number) => {
+  let max = Math.max(a, b);
+  let min = Math.min(a, b);
+  while (min) {
+    let mod = max % min;
+    max = min;
+    min = mod;
+  }
+  return max;
 }

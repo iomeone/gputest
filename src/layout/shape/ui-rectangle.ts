@@ -1,12 +1,14 @@
-import type { LiveComponent } from '../../live';
-import type { TextureSource, Rectangle, Point4 } from '../../core';
-import type { ShaderModule } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TextureSource, Rectangle, Point4 } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 import type { ImageTrait, Fit, Repeat, Anchor } from '../types';
 
-import { use, yeet, memo, useContext, useMemo, useNoContext } from '../../live';
-import { LayoutContext, getAlignmentAnchor } from '../../workbench';
+import { use, yeet, memo, useContext, useMemo, useNoContext } from '@use-gpu/live';
+import { LayoutContext, getAlignmentAnchor } from '@use-gpu/workbench';
 
 import { evaluateDimension, parseAnchorXY } from '../parse';
+import { getOriginProjection } from '../lib/util';
+import { ARCHETYPES } from '../types';
 
 const UV_SQUARE = [0, 0, 1, 1] as Rectangle;
 const NO_RECTANGLE = [0, 0, 0, 0] as Rectangle;
@@ -21,6 +23,7 @@ const REPEAT_FLAG = {
 export type UIRectangleProps = {
   id: number,
   layout?: Rectangle,
+  origin?: Rectangle,
 
   image?: Partial<ImageTrait>,
 
@@ -29,8 +32,9 @@ export type UIRectangleProps = {
   border?: Point4,
   radius?: Point4,
 
-  clip?: ShaderModule,
-  transform?: ShaderModule
+  clip?: ShaderModule | null,
+  mask?: ShaderModule | null,
+  transform?: ShaderModule | null,
 };
 
 export const UIRectangle: LiveComponent<UIRectangleProps> = (props) => {
@@ -43,7 +47,9 @@ export const UIRectangle: LiveComponent<UIRectangleProps> = (props) => {
     radius,
     border,
 
+    origin = NO_RECTANGLE,
     clip,
+    mask,
     transform,
   } = props;
 
@@ -57,6 +63,8 @@ export const UIRectangle: LiveComponent<UIRectangleProps> = (props) => {
   }
 
   return useMemo(() => {
+    const st = origin ? getOriginProjection(layout, origin) : UV_SQUARE;
+    
     const sampledTexture = useMemo(() => {
       if (!image?.texture) return null;
 
@@ -69,8 +77,6 @@ export const UIRectangle: LiveComponent<UIRectangleProps> = (props) => {
         minFilter: 'linear',
         magFilter: 'linear',
         ...texture.sampler,
-        addressModeU,
-        addressModeV,
       } : null;
 
       return {...texture, sampler};
@@ -130,9 +136,8 @@ export const UIRectangle: LiveComponent<UIRectangleProps> = (props) => {
       } = image;
 
       let uv = UV_SQUARE;
-
-      if ('size' in texture && texture.size) {
-        const {size} = texture;
+      if ((texture as any).size) {
+        const {size} = texture as any;
  
         if (fit !== 'scale') {
  
@@ -180,10 +185,12 @@ export const UIRectangle: LiveComponent<UIRectangleProps> = (props) => {
         texture: sampledTexture ?? image?.texture,
         repeat: (repeat != null ? REPEAT_FLAG[repeat] : repeat) ?? 0,
         uv,
+        st,
 
         bounds: layout,
         count: 1,
         transform,
+        archetype: ARCHETYPES.textured,
       };
     }
     else {
@@ -194,11 +201,15 @@ export const UIRectangle: LiveComponent<UIRectangleProps> = (props) => {
         border,
         stroke,
         fill,
+        
+        st,
 
         bounds: layout,
         count: 1,
         clip,
+        mask,
         transform,
+        archetype: ARCHETYPES.solid,
       };
     }
 
@@ -213,7 +224,9 @@ export const UIRectangle: LiveComponent<UIRectangleProps> = (props) => {
     border,
 
     clip,
+    mask,
     transform,
     ...layout,
+    ...origin,
   ]);
 };

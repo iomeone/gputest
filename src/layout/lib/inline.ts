@@ -1,7 +1,7 @@
-import type { Point, Point4, Rectangle } from '../../core';
+import type { Point, Point4, Rectangle } from '@use-gpu/core';
 import type { InlineElement, LayoutElement, InlineRenderer, LayoutRenderer, LayoutPicker, Direction, FitInto, Margin, Alignment, Anchor, Base } from '../types';
 
-import { makeTuples } from '../../core';
+import { makeTuples } from '@use-gpu/core';
 import { makeInlineCursor } from './cursor';
 import { getAlignmentSpacing, isHorizontal, makeMiniHash } from './util';
 
@@ -134,7 +134,7 @@ export const fitInline = (
   const miniHash = makeMiniHash();
 
   // Push all text spans into layout
-  const cursor = makeInlineCursor(wrap ? spaceMain || 0 : 0, align);
+  const cursor = makeInlineCursor(wrap ? spaceMain || 0 : 0, align, isSnap);
 
   for (const el of els) {
     const {spans, block, margin, absolute, height: {lineHeight, ascent, descent, xHeight}} = el;
@@ -164,7 +164,7 @@ export const fitInline = (
   let span = 0;
   const layouts = cursor.gather((start, end, gap, lead, count, lineHeight, ascent, descent, xHeight, index) => {
     let n = end - start;
-    let mainPos = lead;
+    let mainPos = isSnap ? Math.round(lead) : lead;
 
     miniHash(start);
     miniHash(end);
@@ -174,7 +174,7 @@ export const fitInline = (
     const cross = Math.max(lineHeight, ascent + descent);
     const blockSlack = Math.max(0, cross - ascent - descent);
 
-    let t = 0;
+    let deduct = 0;
 
     while (n > 0 && i < els.length) {
       const el = els[i];
@@ -208,6 +208,7 @@ export const fitInline = (
       const sc = isSnap ? Math.round(crossPos) : crossPos;
       const offset = (isX ? [sm, sc, gap] : [sc, sm, gap]) as [number, number, number];
 
+      let t = 0;
       let accum = 0;
       const s = span;
       const e = span + count;
@@ -220,7 +221,8 @@ export const fitInline = (
       mainPos += accum;
       mainPos += indentEnd;
 
-      const size = (isX ? [accum - gap, lh] : [lh, accum - gap]) as Point;
+      deduct = count === last ? 0 : gap + t;
+      const size = (isX ? [accum - deduct, lh] : [lh, accum - deduct]) as Point;
 
       ranges.push([s, e]);
       sizes.push(size);
@@ -238,8 +240,8 @@ export const fitInline = (
       }
     }
 
-    maxMain = Math.max(maxMain, mainPos - gap - t, 0);
-    caretCross += cross;
+    maxMain = Math.max(maxMain, mainPos - deduct, 0);
+    caretCross += lineHeight;
   });
   
   const size = isX ? [into[0] ?? maxMain, caretCross] : [caretCross, into[1] ?? maxMain];

@@ -7,9 +7,10 @@
 
   --LiveInspect-backgroundEmpty: #222;
   --LiveInspect-backgroundInactive: #444;
-  --LiveInspect-backgroundHover: #555;
-  --LiveInspect-backgroundActive: #666;
+  --LiveInspect-backgroundHover: #666;
+  --LiveInspect-backgroundActive: #777;
   --LiveInspect-backgroundOn: rgba(70, 180, 220, 1.0);
+  --LiveInspect-backgroundOnActive: rgba(60, 160, 200, 1.0);
 
   --LiveInspect-trackBackground: #666;
   --LiveInspect-trackActive: #aaa;
@@ -18,15 +19,18 @@
   --LiveInspect-thumbHover: #aaa;
   --LiveInspect-thumbActive: #bbb;
 
-  --LiveInspect-focusShadow: rgba(0, 0, 0, .25);
+  --LiveInspect-depthShadow: rgba(0, 0, 0, .25);
+  --LiveInspect-focusShadow: rgba(30, 90, 120, 0.3);
   --LiveInspect-borderThin: #444;
+  --LiveInspect-borderVisible: #606060;
 
   --LiveInspect-shim: rgba(0, 0, 0, 0.85);
   --LiveInspect-shimGray: rgba(255, 255, 255, 0.1);
 
   --LiveInspect-colorLinkText: rgba(190, 210, 255, 1);
 
-  --LiveInspect-colorTextMuted: rgba(128, 128, 128, 1);
+  --LiveInspect-colorTextMutedSolid: rgba(144, 144, 144, 1);
+  --LiveInspect-colorTextMuted: rgba(255, 255, 255, 0.5);
   --LiveInspect-colorTextSemi: rgba(255, 255, 255, .65);
   --LiveInspect-colorText: #ddd;
   --LiveInspect-colorTextHover: #eee;
@@ -56,35 +60,13 @@
   color: var(--LiveInspect-colorText);
 }
 
-.LiveInspect div[role="tablist"] {
-  height: 40px;
-  border-bottom: 2px solid var(--LiveInspect-backgroundInactive);
-  margin-bottom: 10px;
-}
-
-.LiveInspect button[role="tab"] {
-  background: none;
-  font: inherit;
-  color: inherit;
-  border: 0;
-  padding: 0px 20px;
-  line-height: 40px;
-  height: 40px;
-  margin-bottom: -2px;
-  border-bottom: 2px solid transparent;
-}
-.LiveInspect button[role="tab"]:hover {
-  border-bottom: 2px solid var(--LiveInspect-backgroundHover);  
-}
-.LiveInspect button[role="tab"][data-state="active"] {
-  font-weight: bold;
-  color: var(--LiveInspect-colorTextActive);
-  border-bottom: 2px solid var(--LiveInspect-backgroundActive);  
-}
-
 html > body .LiveInspect ::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, .1);
   border-radius: 0;
+}
+
+html > body .LiveInspect ::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, .4);
 }
 
 html > body .LiveInspect ::-webkit-scrollbar-thumb {
@@ -211,17 +193,14 @@ html > body .LiveInspect ::-webkit-scrollbar {
 .LiveInspect div.fiber-tree-highlight.hovered {
   background: rgba(70, 180, 220, 1.0);
 }
-.LiveInspect div.fiber-tree-highlight.by {
+.LiveInspect div.fiber-tree-highlight.by, .LiveInspect div.fiber-tree-highlight.parents {
   background: rgba(30, 120, 180, 1.0);
 }
-.LiveInspect div.fiber-tree-highlight.parents {
-  background: rgba(30, 120, 180, 1.0);
-}
-.LiveInspect div.fiber-tree-highlight.depends {
+.LiveInspect div.fiber-tree-highlight.depends, .LiveInspect div.fiber-tree-highlight.precedes {
   background: rgba(75, 70, 200, 1.0);
 }
-.LiveInspect div.fiber-tree-highlight.precedes {
-  background: rgba(75, 70, 200, 1.0);
+.LiveInspect div.fiber-tree-highlight.quoted, .LiveInspect div.fiber-tree-highlight.unquoted {
+  background: rgba(30, 80, 250, 1.0);
 }
 .LiveInspect div.fiber-tree-highlight.staticMount {
   background: rgba(120, 120, 120, 1.0);
@@ -233,7 +212,8 @@ html > body .LiveInspect ::-webkit-scrollbar {
 .LiveInspect div.fiber-tree-ping {
   transition: 0.25s ease-in-out opacity;
 }
-.LiveInspect div.fiber-tree-ping.hovering {
+.LiveInspect div.fiber-tree-ping.hovering,
+.LiveInspect div.fiber-tree-highlight.selected.hovering:not(.hovered):not(.by):not(.depends):not(.precedes):not(.quoted):not(.unquoted) {
   opacity: 0.65;
 }
 .LiveInspect div.fiber-tree-ping.cold {

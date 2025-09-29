@@ -1,5 +1,7 @@
 import type { TypedArray, Tuples } from './types';
 
+export const seq = (n: number, s: number = 0, d: number = 1): number[] => Array.from({ length: n }).map((_, i: number) => s + d * i);
+
 export const makeTuples = <N extends number, T = number>(array: TypedArray | T[], dims: N): Tuples<N, T> => {
   const n = array.length / dims;
   const t: T[] = [];

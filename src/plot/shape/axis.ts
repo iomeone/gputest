@@ -1,16 +1,16 @@
-import type { LiveComponent } from '../../live';
-import type { VectorLike } from '../../traits';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike } from '@use-gpu/traits';
 import type { ArrowTrait, AxisTrait, LineTrait, ColorTrait, ROPTrait } from '../types';
 
-import { memo, use, gather, provide, useContext, useOne, useMemo } from '../../live';
+import { memo, use, gather, provide, useContext, useOne, useMemo } from '@use-gpu/live';
 import {
-  useBoundShader, useBoundSource, useRawSource, useShaderRef,
+  useBoundShader, useBoundSource, useShaderRef,
   LineLayer, ArrowLayer, useArrowSegments,
-} from '../../workbench';
-import { parseIntegerPositive } from '../../traits';
+} from '@use-gpu/workbench';
+import { parseIntegerPositive } from '@use-gpu/traits';
 
 import { RangeContext } from '../providers/range-provider';
-import { parsePosition4, useProp } from '../../traits';
+import { parseVec4, useProp } from '@use-gpu/traits';
 import {
   useAxisTrait,
   useArrowTrait,
@@ -20,10 +20,7 @@ import {
 } from '../traits';
 import { vec4 } from 'gl-matrix';
 
-import { bundleToAttributes } from '../../shader/wgsl';
-import { getAxisPosition } from '../../gen-wgsl/plot/axis';
-
-const AXIS_BINDINGS = bundleToAttributes(getAxisPosition);
+import { getAxisPosition } from '@use-gpu/wgsl/plot/axis.wgsl';
 
 export type AxisProps =
   Partial<AxisTrait> &
@@ -46,9 +43,9 @@ export const Axis: LiveComponent<AxisProps> = (props) => {
   const {width, depth, join, loop} = useLineTrait(props);
 
   const color = useColorTrait(props);
-  const {zBias} = useROPTrait(props);
+  const rop = useROPTrait(props);
 
-  const p = useProp(origin, parsePosition4);
+  const p = useProp(origin, parseVec4);
   const d = useProp(detail, parseIntegerPositive);
 
   const parentRange = useContext(RangeContext);
@@ -65,7 +62,7 @@ export const Axis: LiveComponent<AxisProps> = (props) => {
   // Make axis vertex shader
   const o = useShaderRef(og);
   const s = useShaderRef(step);
-  const positions = useBoundShader(getAxisPosition, AXIS_BINDINGS, [s, o]);
+  const positions = useBoundShader(getAxisPosition, [s, o]);
 
   // Render as 1 arrow chunk
   const n = d + 1;
@@ -85,7 +82,7 @@ export const Axis: LiveComponent<AxisProps> = (props) => {
       depth,
       size,
       join,
-      zBias,
+      ...rop,
     })
   );
 };

@@ -1,24 +1,27 @@
-import type { LiveComponent } from '../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type {
   TypedArray, ViewUniforms, DeepPartial, Lazy,
   UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData, TextureSource, LambdaSource, RenderPassMode,
-} from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+  VertexData, TextureSource, LambdaSource, DataBounds,
+} from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
-import { ViewContext } from '../providers/view-provider';
 import { Virtual } from './virtual';
 
-import { patch } from '../../state';
-import { use, memo, useCallback, useMemo } from '../../live';
-import { bindBundle, bindingsToLinks, bundleToAttributes } from '../../shader/wgsl';
-import { makeShaderBindings, resolve, BLEND_ALPHA } from '../../core';
+import { use, memo, useCallback, useMemo, useOne, useNoCallback } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks, getBundleKey } from '@use-gpu/shader/wgsl';
+import { makeShaderBindings, resolve, BLEND_ALPHA } from '@use-gpu/core';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useBoundShader } from '../hooks/useBoundShader';
+import { useDataLength } from '../hooks/useDataBinding';
+import { usePickingShader } from '../providers/picking-provider';
+import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getLabelVertex } from '../../gen-wgsl/instance/vertex/label';
-import { getUIFragment } from '../../gen-wgsl/instance/fragment/ui';
+import { getLabelVertex } from '@use-gpu/wgsl/instance/vertex/label.wgsl';
+import { getUIFragment } from '@use-gpu/wgsl/instance/fragment/ui.wgsl';
+
+const DEFINES = {DEBUG_SDF: false};
 
 export type RawLabelsProps = {
   index?: number,
@@ -26,6 +29,7 @@ export type RawLabelsProps = {
 
   rectangle?: number[] | TypedArray,
   uv?: number[] | TypedArray,
+  st?: number[] | TypedArray,
   layout?: number[] | TypedArray,
   sdf?: number[] | TypedArray,
 
@@ -39,6 +43,7 @@ export type RawLabelsProps = {
 
   rectangles?: ShaderSource,
   uvs?: ShaderSource,
+  sts?: ShaderSource,
   layouts?: ShaderSource,
   sdfs?: ShaderSource,
 
@@ -53,72 +58,32 @@ export type RawLabelsProps = {
   texture?: TextureSource | LambdaSource | ShaderModule,
   flip?: [number, number],
 
-  alphaToCoverage?: boolean,
+  lookups?: ShaderSource,
+  ids?:     ShaderSource,
+  lookup?:  number,
+  id?:      number,
+
   count?: Lazy<number>,
-  pipeline?: DeepPartial<GPURenderPipelineDescriptor>,
-  mode?: RenderPassMode | string,
-  id?: number,
-};
-
-const VERTEX_BINDINGS = bundleToAttributes(getLabelVertex);
-const FRAGMENT_BINDINGS = bundleToAttributes(getUIFragment);
-
-const DEFINES_ALPHA = {
-  HAS_EDGE_BLEED: true,
-  HAS_ALPHA_TO_COVERAGE: false,
-  DEBUG_SDF: false,
-};
-
-const DEFINES_ALPHA_TO_COVERAGE = {
-  HAS_EDGE_BLEED: true,
-  HAS_ALPHA_TO_COVERAGE: true,
-  DEBUG_SDF: false,
-};
-
-const PIPELINE_ALPHA = {
-  primitive: {
-    topology: 'triangle-strip',
-    stripIndexFormat: 'uint16',
-  },
-} as DeepPartial<GPURenderPipelineDescriptor>;
-
-const PIPELINE_ALPHA_TO_COVERAGE = {
-  fragment: {
-    targets: {
-      0: { blend: {$set: undefined}, },
-    },
-  },
-  multisample: {
-    alphaToCoverageEnabled: true,
-  },
-  primitive: {
-    topology: 'triangle-strip',
-    stripIndexFormat: 'uint16',
-  },
-} as DeepPartial<GPURenderPipelineDescriptor>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsProps) => {
   const {
-    pipeline: propPipeline,
-    alphaToCoverage = true,
     mode = 'opaque',
+    alphaToCoverage = true,
+    depthTest,
+    depthWrite,
+    blend,
     id = 0,
-    count = 1,
+    count = null,
   } = props;
 
   const vertexCount = 4;
-  const instanceCount = useCallback(() => ((props.indices as any)?.length ?? resolve(count)), [props.indices, count]);
-
-  const pipeline = useMemo(() =>
-    patch(alphaToCoverage
-      ? PIPELINE_ALPHA_TO_COVERAGE
-      : PIPELINE_ALPHA,
-    propPipeline),
-    [propPipeline, alphaToCoverage]);
+  const instanceCount = useDataLength(count, props.indices);
 
   const i = useShaderRef(props.index, props.indices);
   const r = useShaderRef(props.rectangle, props.rectangles);
   const u = useShaderRef(props.uv, props.uvs);
+  const s = useShaderRef(props.st, props.sts);
   const l = useShaderRef(props.layout, props.layouts);
   const a = useShaderRef(props.sdf, props.sdfs);
 
@@ -130,26 +95,56 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
   const f = useShaderRef(props.color, props.colors);
   const e = useShaderRef(props.expand, props.expands);
 
-  const xf = useApplyTransform(p);
   const q  = useShaderRef(props.flip);
+
+  const [xf,, getBounds] = useApplyTransform(p);
+
+  let bounds: Lazy<DataBounds> | null = null;
+  if (getBounds && (props.positions as any)?.bounds) {
+    bounds = useCallback(() => {
+      return getBounds((props.positions! as any).bounds);
+    }, [props.positions, getBounds]);
+  }
+  else {
+    useNoCallback();
+  }
 
   const t = props.texture;
 
-  const getVertex = useBoundShader(getLabelVertex, VERTEX_BINDINGS, [i, r, u, l, a, xf, c, o, z, d, f, e, q]);
-  const getFragment = useBoundShader(getUIFragment, FRAGMENT_BINDINGS, [t]);
+  const getVertex = useBoundShader(getLabelVertex, [i, r, u, s, l, a, xf, c, o, z, d, f, e, q]);
+  const getPicking = usePickingShader(props);
+  const getFragment = useBoundShader(getUIFragment, [t], DEFINES);
+  const links = useOne(() => ({getVertex, getFragment, getPicking}),
+    getBundleKey(getVertex) + getBundleKey(getFragment) + (getPicking ? getBundleKey(getPicking) : 0));
+
+  const [pipeline, defs] = usePipelineOptions({
+    mode,
+    topology: 'triangle-strip',
+    stripIndexFormat: 'uint16',
+    side: 'both',
+    alphaToCoverage,
+    depthTest: false,
+    depthWrite: false,
+    blend,
+  });
+
+  const defines: Record<string, any> = useMemo(() => ({
+    ...defs,
+    HAS_EDGE_BLEED: true,
+    HAS_MASK: false,
+    DEBUG_SDF: false,
+  }), [defs]);
 
   return use(Virtual, {
     vertexCount,
     instanceCount,
+    bounds,
 
-    getVertex,
-    getFragment,
-
-    defines: alphaToCoverage ? DEFINES_ALPHA_TO_COVERAGE : DEFINES_ALPHA,
+    links,
+    defines,
 
     renderer: 'ui',
     pipeline,
     mode,
-    id,
   });
 }, 'RawLabels');

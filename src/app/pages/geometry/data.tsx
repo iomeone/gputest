@@ -1,15 +1,15 @@
-import type { LC } from '../../../live';
-import type { DataField, Emit, RenderPassMode, Time } from '../../../core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { DataField, Emit, Time } from '@use-gpu/core';
 
-import React, { use } from '../../../live';
+import React, { use } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Draw, Pass,
+  Loop, Pass,
   CompositeData, Data, RawData, Raw, LineSegments,
-  OrbitCamera, OrbitControls,
+  OrbitCamera, OrbitControls, FPSControls,
   Cursor, PointLayer, LineLayer,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 
 // Line data fields
 
@@ -49,14 +49,13 @@ const lineData = seq(20).map((i) => ({
   loop: false,
 }));
 
-let t = 0;
-
 export const GeometryDataPage: LC = () => {
 
-  const view = (
+  return (
     <Loop>
-      <Draw>
-        <Cursor cursor='move' />
+      <Cursor cursor='move' />
+      
+      <Camera>
         <Pass>
 
           <Data
@@ -97,9 +96,9 @@ export const GeometryDataPage: LC = () => {
             length={100}
             live
             time
-            expr={(emit: Emit, i: number, n: number, time: Time) => {
+            expr={(emit: Emit, i: number, time: Time) => {
               const s = ((i*i + i) % 13133.371) % 1000;
-              const t = time.elapsed / 1000;
+              const t = time.elapsed / 2000;
               emit(
                 Math.cos(t * 1.31 + Math.sin((t + s) * 0.31) + s) * 2,
                 Math.sin(t * 1.113 + Math.sin((t - s) * 0.414) - s) * 2,
@@ -111,32 +110,34 @@ export const GeometryDataPage: LC = () => {
                 positions={positions}
                 colors={positions}
                 shape='diamondOutlined'
-                size={20}
+                size={50}
                 depth={1}
                 mode={'transparent'}
               />
             }
           />
         </Pass>
-      </Draw>
+      </Camera>
     </Loop>
   );
-
-  return (
-    <OrbitControls
-      radius={5}
-      bearing={0.5}
-      pitch={0.3}
-      render={(radius: number, phi: number, theta: number) =>
-        <OrbitCamera
-          radius={radius}
-          phi={phi}
-          theta={theta}
-          scale={1080}
-        >
-          {view}
-        </OrbitCamera>
-      }
-    />
-  );
 };
+
+const Camera = ({children}: PropsWithChildren<object>) => (
+  <FPSControls
+    position={[0.5, 0.5, 3.5]}
+    bearing={0.1}
+    pitch={0.1}
+    moveSpeed={8}
+    render={(phi: number, theta: number, target: vec3) =>
+      <OrbitCamera
+        radius={0}
+        phi={phi}
+        theta={theta}
+        target={target}
+        scale={1080}
+      >
+        {children}
+      </OrbitCamera>
+    }
+  />
+);

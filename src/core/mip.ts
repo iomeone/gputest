@@ -3,12 +3,11 @@ import type { Rectangle, Point, Point3, TextureSource, VertexData } from './type
 import { makeVertexAttributeLayout } from './attribute';
 import { makeColorAttachment, makeColorState } from './color';
 import { makeVertexBuffer } from './buffer';
-import { makeRenderPipeline, makeShaderModule } from './pipeline';
-import { makeTextureBinding, makeTextureView, makeSampler } from './texture';
+import { makeRenderPipeline, makeShaderModuleDescriptor } from './pipeline';
+import { makeTextureBinding, makeSampler } from './texture';
+import { seq } from './tuple';
 
-const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
-
-const MIP_SHADER = `
+const MIP_SHADER_2D = `
 struct VertexOutput {
   @builtin(position) position: vec4<f32>,
   @location(0) uv: vec2<f32>,
@@ -33,7 +32,34 @@ fn fragmentMain(
 ) -> @location(0) vec4<f32> {
   return textureSample(mipTexture, mipSampler, uv);
 }
-`
+`;
+
+const MIP_SHADER_2D_ARRAY = `
+struct VertexOutput {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+};
+
+@vertex
+fn vertexMain(
+  @location(0) uv: vec2<f32>,
+) -> VertexOutput {
+  return VertexOutput(
+    vec4<f32>((uv * 2.0 - 1.0) * vec2<f32>(1.0, -1.0), 0.5, 1.0),
+    uv,
+  );
+}
+
+@group(0) @binding(0) var mipTexture: texture_2d_array<f32>;
+@group(0) @binding(1) var mipSampler: sampler;
+
+@fragment
+fn fragmentMain(
+  @location(0) uv: vec2<f32>,
+) -> @location(0) vec4<f32> {
+  return textureSample(mipTexture, mipSampler, uv, 0);
+}
+`;
 
 const MIP_UVS = makeVertexAttributeLayout([{ name: 'uv', format: 'float32x2' }]);
 
@@ -64,14 +90,26 @@ const makeMipMesh = (bounds: Rectangle[], size: Point | Point3): VertexData => {
 const NO_CLEAR = [0, 0, 0, 0] as Rectangle;
 const MIP_PIPELINES = new WeakMap<GPUDevice, Map<string, GPURenderPipeline>>();
 
-export const updateMipTextureChain = (
+export const updateMipArrayTextureChain = (
   device: GPUDevice,
   source: TextureSource,
   bounds: (Rectangle[] | null) = null,
 ) => {
+  const {size} = source;
+  const [,, depth] = size;
+  if (depth) seq(depth).map((layer: number) => updateMipTextureChain(device, source, bounds, layer));
+}
+
+export const updateMipTextureChain = (
+  device: GPUDevice,
+  source: TextureSource,
+  bounds: (Rectangle[] | null) = null,
+  layer: number | null = null,
+) => {
   const {
     texture,
     format,
+    layout,
     size,
     mips = 1,
   } = source;
@@ -86,7 +124,13 @@ export const updateMipTextureChain = (
     magFilter: 'linear',
   });
 
-  const views = seq(mips).map((mip: number) => makeTextureView(texture, 1, mip));
+  const views = seq(mips).map((mip: number) => texture.createView({
+    mipLevelCount: 1,
+    arrayLayerCount: 1,
+    baseMipLevel: mip,
+    baseArrayLayer: layer ?? 0,
+    dimension: layer != null ? '2d-array' : '2d',
+  }));
   
   const renderPassDescriptors = seq(mips).map(i => ({
     colorAttachments: [makeColorAttachment(views[i], null, NO_CLEAR, 'load')],
@@ -95,10 +139,13 @@ export const updateMipTextureChain = (
   let cache = MIP_PIPELINES.get(device);
   if (!cache) MIP_PIPELINES.set(device, cache = new Map());
   
-  let pipeline = cache.get(format);
+  const key = [format, layout].join('/');
+  let pipeline = cache.get(key);
   if (!pipeline) {
-    const vertex = makeShaderModule(MIP_SHADER, 'mip-v', 'vertexMain');
-    const fragment = makeShaderModule(MIP_SHADER, 'mip-f', 'fragmentMain');
+    const shader = layer != null ? MIP_SHADER_2D_ARRAY : MIP_SHADER_2D;
+
+    const vertex = makeShaderModuleDescriptor(shader, 'mip-v', 'vertexMain');
+    const fragment = makeShaderModuleDescriptor(shader, 'mip-f', 'fragmentMain');
     const colorStates = [makeColorState(format as GPUTextureFormat)];
 
     pipeline = makeRenderPipeline(device, vertex, fragment, colorStates, undefined, 1, {
@@ -108,10 +155,10 @@ export const updateMipTextureChain = (
       vertex:   {buffers: mesh.attributes},
       fragment: {},
     });
-    cache.set(format, pipeline);
+    cache.set(key, pipeline);
   }
 
-  const bindGroups = seq(mips).map((mip: number) => makeTextureBinding(device, pipeline!, sampler, views[mip]));
+  const bindGroups = seq(mips).map((mip: number) => makeTextureBinding(device, pipeline!, views[mip], sampler));
 
   const commandEncoder = device.createCommandEncoder();
   for (let i = 1; i < mips; ++i) {

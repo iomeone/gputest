@@ -3,12 +3,13 @@ import { ParsedModule, ParsedModuleCache, ShaderDefine } from './types';
 
 import { makeLoadModule, makeLoadModuleWithCache } from '../util/shader';
 import { makeBundleToAttribute, makeBundleToAttributes } from '../util/bundle';
-import { decompressAST } from '../util/tree';
 import { makeTranspile } from '../util/transpile';
 
-import { makeASTParser, compressAST } from './ast';
+import { makeASTParser, compressAST, decompressAST } from './ast';
 import { toTypeString, toTypeArgs } from './type';
+import { removeComments, removeWhiteSpace, renameLocals } from './minify';
 import { parser } from './grammar/wgsl';
+
 import LRU from 'lru-cache';
 import zip from 'lodash/zip';
 
@@ -26,7 +27,7 @@ export const DEFAULT_CACHE = makeModuleCache();
 export const parseShader = (code: string): Tree => parser.parse(code);
 
 /** Parse a code module into its in-memory representation (AST + symbol table) */
-export const loadModule = makeLoadModule(parseShader, makeASTParser, compressAST);
+export const loadModule = makeLoadModule(parseShader, makeASTParser, compressAST, decompressAST);
 
 /** Use cache to load modules */
 export const loadModuleWithCache = makeLoadModuleWithCache(loadModule, DEFAULT_CACHE);
@@ -34,7 +35,7 @@ export const loadModuleWithCache = makeLoadModuleWithCache(loadModule, DEFAULT_C
 /** Make WGSL constant definitions */
 export const defineConstants = (defs: Record<string, ShaderDefine>): string => {
   const out = [];
-  for (let k in defs) if (k[0] !== '@' && defs[k] != null) out.push(`let ${k} = ${defs[k]};`);
+  for (let k in defs) if (k[0] !== '@' && defs[k] != null) out.push(`const ${k} = ${defs[k]};`);
   return out.join("\n");
 }
 
@@ -44,8 +45,16 @@ export const bundleToAttribute = makeBundleToAttribute(toTypeString, toTypeArgs)
 /** Convert a bundle to a definition for all its attributes. */
 export const bundleToAttributes = makeBundleToAttributes(toTypeString, toTypeArgs);
 
+// Simple whitespace / comment removal
+const minifyCode = (code: string) => {
+  code = removeComments(code);
+  code = renameLocals(code);
+  code = removeWhiteSpace(code);
+  return code;
+};
+
 /** ES/CommonJS Transpiler */
-export const transpileWGSL = makeTranspile('wgsl', 'wgsl', loadModule, compressAST);
+export const transpileWGSL = makeTranspile('wgsl', 'wgsl', loadModule, compressAST, minifyCode);
 
 /** Templated literal syntax:
 

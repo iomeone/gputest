@@ -1,39 +1,36 @@
-import type { LiveComponent, LiveElement } from '../live';
-import type { Point, Point4, Rectangle } from '../core';
-import type { Placement } from '../traits';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { Point, Point4, Rectangle } from '@use-gpu/core';
+import type { Placement } from '@use-gpu/traits';
 import type { FitInto, LayoutElement, LayoutPicker } from './types';
 
-import { parsePlacement, useProp } from '../traits';
-import { memo, yeet, provide, gather, use, keyed, fragment, useContext, useCapture, useFiber, useMemo, useOne } from '../live';
+import { parsePlacement, useProp } from '@use-gpu/traits';
+import { memo, signal, provide, gather, use, keyed, fragment, useContext, useCapture, useFiber, useMemo, useOne, incrementVersion } from '@use-gpu/live';
 
 import {
   DebugContext, MouseContext, WheelContext, ViewContext,
-  LayoutContext, useTransformContext, useScrollSignal,
+  LayoutContext, useTransformContext,
   useInspectable, useInspectHoverable, useInspectorSelect, Inspector,
   useBoundShader, useNoBoundShader,
-} from '../workbench';
+} from '@use-gpu/workbench';
 
-import { bundleToAttributes, chainTo } from '../shader/wgsl';
-import { getLayoutPosition } from '../gen-wgsl/layout/layout';
+import { chainTo } from '@use-gpu/shader/wgsl';
+import { getLayoutPosition } from '@use-gpu/wgsl/layout/layout.wgsl';
 
 import { makeBoxInspectLayout } from './lib/util';
 import { UIRectangle } from './shape/ui-rectangle';
 import { mat4, vec2, vec3 } from 'gl-matrix';
-
-const LAYOUT_BINDINGS = bundleToAttributes(getLayoutPosition);
 
 export type LayoutProps = {
   width?: number,
   height?: number,
   placement?: Placement,
   inspect?: boolean,
-  render?: () => LiveElement<any>,
-  children?: LiveElement<any>,
+  render?: () => LiveElement,
 };
 
 const DEFAULT_PLACEMENT = vec2.fromValues(1, 1);
 
-export const Layout: LiveComponent<LayoutProps> = memo((props: LayoutProps) => {
+export const Layout: LiveComponent<LayoutProps> = memo((props: PropsWithChildren<LayoutProps>) => {
   const {width, height, render, children} = props;
   const placement = useProp(props.placement, parsePlacement, DEFAULT_PLACEMENT);
 
@@ -73,7 +70,7 @@ const Resume = (placement: vec2, inspect: Inspector, hovered: boolean) => (els: 
   const sizes: Point[] = [];
   const offsets: Point[] = [];
 
-  let transform = useTransformContext();
+  let {transform} = useTransformContext();
 
   // Global X/Y flip
   const flip = useOne(() => [0, 0] as Point);
@@ -85,7 +82,7 @@ const Resume = (placement: vec2, inspect: Inspector, hovered: boolean) => (els: 
   shift[0] = (placement[0] - 1.0) / 2 * into[0];
   shift[1] = (placement[1] - 1.0) / 2 * into[1];
 
-  const bound = useBoundShader(getLayoutPosition, LAYOUT_BINDINGS, [flip, shift]);
+  const bound = useBoundShader(getLayoutPosition, [flip, shift]);
   transform = useMemo(() => transform ? chainTo(transform, bound) : bound, [transform, bound]);
 
   // Render children into root container
@@ -100,16 +97,17 @@ const Resume = (placement: vec2, inspect: Inspector, hovered: boolean) => (els: 
     const [w, h] = absolute ? into : size;
     const [ml, mt] = margin;
     const layout = [left + ml, top + mt, left + ml + w, top + mt + h] as Rectangle;
-    const el = render(layout, undefined, transform);
     
     sizes.push([w, h]);
     offsets.push([left + ml, top + mt]);
 
-    if (Array.isArray(el)) out.push(...el);
-    else if (el) out.push(el);
-
     if (pick) pickers.push((x: number, y: number, scroll: boolean = false) =>
       pick(x, y, layout[0], layout[1], layout[2], layout[3], scroll));
+
+    const el = render(layout, layout, null, null, transform);
+
+    if (Array.isArray(el)) out.push(...el);
+    else if (el) out.push(el);
   }
 
   // Picking goes front-to-back
@@ -124,7 +122,7 @@ const Resume = (placement: vec2, inspect: Inspector, hovered: boolean) => (els: 
       offsets,
     },
   });
-  if (hovered) out.push(...makeBoxInspectLayout(id, sizes, offsets)([0, 0, 0, 0], undefined, transform));
+  if (hovered) out.push(...makeBoxInspectLayout(id, sizes, offsets)([0, 0, 0, 0], [0, 0, 0, 0], null, null, transform));
 
   // Add scroll listener
   out.push(keyed(Scroller, -2, pickers, flip, shift));
@@ -145,7 +143,7 @@ const screenToView = (projectionMatrix: mat4, x: number, y: number) => {
 
 export const Scroller = (pickers: any[], flip: [number, number], shift: [number, number]) => {
   const { useWheel } = useContext(WheelContext);
-  const { viewUniforms } = useContext(ViewContext);
+  const { uniforms: viewUniforms } = useContext(ViewContext);
   const {
     viewPixelRatio: { current: dpi },
     viewSize: { current: [width, height] },
@@ -154,7 +152,10 @@ export const Scroller = (pickers: any[], flip: [number, number], shift: [number,
 
   const { wheel } = useWheel();
   const [px, py] = screenToView(matrix, wheel.x / width * dpi * 2.0 - 1.0, 1.0 - wheel.y / height * dpi * 2.0);
-  
+
+  const versionRef = useOne(() => ({current: 0}));
+  let version = versionRef.current;
+
   useOne(() => {
     const { moveX, moveY, stopped } = wheel;
     if (stopped) return;
@@ -169,18 +170,19 @@ export const Scroller = (pickers: any[], flip: [number, number], shift: [number,
       if (picked) {
         const [id, rectangle, onScroll] = picked;
         if (onScroll) onScroll(moveX, moveY);
-
-        useScrollSignal();
+        version = versionRef.current = incrementVersion(versionRef.current);
         return;
       }
     }
   }, wheel);
+
+  return useOne(() => signal(), version);
 }
 
 export const Inspect = (pickers: any[], flip: [number, number], shift: [number, number]) => {
   const { id } = useFiber();
   const { useMouse } = useContext(MouseContext);
-  const { viewUniforms } = useContext(ViewContext);
+  const { uniforms: viewUniforms } = useContext(ViewContext);
   const {
     viewPixelRatio: { current: dpi },
     viewSize: { current: [width, height] },

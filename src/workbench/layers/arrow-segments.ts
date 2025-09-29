@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { StorageSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { StorageSource } from '@use-gpu/core';
 
-import { memo, yeet, useMemo } from '../../live';
-import { getChunkCount, generateChunkSegments, generateChunkAnchors, alignSizeTo } from '../../core';
+import { memo, yeet, useMemo } from '@use-gpu/live';
+import { getChunkCount, generateChunkSegments, generateChunkAnchors, alignSizeTo } from '@use-gpu/core';
 import { useRawSource } from '../hooks/useRawSource';
 
 export type ArrowSegmentsProps = {
@@ -11,7 +11,7 @@ export type ArrowSegmentsProps = {
   starts?: boolean[],
   ends?: boolean[],
 
-  render?: (segments: StorageSource, anchors: StorageSource, trim: StorageSource, lookups: StorageSource) => LiveElement<any>,
+  render?: (segments: StorageSource, anchors: StorageSource, trim: StorageSource, lookups: StorageSource) => LiveElement,
 };
 
 /** Produces `segments`, `anchors`, `trims` composite data for `@{ArrowLayer}`. */
@@ -35,16 +35,16 @@ export const useArrowSegments = (
   const count = getChunkCount(chunks, loops);
 
   // Make index data for line segments/anchor/trim data
-  const [segmentBuffer, anchorBuffer, trimBuffer, lookupBuffer] = useMemo(() => {
+  const [segmentBuffer, anchorBuffer, trimBuffer, lookupBuffer, anchorCount] = useMemo(() => {
     const segmentBuffer = new Int8Array(alignSizeTo(count, 4));
     const anchorBuffer = new Uint32Array(count * 4);
     const trimBuffer = new Uint32Array(count * 4);
     const lookupBuffer = new Uint32Array(count);
 
     generateChunkSegments(segmentBuffer, lookupBuffer, chunks, loops, starts, ends);
-    generateChunkAnchors(anchorBuffer, trimBuffer, chunks, loops, starts, ends);
+    const anchorCount = generateChunkAnchors(anchorBuffer, trimBuffer, chunks, loops, starts, ends);
 
-    return [segmentBuffer, anchorBuffer, trimBuffer, lookupBuffer];
+    return [segmentBuffer, anchorBuffer, trimBuffer, lookupBuffer, anchorCount];
   }, [chunks, loops, starts, ends, count]);
 
   // Bind as shader storage
@@ -52,6 +52,9 @@ export const useArrowSegments = (
   const anchors = useRawSource(anchorBuffer, 'vec4<u32>');
   const trims = useRawSource(trimBuffer, 'vec4<u32>');
   const lookups = useRawSource(lookupBuffer, 'u32');
+
+  anchors.length = anchorCount;
+  anchors.size[0] = anchorCount;
   
   return {segments, anchors, trims, lookups};
 }

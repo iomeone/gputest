@@ -1,9 +1,9 @@
+@link fn getTransformMatrix() -> mat4x4<f32>;
+
 @optional @link fn getPolarBend() -> f32 { return 0.0; };
 @optional @link fn getPolarFocus() -> f32 { return 0.0; };
 @optional @link fn getPolarAspect() -> f32 { return 1.0; };
 @optional @link fn getPolarHelix() -> f32 { return 0.0; };
-
-@link fn getMatrix() -> mat4x4<f32>;
 
 @export fn getPolarPosition(position: vec4<f32>) -> vec4<f32> {
   let polarBend = getPolarBend();
@@ -11,10 +11,9 @@
   let polarAspect = getPolarAspect();
   let polarHelix = getPolarHelix();
 
-  let matrix = getMatrix();
+  let matrix = getTransformMatrix();
 
   if (polarBend > 0.0) {
-
     if (polarBend < 0.001) {
       // Factor out large addition/subtraction of polarFocus
       // to avoid numerical error
@@ -40,7 +39,5 @@
       );
     }
   }
-  else {
-    return matrix * vec4<f32>(position.xyz, 1.0);
-  }
+  return matrix * vec4<f32>(position.xyz, 1.0);
 }

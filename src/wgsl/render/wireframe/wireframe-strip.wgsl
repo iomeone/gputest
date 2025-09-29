@@ -1,7 +1,7 @@
-use '../../../wgsl/use/types'::{ SolidVertex };
-use '../../../wgsl/geometry/quad'::{ getQuadIndex };
-use '../../../wgsl/geometry/strip'::{ getStripIndex };
-use '../../../wgsl/geometry/line'::{ getLineJoin };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadIndex };
+use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
+use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
 
 @link fn getVertex(v: u32, i: u32) -> SolidVertex {};
 @link fn getInstanceSize() -> u32 {};
@@ -25,12 +25,12 @@ use '../../../wgsl/geometry/line'::{ getLineJoin };
   var right = b.position.xyz / b.position.w;
 
   if (a.position.w < 0.0 || b.position.w < 0.0) {
-    var NaN: f32 = bitcast<f32>(0xffffffffu);
     return SolidVertex(
-      vec4<f32>(NaN, NaN, NaN, NaN),
-      vec4<f32>(NaN, NaN, NaN, NaN),
-      vec4<f32>(NaN, NaN, NaN, NaN),
-      vec4<f32>(NaN, NaN, NaN, NaN),
+      vec4<f32>(0.0),
+      vec4<f32>(0.0),
+      vec4<f32>(0.0),
+      vec4<f32>(0.0),
+      vec4<f32>(0.0),
       0u,
     );
   }
@@ -45,9 +45,10 @@ use '../../../wgsl/geometry/line'::{ getLineJoin };
 
   return SolidVertex(
     vec4<f32>(join, 1.0),
-    vec4<f32>(1.0, 1.0, 1.0, 1.0),
-    vec4<f32>(0.0, 0.0, 0.0, 0.0),
-    vec4<f32>(0.0, 0.0, 0.0, 0.0),
+    vec4<f32>(1.0),
+    vec4<f32>(0.0),
+    vec4<f32>(0.0),
+    vec4<f32>(1.0),
     0u,
   );
 }

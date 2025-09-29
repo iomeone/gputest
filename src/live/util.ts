@@ -1,21 +1,27 @@
-import type { LiveFiber, Task, Action, Dispatcher, Key, ArrowFunction } from './types';
+import type { LiveFiber, Task, MaybeTask, Key, ArrowFunction } from './types';
 
 const NO_DEPS = [] as any[];
+const dedupe = <T>(list: T[]): T[] => Array.from(new Set<T>(list));
 
 /** Cyclic 32-bit version number that skips 0 */
 export const incrementVersion = (v: number) => (((v + 1) | 0) >>> 0) || 1;
+
+type Action = {
+  fiber: LiveFiber<any>,
+  task?: MaybeTask,
+};
 
 /** Schedules actions to be run immediately after the current thread completes.
 Notifies the bound listener once after running all actions. */
 export const makeActionScheduler = (
   request: (flush: ArrowFunction) => void,
-  onFlush: (as: Action[]) => void,
+  onFlush: (fibers: LiveFiber<any>[]) => void,
 ) => {
   const queue = [] as Action[];
 
   let pending = false;
 
-  const schedule = (fiber: LiveFiber<any>, task: Task) => {
+  const schedule = (fiber: LiveFiber<any>, task?: MaybeTask) => {
     queue.push({fiber, task});
     if (!pending) {
       pending = true;
@@ -30,8 +36,11 @@ export const makeActionScheduler = (
     queue.length = 0;
     pending = false;
 
-    for (const {task} of q) task();
-    onFlush(q);
+    const acted = [];
+    for (const {fiber, task} of q) if (task?.() !== false) acted.push(fiber);
+
+    const fibers = dedupe(acted);
+    if (fibers.length) onFlush(fibers);
   };
 
   return {schedule, flush};
@@ -40,12 +49,12 @@ export const makeActionScheduler = (
 /** Tracks long-range dependencies for contexts */
 export const makeDependencyTracker = () => {
   // Used in forward direction
-  const dependencies = new WeakMap<LiveFiber<any>, Set<LiveFiber<any>>>();
+  const dependencies = new Map<number, Set<LiveFiber<any>>>();
 
   // Inspector-only, backward direction
-  const precedents = new WeakMap<LiveFiber<any>, Set<LiveFiber<any>>>();
+  const precedents = new WeakMap<LiveFiber<any>, Set<number>>();
 
-  const depend = (fiber: LiveFiber<any>, root: LiveFiber<any>) => {
+  const depend = (fiber: LiveFiber<any>, root: number) => {
     {
       let list = precedents.get(fiber);
       if (!list) precedents.set(fiber, list = new Set());
@@ -62,18 +71,21 @@ export const makeDependencyTracker = () => {
     return !exist;
   }
 
-  const undepend = (fiber: LiveFiber<any>, root: LiveFiber<any>) => {
+  const undepend = (fiber: LiveFiber<any>, root: number) => {
     {
       let list = precedents.get(fiber);
       if (list) list.delete(root);
     }
 
     let list = dependencies.get(root);
-    if (list) list.delete(fiber);
+    if (list) {
+      list.delete(fiber);
+      if (list.size === 0) dependencies.delete(root);
+    }
   }
 
   const traceDown = (fiber: LiveFiber<any>) => {
-    const fibers = dependencies.get(fiber);
+    const fibers = dependencies.get(fiber.id);
     return fibers ? fibers.values() : NO_DEPS;
   }
 
@@ -115,6 +127,27 @@ export const makeDisposalTracker = () => {
   return {track, untrack, dispose};
 }
 
+/** Slice stack once depth has been exceeded */
+export const makeStackSlicer = (maxDepth: number, strict: boolean = true) => {
+  let DEPTH = 0;
+  let SLICED = false;
+
+  const depth = strict
+    ? (depth: number) => {
+        DEPTH = depth;
+        SLICED = false;
+      }
+    : (depth: number) => {
+        DEPTH = depth;
+      };
+
+  const slice = strict
+    ? (depth: number) => { return SLICED = SLICED || (depth - DEPTH > maxDepth); }
+    : (depth: number) => { return (depth - DEPTH > maxDepth); };
+
+  return {depth, slice};
+};
+
 /** Node-friendly RAF wrapper */
 export const getOnPaint = () => typeof window !== 'undefined' ? window.requestAnimationFrame : setTimeout;
 
@@ -155,37 +188,39 @@ export const isSubNode = (a: LiveFiber<any>, b: LiveFiber<any>) => {
 
 /** Compare of two fibers in depth-first tree order */
 export const compareFibers = (a: LiveFiber<any>, b: LiveFiber<any>) => {
-  const ak = a.path;
-  const bk = b.path;
+  const ap = a.path;
+  const bp = b.path;
+
+  const aks = a.keys;
+  const bks = b.keys;
   
-  const n = Math.min(ak.length, bk.length);
+  let aj = aks ? aks[0] : null;
+  let bj = bks ? bks[0] : null; 
+  let asi = 1;
+  let bsi = 1;
+
+  const n = Math.min(ap.length, bp.length);
   for (let i = 0; i < n; ++i) {
-    const ai = ak[i];
-    const bi = bk[i];
+    let ai = ap[i];
+    let bi = bp[i];
 
-    const an = typeof ai === 'number';
-    const bn = typeof bi === 'number';
-    if (an && bn) {
-      const v = (ai as number) - (bi as number);
-      if (v) return v;
-      continue;
+    if (aj === i) {
+      const ak = aks[asi++] as Map<Key, number>;
+      ai = ak.get(ai) ?? -1;
+      aj = aks[asi++] as number;
     }
 
-    const at = typeof ai === 'string';
-    const bt = typeof bi === 'string';
-    if (at && bt) {
-      const lt = (ai as string) < (bi as string);
-      const gt = (ai as string) > (bi as string);
-      const v = lt ? -1 : gt ? 1 : 0;
-      if (v) return v;
-      continue;
+    if (bj === i) {
+      const bk = bks[bsi++] as Map<Key, number>;
+      bi = bk.get(bi) ?? -1;
+      bj = bks[bsi++] as number;
     }
-    
-    if (at && !bt) return 1;
-    if (!at && bt) return -1;
+
+    if (ai < bi) return -1;
+    if (ai > bi) return 1;
   }
 
-  return (ak.length - bk.length) || (a.depth - b.depth);
+  return (ap.length - bp.length) || (a.depth - b.depth);
 }
 
 /** Tag an anonymous function with a random number ID. */
@@ -193,4 +228,3 @@ export const tagFunction = <F extends ArrowFunction>(f: F, name?: string) => {
   (f as any).displayName = name ?? `${Math.floor(Math.random() * 10000)}`;
   return f;
 }
-

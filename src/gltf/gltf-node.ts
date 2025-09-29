@@ -1,9 +1,9 @@
-import type { LC, LiveElement } from '../live';
-import type { TypedArray } from '../core';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { TypedArray } from '@use-gpu/core';
 import type { GLTF } from './types';
 import { vec3, mat4, quat } from 'gl-matrix';
 
-import { use, gather, memo, useMemo, useOne } from '../live';
+import { use, gather, memo, useMemo, useOne } from '@use-gpu/live';
 import { GLTFMesh } from './gltf-mesh';
 
 export type GLTFNodeProps = {
@@ -16,7 +16,7 @@ export const GLTFNode: LC<GLTFNodeProps> = memo((props: GLTFNodeProps) => {
   const {
     gltf,
     node,
-    matrix: parentMatrix,
+    matrix: parent,
   } = props;
   if (!gltf.nodes) return null;
 
@@ -30,10 +30,11 @@ export const GLTFNode: LC<GLTFNodeProps> = memo((props: GLTFNodeProps) => {
   } = gltf.nodes[node];
 
   const transform = useMemo(() => {
-    if (!(matrix || translation || rotation || scale)) return parentMatrix;
+    if (!(matrix || translation || rotation || scale)) return parent;
 
     const transform = mat4.create();
     composeTransform(transform, translation, rotation, scale, matrix);
+    if (parent) mat4.multiply(transform, parent, transform);
     return transform;
   }, [matrix, translation, rotation, scale]);
 
@@ -42,10 +43,10 @@ export const GLTFNode: LC<GLTFNodeProps> = memo((props: GLTFNodeProps) => {
   ) : null;
 
   if (children) {
-    const out: LiveElement<any>[] = [];
+    const out: LiveElement[] = [];
 
     if (self) out.push(self);
-    out.push(...Array.from(children).map((node: number) => use(GLTFNode, {gltf, node})));
+    out.push(...Array.from(children).map((node: number) => use(GLTFNode, {gltf, node, matrix: transform})));
     return out;
   }
 

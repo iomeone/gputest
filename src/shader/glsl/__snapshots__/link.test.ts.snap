@@ -34,7 +34,6 @@ exports[`link links a global across a module 1`] = `
     
 
     vec4 getPosition(int index);
-    vec4 _02_getColor(int index);
     void main() {
       vec4 a = getPosition(0);
     }
@@ -74,16 +73,16 @@ vec2 _01_getQuadUV(int vertex) {
 }
 
 
-    vec4 _02_getColor(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
+    vec4 _02_getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
     
 
-    float _03_getDepth(int index) { return 0.5; }
+    vec4 _03_getColor(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
     
 
-    vec4 _04_getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
+    float _04_getSize(int index) { return 1.0; }
     
 
-    float _05_getSize(int index) { return 1.0; }
+    float _05_getDepth(int index) { return 0.5; }
     
 struct _06_SolidVertex {
   vec4 position;
@@ -122,16 +121,16 @@ float _07_getPerspectiveScale(float w, float f) {
   return pixelScale;
 }
 
-vec4 _04_getPosition(int);
-vec4 _02_getColor(int);
-vec2 _05_getSize(int);
-float _03_getDepth(int);
+vec4 _02_getPosition(int);
+vec4 _03_getColor(int);
+vec2 _04_getSize(int);
+float _05_getDepth(int);
 
 _06_SolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {
-  vec4 position = _04_getPosition(instanceIndex);
-  vec4 color = _02_getColor(instanceIndex);
-  vec2 size = _05_getSize(instanceIndex);
-  float depth = _03_getDepth(instanceIndex);
+  vec4 position = _02_getPosition(instanceIndex);
+  vec4 color = _03_getColor(instanceIndex);
+  vec2 size = _04_getSize(instanceIndex);
+  float depth = _05_getDepth(instanceIndex);
 
   vec4 center = _07_worldToClip(position);
 

@@ -10,12 +10,16 @@ export type ASTParser<T extends SymbolTableT = any> = {
 
 export type SymbolTableT = {
   symbols?: string[],
+  linkable?: Record<string, true>,
 };
 
-export type TypeLike = {
+export type TypeLike = string | {
   name: string,
-  type?: TypeLike,
   args?: TypeLike[],
+};
+
+export type ParameterLike = string | {
+  type: TypeLike,
 };
 
 export type ParsedModuleCache<T extends SymbolTableT = any> = LRU<number, ParsedModule<T>>;
@@ -65,7 +69,7 @@ export type DataBinding<T extends SymbolTableT = any> = {
   constant?: any,
 };
 
-export type CompressedNode = [string, number, number] | [string, number, number, string];
+export type CompressedNode = [number, number, number] | [number, number, number, number];
 
 export type ImportRef = {
   name: string,
@@ -90,7 +94,7 @@ export enum RefFlags {
 export type ShaderDefine = string | number | boolean | null | undefined;
 
 export type ShakeTable = ShakeOp[];
-export type ShakeOp = [number, string[]];
+export type ShakeOp = [number, number[]];
 
 export type StorageSource = {
   buffer: GPUBuffer,
@@ -100,6 +104,7 @@ export type StorageSource = {
   version: number,
 
   volatile?: number,
+  readWrite?: boolean,
   byteOffset?: number,
   byteLength?: number,
   colorSpace?: ColorSpace,
@@ -125,10 +130,11 @@ export type TextureSource = {
 
   mips?: number,
   variant?: string,
-  args?: string[],
   absolute?: boolean,
+  comparison?: boolean,
   volatile?: number,
   colorSpace?: ColorSpace,
+  aspect?: GPUTextureAspect,
 };
 
 export type ShaderSource = StorageSource | LambdaSource<ShaderModule> | TextureSource | ShaderModule;
@@ -136,9 +142,12 @@ export type ShaderSource = StorageSource | LambdaSource<ShaderModule> | TextureS
 export type UniformAttribute = {
   name: string,
   format: any,
-  args?: any[],
+  args?: any[] | null,
   members?: UniformAttribute[],
+  attr?: UniformShaderAttribute[],
 };
+
+export type UniformShaderAttribute = { name: string, args: string[] };
 
 export type UniformAttributeValue = UniformAttribute & {
   value: any,

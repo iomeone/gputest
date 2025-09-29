@@ -22,7 +22,7 @@ export type MakeDiffAccessor = (
 const EXTERNALS = [{
   func: {name: 'getValue'},
   flags: 0,
-}];
+}] as any[];
 
 export const makeDiffBy = (
   makeDiffAccessor: MakeDiffAccessor,
@@ -81,7 +81,8 @@ export const makeDiffBy = (
 
   const revirtuals = module.virtual
     ? (virtuals ? [...virtuals, module] : [module])
-    : virtuals ?? [];
+    : (virtuals ? [...virtuals] : []) ?? [];
+
   for (const m of sizes) if (m) {
     const v = toModule(m);
     if (v?.virtual) revirtuals.push(v);

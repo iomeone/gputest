@@ -1,4 +1,4 @@
-import { vec2, vec3, mat4 } from 'gl-matrix';
+import { vec2, vec3, vec4, mat4 } from 'gl-matrix';
 
 export type Point = [number, number];
 export type Point3 = [number, number, number];
@@ -11,7 +11,7 @@ export type DeepPartial<T> = T | {
   [P in keyof T]?: DeepPartial<T[P]>;
 };
 
-export type UseRenderingContextGPU = {
+export type UseGPURenderContext = {
   width: number,
   height: number,
   pixelRatio: number,
@@ -27,7 +27,13 @@ export type UseRenderingContextGPU = {
   depthStencilState?: GPUDepthStencilState,
   depthStencilAttachment?: GPURenderPassDepthStencilAttachment,
 
-  swapView: (view?: GPUTextureView) => void,
+  swap?: (view?: GPUTextureView) => void,
+  source?: TextureTarget,
+  sources?: TextureTarget[],
+};
+
+export type OffscreenTarget = UseGPURenderContext & {
+  source: TextureTarget,
 };
 
 export type ColorSpace = 'linear' | 'srgb' | 'p3' | 'native' | 'picking' | 'auto';
@@ -134,6 +140,9 @@ export type UniformType =
   | "mat3x4<f64>"
   | "mat4x3<f64>"
   | "mat4x4<f64>"
+  
+  | "atomic<u32>"
+  | "atomic<i32>"
 
   // Virtual types
   | "u8"
@@ -161,12 +170,23 @@ export type UniformType =
   | "vec3to4<f32>"
 ;
 
-// Vertex attributes
+// Simple backing-agnostic mesh geometry
+export type Geometry = {
+  count: number,
+  attributes: {
+    [s: string]: TypedArray,
+  },
+  formats: {
+    [s: string]: UniformType,
+  },
+};
+
+// Classic vertex attributes
 export type VertexData = {
   count: number,
   vertices: TypedArray[],
   attributes: GPUVertexBufferLayout[],
-  index?: TypedArray,
+  indices?: TypedArray,
   indexFormat?: GPUIndexFormat,
 };
 
@@ -178,10 +198,13 @@ export type VertexAttribute = {
 // Uniform buffers
 export type UniformAttribute = {
   name: string,
-  format: UniformType,
-  args?: UniformType[],
+  format: UniformType | ShaderStructType,
+  args?: (UniformType | ShaderStructType)[] | null,
   members?: UniformAttribute[],
+  attr?: UniformShaderAttribute[],
 };
+
+export type UniformShaderAttribute = { name: string, args: string[] };
 
 export type UniformAttributeValue = UniformAttribute & {
   value: any,
@@ -216,20 +239,40 @@ export type UniformAllocation = {
   bindGroup: GPUBindGroup,
 };
 
-export type ResourceAllocation = {
+export type GlobalAllocation = {
+  pipe: UniformPipe,
+  buffer: GPUBuffer,
+  layout: GPUBindGroupLayout,
   bindGroup: GPUBindGroup,
 };
 
-export type VirtualAllocation = Partial<UniformAllocation>;
+export type SharedAllocation = {
+  layout: GPUBindGroupLayout,
+  bindGroup: GPUBindGroup,
+};
+
+export type ResourceAllocation = {
+  bindGroup: GPUBindGroup,
+};
 
 export type VolatileAllocation = {
   bindGroup?: () => GPUBindGroup,
 };
 
+export type VirtualAllocation = Partial<UniformAllocation>;
+
 export type UniformFiller = (items: any) => void;
 export type UniformDataSetter = (index: number, item: any) => void;
 export type UniformValueSetter = (index: number, field: number, value: any) => void;
 export type UniformByteSetter = (view: DataView, offset: number, data: any) => void;
+
+export type DataBoundingBox = [number[], number[]];
+export type DataBounds = {
+  center: number[],
+  radius: number,
+  min: number[],
+  max: number[],
+};
 
 // Storage bindings
 export type StorageSource = {
@@ -239,7 +282,9 @@ export type StorageSource = {
   size: number[],
   version: number,
 
+  bounds?: DataBounds,
   volatile?: number,
+  readWrite?: boolean,
   byteOffset?: number,
   byteLength?: number,
   colorSpace?: ColorSpace,
@@ -251,6 +296,7 @@ export type LambdaSource<T = any> = {
   size: number[],
   version: number,
 
+  bounds?: DataBounds,
   colorSpace?: ColorSpace,
 };
 
@@ -265,10 +311,21 @@ export type TextureSource = {
 
   mips?: number,
   variant?: string,
-  args?: string[],
   absolute?: boolean,
+  comparison?: boolean,
   volatile?: number,
   colorSpace?: ColorSpace,
+  aspect?: GPUTextureAspect,
+};
+
+export type StorageTarget = StorageSource & {
+  history?: StorageSource[],
+  swap: () => void,
+};
+
+export type TextureTarget = TextureSource & {
+  history?: TextureSource[],
+  swap: () => void,
 };
 
 export type DataTexture = {
@@ -301,12 +358,16 @@ export type ShaderStageDescriptor = {
 // Projection pipeline
 export type ViewUniforms = {
   projectionMatrix: { current: mat4 },
+  projectionViewMatrix: { current: mat4 },
+  projectionViewFrustum: { current: vec4[] },
+  inverseViewMatrix: { current: mat4 },
+  inverseProjectionViewMatrix: { current: mat4 },
   viewMatrix: { current: mat4 },
-  viewPosition: { current: vec3 | [number, number, number] | number[] },
-  viewNearFar: { current: vec2 | [number, number] | number[] },
-  viewResolution: { current: vec2 | [number, number] | number[] },
-  viewSize: { current: vec2 | [number, number] | number[] },
-  viewWorldDepth: { current: vec2 | [number, number] | number[] },
+  viewPosition: { current: vec4 },
+  viewNearFar: { current: vec2 },
+  viewResolution: { current: vec2 },
+  viewSize: { current: vec2 },
+  viewWorldDepth: { current: vec2 },
   viewPixelRatio: { current: number },
 };
 
@@ -363,7 +424,7 @@ export type Time = {
 export type ArrayLike = any[] | TypedArray;
 
 export type AccessorSpec = string | Accessor | ArrayLike;
-export type AccessorType = 'index';
+export type AccessorType = 'index' | 'unwelded';
 export type DataField = [string, AccessorSpec] | [string, AccessorSpec, AccessorType];
 export type DataBinding<T = any, S = any> = {
   uniform: UniformAttribute,
@@ -387,10 +448,9 @@ export type Atlas = {
   map: Map<number, Rectangle>,
   width: number,
   height: number,
-  uploads: Rectangle[][],
   version: number,
 };
 
 // Passes
 
-export type RenderPassMode = 'opaque' | 'transparent' | 'picking' | 'debug';
+export type RenderPassMode = 'opaque' | 'transparent' | 'picking' | 'debug' | 'shadow';

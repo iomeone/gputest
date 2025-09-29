@@ -16,6 +16,7 @@ export type MakeChainAccessor = (
   args: string[],
   from: string,
   to: string,
+  limit: number,
 ) => string;
 
 const SYMBOLS = ['chain', 'from', 'to'];
@@ -34,7 +35,7 @@ const EXTERNALS = [
 const makeDeclarations = (type: any, parameters: any) => [{
   func: {name: 'chain', type, parameters},
   flags: RF.Exported,
-}];
+}] as any[];
 
 export const makeChainTo = (
   makeChainAccessor: MakeChainAccessor,
@@ -53,12 +54,18 @@ export const makeChainTo = (
   const {name: toName, format: toFormat, args: toArgs} = bundleToAttribute(to);
 
   const entry = 'chain';
-
   const args = fromArgs;
-  const check = toArgs;
 
-  if (check?.length !== 1 || check[0] !== fromFormat) {
-    throw new Error(`Cannot chain output ${fromFormat} of ${fromName} to args (${check?.join(', ')}) of ${toName}`);
+  // Return value of `from` must match 1st argument of `to`
+  if (toArgs?.[0] !== (fromFormat.entry ?? fromFormat)) {
+    throw new Error(`Type Error: ${fromName} -> ${toName}.\nCannot chain output ${fromFormat.entry ?? fromFormat} to args (${toArgs?.join(', ')}).`);
+  }
+  
+  // Other arguments of `from` and `to` must match
+  const fromRest = fromArgs?.slice(1) ?? [];
+  const toRest = toArgs?.slice(1) ?? [];
+  if (fromRest.join('/') !== toRest.join('/')) {
+    throw new Error(`Type Error: ${fromName} -> ${toName}.\nCannot chain remainder (..., ${fromRest.join(', ')}) to args (..., ${toRest.join(', ')}).`);
   }
 
   const h1 = getBundleHash(fBundle);
@@ -76,14 +83,14 @@ export const makeChainTo = (
     const name = rename.get(entry) ?? entry;
     const from = rename.get('from') ?? 'from';
     const to = rename.get('to') ?? 'to';
-    return makeChainAccessor(toFormat, name, args ?? [], from, to);
+    return makeChainAccessor(toFormat, name, args ?? [], from, to, 1);
   }
 
-  const declarations = makeDeclarations(toFormat, fromArgs);
+  const exports = makeDeclarations(toFormat, fromArgs);
 
   const chain = loadVirtualModule(
     { render },
-    { symbols: SYMBOLS, declarations, externals: EXTERNALS },
+    { symbols: SYMBOLS, exports, externals: EXTERNALS },
     entry,
     rehash,
     code,

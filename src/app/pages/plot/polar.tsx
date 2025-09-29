@@ -1,18 +1,18 @@
-import type { LC } from '../../../live';
+import type { LC } from '@use-gpu/live';
 
-import React, { use } from '../../../live';
+import React, { use } from '@use-gpu/live';
 
 import {
-  Loop, Draw, Pass, Flat,
+  Loop, Pass, Flat,
   ArrayData, Data, RawData,
   OrbitCamera, OrbitControls,
   Pick, Cursor,
   Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
   Plot, Polar, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '../../../plot';
+} from '@use-gpu/plot';
 const π = Math.PI;
 const EPS = 1e-3;
 
@@ -27,9 +27,9 @@ const thetaFormatter = (θ: number) => {
 
 export const PlotPolarPage: LC = () => {
   
-  const view = (
+  return (
     <Loop>
-      <Draw>
+      <Flat relative>
         <Pass>
           <Plot>
             <Animate
@@ -127,13 +127,7 @@ export const PlotPolarPage: LC = () => {
             </Animate>
           </Plot>
         </Pass>
-      </Draw>
+      </Flat>
     </Loop>
-  );
-
-  return (
-    <Flat relative>
-      {view}
-    </Flat>
   );
 };

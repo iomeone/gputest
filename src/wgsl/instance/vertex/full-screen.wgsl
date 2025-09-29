@@ -1,6 +1,6 @@
-use '../../../wgsl/use/types'::{ SolidVertex };
-use '../../../wgsl/geometry/quad'::{ getQuadUV };
-use '../../../wgsl/use/view'::{ getViewSize };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
+use '@use-gpu/wgsl/use/view'::{ getViewSize };
 
 //  0        1      2
 //    +------.------/
@@ -23,6 +23,7 @@ use '../../../wgsl/use/view'::{ getViewSize };
     vec4<f32>(1.0, 1.0, 1.0, 1.0),
     vec4<f32>(uv * 2.0, 0.0, 0.0),
     vec4<f32>(0.0),
+    vec4<f32>(1.0),
     instanceIndex,
   );
 }

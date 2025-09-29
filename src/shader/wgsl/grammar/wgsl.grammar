@@ -4,12 +4,12 @@
 @external tokens untilCommentCloseToken from "./tokens" { untilCommentClose }
 
 unit { globalDirective* globalDeclaration* }
-EmptyToken { }
 
-k<term> { @specialize[@name={term}]<Identifier, term> }
-t<term> { @specialize[@name={term}]<Identifier, term> }
-d<term> { @specialize[@name={term}]<Identifier, term> }
-r<term> { @specialize[@name={term}]<Identifier, term> }
+b<term> { @specialize[@name='Boolean']<Identifier, term> }
+k<term> { @specialize[@name='Keyword']<Identifier, term> }
+t<term> { @specialize[@name='Type']<Identifier, term> }
+d<term> { @specialize[@name='Directive']<Identifier, term> }
+r<term> { @specialize[@name='Reserved']<Identifier, term> }
 
 comment { commentLine untilEOL | commentOpen untilCommentClose }
 template<content> { '<' content '>' }
@@ -43,24 +43,25 @@ ImportDeclaration {
 ImportDeclarationList { '{' (ImportDeclarationIdentifier comma)* ImportDeclarationIdentifier comma? '}' }
 ImportDeclarationIdentifier { Identifier ('as' Identifier)? }
 
+FunctionCall<content> { content }
 Value<content> { content }
 
 GlobalVariableDeclaration {
-  AttributeList VariableDeclaration (assign Value<constExpression>)?
+  AttributeList VariableDeclaration (Assign Value<constExpression>)?
 }
 
 GlobalConstantDeclaration {
-  EmptyToken k<'let'> VariableIdentifier assign Value<constExpression> |
-  AttributeList k<'override'> VariableIdentifier (assign Value<expression>)?
+  AttributeList k<'const'> VariableIdentifier Assign Value<constExpression> |
+  AttributeList k<'override'> VariableIdentifier (Assign Value<expression>)?
 }
 
-TypeAliasDeclaration { AttributeList k<'type'> Identifier (assign TypeDeclaration)? }
+TypeAliasDeclaration { AttributeList k<'type'> Identifier (Assign TypeDeclaration)? }
 
 StructDeclaration { AttributeList k<'struct'> Identifier StructBodyDeclaration }
 StructBodyDeclaration { '{' ((StructMember comma)* StructMember comma?)? '}' }
 StructMember { AttributeList variableIdentifierDeclaration }
 
-FunctionDeclaration { AttributeList FunctionHeader CompoundStatement }
+FunctionDeclaration { AttributeList FunctionHeader CompoundStatement? }
 FunctionHeader { k<'fn'> Identifier '(' ParamList ')' ReturnType }
 ReturnType { (arrow AttributeList TypeDeclaration)? }
 
@@ -74,8 +75,8 @@ VariableQualifier { template<addressSpace (comma accessMode)?> }
 variableIdentifierDeclaration { Identifier colon TypeDeclaration }
 
 variableStatement {
-  VariableDeclaration (assign Value<expression>)? |
-  k<'let'> VariableIdentifier assign Value<expression>
+  VariableDeclaration (Assign Value<expression>)? |
+  k<'let'> VariableIdentifier Assign Value<expression>
 }
 
 CompoundStatement { '{' Statement* '}' }
@@ -97,8 +98,7 @@ Statement {
 }
 
 assignmentStatement {
-  lhsExpression (assign | compoundAssignmentOperator) expression |
-  Underscore assign expression
+  lhsExpression (Assign | compoundAssignmentOperator) expression
 }
 
 compoundAssignmentOperator {
@@ -117,10 +117,10 @@ compoundAssignmentOperator {
 incrementStatement { lhsExpression Inc }
 decrementStatement { lhsExpression Dec }
 
-ifStatement { k<'if'> parenExpression CompoundStatement (k<'else'> elseStatement)? }
+ifStatement { k<'if'> expression CompoundStatement (k<'else'> elseStatement)? }
 elseStatement { CompoundStatement | ifStatement }
 
-switchStatement { k<'switch'> parenExpression '{' switchBody+ '}' }
+switchStatement { k<'switch'> expression '{' switchBody+ '}' }
 switchBody {
   k<'case'> caseSelectors colon '{' caseBody? '}' |
   k<'default'> colon '{' caseBody? '}'
@@ -134,7 +134,7 @@ caseBody {
 }
 
 loopStatement { k<'loop'> '{' Statement* ContinuingStatement? '}' }
-forStatement { k<'for'> '(' forHeader '}' CompoundStatement }
+forStatement { k<'for'> '(' forHeader ')' CompoundStatement }
 forHeader { forInit? semicolon expression? semicolon forUpdate? }
 forInit { variableStatement | assignmentStatement | funcCallStatement }
 forUpdate { incrementStatement | decrementStatement | assignmentStatement | funcCallStatement }
@@ -163,7 +163,8 @@ constExpression {
 
 primaryExpression {
   Reserved |
-  Identifier ~conflict argumentExpressionList? |
+  Identifier |
+  FunctionCall<Identifier> ~conflict argumentExpressionList |
   TypeDeclaration argumentExpressionList |
   constLiteral |
   parenExpression |
@@ -175,8 +176,10 @@ argumentExpressionList { '(' ((expression comma)* expression comma?)? ')' }
 
 postfixExpression {
   LeftBracket expression RightBracket postfixExpression? |
-  '.' Identifier postfixExpression?
+  FieldAccess postfixExpression?
 }
+
+FieldAccess { '.' Identifier }
 
 unaryExpression {
   singularExpression |
@@ -265,12 +268,11 @@ literalOrIdentifier {
   Identifier
 }
 
-constLiteral {
-  IntLiteral |
+constLiteral {  IntLiteral |
   UintLiteral |
   FloatLiteral |
-  k<'true'> |
-  k<'false'>
+  b<'true'> |
+  b<'false'>
 }
 
 elementCountExpression {
@@ -299,20 +301,20 @@ TypeDeclaration {
   t<'f32'> |
   t<'i32'> |
   t<'u32'> |
-  t<'vec2'> template<TypeDeclaration> |
-  t<'vec3'> template<TypeDeclaration> |
-  t<'vec4'> template<TypeDeclaration> |
+  t<'vec2'> template<TypeDeclaration>? |
+  t<'vec3'> template<TypeDeclaration>? |
+  t<'vec4'> template<TypeDeclaration>? |
   t<'ptr'> template<addressSpace comma TypeDeclaration (comma accessMode)?> |
   arrayTypeDeclaration |
-  t<'mat2x2'> template<TypeDeclaration> |
-  t<'mat2x3'> template<TypeDeclaration> |
-  t<'mat2x4'> template<TypeDeclaration> |
-  t<'mat3x2'> template<TypeDeclaration> |
-  t<'mat3x3'> template<TypeDeclaration> |
-  t<'mat3x4'> template<TypeDeclaration> |
-  t<'mat4x2'> template<TypeDeclaration> |
-  t<'mat4x3'> template<TypeDeclaration> |
-  t<'mat4x4'> template<TypeDeclaration> |
+  t<'mat2x2'> template<TypeDeclaration>? |
+  t<'mat2x3'> template<TypeDeclaration>? |
+  t<'mat2x4'> template<TypeDeclaration>? |
+  t<'mat3x2'> template<TypeDeclaration>? |
+  t<'mat3x3'> template<TypeDeclaration>? |
+  t<'mat3x4'> template<TypeDeclaration>? |
+  t<'mat4x2'> template<TypeDeclaration>? |
+  t<'mat4x3'> template<TypeDeclaration>? |
+  t<'mat4x4'> template<TypeDeclaration>? |
   t<'atomic'> template<TypeDeclaration> |
   textureSamplerTypes
 }
@@ -376,31 +378,29 @@ texelFormat {
   t<'rgba32float'>
 }
 
-
-
 @tokens {
   space { std.whitespace+ }
   commentLine { "//" }
   commentOpen { "/*" }
 
-  Identifier { $[a-zA-Z_] $[0-9a-zA-Z] $[0-9a-zA-Z_]* | $[a-zA-Z] $[0-9a-zA-Z_]* }
+  Identifier { $[a-zA-Z_] $[0-9a-zA-Z_]* }
   String { '"' ( !["]+ | '\\"' )* '"' | "'" ( ![']+ | "\\'" )* "'" }
 
-  IntLiteral { "-"? "0" $[xX] $[0-9a-fA-F]+ | "0" | "-"? $[1-9] $[0-9]* }
+  IntLiteral { "0" $[xX] $[0-9a-fA-F]+ | "0" | $[1-9] $[0-9]* }
   UintLiteral { "0" $[xX] $[0-9a-fA-F]+ "u" | "0u" | $[1-9] $[0-9]* "u" }
   FloatLiteral { 
     (
-      ("-"? $[0-9]* "." $[0-9]+ | "-"? $[0-9]+ "." $[0-9]*)
+      ($[0-9]* "." $[0-9]+ | "-"? $[0-9]+ "." $[0-9]*)
       ($[eE] $[+\-]? $[0-9]+)?
       "f"?
     ) |
     (
-      "-"? $[0-9]+
+      $[0-9]+
       $[eE] $[+\-]? $[0-9]+
       "f"?
     ) |
     (
-      "-"? "0" $[xX]
+      "0" $[xX]
       (
         (
           (
@@ -424,7 +424,7 @@ texelFormat {
   at { "@" }
   arrow { "->" }
 
-  assign { "=" }
+  Assign { "=" }
   AddAssign { "+=" }
   SubAssign { "-=" }
   MulAssign { "*=" }
@@ -435,8 +435,6 @@ texelFormat {
   AndAssign { "&=" }
   XorAssign { "^=" }
   OrAssign { "|=" }
-
-  Underscore { "_" }
 
   Add { "+" }
   Sub { "-" }
@@ -470,14 +468,13 @@ texelFormat {
   @precedence {
     commentLine, Div,
     FloatLiteral, UintLiteral, IntLiteral, Sub,
-    Underscore, Identifier
+    Identifier
   }
 }
 
 Reserved {
   r<'asm'> |
   r<'bf16'> |
-  r<'const'> |
   r<'do'> |
   r<'enum'> |
   r<'f16'> |

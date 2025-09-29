@@ -1,9 +1,9 @@
-import type { LC, LiveElement } from '../live';
-import type { TypedArray } from '../core';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { TypedArray } from '@use-gpu/core';
 import { GLTF, GLTFNodeData } from './types';
 
-import { use, gather, memo, useMemo, useOne } from '../live';
-import { GLTFNode } from './gltf-node';
+import { use, gather, memo, useMemo, useOne } from '@use-gpu/live';
+import { GLTFTree } from './gltf-tree';
 
 export type GLTFModelProps = {
   gltf: GLTF,
@@ -47,7 +47,7 @@ export const GLTFModel: LC<GLTFModelProps> = memo((props: GLTFModelProps) => {
       else roots = seq(nodes?.length || 0);
     }
 
-    // Render as GLTFNode
-    return Array.from(roots).map(root => root != null ? use(GLTFNode, {gltf, node: root}) : null);
+    // Render as GLTFTree
+    return Array.from(roots).map(root => root != null ? use(GLTFTree, {gltf, node: root}) : null);
   }, [gltf, propNode, propScene]);
 }, 'GLTFModel');

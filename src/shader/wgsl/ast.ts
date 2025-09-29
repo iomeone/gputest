@@ -11,6 +11,7 @@ import {
   InferRef,
   ModuleRef,
   ParameterRef,
+  ReturnTypeRef,
   QualifiedTypeAliasRef,
   StructRef,
   StructMemberRef,
@@ -25,15 +26,17 @@ import {
 import * as T from './grammar/wgsl.terms';
 import { WGSL_NATIVE_TYPES } from './constants';
 import { parseString } from '../util/bundle';
-import { getChildNodes, hasErrorNode, formatAST, formatASTNode, decompressAST } from '../util/tree';
+import { getChildNodes, hasErrorNode, formatAST, formatASTNode, makeASTEmitter, makeASTDecompressor } from '../util/tree';
+import { getTypeName, getAttributeName, getAttributeArgs } from './type';
 import uniq from 'lodash/uniq';
 
-export { decompressAST } from '../util/tree';
-
 const NO_STRINGS = [] as string[];
-const VOID_TYPE = {name: 'void'};
-const AUTO_TYPE = {name: 'auto'};
+const VOID_TYPE = 'void';
+const AUTO_TYPE = 'auto';
 const PRIVATE_ATTRIBUTES = new Set(['@export', '@link', '@global', '@optional', '@infer']);
+const AST_OPS = ["Shake", "Skip", "Identifier", "Attribute", "Optional"];
+
+export const decompressAST = makeASTDecompressor(AST_OPS);
 
 const orNone = <T>(list: T[]): T[] | undefined => list.length ? list : undefined;
 
@@ -76,13 +79,18 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
   const getText = (node: SyntaxNode | TreeCursor) => {
     if (!node) throwError('text');
-    return code.slice(node.from, node.to);
+    return getTextAt(node.from, node.to);
+  }
+
+  const getTextAt = (from: number, to: number) => {
+    return code.slice(from, to);
   }
   
   ////////////////
   
-  const getIdentifiers = (node: SyntaxNode, symbol: string, exclude = NO_STRINGS): string[] => {
-    const {cursor, to} = node;
+  const getIdentifiers = (node: SyntaxNode, symbol: string, exclude = NO_STRINGS): string[] | undefined => {
+    const cursor = node.cursor();
+    const {to} = node;
     const ids = new Set<string>();
 
     const visit = () => {
@@ -100,7 +108,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       if (!cursor.next()) break;
     } while (cursor.from < to);
 
-    return Array.from(ids);
+    return ids.size ? Array.from(ids) : undefined;
   };
     
   ////////////////
@@ -116,22 +124,26 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
   };
 
   const getAttribute = (node: SyntaxNode): AttributeRef => {
+    return getTextAt(node.from + 1, node.to);
+    
+    /*
     const [a, ...rest] = getNodes(node, 1);
 
     const name = getText(a);
     const args = rest.length ? rest.map(getText) : undefined;
 
     return {name, args};
+    */
   };
 
   const getParameter = (node: SyntaxNode): ParameterRef => {
     const [a, b, c] = getNodes(node, 3);
 
-    const attributes = getAttributes(a);
+    const attr = getAttributes(a);
     const name = getText(b);
     const type = getType(c);
 
-    return {name, type, attributes};
+    return {name, type, attr};
   };
 
   const getAttributes = (node: SyntaxNode): AttributeRef[] | undefined => {
@@ -145,6 +157,9 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
   } 
 
   const getType = (node: SyntaxNode): TypeRef => {
+    return getText(node);
+    
+    /*
     const [a, ...rest] = getNodes(node, 1);
 
     const name = getText(a);
@@ -154,15 +169,16 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     }) : undefined;
 
     return {name, args};
+    */
   };
 
-  const getReturnType = (node: SyntaxNode): AnnotatedTypeRef => {
+  const getReturnType = (node: SyntaxNode): ReturnTypeRef => {
     const [a, b] = getNodes(node);
 
-    const attributes = a ? getAttributes(a) : undefined;
+    const attr = a ? getAttributes(a) : undefined;
     const type = b ? getType(b) : VOID_TYPE;
 
-    return {...type, attributes};
+    return attr ? {name: type, attr} : type;
   };
 
   const getFunctionHeader = (node: SyntaxNode): FunctionHeaderRef => {
@@ -171,24 +187,24 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
     const name = getText(a);
     const parameters = getParameters(b);
-    const type = hasType ? getReturnType(c) : VOID_TYPE;
+    const type = hasType ? getReturnType(c) : {name: VOID_TYPE};
 
     return {name, type, parameters};
   };
 
   const getFunction = (node: SyntaxNode): FunctionRef => {
-    const [a, b, c] = getNodes(node, 3);
+    const [a, b, c] = getNodes(node, 2);
 
-    const attributes = getAttributes(a);
+    const attr = getAttributes(a);
     const header = getFunctionHeader(b);
 
     const inferred = getInferred(header);
     const {name, type, parameters} = header;
 
     const exclude = parameters ? parameters.map(p => (p as any).name) : undefined;
-    const identifiers = getIdentifiers(c, name, exclude);
+    const identifiers = c ? getIdentifiers(c, name, exclude) : undefined;
 
-    return {name, type, attributes, parameters, identifiers, inferred};
+    return {name, type, attr, parameters, identifiers, inferred};
   };
 
   const getVariableIdentifier = (node: SyntaxNode): TypeAliasRef => {
@@ -216,54 +232,62 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
   }
 
   const getVariable = (node: SyntaxNode): VariableRef => {
-    const [a, b, c] = getNodes(node, 2);
+    const [a, b,, c] = getNodes(node, 2);
     const hasValue = !!c;
 
-    const attributes = getAttributes(a);
+    const attr = getAttributes(a);
     const {name, type, qual} = getVariableDeclaration(b);
     const value = hasValue ? getText(c) : undefined; 
 
-    const identifiers = hasValue ? getIdentifiers(c, name) : NO_STRINGS;
-    if (!WGSL_NATIVE_TYPES.has(type.name)) identifiers.push(type.name);
+    let identifiers = hasValue ? getIdentifiers(c, name) : undefined;
+    const typeName = getTypeName(type);
+    if (!WGSL_NATIVE_TYPES.has(typeName)) {
+      if (!identifiers) identifiers = [];
+      identifiers!.push(typeName);
+    }
 
-    return {name, type, attributes, value, identifiers, qual};
+    return {name, type, attr, value, identifiers, qual};
   };
 
   const getConstant = (node: SyntaxNode): VariableRef => {
     const nodes = getNodes(node, 2);
     
-    const [a, b, c, d] = nodes;
+    const [a, b, c,, d] = nodes;
     const hasAttributes = a.type.id === T.AttributeList;
-    const attributes = hasAttributes ? getAttributes(a) : undefined;
+    const attr = hasAttributes ? getAttributes(a) : undefined;
 
     const hasValue = !!d;
     const {name, type} = getVariableIdentifier(c);
     const value = hasValue ? getText(d) : undefined; 
 
-    const identifiers = hasValue ? getIdentifiers(d, name) : NO_STRINGS;
-    if (!WGSL_NATIVE_TYPES.has(type.name)) identifiers.push(type.name);
+    let identifiers = hasValue ? getIdentifiers(d, name) : undefined;
+    const typeName = getTypeName(type);
+    if (!WGSL_NATIVE_TYPES.has(typeName)) {
+      if (!identifiers) identifiers = [];
+      identifiers!.push(typeName);
+    }
 
-    return {name, type, attributes, value, identifiers};
+    return {name, type, attr, value, identifiers};
   };
   
   const getTypeAlias = (node: SyntaxNode): TypeAliasRef => {
-    const [a,, b, c] = getNodes(node, 3);
+    const [a,, b,, c] = getNodes(node, 3);
 
-    const attributes = getAttributes(a);
+    const attr = getAttributes(a);
     const name = getText(b);
-    const type = c ? getType(c) : {name};
+    const type = c ? getType(c) : name;
 
-    return {name, type, attributes};
+    return {name, type, attr};
   };
 
   const getStructMember = (node: SyntaxNode): StructMemberRef => {
     const [a, b, c] = getNodes(node, 3);
 
-    const attributes = getAttributes(a);
+    const attr = getAttributes(a);
     const name = getText(b);
     const type = getType(c);
 
-    return {name, type, attributes};
+    return {name, type, attr};
   };
 
   const getStructMembers = (node: SyntaxNode): StructMemberRef[] => getNodes(node).map(getStructMember);
@@ -271,11 +295,11 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
   const getStruct = (node: SyntaxNode): StructRef => {
     const [a,, b, c] = getNodes(node, 3);
     
-    const attributes = getAttributes(a);
+    const attr = getAttributes(a);
     const name = getText(b);
     const members = getStructMembers(c);
 
-    return {name, attributes, members};
+    return {name, attr, members};
   };
 
   const getInferred = (func: FunctionHeaderRef) => {
@@ -283,21 +307,33 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     let index = -1;
 
     const {name, type, parameters} = func;
-    const attr = findAttribute(func.type.attributes, 'infer');
-    if (attr && attr.args?.length) inferred.push({
-      name: attr.args[0],
-      at: index,
-    });
+    if (typeof func.type !== 'string') {
+      const attribute = findAttribute(func.type.attr, 'infer');
+      if (attribute != null) {
+        const name = getAttributeArgs(attribute);
+        if (name != null) {
+          inferred.push({
+            name,
+            at: index,
+          });
+        }
+      }
+    }
     index++;
 
     if (parameters) for (const param of parameters) {
-      const attributes = (param as any).attributes;
-      if (attributes) {
-        const attr = findAttribute(attributes, 'infer');
-        if (attr && attr.args?.length) inferred.push({
-          name: attr.args[0],
-          at: index,
-        });
+      const attr = (param as any).attr;
+      if (attr) {
+        const attribute = findAttribute(attr, 'infer');
+        if (attribute != null) {
+          const name = getAttributeArgs(attribute);
+          if (name != null) {
+            inferred.push({
+              name,
+              at: index,
+            });
+          }
+        }
       }
       index++;
     }
@@ -307,18 +343,19 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
   ////////////////
 
-  const findAttribute = (attributes: AttributeRef[] | undefined, name: string) =>
-    attributes?.find(a => a.name === name);
+  const findAttribute = (attr: AttributeRef[] | undefined, name: string) =>
+    attr?.find(a => getAttributeName(a) === name);
 
-  const hasAttribute = (attributes: AttributeRef[] | undefined, name: string) =>
-    findAttribute(attributes, name) != null;
+  const hasAttribute = (attr: AttributeRef[] | undefined, name: string) =>
+    findAttribute(attr, name) != null;
 
   const getFlags = (ref: AttributesRef) => {
-    const isExported = hasAttribute(ref.attributes, 'export');
-    const isExternal = hasAttribute(ref.attributes, 'link');
-    const isOptional = hasAttribute(ref.attributes, 'optional');
-    const isGlobal   = hasAttribute(ref.attributes, 'global');
-    const isInfer    = hasAttribute(ref.attributes, 'infer')
+
+    const isExported = hasAttribute(ref.attr, 'export');
+    const isExternal = hasAttribute(ref.attr, 'link');
+    const isOptional = hasAttribute(ref.attr, 'optional');
+    const isGlobal   = hasAttribute(ref.attr, 'global');
+    const isInfer    = hasAttribute(ref.attr, 'infer')
 
     return (
       (isExported ? RF.Exported : 0) |
@@ -440,7 +477,14 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       if      (func?.identifiers)     func    .identifiers = func    .identifiers.filter(s => scope.has(s));
       else if (variable?.identifiers) variable.identifiers = variable.identifiers.filter(s => scope.has(s));
       else if (constant?.identifiers) constant.identifiers = constant.identifiers.filter(s => scope.has(s));
+
+      if      (func?.identifiers?.length     === 0)     func.identifiers = undefined;
+      else if (variable?.identifiers?.length === 0) variable.identifiers = undefined;
+      else if (constant?.identifiers?.length === 0) constant.identifiers = undefined;
     }
+
+    const linkable = {} as Record<string, true>;
+    for (const {symbol} of externals) linkable[symbol] = true;
 
     return {
       symbols: orNone(symbols),
@@ -451,11 +495,13 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       exports: orNone(exported),
 
       declarations: orNone(declarations),
+      linkable: externals.length ? linkable : undefined,
     };
   }
 
   const getShakeTable = (table: SymbolTable = getSymbolTable()): ShakeTable | undefined => {
-    const {declarations: refs} = table;
+    const {declarations: refs, symbols} = table;
+    const lookup = new Map(symbols ? symbols.map((s, i) => [s, i]) : undefined);
     if (!refs) return undefined;
 
     const graph = new Map<string, string[]>();
@@ -475,11 +521,14 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       if (identifiers) for (const id of identifiers) link(id, symbol);
     }
 
-    const getAll = (ss: string[], accum: Set<string>): Set<string> => {
-      for (let s of ss) if (!accum.has(s)) {
-        accum.add(s);
-        const deps = graph.get(s);
-        if (deps?.length) getAll(deps, accum);
+    const getAll = (ss: string[], accum: Set<number> = new Set()): Set<number> => {
+      for (let symbol of ss) {
+        let s = lookup.get(symbol)!;
+        if (!accum.has(s)) {
+          accum.add(s);
+          const deps = graph.get(symbol);
+          if (deps?.length) getAll(deps, accum);
+        }
       }
       return accum;
     }
@@ -487,13 +536,23 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const out = [] as ShakeOp[];
     for (const ref of refs) {
       const {at, symbol} = ref;
-      const deps = getAll([symbol], new Set());
+      const deps = getAll([symbol]);
       if (deps.size) out.push([at, Array.from(deps)]);
     }
 
     return out.length ? out : undefined;
   }
   
+  ////////////////
+
+  const cursor = tree.cursor();
+  do {
+    const {type} = cursor;
+    if (type.name === '⚠') {
+      throwError('Parse error', cursor.node);
+    }
+  } while (cursor.next())
+
   ////////////////
 
   return {
@@ -537,9 +596,9 @@ export const rewriteUsingAST = (
   do {
     const {type, from, to, arg} = cursor as any;
 
-    // Injected by compressed AST only: Skip, Shake, Id, Attr, Opt
+    // Injected by compressed AST only: Skip, Shake, Optional
     if (type.name === 'Skip') skip(from, to);
-    if (type.name === 'Opt') {
+    if (type.name === 'Optional') {
       if (!optionals || !optionals.has(arg)) {
         skip(from, to);
         while (cursor.lastChild()) {};
@@ -556,7 +615,7 @@ export const rewriteUsingAST = (
     }
 
     // Any identifier (both full and compressed AST)
-    else if (type.name === 'Identifier' || type.name === 'Id') {
+    else if (type.name === 'Identifier') {
       const name = code.slice(from, to);
       const replace = rename.get(name);
 
@@ -574,7 +633,7 @@ export const rewriteUsingAST = (
       }
       else {
         // Check if declaration is external or inferred
-        const sub = cursor.node.cursor;
+        const sub = cursor.node.cursor();
         sub.firstChild();
         sub.firstChild();
 
@@ -604,7 +663,7 @@ export const rewriteUsingAST = (
       }
     }
     // Public or private attributes (both full and compressed AST)
-    else if (type.name === 'Attribute' || type.name === 'Attr') {
+    else if (type.name === 'Attribute') {
       const name = code.slice(from, to);
       if (PRIVATE_ATTRIBUTES.has(name)) {
         const {from, to} = cursor;
@@ -631,18 +690,23 @@ export const rewriteUsingAST = (
 }
 
 // Compress an AST to only the info needed to do symbol replacement and tree shaking
-export const compressAST = (code: string, tree: Tree): CompressedNode[] => {
+export const compressAST = (
+  code: string,
+  tree: Tree,
+  symbols: string[] = [],
+): CompressedNode[] => {
   const out = [] as any[]
+  const emit = makeASTEmitter(out, AST_OPS, symbols);
 
   // Pass through nodes from pre-compressed tree immediately
   // @ts-ignore
   if (tree.__nodes) return tree.__nodes();
 
-  const shake = (from: number, to: number) => out.push(["Shake", from, to]);
-  const skip  = (from: number, to: number) => out.push(["Skip",  from, to]);
-  const ident = (from: number, to: number) => out.push(["Id",    from, to]);
-  const attr  = (from: number, to: number) => out.push(["Attr",  from, to]);
-  const opt   = (from: number, to: number, symbol: string) => out.push(["Opt", from, to, symbol]);
+  const shake = (from: number, to: number) => emit('Shake',      from, to);
+  const skip  = (from: number, to: number) => emit('Skip',       from, to);
+  const ident = (from: number, to: number) => emit('Identifier', from, to);
+  const attr  = (from: number, to: number) => emit('Attribute',  from, to);
+  const opt   = (from: number, to: number, symbol: string) => emit('Optional', from, to, symbol);
 
   const cursor = tree.cursor();
   do {
@@ -656,7 +720,7 @@ export const compressAST = (code: string, tree: Tree): CompressedNode[] => {
     // Top level declaration
     else if (type.name === 'LocalDeclaration') {
       // Check if declaration is external
-      const sub = cursor.node.cursor;
+      const sub = cursor.node.cursor();
       sub.firstChild();
       sub.firstChild();
 

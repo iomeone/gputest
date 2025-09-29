@@ -1,24 +1,45 @@
-import type { StorageSource, UniformType, TypedArray } from '../../core';
+import type { StorageSource, UniformType, TypedArray } from '@use-gpu/core';
 
-import { useContext, useOne, useMemo, useNoContext, useNoOne, useNoMemo, incrementVersion } from '../../live';
-import { makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS } from '../../core';
-import { DeviceContext } from '../providers/device-provider';
+import { useContext, useOne, useMemo, useVersion, useNoContext, useNoOne, useNoMemo, useNoVersion, incrementVersion } from '@use-gpu/live';
+import { makeDataBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
+
+import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';
 import { useBufferedSize, useNoBufferedSize } from './useBufferedSize';
 
+const NO_OPTIONS: RawSourceOptions = {};
+
+type RawSourceOptions = {
+  flags?: GPUFlagsConstant,
+  readWrite?: boolean,
+  live?: boolean,
+};
+
 // Turn a typed array into a storage source
-export const useRawSource = (array: TypedArray, format: UniformType, live: boolean = false) => {
-  const device = useContext(DeviceContext);
+export const useRawSource = (
+  array: TypedArray,
+  format: UniformType,
+  options: RawSourceOptions = NO_OPTIONS,
+) => {
+  const {
+    live,
+    readWrite,
+    flags = GPUBufferUsage.STORAGE,
+  } = options;
+
+  const device = useDeviceContext();
 
   const alloc = useBufferedSize(array.byteLength);
-  const buffer = useOne(() => makeStorageBuffer(device, alloc), alloc);
+  const buffer = useOne(() => makeDataBuffer(device, alloc, flags), alloc);
 
+  const version = useVersion(buffer) + useVersion(readWrite);
   const source = useOne(() => ({
     buffer,
     format,
     length: 0,
     size: [],
     version: 0,
-  } as StorageSource), buffer);
+    readWrite,
+  } as StorageSource), version);
 
   if (live) {
     useNoMemo();
@@ -42,9 +63,11 @@ export const useRawSource = (array: TypedArray, format: UniformType, live: boole
 }
 
 export const useNoRawSource = () => {
-  useNoContext(DeviceContext);
+  useNoDeviceContext();
   useNoBufferedSize();
   useNoOne();
+  useNoVersion();
+  useNoVersion();
   useNoOne();
   useNoMemo();
 };

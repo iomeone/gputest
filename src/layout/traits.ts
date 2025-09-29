@@ -9,7 +9,7 @@ import {
   optional,
   parseNumber,
   parseColor,
-} from '../traits';
+} from '@use-gpu/traits';
 import {
   parseAlignmentXY,
   parseAnchor,
@@ -48,6 +48,7 @@ const IMAGE_DEFAULTS = {};
 const ELEMENT_TRAIT = {
   width: optional(parseDimension),
   height: optional(parseDimension),
+  aspect: optional(parseNumber),
   
   radius: optional(parseMargin),
   border: optional(parseMargin),

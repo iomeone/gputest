@@ -1,6 +1,6 @@
 @optional @link fn applyTransform(p: vec4<f32>) -> vec4<f32> { return p; }
 
-@link fn getParent(i: u32) -> {}
+@link fn getParent(i: u32) -> vec4<f32>;
 @optional @link fn getSelf(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); }
 
 @export fn getCombinedClip(i: u32) -> vec4<f32> {

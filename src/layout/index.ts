@@ -4,6 +4,7 @@ export * from './display/embed';
 export * from './display/flex';
 export * from './display/inline';
 export * from './display/overflow';
+export * from './display/transform';
 
 export * from './element/element';
 export * from './element/text';

@@ -1,8 +1,8 @@
-import type { Tuples, Point, Point4, Rectangle } from '../core';
-import type { LiveElement, Key } from '../live';
-import type { FontMetrics } from '../glyph';
-import type { ShaderSource, ShaderModule } from '../shader';
-import type { Color, ColorLike } from '../traits';
+import type { Tuples, Point, Point4, Rectangle } from '@use-gpu/core';
+import type { LiveElement, Key } from '@use-gpu/live';
+import type { FontMetrics } from '@use-gpu/glyph';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { Color, ColorLike } from '@use-gpu/traits';
 import { mat4 } from 'gl-matrix';
 
 export type AutoPoint = [number | null, number | null];
@@ -38,6 +38,7 @@ export type BoxTrait = {
 export type ElementTrait = {
   width: Dimension,
   height: Dimension,
+  aspect: number | null,
 
   radius: MarginLike,
   border: MarginLike,
@@ -55,8 +56,55 @@ export type ImageTrait = {
   align: AnchorLike,
 };
 
-export type LayoutRenderer = (box: Rectangle, clip?: ShaderModule, transform?: ShaderModule) => LiveElement<any>;
-export type InlineRenderer = (lines: InlineLine[], clip?: ShaderModule, transform?: ShaderModule, version?: number) => LiveElement<any>;
+export type LayoutRenderer = (
+  box: Rectangle,
+  origin: Rectangle,
+  clip: ShaderModule | null,
+  mask: ShaderModule | null,
+  transform: ShaderModule | null,
+) => LiveElement;
+
+export type RenderInside = {
+  sizes: Point[],
+  offsets: Point[],
+  renders: LayoutRenderer[],
+  clip?: ShaderModule | null,
+  mask?: ShaderModule | null,
+  transform?: ShaderModule | null,
+  inverse?: ShaderModule | null,
+};
+
+export type RenderInline = {
+  ranges: Point[],
+  sizes: Point[],
+  offsets: [number, number, number][],
+  renders: InlineRenderer[],
+  key?: number,
+};
+
+export type RenderOutside = {
+  box: Rectangle,
+  origin: Rectangle,
+  clip?: ShaderModule | null,
+  mask?: ShaderModule | null,
+  transform?: ShaderModule | null,
+};
+
+export type InlineRenderer = (
+  lines: InlineLine[],
+  origin: Rectangle,
+  clip: ShaderModule | null,
+  mask: ShaderModule | null,
+  transform: ShaderModule | null,
+  version?: number
+) => LiveElement;
+
+export type LayoutShaders = {
+  texture?: ShaderModule | null,
+  transform?: ShaderModule | null,
+  clip?: ShaderModule | null,
+  mask?: ShaderModule | null,
+};
 
 export type LayoutScroller = (x: number, y: number) => void;
 export type LayoutPicker = (x: number, y: number, l: number, t: number, r: number, b: number, scroll: boolean) => [number, Rectangle, LayoutScroller] | null;
@@ -107,6 +155,12 @@ export type InlineLine = {
   gap: number,
 };
 
+export const ARCHETYPES = {
+  glyphs: 1,
+  textured: 2,
+  solid: 3,
+};
+
 export type UIAggregate = {
   id: string | number,
   count: number,
@@ -114,23 +168,25 @@ export type UIAggregate = {
   rectangles?: number[],
   colors?: number[],
   uvs?: number[],
+  sts?: number[],
   repeats?: number[],
   borders?: number[],
   strokes?: number[],
   fills?: number[],
   radiuses?: number[],
+  sdfs?: number[],
 
   rectangle?: number[],
   color?: number[],
   uv?: number[],
+  st?: number[],
   repeat?: number,
   border?: number[],
   stroke?: number[],
   fill?: number[],
   radius?: number[],
+  sdf?: number[],
 
-  texture?: ShaderSource,
-  clip?: ShaderModule,
-  transform?: ShaderModule,
+  archetype?: number,
   bounds: Rectangle,
-};
+} & LayoutShaders;

@@ -1,0 +1,104 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`captures values 1`] = `
+"<Root >
+  <Capture(undefined) displayName={undefined} capture={true} [<Fiber >,<Fiber >,…] (…) (0, _builtin.use)(Node, list)>
+    <Fiber >
+    <Fiber >
+    <Fiber >
+    <Resume(undefined) (…) (0, _builtin.use)(Node, list)>
+      <Node [1,2,…]>"
+`;
+
+exports[`gathers yeeted values 1`] = `
+"<Root >
+  <Yeet 1>
+  <Value >
+  <Yeet 3>
+  <Resume(Root) (…) (0, _builtin.use)(Node, values)>
+    <Node [1,2,…]>"
+`;
+
+exports[`render reordering 1`] = `
+"<Root >
+  <Provide(undefined) initialValue={-1} displayName={undefined} context={true} 0 <Memo() >>
+    <Memo() >
+      <Node id={0}>
+      <Node id={1}>
+      <Node id={2}>"
+`;
+
+exports[`render reordering 2`] = `
+"<Root >
+  <Provide(undefined) initialValue={-1} displayName={undefined} context={true} 1 <Memo() >>
+    <Memo() >
+      <Node id={1}>
+      <Node id={2}>
+      <Node id={0}>"
+`;
+
+exports[`renders quote/unquote pairs 1`] = `
+"<Root >
+  <First <Quote <Second …>>>
+    <Quote <Second <Unquote …>>>
+      <First <Quote <Unquote …>>>
+        <First <First <Quote …>>>
+          <First <Quote <Second >>>
+        <Reconcile(First) >
+      <Reconcile(Quote) >
+    <Reconcile(First) >
+  <Root(…) >
+    <Second <Second <Unquote …>>>
+      <Second <Unquote <Quote …>>>
+        <Second <Unquote <First …>>>
+          <Unquote <First <First …>>>
+            <Second >
+            <Reconcile(Unquote) >
+          <Reconcile(Second) >
+        <Reconcile(Second) >
+    <Reconcile(…) >"
+`;
+
+exports[`renders quoted tree 1`] = `
+"<Root >
+  <Node >
+  <Quote <Tree >>
+  <Node >
+  <Root(…) >
+    <Tree >
+      <Node <Node <Node >>>
+        <Node <Node >>
+          <Node >
+    <Reconcile(…) >"
+`;
+
+exports[`renders quoted/unquoted trees 1`] = `
+"<Root >
+  <Reconcile <Quote <Second …>>>
+    <Quote <Second <Second …>>>
+      <First <Quote <Second …>>>
+        <First <First <Quote …>>>
+          <First <Quote <Second >>>
+        <Reconcile(First) >
+      <Reconcile(Quote) >
+    <Root(Reconcile) >
+      <Second <Second <Unquote …>>>
+        <Second <Unquote <First …>>>
+          <Second <Unquote <First …>>>
+            <Second >
+            <Reconcile(Second) >
+          <Reconcile(Second) >
+      <Reconcile(…) >"
+`;
+
+exports[`yeets from capture 1`] = `
+"<Root >
+  <Capture(undefined) displayName={undefined} capture={true} [f={YEET(…) {}} arg={1} key={undefined} by={1},f={…} arg={…} key={…} by={…},…,…] (…) (0, _builtin.yeet)(list)>
+    <Yeet 1>
+    <Yeet 2>
+    <Fiber >
+    <Fiber >
+    <Resume(undefined) (…) (0, _builtin.yeet)(list)>
+  <Resume(Root) (…) (0, _builtin.use)(Node, values)>
+    <Node [1,2,…,…]>"
+`;

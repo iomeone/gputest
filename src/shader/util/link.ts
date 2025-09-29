@@ -188,8 +188,8 @@ export const makeLinker = (
     }
 
     // Replace imported function prototype names with target
-    if (externals) for (const {flags, func} of externals) if (func) {
-      const {name, inferred} = func;
+    if (externals) for (const {flags, func, variable, struct} of externals) if (func ?? variable ?? struct) {
+      const {name, inferred} = func ?? variable ?? struct;
       const key = importMap?.get(name)!;
       const ns = namespaces.get(key);
 
@@ -215,7 +215,7 @@ export const makeLinker = (
         for (const {name, at} of inferred) {
           const resolved = at < 0 ? type : parameters[at];
 
-          let imp = ns + (resolved.type?.name ?? resolved.name);
+          let imp = ns + (resolved.type ?? resolved.name ?? resolved);
           let i = imp;
           while (i = infers.get(imp)) { imp = i; }
 
@@ -246,7 +246,7 @@ export const makeLinker = (
     else if (tree) {
       // Shake tree ops based on which symbols were exported
       const keep = exported.get(key);
-      const ops = shake && keep ? resolveShakeOps(shake, keep) : null;
+      const ops = shake && keep ? resolveShakeOps(shake, keep, symbols) : null;
 
       // Rename symbols using AST while tree shaking
       const recode = rewriteUsingAST(code, tree, rename, ops, optionals);
@@ -284,8 +284,9 @@ export const loadBundlesInOrder = (
   const out: ParsedBundle[] = [];
 
   const {module} = bundle;
-  const {name} = module;
+  const {name, entry} = module;
   const key = getBundleKey(bundle);
+  exported.set(key, new Set([entry ?? 'main']));
 
   // Traverse graph starting from source
   const queue = [{key, name, chunk: bundle as ShaderModule}];
@@ -334,14 +335,14 @@ export const loadBundlesInOrder = (
     }
 
     // Recurse into links
-    if (externals) for (const {func, flags} of externals) if (func) {
-      const {name} = func;
+    if (externals) for (const {flags, func, variable, struct} of externals) if (func ?? variable ?? struct) {
+      const {name} = func ?? variable ?? struct;
       const chunk = links[name];
       if (!chunk) {
         if (flags & RF.Optional) {
           continue;
         }
-        throw new Error(`Unlinked function '${name}' in ${getContext(module)}`);
+        throw new Error(`Unlinked function/variable '${name}' in ${getContext(module)}`);
       }
 
       const key = getBundleKey(chunk);
@@ -363,7 +364,6 @@ export const loadBundlesInOrder = (
       let list = exported.get(key);
       if (!list) exported.set(key, list = new Set());
       list.add(symbol);
-      
     }
 
     // Build module-to-module dependency graph

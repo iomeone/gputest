@@ -1,12 +1,11 @@
-import type { LiveComponent } from '../../live';
-import type { TypedArray, TextureSource, Atlas, Lazy, RenderPassMode } from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TypedArray, TextureSource, Atlas, Lazy, RenderPassMode } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 import type { SDFGlyphData } from '../text/types';
 
-import { use, keyed, wrap, memo, debug, fragment, provide, useFiber, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
-import { makeShaderBindings } from '../../core';
-import { TransformContext, useTransformContext } from '../providers/transform-provider';
+import { gather, use, yeet, keyed, wrap, memo, debug, fragment, provide, useFiber, useOne, useState, useResource } from '@use-gpu/live';
+import { bindBundle, bindingsToLinks } from '@use-gpu/shader/wgsl';
+import { makeShaderBindings } from '@use-gpu/core';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useRawSource } from '../hooks/useRawSource';
 
@@ -87,13 +86,14 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
 
   return (
     use(SDFFontProvider, {
+      fence: gather,
       radius: sdfRadius,
       children:
         use(GlyphSource, {
           family,
           weight,
           style,
-          strings: labels ?? (label != null ? [label] : []),
+          strings,
           size: detail,
         }),
       then:
@@ -115,7 +115,7 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
             uvs,
             sdf,
             texture: source,
-        
+
             position,
             positions,
             placement,
@@ -132,11 +132,9 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
             expands,
 
             flip,
-            count,
             mode,
             id,
           });
-          //]);
         },
     })
   );

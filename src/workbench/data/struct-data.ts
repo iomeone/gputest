@@ -1,30 +1,37 @@
-import type { LiveElement, LC, PropsWithChildren } from '../../live';
-import type { TypedArray, StorageSource, Emit, Time } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
+import type { LiveElement, LC, PropsWithChildren } from '@use-gpu/live';
+import type { TypedArray, StorageSource, Emit, Time } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
 import { useDeviceContext } from '../providers/device-provider';
 
-import { yeet, useMemo, useNoMemo, useOne } from '../../live';
-import { bundleToAttribute } from '../../shader/wgsl';
-import { incrementVersion } from '../../live';
-import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '../../core';
+import { yeet, signal, useMemo, useNoMemo, useOne, useYolo } from '@use-gpu/live';
+import { bundleToAttribute } from '@use-gpu/shader/wgsl';
+import { incrementVersion } from '@use-gpu/live';
+import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '@use-gpu/core';
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
-import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 
 export type StructDataProps = {
+  /** Set/override input length */
   length?: number,
-  data?: any[],
+  
+  /** Struct WGSL type */
+  format?: ShaderModule,
 
+  /** Input data */
+  data?: number[] | TypedArray,
+  /** Input emitter expression */
+  expr?: (emit: Emit, ...args: any[]) => void,
+  /** Emit 0 or 1 item per `expr` call. */
   sparse?: boolean,
-  expr?: (emit: Emit, i: number, n: number, t?: Time) => void,
-
-  format: ShaderModule,
+  /** Add current `TimeContext` to the `expr` arguments. */
+  time?: boolean,
+  /** Resample `data` or `expr` on every animation frame. */
   live?: boolean,
 
-  render?: (...source: ShaderSource[]) => LiveElement<any>,
-  children?: LiveElement<any>,
+  /** Leave empty to yeet source instead. */
+  render?: (...source: ShaderSource[]) => LiveElement,
 };
 
 export const StructData: LC<StructDataProps> = (props: PropsWithChildren<StructDataProps>) => {
@@ -34,6 +41,7 @@ export const StructData: LC<StructDataProps> = (props: PropsWithChildren<StructD
     
     sparse,
     expr,
+    time,
     
     format,
     live,
@@ -78,7 +86,7 @@ export const StructData: LC<StructDataProps> = (props: PropsWithChildren<StructD
   const filler = useMemo(() => makeLayoutFiller(layout, array), [layout, array]);
 
   // Provide time for expr
-  const time = expr ? useTimeContext() : useNoTimeContext();
+  const clock = time && expr ? useTimeContext() : useNoTimeContext();
 
   // Refresh and upload data
   const refresh = () => {
@@ -89,7 +97,7 @@ export const StructData: LC<StructDataProps> = (props: PropsWithChildren<StructD
       let field = 0;
       const emit = (...args: any[]) => filler.setValue(emitted, field++, args);
       for (let i = 0; i < count; ++i) {
-        expr(emit, i, count, time!);
+        expr(emit, i, count, clock!);
 
         if (field) {
           emitted++;
@@ -99,24 +107,24 @@ export const StructData: LC<StructDataProps> = (props: PropsWithChildren<StructD
     }
     if (data || expr) {
       uploadBuffer(device, source.buffer, array);
+      source.version = incrementVersion(source.version);
     }
 
     source.length  = !sparse ? count : emitted;
     source.size    = [source.length]
-    source.version = incrementVersion(source.version);
   };
 
   if (!live) {
-    useNoPerFrame();
     useNoAnimationFrame();
     useMemo(refresh, [device, source, array, data, expr, count]);
   }
   else {
-    usePerFrame();
     useAnimationFrame();
     useNoMemo();
     refresh();
   }
 
-  return useMemo(() => render ? render(source) : yeet(source), [render, source]);
+  const trigger = useOne(() => signal(), source.version);
+  const view = useYolo(() => render ? render(source) : yeet(source), [render, source]);
+  return [trigger, view];
 };

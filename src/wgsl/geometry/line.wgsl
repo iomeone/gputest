@@ -1,4 +1,4 @@
-use '../../wgsl/use/view'::{ screenToClip3D, clip3DToScreen };
+use '@use-gpu/wgsl/use/view'::{ screenToClip3D, clip3DToScreen };
 
 fn turn(xy: vec2<f32>) -> vec2<f32> {
   return vec2<f32>(xy.y, -xy.x);

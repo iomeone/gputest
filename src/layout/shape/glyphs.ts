@@ -1,12 +1,14 @@
-import type { LiveComponent } from '../../live';
-import type { TextureSource, Tuples, Point4 } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { FontMetrics } from '../../glyph';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Rectangle, TextureSource, Tuples, Point4 } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { FontMetrics } from '@use-gpu/glyph';
 import type { InlineLine } from '../types';
 
-import { use, yeet, useContext, useMemo } from '../../live';
-import { SDFFontProvider, useSDFFontContext, SDF_FONT_ATLAS } from '../../workbench';
+import { use, yeet, useContext, useMemo } from '@use-gpu/live';
+import { SDFFontProvider, useSDFFontContext } from '@use-gpu/workbench';
 import { evaluateDimension } from '../parse';
+import { getOriginProjectionX, getOriginProjectionY } from '../lib/util';
+import { ARCHETYPES } from '../types';
 
 const BLACK = [0, 0, 0, 1];
 
@@ -27,8 +29,10 @@ export type GlyphsProps = {
   height: FontMetrics,
   lines: InlineLine[],
   
-  clip?: ShaderModule,
-  transform?: ShaderModule,
+  origin: Rectangle,
+  clip?: ShaderModule | null,
+  mask?: ShaderModule | null,
+  transform?: ShaderModule | null,
 };
 
 export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
@@ -36,9 +40,9 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     id,
     color = BLACK,
     opacity = 1,
-    detail,
     expand = 0,
     size = 16,
+    detail = size,
     snap = false,
 
     font,
@@ -48,22 +52,28 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     height,
     lines,
 
+    origin,
     clip,
+    mask,
     transform,
   } = props;
 
-  const { getGlyph, getScale, getRadius } = useSDFFontContext();
+  const sdfFont = useSDFFontContext();
 
   return useMemo(() => {
-    const adjust = size / (detail ?? size);
+    const { getGlyph, getScale, getRadius, getTexture } = sdfFont;
+    
+    const adjust = size / detail;
     const radius = getRadius();
-    const scale = getScale(detail ?? size) * adjust;
+    const scale = getScale(detail) * adjust;
+    const texture = getTexture();
 
     const fill = color.slice();
     fill[3] *= opacity;
   
     const rectangles = [] as number[];
     const uvs = [] as number[];
+    const sts = [] as number[];
     let count = 0;
 
     const bounds = [Infinity, Infinity, -Infinity, -Infinity];
@@ -72,15 +82,15 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
       const [l, t] = layout;
 
       const {ascent, lineHeight} = height;
-      let x = l;
-      let y = t + ascent;
+      let x = snap ? Math.round(l) : l;
+      let y = snap ? Math.round(t + ascent) : t + ascent;
       
       let first = true;
 
       let sx = x;
       spans.iterate((_a, trim, _h, index) => {
         glyphs.iterate((fontIndex: number, glyphId: number, isWhiteSpace: number, kerning: number) => {
-          const {glyph, mapping} = getGlyph(font[fontIndex], glyphId, detail ?? size);
+          const {glyph, mapping} = getGlyph(font[fontIndex], glyphId, detail);
           const {image, layoutBounds, outlineBounds, rgba, scale: glyphScale} = glyph;
           const [ll, lt, lr, lb] = layoutBounds;      
 
@@ -104,6 +114,12 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
 
               rectangles.push(left, top, right, bottom);
               uvs.push(r * mapping[0], r * mapping[1], r * mapping[2], r * mapping[3]);
+              sts.push(
+                getOriginProjectionX(left, origin),
+                getOriginProjectionY(top, origin),
+                getOriginProjectionX(right, origin),
+                getOriginProjectionY(bottom, origin),
+              );
 
               bounds[0] = Math.min(bounds[0], left);
               bounds[1] = Math.min(bounds[1], top);
@@ -113,7 +129,6 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
               count++;
             }
           }
-
           sx += lr * scale;
           x += lr * scale;
         }, breaks[index - 1] || 0, breaks[index]);
@@ -129,17 +144,20 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
       id,
       rectangles,
       uvs,
+      sts,
       // macOS-style font bleed
       border: [expand, Math.min(size / 32, 1.0) * 0.25, 0, 0],
       sdf: [radius, scale, size, 0],
       fill,
-      texture: SDF_FONT_ATLAS,
+      texture,
       count,
       clip,
+      mask,
       transform,
       bounds,
+      archetype: ARCHETYPES.glyphs,
     } : null;
 
     return yeet(render);
-  }, [props, getGlyph, getScale, getRadius]);
+  }, [props, sdfFont]);
 };

@@ -1,11 +1,10 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TypedArray, StorageSource, UniformType, Accessor, DataField, ChunkLayout } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { TypedArray, StorageSource, UniformType, Accessor, DataField, DataBounds, ChunkLayout } from '@use-gpu/core';
 
 import { DeviceContext } from '../providers/device-provider';
-import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { useBufferedSize } from '../hooks/useBufferedSize';
-import { yeet, extend, gather, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { yeet, extend, signal, gather, useOne, useMemo, useNoMemo, useContext, useNoContext, useYolo, useNoYolo, incrementVersion } from '@use-gpu/live';
 import {
   makeDataArray, makeDataAccessor,
   copyDataArray, copyNumberArray,
@@ -14,24 +13,33 @@ import {
   copyDataArrayChunked, copyNumberArrayChunked,
   getChunkCount,
   makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
-} from '../../core';
+  getBoundingBox, toDataBounds,
+} from '@use-gpu/core';
 
 export type CompositeDataProps = {
-  length?: number,
-  data?: any[],
+  /** Input data, array of structs of values/arrays */
+  data?: (Record<string, any>)[],
+  /** WGSL schema of input data */
   fields?: DataField[],
+  /** Resample `data` on every animation frame. */
   live?: boolean,
 
+  /** Per item `isLoop` accessor */
   loop?: <T>(t: T[]) => boolean,
+  /** Per item `hasStart` accessor */
   start?: <T>(t: T[]) => boolean,
+  /** Per item `hasEnd` accessor */
   end?: <T>(t: T[]) => boolean,
   
-  on?: LiveElement<any>,
+  /** Segment decorator(s) */
+  on?: LiveElement,
 
-  render?: (...sources: StorageSource[]) => LiveElement<any>,
+  /** Receive 1 source per field, in struct-of-array format. Leave empty to yeet sources instead. */
+  render?: (...sources: StorageSource[]) => LiveElement,
 };
 
 const NO_FIELDS = [] as DataField[];
+const NO_BOUNDS = {center: [], radius: 0, min: [], max: []} as DataBounds;
 
 const isComposite = (format: string) => !!format.match(/^array</);
 const toSimple = (format: string) => format.slice(6, -1);
@@ -76,6 +84,7 @@ const iterateChunks = (
   }
 }
 
+/** Compose array-of-structs with fields `T | T[]` into struct-of-array data. */
 export const CompositeData: LiveComponent<CompositeDataProps> = (props) => {
   const device = useContext(DeviceContext);
 
@@ -109,11 +118,11 @@ export const CompositeData: LiveComponent<CompositeDataProps> = (props) => {
     const [index] = indexes;
 
     // Look for first non-index composite field
-    const composites = fs.filter(([format,, accessorType]) => isComposite(format) && accessorType !== 'index');
+    const composites = fs.filter(([format,, accessorType]) => isComposite(format));
     const [composite] = composites;
     if (!composite) {
       const length = data?.length ?? rawLength ?? 0;
-      return {chunks: [length], loops: undefined, starts: undefined, ends: undefined, count: length};
+      return {chunks: [length], loops: undefined, starts: undefined, ends: undefined, dataCount: length, indexCount: length};
     }
 
     // Gather chunk sizes and chunk metadata
@@ -149,22 +158,26 @@ export const CompositeData: LiveComponent<CompositeDataProps> = (props) => {
     const chunks = indexChunks ?? dataChunks;
     const indexed = indexChunks && dataChunks;
 
-    const count = getChunkCount(chunks, loops);
+    const dataCount = getChunkCount(dataChunks, loops);
+    const indexCount = indexChunks ? getChunkCount(indexChunks, loops) : 0;
     const offsets = indexed && accumulate(indexed);
 
     return {
       chunks,
+      indexed,
       loops,
       starts,
       ends,
-      count,
-      indexed,
       offsets,
+      dataCount,
+      indexCount,
     };
   }, [data, fs]);
 
-  const {chunks, loops, starts, ends, count} = layout;
-  const l = useBufferedSize(count);
+  const {chunks, indexed, loops, starts, ends, dataCount, indexCount} = layout;
+
+  const lData = useBufferedSize(dataCount);
+  const lIndex = useBufferedSize(indexCount);
 
   // Make data buffers
   const [fieldBuffers, fieldSources] = useMemo(() => {
@@ -173,11 +186,15 @@ export const CompositeData: LiveComponent<CompositeDataProps> = (props) => {
       const composite = isComposite(format);
       format = composite ? toSimple(format) : format;
 
+      const isIndex = accessorType === 'index';
+      const isUnwelded = accessorType === 'unwelded';
+
       if (!(format in UNIFORM_ARRAY_DIMS)) throw new Error(`Unknown data format "${format}"`);
       const f = format as any as UniformType;
 
       let {raw, fn} = makeDataAccessor(f, accessor);
 
+      const l = isIndex || isUnwelded ? lIndex : lData;
       const {array, dims} = makeDataArray(f, l);
 
       const buffer = makeStorageBuffer(device, array.byteLength);
@@ -187,23 +204,23 @@ export const CompositeData: LiveComponent<CompositeDataProps> = (props) => {
         length: 0,
         size: [0],
         version: 0,
+        bounds: {...NO_BOUNDS},
       };
 
-      const isIndex = accessorType === 'index';
-      return {buffer, array, source, dims, accessor: fn, raw, composite, isIndex};
+      return {buffer, array, source, dims, accessor: fn, raw, composite, isIndex, isUnwelded};
     });
 
     const fieldSources = fieldBuffers.map(f => f.source);
 
     return [fieldBuffers, fieldSources];
-  }, [device, fs, l]);
+  }, [device, fs, lData, lIndex]);
   
   // Refresh and upload data
   const refresh = () => {
-    for (const {buffer, array, source, dims, accessor, raw, composite, isIndex} of fieldBuffers) if (raw || data) {
+    for (const {buffer, array, source, dims, accessor, raw, composite, isIndex, isUnwelded} of fieldBuffers) if (raw || data) {
       const a = accessor as Accessor;
-      const c = isIndex ? chunks : layout.indexed ?? chunks;
-      const l = (!layout.indexed || isIndex) ? loops : undefined;
+      const c = isIndex || isUnwelded ? chunks : indexed ?? chunks;
+      const l = (!indexed || isIndex) ? loops : undefined;
       const o = isIndex ? layout.offsets : undefined;
 
       if (composite) {
@@ -216,34 +233,43 @@ export const CompositeData: LiveComponent<CompositeDataProps> = (props) => {
       }
       uploadBuffer(device, buffer, array.buffer);
 
-      source.length = count;
-      source.size[0] = count;
+      source.length  = isIndex || isUnwelded ? indexCount : dataCount;
+      source.size[0] = source.length;
       source.version = incrementVersion(source.version);
+
+      const {bounds} = source;
+      const {center, radius, min, max} = toDataBounds(getBoundingBox(array, Math.ceil(dims)));
+      bounds.center = center;
+      bounds.radius = radius;
+      bounds.min = min;
+      bounds.max = max;
     }
   };
-  
+
   if (!live) {
-    useNoPerFrame();
     useNoAnimationFrame();
-    useMemo(refresh, [device, data, fieldBuffers, count]);
+    useMemo(refresh, [device, data, fieldBuffers, dataCount, indexCount]);
   }
   else {
-    usePerFrame();
     useAnimationFrame();
     useNoMemo();
     refresh()
   }
-  
+
+  const trigger = useOne(() => signal(), fieldSources[0]?.version);
+
   if (on) {
-    useNoMemo();
+    useNoYolo();
 
     const els = extend(on, layout);
     return gather(els, (sources: StorageSource[]) => {
       const s = [...fieldSources, ...sources];
-      return render ? render(...s) : yeet(s);
+      const view = useYolo(() => render ? render(...s) : yeet(s), [render, ...s]);
+      return [trigger, view];
     });
   }
   else {
-    return useMemo(() => render ? render(...fieldSources) : yeet(fieldSources), [render, fieldSources]);
+    const view = useYolo(() => render ? render(...fieldSources) : yeet(fieldSources), [render, fieldSources]);
+    return [trigger, view];
   }
 };

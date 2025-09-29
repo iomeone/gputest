@@ -1,48 +1,30 @@
-import type { Font, FontProps, FontMetrics, SpanMetrics, GlyphMetrics, RustTextAPI } from './types';
-import { toMurmur53 } from '../state';
-// import { UseRustText } from '../pkg/use_gpu_text.js';
+import type { Font, FontProps, FontGlyph, FontMetrics, SpanMetrics, GlyphMetrics, RustTextAPI } from './types';
+import { toMurmur53 } from '@use-gpu/state';
+import { UseRustText } from '../pkg/use_gpu_text.js';
 
-
-
-let __rtInstance: any | null = null;
-let __rtReady: Promise<void> | null = null;
-
-export const initRustText = () =>
-  (__rtReady ??= (async () => {
-    const { default: init, UseRustText } =
-      await import('../use-gpu-text/pkg/index.js');
-      await init(new URL('../use-gpu-text/pkg/index_bg.wasm', import.meta.url));
-    __rtInstance = UseRustText.new();
-  })());
-
-
+type ArrowFunction = (...args: any[]) => any;
 
 const DEFAULT_FONTS = {
   "0": {
-    family: 'sans-serif',
-    weight: 400,
-    style: 'normal',
+    props: {
+      family: 'sans-serif',
+      weight: 400,
+      style: 'normal',
+    },
   },
-} as Record<string, FontProps>;
+} as Record<string, Font>;
 
 export const RustText = (): RustTextAPI => {
 
-  // const useRustText = UseRustText.new();
+  const useRustText = UseRustText.new();
 
+  const fontMap = new Map<number, Font>();
+  const pendingGlyphs = new Map<number, ArrowFunction[]>;
 
-  if (!__rtInstance) {
-    throw new Error('RustText not initialized. Call `await initRustText()` once at startup.');
-  }
-  const useRustText = __rtInstance;
-
-
-
-
-  let fontMap = new Map<number, FontProps>();
   for (let k in DEFAULT_FONTS) fontMap.set(+k, DEFAULT_FONTS[k]);
 
   const setFonts = (fonts: Font[]) => {
-    const keys = fonts.map(toMurmur53);
+    const keys = fonts.map(({props}) => toMurmur53(props));
 
     const remove = new Set<number>(fontMap.keys());
     remove.delete(0);
@@ -50,15 +32,21 @@ export const RustText = (): RustTextAPI => {
     keys.forEach((k, i) => {
       if (!fontMap.has(k)) {
         const font = fonts[i];
-        useRustText.load_font(k, new Uint8Array(font.buffer));
-        fontMap.set(k, font.props);
+
+        if (font.buffer) useRustText.load_font(k, new Uint8Array(font.buffer));
+        else if (font.lazy) useRustText.load_image_font(k, packStrings(font.lazy.sequences));
+
+        fontMap.set(k, font);
       }
       else remove.delete(k);
     });
-    
+
     for (const k of remove.keys()) {
+      const font = fontMap.get(k)!;
       fontMap.delete(k);
-      useRustText.unload_font(k);
+
+      if (font.buffer) useRustText.unload_font(k);
+      else if (font.lazy) useRustText.unload_image_font(k);
     }
   }
 
@@ -74,23 +62,23 @@ export const RustText = (): RustTextAPI => {
     } = font;
 
     for (const k of fontMap.keys()) {
-      const font = fontMap.get(k)!;
-      const {family: f, style: s, weight: w} = font;
+      const {props} = fontMap.get(k)!;
+      const {family: f, style: s, weight: w} = props;
 
       let score = 0;
       if (f === family) score += 2;
       if (s === style) score += 1;
       score += Math.min(weight / w, w / weight);
-      
+
       if (score > max) {
         max = score;
         best = k;
       }
     }
-    
+
     return best;
   }
-  
+
   const resolveFontStack = (fonts: Partial<FontProps>[]): number[] => {
     const stack = fonts.map(resolveFont).filter(x => x != null) as number[];
     return stack.length ? stack : [0];
@@ -106,20 +94,59 @@ export const RustText = (): RustTextAPI => {
       breaks: new Uint32Array(s.breaks.buffer),
       metrics: new Float32Array(s.metrics.buffer),
       glyphs: new Int32Array(s.glyphs.buffer),
+      missing: new Int32Array(s.missing.buffer),
     };
   }
-  
+
   const measureGlyph = (fontId: number, glyphId: number, size: number): GlyphMetrics => {
     return useRustText.measure_glyph(fontId, glyphId, size);
   }
 
-  const findGlyph = (fontId: number, char: string): number => {
-    const {glyphs} = useRustText.measure_spans(new Float64Array([fontId]), packString(char), 16);
-    const array = new Uint32Array(glyphs.buffer);
-    return array[1];
+  const loadMissingGlyph = (fontId: number, glyphId: number, callback: ArrowFunction) => {
+    const {props, lazy} = fontMap.get(fontId)!;
+    if (!lazy) return;
+
+    const key = toMurmur53([fontId, glyphId]);
+
+    let list = pendingGlyphs.get(key);
+    if (list) {
+      list.push(callback);
+      return;
+    }
+    pendingGlyphs.set(key, list = [callback]);
+
+    const resolve = (glyph: FontGlyph) => {
+      const {type, buffer, width, height} = glyph;
+
+      if (type === 'rgba') useRustText.load_image_rgba(fontId, glyphId, new Uint8Array(buffer), width || 1, height || 1);
+      else if (type === 'png') useRustText.load_image_png(fontId, glyphId, new Uint8Array(buffer));
+      else throw new Error(`Unknown glyph type '${type}' for '${JSON.stringify(props)}'`);
+
+      const list = pendingGlyphs.get(key)!;
+      pendingGlyphs.delete(key);
+      for (const cb of list) cb();
+    };
+
+    const {sync, async, fetch: f} = lazy;
+    if (sync) resolve(sync(glyphId));
+    else if (async) async(glyphId).then(resolve);
+    else if (f) fetch(f(glyphId)).then(r => {
+      const mime = r.headers.get('content-type');
+      if (mime === 'image/png') {
+        r.arrayBuffer().then(buffer => resolve(({ type: 'png', buffer })))
+      }
+      else {
+        console.warn(`Unsupported mime type '${mime}' for '${JSON.stringify(props)}'`);
+      }
+    })
+    else throw new Error(`No loader defined for lazy font '${JSON.stringify(props)}'`);
   };
-  
-  return {findGlyph, measureFont, measureSpans, measureGlyph, resolveFont, resolveFontStack, setFonts};
+
+  const findGlyph = (fontId: number, char: string): [number, boolean] => {
+    return useRustText.find_glyph(fontId, packString(char));
+  };
+
+  return {findGlyph, measureFont, measureSpans, measureGlyph, loadMissingGlyph, resolveFont, resolveFontStack, setFonts};
 }
 
 export const packStrings = (strings: string[] | string): Uint16Array => {

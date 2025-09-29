@@ -76,10 +76,12 @@ export const transpileWGSL = (source: string, resourcePath: string, esModule: bo
           log({ mode: 'fallback', resourcePath: rp, dir, parseFrom, decompressFrom });
         }
   
-        preamble = [
-          makeImport('{parseBundle}', parseFrom),
-          makeImport('{decompressAST}', decompressFrom),
-        ].join('\n');
+        // preamble = [
+        //   makeImport('{parseBundle}', parseFrom),
+        //   makeImport('{decompressAST}', decompressFrom),
+        // ].join('\n');
+
+        preamble = makeImport('{decompressAST, bindEntryPoint}', decompressFrom);
       }
   
 
@@ -92,19 +94,28 @@ export const transpileWGSL = (source: string, resourcePath: string, esModule: bo
   const module = loadModule(source, name);
 
   // Emit module data
-  const {code, hash, table, tree, shake} = module;
-  const def = `const data = {
-    "name": ${stringify(name)},
-    "code": ${stringify(code)},
-    "hash": ${stringify(hash)},
-    "table": ${stringify(table)},
-    "shake": ${stringify(shake)},
-    "tree": decompressAST(${stringify(compressAST(code, tree!))}),
-  };`
+  // const {code, hash, table, tree, shake} = module;
+  // const def = `const data = {
+  //   "name": ${stringify(name)},
+  //   "code": ${stringify(code)},
+  //   "hash": ${stringify(hash)},
+  //   "table": ${stringify(table)},
+  //   "shake": ${stringify(shake)},
+  //   "tree": decompressAST(${stringify(compressAST(code, tree!))}),
+  // };`
 
 
 
+const { code, hash, table: { declarations, ...table }, tree, shake } = module;
 
+const def = `const t = ${stringify(table)}; const data = {
+  "name": ${stringify(name)},
+  "code": ${stringify(code)},
+  "hash": ${stringify(hash)},
+  "table": t,
+  "shake": ${stringify(shake)},
+  "tree": decompressAST(${stringify(compressAST(code, tree!, table.symbols))}, t.symbols),
+};`;
 
 
 
@@ -234,7 +245,10 @@ exports.default = __default;
     def,
     libs,
 
-    `const getSymbol = (entry) => ({module: data, libs, entry});`,
+    // `const getSymbol = (entry) => ({module: data, libs, entry});`,
+
+    `const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });`,
+
     exportDefault,
     ...exportSymbols,
     '/* __WGSL_LOADER_GENERATED */',

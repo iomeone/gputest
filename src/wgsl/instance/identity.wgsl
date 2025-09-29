@@ -1,1 +1,1 @@
-@export fn getIndex(i: u32) -> { return i; }
+@export fn getIndex(i: u32) -> u32 { return i; }

@@ -1,11 +1,11 @@
-use '../../wgsl/fragment/pbr'::{ PBR, PBRParams };
+use '@use-gpu/wgsl/fragment/pbr'::{ PBR };
+use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
 
 @export fn applyPBRMaterial(
   N: vec3<f32>,
   L: vec3<f32>,
   V: vec3<f32>,
-  radiance: vec3<f32>,
-  params: PBRParams,
+  surface: SurfaceFragment,
 ) -> vec3<f32> {
-  return PBR(N, L, V, radiance, params.albedo, params.metalness, params.roughness);
+  return PBR(N, L, V, surface.albedo.xyz, surface.material.x, surface.material.y);
 }

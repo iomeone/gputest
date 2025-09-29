@@ -1,39 +1,45 @@
-import type { LiveFiber } from '../../../live';
+import type { LiveFiber } from '@use-gpu/live';
 import type { Action } from '../types';
 
-import { formatNode, formatValue, formatNodeName, YEET } from '../../../live';
+import { formatNode, formatNodeName, YEET } from '@use-gpu/live';
+import { InspectObject } from '../inspect-object';
+import { Spacer } from '../layout';
+
+import React, { useLayoutEffect, useState } from 'react';
+
 import { styled as _styled } from '@stitches/react';
 
-import React, { useState } from 'react';
-import { SplitRow, TreeRow, TreeIndent, Label, Spacer } from '../layout';
-import { usePingContext } from '../ping';
-import { IconItem, SVGChevronDown, SVGChevronRight } from '../svg';
-
+// TODO: TS nightly issue?
 const styled: any = _styled;
 
 type PropsProps = {
   fiber: LiveFiber<any>,
   fibers: Map<number, LiveFiber<any>>,
+  selectFiber: (fiber: LiveFiber<any>) => void,
 };
 
-const Prefix = styled('div', {
-  width: '20px',
-  display: 'inline-block',
-  whiteSpace: 'nowrap',
-  lineHeight: 1,
+export const FiberName = styled('span', {
+  color: 'var(--LiveInspect-colorTextActive)',
+  marginRight: 10,
 });
 
-const Compact = styled('span', {
-  whiteSpace: 'nowrap',
+export const Fiber = styled('div', {
+  cursor: 'pointer',
+  display: 'flex',
+  '& > div': {
+    margin: '0px -4px',
+    padding: '2px 4px',
+  },
+  '&:hover > div': {
+    background: "#444",
+  },
 });
 
-export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
+export const Props: React.FC<PropsProps> = ({fiber, fibers, selectFiber}) => {
   // @ts-ignore
   const {id, f, arg, args, yeeted} = fiber;
   const name = formatNodeName(fiber);
   let props = {} as Record<string, any>;
-
-  usePingContext();
 
   const [state, setState] = useState<Record<string, boolean>>({});
   const toggleState = (id: string) => setState((state) => ({
@@ -42,7 +48,7 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
   }));
 
   if (arg !== undefined) {
-    if (name === 'YEET') {
+    if (f.name === 'YEET') {
       props = {yeet: arg};
     }
     else {
@@ -51,18 +57,26 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
   }
 
   if (args !== undefined) {
-    if (name === 'YEET') {
-      props = {yeet: args[0]};
+    if (f.name === 'YEET') {
+      props = {};
     }
-    if (name === 'MAP_REDUCE') {
-      const [, map, reduce] = args;
-      props = {map, reduce};
+    if (f.name === 'MAP_REDUCE') {
+      const [children, map, reduce] = args;
+      props = {map, reduce, children};
     }
-    else if (name === 'PROVIDE') {
+    else if (f.name === 'CAPTURE') {
+      const [context] = args;
+      props = {context};
+    }
+    else if (f.name === 'PROVIDE') {
       const [context, value] = args;
       props = {context, value};
     }
-    else if (name === 'GATHER') {
+    else if (f.name === 'GATHER') {
+      const [children, then, fallback] = args;
+      props = {children, then, fallback};
+    }
+    else if (f.name === 'SIGNAL') {
     }
     else {
       if (args.length === 1 && typeof args[0] === 'object') props = args[0];
@@ -70,33 +84,74 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
     }
   }
 
-  let yt = yeeted?.value != null ? (<>
+  let yt = (yeeted?.value ?? yeeted?.reduced) != null ? (<>
     <div><b>Yeeted</b></div>
-    <div>{inspectObject(yeeted?.value, state, toggleState, '')}</div>
+    {yeeted?.value != null ? ( 
+      <div><InspectObject
+        object={{value: yeeted?.value}}
+        state={state}
+        toggleState={toggleState}
+        path={''}
+      /></div>
+    ) : null}
+    {yeeted?.reduced != null ? ( 
+      <div><InspectObject
+        object={{reduced: yeeted?.reduced}}
+        state={state}
+        toggleState={toggleState}
+        path={''}
+      /></div>
+    ) : null}
   </>) : null;
 
   let showProps = f !== YEET;
 
-  let history = null as React.ReactNode | null;
-  let parent = fiber;
-  if (parent.by) {
-    const parents = [] as LiveFiber<any>[];
-    while (parent) {
-      const {by} = parent;
-      const source = fibers.get(by);
-      if (source) parents.push(source);
-      parent = source as any;
+  const getHistory = () => {
+    let parent = fiber;
+    if (parent.by) {
+      const parents = [] as LiveFiber<any>[];
+      while (parent) {
+        const {by} = parent;
+        const source = fibers.get(by);
+        if (source) parents.push(source);
+        parent = source as any;
+      }
+      if (parents.length) {
+        return parents.map((fiber) => {
+          const text = formatNode(fiber);
+          const name = formatNodeName(fiber);
+          const parts = text.split(name);
+          return (
+            <Fiber key={fiber.id} onClick={() => {
+              selectFiber(fiber);
+            }}><div>
+              {parts[0]}
+              <FiberName>{name}</FiberName>
+              {parts.slice(1).join(' ')}
+            </div></Fiber>
+          );
+        });
+      }
     }
-    history = parents.map((fiber) => <div key={fiber.id}>{formatNode(fiber)}</div>)  }
-  else {
-    history = '[Runtime]';
-  }
+    return '[Runtime]';
+  };
+
+  let [history, setHistory] = useState(getHistory);
+  useLayoutEffect(() => {
+    const h = getHistory();
+    if (h.length !== history.length) setHistory(h);
+  });
 
   return (<>
     {showProps ? (
       <>
         <div><b>{name}</b></div>
-        <div>{inspectObject(props, state, toggleState, '')}</div>
+        <div><InspectObject
+          object={props}
+          state={state}
+          toggleState={toggleState}
+          path={''}
+        /></div>
       </>
     ) : null}
     {showProps && yt ? <Spacer /> : null}
@@ -107,120 +162,3 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers}) => {
   </>);
 }
 
-export const inspectObject = (
-  object: any,
-  state: Record<string, boolean>,
-  toggleState: (id: string) => void,
-  path: string,
-  seen: Set<any> = new Set(),
-  depth: number = 0,
-) => {
-  if (!object) return null;
-
-  if (seen.has(object)) return '{Circular}';
-  seen.add(object);
-
-  if (Array.isArray(object)) {
-    if (object.reduce((b, o) => b && typeof o === 'number', true)) {
-      return `[${object.join(', ')}]`;
-    }
-    if (object.length > 100) object = object.slice(0, 100);
-  }
-  
-  if (object instanceof Float32Array) {
-    if (object.length > 100) object = object.slice(0, 100);
-  }
-
-  if (object instanceof Map) {
-    const o = {} as Record<string, any>;
-    let i = 0;
-    for (let k of object.keys()) {
-      const v = object.get(k);
-      if (k instanceof Object) k = (i++).toString();
-      o[k] = v;
-    }
-    object = o;
-  }
-
-  const signature = Object.keys(object).join('/');
-  // @ts-ignore
-  if ((signature === 'f/args/key') && object.f && object.args) {
-    if (!object.f.isLiveBuiltin) {
-      object = Object.assign(Object.create(object.f), {
-        component: object.f,
-        props: object.args[0],
-        key: object.key,
-      });
-    }
-    else {
-      object = Object.assign(Object.create(object.f), {
-        component: object.f,
-        args: object.args,
-        arg: object.arg,
-        key: object.key,
-      });
-    }
-  }
-
-  const fields = Object.keys(object).map((k: string) => {
-    const key = path +'/'+ k;
-    const expandable = typeof object[k] === 'object' && object[k];
-    const expanded = !!state[key];
-
-    const icon = <IconItem height={16} top={2}>{expanded !== false ? <SVGChevronDown /> : <SVGChevronRight />}</IconItem>;
-    const prefix = expandable ? icon : '';
-    
-    const onClick = expandable ? (e: any) => {
-      toggleState(key);
-      e.preventDefault();
-      e.stopPropagation();
-    } : undefined;
-
-    const compact = <Compact>
-      {expanded ? formatValue(object[k]) : truncate(formatValue(object[k]), 80)}
-    </Compact>
-
-    const full = expanded ? (
-      <TreeIndent indent={1}>{inspectObject(object[k], state, toggleState, key, seen, depth + 1)}</TreeIndent>
-    ) : null;
-
-    const proto = object[k]?.__proto__ !== Object.prototype
-      ? object[k]?.__proto__?.constructor?.name ??
-        object[k]?.__proto__?.displayName
-      : null;
-
-    const showFull = typeof object[k] === 'object' && depth < 20;
-    if (showFull && expanded) {
-      return (
-        <div key={k} onClick={onClick}>
-          <TreeRow>
-            <SplitRow>
-              <Label><Prefix>{prefix}</Prefix><div>{k}</div></Label>
-              <div>{proto}</div>
-            </SplitRow>
-          </TreeRow>
-          <div>{full}</div>
-        </div>
-      );
-    }
-
-    return (
-      <div key={k} onClick={onClick}>
-        <TreeRow>
-          <SplitRow>
-            <Label><Prefix>{prefix}</Prefix><div>{k}</div></Label>
-            <div>{compact}</div>
-          </SplitRow>
-        </TreeRow>
-      </div>
-    );
-  });
-  
-  return fields;
-}
-
-const truncate = (s: string, n: number) => {
-  s = s.replace(/\s+/g, ' ');
-  if (s.length < n) return s;
-  return s.slice(0, n) + '…';
-}

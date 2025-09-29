@@ -1,33 +1,45 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TypedArray, StorageSource, UniformType, Emit, Emitter } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { DataBounds, TypedArray, StorageSource, UniformType, Emit, Emitter } from '@use-gpu/core';
 
-import { provide, yeet, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
+import { provide, yeet, signal, useOne, useMemo, useNoMemo, useContext, useNoContext, useYolo, incrementVersion } from '@use-gpu/live';
 import {
   makeDataArray, copyNumberArray, emitIntoMultiNumberArray, 
   makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
-} from '../../core';
+  getBoundingBox, toDataBounds,
+} from '@use-gpu/core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
-import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 
 export type ArrayDataProps = {
+  /** Input size up to [width, height, depth, layers] */
   size: number[],
 
-  sparse?: boolean,
-  data?: number[] | TypedArray,
-  expr?: Emitter,
-  items?: number,
-
+  /** WGSL type per sample */
   format?: string,
-  live?: boolean,
-  time?: boolean,
 
-  render?: (source: StorageSource) => LiveElement<any>,
+  /** Input data */
+  data?: number[] | TypedArray,
+  /** Input emitter expression */
+  expr?: Emitter,
+  /** Emit N items per `expr` call. Output size is `[items, ...size]` if > 1. */
+  items?: number,
+  /** Emit 0 or N items per `expr` call. Output size is `[N]` or `[items, N]`. */
+  sparse?: boolean,
+  /** Add current `TimeContext` to the `expr` arguments. */
+  time?: boolean,
+  /** Resample `data` or `expr` on every animation frame. */
+  live?: boolean,
+
+  /** Leave empty to yeet source instead. */
+  render?: (source: StorageSource) => LiveElement,
 };
 
+const NO_BOUNDS = {center: [], radius: 0, min: [], max: []} as DataBounds;
+
+/** Up-to-4D array of a WGSL type. Reads input `data` or samples a given `expr`. */
 export const ArrayData: LiveComponent<ArrayDataProps> = (props) => {
   const device = useContext(DeviceContext);
 
@@ -61,6 +73,7 @@ export const ArrayData: LiveComponent<ArrayDataProps> = (props) => {
       length,
       size,
       version: 0,
+      bounds: {...NO_BOUNDS},
     };
 
     return [buffer, array, source, dims] as [GPUBuffer, TypedArray, StorageSource, number];
@@ -78,26 +91,31 @@ export const ArrayData: LiveComponent<ArrayDataProps> = (props) => {
     }
     if (data || expr) {
       uploadBuffer(device, buffer, array.buffer);
+      source.version = incrementVersion(source.version);
     }
 
     source.length  = !sparse ? length : emitted;
     source.size    = !sparse ? (items > 1 ? [items, ...size] : size) : [items, emitted / items];
-    source.version = incrementVersion(source.version);
+
+    const {bounds} = source;
+    const {center, radius, min, max} = toDataBounds(getBoundingBox(array, Math.ceil(dims)));
+    bounds!.center = center;
+    bounds!.radius = radius;
+    bounds!.min = min;
+    bounds!.max = max;
   };
 
   if (!live) {
-    useNoPerFrame();
     useNoAnimationFrame();
     useMemo(refresh, [device, buffer, array, data, expr, dims, length, items]);
   }
   else {
-    usePerFrame();
     useAnimationFrame();
     useNoMemo();
     refresh();
   }
 
-  return useMemo(() => {
-    return render ? render(source) : yeet(source);
-  }, [render, source]);
+  const trigger = useOne(() => signal(), source.version);
+  const view = useYolo(() => render ? render(source) : yeet(source), [render, source]);
+  return [trigger, view];
 };

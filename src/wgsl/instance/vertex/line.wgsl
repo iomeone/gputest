@@ -1,10 +1,15 @@
-use '../../../wgsl/use/types'::{ SolidVertex };
-use '../../../wgsl/use/view'::{ worldToClip, worldToView, viewToClip, toClip3D, clipLineIntoView, getPerspectiveScale, applyZBias3 };
-use '../../../wgsl/geometry/strip'::{ getStripIndex };
-use '../../../wgsl/geometry/line'::{ getLineJoin };
-use '../../../wgsl/geometry/arrow'::{ getArrowSize };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipLineIntoView, getPerspectiveScale, applyZBias3 };
+use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
+use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
+use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
 
 @optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
+@optional @link fn getScissor(i: u32) -> vec4<f32> { return vec4<f32>(1.0); };
+
+@optional @link fn getUV(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.0, 0.0); };
+@optional @link fn getST(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.0, 0.0); };
+
 @optional @link fn getSegment(i: u32) -> i32 { return 0; };
 @optional @link fn getColor(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.5, 1.0); };
 @optional @link fn getWidth(i: u32) -> f32 { return 1.0; };
@@ -14,9 +19,9 @@ use '../../../wgsl/geometry/arrow'::{ getArrowSize };
 @optional @link fn getTrim(i: u32) -> vec4<u32> { return vec4<u32>(0u, 0u, 0u, 0u); };
 @optional @link fn getSize(i: u32) -> f32 { return 3.0; };
 
-@optional @link fn getLookup(i: u32) -> u32 { return i; };
+@optional @link fn getInstanceCount() -> f32 { return 1.0; }
 
-let ARROW_ASPECT: f32 = 2.5;
+const ARROW_ASPECT: f32 = 2.5;
 
 fn getAnchorDistance(anchor: vec3<f32>, tangent: vec3<f32>, center: vec3<f32>) -> f32 {
   var diff = center - anchor;
@@ -40,9 +45,7 @@ fn trimAnchor(
   both: i32,
   w: f32,
   depth: f32,
-) -> vec3<f32> {
-  var NaN: f32 = bitcast<f32>(0xffffffffu);
-
+) -> vec4<f32> {
   var tangent = normalize(next - anchor);
   var distanceStart = getAnchorDistance(anchor, tangent, center);
   var distanceEnd = getAnchorDistance(anchor, tangent, after);
@@ -50,39 +53,30 @@ fn trimAnchor(
   var arrowLength = getArrowSize(maxLength, width, size, both, w, depth) * ARROW_ASPECT;
 
   if (distanceStart >= 0.0 && distanceStart < arrowLength) {
-    if (distanceEnd >= 0.0 && distanceEnd < arrowLength) {
-      return vec3<f32>(NaN, NaN, NaN);
-    }
-    else {
-      let ratio = (arrowLength - distanceStart) / (distanceEnd - distanceStart);
-      return mix(center, after, ratio);
-    }
+    let ratio = (arrowLength - distanceStart) / (distanceEnd - distanceStart);
+    return vec4<f32>(mix(center, after, ratio), 1.0);
   }
 
-  return center;
+  return vec4<f32>(center, 1.0);
 }
 
 @export fn getLineVertex(vertexIndex: u32, instanceIndex: u32) -> SolidVertex {
-  var NaN: f32 = bitcast<f32>(0xffffffffu);
-
   var ij = getStripIndex(vertexIndex);
 
   var segmentLeft = getSegment(instanceIndex);
   if (segmentLeft == 0 || segmentLeft == 2) {
     return SolidVertex(
-      vec4(NaN, NaN, NaN, NaN),
-      vec4(NaN, NaN, NaN, NaN),
-      vec4(NaN, NaN, NaN, NaN),
-      vec4(NaN, NaN, NaN, NaN),
+      vec4<f32>(0.0),
+      vec4<f32>(0.0),
+      vec4<f32>(0.0),
+      vec4<f32>(0.0),
+      vec4<f32>(0.0),
       0u,
     );
   }
 
-  var uv = vec2<f32>(ij);
-  var xy = uv * 2.0 - 1.0;
-
-  let uv4 = vec4<f32>(uv, 0.0, 0.0);
-  let st4 = vec4<f32>(0.0);
+  var uv1 = vec2<f32>(ij);
+  var xy = uv1 * 2.0 - 1.0;
 
   var cornerIndex: u32;
   var joinIndex: u32;
@@ -95,18 +89,26 @@ fn trimAnchor(
     cornerIndex = instanceIndex + 1u;
   }
 
-  var trim = getTrim(instanceIndex);
+  let trim = getTrim(instanceIndex);
   var trimMode = i32(trim.z);
 
-  var segment = getSegment(cornerIndex);
-  var color = getColor(cornerIndex);
-  var width = getWidth(cornerIndex);
-  var depth = getDepth(cornerIndex);
-  var zBias = getZBias(cornerIndex);
+  let rectangleUV = getUV(cornerIndex);
+  let st4 = getST(cornerIndex);
 
+  let uv = mix(rectangleUV.xy, rectangleUV.zw, uv1);
+  let uv4 = vec4<f32>(uv, f32(instanceIndex) / getInstanceCount(), 0.0);
+
+  let segment = getSegment(cornerIndex);
+  let color = getColor(cornerIndex);
+  var width = getWidth(cornerIndex);
+  let depth = getDepth(cornerIndex);
+  let zBias = getZBias(cornerIndex);
+  
   var centerPos = getPosition(cornerIndex);
   var beforePos = centerPos;
   var afterPos = centerPos;
+
+  let scissor = getScissor(cornerIndex);
 
   if (segment != 1) { beforePos = getPosition(cornerIndex - 1u); }
   else { trimMode = trimMode & 1; }
@@ -121,9 +123,12 @@ fn trimAnchor(
     var endIndex = trim.y;
     var midIndex = (startIndex + endIndex) / 2u;
 
-    var startPos = getPosition(startIndex);
+    var startPos = centerPos;
     var midPos = getPosition(midIndex);
-    var endPos = getPosition(endIndex);
+    var endPos = centerPos;
+
+    if (startIndex != cornerIndex) { startPos = getPosition(startIndex); }
+    if (endIndex != cornerIndex) { endPos = getPosition(endIndex); }
 
     let maxLength = length(endPos.xyz - midPos.xyz) + length(midPos.xyz - startPos.xyz);
 
@@ -134,17 +139,26 @@ fn trimAnchor(
       var start = worldToClip(startPos);
       if (start.w > 0.0) {
         var nextPos = getPosition(trim.x + 1u);
-        var trimmed = trimAnchor(maxLength, startPos.xyz, nextPos.xyz, centerPos.xyz, afterPos.xyz, width, size, both, start.w, depth);
-        centerPos = vec4<f32>(trimmed, 1.0);
+        centerPos = trimAnchor(maxLength, startPos.xyz, nextPos.xyz, centerPos.xyz, afterPos.xyz, width, size, both, start.w, depth);
       }
     }
     if ((trimMode & 2) != 0) {
       var end = worldToClip(endPos);
       if (end.w > 0.0) {
         var nextPos = getPosition(trim.y - 1u);
-        var trimmed = trimAnchor(maxLength, endPos.xyz, nextPos.xyz, centerPos.xyz, beforePos.xyz, width, size, both, end.w, depth);
-        centerPos = vec4<f32>(trimmed, 1.0);
+        centerPos = trimAnchor(maxLength, endPos.xyz, nextPos.xyz, centerPos.xyz, beforePos.xyz, width, size, both, end.w, depth);
       }
+    }
+    
+    if (centerPos.w == 0.0) {
+      return SolidVertex(
+        vec4<f32>(0.0),
+        vec4<f32>(0.0),
+        vec4<f32>(0.0),
+        vec4<f32>(0.0),
+        vec4<f32>(0.0),
+        0u,
+      );
     }
   }
 
@@ -152,8 +166,8 @@ fn trimAnchor(
   var clipBeforeV = clipLineIntoView(beforePos, centerPos);
   var clipAfterV  = clipLineIntoView(afterPos, centerPos);
 
-  var before = toClip3D(viewToClip(clipBeforeV));
-  var after  = toClip3D(viewToClip(clipAfterV));
+  var before = to3D(viewToClip(clipBeforeV));
+  var after  = to3D(viewToClip(clipAfterV));
 
   var centerV = worldToView(centerPos);
   var center4 = viewToClip(centerV);
@@ -167,17 +181,18 @@ fn trimAnchor(
     }
     else {
       return SolidVertex(
-        vec4(NaN, NaN, NaN, NaN),
-        vec4(NaN, NaN, NaN, NaN),
-        vec4(NaN, NaN, NaN, NaN),
-        vec4(NaN, NaN, NaN, NaN),
-        instanceIndex,
+        vec4<f32>(0.0),
+        vec4<f32>(0.0),
+        vec4<f32>(0.0),
+        vec4<f32>(0.0),
+        vec4<f32>(0.0),
+        0u,
       );
     }
     center4 = viewToClip(centerV);
   }
 
-  var center = toClip3D(center4);
+  var center = to3D(center4);
 
   // Lerp between fixed size and full perspective
   var pixelScale = getPerspectiveScale(center4.w, depth);
@@ -195,6 +210,7 @@ fn trimAnchor(
     color,
     uv4,
     st4,
-    getLookup(cornerIndex),
+    scissor,
+    cornerIndex,
   );
 }

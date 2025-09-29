@@ -6,8 +6,9 @@ it("schedules actions", () => {
   let fiber = {} as any;
 
   let flushed = 0;
+  let captured = 0;
   let flush = () => {};
-  let actions: any[] = [];
+  let fibers: any[] = [];
 
   const dispatch = (f: any) => { 
     flushed++;
@@ -15,7 +16,8 @@ it("schedules actions", () => {
   };
 
   const capture = (as: any[]) => {
-    actions = as;
+    fibers = as;
+    captured++;
   };
 
   const scheduler = makeActionScheduler(dispatch, capture);
@@ -27,15 +29,16 @@ it("schedules actions", () => {
   expect(run.a).toBe(1);
   expect(run.b).toBe(1);
   expect(flushed).toBe(1);
-  expect(actions.length).toBe(2);
+  expect(captured).toBe(1);
+  expect(fibers.length).toBe(1);
 
+  scheduler.schedule(fiber, () => { run.a++; return false });
   flush();
 
-  actions = [];
-  expect(run.a).toBe(1);
+  expect(run.a).toBe(2);
   expect(run.b).toBe(1);
-  expect(flushed).toBe(1);
-  expect(actions.length).toBe(0);
+  expect(flushed).toBe(2);
+  expect(captured).toBe(1);
 })
 
 it("tracks disposal actions", () => {
@@ -65,15 +68,15 @@ it("tracks dependencies", () => {
   let fiber2 = {} as any;
 
   const dependency = makeDependencyTracker();
-  dependency.depend(fiber1, root);
-  dependency.depend(fiber2, root);
+  dependency.depend(fiber1, root.id);
+  dependency.depend(fiber2, root.id);
 
   let visit = new Set(dependency.traceDown(root));
   expect(visit.size).toBe(2);
   expect(visit.has(fiber1)).toBe(true);
   expect(visit.has(fiber2)).toBe(true);
 
-  dependency.undepend(fiber1, root);
+  dependency.undepend(fiber1, root.id);
 
   visit = new Set(dependency.traceDown(root));
   expect(visit.size).toBe(1);
@@ -131,17 +134,19 @@ it("resolves node ancestry", () => {
 });
 
 it("sorts fibers", () => {
+  const lookup = new Map();
+  lookup.set('key', 2);
 
-  const n1  = {depth: 0, path: [0]} as any;
-  const n11 = {depth: 1, path: [0, 0]} as any;
-  const n12 = {depth: 1, path: [0, 1]} as any;
-  const n1k = {depth: 1, path: [0, 'key']} as any;
+  const n1  = {depth: 0, path: [0], keys: null} as any;
+  const n11 = {depth: 1, path: [0, 0], keys: null} as any;
+  const n12 = {depth: 1, path: [0, 1], keys: null} as any;
+  const n1k = {depth: 1, path: [0, 'key'], keys: [1, lookup]} as any;
 
-  const n111 = {depth: 2, path: [0, 0, 0]} as any;
-  const n1111 = {depth: 3, path: [0, 0, 0]} as any;
+  const n111 = {depth: 2, path: [0, 0, 0], keys: null} as any;
+  const n1111 = {depth: 3, path: [0, 0, 0], keys: null} as any;
 
-  const n11111 = {depth: 4, path: [0, 0, 0, 0]} as any;
-  const n11112 = {depth: 4, path: [0, 0, 0, 1]} as any;
+  const n11111 = {depth: 4, path: [0, 0, 0, 0], keys: null} as any;
+  const n11112 = {depth: 4, path: [0, 0, 0, 1], keys: null} as any;
 
   const list = [n11111, n1k, n11112, n1, n12, n11, n111, n1111];
   const sorted = [n1, n11, n111, n1111, n11111, n11112, n12, n1k];

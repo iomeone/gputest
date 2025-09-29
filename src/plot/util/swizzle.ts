@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix';
-import { parseAxes } from '../../traits';
+import { parseAxes } from '@use-gpu/traits';
 
 const AXES = ['x', 'y', 'z', 'w'];
 
@@ -18,6 +18,10 @@ export const swizzleMatrix = (m: mat4, swizzle: string) => {
 
 export const toBasis = (axes: string) => {
   return parseAxes(axes);
+};
+
+export const toOrder = (basis: string) => {
+  return basis.split('').map(s => AXES.indexOf(s));
 };
 
 export const invertBasisSlow = (axes: string) => {

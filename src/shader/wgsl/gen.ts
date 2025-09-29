@@ -20,7 +20,15 @@ const to4 = (type: string) => type.replace(/vec3to4</, 'vec4<');
 
 const is8to32 = (type: string) => type.match(/^(u|i)8$/);
 const is16to32 = (type: string) => type.match(/^(u|i)16$/);
-const to32 = (type: string) => type.replace(/^([ui])[0-9]+/, '$132');
+const isVec8to32 = (type: string) => type.match(/^vec[234]<(u|i)8>$/);
+const isVec16to32 = (type: string) => type.match(/^vec[234]<(u|i)16>$/);
+
+const to32 = (type: string) => type.replace(/^(vec[234]<)?([ui])[0-9]+/, '$1$232');
+
+const needsCast = (from: string, to: string) => {
+  if (from.match(/[A-Z]/)) return false;
+  return from.replace(/[^0-9]+/, '') != to.replace(/[^0-9]+/, '');
+};
 
 const getTypeKey = (b: DataBinding) =>
   (+!!b.constant) +
@@ -30,7 +38,12 @@ const getTypeKey = (b: DataBinding) =>
   (+!!(b.storage?.volatile || b.texture?.volatile)) * 16;
 
 const getFormatKey = (b: DataBinding) => 
-  toMurmur53(b.storage?.format ?? b.texture?.format);
+  b.texture ? toMurmur53(b.texture?.format) ^
+              toMurmur53(b.texture?.layout) ^
+              toMurmur53(b.texture?.variant) ^
+              toMurmur53(b.texture?.absolute) :
+  b.storage ? toMurmur53(b.storage?.format) :
+  0;
 
 const getBindingsKey = (bs: DataBinding[]) => scrambleBits(bs.reduce((a, b) => mixBits(a, getTypeKey(b) ^ getFormatKey(b)), 0)) >>> 0;
 const getValueKey = (b: DataBinding) => getObjectKey(b.constant ?? b.storage ?? b.texture);
@@ -49,16 +62,14 @@ export const makeBindingAccessors = (
   const virtuals = [...constants, ...storages, ...textures];
   const symbols = virtuals.map(({uniform}) => uniform.name);
   const types = virtuals.map(({uniform}) => uniform.format);
-  const declarations = virtuals.map(({uniform}) => ({
-    at: 0,
-    symbol: uniform.name,
+  const exports = virtuals.map(({uniform}) => ({
     func: {
       name: uniform.name,
       type: {name: uniform.format},
       parameters: uniform.args ?? INT_PARAMS,
     },
-    flags: 0,
-  }));
+    flags: RF.Exported,
+  })) as any[];
 
   // Handle struct types for storage
   const libs: Record<string, ShaderModule> = {};
@@ -66,15 +77,21 @@ export const makeBindingAccessors = (
     const {format} = uniform;
     const {format: type} = storage!;
 
-    if (typeof type === 'object') {
-      const module = toModule(type);
-      const entry = getBundleEntry(module);
+    const object = (
+      typeof type === 'object' ? type :
+      typeof format === 'object' ? format :
+      null
+    );
+
+    if (object) {
+      const entry = getBundleEntry(object);
       if (entry != null) {
+        const module = toModule(object);
         libs[module.name] = module;
         return {
           at: 0,
           name: module.name,
-          imports: [{name: format, imported: entry}],
+          imports: [{name: entry, imported: entry}],
           symbols: [format],
         } as ModuleRef;
       }
@@ -107,20 +124,26 @@ export const makeBindingAccessors = (
     const volatileSet = getBindingArgument(rename.get(VOLATILE_BINDGROUP));
 
     for (const {uniform: {name, format: type, args}} of constants) {
-      program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args));
+      program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args as any));
     }
 
     for (const {uniform: {name, format: type, args}, storage} of storages) {
-      const {volatile, format} = storage!;
+      const {volatile, format, readWrite} = storage!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
 
-      if (typeof format === 'object') {
-        const module = toModule(format);
-        const entry = getBundleEntry(module);
-        const t = (entry ? rename.get(entry) : null) ?? entry ?? 'unknown';
+      const object = (
+        typeof type === 'object' ? type :
+        typeof format === 'object' ? format :
+        null
+      );
 
-        program.push(makeStorageAccessor(namespace, set, base, t, t, name));
+      if (object) {
+        const entry = getBundleEntry(object);
+        const t = (entry ? rename.get(entry) : null) ?? entry ?? 'unknown';
+        if (t === 'unknown') debugger;
+
+        program.push(makeStorageAccessor(namespace, set, base, t, t, name, readWrite, args));
         continue;
       }
 
@@ -128,32 +151,46 @@ export const makeBindingAccessors = (
         if (is3to4(format)) {
           const accessor = name + '3to4';
           program.push(makeVec3to4Accessor(namespace, type, to3(format), name, accessor));
-          program.push(makeStorageAccessor(namespace, set, base, to4(format), to4(format), accessor));
+          program.push(makeStorageAccessor(namespace, set, base, to4(format), to4(format), accessor, readWrite));
           continue;
         }
         else if (is8to32(format)) {
           const accessor = name + '8to32';
           program.push(make8to32Accessor(namespace, type, to32(format), name, accessor));
-          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor));
+          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
           continue;
         }
         else if (is16to32(format)) {
           const accessor = name + '16to32';
           program.push(make16to32Accessor(namespace, type, to32(format), name, accessor));
-          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor));
+          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+          continue;
+        }
+        else if (isVec8to32(format)) {
+          const accessor = name + 'Vec8to32';
+          const wide = to32(format).replace('i32', 'u32');
+          program.push(makeVec8to32Accessor(namespace, type, wide, name, accessor));
+          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+          continue;
+        }
+        else if (isVec16to32(format)) {
+          const accessor = name + 'Vec16to32';
+          const wide = to32(format).replace('i32', 'u32');
+          program.push(makeVec16to32Accessor(namespace, type, wide, name, accessor));
+          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
           continue;
         }
       }
 
-      program.push(makeStorageAccessor(namespace, set, base, type, format, name));
+      program.push(makeStorageAccessor(namespace, set, base, type, format as string, name, readWrite, args));
     }
 
     for (const {uniform: {name, format: type, args}, texture} of textures) {
-      const {volatile, layout, variant, absolute, sampler, format, args} = texture!;
+      const {volatile, layout, variant, absolute, sampler, comparison, format, aspect} = texture!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
-      if (sampler) volatile ? volatileBase++ : bindingBase++;
-      program.push(makeTextureAccessor(namespace, set, base, type, format, name, layout, variant, absolute, !!sampler, args));
+      if (sampler && args !== null) volatile ? volatileBase++ : bindingBase++;
+      program.push(makeTextureAccessor(namespace, set, base, type, format, name, layout, variant, aspect, absolute, !!sampler, !!comparison, args));
     }
 
     return program.join('\n');
@@ -166,7 +203,7 @@ export const makeBindingAccessors = (
     render,
   }, {
     symbols,
-    declarations,
+    exports,
     modules: modules.length ? modules : undefined,
   }, undefined, hash, code, key);
 
@@ -211,12 +248,15 @@ export const makeUniformFieldAccessor = (
   ns: string,
   type: string,
   name: string,
-  args: string[] = INT_ARG,
-) => `
+  args: string[] | null = INT_ARG,
+) => {
+  if (args == null) throw new Error("Constants cannot be bound directly to storage/textures");
+  return `
 fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} {
   return ${uniform}Uniform.${ns}${name};
 }
 `;
+};
 
 export const makeStorageAccessor = (
   ns: string,
@@ -225,14 +265,25 @@ export const makeStorageAccessor = (
   type: string,
   format: string,
   name: string,
-) => `
-@group(${set}) @binding(${binding}) var<storage> ${ns}${name}Storage: array<${format}>;
+  readWrite?: boolean,
+  args: string[] | null = INT_ARG,
+) => {
+  const access = readWrite ? 'storage, read_write' : 'storage';
+  
+  if (args === null) {
+    return `@group(${set}) @binding(${binding}) var<${access}> ${ns}${name}: ${type};\n`;
+  }
 
-fn ${ns}${name}(index: u32) -> ${type} {
-  ${format !== type ? 'let v =' : 'return'} ${ns}${name}Storage[index];
-${format !== type ? `  return ${makeSwizzle(format, type, 'v')};\n` : ''
+  const hasCast = needsCast(format, type);
+  return `
+@group(${set}) @binding(${binding}) var<${access}> ${ns}${name}Storage: array<${format}>;
+
+fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} {
+  ${hasCast ? 'let v =' : 'return'} ${ns}${name}Storage[${args.length ? arg(0) : '0u'}];
+${hasCast ? `  return ${makeSwizzle(format, type, 'v')};\n` : ''
 }}
 `;
+}
 
 export const makeTextureAccessor = (
   ns: string,
@@ -243,20 +294,31 @@ export const makeTextureAccessor = (
   name: string,
   layout: string,
   variant: string = 'textureSample',
+  aspect: string = 'all',
   absolute: boolean = false,
   sampler: boolean = true,
-  args: string[] = UV_ARG,
+  comparison: boolean = false,
+  args: string[] | null = UV_ARG,
 ) => {
+  if (args === null) {
+    return `@group(${set}) @binding(${binding}) var ${ns}${name}: ${type};\n`;
+  }
+
   const m = layout.match(/[0-9]/) ?? [2];
   const dims = +m[0];
   const dimsCast = dims === 1 ? 'f32' : `vec${dims}<f32>`;
 
-  const shaderType = format ? TEXTURE_SHADER_TYPES[format] : type;
-  const hasCast = shaderType !== type;
+  const t = layout.match(/<([^>]+)>/)?.[1] ?? 'f32';
+  const shaderType = (
+    layout.match(/depth/) ? 'f32' : 
+    `vec4<${t}>`
+  );
+
+  const hasCast = needsCast(shaderType, type);
 
   return `
 @group(${set}) @binding(${binding}) var ${ns}${name}Texture: ${layout};
-${sampler ? `@group(${set}) @binding(${binding + 1}) var ${ns}${name}Sampler: sampler;\n` : ''}
+${sampler ? `@group(${set}) @binding(${binding + 1}) var ${ns}${name}Sampler: ${comparison ? 'sampler_comparison' : 'sampler'};\n` : ''}
 fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} {
   ${absolute ?
     `let relUV = ${arg(0)} / ${dimsCast}(textureDimensions(${ns}${name}Texture));\n  ` : ``
@@ -275,9 +337,9 @@ export const makeVec3to4Accessor = (
 ) => `
 fn ${ns}${name}(i: u32) -> ${type} {
   let i3 = i * 3u;
-  let b = (i3 / 4u);
+  let b = i3 / 4u;
 
-  let b4 = (i3 / 4u) * 4u;
+  let b4 = b * 4u;
   let f3 = i3 - b4;
 
   let v1 = ${ns}${accessor}(b);
@@ -289,7 +351,7 @@ fn ${ns}${name}(i: u32) -> ${type} {
   else if (f3 == 2u) { v = ${format}(v1.zw, v2.x); }
   else { v = ${format}(v1.w, v2.xy); }
   
-  return ${format !== type ? makeSwizzle(format, type, 'v') : 'v'};
+  return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
 `;
 
@@ -306,7 +368,7 @@ fn ${ns}${name}(i: u32) -> ${type} {
 
   let word = u32(${ns}${accessor}(b2));
   var v: ${format} = ${format}((word >> (f4 << 3u)) & 0xFFu);
-  return ${format !== type ? makeSwizzle(format, type, 'v') : 'v'};
+  return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
 `;
 
@@ -323,62 +385,65 @@ fn ${ns}${name}(i: u32) -> ${type} {
 
   let word = u32(${ns}${accessor}(b2));
   var v: ${format} = ${format}((word >> (f2 << 4u)) & 0xFFFFu);  
-  return ${format !== type ? makeSwizzle(format, type, 'v') : 'v'};
+  return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
 `;
 
-export const TEXTURE_SHADER_TYPES = {
-  // 8-bit formats
-  "r8unorm": 'vec4<f32>',
-  "r8snorm": 'vec4<f32>',
-  "r8uint": 'vec4<u32>',  // u8
-  "r8sint": 'vec4<i32>',  // i8
+export const makeVec8to32Accessor = (
+  ns: string,
+  type: string,
+  format: string,
+  name: string,
+  accessor: string,
+) => {
+  if (format.match(/^vec2/)) {
+    return `
+fn ${ns}${name}(i: u32) -> ${type} {
+  let i2 = i / 2u;
+  let f2 = i & 1u;
+  let word = ${ns}${accessor}(i2);
+  let short = word >> (f2 << 4u);
+  let v = (vec2<u32>(short) >> vec2<u32>(0, 8)) & vec2<u32>(0xFF);
+  return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
+}
+`;
+  }
+  else {
+    return `
+fn ${ns}${name}(i: u32) -> ${type} {
+  let word = ${ns}${accessor}(i);
+  let v = (vec4<u32>(word) >> vec4<u32>(0, 8, 16, 24)) & vec4<u32>(0xFF);
+  return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
+}
+`;
+  }
+}
 
-  // 16-bit formats
-  "r16uint": 'vec4<u32>',        // u16
-  "r16sint": 'vec4<i32>',        // i16
-  "r16float": 'vec4<f32>',       // f16
-  "rg8unorm": 'vec4<f32>',
-  "rg8snorm": 'vec4<f32>',
-  "rg8uint": 'vec4<u32>',  // u8
-  "rg8sint": 'vec4<i32>',  // i8
-
-  // 32-bit formats
-  "r32uint": 'vec4<u32>',
-  "r32sint": 'vec4<i32>',
-  "r32float": 'vec4<f32>',
-  "rg16uint": 'vec4<u32>',        // u16
-  "rg16sint": 'vec4<i32>',        // i16
-  "rg16float": 'vec4<f32>',       // f32
-  "rgba8unorm": 'vec4<f32>', 
-  "rgba8unorm-srgb": 'vec4<f32>',
-  "rgba8snorm": 'vec4<f32>',
-  "rgba8uint": 'vec4<u32>',       // u8
-  "rgba8sint": 'vec4<i32>',       // i8
-  "bgra8unorm": 'vec4<f32>',
-  "bgra8unorm-srgb": 'vec4<f32>',
-  // Packed 32-bit formats
-  "rgb9e5ufloat": 'vec4<f32>',
-  "rgb10a2unorm": 'vec4<f32>',
-  "rg11b10ufloat": 'vec4<f32>',
-
-  // 64-bit formats
-  "rg32uint": 'vec4<u32>',
-  "rg32sint": 'vec4<i32>',
-  "rg32float": 'vec4<f32>',
-  "rgba16uint": 'vec4<u32>',
-  "rgba16sint": 'vec4<i32>',
-  "rgba16float": 'vec4<f32>',
-
-  // 128-bit formats
-  "rgba32uint": 'vec4<u32>',
-  "rgba32sint": 'vec4<i32>',
-  "rgba32float": 'vec4<f32>',
-
-  // Depth and stencil formats
-  "stencil8": 'vec4<u32>',              // u8
-  "depth16unorm": 'vec4<f32>',
-  "depth24plus": 'vec4<u32>',
-  "depth24plus-stencil8": 'vec4<u32>',
-  "depth32float": 'vec4<f32>',
-} as Record<string, string>;
+export const makeVec16to32Accessor = (
+  ns: string,
+  type: string,
+  format: string,
+  name: string,
+  accessor: string,
+) => {
+  if (format.match(/^vec2/)) {
+    return `
+fn ${ns}${name}(i: u32) -> ${type} {
+  let word = ${ns}${accessor}(i);
+  let v = (vec2<u32>(word, word) >> vec2<u32>(0, 16)) & vec2<u32>(0xFFFF);
+  return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
+}
+`;
+  }
+  else {
+    return `
+fn ${ns}${name}(i: u32) -> ${type} {
+  let i2 = i * 2;
+  let word1 = ${ns}${accessor}(i2);
+  let word2 = ${ns}${accessor}(i2 + 1);
+  let v = (vec4<u32>(word1, word1, word2, word2) >> vec4<u32>(0, 16, 0, 16)) & vec4<u32>(0xFFFF);
+  return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
+}
+`;
+  }
+};

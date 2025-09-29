@@ -1,37 +1,34 @@
-use '../../../wgsl/use/view'::{ getViewPosition };
-
-@infer type T = T;
-@link fn getMaterial(
-  materialColor: vec3<f32>,
-  mapUV: vec4<f32>,
-  mapST: vec4<f32>,
-) -> @infer(T) T {}
+use '@use-gpu/wgsl/use/view'::{ getViewPosition };
+use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
 
 @link fn applyLights(
   N: vec3<f32>,
   V: vec3<f32>,
-  position: vec3<f32>,
-  ao: f32,
-  params: T,
+  surface: SurfaceFragment,
 ) -> vec3<f32> {}
 
 @export fn getShadedFragment(
-  color: vec4<f32>,
-  uv: vec4<f32>,
-  st: vec4<f32>,
-  normal: vec4<f32>,
-  tangent: vec4<f32>,
-  position: vec4<f32>,
+  surface: SurfaceFragment,
 ) -> vec4<f32> {
-  let viewPosition = getViewPosition();
-  let toView: vec3<f32> = viewPosition.xyz - position.xyz;
+  let viewPosition = getViewPosition().xyz;
+  let surfacePosition = surface.position.xyz;
+  let toView: vec3<f32> = viewPosition - surfacePosition;
 
-  let params = getMaterial(color.rgb, uv, st);
-
-  let N: vec3<f32> = normalize(normal.xyz);
+  let N: vec3<f32> = normalize(surface.normal.xyz);
   let V: vec3<f32> = normalize(toView);
 
-  let light = applyLights(N, V, position.xyz, 1.0, params);
+  let light = surface.emissive.xyz + applyLights(N, V, surface);
 
-  return vec4<f32>(light * color.a, color.a);
+  //return vec4<f32>(color.xyz, 1.0);
+  //return vec4<f32>(mix(color.xyz, N * .5 + .5, .5), 1.0); 
+  //return vec4<f32>(N * .5 + .5, 1.0); 
+
+  let alpha = surface.albedo.a;
+
+  if (HAS_ALPHA_TO_COVERAGE) {
+    return vec4<f32>(light, alpha);
+  }
+  else {
+    return vec4<f32>(light * alpha, alpha);
+  }
 }

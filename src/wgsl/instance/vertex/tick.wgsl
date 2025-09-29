@@ -1,6 +1,7 @@
-use '../../../wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
 
-@link fn transformPosition(p: vec4<f32>) -> vec4<f32>;
+@optional @link fn transformPosition(p: vec4<f32>) -> vec4<f32> { return p; };
+@optional @link fn transformDifferential(v: vec4<f32>, b: vec4<f32>, c: bool) -> vec4<f32> { return v; };
 
 @link fn getPosition(i: u32) -> vec4<f32>;
 @link fn getOffset(i: u32) -> vec4<f32>;
@@ -9,8 +10,6 @@ use '../../../wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
 
 @optional @link fn getTangent(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); };
 @optional @link fn getBase(i: u32) -> f32 { return 2.0; }
-
-let EPSILON: f32 = 0.001;
 
 @export fn getTickPosition(index: u32) -> vec4<f32> {
   let n = u32(LINE_DETAIL + 1);
@@ -30,8 +29,7 @@ let EPSILON: f32 = 0.001;
   let s = getWorldScale(c.w, depth) * getViewScale();
 
   if (length(tangent) > 0.0) {
-    let adj = transformPosition(anchor + tangent * EPSILON);
-    let diff = (adj.xyz - center.xyz) / EPSILON;
+    let diff = transformDifferential(tangent, anchor, false).xyz;
 
     let l = length(diff) * 0.999;
     let limit = s * size;
@@ -39,13 +37,12 @@ let EPSILON: f32 = 0.001;
 
     let modulus = u32(round(pow(base, ceil(log(trunc)/log(base)))));
     if ((modulus > 1u) && ((instanceIndex % modulus) != 0u)) {
-      var NaN: f32 = bitcast<f32>(0xffffffffu);
-      return vec4<f32>(NaN, NaN, NaN, NaN);
+      return vec4<f32>(0.0, 0.0, 0.0, 0.0);
     }
   }
 
-  let adj = transformPosition(anchor + offset * EPSILON);
-  let normal = normalize(adj.xyz - center.xyz);
+  let adj = transformDifferential(offset, anchor, false).xyz;
+  let normal = normalize(adj);
   
   return center + vec4<f32>(normal * size * v * s, 0.0);
 }

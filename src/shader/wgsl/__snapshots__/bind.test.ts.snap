@@ -1,39 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`bind bind produces a bound bundle 1`] = `7689438517184070`;
+exports[`bind bind produces a bound bundle 1`] = `1068531536290827`;
 
 exports[`bind binds an external 1`] = `
-"let TEST = true;
+"const TEST = true;
 
     fn _01_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
 
     fn colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
-    fn colorNotUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 1.0); }
-
-    fn getColor() -> vec4<f32> {
+fn getColor() -> vec4<f32> {
       return _01_getColor() + colorUsed();
     }
     "
 `;
 
 exports[`bind binds an external 2`] = `
-"let TEST = true;
+"const TEST = true;
 
     fn _01_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
 
     fn colorUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 0.0); }
-    fn colorNotUsed() -> vec4<f32> { return vec4<f32>(0.0, 0.1, 0.2, 1.0); }
-
-    fn getColor() -> vec4<f32> {
+fn getColor() -> vec4<f32> {
       return _01_getColor() + colorUsed();
     }
     "
 `;
 
 exports[`bind binds an external 3`] = `
-"let TEST = true;
+"const TEST = true;
 
     fn _01_getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     
@@ -67,8 +63,8 @@ fn _VT_1_getColor(a: i32) -> vec4<f32> {
 
 @group(0) @binding(0) var<storage> _VT_1_getSizeStorage: array<vec2<f32>>;
 
-fn _VT_1_getSize(index: u32) -> vec2<f32> {
-  return _VT_1_getSizeStorage[index];
+fn _VT_1_getSize(a: i32) -> vec2<f32> {
+  return _VT_1_getSizeStorage[a];
 }
 
 
@@ -82,8 +78,8 @@ fn _VT_1_getSize(index: u32) -> vec2<f32> {
 exports[`bind makes deterministic links for data bindings 1`] = `
 Object {
   "base": undefined,
-  "code": "@access [getColor getSize] [rzekwzgitk]",
-  "name": "_VT_t06y5a",
+  "code": "@access [getColor getSize] [bxd6ge0qaz]",
+  "name": "_VT_171w40",
   "storages": Array [
     Object {
       "storage": Object {
@@ -109,10 +105,9 @@ Object {
     },
   ],
   "table": Object {
-    "declarations": Array [
+    "exports": Array [
       Object {
-        "at": 0,
-        "flags": 0,
+        "flags": 1,
         "func": Object {
           "name": "getColor",
           "parameters": Array [
@@ -122,11 +117,9 @@ Object {
             "name": "vec4<f32>",
           },
         },
-        "symbol": "getColor",
       },
       Object {
-        "at": 0,
-        "flags": 0,
+        "flags": 1,
         "func": Object {
           "name": "getSize",
           "parameters": Array [
@@ -136,7 +129,6 @@ Object {
             "name": "vec2<f32>",
           },
         },
-        "symbol": "getSize",
       },
     ],
     "modules": undefined,

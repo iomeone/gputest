@@ -1,8 +1,11 @@
 import { WGSLModules } from './wgsl.test.data';
 import { linkCode, linkModule } from './link';
-import { loadModule } from './shader';
+import { loadModule, wgsl } from './shader';
 import { formatAST } from '../util/tree'; 
 import { addASTSerializer } from '../test/snapshot';
+import mapValues from 'lodash/mapValues';
+
+const loadedModules = mapValues(WGSLModules, (v, k) => loadModule(v, k, k));
 
 addASTSerializer(expect);
 
@@ -18,7 +21,7 @@ describe("link", () => {
     `
     
     const getColor = `
-    @export fn getColor() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
+    @export fn main() -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     `
     
     const linked = linkCode(code, {}, {getColor});
@@ -53,29 +56,28 @@ describe("link", () => {
 
   it("links quad vertex", () => {
 
-    const getPosition = `
+    const getPosition = wgsl`
     @export fn getPosition(index: i32) -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     `
 
-    const getPerspective = `
+    const getPerspective = wgsl`
     @export fn getPerspective(index: i32) -> f32 { return 1.0; }
     `
 
-    const getColor = `
+    const getColor = wgsl`
     @export fn getColor(index: i32) -> vec4<f32> { return vec4<f32>(1.0, 0.0, 1.0, 1.0); }
     `
 
-    const getSize = `
+    const getSize = wgsl`
     @export fn getSize(index: i32) -> f32 { return 1.0; }
     `
 
-    const getDepth = `
+    const getDepth = wgsl`
     @export fn getDepth(index: i32) -> f32 { return 0.5; }
     `
 
-    const code = WGSLModules['instance/vertex/quad'];
-    const modules = WGSLModules;
-    const linked = linkCode(code, modules, {getPosition, getPerspective, getColor, getSize, getDepth});
+    const module = loadedModules['getQuadVertex'];
+    const linked = linkModule(module, loadedModules, {getPosition, getPerspective, getColor, getSize, getDepth});
     expect(linked).toMatchSnapshot();
 
   });
@@ -114,8 +116,8 @@ describe("link", () => {
   
   it("tree shakes constants", () => {
     const sub = `
-    let colorUsed = vec4<f32>(0.0, 0.1, 0.2, 0.0);
-    let colorNotUsed = vec4<f32>(0.0, 0.1, 0.2, 1.0);
+    const colorUsed = vec4<f32>(0.0, 0.1, 0.2, 0.0);
+    const colorNotUsed = vec4<f32>(0.0, 0.1, 0.2, 1.0);
 
     @export fn getColor() -> vec4<f32> {
       return colorUsed;

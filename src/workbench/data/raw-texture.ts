@@ -1,20 +1,36 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TypedArray, DataTexture, TextureSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { TypedArray, DataTexture, TextureSource } from '@use-gpu/core';
 
 import { DeviceContext } from '../providers/device-provider';
-import { usePerFrame, useNoPerFrame } from '../providers/frame-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { yeet, memo, useMemo, useNoMemo, useContext, useNoContext, incrementVersion } from '../../live';
-import { makeSampler, makeRawTexture, makeTextureView, uploadDataTexture } from '../../core';
+import { yeet, signal, memo, useOne, useMemo, useNoMemo, useContext, useNoContext, useYolo, incrementVersion } from '@use-gpu/live';
+import { makeSampler, makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '@use-gpu/core';
 
 export type RawTextureProps = {
-  data?: DataTexture,
+  /** Texture data */
+  data: DataTexture,
+  /** MIPs */
+  mip?: number | boolean,
+  /** Texture sampler */
   sampler?: GPUSamplerDescriptor,
+  /** Resample data every animation frame */
   live?: boolean,
 
-  render?: (source: TextureSource) => LiveElement<any>,
+  /** Sample in absolute pixels instead of relative UVs */
+  absolute?: boolean,
+  /** Convert RGBA to premultiplied alpha before upload */
+  premultiply?: boolean,
+
+  /** Leave empty to yeet source(s) instead. */
+  render?: (source: TextureSource) => LiveElement,
 };
 
+const countMips = (width: number, height: number): number => {
+  const max = Math.max(width, height);
+  return Math.floor(Math.log2(max));
+}
+
+/** Use numeric texture data as a 2D texture. */
 export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
   const device = useContext(DeviceContext);
 
@@ -22,6 +38,9 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
     data,
     sampler,
     render,
+    premultiply = false,
+    mip = false,
+    absolute = false,
     live = false,
   } = props;
 
@@ -29,51 +48,74 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
 
   // Make source texture from data
   const source = useMemo(() => {
-    if (!data) return null;
-
     const {
       size,
       layout = 'texture_2d<f32>',
       format = 'rgba8unorm',
       colorSpace = 'native',
     } = data;
-    const texture = makeRawTexture(device, data);
+
+    const mips = (
+      typeof mip === 'number' ? mip :
+      mip ? countMips(size[0], size[1]) : 1
+    );
+
+    const texture = makeRawTexture(device, data, mips);
     const source = {
       texture,
-      view: makeTextureView(texture),
       sampler: {
         minFilter: 'nearest',
         magFilter: 'nearest',
         ...sampler,
       } as GPUSamplerDescriptor,
+      mips,
       size,
       layout,
       format,
       colorSpace,
+      absolute,
       version: 0,
     };
     return source;
-  }, [device, memoKey, sampler]);
+  }, [device, memoKey, sampler, absolute, mip]);
 
   // Refresh and upload data
   const refresh = () => {
     if (!source || !data) return;
 
-    uploadDataTexture(device, source.texture, data);
+    const {size, data: upload} = data;
+    if (premultiply) {
+      const pre = upload.slice();
+      for (let i = 0, j = 0, n = size[0] * size[1]; i < n; ++i, j += 4) {
+        const a = pre[j + 3] / 255;
+        pre[j    ] = pre[j    ] * a;
+        pre[j + 1] = pre[j + 1] * a;
+        pre[j + 2] = pre[j + 2] * a;
+      }
+      uploadDataTexture(device, source.texture, {...data, data: pre});
+    }
+    else {
+      uploadDataTexture(device, source.texture, data);
+    }
     source.version = incrementVersion(source.version);
+
+    if (source.mips > 1) {
+      if (source.layout.match(/array/)) updateMipArrayTextureChain(device, source);
+      else updateMipTextureChain(device, source);
+    }
   };
 
   if (!live) {
-    useNoPerFrame();
     useNoAnimationFrame();
-    useMemo(refresh, [device, source, data]);
+    useMemo(refresh, [device, source, data, premultiply]);
   }
   else {
-    usePerFrame();
     useAnimationFrame();
     useNoMemo();
     refresh();
   }
 
-  return useMemo(() => source ? (render ? render(source) : yeet(source)) : null, [render, source]);
+  const trigger = useOne(() => signal(), source.version);
+  const view = useYolo(() => render ? render(source) : yeet(source), [render, source]);
+  return [trigger, view];
 };

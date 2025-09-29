@@ -1,17 +1,18 @@
-import type { LiveComponent, LiveElement } from '../../../live';
-import type { RustTextAPI, Font } from '../../../glyph';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { RustTextAPI, Font } from '@use-gpu/glyph';
 
-import { parseWeight } from '../../../traits';
-import { provide, useAsync, makeContext, useContext, useMemo, useOne } from '../../../live';
-import { makeTuples } from '../../../core';
-import { RustText, packStrings } from '../../../glyph';
+import { parseWeight } from '@use-gpu/traits';
+import { provide, useAwait, makeContext, useContext, useMemo, useOne } from '@use-gpu/live';
+import { makeTuples } from '@use-gpu/core';
+import { RustText, packStrings } from '@use-gpu/glyph';
+import { useForceUpdate } from '../../hooks';
 
 export const FontContext = makeContext<RustTextAPI>(undefined, 'FontContext');
 export const useFontContext = () => useContext(FontContext);
 
 export type FontProviderProps = {
   fonts: Font[],
-  children: LiveElement<any>,
+  children: LiveElement,
 };
 
 export const FontProvider: LiveComponent<FontProviderProps> = ({fonts, children}) => {
@@ -50,14 +51,21 @@ export const useFontText = (
 ) => {
   const rustText = useFontContext();
 
+  const [version, forceUpdate] = useForceUpdate();
   const packed = useOne(() => packStrings(strings), strings);
 
   return useMemo(() => {
-    const {breaks, metrics: m, glyphs: g} = rustText.measureSpans(stack, packed, size);
+    const {breaks, metrics: m, glyphs: g, missing: i} = rustText.measureSpans(stack, packed, size);
     const spans = makeTuples(m, 3);
     const glyphs = makeTuples(g, 4);
+    const missing = makeTuples(i, 2);
+    
+    missing.iterate((index: number, glyph: number) =>
+      rustText.loadMissingGlyph(stack[index], glyph, forceUpdate)
+    );
+
     return {spans, glyphs, breaks};
-  }, [packed, size, rustText]);
+  }, [packed, size, rustText, version]);
 }
 
 // Get font metrics

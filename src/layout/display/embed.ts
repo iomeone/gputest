@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { Rectangle, Point, Point4 } from '../../core';
-import type { ShaderModule } from '../../shader';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { Rectangle, Point, Point4 } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 import type { FitInto, LayoutElement, Dimension, Margin } from '../types';
 
-import { useProp } from '../../traits';
-import { use, memo, gather, provide, yeet, tagFunction, useContext, useFiber } from '../../live';
-import { LayoutContext, TransformContext } from '../../workbench';
+import { useProp } from '@use-gpu/traits';
+import { use, memo, gather, provide, yeet, useContext, useFiber } from '@use-gpu/live';
+import { LayoutContext, TransformContext } from '@use-gpu/workbench';
 import { getBlockMinMax, getBlockMargin, fitBlock } from '../lib/block';
 import { memoFit, memoLayout } from '../lib/util';
 import { evaluateDimension } from '../parse';
@@ -19,11 +19,17 @@ export type EmbedProps = Partial<BoxTrait> &
   width?: Dimension,
   height?: Dimension,
   snap?: boolean,
-  render?: (key: number, layout: Rectangle, clip?: ShaderModule, transform?: ShaderModule) => LiveElement<any>,
-  children?: LiveElement<any>,
+  render?: (
+    key: number,
+    layout: Rectangle,
+    origin: Rectangle,
+    clip: ShaderModule | null,
+    mask: ShaderModule | null,
+    transform: ShaderModule | null,
+  ) => LiveElement,
 };
 
-export const Embed: LiveComponent<EmbedProps> = memo((props: EmbedProps) => {
+export const Embed: LiveComponent<EmbedProps> = memo((props: PropsWithChildren<EmbedProps>) => {
   const {
     snap = true,
     render,
@@ -50,31 +56,35 @@ export const Embed: LiveComponent<EmbedProps> = memo((props: EmbedProps) => {
   if (typeof height === 'string') ratioY = evaluateDimension(height, 1, false);
 
   const fit = (into: FitInto) => {
-      const w = width != null ? evaluateDimension(width, into[2], snap) : null;
-      const h = height != null ? evaluateDimension(height, into[3], snap) : null;
+    const w = width != null ? evaluateDimension(width, into[2], snap) : null;
+    const h = height != null ? evaluateDimension(height, into[3], snap) : null;
 
-      const size = [
-        w ?? into[0],
-        h ?? into[1],
-      ] as [number, number];
+    const size = [
+      w ?? into[0],
+      h ?? into[1],
+    ] as [number, number];
 
-      return {
-        size,
-        render: memoLayout((layout: Rectangle, clip?: ShaderModule, transform?: ShaderModule) => {
-          const view = render
-            ? render(id, layout, clip, transform)
-            : (
-              provide(LayoutContext, layout,
-                provide(TransformContext, transform,
-                  children
-                ),
-                id,
-              )
-            );
-          return yeet(view);
-        }),
-      };
+    return {
+      size,
+      render: memoLayout((
+        layout: Rectangle,
+        origin: Rectangle,
+        clip: ShaderModule | null,
+        mask: ShaderModule | null,
+        transform: ShaderModule | null,
+      ) => {
+        const view = render
+          ? render(id, layout, origin, clip, mask, transform)
+          : (
+            provide(LayoutContext, layout,
+              provide(TransformContext, {transform}, children),
+              id,
+            )
+          );
+        return yeet(view);
+      }),
     };
+  };
 
   return yeet({
     size: [w, h],

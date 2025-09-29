@@ -21,13 +21,14 @@ import {
 import * as T from './grammar/glsl.terms';
 import { GLSL_NATIVE_TYPES } from './constants';
 import { parseString } from '../util/bundle';
-import { getChildNodes, hasErrorNode, formatAST, formatASTNode, decompressAST } from '../util/tree';
+import { getChildNodes, hasErrorNode, formatAST, formatASTNode, makeASTEmitter, makeASTDecompressor } from '../util/tree';
 import uniq from 'lodash/uniq';
-
-export { decompressAST } from '../util/tree';
 
 const NO_DEPS = [] as string[];
 const IGNORE_IDENTIFIERS = new Set(['location', 'set', 'binding']);
+const AST_OPS = ["Shake", "Skip", "Identifier"];
+
+export const decompressAST = makeASTDecompressor(AST_OPS);
 
 const orNone = <T>(list: T[]): T[] | undefined => list.length ? list : undefined;
 
@@ -180,7 +181,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const at = node.from;
 
     const symbols = [func.name];
-    const identifiers = b ? getIdentifiers(b, symbols) : [];
+    const identifiers = b ? getIdentifiers(b, symbols) : undefined;
 
     return {at, symbols, identifiers, flags, func};
   };
@@ -238,7 +239,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
       const variable = getQualifiedDeclaration(a);
       const {type} = variable;
       const symbols = [type.name];
-      return {at, symbols, identifiers: [], flags};
+      return {at, symbols, flags};
     }
     
     throw throwError('declaration', node);
@@ -292,13 +293,14 @@ export const makeASTParser = (code: string, tree: Tree) => {
   };
 
   const getIdentifiers = (node: SyntaxNode, exclude: string[] = []): string[] => {
-    const {cursor, to} = node;
+    const cursor = node.cursor();
+    const {to} = node;
     const ids = new Set<string>();
 
     const visit = () => {
       const {type} = cursor;
       if (type.name === 'Field') {
-        const sub = cursor.node.cursor;
+        const sub = cursor.node.cursor();
         do {} while (sub.firstChild());
         const t = getText(sub);
         ids.add(t);
@@ -384,20 +386,28 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const scope = new Set(symbols ?? []);
     for (let ref of refs) if (ref.identifiers) {
       ref.identifiers = ref.identifiers.filter(s => scope.has(s));
+      if (ref.identifiers?.length === 0) ref.identifiers = undefined;
     }
+
+    const linkable = {} as Record<string, true>;
+    for (const {symbols} of externals) for (const symbol of symbols) linkable[symbol] = true;
 
     return {
       symbols: orNone(symbols),
       visibles: orNone(visibles),
       globals: orNone(globals),
-      externals: orNone(externals),
       modules: orNone(modules),
+      externals: orNone(externals),
+      exports: orNone(exported),
+
       declarations: orNone(refs),
+      linkable: externals.length ? linkable : undefined,
     };
   }
 
   const getShakeTable = (table: SymbolTable = getSymbolTable()): ShakeTable | undefined => {
-    const {declarations: refs} = table;
+    const {declarations: refs, symbols} = table;
+    const lookup = new Map(symbols ? symbols.map((s, i) => [s, i]) : undefined);
     if (!refs) return undefined;
 
     const graph = new Map<string, string[]>();
@@ -414,11 +424,14 @@ export const makeASTParser = (code: string, tree: Tree) => {
       }
     }
 
-    const getAll = (ss: string[], accum: Set<string>): Set<string> => {
-      for (let s of ss) if (!accum.has(s)) {
-        accum.add(s);
-        const deps = graph.get(s);
-        if (deps?.length) getAll(deps, accum);
+    const getAll = (ss: string[], accum: Set<number> = new Set()): Set<number> => {
+      for (let symbol of ss) {
+        let s = lookup.get(symbol)!;
+        if (!accum.has(s)) {
+          accum.add(s);
+          const deps = graph.get(symbol);
+          if (deps?.length) getAll(deps, accum);
+        }
       }
       return accum;
     }
@@ -426,7 +439,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const out = [] as ShakeOp[];
     for (const ref of refs) {
       const {at, symbols} = ref;
-      const deps = getAll(symbols, new Set());
+      const deps = getAll(symbols);
       if (deps.size) out.push([at, Array.from(deps)]);
     }
 
@@ -469,7 +482,8 @@ export const rewriteUsingAST = (
   const cursor = tree.cursor();
   do {
     const {type, from, to} = cursor;
-    // Injected by compressed AST only: Skip, Shake, Id
+
+    // Injected by compressed AST only: Skip, Shake
     if (type.name === 'Skip') skip(from, to);
     
     // Top level declaration
@@ -482,7 +496,7 @@ export const rewriteUsingAST = (
       }
     }
     // Any identifier
-    else if (type.name === 'Identifier' || type.name === 'Id') {
+    else if (type.name === 'Identifier') {
       const name = code.slice(from, to);
       const replace = rename.get(name);
 
@@ -506,7 +520,7 @@ export const rewriteUsingAST = (
     }
     // Field accessor
     else if (type.name === 'Field') {
-      const sub = cursor.node.cursor;
+      const sub = cursor.node.cursor();
       do {} while (sub.firstChild());
 
       const name = code.slice(sub.from, sub.to);
@@ -524,16 +538,21 @@ export const rewriteUsingAST = (
 }
 
 // Compress an AST to only the info needed to do symbol replacement and tree shaking
-export const compressAST = (_: string, tree: Tree): CompressedNode[] => {
+export const compressAST = (
+  _: string,
+  tree: Tree,
+  symbols: string[] = [],
+): CompressedNode[] => {
   const out = [] as any[]
+  const emit = makeASTEmitter(out, AST_OPS, symbols);
 
   // Pass through nodes from pre-compressed tree immediately
   // @ts-ignore
   if (tree.__nodes) return tree.__nodes();
 
-  const shake = (from: number, to: number) => out.push(["Shake", from, to]);
-  const skip = (from: number, to: number) => out.push(["Skip", from, to]);
-  const ident = (from: number, to: number) => out.push(["Id", from, to]);
+  const shake = (from: number, to: number) => emit('Shake',      from, to);
+  const skip  = (from: number, to: number) => emit('Skip',       from, to);
+  const ident = (from: number, to: number) => emit('Identifier', from, to);
 
   const cursor = tree.cursor();
   do {
@@ -561,7 +580,7 @@ export const compressAST = (_: string, tree: Tree): CompressedNode[] => {
       cursor.lastChild();
     }
     else if (type.name === 'Field') {
-      const sub = cursor.node.cursor;
+      const sub = cursor.node.cursor();
       do {} while (sub.firstChild());
       ident(sub.from, sub.to);
       cursor.lastChild();

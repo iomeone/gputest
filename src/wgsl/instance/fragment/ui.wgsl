@@ -1,17 +1,19 @@
-use '../../../wgsl/fragment/sdf-2d'::{ SDF, getUVScale, getBoxSDF, getBorderBoxSDF, getRoundedBorderBoxSDF };
-use '../../../wgsl/use/color'::{ premultiply };
+use '@use-gpu/wgsl/fragment/sdf-2d'::{ SDF, getUVScale, getBoxSDF, getBorderBoxSDF, getRoundedBorderBoxSDF };
+use '@use-gpu/wgsl/use/color'::{ premultiply };
 
 @optional @link fn getTexture(uv: vec2<f32>) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); };
+@optional @link fn getMask(color: vec4<f32>, uv: vec4<f32>, st: vec4<f32>) -> vec4<f32> { return color; }
 
 @export fn getUIFragment(
   uv: vec2<f32>,
   textureUV: vec2<f32>,
+  textureST: vec2<f32>,
   clipUV: vec4<f32>,
   sdfUV: vec2<f32>,
   sdfConfig: vec4<f32>,
   repeat: i32,
   mode: i32,
-  layout: vec4<f32>,
+  shape: vec4<f32>,
   radius: vec4<f32>,
   border: vec4<f32>,
   stroke: vec4<f32>,
@@ -65,10 +67,10 @@ use '../../../wgsl/use/color'::{ premultiply };
     // Get appropriate SDF
     if (mode == 0) {
       if (fillColor.a <= 0.0) { discard; }
-      sdf = getBoxSDF(layout.xy, uv, scale);
+      sdf = getBoxSDF(shape.xy, uv, scale);
     }
-    else if (mode == 1) { sdf = getBorderBoxSDF(layout.xy, border, uv, scale); }
-    else { sdf = getRoundedBorderBoxSDF(layout.xy, border, radius, uv, scale); }
+    else if (mode == 1) { sdf = getBorderBoxSDF(shape.xy, border, uv, scale); }
+    else { sdf = getRoundedBorderBoxSDF(shape.xy, border, radius, uv, scale); }
 
     // Bleed by 0.5px to account for filter radius
     let bleed = 0.5;
@@ -117,6 +119,10 @@ use '../../../wgsl/use/color'::{ premultiply };
     color = mix(fillColor, strokeColor, reduce * clamp(1.0 - sdf.inner, 0.0, 1.0));
   }
 
+  if (HAS_MASK) {
+    color = getMask(color, vec4<f32>(textureUV, 0.0, 0.0), vec4<f32>(textureST, 0.0, 0.0));
+  }
+
   if (!HAS_ALPHA_TO_COVERAGE) {
     color = vec4<f32>((color.rgb + mark) * color.a * mask, color.a * mask + mark);
   }
@@ -127,5 +133,6 @@ use '../../../wgsl/use/color'::{ premultiply };
   if (DEBUG_SDF) {
     return vec4<f32>(mix(color.rgb, vec3<f32>(mark), 0.5), color.a);
   }
+  
   return color;
 }

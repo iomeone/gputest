@@ -1,7 +1,7 @@
 import type {
-  Initial, Setter, Reducer, Key, Task,
+  Initial, Setter, Reducer, Key, Task, ArrowFunction,
   LiveFunction, LiveFiber, LiveContext, LiveCapture,
-  DeferredCall, HostInterface, RefObject, MutableRefObject,
+  DeferredCall, HostInterface, Ref, RefObject, MutableRefObject,
 } from './types';
 import { Hook } from './types';
 
@@ -38,11 +38,7 @@ export const discardState = <F extends Function>(fiber: LiveFiber<F>) => {
     const i = fiber.pointer;
     const type = state[i];
     switch (type) {
-      case Hook.STATE:
-      case Hook.MEMO:
-      case Hook.ONE:
-      case Hook.CALLBACK:
-      case Hook.VERSION:
+      default:
         useNoHook(type)();
         break;
       case Hook.RESOURCE:
@@ -80,78 +76,95 @@ export const useNoHook = (hookType: Hook) => () => {
   state![i + 1] = undefined;
 };
 
+type ShouldMemoArgs<T extends Array<any>> = (prevArgs: T, nextArgs: T) => boolean;
+type ShouldMemoProps<T> = (prevProps: T, nextArgs: T) => boolean;
+
 /**
  * Memoize a live function on all its arguments (shallow comparison per arg)
  */
-export const memoArgs = <F extends Function>(
+export const memoArgs = <F extends ArrowFunction>(
   f: LiveFunction<F>,
+  shouldOrName?: ShouldMemoArgs<Parameters<F>> | string,
   name?: string,
 ) => {
+  const customMemo = typeof shouldOrName === 'function' ? shouldOrName as ShouldMemoArgs<any> : null;
+  if (typeof shouldOrName === 'string') name = shouldOrName;
+
   const inner = (...args: any[]) => {
     const fiber = useFiber();
     if (!fiber.version) fiber.version = 1;
 
-    args.push(fiber.version);
+    if (customMemo) {
+      const ref = useRef(args);
+      if (!ref || !customMemo(ref.current, args)) fiber.version = incrementVersion(fiber.version!);
+      ref.current = args;
+    }
 
-    let skip = true;
-    const value = useMemo(() => {
-      fiber.memo = -1;
-      skip = false;
+    const deps = [fiber.version] as any[];
+    if (!customMemo) deps.push(...args);
+
+    const value = useYolo(() => {
+      deps[0] = fiber.version = incrementVersion(fiber.version!);
       return f(...args);
-    }, args);
-
-    if (skip) fiber.pointer = fiber.state!.length;
+    }, deps);
 
     return value;
   };
 
-  const memoName = `Memo(${name ?? f.name})`;
+  const memoName = `Memo(${name ?? f.name ?? 'Component'})`;
   const length = getArgCount(f);
+
   return new Proxy(inner, { get: (target: any, s: string) => {
     if (s === 'length') return length;
     if (s === 'name') return memoName;
+    if (s === 'argCount') return length;
     return target[s];
-  }});
+  }}) as LiveFunction<F>;
 };
 
 /**
  * Memoize a live function with 1 argument on its object props (shallow comparison per arg)
  */
-export const memoProps = <F extends Function>(
+export const memoProps = <F extends ArrowFunction>(
   f: LiveFunction<F>,
+  shouldOrName?: ShouldMemoProps<Parameters<F>[0]> | string,
   name?: string,
 ) => {
+  const customMemo = typeof shouldOrName === 'function' ? shouldOrName as ShouldMemoArgs<any> : null;
+  if (typeof shouldOrName === 'string') name = shouldOrName;
+
   const inner = (props: Record<string, any>[]) => {
     const fiber = useFiber();
     if (!fiber.version) fiber.version = 1;
 
+    if (customMemo) {
+      const ref = useRef(props);
+      if (!ref || !customMemo(ref.current, props)) fiber.version = incrementVersion(fiber.version!);
+      ref.current = props;
+    }
+
     const deps = [fiber.version] as any[];
-    for (let k in props) {
+    if (!customMemo) for (let k in props) {
       deps.push(k);
       deps.push(props[k]);
     }
 
-    let skip = true;
-    const value = useMemo(() => {
-      fiber.memo = -1;
-      skip = false;
+    const value = useYolo(() => {
+      deps[0] = fiber.version = incrementVersion(fiber.version!);
       return f(props);
     }, deps);
-
-    if (skip) fiber.pointer = fiber.state!.length;
 
     return value;
   };
 
-  const memoName = `Memo(${name ?? f.name})`;
+  const memoName = `Memo(${name ?? f.name ?? 'Component'})`;
   const length = getArgCount(f);
-  const p = new Proxy(inner, { get: (target: any, s: string) => {
+
+  return new Proxy(inner, { get: (target: any, s: string) => {
     if (s === 'length') return length;
     if (s === 'name') return memoName;
     return target[s];
-  }});
-  p.displayName = memoName;
-  return p;
+  }}) as LiveFunction<F>;
 }
 
 /**
@@ -225,7 +238,7 @@ export const useMemo = <T>(
   const fiber = useFiber();
 
   const i = pushState(fiber, Hook.MEMO);
-  let {state, host} = fiber;
+  let {state} = fiber;
 
   let value = state![i];
   const deps = state![i + 1];
@@ -250,7 +263,7 @@ export const useOne = <T>(
   const fiber = useFiber();
 
   const i = pushState(fiber, Hook.ONE);
-  let {state, host} = fiber;
+  let {state} = fiber;
 
   let value = state![i];
   const dep = state![i + 1];
@@ -275,7 +288,7 @@ export const useCallback = <T extends Function>(
   const fiber = useFiber();
 
   const i = pushState(fiber, Hook.CALLBACK);
-  let {state, host} = fiber;
+  let {state} = fiber;
 
   let value = state![i];
   const deps = state![i + 1];
@@ -297,7 +310,7 @@ export const useVersion = <T>(nextValue: T) => {
   const fiber = useFiber();
 
   const i = pushState(fiber, Hook.VERSION);
-  let {state, host, yeeted} = fiber;
+  let {state, yeeted} = fiber;
 
   let value   = state![i];
   let version = state![i + 1] || 0;
@@ -366,7 +379,7 @@ export const useNoResource = () => {
 }
 
 /**
- * Grab a context from the fiber (optional mode)
+ * Grab a context from the fiber
  */
 export const useContext = <C>(
   context: LiveContext<C>,
@@ -375,7 +388,7 @@ export const useContext = <C>(
 
   const i = pushState(fiber, Hook.CONTEXT);
   const {state, host, context: {values, roots}} = fiber;
-  const root = roots.get(context);
+  const root = roots.get(context) as number;
   if (!root) {
     const {initialValue, displayName} = context;
     if (initialValue === undefined) {
@@ -410,24 +423,23 @@ export const useCapture = <C>(
 
   const i = pushState(fiber, Hook.CAPTURE);
   const {state, host, context: {values, roots}} = fiber;
-  const root = roots.get(context);
-  if (!root || !root.next) throw new Error(`Context '${context.displayName}' was used without being captured.`);
+  const root = roots.get(context) as LiveFiber<any>;
+  if (!root) throw new Error(`Context '${context.displayName}' was used without being captured.`);
 
-  const {next} = root;
   if (host) {
     if (!state![i]) {
       state![i] = true;
       state![i + 1] = context;
       host.track(fiber, () => {
         registry.delete(fiber);
-        host.schedule(next, NOP);
-        host.undepend(next, fiber);
+        host.schedule(root);
+        host.undepend(root, fiber.id);
       });
 
-      host.depend(next, fiber);
+      host.depend(root, fiber.id);
     }
 
-    host.visit(next);
+    host.visit(root);
   }
 
   const registry = values.get(context).current;
@@ -448,7 +460,7 @@ export const useNoContext = <C>(
     throw new Error(`Context is undefined.`);
   }
 
-  const root = roots.get(context)!;
+  const root = roots.get(context)! as number;
   if (state![i]) {
     if (host) host.undepend(fiber, root);
     state![i] = false;
@@ -469,15 +481,97 @@ export const useNoCapture = <C>(
   const {state, host, context: {values, roots}} = fiber;
   if (!context) throw new Error(`Capture is undefined.`);
 
-  const root = roots.get(context)!;
-  const next = root.next;
-  if (state![i] && next) {
-    if (host) host.undepend(next, fiber);
+  const root = roots.get(context)! as LiveFiber<any>;
+  if (state![i] && root) {
+    const registry = values.get(context).current;
+    registry.delete(fiber);
+
+    if (host) host.undepend(root, fiber.id);
     state![i] = false;
   }
 
   state![i + 1] = undefined;
 }
+
+/**
+ * Detect context on a fiber without depending on it
+ */
+export const useHasContext = <C>(
+  context: LiveContext<C>,
+): boolean => {
+  const fiber = useFiber();
+
+  const {context: {roots}} = fiber;
+  const root = roots.get(context);
+  return !!root;
+}
+
+/**
+ * Detect context on a fiber without depending on it
+ */
+export const useHasCapture = <C>(
+  capture: LiveCapture<C>,
+): boolean => {
+  const fiber = useFiber();
+
+  const {context: {roots}} = fiber;
+  const root = roots.get(capture);
+  return !!root;
+}
+
+export const useNoHasContext = () => {};
+export const useNoHasCapture = () => {};
+
+/**
+ * Memoize a hook with given dependencies
+ */
+export const useYolo = <T>(
+  initialState: () => T,
+  dependencies: any[] = NO_DEPS,
+): T => {
+  const fiber = useFiber();
+  const {pointer} = fiber;
+
+  const i = pushState(fiber, Hook.YOLO);
+  let {state} = fiber;
+
+  let value;
+  if (pointer === 0) {
+    let skip = true;
+    value = useMemo(() => {
+      skip = false;
+      return initialState();
+    }, dependencies);
+
+    if (skip) fiber.pointer = state![i];
+    else state![i] = fiber.pointer;
+  }
+  else {
+    let scope = state![i + 1];
+
+    let {pointer} = fiber;
+    value = useMemo(() => {
+      try {
+        fiber.pointer = 0;
+        fiber.state = scope;
+        return initialState();
+      }
+      catch (e) { throw e; }
+      finally {
+        state![i + 1] = fiber.state;
+        fiber.pointer = pointer + STATE_SLOTS;
+        fiber.state = state;
+      }
+    }, dependencies);
+  }
+
+  return value as unknown as T;
+}
+
+export const useNoYolo = () => {
+  useNoHook(Hook.YOLO);
+  useNoHook(Hook.MEMO);
+};
 
 // Togglable hooks
 export const useNoState = useNoHook(Hook.STATE);
@@ -495,12 +589,15 @@ export const useNoLog = useNoOne;
 /**
  * Async wrapper
  */
-export const useAsync = <T, E = Error>(f: () => Promise<T>, deps: any[] = NO_DEPS): [T | undefined, E | undefined] => {
+export const useAwait = <T, E = Error>(
+  f: (cancelled: () => boolean) => Promise<T>,
+  deps: any[] = NO_DEPS,
+): [T | undefined, E | undefined] => {
   const [value, setValue] = useState<[T | undefined, E | undefined]>([undefined, undefined]);
 
   const ref = useResource((dispose) => {
     let cancelled = false;
-    f()
+    f(() => cancelled)
     .then(value => !cancelled && setValue([value, undefined]))
     .catch(error => !cancelled && setValue([undefined, error]));
     dispose(() => { cancelled = true; });
@@ -518,8 +615,8 @@ export const useNoAsync = () => {
  * Ref emulator
  */
 interface UseRef {
+  <T>(current?: T): Ref<T>;
   <T>(current?: T | null): RefObject<T>;
-  <T>(current?: T): MutableRefObject<T>;
   <T = undefined>(): MutableRefObject<T | undefined>;
 }
 export const useRef: UseRef = (<T>(current?: T | null) => useOne(() => ({current}))) as any;

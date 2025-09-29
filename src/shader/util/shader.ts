@@ -1,7 +1,6 @@
 import { Tree } from '@lezer/common';
-import { ASTParser, VirtualTable, SymbolTableT, ParsedModule, ParsedModuleCache, CompressedNode } from '../types';
+import { ASTParser, VirtualTable, SymbolTableT, ParsedBundle, ParsedModule, ParsedModuleCache, CompressedNode } from '../types';
 import { formatMurmur53, toMurmur53 } from './hash';
-import { decompressAST } from './tree';
 import { PREFIX_VIRTUAL } from '../constants';
 
 const EMPTY_LIST = [] as any[];
@@ -12,7 +11,8 @@ const EMPTY_TABLE = {} as any;
 export const makeLoadModule = <T extends SymbolTableT = any>(
   parseShader: (code: string) => Tree,
   makeASTParser: (code: string, tree: Tree, name?: string) => ASTParser<T>,
-  compressAST: (code: string, tree: Tree) => CompressedNode[],
+  compressAST: (code: string, tree: Tree, symbols?: string[]) => CompressedNode[],
+  decompressAST: (nodes: CompressedNode[], symbols?: string[]) => Tree,
 ) => (
   code: string,
   name: string = 'main',
@@ -27,7 +27,10 @@ export const makeLoadModule = <T extends SymbolTableT = any>(
   const table = astParser.getSymbolTable();
   const shake = astParser.getShakeTable(table);
 
-  if (compressed) tree = decompressAST(compressAST(code, tree));
+  if (compressed) {
+    const {symbols} = table;
+    tree = decompressAST(compressAST(code, tree, symbols), symbols);
+  }
   const hash = toMurmur53(code);
 
   return bindEntryPoint({name, code, hash, table, shake, tree}, entry);
@@ -87,14 +90,18 @@ export const loadVirtualModule = <T extends SymbolTableT = any>(
   return { name, code, hash, table, entry, virtual, key };
 }
 
-// Set entry point of a module, returns new module.
-// Is the same instance as the original (key = old hash), so it merges with copies of itself.
+// Set entry point of a module, returns new bundle/module.
+// Is the same instance as the original (key = old key/hash), so it merges with copies of itself.
 // But is structurally different (hash = new key), so differences in links are reflected in the shader hash.
-export const bindEntryPoint = (module: ParsedModule, entry?: string) => {
-  const {hash, table} = module;
+export const bindEntryPoint = <T extends ParsedBundle | ParsedModule>(bundle: T, entry?: string): T => {
+  let {key, hash, module, table} = bundle as any;
+
+  table = table ?? module?.table;
+  hash = hash ?? module?.hash;
+
   if (entry == null && table.symbols?.includes('main')) entry = 'main';
-  if (entry == null) return module;
+  if (entry == null) return bundle;
 
   const structural = toMurmur53([hash, entry]);
-  return {...module, entry, hash: structural, key: hash};
+  return {...bundle, entry, hash: structural, key: key ?? hash};
 };

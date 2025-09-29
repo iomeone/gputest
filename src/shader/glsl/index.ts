@@ -51,9 +51,12 @@ import {
 } from './ast';
 
 import {
+  getBundleEntry,
   getBundleHash,
   getBundleKey,
 } from '../util/bundle';
+
+import { parser } from './grammar/glsl';
 
 export {
   loadModule,
@@ -108,6 +111,7 @@ export {
 } from './ast';
 
 export {
+  getBundleEntry,
   getBundleHash,
   getBundleKey,
 } from '../util/bundle';
@@ -149,8 +153,14 @@ export const GLSLLinker = {
 
   makeModuleCache,
 
+  getBundleEntry,
   getBundleHash,
   getBundleKey,
+
+  parser,
 };
+
+export { parser } from './grammar/glsl';
+
 
 export default GLSLLinker;

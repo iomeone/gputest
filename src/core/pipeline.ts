@@ -1,11 +1,12 @@
 import type {
-  TypedArray, DeepPartial, UseRenderingContextGPU,
+  TypedArray, UseGPURenderContext,
   ShaderModuleDescriptor, ShaderStageDescriptor,
 } from './types';
+import type { Update } from '@use-gpu/state';
 
-import { patch } from '../state';
+import { patch, $delete } from '@use-gpu/state';
 
-export const makeShaderModule = (
+export const makeShaderModuleDescriptor = (
   code: TypedArray | string,
   hash: string | number,
   entryPoint: string = 'main'
@@ -23,21 +24,24 @@ export const makeShaderStage = (device: GPUDevice, descriptor: ShaderModuleDescr
 export const makeRenderPipeline = (
   device: GPUDevice,
   vertexShader: ShaderModuleDescriptor,
-  fragmentShader: ShaderModuleDescriptor,
+  fragmentShader: ShaderModuleDescriptor | null,
   colorStates: GPUColorTargetState[],
   depthStencilState: GPUDepthStencilState | undefined,
   samples: number,
-  descriptor: DeepPartial<GPURenderPipelineDescriptor> = {},
+  descriptor: Update<GPURenderPipelineDescriptor> = {},
+  layout?: GPUPipelineLayout,
 ) => {
   const pipelineDescriptor: GPURenderPipelineDescriptor = patch({
-    layout: 'auto',
+    layout: layout ?? 'auto',
     depthStencil: depthStencilState,
     multisample: { count: samples },
     vertex: makeShaderStage(device, vertexShader),
-    fragment: makeShaderStage(device, fragmentShader, {
+    fragment: fragmentShader ? makeShaderStage(device, fragmentShader, {
       targets: colorStates,
-    }),
+    }) : undefined,
   } as any, descriptor) as any as GPURenderPipelineDescriptor;
+
+  if (!depthStencilState) delete pipelineDescriptor.depthStencil;
 
   return device.createRenderPipeline(pipelineDescriptor);
 }
@@ -45,21 +49,57 @@ export const makeRenderPipeline = (
 export const makeRenderPipelineAsync = (
   device: GPUDevice,
   vertexShader: ShaderModuleDescriptor,
-  fragmentShader: ShaderModuleDescriptor,
+  fragmentShader: ShaderModuleDescriptor | null,
   colorStates: GPUColorTargetState[],
   depthStencilState: GPUDepthStencilState | undefined,
   samples: number,
-  descriptor: DeepPartial<GPURenderPipelineDescriptor> = {},
+  descriptor: Update<GPURenderPipelineDescriptor> = {},
+  layout?: GPUPipelineLayout,
 ) => {
   const pipelineDescriptor: GPURenderPipelineDescriptor = patch({
-    layout: 'auto',
+    layout: layout ?? 'auto',
     depthStencil: depthStencilState,
     multisample: { count: samples },
     vertex: makeShaderStage(device, vertexShader),
-    fragment: makeShaderStage(device, fragmentShader, {
+    fragment: fragmentShader ? makeShaderStage(device, fragmentShader, {
       targets: colorStates,
-    }),
+    }) : undefined,
   } as any, descriptor) as any as GPURenderPipelineDescriptor;
 
+  if (!depthStencilState) delete pipelineDescriptor.depthStencil;
   return device.createRenderPipelineAsync(pipelineDescriptor);
 }
+
+export const makeComputePipeline = (
+  device: GPUDevice,
+  shader: ShaderModuleDescriptor,
+  layout?: GPUPipelineLayout,
+) => {
+  const pipelineDescriptor: GPUComputePipelineDescriptor = {
+    layout: layout ?? 'auto',
+    compute: makeShaderStage(device, shader),
+  };
+  return device.createComputePipeline(pipelineDescriptor);
+}
+
+export const makeComputePipelineAsync = (
+  device: GPUDevice,
+  shader: ShaderModuleDescriptor,
+  layout?: GPUPipelineLayout,
+) => {
+  const pipelineDescriptor: GPUComputePipelineDescriptor = {
+    layout: layout ?? 'auto',
+    compute: makeShaderStage(device, shader),
+  };
+  return device.createComputePipelineAsync(pipelineDescriptor);
+}
+
+export const makePipelineLayout = (
+  device: GPUDevice,
+  bindGroupLayouts: GPUBindGroupLayout[],
+) => {
+  return device.createPipelineLayout({
+    bindGroupLayouts,
+  });
+}
+

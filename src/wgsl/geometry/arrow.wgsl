@@ -1,6 +1,6 @@
-use '../../wgsl/use/view'::{ getWorldScale, getViewScale };
+use '@use-gpu/wgsl/use/view'::{ getWorldScale, getViewScale };
 
-let ARROW_ASPECT: f32 = 2.5;
+const ARROW_ASPECT: f32 = 2.5;
 
 fn sqr(f: f32) -> f32 { return f * f; };
 

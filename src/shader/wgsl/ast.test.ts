@@ -40,11 +40,25 @@ describe('ast', () => {
     expect(imports).toMatchSnapshot();
   });
 
+  it('gets linked var/const declarations', () => {
+    const code = `
+      @link var x: f32;
+      @link var y: f32;
+      @link const a: i32 = 3;
+    `;
+
+    const tree = parseShader(code);
+    const {getDeclarations} = makeGuardedParser(code, tree);
+
+    const declarations = getDeclarations();
+    expect(declarations).toMatchSnapshot();
+  });
+
   it('gets test var/const declarations', () => {
     const code = `
       var x: f32;
       var y: f32;
-      let a: i32 = 3;
+      const a: i32 = 3;
       type integer = i32;
       override b: i32;
     `;
@@ -99,7 +113,7 @@ describe('ast', () => {
 
   it('gets test declarations with array', () => {
     const code = `
-      let QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(
+      const QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(
         vec2<i32>(0, 0),
         vec2<i32>(1, 0),
         vec2<i32>(0, 1),
@@ -116,18 +130,18 @@ describe('ast', () => {
 
   it('gets symbol table', () => {
     const code = `
-      @exported var x: f32;
+      @export var x: f32;
       var y: f32;
-      let a: i32 = 3;
+      const a: i32 = 3;
       type integer = i32;
       override b: i32;
 
-      @exported struct light {
+      @export struct light {
         intensity: f32,
         @annotate position: vec3<f32>,
       }
 
-      let QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(
+      const QUAD: array<vec2<i32>, 4> = array<vec2<i32>, 4>(
         vec2<i32>(0, 0),
         vec2<i32>(1, 0),
         vec2<i32>(0, 1),
@@ -148,7 +162,7 @@ describe('ast', () => {
 
   it('gets shake table', () => {
     const code = `
-      @exported var x: f32;
+      @export var x: f32;
       var y: f32;
 
       @optional @link fn getFloat1() -> f32 {}
@@ -181,7 +195,7 @@ describe('ast', () => {
   });
 
   it('gets quad vertex imports', () => {
-    const code = WGSLModules['instance/vertex/quad'];
+    const code = WGSLModules['getQuadVertex'];
 
     const tree = parseShader(code);
     const {getImports} = makeGuardedParser(code, tree);
@@ -191,7 +205,7 @@ describe('ast', () => {
   });
 
   it('gets quad vertex declarations', () => {
-    const code = WGSLModules['instance/vertex/quad'];
+    const code = WGSLModules['getQuadVertex'];
 
     const tree = parseShader(code);
     const {getDeclarations} = makeGuardedParser(code, tree);
@@ -221,7 +235,7 @@ describe('ast', () => {
   });
 
   it('gets quad vertex symbol table', () => {
-    const code = WGSLModules['instance/vertex/quad'];
+    const code = WGSLModules['getQuadVertex'];
 
     const tree = parseShader(code);
     const {getSymbolTable} = makeGuardedParser(code, tree);
@@ -260,9 +274,97 @@ describe('ast', () => {
     expect(symbolTable).toMatchSnapshot();
   });
   
+  it('parses comment function', () => {
+    const code = `
+    // Append any X/Y/Z edge that crosses the level set
+    fn appendEdge(id: u32) {
+      let nextEdge = atomicAdd(&indirectDraw.instanceCount, 1u);
+      activeEdges[nextEdge] = id;
+    }
+    `;
+
+    const tree = parseShader(code);
+    const {getDeclarations} = makeGuardedParser(code, tree);
+
+    const declarations = getDeclarations();
+    expect(declarations).toMatchSnapshot();
+  });
+
+  it('filters out noisy comments', () => {
+    const code = `
+      use /* wat */ 'use/types'::{SolidVertex};
+
+      // wat
+      struct Foo {
+        bar: u32,
+      };
+
+      @link /* wat */ var x: f32;
+      @link var y: /* wat */ f32;
+
+      fn getValue(index: /* wat */ i32) -> f32;
+      fn main() -> /* wat */ vec3<f32> {
+        let x = /* wat */ 3.0;
+        let y /* wat */ = getValue(2); // wat
+        // wat
+        let v: vec3<f32> /* wat */ = vec3<f32>(x, y, 0.0);
+        return v.xyz;
+      }
+    `;
+
+    const tree = parseShader(code);
+    const {getDeclarations} = makeGuardedParser(code, tree);
+
+    const declarations = getDeclarations();
+    expect(declarations).toMatchSnapshot();
+  });
+  
+  it('parses around comment lines with @attributes', () => {
+    const code = `
+use '@use-gpu/wgsl/use/types'::{ LightVertex };
+
+@link fn getVertex(i: u32) -> LightVertex {};
+//@optional @link fn toColorSpace(c: vec4<f32>) -> vec4<f32> { return c; }
+
+struct VertexOutput {
+  @builtin(position) position: vec4<f32>,
+  @location(0) @interpolate(flat) lightIndex: u32,
+};
+    `;
+    
+    const tree = parseShader(code);
+    const rename = new Map<string, string>();
+    rename.set('VertexOutput', 'VertexT');
+    
+    const output = rewriteUsingAST(code, tree, rename);
+    expect(output).toMatchSnapshot();
+    
+  })
+  
   it('rewrites code using the AST', () => {
     const code = `
     fn getValue(index: i32) -> f32;
+    fn main() -> vec3<f32> {
+      let x = 3.0;
+      let y = getValue(2);
+      let v: vec3<f32> = vec3<f32>(x, y, 0.0);
+      return v.xyz;
+    }
+    `;
+
+    const tree = parseShader(code);
+    const rename = new Map<string, string>();
+    rename.set('main', 'entryPoint');
+    rename.set('getValue', '_zz_getValue');
+    
+    const output = rewriteUsingAST(code, tree, rename);
+    expect(output).toMatchSnapshot();
+  });
+
+  it('rewrites code with inferred types using the AST', () => {
+    const code = `
+    @infer type T;
+    @link fn getValue(index: i32) -> @infer(T) T;
     fn main() -> vec3<f32> {
       let x = 3.0;
       let y = getValue(2);
@@ -393,7 +495,7 @@ fn main(
   
   it('shakes simple program', () => {
     const code = `
-let x: f32 = 1.0;
+const x: f32 = 1.0;
 
 @export fn getA() -> f32 {
   return x;
@@ -405,14 +507,16 @@ let x: f32 = 1.0;
     `;
 
     const tree = parseShader(code);
-    const table = makeGuardedParser(code, tree).getShakeTable();
+    const ast = makeGuardedParser(code, tree);
+    const {symbols} = ast.getSymbolTable();
+    const shake = ast.getShakeTable();
 
-    expect(table).toBeTruthy();
-    expect(table).toMatchSnapshot();
-    if (!table) return;
+    expect(shake).toBeTruthy();
+    expect(shake).toMatchSnapshot();
+    if (!shake) return;
     
     const keep = new Set(['getA']);
-    const ops = resolveShakeOps(table, keep);
+    const ops = resolveShakeOps(shake, keep, symbols);
     expect(rewriteUsingAST(code, tree, new Map(), ops)).toMatchSnapshot();
   });
   
@@ -420,14 +524,16 @@ let x: f32 = 1.0;
     const code = WGSLModules['@use-gpu/wgsl/use/view'];
 
     const tree = parseShader(code);
-    const table = makeGuardedParser(code, tree).getShakeTable();
+    const ast = makeGuardedParser(code, tree);
+    const {symbols} = ast.getSymbolTable();
+    const shake = ast.getShakeTable();
 
-    expect(table).toBeTruthy();
-    expect(table).toMatchSnapshot();
-    if (!table) return;
+    expect(shake).toBeTruthy();
+    expect(shake).toMatchSnapshot();
+    if (!shake) return;
     
     const keep = new Set(['worldToClip']);
-    const ops = resolveShakeOps(table, keep);
+    const ops = resolveShakeOps(shake, keep, symbols);
     expect(rewriteUsingAST(code, tree, new Map(), ops)).toMatchSnapshot();
   });
 
@@ -435,15 +541,17 @@ let x: f32 = 1.0;
     const code = WGSLModules['@use-gpu/wgsl/use/view'];
 
     const tree = parseShader(code);
-    const table = makeGuardedParser(code, tree).getShakeTable();
+    const ast = makeGuardedParser(code, tree);
+    const {symbols} = ast.getSymbolTable();
+    const shake = ast.getShakeTable();
 
-    expect(table).toBeTruthy();
-    expect(table).toMatchSnapshot();
-    if (!table) return;
+    expect(shake).toBeTruthy();
+    expect(shake).toMatchSnapshot();
+    if (!shake) return;
     
     const keep = new Set(['worldToClip']);
-    const ops = resolveShakeOps(table, keep);
-    
+    const ops = resolveShakeOps(shake, keep, symbols);    
+
     const tree1 = tree;
     const tree2 = decompressAST(compressAST(code, tree1));
 
@@ -453,8 +561,8 @@ let x: f32 = 1.0;
     expect(code2).toEqual(code1);
   });
 
-  it('gets shake information for instance/vertex/quad AST', () => {
-    const code = WGSLModules['instance/vertex/quad'];
+  it('gets shake information for getQuadVertex AST', () => {
+    const code = WGSLModules['getQuadVertex'];
 
     const tree = parseShader(code);
     const table = makeGuardedParser(code, tree).getShakeTable();

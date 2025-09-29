@@ -1,16 +1,16 @@
-import type { LC } from '../../live';
-import React from '../../live';
+import type { LC } from '@use-gpu/live';
+import React, { useOne } from '@use-gpu/live';
 
 import {
   Flat,
   PickingContext,
   useBoundShader, useLambdaSource,
-} from '../../workbench';
+} from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Inline, Text,
-} from '../../layout';
-import { useContext } from '../../live';
-import { wgsl, bindModule, bundleToAttributes } from '../../shader/wgsl';
+} from '@use-gpu/layout';
+import { useContext } from '@use-gpu/live';
+import { wgsl, bindModule } from '@use-gpu/shader/wgsl';
 
 export const PickingOverlay: LC = () => {
 
@@ -18,7 +18,7 @@ export const PickingOverlay: LC = () => {
   if (!pickingContext) return null;
 
   // Display picking buffer with colorization shader
-  const {pickingSource} = pickingContext;
+  const {renderContext: {source}} = pickingContext;
   const colorizeShader = wgsl`
     // Picking buffer is int32, have to use direct texture load.
     @link fn getSize() -> vec2<f32>;
@@ -35,31 +35,31 @@ export const PickingOverlay: LC = () => {
       return sqrt(vec4<f32>(a, c, b, 1.0));
     }
   `;
-  const BINDINGS = bundleToAttributes(colorizeShader);
-  const boundShader = useBoundShader(colorizeShader, BINDINGS, [() => pickingSource.size, pickingSource]);
-  const textureSource = useLambdaSource(boundShader, pickingSource);
+  
+  const size = useOne(() => () => source.size, source);
+
+  const boundShader = useBoundShader(colorizeShader, [size, source]);
+  const textureSource = useLambdaSource(boundShader, source);
 
   const scale = 0.5;
 
   return (
-    <Flat>
-      <UI>
-        <Layout>
-          <Absolute
-            right={0}
-          >
-            <Block fill={[0, 0, 0, .5]} contain>
-              <Block
-                width={textureSource.size[0] * scale / window.devicePixelRatio}
-                height={textureSource.size[1] * scale / window.devicePixelRatio}
-                image={{texture: textureSource}}
-                fill={[0, 0, 0, 1]}
-              />
-              <Inline align="center" margin={[0, 5]}><Text color={[1, 1, 1, 1]} size={24}>GPU Picking Buffer</Text></Inline>
-            </Block>
-          </Absolute>
-        </Layout>
-      </UI>
-    </Flat>
+    <UI>
+      <Layout>
+        <Absolute
+          right={0}
+        >
+          <Block fill={[0, 0, 0, .5]} contain>
+            <Block
+              width={textureSource.size[0] * scale}
+              height={textureSource.size[1] * scale}
+              image={{texture: textureSource, fit: 'scale'}}
+              fill={[0, 0, 0, 1]}
+            />
+            <Inline align="center" margin={[0, 5]}><Text color={[1, 1, 1, 1]} size={18}>GPU Picking Buffer</Text></Inline>
+          </Block>
+        </Absolute>
+      </Layout>
+    </UI>
   );
 }

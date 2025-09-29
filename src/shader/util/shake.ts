@@ -4,4 +4,5 @@ import { ShakeOp } from '../types';
 export const resolveShakeOps = (
   shake: ShakeOp[],
   exports: Set<string>, 
-) => shake.filter(([, deps]) => deps.every(s => !exports.has(s))).map(([at]) => at);
+  symbols: string[],
+) => shake.filter(([, deps]) => deps.every(s => !exports.has(symbols[s]))).map(([at]) => at);

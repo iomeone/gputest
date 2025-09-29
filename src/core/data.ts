@@ -1,5 +1,6 @@
-import type { TypedArray, UniformType, UniformAttribute, Emitter, Emit, Accessor, AccessorSpec } from './types';
-import { UNIFORM_ARRAY_TYPES, UNIFORM_ARRAY_DIMS } from './constants';
+import type { TypedArray, UniformType, UniformAttribute, Emitter, Emit, Accessor, AccessorSpec, DataBoundingBox, DataBounds } from './types';
+import { UNIFORM_ARRAY_TYPES, UNIFORM_ARRAY_DIMS, UNIFORM_ATTRIBUTE_SIZES } from './constants';
+import { seq } from './tuple';
 
 import { vec4 } from 'gl-matrix';
 
@@ -8,32 +9,49 @@ type NumberArray = TypedArray | number[];
 const NO_LOOPS = [] as boolean[];
 const NO_ENDS = [] as [boolean, boolean][];
 
+export const toDims3 = (dims: number) => {
+  if (dims === Math.round(dims)) return dims;
+  return Math.ceil(dims) / 4 * 3;
+};
+
 export const alignSizeTo = (n: number, s: number) => {
   let f = n % s;
   return f === 0 ? n : n + (s - f);
 };
 
+export const getDataArrayConstructor = (type: UniformType) => UNIFORM_ARRAY_TYPES[type];
+
+export const getDataArrayByteLength = (type: UniformType, length: number) => {
+  const size = UNIFORM_ATTRIBUTE_SIZES[type];
+  return alignSizeTo(length * size, 4);
+};
+
 export const makeDataArray = (type: UniformType, length: number) => {
   const ctor = UNIFORM_ARRAY_TYPES[type];
-  let dims = UNIFORM_ARRAY_DIMS[type];
+  const dims = UNIFORM_ARRAY_DIMS[type];
 
-  const array = new ctor(alignSizeTo(length * Math.ceil(dims), 4));
+  const n = alignSizeTo(length * Math.ceil(dims), 4);
+
+  const array = new ctor(n);
   return {array, dims};
 };
 
 export const makeDataEmitter = (to: NumberArray, dims: number): {
   emit: Emit,
   emitted: () => number,
+  reset: () => void,
 } => {
   let i = 0;
   const emitted = () => i / Math.ceil(dims);
+  const reset = () => i = 0;
 
-  if (dims === 1)   return {emitted, emit: (a: number) => { to[i++] = a; }};
-  if (dims === 2)   return {emitted, emit: (a: number, b: number) => { to[i++] = a; to[i++] = b; }};
-  if (dims === 3)   return {emitted, emit: (a: number, b: number, c: number) => { to[i++] = a; to[i++] = b; to[i++] = c; }};
-  if (dims === 3.5) return {emitted, emit: (a: number, b: number, c: number) => { to[i++] = a; to[i++] = b; to[i++] = c; i++; }}; // !
-  if (dims === 4)   return {emitted, emit: (a: number, b: number, c: number, d: number) => { to[i++] = a; to[i++] = b; to[i++] = c; to[i++] = d; }};
+  if (dims === 1)   return {reset, emitted, emit: (a: number) => { to[i++] = a; }};
+  if (dims === 2)   return {reset, emitted, emit: (a: number, b: number) => { to[i++] = a; to[i++] = b; }};
+  if (dims === 3)   return {reset, emitted, emit: (a: number, b: number, c: number) => { to[i++] = a; to[i++] = b; to[i++] = c; }};
+  if (dims === 3.5) return {reset, emitted, emit: (a: number, b: number, c: number) => { to[i++] = a; to[i++] = b; to[i++] = c; i++; }}; // !
+  if (dims === 4)   return {reset, emitted, emit: (a: number, b: number, c: number, d: number) => { to[i++] = a; to[i++] = b; to[i++] = c; to[i++] = d; }};
   return {
+    reset,
     emitted,
     emit: (...args: number[]) => {
       const n = args.length;
@@ -61,7 +79,7 @@ export const makeDataAccessor = (format: UniformType, accessor: AccessorSpec) =>
 export const emitIntoNumberArray = <T>(expr: Emitter, to: NumberArray, dims: number, props?: T) => {
   const {emit, emitted} = makeDataEmitter(to, dims);
   const n = to.length / Math.ceil(dims);
-  for (let i = 0; i < n; i++) expr(emit, i, n, props);
+  for (let i = 0; i < n; i++) expr(emit, i, props);
   return emitted();
 }
 
@@ -83,31 +101,31 @@ export const emitIntoMultiNumberArray = <T>(expr: Emitter, to: NumberArray, dims
   let nest: Emitter;
   if (n === 1) {
     nest = (emit: Emit) => {
-      expr(emit, index[0], size[0], props);
+      expr(emit, index[0], props);
       increment();
     };
   }
   else if (n === 2) {
     nest = (emit: Emit) => {
-      expr(emit, index[0], index[1], size[0], size[1], props);
+      expr(emit, index[0], index[1], props);
       increment();
     };
   }
-  else if (n === 3 || n === 3.5) {
+  else if (n === 3) {
     nest = (emit: Emit) => {
-      expr(emit, index[0], index[1], index[2], size[0], size[1], size[2], props);
+      expr(emit, index[0], index[1], index[2], props);
       increment();
     };
   }
   else if (n === 4) {
     nest = (emit: Emit) => {
-      expr(emit, index[0], index[1], index[2], index[3], size[0], size[1], size[2], size[3], props);
+      expr(emit, index[0], index[1], index[2], index[3], props);
       increment();
     };
   }
   else {
     nest = (emit: Emit) => {
-      expr(emit, ...index, ...size, props);
+      expr(emit, ...index, props);
       increment();
     };
   }
@@ -137,11 +155,8 @@ export const flattenIndexedArray = (from: NumberArray, indices: NumberArray, dim
     for (let i = 0; i < n; ++i) {
       const j = indices[i] * 3;
       flat[o++] = from[j];
-      if (Number.isNaN(flat[o-1])) debugger;
       flat[o++] = from[j + 1];
-      if (Number.isNaN(flat[o-1])) debugger;
       flat[o++] = from[j + 2];
-      if (Number.isNaN(flat[o-1])) debugger;
     }
   }
   else if (dims === 3.5) {
@@ -175,6 +190,57 @@ export const copyNumberArray = (from: NumberArray, to: NumberArray, dims: number
       j++;
     }
   }
+  else if (dims === 7.5) {
+    const n = Math.min(from.length, Math.floor(to.length * 3/4));
+    for (let i = 0, j = 0; i < n;) {
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      j++;
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      j++;
+    }
+  }
+  else if (dims === 11.5) {
+    const n = Math.min(from.length, Math.floor(to.length * 3/4));
+    for (let i = 0, j = 0; i < n;) {
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      j++;
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      j++;
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      j++;
+    }
+  }
+  else if (dims === 15.5) {
+    const n = Math.min(from.length, Math.floor(to.length * 3/4));
+    for (let i = 0, j = 0; i < n;) {
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      j++;
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      j++;
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      j++;
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      to[j++] = from[i++];
+      j++;
+    }
+  }
   else {
     const n = Math.min(from.length, to.length);
     for (let i = 0; i < n; ++i) to[i] = from[i];
@@ -184,7 +250,7 @@ export const copyNumberArray = (from: NumberArray, to: NumberArray, dims: number
 export const copyNumberArrays = (from: NumberArray[], to: NumberArray, dims: number = 1) => {
   let pos = 0;
   const n = from.length;
-  const dims3 = Math.floor(dims);
+  const dims3 = toDims3(dims);
   const dims4 = Math.ceil(dims);
   for (let i = 0; i < n; ++i) {
     const src = from[i];
@@ -202,9 +268,60 @@ export const copyNumberArrayRange = (
   if (dims === 3.5) {
     const n = length;
     for (let i = 0, j = 0; i < n;) {
-      to[toIndex + j++] = from[fromIndex + i++];
-      to[toIndex + j++] = from[fromIndex + i++];
-      to[toIndex + j++] = from[fromIndex + i++];
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      j++;
+    }
+  }
+  else if (dims === 7.5) {
+    const n = length;
+    for (let i = 0, j = 0; i < n;) {
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      j++;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      j++;
+    }
+  }
+  else if (dims === 11.5) {
+    const n = length;
+    for (let i = 0, j = 0; i < n;) {
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      j++;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      j++;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      j++;
+    }
+  }
+  else if (dims === 15.5) {
+    const n = length;
+    for (let i = 0, j = 0; i < n;) {
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      j++;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      j++;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      j++;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
+      to[toIndex + j++] = from[fromIndex + i++] + offset;
       j++;
     }
   }
@@ -321,7 +438,7 @@ export const copyDataArray = (from: any[], to: NumberArray, dims: number, access
 export const copyDataArrays = (from: any[], to: NumberArray, dims: number, accessor: Accessor) => {
   let pos = 0;
   const n = from.length;
-  const dims3 = Math.floor(dims);
+  const dims3 = toDims3(dims);
   const dims4 = Math.ceil(dims);
   for (let i = 0; i < n; ++i) {
     const src = accessor(from[i]);
@@ -455,6 +572,8 @@ export const generateChunkAnchors = (
       anchors[o++] = both;
     }
   }
+
+  return o / 4;
 }
 
 export const generateChunkFaces = (
@@ -496,7 +615,7 @@ export const generateChunkFaces = (
 export const copyNumberArrayRepeatedRange = (
   from: NumberArray | number, to: NumberArray,
   fromIndex: number, toIndex: number,
-  dims: number, count: number, loop: boolean = false,
+  dims: number, count: number, loop: boolean = false, offset: number = 0,
 ) => {
   let pos = toIndex;
   const read = fromIndex;
@@ -506,41 +625,41 @@ export const copyNumberArrayRepeatedRange = (
 
   if (typeof from === 'number' && dims === 1) {
     for (let j = 0; j < count; ++j) {
-      to[pos++] = from;
+      to[pos++] = from + offset;
     }
   }
   else if (dims === 1) {
     for (let j = 0; j < count; ++j) {
-      to[pos++] = array[read];
+      to[pos++] = array[read] + offset;
     }
   }
   else if (dims === 2) {
     for (let j = 0; j < count; ++j) {
-      to[pos++] = array[read];
-      to[pos++] = array[read + 1];
+      to[pos++] = array[read] + offset;
+      to[pos++] = array[read + 1] + offset;
     }
   }
   else if (dims === 3) {
     for (let j = 0; j < count; ++j) {
-      to[pos++] = array[read];
-      to[pos++] = array[read + 1];
-      to[pos++] = array[read + 2];
+      to[pos++] = array[read] + offset;
+      to[pos++] = array[read + 1] + offset;
+      to[pos++] = array[read + 2] + offset;
     }
   }
   else if (dims === 3.5) {
     for (let j = 0; j < count; ++j) {
-      to[pos++] = array[read];
-      to[pos++] = array[read + 1];
-      to[pos++] = array[read + 2];
+      to[pos++] = array[read] + offset;
+      to[pos++] = array[read + 1] + offset;
+      to[pos++] = array[read + 2] + offset;
       pos++; // !
     }
   }
   else if (dims === 4) {
     for (let j = 0; j < count; ++j) {
-      to[pos++] = array[read];
-      to[pos++] = array[read + 1];
-      to[pos++] = array[read + 2];
-      to[pos++] = array[read + 3];
+      to[pos++] = array[read] + offset;
+      to[pos++] = array[read + 1] + offset;
+      to[pos++] = array[read + 2] + offset;
+      to[pos++] = array[read + 3] + offset;
     }
   }
   else {
@@ -548,7 +667,7 @@ export const copyNumberArrayRepeatedRange = (
     console.warn('Dims > 4 not supported');
     for (let j = 0; j < count; ++j) {
       for (let k = 0; k < dims; ++k) {
-        to[pos++] = array[read + k];
+        to[pos++] = array[read + k] + offset;
       }
     }
   }
@@ -780,7 +899,7 @@ export const copyNumberArraysComposite = (
   const isNested = el && !(typeof el === 'number') && (typeof el[0] === 'number');
   const getOffset = offsets ? (i: number) => offsets[i] : () => 0;
 
-  const dims3 = Math.floor(dims);
+  const dims3 = toDims3(dims);
   const dims4 = Math.ceil(dims);
 
   if (!isNested) {
@@ -840,7 +959,7 @@ export const copyDataArraysComposite = (
   const isNested = el && !(typeof el === 'number') && (typeof el[0] === 'number');
   const getOffset = offsets ? (i: number) => offsets[i] : () => 0;
 
-  const dims3 = Math.floor(dims);
+  const dims3 = toDims3(dims);
   const dims4 = Math.ceil(dims);
 
   if (!isNested) {
@@ -891,14 +1010,14 @@ export const copyDataArraysComposite = (
 export const copyNumberArrayCompositeRange = (
   from: (NumberArray[] | NumberArray), to: NumberArray,
   fromIndex: number, toIndex: number,
-  dims: number, count: number, loop: boolean = false,
+  dims: number, count: number, loop: boolean = false, offset: number = 0,
 ) => {
   let pos = toIndex;
 
   const el = (from as NumberArray[])[0][0];
   const isNested = el && !(typeof el === 'number') && (typeof el[0] === 'number');
 
-  const dims3 = Math.floor(dims);
+  const dims3 = toDims3(dims);
   const dims4 = Math.ceil(dims);
 
   if (!isNested) {
@@ -907,12 +1026,12 @@ export const copyNumberArrayCompositeRange = (
     const src = from as NumberArray;
 
     if (loop) {
-      copyNumberArrayRange(src, to, fromIndex + range3 - dims3, pos, dims, dims);
-      copyNumberArrayRange(src, to, fromIndex, pos + dims4, range3, dims);
-      copyNumberArrayRange(src, to, fromIndex, pos + range4 + dims4, dims * 2, dims);
+      copyNumberArrayRange(src, to, fromIndex + range3 - dims3, pos, dims, dims, offset);
+      copyNumberArrayRange(src, to, fromIndex, pos + dims4, range3, dims, offset);
+      copyNumberArrayRange(src, to, fromIndex, pos + range4 + dims4, dims * 2, dims, offset);
     }
     else {
-      copyNumberArrayRange(src, to, fromIndex, pos, range3, dims);
+      copyNumberArrayRange(src, to, fromIndex, pos, range3, dims, offset);
     }
   }
   else {
@@ -920,12 +1039,264 @@ export const copyNumberArrayCompositeRange = (
     const src = from as NumberArray[];
 
     if (loop) {
-      copyNestedNumberArrayRange(src, to, fromIndex + count - 1, pos, 1, dims);
-      copyNestedNumberArrayRange(src, to, fromIndex, pos + dims4, count, dims);
-      copyNestedNumberArrayRange(src, to, fromIndex, pos + range4 + dims4, 2, dims);
+      copyNestedNumberArrayRange(src, to, fromIndex + count - 1, pos, 1, dims, offset);
+      copyNestedNumberArrayRange(src, to, fromIndex, pos + dims4, count, dims, offset);
+      copyNestedNumberArrayRange(src, to, fromIndex, pos + range4 + dims4, 2, dims, offset);
     }
     else {
-      copyNestedNumberArrayRange(src, to, fromIndex, pos, count, dims);
+      copyNestedNumberArrayRange(src, to, fromIndex, pos, count, dims, offset);
     }
   }
 }
+
+export const getBoundingBox = (data: NumberArray, dims: number): DataBoundingBox => {
+  const n = data.length / dims;
+  
+  if (dims === 1) {
+    let min = Infinity;
+    let max = -Infinity;
+    for (let i = 0; i < n; ++i) {
+      const d = data[i];
+      min = Math.min(min, d);
+      max = Math.max(max, d);
+    }
+    return [[min], [max]];
+  }
+
+  if (dims === 2) {
+    let minX = Infinity;
+    let maxX = -Infinity;
+
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    for (let i = 0, j = 0; i < n; ++i, j += 2) {
+      const dx = data[j];
+      const dy = data[j + 1];
+      minX = Math.min(minX, dx);
+      maxX = Math.max(maxX, dx);
+
+      minY = Math.min(minY, dy);
+      maxY = Math.max(maxY, dy);
+    }
+    return [[minX, minY], [maxX, maxY]];
+  }
+
+  if (dims === 3) {
+    let minX = Infinity;
+    let maxX = -Infinity;
+
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+
+    for (let i = 0, j = 0; i < n; ++i, j += 3) {
+      const dx = data[j];
+      const dy = data[j + 1];
+      const dz = data[j + 2];
+
+      minX = Math.min(minX, dx);
+      maxX = Math.max(maxX, dx);
+
+      minY = Math.min(minY, dy);
+      maxY = Math.max(maxY, dy);
+
+      minZ = Math.min(minZ, dz);
+      maxZ = Math.max(maxZ, dz);
+    }
+    return [[minX, minY, minZ], [maxX, maxY, maxZ]];
+  }
+
+  if (dims === 4) {
+    let minX = Infinity;
+    let maxX = -Infinity;
+
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+
+    let minW = Infinity;
+    let maxW = -Infinity;
+
+    for (let i = 0, j = 0; i < n; ++i, j += 4) {
+      const dx = data[j];
+      const dy = data[j + 1];
+      const dz = data[j + 2];
+      const dw = data[j + 3];
+
+      minX = Math.min(minX, dx);
+      maxX = Math.max(maxX, dx);
+
+      minY = Math.min(minY, dy);
+      maxY = Math.max(maxY, dy);
+
+      minZ = Math.min(minZ, dz);
+      maxZ = Math.max(maxZ, dz);
+
+      minW = Math.min(minW, dw);
+      maxW = Math.max(maxW, dw);
+    }
+    return [[minX, minY, minZ, minW], [maxX, maxY, maxZ, maxW]];
+  }
+
+  const min = seq(dims).map(_ => Infinity);
+  const max = seq(dims).map(_ => -Infinity);
+  for (let i = 0, j = 0; i < n; ++i, j += dims) {
+    for (let k = 0; k < dims; ++k) {
+      const d = data[j];
+
+      min[k] = Math.min(min[k], d);
+      max[k] = Math.max(max[k], d);
+    }
+  }
+
+  return [min, max];
+};
+
+export const extendBoundingBox = (box: DataBoundingBox, data: NumberArray, dims: number) => {
+  const n = data.length / dims;
+  const [min, max] = box;
+  
+  if (dims === 1) {
+    for (let i = 0; i < n; ++i) {
+      const d = data[i];
+      min[0] = Math.min(min[0], d);
+      max[0] = Math.max(max[0], d);
+    }
+    return;
+  }
+
+  if (dims === 2) {
+    for (let i = 0, j = 0; i < n; ++i, j += 2) {
+      const dx = data[j];
+      const dy = data[j + 1];
+      min[0] = Math.min(min[0], dx);
+      max[0] = Math.max(max[0], dx);
+
+      min[1] = Math.min(min[1], dy);
+      max[1] = Math.max(max[1], dy);
+    }
+    return;
+  }
+
+  if (dims === 3) {
+    for (let i = 0, j = 0; i < n; ++i, j += 3) {
+      const dx = data[j];
+      const dy = data[j + 1];
+      const dz = data[j + 2];
+
+      min[0] = Math.min(min[0], dx);
+      max[0] = Math.max(max[0], dx);
+
+      min[1] = Math.min(min[1], dy);
+      max[1] = Math.max(max[1], dy);
+
+      min[2] = Math.min(min[2], dz);
+      max[2] = Math.max(max[2], dz);
+    }
+    return;
+  }
+
+  if (dims === 4) {
+    for (let i = 0, j = 0; i < n; ++i, j += 4) {
+      const dx = data[j];
+      const dy = data[j + 1];
+      const dz = data[j + 2];
+      const dw = data[j + 3];
+
+      min[0] = Math.min(min[0], dx);
+      max[0] = Math.max(max[0], dx);
+
+      min[1] = Math.min(min[1], dy);
+      max[1] = Math.max(max[1], dy);
+
+      min[2] = Math.min(min[2], dz);
+      max[2] = Math.max(max[2], dz);
+
+      min[3] = Math.min(min[3], dw);
+      max[3] = Math.max(max[3], dw);
+    }
+    return;
+  }
+
+  for (let i = 0, j = 0; i < n; ++i, j += dims) {
+    for (let k = 0; k < dims; ++k) {
+      const d = data[j];
+
+      min[k] = Math.min(min[k], d);
+      max[k] = Math.max(max[k], d);
+    }
+  }
+
+  return;
+};
+
+export const toDataBounds = (box: DataBoundingBox): DataBounds => {
+  const [min, max] = box;
+  const dims = min.length;
+
+  if (dims === 1) {
+    return {
+      center: [(min[0] + max[0]) / 2],
+      radius: (max[0] - min[0]) / 2,
+      min,
+      max,
+    };
+  }
+
+  if (dims === 2) {
+    const cx = (min[0] + max[0]) / 2;
+    const cy = (min[1] + max[1]) / 2;
+
+    const dx = (max[0] - min[0]) / 2;
+    const dy = (max[1] - min[1]) / 2;
+    const d = Math.sqrt(dx*dx + dy*dy);
+    
+    return {center: [cx, cy], radius: d, min, max};
+  }
+
+  if (dims === 3) {
+    const cx = (min[0] + max[0]) / 2;
+    const cy = (min[1] + max[1]) / 2;
+    const cz = (min[2] + max[2]) / 2;
+
+    const dx = (max[0] - min[0]) / 2;
+    const dy = (max[1] - min[1]) / 2;
+    const dz = (max[2] - min[2]) / 2;
+    const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+    
+    return {center: [cx, cy, cz], radius: d, min, max};
+  }
+
+  if (dims === 4) {
+    const cx = (min[0] + max[0]) / 2;
+    const cy = (min[1] + max[1]) / 2;
+    const cz = (min[2] + max[2]) / 2;
+    const cw = (min[3] + max[3]) / 2;
+
+    const dx = (max[0] - min[0]) / 2;
+    const dy = (max[1] - min[1]) / 2;
+    const dz = (max[2] - min[2]) / 2;
+    const dw = (max[3] - min[3]) / 2;
+    const d = Math.sqrt(dx*dx + dy*dy + dz*dz + dw*dw);
+    
+    return {center: [cx, cy, cz, cw], radius: d, min, max};
+  }
+
+  return {
+    center: min.map((v: number, i: number) => (v + max[i]) / 2),
+    radius: Math.sqrt(
+      min
+      .map((v: number, i: number) => (max[i] - v) / 2)
+      .map((v: number) => v * v)
+      .reduce((a: number, b: number) => a + b, 0)
+    ),
+    min,
+    max,
+  };
+};
+

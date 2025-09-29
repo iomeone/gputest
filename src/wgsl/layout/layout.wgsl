@@ -1,13 +1,10 @@
-@link fn getFlip(i: u32) -> vec2<f32>;
-@link fn getOffset(i: u32) -> vec2<f32>;
+@link fn getFlip() -> vec2<f32>;
+@link fn getOffset() -> vec2<f32>;
 
 @export fn getLayoutPosition(position: vec4<f32>) -> vec4<f32> {
-  let flip = getFlip(0u);
-  let offset = getOffset(0u);
+  let flip = getFlip();
+  let offset = getOffset();
 
-  var x = position.x;
-  var y = position.y;
-  if (flip.x > 0.0) { x = flip.x - x; }
-  if (flip.y > 0.0) { y = flip.y - y; }
-  return vec4<f32>(vec2<f32>(x, y) + offset, position.zw);
+  var xy = select(position.xy, flip - position.xy, flip > vec2<f32>(0.0));
+  return vec4<f32>(xy + offset, position.zw);
 }

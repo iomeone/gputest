@@ -1,20 +1,20 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { LambdaSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LambdaSource } from '@use-gpu/core';
 
-import { yeet, use, gather, provide, useContext, useMemo, useOne, tagFunction } from '../../live';
-import { bindBundle, bundleToAttribute, castTo, chainTo } from '../../shader/wgsl';
-import { useBoundSource, useDataBinding, useLambdaSource } from '../../workbench';
+import { yeet, use, gather, provide, useContext, useMemo, useOne } from '@use-gpu/live';
+import { bindBundle, bundleToAttribute, castTo, chainTo } from '@use-gpu/shader/wgsl';
+import { useBoundSource, useDataBinding, useLambdaSource } from '@use-gpu/workbench';
 
 import { DataContext } from '../providers/data-provider';
-import { parseAxes, parseAxis } from '../../traits';
+import { parseAxes, parseAxis } from '@use-gpu/traits';
 
-import plotArray, { packIndex, unpackIndex } from '../../gen-wgsl/plot/array';
+import plotArray, { packIndex, unpackIndex } from '@use-gpu/wgsl/plot/array.wgsl';
 
 const SIZE_BINDING = bundleToAttribute(plotArray, 'getSize');
 
 export type TransposeProps = {
   axes?: string,
-  render?: (source: LambdaSource) => LiveElement<any>,
+  render?: (source: LambdaSource) => LiveElement,
 };
 
 export const Transpose: LiveComponent<TransposeProps> = (props) => {
