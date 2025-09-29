@@ -12,8 +12,8 @@ import { useRenderContext } from '../../providers/render-provider';
 import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualUI from '../../../wgsl/render/vertex/virtual-ui.wgsl';
-import instanceFragmentUI from '../../../wgsl/render/fragment/ui.wgsl';
+import instanceDrawVirtualUI from '../../../gen-wgsl/render/vertex/virtual-ui';
+import instanceFragmentUI from '../../../gen-wgsl/render/fragment/ui';
 
 export type UIRenderProps = VirtualDraw;
 

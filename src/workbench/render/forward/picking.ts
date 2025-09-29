@@ -10,8 +10,8 @@ import { drawCall } from '../../queue/draw-call';
 import { usePassContext } from '../../providers/pass-provider';
 import { useViewContext } from '../../providers/view-provider';
 
-import instanceDrawVirtualPicking from '../../../wgsl/render/vertex/virtual-pick.wgsl';
-import instanceFragmentPicking from '../../../wgsl/render/fragment/pick.wgsl';
+import instanceDrawVirtualPicking from '../../../gen-wgsl/render/vertex/virtual-pick';
+import instanceFragmentPicking from '../../../gen-wgsl/render/fragment/pick';
 
 export type PickingRenderProps = VirtualDraw;
 

@@ -17,7 +17,7 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getStereographicPosition } from '../../wgsl/transform/stereographic.wgsl';
+import { getStereographicPosition } from '../../gen-wgsl/transform/stereographic';
 
 export type StereographicProps = Partial<AxesTrait> & Partial<ObjectTrait> & {
   bend?: number,

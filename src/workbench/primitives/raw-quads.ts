@@ -21,8 +21,8 @@ import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 import { useMaterialContext } from '../providers/material-provider';
 
-import { getQuadVertex } from '../../wgsl/instance/vertex/quad.wgsl';
-import { getMaskedColor } from '../../wgsl/mask/masked.wgsl';
+import { getQuadVertex } from '../../gen-wgsl/instance/vertex/quad';
+import { getMaskedColor } from '../../gen-wgsl/mask/masked';
 
 export type RawQuadsProps = {
   position?: number[] | TypedArray,

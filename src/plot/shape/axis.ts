@@ -20,7 +20,7 @@ import {
 } from '../traits';
 import { vec4 } from 'gl-matrix';
 
-import { getAxisPosition } from '../../wgsl/plot/axis.wgsl';
+import { getAxisPosition } from '../../gen-wgsl/plot/axis';
 
 export type AxisProps =
   Partial<AxisTrait> &

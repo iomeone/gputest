@@ -9,10 +9,10 @@ import { getBundleKey } from '../shader/wgsl';
 
 import { usePresentTransition } from './hooks';
 
-import { transformRectangle } from '../wgsl/layout/rectangle.wgsl';
+import { transformRectangle } from '../gen-wgsl/layout/rectangle';
 
-import { getScreenVertex } from '../wgsl/present/screen.wgsl';
-import { getScreenFragment } from '../wgsl/present/fragment.wgsl';
+import { getScreenVertex } from '../gen-wgsl/present/screen';
+import { getScreenFragment } from '../gen-wgsl/present/fragment';
 
 export type ScreenProps = {
   id: number,

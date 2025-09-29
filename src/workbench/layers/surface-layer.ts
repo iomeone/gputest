@@ -19,7 +19,7 @@ import { useBoundSource } from '../hooks/useBoundSource';
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 
-import { getSurfaceIndex, getSurfaceNormal, getSurfaceUV } from '../../wgsl/plot/surface.wgsl';
+import { getSurfaceIndex, getSurfaceNormal, getSurfaceUV } from '../../gen-wgsl/plot/surface';
 
 export type SurfaceLayerProps = {
   position?: number[] | TypedArray,

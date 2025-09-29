@@ -5,9 +5,9 @@ import { resolve, makeDataBuffer } from '../../core';
 import { useMemo, useNoMemo } from '../../live';
 import { getBoundShader } from '../hooks/useBoundShader';
 
-import { getWireframeListVertex } from '../../wgsl/render/wireframe/wireframe-list.wgsl';
-import { getWireframeStripVertex } from '../../wgsl/render/wireframe/wireframe-strip.wgsl';
-import { main as makeWireframeIndirectCommand } from '../../wgsl/render/wireframe/wireframe-indirect.wgsl';
+import { getWireframeListVertex } from '../../gen-wgsl/render/wireframe/wireframe-list';
+import { getWireframeStripVertex } from '../../gen-wgsl/render/wireframe/wireframe-strip';
+import { main as makeWireframeIndirectCommand } from '../../gen-wgsl/render/wireframe/wireframe-indirect';
 
 /** Produce a wireframe vertex shader for a given solid vertex shader. */
 export const getWireframe = (

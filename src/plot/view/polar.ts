@@ -17,7 +17,7 @@ import { mat4 } from 'gl-matrix';
 
 import { useAxesTrait, useObjectTrait } from '../traits';
 
-import { getPolarPosition } from '../../wgsl/transform/polar.wgsl';
+import { getPolarPosition } from '../../gen-wgsl/transform/polar';
 
 export type PolarProps = Partial<AxesTrait> & Partial<ObjectTrait> & {
   bend?: number,

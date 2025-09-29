@@ -10,7 +10,7 @@ import {
 
 import { RangeContext } from '../providers/range-provider';
 
-import { getCartesianPosition } from '../../wgsl/transform/cartesian.wgsl';
+import { getCartesianPosition } from '../../gen-wgsl/transform/cartesian';
 import { mat4, vec3 } from 'gl-matrix';
 
 export type EmbeddedProps = {

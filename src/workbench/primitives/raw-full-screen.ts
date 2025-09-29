@@ -18,8 +18,8 @@ import { useRenderContext, useNoRenderContext } from '../providers/render-provid
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getFullScreenVertex } from '../../wgsl/instance/vertex/full-screen.wgsl';
-import { getTextureColor } from '../../wgsl/mask/textured.wgsl';
+import { getFullScreenVertex } from '../../gen-wgsl/instance/vertex/full-screen';
+import { getTextureColor } from '../../gen-wgsl/mask/textured';
 
 export type RawFullScreenProps = {
   texture?: TextureSource | LambdaSource | ShaderModule,

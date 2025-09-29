@@ -5,7 +5,7 @@ import { provide, makeContext, useContext, useNoContext, useOne } from '../../li
 import { useBoundShader } from '../hooks/useBoundShader';
 import { useShaderRefs } from '../hooks/useShaderRef';
 
-import { getScissorLevel } from '../../wgsl/transform/scissor.wgsl';
+import { getScissorLevel } from '../../gen-wgsl/transform/scissor';
 
 export type ScissorContextProps = ShaderModule;
 

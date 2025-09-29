@@ -9,13 +9,13 @@ import { bindBundle } from '../../../shader/wgsl';
 import { LightContext } from '../../providers/light-provider';
 import { LightData, SHADOW_PAGE } from './light-data';
 
-import { getLight, getLightCount } from '../../../wgsl/use/light.wgsl';
-import { sampleShadow } from '../../../wgsl/use/shadow.wgsl';
+import { getLight, getLightCount } from '../../../gen-wgsl/use/light';
+import { sampleShadow } from '../../../gen-wgsl/use/shadow';
 
-import { applyLight as applyLightWGSL } from '../../../wgsl/material/light.wgsl';
-import { applyLights as applyLightsWGSL } from '../../../wgsl/material/lights.wgsl';
-import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directional.wgsl';
-import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/point.wgsl';
+import { applyLight as applyLightWGSL } from '../../../gen-wgsl/material/light';
+import { applyLights as applyLightsWGSL } from '../../../gen-wgsl/material/lights';
+import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../gen-wgsl/shadow/directional';
+import { applyPointShadow as applyPointShadowWGSL } from '../../../gen-wgsl/shadow/point';
 
 export type LightMaterialProps = {
   shadows?: boolean,

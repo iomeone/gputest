@@ -19,9 +19,9 @@ import {
 import { useObjectTrait } from './traits';
 import { composeTransform } from './lib/compose';
 
-import { loadInstance } from '../wgsl/transform/instance.wgsl';
-import { getCartesianPosition } from '../wgsl/transform/cartesian.wgsl';
-import { getMatrixDifferential } from '../wgsl/transform/diff-matrix.wgsl';
+import { loadInstance } from '../gen-wgsl/transform/instance';
+import { getCartesianPosition } from '../gen-wgsl/transform/cartesian';
+import { getMatrixDifferential } from '../gen-wgsl/transform/diff-matrix';
 
 import { mat3, mat4 } from 'gl-matrix';
 

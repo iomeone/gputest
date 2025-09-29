@@ -15,7 +15,7 @@ import {
 } from '../traits';
 import { vec4 } from 'gl-matrix';
 
-import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
+import { getLineSegment } from '../../gen-wgsl/geometry/segment';
 
 const LINE_ATTRIBUTE = bundleToAttribute(getLineSegment, 'getLineDetail');
 

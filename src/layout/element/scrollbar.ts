@@ -17,7 +17,7 @@ import { UIRectangle } from '../shape/ui-rectangle';
 import { chainTo } from '../../shader/wgsl';
 import { useBoundShader } from '../../workbench';
 
-import { getScrolledPosition } from '../../wgsl/layout/scroll.wgsl';
+import { getScrolledPosition } from '../../gen-wgsl/layout/scroll';
 
 export type ScrollBarProps = {
   direction?: Direction,

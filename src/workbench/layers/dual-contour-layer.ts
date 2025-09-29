@@ -28,12 +28,12 @@ import { useTransformContext } from '../providers/transform-provider';
 
 import { useInspectable } from '../hooks/useInspectable'
 
-import { main as scanVolume } from '../../wgsl/contour/scan.wgsl';
-import { main as fitContourLinear } from '../../wgsl/contour/fit-linear.wgsl';
-import { main as fitContourQuadratic } from '../../wgsl/contour/fit-quadratic.wgsl';
-import { getDualContourVertex } from '../../wgsl/instance/vertex/dual-contour.wgsl';
-import { getPassThruColor } from '../../wgsl/mask/passthru.wgsl';
-import { getScissorColor } from '../../wgsl/mask/scissor.wgsl';
+import { main as scanVolume } from '../../gen-wgsl/contour/scan';
+import { main as fitContourLinear } from '../../gen-wgsl/contour/fit-linear';
+import { main as fitContourQuadratic } from '../../gen-wgsl/contour/fit-quadratic';
+import { getDualContourVertex } from '../../gen-wgsl/instance/vertex/dual-contour';
+import { getPassThruColor } from '../../gen-wgsl/mask/passthru';
+import { getScissorColor } from '../../gen-wgsl/mask/scissor';
 
 import { Dispatch } from '../queue/dispatch';
 

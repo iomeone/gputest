@@ -15,9 +15,9 @@ import { MaterialContext } from '../providers/material-provider';
 
 import { ShaderFlatMaterial } from './shader-flat-material';
 
-import { getBasicMaterial } from '../../wgsl/material/basic-material.wgsl';
-import { getSolidSurface } from '../../wgsl/instance/surface/solid.wgsl';
-import { getSolidFragment } from '../../wgsl/instance/fragment/solid.wgsl';
+import { getBasicMaterial } from '../../gen-wgsl/material/basic-material';
+import { getSolidSurface } from '../../gen-wgsl/instance/surface/solid';
+import { getSolidFragment } from '../../gen-wgsl/instance/fragment/solid';
 
 export type BasicMaterialProps = {
   color?: ColorLike,

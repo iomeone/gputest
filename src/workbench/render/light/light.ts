@@ -27,16 +27,16 @@ import { EmissiveLightRender } from './emissive';
 import { FullScreenLightRender } from './full-screen';
 import { PointLightRender } from './point';
 
-import { getLight } from '../../../wgsl/use/light.wgsl';
-import { sampleShadow } from '../../../wgsl/use/shadow.wgsl';
+import { getLight } from '../../../gen-wgsl/use/light';
+import { sampleShadow } from '../../../gen-wgsl/use/shadow';
 
-import instanceDrawVirtualLight from '../../../wgsl/render/vertex/virtual-light.wgsl';
-import instanceFragmentLight from '../../../wgsl/render/fragment/deferred-light.wgsl';
+import instanceDrawVirtualLight from '../../../gen-wgsl/render/vertex/virtual-light';
+import instanceFragmentLight from '../../../gen-wgsl/render/fragment/deferred-light';
 
-import { applyLight as applyLightWGSL } from '../../../wgsl/material/light.wgsl';
-import { applyPBRMaterial as applyMaterial } from '../../../wgsl/material/pbr-apply.wgsl';
-import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directional.wgsl';
-import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/point.wgsl';
+import { applyLight as applyLightWGSL } from '../../../gen-wgsl/material/light';
+import { applyPBRMaterial as applyMaterial } from '../../../gen-wgsl/material/pbr-apply';
+import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../gen-wgsl/shadow/directional';
+import { applyPointShadow as applyPointShadowWGSL } from '../../../gen-wgsl/shadow/point';
 
 export type LightRenderProps = {
   lights: Map<number, BoundLight>,

@@ -3,7 +3,7 @@ import type { ShaderSource } from '../../shader';
 import { makeContext, useContext, useNoContext } from '../../live';
 import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
 
-import { getPickingID } from '../../wgsl/render/pick.wgsl';
+import { getPickingID } from '../../gen-wgsl/render/pick';
 
 export type PickingContextProps = {
   renderContext: OffscreenTarget,

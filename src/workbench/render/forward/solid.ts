@@ -12,10 +12,10 @@ import { useRenderContext } from '../../providers/render-provider';
 import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualSolid from '../../../wgsl/render/vertex/virtual-solid.wgsl';
-import instanceFragmentSolid from '../../../wgsl/render/fragment/solid.wgsl';
+import instanceDrawVirtualSolid from '../../../gen-wgsl/render/vertex/virtual-solid';
+import instanceFragmentSolid from '../../../gen-wgsl/render/fragment/solid';
 
-import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../gen-wgsl/mask/scissor';
 
 export type SolidRenderProps = VirtualDraw;
 

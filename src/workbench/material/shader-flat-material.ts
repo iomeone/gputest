@@ -9,8 +9,8 @@ import { useBoundShader } from '../hooks/useBoundShader';
 import { useLightContext } from '../providers/light-provider';
 import { MaterialContext } from '../providers/material-provider';
 
-import { getSolidSurface } from '../../wgsl/instance/surface/solid.wgsl';
-import { getSolidFragment } from '../../wgsl/instance/fragment/solid.wgsl';
+import { getSolidSurface } from '../../gen-wgsl/instance/surface/solid';
+import { getSolidFragment } from '../../gen-wgsl/instance/fragment/solid';
 
 export type ShaderFlatMaterialProps = {
   /** Flat shader, for both lit and unlit passes (e.g. shadow map).

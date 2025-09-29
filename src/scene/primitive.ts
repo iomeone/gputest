@@ -10,8 +10,8 @@ import {
   useShaderRef, useBoundShader, useBoundSource, useCombinedTransform,
  } from '../workbench';
 
-import { getCartesianPosition } from '../wgsl/transform/cartesian.wgsl';
-import { getMatrixDifferential } from '../wgsl/transform/diff-matrix.wgsl';
+import { getCartesianPosition } from '../gen-wgsl/transform/cartesian';
+import { getMatrixDifferential } from '../gen-wgsl/transform/diff-matrix';
 
 const MATRIX_BINDINGS = bundleToAttributes(getCartesianPosition);
 

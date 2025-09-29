@@ -10,9 +10,9 @@ import { usePassContext } from '../providers/pass-provider';
 
 import { SHADOW_PAGE } from '../render/light/light-data';
 
-import { getFullScreenVertex } from '../../wgsl/instance/vertex/full-screen.wgsl';
-import instanceDrawVirtualDepth from '../../wgsl/render/vertex/virtual-depth.wgsl';
-import instanceFragmentDepthCopy from '../../wgsl/render/fragment/depth-copy.wgsl';
+import { getFullScreenVertex } from '../../gen-wgsl/instance/vertex/full-screen';
+import instanceDrawVirtualDepth from '../../gen-wgsl/render/vertex/virtual-depth';
+import instanceFragmentDepthCopy from '../../gen-wgsl/render/fragment/depth-copy';
 
 import { drawCall } from '../queue/draw-call';
 

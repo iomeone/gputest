@@ -14,11 +14,11 @@ import { useViewContext } from '../../providers/view-provider';
 import {
   main as instanceDrawVirtualDepth,
   mainWithDepth as instanceDrawVirtualDepthDepth,
-} from '../../../wgsl/render/vertex/virtual-depth.wgsl';
-import instanceFragmentDepth from '../../../wgsl/render/fragment/depth.wgsl';
-import instanceFragmentDepthDepth from '../../../wgsl/render/fragment/depth-frag.wgsl';
+} from '../../../gen-wgsl/render/vertex/virtual-depth';
+import instanceFragmentDepth from '../../../gen-wgsl/render/fragment/depth';
+import instanceFragmentDepthDepth from '../../../gen-wgsl/render/fragment/depth-frag';
 
-import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../gen-wgsl/mask/scissor';
 
 export type ShadowRenderProps = VirtualDraw;
 

@@ -7,8 +7,8 @@ import { yeet, useMemo } from '../../../live';
 
 import { useBoundShader } from '../../hooks/useBoundShader';
 
-import { getLightVertex } from '../../../wgsl/instance/vertex/light.wgsl';
-import { getEmissiveFragment } from '../../../wgsl/instance/fragment/emissive.wgsl';
+import { getLightVertex } from '../../../gen-wgsl/instance/vertex/light';
+import { getEmissiveFragment } from '../../../gen-wgsl/instance/fragment/emissive';
 
 import { FULLSCREEN_PIPELINE, FULLSCREEN_DEFS, useLightDraw } from './light';
 

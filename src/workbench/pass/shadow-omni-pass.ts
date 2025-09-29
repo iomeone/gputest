@@ -22,7 +22,7 @@ import { useShaderRef } from '../hooks/useShaderRef';
 import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
 import { drawToPass, reverseZ } from './util';
 
-import { getCubeToOmniSample } from '../../wgsl/render/sample/cube-to-omni.wgsl';
+import { getCubeToOmniSample } from '../../gen-wgsl/render/sample/cube-to-omni';
 
 import { useDepthBlit } from './depth-blit';
 

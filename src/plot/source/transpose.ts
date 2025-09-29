@@ -8,7 +8,7 @@ import { useBoundSource, useDataBinding, useLambdaSource } from '../../workbench
 import { DataContext } from '../providers/data-provider';
 import { parseAxes, parseAxis } from '../../traits';
 
-import plotArray, { packIndex, unpackIndex } from '../../wgsl/plot/array.wgsl';
+import plotArray, { packIndex, unpackIndex } from '../../gen-wgsl/plot/array';
 
 const SIZE_BINDING = bundleToAttribute(plotArray, 'getSize');
 

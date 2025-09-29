@@ -5,7 +5,7 @@ import type { LayoutRenderer, LayoutPicker, RenderInside, RenderOutside, RenderI
 
 import { memoArgs, yeet, fragment, use, useFiber, useMemo, useNoMemo } from '../live';
 import { bindBundle, chainTo } from '../shader/wgsl';
-import { getCombinedClip, getTransformedClip } from '../wgsl/layout/clip.wgsl';
+import { getCombinedClip, getTransformedClip } from '../gen-wgsl/layout/clip';
 import { INSPECT_STYLE } from './lib/constants';
 
 const NO_OBJECT: any = {};
