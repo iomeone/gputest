@@ -1,3 +1,5 @@
 npx ts-node src/scripts/glsl-codegen.ts
 
 npx ts-node src/scripts/wgsl-codegen.ts
+
+npx ts-node src/scripts/wgsl-codegen-inplace.ts
