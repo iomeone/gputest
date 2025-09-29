@@ -12,7 +12,12 @@ import { render } from './live';
 // window.onload = () => render(<App />);
 
 
-import { initRustText } from './glyph'; // 路径按你的实际位置改
+// import { initRustText } from './glyph'; // 路径按你的实际位置改
+
+import { initRustText } from './vendor/rusttext';
+
+
+
 import { initMikkt } from './vendor/mikkt';
 window.onload = () => {
   (async () => {

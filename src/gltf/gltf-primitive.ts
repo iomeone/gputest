@@ -5,7 +5,7 @@ import type { GLTF, GLTFPrimitiveData } from './types';
 import { flattenIndexedArray } from '../core';
 import { bundleToAttributes } from '../shader/wgsl';
 import { use, provide, useCallback, useOne, useNoOne, useMemo, useNoMemo, useVersion, useNoCallback, useNoVersion } from '../live';
-import { generateTangents } from 'mikktspace';
+import { generateTangents } from '../vendor/mikkt';
 import { vec3, mat3, mat4 } from 'gl-matrix';
 
 import {
