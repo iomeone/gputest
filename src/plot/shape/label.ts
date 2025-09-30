@@ -3,7 +3,7 @@ import type { LiveComponent } from '../../live';
 import type { VectorLike } from '../../core';
 import type { TraitProps } from '../../traits';
 
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
 import { adjustSchema, schemaToArchetype, schemaToAttributes, toCPUDims, getUniformDims } from '../../core';
 import { yeet, memo, useContext, useOne, useMemo } from '../../live';
 import { formatNumber } from '../util/format';

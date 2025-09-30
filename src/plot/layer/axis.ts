@@ -1,7 +1,7 @@
 import type { LiveComponent } from '../../live';
-import type { TraitProps } from '../../traits/live';
+import type { TraitProps } from '../../traits/index-live';
 
-import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '../../traits/live';
+import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '../../traits/index-live';
 import { memo, use, useMemo } from '../../live';
 import {
   useShader, useShaderRef,

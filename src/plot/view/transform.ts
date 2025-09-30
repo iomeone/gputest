@@ -1,7 +1,7 @@
 import type { LiveComponent, PropsWithChildren, DeferredCall } from '../../live';
 import type { TraitProps } from '../../traits';
 
-import { combine, makeUseTrait } from '../../traits/live';
+import { combine, makeUseTrait } from '../../traits/index-live';
 import { provide, useDouble, useOne, useMemo } from '../../live';
 import { MatrixContext, TransformContext, useCombinedMatrixTransform, useCombinedMatrix, useNoCombinedMatrix, QueueReconciler } from '../../workbench';
 

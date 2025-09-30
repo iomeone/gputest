@@ -2,7 +2,7 @@ import type { LiveComponent, PropsWithChildren } from '../../live';
 import type { VectorLike } from '../../core';
 import { ViewUniforms } from '../../core';
 
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { parsePosition } from '../../parse';
 import { provide, use, useContext, useOne, incrementVersion } from '../../live';
 import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition, makeFrustumPlanes } from '../../core';

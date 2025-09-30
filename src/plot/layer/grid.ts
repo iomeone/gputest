@@ -3,7 +3,7 @@ import type { ShaderModule } from '../../shader';
 import type { XYZW } from '../../core';
 import type { TraitProps } from '../../traits';
 
-import { makeUseTrait, optional, combine, trait, shouldEqual, sameShallow, useProp } from '../../traits/live';
+import { makeUseTrait, optional, combine, trait, shouldEqual, sameShallow, useProp } from '../../traits/index-live';
 import { parseBoolean, parseIntegerPositive, parseAxis, parsePosition } from '../../parse';
 import { memo, use, fragment, useOne, useMemo } from '../../live';
 import {

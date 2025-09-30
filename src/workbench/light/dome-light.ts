@@ -1,5 +1,5 @@
 import type { ColorLike, VectorLike } from '../../core';
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { parseColor, parseNumber, parsePosition } from '../../parse';
 
 import { memo, useMemo } from '../../live';

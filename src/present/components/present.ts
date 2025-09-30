@@ -5,7 +5,7 @@ import type { SlideInfo, ResolvedSlide } from '../types';
 import { clamp } from '../../core';
 import { gather, provide, use, useMemo, useOne, useRef, useState } from '../../live';
 import { parseColor } from '../../parse';
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 
 import { resolveSlides } from '../lib/slides';
 import { PresentContext, PresentAPI } from '../providers/present-provider';

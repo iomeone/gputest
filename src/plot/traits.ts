@@ -3,7 +3,7 @@ import type { ShaderSource } from '../shader';
 import type { Parser } from '../traits';
 
 import { useMemo, useOne } from '../live';
-import { trait, combine, optional, useProp } from '../traits/live';
+import { trait, combine, optional, useProp } from '../traits/index-live';
 import {
   parseNumber,
   parseInteger,

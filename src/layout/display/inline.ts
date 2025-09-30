@@ -4,7 +4,7 @@ import type { ShaderModule } from '../../shader';
 import type { InlineElement, LayoutPicker, LayoutRenderer, FitInto, Direction, Alignment, Baseline } from '../types';
 import type { TraitProps } from '../../traits';
 
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { keyed, fragment, use, memo, gather, yeet, useFiber, useMemo } from '../../live';
 import { getInlineMinMax, fitInline, resolveInlineBlockElements } from '../lib/inline';
 import { makeBoxPicker, memoFit, memoLayout } from '../lib/util';

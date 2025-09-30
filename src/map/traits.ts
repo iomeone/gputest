@@ -1,5 +1,5 @@
 import { parseNumber } from '../parse';
-import { trait, makeUseTrait } from '../traits/live';
+import { trait, makeUseTrait } from '../traits/index-live';
 
 export const GeographicTrait = trait({
   long: parseNumber,

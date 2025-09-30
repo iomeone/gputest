@@ -1,6 +1,6 @@
 import type { VectorLike } from '../core';
 import { useMemo } from '../live';
-import { optional, trait, makeUseTrait } from '../traits/live';
+import { optional, trait, makeUseTrait } from '../traits/index-live';
 import {
   parseBoolean,
   parsePosition,

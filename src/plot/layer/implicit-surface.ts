@@ -4,7 +4,7 @@ import type { TensorArray } from '../../core';
 import type { TraitProps } from '../../traits';
 
 import { memo, use, useOne } from '../../live';
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
 import { adjustSchema } from '../../core';
 import { useInspectHoverable, Data, DualContourLayer, DUAL_CONTOUR_SCHEMA } from '../../workbench';
 

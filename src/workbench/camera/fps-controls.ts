@@ -1,7 +1,7 @@
 import type { LiveComponent, LiveElement } from '../../live';
 import type { VectorLike } from '../../core';
 
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { parseVec3 } from '../../parse';
 import { useContext, useHooks, useOne, useRef, useState } from '../../live';
 import { makeOrbitMatrix, clamp } from '../../core';

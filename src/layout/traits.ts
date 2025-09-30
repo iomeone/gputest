@@ -4,7 +4,7 @@ import {
   optional,
   nullable,
   trait,
-} from '../traits/live';
+} from '../traits/index-live';
 import {
   parseNumber,
   parseInteger,

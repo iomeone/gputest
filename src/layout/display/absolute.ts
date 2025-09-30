@@ -4,7 +4,7 @@ import type { Rectangle } from '../../core';
 import type { LayoutElement, FitInto, Dimension, Direction } from '../types';
 import type { TraitProps } from '../../traits';
 
-import { shouldEqual, sameShallow } from '../../traits/live';
+import { shouldEqual, sameShallow } from '../../traits/index-live';
 import { memo, gather, keyed, yeet, useFiber, useMemo } from '../../live';
 import { fitAbsoluteBox } from '../lib/absolute';
 import { makeBoxPicker, memoFit } from '../lib/util';

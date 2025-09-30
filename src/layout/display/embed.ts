@@ -4,7 +4,7 @@ import type { ShaderModule } from '../../shader';
 import type { FitInto, Dimension } from '../types';
 import type { TraitProps } from '../../traits';
 
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { memo, provide, yeet, useFiber } from '../../live';
 import { LayoutContext, TransformContext, LayerReconciler } from '../../workbench';
 import { memoFit, memoLayout } from '../lib/util';

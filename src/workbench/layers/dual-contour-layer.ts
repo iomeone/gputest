@@ -5,7 +5,7 @@ import type { VectorLike } from '../../core';
 
 import { use, memo, useCallback, useMemo, useOne, useRef, useVersion, useNoCallback, incrementVersion } from '../../live';
 import { resolve, uploadBuffer, toDataBounds } from '../../core';
-import { shouldEqual, sameShallow } from '../../traits/live';
+import { shouldEqual, sameShallow } from '../../traits/index-live';
 
 import { useShader } from '../hooks/useShader';
 import { useCombinedTransform, useNoCombinedTransform } from '../hooks/useCombinedTransform';

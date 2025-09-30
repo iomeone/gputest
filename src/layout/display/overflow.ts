@@ -3,7 +3,7 @@ import type { ShaderModule } from '../../shader';
 import type { UniformType, Rectangle, XY, XYZW } from '../../core';
 import type { FitInto, Direction, OverflowMode, LayoutElement, LayoutPicker, LayoutRenderer } from '../types';
 
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { memo, use, gather, yeet, extend, useFiber, useOne, useMemo } from '../../live';
 import { bindBundle, bundleToAttribute, chainTo } from '../../shader/wgsl';
 import { useForceUpdate, useInspectable, getSource } from '../../workbench';

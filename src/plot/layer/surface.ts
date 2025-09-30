@@ -5,7 +5,7 @@ import type { TensorArray } from '../../core';
 import type { TraitProps } from '../../traits';
 
 import { memo, use, useOne, useMemo, useRef } from '../../live';
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
 import { adjustSchema } from '../../core';
 import { Data, SurfaceLayer, SURFACE_SCHEMA } from '../../workbench';
 

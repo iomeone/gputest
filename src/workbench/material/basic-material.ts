@@ -3,7 +3,7 @@ import type { ColorLike, XYZW } from '../../core';
 import type { ShaderSource } from '../../shader';
 
 import { useOne } from '../../live';
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { parseColor } from '../../parse';
 
 import { useShader } from '../hooks/useShader';

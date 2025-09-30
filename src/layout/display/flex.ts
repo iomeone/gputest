@@ -4,7 +4,7 @@ import type { Rectangle } from '../../core';
 import type { LayoutElement, Direction, AlignmentLike, GapLike, Anchor, FitInto } from '../types';
 import type { TraitProps } from '../../traits';
 
-import { useProp, shouldEqual, sameShallow } from '../../traits/live';
+import { useProp, shouldEqual, sameShallow } from '../../traits/index-live';
 import { keyed, yeet, memo, gather, useFiber, useMemo } from '../../live';
 import { getFlexMinMax, fitFlex } from '../lib/flex';
 import { makeBoxPicker, memoFit } from '../lib/util';

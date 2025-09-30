@@ -2,7 +2,7 @@ import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
 import type { TensorArray } from '../../core';
 import type { TraitProps } from '../../traits';
 
-import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '../../traits/live';
+import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '../../traits/index-live';
 import { parsePosition } from '../../parse';
 import { memo, yeet, provide, useMemo, useNoMemo } from '../../live';
 import { toTensorArray, fillNumberArray } from '../../core';

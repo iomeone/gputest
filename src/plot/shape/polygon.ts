@@ -2,7 +2,7 @@ import type { LiveComponent } from '../../live';
 import type { ColorLike, ColorLikes, VectorLike, VectorLikes } from '../../core';
 import type { TraitProps } from '../../traits';
 
-import { combine, shouldEqual, sameShallow } from '../../traits/live';
+import { combine, shouldEqual, sameShallow } from '../../traits/index-live';
 import { memo, use } from '../../live';
 
 import { InnerFace, FaceProps } from './face';
