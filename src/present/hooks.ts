@@ -8,8 +8,8 @@ import { bundleToAttributes } from '../shader/wgsl';
 import { useTimeContext, LoopContext, useSource, useShader, useShaderRef } from '../workbench';
 import { usePresentContext } from './providers/present-provider';
 
-import { getSlideMask } from '../wgsl/present/mask.wgsl';
-import { getSlideMotion } from '../wgsl/present/motion.wgsl';
+import { getSlideMask } from '../wgsl/present/maskwgsl';
+import { getSlideMotion } from '../wgsl/present/motionwgsl';
 
 const ATTRIBUTES = bundleToAttributes(getSlideMotion);
 const NO_VEC4: XYZW = [0, 0, 0, 0];

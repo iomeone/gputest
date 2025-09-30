@@ -3,7 +3,7 @@ import type { ShaderSource } from '../../../shader';
 import { useOne } from '../../../live';
 import { useShader, useNoShader } from '../../hooks/useShader';
 
-import { getPickingID } from '../../../wgsl/render/lookup/pick.wgsl';
+import { getPickingID } from '../../../wgsl/render/lookup/pickwgsl';
 
 export type PickingSource = {
   id?: number,

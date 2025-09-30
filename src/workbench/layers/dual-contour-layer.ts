@@ -21,11 +21,11 @@ import { useMaterialContext } from '../providers/material-provider';
 import { TransformContextProps } from '../providers/transform-provider';
 import { PassReconciler } from '../reconcilers/index';
 
-import { main as scanVolume } from '../../wgsl/contour/scan.wgsl';
-import { main as fitContourLinear } from '../../wgsl/contour/fit-linear.wgsl';
-import { main as fitContourQuadratic } from '../../wgsl/contour/fit-quadratic.wgsl';
-import { getDualContourVertex } from '../../wgsl/instance/vertex/dual-contour.wgsl';
-import { getPassThruColor } from '../../wgsl/mask/passthru.wgsl';
+import { main as scanVolume } from '../../wgsl/contour/scanwgsl';
+import { main as fitContourLinear } from '../../wgsl/contour/fit-linearwgsl';
+import { main as fitContourQuadratic } from '../../wgsl/contour/fit-quadraticwgsl';
+import { getDualContourVertex } from '../../wgsl/instance/vertex/dual-contourwgsl';
+import { getPassThruColor } from '../../wgsl/mask/passthruwgsl';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { Dispatch } from '../queue/dispatch';

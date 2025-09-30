@@ -18,8 +18,8 @@ import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getSDFRectangleVertex } from '../../wgsl/instance/vertex/sdf-rectangle.wgsl';
-import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectangle.wgsl';
+import { getSDFRectangleVertex } from '../../wgsl/instance/vertex/sdf-rectanglewgsl';
+import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectanglewgsl';
 
 export type SDFRectanglesProps = {
   rectangle?: VectorLike,

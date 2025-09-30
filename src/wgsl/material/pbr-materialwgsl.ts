@@ -1,0 +1,19 @@
+/* __WGSL_LOADER_GENERATED */
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import m0 from "../../wgsl/fragment/pbrwgsl";
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getAlbedo getEmissive getMetalness getRoughness getAlbedoMap getEmissiveMap getOcclusionMap getMetalnessRoughnessMap getPBRMaterial ../../wgsl/fragment/pbr PBRParams optional link f32 vec2<f32> export color mapUV mapST PBRParams optional return albedo emissive occlusion material".split(' '));
+const table = {[S]:_([0,1,2,3,4,5,6,7,8]),[W]:_([8]),[O]:[{[A]:0,[N]:_(9),[S]:_([10]),[K]:[{[N]:_(10),[J]:_(10)}]}],[X]:[{[A]:49,[R]:_(0),[G]:6,[F]:{[N]:_(0),[T]:C,[Z]:_([11,12])}},{[A]:136,[R]:_(1),[G]:6,[F]:{[N]:_(1),[T]:D,[Z]:_([11,12])}},{[A]:210,[R]:_(2),[G]:6,[F]:{[N]:_(2),[T]:_(13),[Z]:_([11,12])}},{[A]:268,[R]:_(3),[G]:6,[F]:{[N]:_(3),[T]:_(13),[Z]:_([11,12])}},{[A]:328,[R]:_(4),[G]:6,[F]:{[N]:_(4),[T]:C,[Z]:_([11,12]),[P]:[{[N]:"uv",[T]:_(14)}]}},{[A]:416,[R]:_(5),[G]:6,[F]:{[N]:_(5),[T]:C,[Z]:_([11,12]),[P]:[{[N]:"uv",[T]:_(14)}]}},{[A]:506,[R]:_(6),[G]:6,[F]:{[N]:_(6),[T]:C,[Z]:_([11,12]),[P]:[{[N]:"uv",[T]:_(14)}]}},{[A]:597,[R]:_(7),[G]:6,[F]:{[N]:_(7),[T]:C,[Z]:_([11,12]),[P]:[{[N]:"uv",[T]:_(14)}]}}],[E]:[{[A]:699,[R]:_(8),[G]:1,[F]:{[N]:_(8),[T]:_(10),[Z]:_([15]),[P]:[{[N]:_(16),[T]:C},{[N]:_(17),[T]:C},{[N]:_(18),[T]:C}],[I]:_([0,3,2,1,4,5,6,7])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true,[_(4)]:true,[_(5)]:true,[_(6)]:true,[_(7)]:true}};
+const data = {
+  name: "material/pbr-material.wgsl",
+  code: _(["use '",9,"'::{ ",10," };\r\n\r\n@",11," @",12," fn ",0,"() -> ",C," { ",21," ",C,"(1.0, 1.0, 1.0, 1.0); }\r\n@",11," @",12," fn ",1,"() -> ",D," { ",21," ",D,"(0.0); }\r\n@",11," @",12," fn ",2,"() -> f32 { ",21," 1.0; }\r\n@",11," @",12," fn ",3,"() -> f32 { ",21," 1.0; }\r\n\r\n@",11," @",12," fn ",0,"Map(uv: ",14,") -> ",C," { ",21," ",C,"(0.0); }\r\n@",11," @",12," fn ",1,"Map(uv: ",14,") -> ",C," { ",21," ",C,"(0.0); }\r\n@",11," @",12," fn ",6,"(uv: ",14,") -> ",C," { ",21," ",C,"(0.0); }\r\n@",11," @",12," fn ",2,"RoughnessMap(uv: ",14,") -> ",C," { ",21," ",C,"(0.0); }\r\n\r\n@",15," fn ",8,"(\r\n  ",16,": ",C,",\r\n  ",17,": ",C,",\r\n  ",18,": ",C,",\r\n) -> ",10," {\r\n  var ",22,": ",C," = ",16," * ",0,"();\r\n  var roughness: f32 = ",3,"();\r\n  var metalness: f32 = ",2,"();\r\n  var ",23,": ",C," = ",C,"(",1,"(), 0.0);\r\n  var ",24,": f32 = 1.0;\r\n\r\n  if (HAS_ALBEDO_MAP) {\r\n    ",22," *= ",0,"Map(",17,".xy);\r\n  }\r\n\r\n  if (HAS_EMISSIVE_MAP) {\r\n    ",23," *= ",1,"Map(",17,".xy);\r\n  }\r\n\r\n  else if (HAS_OCCLUSION_MAP) {\r\n    ",24," = ",6,"(",17,".xy).x;\r\n  }\r\n\r\n  var ",25," = ",C,"(metalness, roughness, 1.0, 1.0);\r\n  if (HAS_METALNESS_ROUGHNESS_MAP) {\r\n     ",25," *= ",2,"RoughnessMap(",17,".xy).bgra;\r\n  }\r\n\r\n  ",21," ",10,"(",22,", ",23,", ",25,", ",24,");\r\n}\n"]).join(''),
+  hash: 0xf640883fa434c,
+  table,
+  shake: [[49,[0,8]],[136,[1,8]],[210,[2,8]],[268,[3,8]],[328,[4,8]],[416,[5,8]],[506,[6,8]],[597,[7,8]],[699,[8]]],
+  tree: decompressAST([[1,0,44],[4,49,134,0],[1,0,9],[1,10,15],[2,9,18],[4,68,140,1],[1,0,9],[1,10,15],[2,9,20],[4,55,111,2],[1,0,9],[1,10,15],[2,9,21],[4,39,95,3],[1,0,9],[1,10,15],[2,9,21],[4,41,127,4],[1,0,9],[1,10,15],[2,9,21],[4,69,157,5],[1,0,9],[1,10,15],[2,9,23],[4,71,160,6],[1,0,9],[1,10,15],[2,9,24],[4,72,170,7],[1,0,9],[1,10,15],[2,9,33],[0,83,871],[1,0,7],[2,11,25],[2,85,94],[2,47,56],[2,37,49],[2,40,52],[2,55,66],[2,92,104],[2,75,89],[2,83,98],[2,153,177],[2,58,67]], table[S]),
+};
+
+const libs = {"../../wgsl/fragment/pbr": m0};
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
+export default getSymbol();
+export const getPBRMaterial = getSymbol("getPBRMaterial");

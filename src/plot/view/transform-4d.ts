@@ -12,7 +12,7 @@ import { vec4, mat4 } from 'gl-matrix';
 
 import { AxesTrait, Object4DTrait } from '../traits';
 
-import { getCartesian4DPosition } from '../../wgsl/transform/cartesian-4d.wgsl';
+import { getCartesian4DPosition } from '../../wgsl/transform/cartesian-4dwgsl';
 
 const {signal} = QueueReconciler;
 

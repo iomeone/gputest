@@ -12,15 +12,15 @@ import { getShaderLabel } from '../../pass/util';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualShaded from '../../../wgsl/render/vertex/virtual-shaded.wgsl';
+import renderVirtualShaded from '../../../wgsl/render/vertex/virtual-shadedwgsl';
 import {
   main as renderFragmentShaded,
   mainWithDepth as renderFragmentShadedDepth,
-} from '../../../wgsl/render/fragment/shaded.wgsl';
+} from '../../../wgsl/render/fragment/shadedwgsl';
 
-import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
-import { getSSAOSurface } from '../../../wgsl/instance/surface/ssao-surface.wgsl';
-import { sampleSSAO } from '../../../wgsl/use/ssao.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissorwgsl';
+import { getSSAOSurface } from '../../../wgsl/instance/surface/ssao-surfacewgsl';
+import { sampleSSAO } from '../../../wgsl/use/ssaowgsl';
 
 export type ShadedRenderProps = VirtualDraw;
 

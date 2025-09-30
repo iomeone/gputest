@@ -8,8 +8,8 @@ import { chainTo } from '../../shader/wgsl';
 import { RenderContext } from '../providers/render-provider';
 import { getSource } from '../hooks/useSource';
 
-import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectangle.wgsl';
-import { toLinear4, toGamma4 } from '../../wgsl/use/gamma.wgsl';
+import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectanglewgsl';
+import { toLinear4, toGamma4 } from '../../wgsl/use/gammawgsl';
 
 const TEXTURE_BINDING = bundleToAttribute(getSDFRectangleFragment, 'getTexture');
 

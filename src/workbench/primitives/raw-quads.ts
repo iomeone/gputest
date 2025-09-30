@@ -21,10 +21,10 @@ import { useDataLength } from '../hooks/useDataBinding';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getQuadVertex, getQuadVertexShaded } from '../../wgsl/instance/vertex/quad.wgsl';
-import { getMaskedColor, getMaskedSurface } from '../../wgsl/mask/masked.wgsl';
-import { solidToShaded } from '../../wgsl/instance/surface/solid-to-shaded.wgsl';
-import { getRaytraceSurface } from '../../wgsl/instance/surface/raytrace-surface.wgsl';
+import { getQuadVertex, getQuadVertexShaded } from '../../wgsl/instance/vertex/quadwgsl';
+import { getMaskedColor, getMaskedSurface } from '../../wgsl/mask/maskedwgsl';
+import { solidToShaded } from '../../wgsl/instance/surface/solid-to-shadedwgsl';
+import { getRaytraceSurface } from '../../wgsl/instance/surface/raytrace-surfacewgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

@@ -9,7 +9,7 @@ import { useRenderContext } from '../../providers/render-provider';
 
 import { SHADOW_FORMAT } from '../light/light-data';
 
-import shadowBindingWGSL from '../../../wgsl/use/shadow.wgsl';
+import shadowBindingWGSL from '../../../wgsl/use/shadowwgsl';
 
 export type ShadowBufferProps = PropsWithChildren<{
   format?: GPUTextureFormat,

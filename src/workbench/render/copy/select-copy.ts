@@ -4,13 +4,13 @@ import type { ShaderModule } from '../../../shader';
 import { useMemo } from '../../../live';
 import { bindBundle, getBundleName } from '../../../shader/wgsl';
 
-import { getFullScreenVertex } from '../../../wgsl/instance/vertex/full-screen.wgsl';
+import { getFullScreenVertex } from '../../../wgsl/instance/vertex/full-screenwgsl';
 
-import renderVirtualCopy from '../../../wgsl/render/vertex/virtual-copy.wgsl';
+import renderVirtualCopy from '../../../wgsl/render/vertex/virtual-copywgsl';
 
-import renderFragmentSelectSampleCopy2 from '../../../wgsl/render/copy/copy-select-sample-2.wgsl';
-import renderFragmentSelectDepthSampleCopy from '../../../wgsl/render/copy/copy-select-depth-sample.wgsl';
-import renderFragmentSelectDepthSampleCopy2 from '../../../wgsl/render/copy/copy-select-depth-sample-2.wgsl';
+import renderFragmentSelectSampleCopy2 from '../../../wgsl/render/copy/copy-select-sample-2wgsl';
+import renderFragmentSelectDepthSampleCopy from '../../../wgsl/render/copy/copy-select-depth-samplewgsl';
+import renderFragmentSelectDepthSampleCopy2 from '../../../wgsl/render/copy/copy-select-depth-sample-2wgsl';
 
 import { useRenderCopy } from './render-copy';
 

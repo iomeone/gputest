@@ -17,7 +17,7 @@ import { mat4 } from 'gl-matrix';
 
 import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getStereographic4DPosition } from '../../wgsl/transform/stereographic-4d.wgsl';
+import { getStereographic4DPosition } from '../../wgsl/transform/stereographic-4dwgsl';
 
 const {signal} = QueueReconciler;
 const makeMat4 = () => mat4.create();

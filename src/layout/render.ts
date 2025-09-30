@@ -7,7 +7,7 @@ import { bindBundle, chainTo } from '../shader/wgsl';
 import { schemaToArchetype } from '../core';
 import { UI_SCHEMA, LayerReconciler } from '../workbench';
 
-import { getCombinedClip, getTransformedClip } from '../wgsl/layout/clip.wgsl';
+import { getCombinedClip, getTransformedClip } from '../wgsl/layout/clipwgsl';
 import { INSPECT_STYLE } from './lib/constants';
 
 const {quote} = LayerReconciler;

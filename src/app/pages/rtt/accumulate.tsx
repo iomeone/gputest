@@ -19,8 +19,8 @@ import {
 
 import { InfoBox } from '../../ui/info-box';
 
-import { accumulateShader } from './accumulate/accumulate.wgsl';
-import { compositeShader } from './accumulate/composite.wgsl';
+import { accumulateShader } from './accumulate/accumulatewgsl';
+import { compositeShader } from './accumulate/compositewgsl';
 
 // Simple raw test scene of ground + spheres
 const GROUND = -3;

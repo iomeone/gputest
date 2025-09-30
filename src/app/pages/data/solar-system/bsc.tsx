@@ -9,7 +9,7 @@ import {
   ValueShader,
   PointLayer,
 } from '../../../../workbench';
-import { bv2rgb } from './bv2rgb.wgsl';
+import { bv2rgb } from './bv2rgbwgsl';
 
 
 const isDevelopment = process.env.NODE_ENV === 'development';

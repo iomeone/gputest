@@ -14,10 +14,10 @@ import { useRenderContext } from '../../providers/render-provider';
 
 import { useCopySample } from '../copy/value-copy';
 
-import { getOutlineSample } from '../../../wgsl/outline/outline-sample.wgsl';
-import { getOutlineResolve } from '../../../wgsl/outline/outline-resolve.wgsl';
+import { getOutlineSample } from '../../../wgsl/outline/outline-samplewgsl';
+import { getOutlineResolve } from '../../../wgsl/outline/outline-resolvewgsl';
 
-import { octaToNormal16 } from '../../../wgsl/codec/normal16.wgsl';
+import { octaToNormal16 } from '../../../wgsl/codec/normal16wgsl';
 
 export type OutlineDispatchProps = {
   bindPass?: (r: GPURenderPassEncoder) => void,

@@ -9,13 +9,13 @@ import { drawCall } from '../../queue/draw-call';
 
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualNormal from '../../../wgsl/render/vertex/virtual-normal.wgsl';
+import renderVirtualNormal from '../../../wgsl/render/vertex/virtual-normalwgsl';
 import {
   main as renderFragmentNormal,
   mainWithDepth as renderFragmentNormalDepth,
-} from '../../../wgsl/render/fragment/normal.wgsl';
+} from '../../../wgsl/render/fragment/normalwgsl';
 
-import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissorwgsl';
 
 export type NormalRenderProps = VirtualDraw;
 

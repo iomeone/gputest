@@ -7,7 +7,7 @@ import { getShader } from '../hooks/useShader';
 import { getDerivedSource } from '../hooks/useDerivedSource';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getEquiToCubeSample } from '../../wgsl/render/sample/equi-to-cube.wgsl';
+import { getEquiToCubeSample } from '../../wgsl/render/sample/equi-to-cubewgsl';
 
 export type PanoramaMapProps = {
   texture?: TextureSource | null,

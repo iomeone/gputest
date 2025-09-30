@@ -8,7 +8,7 @@ import { useAnimationFrame } from '../providers/loop-provider';
 import { useTimeContext } from '../providers/time-provider';
 import { RawQuads } from '../primitives/raw-quads';
 
-import { getLoadingSpinnerMask } from '../../wgsl/mask/loading.wgsl';
+import { getLoadingSpinnerMask } from '../../wgsl/mask/loadingwgsl';
 
 export type LoadingSpinnerProps = {
   blend?: Blending,

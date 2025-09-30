@@ -10,8 +10,8 @@ import { getSource } from './useSource';
 
 import { vec3, mat3, mat4 } from 'gl-matrix';
 
-import { getCartesianPosition } from '../../wgsl/transform/cartesian.wgsl';
-import { getMatrixDifferential } from '../../wgsl/transform/diff-matrix.wgsl';
+import { getCartesianPosition } from '../../wgsl/transform/cartesianwgsl';
+import { getMatrixDifferential } from '../../wgsl/transform/diff-matrixwgsl';
 
 const NO_MATRIX = mat4.create();
 const MATRIX_BINDING = bundleToAttribute(getCartesianPosition, 'getTransformMatrix');

@@ -10,8 +10,8 @@ import { getShaderLabel } from '../../pass/util';
 
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualPicking from '../../../wgsl/render/vertex/virtual-pick.wgsl';
-import renderFragmentPicking from '../../../wgsl/render/fragment/pick.wgsl';
+import renderVirtualPicking from '../../../wgsl/render/vertex/virtual-pickwgsl';
+import renderFragmentPicking from '../../../wgsl/render/fragment/pickwgsl';
 
 export type PickingRenderProps = VirtualDraw;
 

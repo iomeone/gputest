@@ -13,10 +13,10 @@ import { RawFullScreen } from '../primitives/index';
 import { getShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { gainColor } from '../../wgsl/fragment/gain.wgsl';
-import { tonemapACES } from '../../wgsl/tonemap/aces.wgsl';
-import { tonemapHable } from '../../wgsl/tonemap/hable.wgsl';
-import { tonemapUnreal } from '../../wgsl/tonemap/unreal.wgsl';
+import { gainColor } from '../../wgsl/fragment/gainwgsl';
+import { tonemapACES } from '../../wgsl/tonemap/aceswgsl';
+import { tonemapHable } from '../../wgsl/tonemap/hablewgsl';
+import { tonemapUnreal } from '../../wgsl/tonemap/unrealwgsl';
 
 export type LinearRGBProps = PropsWithChildren<{
   width?: number,

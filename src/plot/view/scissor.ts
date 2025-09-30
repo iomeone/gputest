@@ -6,7 +6,7 @@ import { ScissorContext, useShader, useShaderRefs } from '../../workbench';
 
 import { useRangeContext, useNoRangeContext } from '../providers/range-provider';
 
-import { getScissorLevel } from '../../wgsl/transform/scissor.wgsl';
+import { getScissorLevel } from '../../wgsl/transform/scissorwgsl';
 
 const NO_LOOP = [0, 0, 0, 0];
 

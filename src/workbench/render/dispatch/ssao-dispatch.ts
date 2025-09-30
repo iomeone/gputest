@@ -16,12 +16,12 @@ import { usePrintContext, useNoPrintContext } from '../../providers/print-provid
 
 import { useCopySample, useCopyDepthSample } from '../copy/value-copy';
 
-import { downsampleExact2 } from '../../../wgsl/texture/downsample.wgsl';
+import { downsampleExact2 } from '../../../wgsl/texture/downsamplewgsl';
 
-import { getSSAOSample } from '../../../wgsl/ssao/ssao-sample.wgsl';
-import { getSSAOAccum } from '../../../wgsl/ssao/ssao-accum.wgsl';
-import { getSSAOResolve } from '../../../wgsl/ssao/ssao-resolve.wgsl';
-import { decodeNormal16, octaToNormal, octaToNormal16 } from '../../../wgsl/codec/normal16.wgsl';
+import { getSSAOSample } from '../../../wgsl/ssao/ssao-samplewgsl';
+import { getSSAOAccum } from '../../../wgsl/ssao/ssao-accumwgsl';
+import { getSSAOResolve } from '../../../wgsl/ssao/ssao-resolvewgsl';
+import { decodeNormal16, octaToNormal, octaToNormal16 } from '../../../wgsl/codec/normal16wgsl';
 
 export type SSAODispatchProps = {
   bindPass?: (r: GPURenderPassEncoder) => void,

@@ -25,7 +25,7 @@ import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
 import { useDynamicViewBinding, useApplyPassBindGroup } from './bindings';
 import { drawToPass } from './util';
 
-import { getCubeToOmniSample } from '../../wgsl/render/sample/cube-to-omni.wgsl';
+import { getCubeToOmniSample } from '../../wgsl/render/sample/cube-to-omniwgsl';
 
 const {quote} = QueueReconciler;
 

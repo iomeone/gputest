@@ -16,8 +16,8 @@ import { LineLayer } from '../layers/line-layer';
 import { PointLayer } from '../layers/point-layer';
 import { Readback } from '../primitives/readback';
 
-import { PrintData as PrintDataWGSL } from '../../wgsl/debug/print.wgsl';
-import printWGSL from '../../wgsl/debug/print-helper.wgsl';
+import { PrintData as PrintDataWGSL } from '../../wgsl/debug/printwgsl';
+import printWGSL from '../../wgsl/debug/print-helperwgsl';
 
 const {quote} = PassReconciler;
 

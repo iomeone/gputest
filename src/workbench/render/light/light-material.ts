@@ -9,15 +9,15 @@ import { bindBundle } from '../../../shader/wgsl';
 import { LightContext } from '../../providers/light-provider';
 import { LightData, SHADOW_PAGE } from './light-data';
 
-import { getLight, getLightCount } from '../../../wgsl/use/light.wgsl';
-import { sampleShadow } from '../../../wgsl/use/shadow.wgsl';
+import { getLight, getLightCount } from '../../../wgsl/use/lightwgsl';
+import { sampleShadow } from '../../../wgsl/use/shadowwgsl';
 
-import { applyLight as applyLightWGSL } from '../../../wgsl/material/light.wgsl';
-import { applyLights as applyLightsWGSL } from '../../../wgsl/material/lights.wgsl';
-import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directional.wgsl';
-import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/point.wgsl';
-import { applyHemiShadow as applyHemiShadowWGSL } from '../../../wgsl/shadow/hemi.wgsl';
-import { applySpotShadow as applySpotShadowWGSL } from '../../../wgsl/shadow/spot.wgsl';
+import { applyLight as applyLightWGSL } from '../../../wgsl/material/lightwgsl';
+import { applyLights as applyLightsWGSL } from '../../../wgsl/material/lightswgsl';
+import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directionalwgsl';
+import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/pointwgsl';
+import { applyHemiShadow as applyHemiShadowWGSL } from '../../../wgsl/shadow/hemiwgsl';
+import { applySpotShadow as applySpotShadowWGSL } from '../../../wgsl/shadow/spotwgsl';
 
 export type LightMaterialProps = PropsWithChildren<{
   shadows?: boolean,

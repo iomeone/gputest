@@ -19,7 +19,7 @@ import { QueueReconciler } from '../../reconcilers/index';
 
 import { FontContext } from './font-provider';
 
-import { getLODBiasedTexture } from '../../../wgsl/fragment/lod-bias.wgsl';
+import { getLODBiasedTexture } from '../../../wgsl/fragment/lod-biaswgsl';
 
 export const SDFFontContext = makeContext<SDFFontContextProps>(undefined, 'SDFFontContext');
 export const useSDFFontContext = () => useContext(SDFFontContext);

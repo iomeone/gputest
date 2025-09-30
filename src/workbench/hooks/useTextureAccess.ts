@@ -9,10 +9,10 @@ import { getLambdaSource } from './useLambdaSource';
 import { getShader } from './useShader';
 import { getSource } from './useSource';
 
-import { loadTextureLevel } from '../../wgsl/texture/level.wgsl';
-import { loadTextureIndexLevel } from '../../wgsl/texture/level-index.wgsl';
-import { textureUVToXY } from '../../wgsl/texture/raw.wgsl';
-import { textureUVToXYOffset } from '../../wgsl/texture/raw-offset.wgsl';
+import { loadTextureLevel } from '../../wgsl/texture/levelwgsl';
+import { loadTextureIndexLevel } from '../../wgsl/texture/level-indexwgsl';
+import { textureUVToXY } from '../../wgsl/texture/rawwgsl';
+import { textureUVToXYOffset } from '../../wgsl/texture/raw-offsetwgsl';
 
 export const useTextureAccess = (
   texture: TextureSource,

@@ -24,23 +24,23 @@ import { EmissiveLightRender } from './emissive-light-render';
 import { FullScreenLightRender } from './full-screen-light-render';
 import { PointLightRender } from './point-light-render';
 
-import { getLight } from '../../../wgsl/use/light.wgsl';
-import { sampleShadow } from '../../../wgsl/use/shadow.wgsl';
+import { getLight } from '../../../wgsl/use/lightwgsl';
+import { sampleShadow } from '../../../wgsl/use/shadowwgsl';
 
-import renderVirtualLight from '../../../wgsl/render/vertex/virtual-light.wgsl';
-import renderFragmentLight from '../../../wgsl/render/fragment/deferred-light.wgsl';
+import renderVirtualLight from '../../../wgsl/render/vertex/virtual-lightwgsl';
+import renderFragmentLight from '../../../wgsl/render/fragment/deferred-lightwgsl';
 
-import { getGBufferSurface } from '../../../wgsl/instance/surface/g-buffer-surface.wgsl';
-import { getGBufferSSAOSurface } from '../../../wgsl/instance/surface/g-buffer-ssao-surface.wgsl';
-import { sampleSSAO } from '../../../wgsl/use/ssao.wgsl';
+import { getGBufferSurface } from '../../../wgsl/instance/surface/g-buffer-surfacewgsl';
+import { getGBufferSSAOSurface } from '../../../wgsl/instance/surface/g-buffer-ssao-surfacewgsl';
+import { sampleSSAO } from '../../../wgsl/use/ssaowgsl';
 
-import { applyLight as applyLightWGSL } from '../../../wgsl/material/light.wgsl';
-import { applyPBRMaterial as applyMaterial } from '../../../wgsl/material/pbr-apply.wgsl';
-import { applyPBREnvironment as applyEnvironment } from '../../../wgsl/material/pbr-environment.wgsl';
-import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directional.wgsl';
-import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/point.wgsl';
-import { applyHemiShadow as applyHemiShadowWGSL } from '../../../wgsl/shadow/hemi.wgsl';
-import { applySpotShadow as applySpotShadowWGSL } from '../../../wgsl/shadow/spot.wgsl';
+import { applyLight as applyLightWGSL } from '../../../wgsl/material/lightwgsl';
+import { applyPBRMaterial as applyMaterial } from '../../../wgsl/material/pbr-applywgsl';
+import { applyPBREnvironment as applyEnvironment } from '../../../wgsl/material/pbr-environmentwgsl';
+import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directionalwgsl';
+import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/pointwgsl';
+import { applyHemiShadow as applyHemiShadowWGSL } from '../../../wgsl/shadow/hemiwgsl';
+import { applySpotShadow as applySpotShadowWGSL } from '../../../wgsl/shadow/spotwgsl';
 
 export type LightRenderProps = {
   lights: Map<number, BoundLight>,

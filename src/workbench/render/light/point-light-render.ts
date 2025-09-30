@@ -14,8 +14,8 @@ import { useViewContext } from '../../providers/view-provider';
 import { makeSphereGeometry } from '../../primitives/geometry/sphere';
 import { forMeshTriangles } from '../../primitives/geometry/util';
 
-import { getDeferredLightVertex } from '../../../wgsl/instance/vertex/deferred-light.wgsl';
-import { getDeferredLightFragment } from '../../../wgsl/instance/fragment/deferred-light.wgsl';
+import { getDeferredLightVertex } from '../../../wgsl/instance/vertex/deferred-lightwgsl';
+import { getDeferredLightFragment } from '../../../wgsl/instance/fragment/deferred-lightwgsl';
 
 import { vec3 } from 'gl-matrix';
 

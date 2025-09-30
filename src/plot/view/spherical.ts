@@ -19,7 +19,7 @@ import { mat4 } from 'gl-matrix';
 
 import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getSphericalPosition } from '../../wgsl/transform/spherical.wgsl';
+import { getSphericalPosition } from '../../wgsl/transform/sphericalwgsl';
 
 const {signal} = QueueReconciler;
 const makeMat4 = () => mat4.create();

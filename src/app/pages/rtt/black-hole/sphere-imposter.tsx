@@ -15,11 +15,11 @@ import {
 import { bindEntryPoint } from '../../../../shader/wgsl';
 import { Primitive } from '../../../../scene';
 
-import { applyPBRMaterial } from '../../../../wgsl/material/pbr-apply.wgsl';
-import { applyPBREnvironment } from '../../../../wgsl/material/pbr-environment.wgsl';
+import { applyPBRMaterial } from '../../../../wgsl/material/pbr-applywgsl';
+import { applyPBREnvironment } from '../../../../wgsl/material/pbr-environmentwgsl';
 
-import { getImpostorVertex } from './vertex-impostor.wgsl';
-import { getSphereImpostorSurface, getSphereImpostorEmissive } from './surface-sphere-impostor.wgsl';
+import { getImpostorVertex } from './vertex-impostorwgsl';
+import { getSphereImpostorSurface, getSphereImpostorEmissive } from './surface-sphere-impostorwgsl';
 
 import { vec3, mat3, mat4 } from 'gl-matrix';
 

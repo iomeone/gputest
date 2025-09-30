@@ -20,7 +20,7 @@ import {
 } from '../../../plot';
 import { vec3 } from 'gl-matrix';
 
-import { traceVolumeBH } from './black-hole/black-hole.wgsl';
+import { traceVolumeBH } from './black-hole/black-holewgsl';
 import { SphereImpostor } from './black-hole/sphere-imposter';
 import { Stars } from '../data/solar-system/bsc';
 

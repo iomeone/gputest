@@ -13,8 +13,8 @@ import { useShaderRef } from '../hooks/useShaderRef';
 import { useSource } from '../hooks/useSource';
 import { useShader } from '../hooks/useShader';
 
-import { getSurfaceIndex, getSurfaceUV } from '../../wgsl/plot/surface.wgsl';
-import { getSurfaceNormal } from '../../wgsl/plot/surface-normal.wgsl';
+import { getSurfaceIndex, getSurfaceUV } from '../../wgsl/plot/surfacewgsl';
+import { getSurfaceNormal } from '../../wgsl/plot/surface-normalwgsl';
 
 export type SurfaceLayerProps = {
   position?: VectorLike,

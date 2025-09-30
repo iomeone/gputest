@@ -11,8 +11,8 @@ import { getShaderLabel } from '../../pass/util';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualUI from '../../../wgsl/render/vertex/virtual-ui.wgsl';
-import renderFragmentUI from '../../../wgsl/render/fragment/ui.wgsl';
+import renderVirtualUI from '../../../wgsl/render/vertex/virtual-uiwgsl';
+import renderFragmentUI from '../../../wgsl/render/fragment/uiwgsl';
 
 export type UIRenderProps = VirtualDraw;
 

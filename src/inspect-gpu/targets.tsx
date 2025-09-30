@@ -19,9 +19,9 @@ import { getObjectKey } from '../state';
 import { UseInspect } from '../inspect';
 import { inspectGPU } from './index';
 
-import { displayCubeColor } from '../wgsl/display/cube-color.wgsl';
-import { displayCubeAlpha } from '../wgsl/display/cube-alpha.wgsl';
-import { displayCubeDepth } from '../wgsl/display/cube-depth.wgsl';
+import { displayCubeColor } from '../wgsl/display/cube-colorwgsl';
+import { displayCubeAlpha } from '../wgsl/display/cube-alphawgsl';
+import { displayCubeDepth } from '../wgsl/display/cube-depthwgsl';
 
 const {signal} = QueueReconciler;
 

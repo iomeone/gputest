@@ -11,7 +11,7 @@ import { useUniformSource } from '../hooks/useUniformSource';
 import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';
 import { useViewUniforms } from '../providers/view-provider';
 
-import { ViewUniforms as ViewUniformsWGSL } from '../../wgsl/use/view.wgsl';
+import { ViewUniforms as ViewUniformsWGSL } from '../../wgsl/use/viewwgsl';
 
 export const useMinimalBindGroups = (
   resources: PassResources,

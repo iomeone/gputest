@@ -12,7 +12,7 @@ import { useFrustumCuller } from '../hooks/useFrustumCuller';
 import { useFrustumPicker } from '../hooks/useFrustumPicker';
 import { QueueReconciler } from '../reconcilers/index';
 
-import viewBindingWGSL, { ViewUniforms as ViewUniformsWGSL } from '../../wgsl/use/view.wgsl';
+import viewBindingWGSL, { ViewUniforms as ViewUniformsWGSL } from '../../wgsl/use/viewwgsl';
 import { useInspectable } from '../hooks/useInspectable'
 
 const {signal} = QueueReconciler;

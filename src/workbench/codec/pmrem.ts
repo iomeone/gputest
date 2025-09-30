@@ -17,14 +17,14 @@ import { useInspectable } from '../hooks/useInspectable';
 import { getRenderFunc } from '../hooks/useRenderProp';
 import { PassReconciler } from '../reconcilers/index';
 
-import { pmremInit } from '../../wgsl/pmrem/pmrem-init.wgsl';
-import { pmremCopy } from '../../wgsl/pmrem/pmrem-copy.wgsl';
-import { pmremBlur } from '../../wgsl/pmrem/pmrem-blur.wgsl';
-import { pmremDiffuseSH } from '../../wgsl/pmrem/pmrem-diffuse-sh.wgsl';
-import { pmremGridOverlay } from '../../wgsl/pmrem/pmrem-debug.wgsl';
+import { pmremInit } from '../../wgsl/pmrem/pmrem-initwgsl';
+import { pmremCopy } from '../../wgsl/pmrem/pmrem-copywgsl';
+import { pmremBlur } from '../../wgsl/pmrem/pmrem-blurwgsl';
+import { pmremDiffuseSH } from '../../wgsl/pmrem/pmrem-diffuse-shwgsl';
+import { pmremGridOverlay } from '../../wgsl/pmrem/pmrem-debugwgsl';
 //import { pmremDiffuseRender } from '../../wgsl/pmrem/pmrem-diffuse-render.wgsl';
 
-import { sampleEnvMap } from '../../wgsl/pmrem/pmrem-read.wgsl';
+import { sampleEnvMap } from '../../wgsl/pmrem/pmrem-readwgsl';
 
 const π = Math.PI;
 const τ = 2*π;

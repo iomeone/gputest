@@ -20,7 +20,7 @@ import { mat4 } from 'gl-matrix';
 import { GeographicTrait } from '../traits';
 import { EARTH_CIRCUMFERENCE, toRad } from '../util/tiles';
 
-import { getWebMercatorPosition } from '../../wgsl/transform/web-mercator.wgsl';
+import { getWebMercatorPosition } from '../../wgsl/transform/web-mercatorwgsl';
 
 const {signal} = QueueReconciler;
 

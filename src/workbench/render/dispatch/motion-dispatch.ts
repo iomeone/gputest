@@ -12,7 +12,7 @@ import { usePassContext } from '../../providers/pass-provider';
 
 import { useCopySelectDepthSample2 } from '../copy/select-copy';
 
-import { getMotionSample } from '../../../wgsl/motion/motion-sample.wgsl';
+import { getMotionSample } from '../../../wgsl/motion/motion-samplewgsl';
 
 const selectXY = wgsl`@export fn selectXY(v: vec4<f32>) -> vec2<f32> { return v.xy; }`;
 const selectZ = wgsl`@export fn selectZ(v: vec4<f32>) -> f32 { return v.z; }`;

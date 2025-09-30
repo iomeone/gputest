@@ -10,10 +10,10 @@ import { getNativeColor } from '../../hooks/useNativeColor';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualSolid from '../../../wgsl/render/vertex/virtual-solid.wgsl';
-import renderFragmentSolid from '../../../wgsl/render/fragment/deferred-solid.wgsl';
+import renderVirtualSolid from '../../../wgsl/render/vertex/virtual-solidwgsl';
+import renderFragmentSolid from '../../../wgsl/render/fragment/deferred-solidwgsl';
 
-import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissorwgsl';
 
 export type DeferredSolidRenderProps = VirtualDraw;
 

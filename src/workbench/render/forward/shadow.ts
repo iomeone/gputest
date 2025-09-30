@@ -13,15 +13,15 @@ import { usePassContext } from '../../providers/pass-provider';
 import {
   main as renderVirtualDepth,
   mainWithDepth as renderVirtualDepthDepth,
-} from '../../../wgsl/render/vertex/virtual-depth.wgsl';
+} from '../../../wgsl/render/vertex/virtual-depthwgsl';
 import {
   main as renderVirtualShaded,
-} from '../../../wgsl/render/vertex/virtual-shaded.wgsl';
-import renderFragmentDepth from '../../../wgsl/render/fragment/depth.wgsl';
-import renderFragmentDepthOnly from '../../../wgsl/render/fragment/depth-only.wgsl';
-import renderFragmentDepthShaded from '../../../wgsl/render/fragment/depth-shaded.wgsl';
+} from '../../../wgsl/render/vertex/virtual-shadedwgsl';
+import renderFragmentDepth from '../../../wgsl/render/fragment/depthwgsl';
+import renderFragmentDepthOnly from '../../../wgsl/render/fragment/depth-onlywgsl';
+import renderFragmentDepthShaded from '../../../wgsl/render/fragment/depth-shadedwgsl';
 
-import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissorwgsl';
 
 export type ShadowRenderProps = VirtualDraw;
 

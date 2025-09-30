@@ -25,9 +25,9 @@ import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions
 import { makeArrowFlatGeometry } from './geometry/arrow-flat';
 import { makeArrowGeometry } from './geometry/arrow';
 
-import { getAnchorIndex } from '../../wgsl/instance/index/anchor.wgsl';
-import { getArrowVertex, getArrowVertexShaded } from '../../wgsl/instance/vertex/arrow.wgsl';
-import { solidToShaded } from '../../wgsl/instance/surface/solid-to-shaded.wgsl';
+import { getAnchorIndex } from '../../wgsl/instance/index/anchorwgsl';
+import { getArrowVertex, getArrowVertexShaded } from '../../wgsl/instance/vertex/arrowwgsl';
+import { solidToShaded } from '../../wgsl/instance/surface/solid-to-shadedwgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

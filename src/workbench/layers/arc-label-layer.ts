@@ -24,9 +24,9 @@ import { GlyphSource } from '../text/glyph-source';
 
 import { RawLabels, RawLabelsFlags } from '../primitives/raw-labels';
 
-import { main as computeArcLength } from '../../wgsl/instance/compute/arc-length.wgsl';
-import { main as computeArcPrefixSum } from '../../wgsl/instance/compute/arc-prefix-sum.wgsl';
-import { attachArcLabelTo } from '../../wgsl/instance/vertex/arc-label.wgsl';
+import { main as computeArcLength } from '../../wgsl/instance/compute/arc-lengthwgsl';
+import { main as computeArcPrefixSum } from '../../wgsl/instance/compute/arc-prefix-sumwgsl';
+import { attachArcLabelTo } from '../../wgsl/instance/vertex/arc-labelwgsl';
 
 const {quote} = PassReconciler;
 

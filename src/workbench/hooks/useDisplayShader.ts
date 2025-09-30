@@ -9,18 +9,18 @@ import { getShader } from '../hooks/useShader';
 import { getTextureAccess, getTextureUVToXY } from '../hooks/useTextureAccess';
 import { getLambdaSource } from '../hooks/useLambdaSource';
 
-import { displayFloat } from '../../wgsl/display/float.wgsl';
-import { displayInt } from '../../wgsl/display/int.wgsl';
+import { displayFloat } from '../../wgsl/display/floatwgsl';
+import { displayInt } from '../../wgsl/display/intwgsl';
 
-import { displayAlpha } from '../../wgsl/display/alpha.wgsl';
-import { displayDepth } from '../../wgsl/display/depth.wgsl';
-import { displayMotionXY } from '../../wgsl/display/motion-xy.wgsl';
-import { displayMotionZ } from '../../wgsl/display/motion-z.wgsl';
-import { displayPicking } from '../../wgsl/display/picking.wgsl';
-import { displayRGB } from '../../wgsl/display/rgb.wgsl';
-import { displayStencil } from '../../wgsl/display/stencil.wgsl';
+import { displayAlpha } from '../../wgsl/display/alphawgsl';
+import { displayDepth } from '../../wgsl/display/depthwgsl';
+import { displayMotionXY } from '../../wgsl/display/motion-xywgsl';
+import { displayMotionZ } from '../../wgsl/display/motion-zwgsl';
+import { displayPicking } from '../../wgsl/display/pickingwgsl';
+import { displayRGB } from '../../wgsl/display/rgbwgsl';
+import { displayStencil } from '../../wgsl/display/stencilwgsl';
 
-import { getMultiViewSample } from '../../wgsl/display/multiview.wgsl';
+import { getMultiViewSample } from '../../wgsl/display/multiviewwgsl';
 
 const HINT_SHADERS = {
   'alpha': displayAlpha,

@@ -1,0 +1,22 @@
+/* __WGSL_LOADER_GENERATED */
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import m0 from "../../wgsl/use/viewwgsl";
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getLineJoin lineJoinBevel lineJoinMiter lineJoinRound turn slerp ../../wgsl/use/view screenToClip3D clip3DToScreen export beforePoint centerPoint afterPoint arc f32 size segment i32 style vec2<f32> left right clip3DToScreen export centerPoint segment center normalize lineJoinMiter return".split(' '));
+const table = {[S]:_([0,1,2,3,4,5]),[W]:_([0,1,2,3]),[O]:[{[A]:0,[N]:_(6),[S]:_([7,8]),[K]:[{[N]:_(7),[J]:_(7)},{[N]:_(8),[J]:_(8)}]}],[E]:[{[A]:66,[R]:_(0),[G]:1,[F]:{[N]:_(0),[T]:D,[Z]:_([9]),[P]:[{[N]:_(10),[T]:D},{[N]:_(11),[T]:D},{[N]:_(12),[T]:D},{[N]:_(13),[T]:_(14)},{[N]:"y",[T]:_(14)},{[N]:_(15),[T]:_(14)},{[N]:_(16),[T]:_(17)},{[N]:_(18),[T]:_(17)}],[I]:_([4,2,1,3])}},{[A]:1312,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:_(19),[Z]:_([9]),[P]:[{[N]:_(20),[T]:_(19)},{[N]:_(21),[T]:_(19)},{[N]:_(13),[T]:_(14)}]}},{[A]:1445,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:_(19),[Z]:_([9]),[P]:[{[N]:_(20),[T]:_(19)},{[N]:_(21),[T]:_(19)},{[N]:_(13),[T]:_(14)}]}},{[A]:1733,[R]:_(3),[G]:1,[F]:{[N]:_(3),[T]:_(19),[Z]:_([9]),[P]:[{[N]:_(20),[T]:_(19)},{[N]:_(21),[T]:_(19)},{[N]:_(13),[T]:_(14)}],[I]:_([5])}}]};
+const data = {
+  name: "geometry/line.wgsl",
+  code: _(["use '",6,"'::{ ",7,", ",8," };\r\n\r\n@",9," fn ",0,"(\r\n  ",10,": ",D,",\r\n  ",11,": ",D,",\r\n  ",12,": ",D,",\r\n  arc: f32,\r\n  y: f32,\r\n  ",15,": f32,\r\n  ",16,": i32,\r\n  ",18,": i32,\r\n) -> ",D," {\r\n  let before = ",8,"(",10,");\r\n  let ",26," = ",8,"(",11,");\r\n  let after  = ",8,"(",12,");\r\n\r\n  let ",20," = ",4,"(",27,"(",26," - before));\r\n  let ",21," = ",4,"(",27,"(after - ",26,"));\r\n\r\n  var mid: ",19,";\r\n  if (",16," == 2) {\r\n    mid = ",20,";\r\n  }\r\n  else if (",16," == 1) {\r\n    mid = ",21,";\r\n  }\r\n  else {\r\n    if (dot(",20,", ",21,") < 0.999) {\r\n      if (",18," == 0) { mid = ",2,"(",20,", ",21,", 0.5); }\r\n      else {\r\n        let c = cross(vec3(",20,", 0.0), vec3(",21,", 0.0)).z;\r\n        if (c * y < 0.0) {\r\n          mid = ",2,"(",20,", ",21,", arc);\r\n        }\r\n        else {\r\n          if (",18," == 1) { mid = ",1,"(",20,", ",21,", arc); }\r\n          if (",18," == 2) { mid = ",2,"(",20,", ",21,", arc); }\r\n          if (",18," == 3) { mid = ",3,"(",20,", ",21,", arc); }\r\n        }\r\n      }\r\n    }\r\n    else {\r\n      mid = ",20,";\r\n    }\r\n  }\r\n\r\n  let offset = ",15," * mid * y;\r\n  let lineJoin = ",26," + offset;\r\n\r\n  re",4," ",7,"(lineJoin, ",11,".z);\r\n}\r\n\r\n@",9," fn ",1,"(",20,": ",19,", ",21,": ",19,", arc: f32) -> ",19," {\r\n  re",4," select(",20,", ",21,", arc > 0.0);\r\n}\r\n\r\n@",9," fn ",2,"(",20,": ",19,", ",21,": ",19,", arc: f32) -> ",19," {\r\n  if (arc == 0.0) { re",4," ",20,"; }\r\n  if (arc == 1.0) { re",4," ",21,"; }\r\n\r\n  let mid = ",27,"(",20," + ",21,");\r\n  let scale = min(2.0, 1.0 / max(0.001, dot(mid, ",20,")));\r\n\r\n  re",4," mid * scale;\r\n}\r\n\r\n@",9," fn ",3,"(",20,": ",19,", ",21,": ",19,", arc: f32) -> ",19," {\r\n  if (arc == 0.0) { re",4," ",20,"; }\r\n  if (arc == 1.0) { re",4," ",21,"; }\r\n\r\n  let d = dot(",20,", ",21,");\r\n  if (d > 0.999) { re",4," ",20,"; }\r\n\r\n  re",4," ",5,"(d, ",20,", ",21,", arc);\r\n}\r\n\r\nfn ",4,"(xy: ",19,") -> ",19," {\r\n  re",4," ",19,"(xy.y, -xy.x);\r\n}\r\n\r\nfn ",5,"(d: f32, a: ",19,", b: ",19,", t: f32) -> ",19," {\r\n  let th = acos(d);\r\n  let ab = sin(vec2((1.0 - t) * th, t * th));\r\n  re",4," ",27,"(a * ab.x + b * ab.y);\r\n}\n"]).join(''),
+  hash: 0xe78b45b275307,
+  table,
+  shake: [[66,[0]],[1312,[1,0]],[1445,[2,0]],[1733,[3,0]],[1999,[4,0]],[2077,[5,3,0]]],
+  tree: decompressAST([[1,0,61],[0,66,1308],[1,0,7],[2,11,22],[2,197,211],[2,45,59],[2,45,59],[2,44,48],[2,49,53],[2,232,245],[2,155,168],[2,95,108],[2,70,83],[2,70,83],[2,186,200],[0,47,176],[1,0,7],[2,11,24],[0,122,406],[1,0,7],[2,11,24],[0,277,543],[1,0,7],[2,11,24],[2,225,230],[0,30,108],[2,7,11],[0,71,255],[2,7,12]], table[S]),
+};
+
+const libs = {"../../wgsl/use/view": m0};
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
+export default getSymbol();
+export const getLineJoin = getSymbol("getLineJoin");
+export const lineJoinBevel = getSymbol("lineJoinBevel");
+export const lineJoinMiter = getSymbol("lineJoinMiter");
+export const lineJoinRound = getSymbol("lineJoinRound");

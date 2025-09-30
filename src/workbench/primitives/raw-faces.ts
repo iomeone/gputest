@@ -21,8 +21,8 @@ import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getFaceVertex } from '../../wgsl/instance/vertex/face.wgsl';
-import { getInstancedFaceIndex } from '../../wgsl/instance/index/face.wgsl';
+import { getFaceVertex } from '../../wgsl/instance/vertex/facewgsl';
+import { getInstancedFaceIndex } from '../../wgsl/instance/index/facewgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

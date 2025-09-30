@@ -6,8 +6,8 @@ import { yeet, useMemo } from '../../../live';
 
 import { useShader } from '../../hooks/useShader';
 
-import { getDeferredLightVertex } from '../../../wgsl/instance/vertex/deferred-light.wgsl';
-import { getDeferredEmissiveFragment } from '../../../wgsl/instance/fragment/deferred-emissive.wgsl';
+import { getDeferredLightVertex } from '../../../wgsl/instance/vertex/deferred-lightwgsl';
+import { getDeferredEmissiveFragment } from '../../../wgsl/instance/fragment/deferred-emissivewgsl';
 
 import { FULLSCREEN_PIPELINE, FULLSCREEN_DEFS, useLightDraw } from './light-render';
 

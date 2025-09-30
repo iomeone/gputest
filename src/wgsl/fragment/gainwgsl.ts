@@ -1,0 +1,18 @@
+/* __WGSL_LOADER_GENERATED */
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getGain gainColor f32 link export color getGain".split(' '));
+const table = {[S]:_([0,1]),[W]:_([1]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:_(2),[Z]:_([3])}}],[E]:[{[A]:30,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:C,[Z]:_([4]),[P]:[{[N]:_(5),[T]:C}],[I]:_([0])}}],[L]:{[_(0)]:true}};
+const data = {
+  name: "fragment/gain.wgsl",
+  code: _(["@",3," fn ",0,"() -> f32;\r\n\r\n@",4," fn ",1,"(",5,": ",C,") -> ",C," {\r\n  var rgb = ",5,".rgb * ",0,"();\r\n  if (IS_OPAQUE) { return ",C,"(rgb, 1.0); }\r\n  else { return ",C,"(rgb * ",0,"(), ",5,".a); }\r\n};\n"]).join(''),
+  hash: 0xb23b64dc0ae60,
+  table,
+  shake: [[0,[0,1]],[30,[1]]],
+  tree: decompressAST([[1,0,25],[0,30,228],[1,0,7],[2,11,20],[2,68,75],[2,94,101]], table[S]),
+};
+
+const libs = {};
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
+export default getSymbol();
+export const gainColor = getSymbol("gainColor");

@@ -26,7 +26,7 @@ import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
 import { useDynamicViewBinding, useApplyPassBindGroup } from './bindings';
 import { drawToPass } from './util';
 
-import { getQuadsToHemiSample } from '../../wgsl/render/sample/quads-to-hemi.wgsl';
+import { getQuadsToHemiSample } from '../../wgsl/render/sample/quads-to-hemiwgsl';
 
 const {quote} = QueueReconciler;
 

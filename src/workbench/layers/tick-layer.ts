@@ -10,8 +10,8 @@ import { TransformContextProps, TransformContext, useTransformContext, DEFAULT_T
 import { useShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getTickPosition } from '../../wgsl/instance/vertex/tick.wgsl';
-import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
+import { getTickPosition } from '../../wgsl/instance/vertex/tickwgsl';
+import { getLineSegment } from '../../wgsl/geometry/segmentwgsl';
 
 export type TickLayerProps = RawLinesFlags & {
   position?: number[] | TypedArray,

@@ -6,7 +6,7 @@ import { use, gather, yeet, memo } from '../../../live';
 
 import { RenderTarget } from '../render-target';
 
-import ssaoBindingWGSL from '../../../wgsl/use/ssao.wgsl';
+import ssaoBindingWGSL from '../../../wgsl/use/ssaowgsl';
 
 export type SSAOBufferProps = {
   overscan?: OverscanOptions,
