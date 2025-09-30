@@ -1,14 +1,14 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { TextureSource, ViewUniforms } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../live';
+import type { TextureSource, ViewUniforms } from '../../core';
 import type { Renderable } from '../pass';
 import type { BoundLight } from '../light/types';
 import { mat4 } from 'gl-matrix';
 
-import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { yeet, memo, useMemo, useOne } from '../../live';
 import {
   makeDepthStencilAttachments, makeFrustumPlanes, makeGlobalUniforms, makeTexture, uploadBuffer,
   VIEW_UNIFORMS,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
@@ -22,7 +22,7 @@ import { useShaderRef } from '../hooks/useShaderRef';
 import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
 import { drawToPass, reverseZ } from './util';
 
-import { getCubeToOmniSample } from '@use-gpu/wgsl/render/sample/cube-to-omni.wgsl';
+import { getCubeToOmniSample } from '../../wgsl/render/sample/cube-to-omni.wgsl';
 
 import { useDepthBlit } from './depth-blit';
 

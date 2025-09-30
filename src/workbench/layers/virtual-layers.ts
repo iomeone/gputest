@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveFunction, LiveElement, DeferredCall } from '@use-gpu/live';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent, LiveFunction, LiveElement, DeferredCall } from '../../live';
+import type { ShaderSource } from '../../shader';
 import type { LayerAggregator, LayerAggregate, LayerAggregates } from './types';
 
-import { use, keyed, yeet, provide, multiGather, unquote, useMemo, useOne } from '@use-gpu/live';
-import { mixBits53, getObjectKey } from '@use-gpu/state';
-import { getBundleKey } from '@use-gpu/shader';
+import { use, keyed, yeet, provide, multiGather, unquote, useMemo, useOne } from '../../live';
+import { mixBits53, getObjectKey } from '../../state';
+import { getBundleKey } from '../../shader';
 
 import { TransformContext } from '../providers/transform-provider';
 import { MaterialContext } from '../providers/material-provider';

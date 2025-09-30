@@ -1,5 +1,5 @@
-import type { LiveFiber } from '@use-gpu/live';
-import { makeContext, useContext, useFiber, useNoContext } from '@use-gpu/live';
+import type { LiveFiber } from '../../live';
+import { makeContext, useContext, useFiber, useNoContext } from '../../live';
 import { TimeContext, TimeContextProps } from './time-provider';
 
 type LoopContextProps = {

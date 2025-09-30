@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { DataSchema, GPUAttributes, LambdaSource, StorageSource } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { DataSchema, GPUAttributes, LambdaSource, StorageSource } from '../../../core';
 
-import React, { Gather, yeet, use, useOne, useMemo } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
-import { clamp } from '@use-gpu/core';
+import React, { Gather, yeet, use, useOne, useMemo } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
+import { clamp } from '../../../core';
 
 import {
   Pass, Data, DataShader,
@@ -11,10 +11,10 @@ import {
   Pick, Cursor,
   PointLayer,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Cartesian, Grid,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 import { BinaryControls } from '../../ui/binary-controls';
 import { InfoBox } from '../../ui/info-box';

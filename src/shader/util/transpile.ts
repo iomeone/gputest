@@ -254,7 +254,7 @@ export const compressString = (
 };
 
 export const makeTypeDef = (symbols: string[]) => (
-`import { ParsedBundle } from "@use-gpu/shader/wgsl";
+`import { ParsedBundle } from "../../shader/wgsl";
 declare const _default: ParsedBundle;
 export default _default;
 ${symbols.map(s => `export declare const ${s}: ParsedBundle;`).join("\n")}

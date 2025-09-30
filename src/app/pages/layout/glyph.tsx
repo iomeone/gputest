@@ -1,11 +1,11 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Rectangle, Emit, DataTexture } from '@use-gpu/core';
-import type { Image } from '@use-gpu/glyph';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Rectangle, Emit, DataTexture } from '../../../core';
+import type { Image } from '../../../glyph';
 
-import React, { Morph } from '@use-gpu/live';
-import { memo, fragment } from '@use-gpu/live';
-import { makeRawTexture } from '@use-gpu/core';
-import { padRGBA, glyphToRGBA, glyphToSDF, rgbaToSDF, rgbaToGlyph, sdfToGradient, makeSDFStage, paintSubpixelOffsets } from '@use-gpu/glyph';
+import React, { Morph } from '../../../live';
+import { memo, fragment } from '../../../live';
+import { makeRawTexture } from '../../../core';
+import { padRGBA, glyphToRGBA, glyphToSDF, rgbaToSDF, rgbaToGlyph, sdfToGradient, makeSDFStage, paintSubpixelOffsets } from '../../../glyph';
 import { GlyphControls } from '../../ui/glyph-controls';
 import { vec3 } from 'gl-matrix';
 
@@ -13,13 +13,13 @@ import {
   LinearRGB, Pass, FlatCamera, RawTexture,
   OrbitCamera, OrbitControls, PanControls,
   useDeviceContext, useFontContext, LayoutContext, DebugProvider,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Block, Inline, Text, Flex, Embed, Element,
-} from '@use-gpu/layout';
+} from '../../../layout';
 import {
   Embedded, Axis, Grid, Scale, Tick, Point, Arrow, Sampler,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 import { InfoBox } from '../../ui/info-box';
 

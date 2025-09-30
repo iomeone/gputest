@@ -1,6 +1,6 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 
-import { useAwait, useOne } from '@use-gpu/live';
+import { useAwait, useOne } from '../../live';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type AwaitProps<T> = {

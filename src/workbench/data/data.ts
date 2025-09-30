@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { ArrowFunction, FromSchema, TypedArray, StorageSource, LambdaSource, DataSchema, DataField, DataBounds, VectorLike, UniformType } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { ArrowFunction, FromSchema, TypedArray, StorageSource, LambdaSource, DataSchema, DataField, DataBounds, VectorLike, UniformType } from '../../core';
 
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { QueueReconciler } from '../reconcilers/index';
 import { useAggregator } from '../hooks/useAggregator';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 import { useRenderProp } from '../hooks/useRenderProp';
-import { useOne, useMemo } from '@use-gpu/live';
+import { useOne, useMemo } from '../../live';
 import {
   toCPUDims,
   isUniformArrayType,
@@ -20,8 +20,8 @@ import {
   normalizeSchema,
   allocateSchema,
   schemaToEmitters,
-} from '@use-gpu/core';
-import { sizeToChunkCounts, toChunkCounts, toVertexCount } from '@use-gpu/parse';
+} from '../../core';
+import { sizeToChunkCounts, toChunkCounts, toVertexCount } from '../../parse';
 
 const {signal} = QueueReconciler;
 const NO_TENSOR: number[] = [];

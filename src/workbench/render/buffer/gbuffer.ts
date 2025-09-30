@@ -1,10 +1,10 @@
-import type { LC } from '@use-gpu/live';
-import type { TextureTarget } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { TextureTarget } from '../../../core';
 
-import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { yeet, memo, useMemo, useOne } from '../../../live';
 import {
   makeColorAttachment, makeColorState, makeTargetTexture,
-} from '@use-gpu/core';
+} from '../../../core';
 
 import { useDeviceContext } from '../../providers/device-provider';
 import { useRenderContext } from '../../providers/render-provider';

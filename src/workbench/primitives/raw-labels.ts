@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Lazy, TextureSource, LambdaSource, DataBounds, VectorLike, UniformAttribute } from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { Lazy, TextureSource, LambdaSource, DataBounds, VectorLike, UniformAttribute } from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
+import { memo, useCallback, useMemo, useNoCallback } from '../../live';
 
 import { PickingSource, usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
@@ -17,8 +17,8 @@ import { useShader } from '../hooks/useShader';
 import { useSource } from '../hooks/useSource';
 import { useDataLength } from '../hooks/useDataBinding';
 
-import { getLabelVertex } from '@use-gpu/wgsl/instance/vertex/label.wgsl';
-import { getSDFRectangleFragment } from '@use-gpu/wgsl/instance/fragment/sdf-rectangle.wgsl';
+import { getLabelVertex } from '../../wgsl/instance/vertex/label.wgsl';
+import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectangle.wgsl';
 
 const DEFINES = {DEBUG_SDF: false};
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };

@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { DataTexture, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { DataTexture, TextureSource } from '../../core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { QueueReconciler } from '../reconcilers/index';
-import { yeet, useOne, useMemo, useNoMemo, useContext, useHooks, incrementVersion } from '@use-gpu/live';
-import { makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '@use-gpu/core';
+import { yeet, useOne, useMemo, useNoMemo, useContext, useHooks, incrementVersion } from '../../live';
+import { makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '../../core';
 
 const {signal} = QueueReconciler;
 

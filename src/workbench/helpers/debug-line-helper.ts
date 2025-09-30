@@ -1,17 +1,17 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { StorageSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC, LiveElement } from '../../live';
+import type { StorageSource } from '../../core';
+import type { ShaderSource } from '../../shader';
 
-import { yeet, useMemo, useOne } from '@use-gpu/live';
-import { clearBuffer } from '@use-gpu/core';
-import { bindEntryPoint } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo, useOne } from '../../live';
+import { clearBuffer } from '../../core';
+import { bindEntryPoint } from '../../shader/wgsl';
 import { useDeviceContext } from '../providers/device-provider';
 import { getDerivedSource } from '../hooks/useDerivedSource';
 import { useScratchSource } from '../hooks/useScratchSource';
 import { getShader } from '../hooks/useShader';
 import { useRawSource } from '../hooks/useRawSource';
 
-import debugWGSL from '@use-gpu/wgsl/debug/line-helper.wgsl';
+import debugWGSL from '../../wgsl/debug/line-helper.wgsl';
 
 export type DebugHelper = {
   target: Record<string, StorageSource>,

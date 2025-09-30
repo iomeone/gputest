@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { StorageSource, TypedArray, UniformType } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { StorageSource, TypedArray, UniformType } from '../../core';
 
-import { memo, yeet, useOne, useResource } from '@use-gpu/live';
-import { getUniformArraySize, getUniformArrayType } from '@use-gpu/core';
+import { memo, yeet, useOne, useResource } from '../../live';
+import { getUniformArraySize, getUniformArrayType } from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useScratchSource } from '../hooks/useScratchSource';

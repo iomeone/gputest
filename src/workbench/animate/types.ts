@@ -1,4 +1,4 @@
-import { VectorLike, VectorLikes } from '@use-gpu/core';
+import { VectorLike, VectorLikes } from '../../core';
 
 export type Ease = 'cosine' | 'linear' | 'zero' | 'auto' | 'bezier';
 

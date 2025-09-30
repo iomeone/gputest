@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { StorageSource, LambdaSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../live';
+import type { StorageSource, LambdaSource } from '../core';
 import type { MVTStyleSheet } from './types';
 
-import { clamp, adjustSchema } from '@use-gpu/core';
-import { use, keyed, memo, useAwait, useCallback, useOne, useMemo, useResource } from '@use-gpu/live';
-import { useLayoutContext, useForceUpdate, Data, PointLayer, LineLayer, FaceLayer, POINT_SCHEMA, LINE_SCHEMA, FACE_SCHEMA } from '@use-gpu/workbench';
-import { useRangeContext } from '@use-gpu/plot';
+import { clamp, adjustSchema } from '../core';
+import { use, keyed, memo, useAwait, useCallback, useOne, useMemo, useResource } from '../live';
+import { useLayoutContext, useForceUpdate, Data, PointLayer, LineLayer, FaceLayer, POINT_SCHEMA, LINE_SCHEMA, FACE_SCHEMA } from '../workbench';
+import { useRangeContext } from '../plot';
 
 import { useTileContext } from './providers/tile-provider';
 import { MVTStyleContextProps, useMVTStyleContext } from './providers/mvt-style-provider';

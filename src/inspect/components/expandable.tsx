@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
-import type { Cursor } from '@use-gpu/state';
+import type { Cursor } from '../../state';
 import type { ExpandState } from './types';
 
-import { useCursor, useUpdateState } from '@use-gpu/state/react';
+import { useCursor, useUpdateState } from '../../state/react';
 
 
 type ExpandableProps = {

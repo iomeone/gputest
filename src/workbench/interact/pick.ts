@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import { extend, useContext, useMemo, useNoMemo, useOne, useResource, useNoResource, useHooks } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
+import { extend, useContext, useMemo, useNoMemo, useOne, useResource, useNoResource, useHooks } from '../../live';
 import { EventContext, MouseContext, MouseEventState } from '../providers/event-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
 

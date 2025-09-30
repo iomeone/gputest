@@ -1,13 +1,13 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../live';
 
-import React, { hot, into, useFiber, useMemo, useOne, useResource, useState } from '@use-gpu/live';
-import { HTML } from '@use-gpu/react';
-import { AutoCanvas, FPSCounter, WebGPU } from '@use-gpu/webgpu';
-import { DebugProvider, FontLoader, Router, Routes, useKeyboard } from '@use-gpu/workbench';
+import React, { hot, into, useFiber, useMemo, useOne, useResource, useState } from '../live';
+import { HTML } from '../react';
+import { AutoCanvas, FPSCounter, WebGPU } from '../webgpu';
+import { DebugProvider, FontLoader, Router, Routes, useKeyboard } from '../workbench';
 
-import { UseInspect } from '@use-gpu/inspect';
-import { inspectGPU } from '@use-gpu/inspect-gpu';
-import '@use-gpu/inspect/theme.css';
+import { UseInspect } from '../inspect';
+import { inspectGPU } from '../inspect-gpu';
+import '../inspect/theme.css';
 
 import { makeRoutes } from './routes';
 import { makePicker } from './ui/page-picker';

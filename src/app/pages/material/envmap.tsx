@@ -1,10 +1,10 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, TextureSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry, TextureSource } from '../../../core';
+import type { ShaderSource } from '../../../shader';
 
-import React, { Gather, memo, useContext, useOne } from '@use-gpu/live';
-import { seq } from '@use-gpu/core';
-import { bindBundle, wgsl } from '@use-gpu/shader/wgsl';
+import React, { Gather, memo, useContext, useOne } from '../../../live';
+import { seq } from '../../../core';
+import { bindBundle, wgsl } from '../../../shader/wgsl';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -15,17 +15,17 @@ import {
   KeyboardContext,
   makeSphereGeometry,
   useShader, useShaderRef,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 import {
   Scene, Node, Mesh,
-} from '@use-gpu/scene';
+} from '../../../scene';
 import {
   Cartesian, Grid, Embedded,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import {
   UI, Layout, Absolute, Block, Embed,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 import { InfoBox } from '../../ui/info-box';
 

@@ -1,7 +1,7 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
 
-import { useTimeContext } from '@use-gpu/workbench';
-import { memo, useOne, useResource } from '@use-gpu/live';
+import { useTimeContext } from '../../workbench';
+import { memo, useOne, useResource } from '../../live';
 
 export type FPSCounterProps = {
   container?: Element | string | null,

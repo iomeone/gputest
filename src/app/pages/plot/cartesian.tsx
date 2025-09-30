@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import React, { use } from '@use-gpu/live';
-import { TensorArray } from '@use-gpu/core';
+import React, { use } from '../../../live';
+import { TensorArray } from '../../../core';
 
 import {
   Loop, Pass,
@@ -9,10 +9,10 @@ import {
   Cursor, Environment,
   Animate,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Cartesian, Axis, Grid, Label, Line, Sampler, Scale, Scissor, Surface, Tick, Transpose,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';

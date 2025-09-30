@@ -1,9 +1,9 @@
-import type { ArchetypeSchema, Ragged, TensorArray, TypedArray, UniformType, VectorLike, VectorLikes } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
-import type { Parser } from '@use-gpu/traits';
+import type { ArchetypeSchema, Ragged, TensorArray, TypedArray, UniformType, VectorLike, VectorLikes } from '../core';
+import type { ShaderSource } from '../shader';
+import type { Parser } from '../traits';
 
-import { useMemo, useOne } from '@use-gpu/live';
-import { trait, combine, optional, useProp } from '@use-gpu/traits/live';
+import { useMemo, useOne } from '../live';
+import { trait, combine, optional, useProp } from '../traits/live';
 import {
   parseNumber,
   parseInteger,
@@ -42,9 +42,9 @@ import {
   parsePointShape,
   toChunkCounts,
   makeParseEnum,
-} from '@use-gpu/parse';
-import { seq, isShaderBinding, toCPUDims, getUniformDims, formatToArchetype } from '@use-gpu/core';
-import { getArrowSegments, getFaceSegments, getFaceSegmentsConcave, getLineSegments } from '@use-gpu/workbench';
+} from '../parse';
+import { seq, isShaderBinding, toCPUDims, getUniformDims, formatToArchetype } from '../core';
+import { getArrowSegments, getFaceSegments, getFaceSegmentsConcave, getLineSegments } from '../workbench';
 
 import { useDataContext } from './providers/data-provider';
 

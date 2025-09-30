@@ -1,10 +1,10 @@
-import type { TypedArray, UniformType } from '@use-gpu/core';
+import type { TypedArray, UniformType } from '../core';
 import type { GLTF, GLTFPrimitiveData } from './types';
 
-import { toUnweldedArray, formatToArchetype, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
-import { useMemo } from '@use-gpu/live';
-import { patch, $nop } from '@use-gpu/state';
-import { transformPositions, transformNormals } from '@use-gpu/workbench';
+import { toUnweldedArray, formatToArchetype, UNIFORM_ARRAY_DIMS } from '../core';
+import { useMemo } from '../live';
+import { patch, $nop } from '../state';
+import { transformPositions, transformNormals } from '../workbench';
 import { generateTangents } from 'mikktspace';
 import { mat4 } from 'gl-matrix';
 

@@ -1,10 +1,10 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LC, PropsWithChildren } from '../../live';
+import type { TraitProps } from '../../traits';
 import type { ParsedEffect, } from '../types';
 
-import { unquote, fence, yeet, use, useMemo, useOne, useFiber } from '@use-gpu/live';
-import { useLayoutContext } from '@use-gpu/workbench';
-import { Transform } from '@use-gpu/layout';
+import { unquote, fence, yeet, use, useMemo, useOne, useFiber } from '../../live';
+import { useLayoutContext } from '../../workbench';
+import { Transform } from '../../layout';
 
 import { merge } from '../lib/slides';
 import { usePresentTransition } from '../hooks';

@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { TensorArray } from '@use-gpu/core';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { TensorArray } from '../../core';
+import type { TraitProps } from '../../traits';
 
-import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
-import { parsePosition } from '@use-gpu/parse';
-import { memo, yeet, provide, useMemo, useNoMemo } from '@use-gpu/live';
-import { toTensorArray, fillNumberArray } from '@use-gpu/core';
-import { getRenderFunc } from '@use-gpu/workbench';
+import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '../../traits/live';
+import { parsePosition } from '../../parse';
+import { memo, yeet, provide, useMemo, useNoMemo } from '../../live';
+import { toTensorArray, fillNumberArray } from '../../core';
+import { getRenderFunc } from '../../workbench';
 
 import { useDataContext, DataContext } from '../providers/data-provider';
 import { useRangeContext } from '../providers/range-provider';

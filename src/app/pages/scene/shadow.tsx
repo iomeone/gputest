@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, StorageSource, TextureSource, UniformType } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry, StorageSource, TextureSource, UniformType } from '../../../core';
 
-import React, { Gather, memo, useOne } from '@use-gpu/live';
+import React, { Gather, memo, useOne } from '../../../live';
 import { vec3 } from 'gl-matrix';
-import { seq } from '@use-gpu/core';
+import { seq } from '../../../core';
 
 import {
   Loop, Pass, FlatCamera, Animate, LinearRGB,
@@ -13,11 +13,11 @@ import {
   DirectionalLight, PointLight, AmbientLight,
   Data, PointLayer,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 import {
   Scene, Node, Mesh, Instances,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 import { InfoBox } from '../../ui/info-box';
 

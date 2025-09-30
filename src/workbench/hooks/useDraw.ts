@@ -1,5 +1,5 @@
 import type { VirtualDraw } from '../pass/types';
-import { use, useHooks, useNoHooks } from '@use-gpu/live';
+import { use, useHooks, useNoHooks } from '../../live';
 
 import { useInspectHoverable } from '../hooks/useInspectable';
 import { useVariantContext } from '../providers/pass-provider';

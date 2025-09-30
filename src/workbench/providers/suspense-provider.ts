@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import { yeet, fence, provide, makeContext, useContext, useNoContext, useOne, useRef, SUSPEND } from '@use-gpu/live';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import { yeet, fence, provide, makeContext, useContext, useNoContext, useOne, useRef, SUSPEND } from '../../live';
 
 type SuspenseContextProps = boolean;
 

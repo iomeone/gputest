@@ -1,8 +1,8 @@
-import type { LC, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement } from '../live';
 import type { GLTF, GLTFPrimitiveData } from './types';
 
-import { toUnweldedArray } from '@use-gpu/core';
-import { use, provide, useMemo, useNoMemo } from '@use-gpu/live';
+import { toUnweldedArray } from '../core';
+import { use, provide, useMemo, useNoMemo } from '../live';
 import { generateTangents } from 'mikktspace';
 import { mat4 } from 'gl-matrix';
 
@@ -12,7 +12,7 @@ import {
   TransformContext,
   useCombinedMatrixTransform, useNoCombinedMatrixTransform,
   useRawSource, useNoRawSource,
-} from '@use-gpu/workbench';
+} from '../workbench';
 import { useGLTFMaterial } from './gltf-material';
 
 export type GLTFPrimitiveProps = {

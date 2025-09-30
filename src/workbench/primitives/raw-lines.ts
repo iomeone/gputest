@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useMemo, useOne, useNoCallback } from '@use-gpu/live';
+import { memo, useCallback, useMemo, useOne, useNoCallback } from '../../live';
 
 import { useMaterialContext } from '../providers/material-provider';
 import { PickingSource, usePickingShader } from '../providers/picking-provider';
@@ -18,8 +18,8 @@ import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
-import { getLineVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
+import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
+import { getLineVertex } from '../../wgsl/instance/vertex/line.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

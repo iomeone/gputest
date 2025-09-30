@@ -1,4 +1,4 @@
-import type { XY, XYZW } from '@use-gpu/core';
+import type { XY, XYZW } from '../../core';
 import type { LayoutElement, LayoutRenderer, LayoutPicker, Direction, FitInto, AutoXY, Alignment, Anchor } from '../types';
 
 import { makeFlexCursor } from './cursor';

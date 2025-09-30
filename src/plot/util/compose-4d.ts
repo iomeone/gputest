@@ -1,4 +1,4 @@
-import type { VectorLike } from '@use-gpu/core';
+import type { VectorLike } from '../../core';
 import { vec4, mat4, quat } from 'gl-matrix';
 
 const makeComposeTransform4D = () => {

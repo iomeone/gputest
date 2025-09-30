@@ -1,17 +1,17 @@
-import type { LC } from '@use-gpu/live';
-import type { Emit, TextureTarget } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { Emit, TextureTarget } from '../../../core';
 
-import React, { Gather, use, useMemo } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React, { Gather, use, useMemo } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 
 import {
   Loop, FlatCamera, Pass, OrbitCamera, RawData, PointLayer, Pick,
   TextureBuffer, Compute, Stage, Iterate, Kernel, Suspense, RawFullScreen,
   useShader, useLambdaSource, useShaderRefs,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Absolute, Block, Element, Inline, Text,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 import { main as generateInitial }  from './cfd-texture/initial.wgsl';
 import { main as pushVelocity }     from './cfd-texture/push.wgsl';

@@ -1,6 +1,6 @@
 import React from 'react';
-import { use } from '@use-gpu/live';
-import { HTML } from '@use-gpu/react';
+import { use } from '../../live';
+import { HTML } from '../../react';
 
 const ICON = (s: string) => <span className="m-icon">{s}</span>
 

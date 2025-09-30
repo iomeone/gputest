@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
+use '../../wgsl/use/types'::{ Light, SurfaceFragment };
 
 @link fn applyMaterial(
   N: vec3<f32>,

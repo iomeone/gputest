@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, StorageSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../live';
+import type { GPUGeometry, StorageSource } from '../core';
 
-import { use, useCallback, useOne, tagFunction } from '@use-gpu/live';
-import { makeUseTrait, combine, TraitProps } from '@use-gpu/traits/live';
+import { use, useCallback, useOne, tagFunction } from '../live';
+import { makeUseTrait, combine, TraitProps } from '../traits/live';
 
 import {
   FaceLayer,
@@ -10,7 +10,7 @@ import {
   UseInstance,
   IndexedTransform,
   useMatrixContext,
-} from '@use-gpu/workbench';
+} from '../workbench';
 
 import { ColorTrait, ObjectTrait } from './traits';
 import { composeTransform } from './lib/compose';

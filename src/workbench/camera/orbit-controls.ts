@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { VectorLike } from '../../core';
 
-import { useProp } from '@use-gpu/traits/live';
-import { parseVec3 } from '@use-gpu/parse';
-import { useContext, useOne, useHooks } from '@use-gpu/live';
-import { makeOrbitMatrix, clamp } from '@use-gpu/core';
+import { useProp } from '../../traits/live';
+import { parseVec3 } from '../../parse';
+import { useContext, useOne, useHooks } from '../../live';
+import { makeOrbitMatrix, clamp } from '../../core';
 import { KeyboardContext, MouseContext, WheelContext } from '../providers/event-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { useDerivedState } from '../hooks/useDerivedState';

@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { UIAggregate } from '@use-gpu/layout';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LC, PropsWithChildren } from '../../live';
+import type { UIAggregate } from '../../layout';
+import type { TraitProps } from '../../traits';
 import type { SlideInfo } from '../types';
 
-import { unquote, gather, yeet, use, useFiber, useMemo } from '@use-gpu/live';
+import { unquote, gather, yeet, use, useFiber, useMemo } from '../../live';
 
 import { resolveSlides } from '../lib/slides';
 import { PresentReconciler } from '../reconcilers';

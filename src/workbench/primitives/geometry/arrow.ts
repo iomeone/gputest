@@ -1,4 +1,4 @@
-import type { CPUGeometry } from '@use-gpu/core';
+import type { CPUGeometry } from '../../../core';
 
 const τ = Math.PI * 2;
 

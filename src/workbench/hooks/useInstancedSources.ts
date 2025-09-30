@@ -1,8 +1,8 @@
-import type { StorageSource, LambdaSource, UniformAttribute, StructAggregateBuffer, UniformType } from '@use-gpu/core';
+import type { StorageSource, LambdaSource, UniformAttribute, StructAggregateBuffer, UniformType } from '../../core';
 
-import { useMemo } from '@use-gpu/live';
-import { chainTo, instanceWith, bindEntryPoint } from '@use-gpu/shader/wgsl';
-import { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import { useMemo } from '../../live';
+import { chainTo, instanceWith, bindEntryPoint } from '../../shader/wgsl';
+import { ShaderModule, ShaderSource } from '../../shader';
 import { getSource } from './useSource';
 import { getStructAggregate } from './useStructSources';
 import { getLambdaSource } from './useLambdaSource';

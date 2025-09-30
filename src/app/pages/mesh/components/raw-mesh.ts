@@ -1,21 +1,21 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { UniformAttribute, VertexData, RenderPassMode, DataTexture } from '@use-gpu/core';
+import type { LiveComponent } from '../../../../live';
+import type { UniformAttribute, VertexData, RenderPassMode, DataTexture } from '../../../../core';
 
-import { useViewContext, useDeviceContext, useRenderContext, usePickingContext } from '@use-gpu/workbench';
-import { yeet, memo, useMemo } from '@use-gpu/live';
+import { useViewContext, useDeviceContext, useRenderContext, usePickingContext } from '../../../../workbench';
+import { yeet, memo, useMemo } from '../../../../live';
 import {
   makeVertexBuffers, makeRawTexture, makeMultiUniforms,
   makeRenderPipeline, makeShaderModuleDescriptor, makeSampler, makeTextureBinding,
   uploadBuffer, uploadDataTexture,
-} from '@use-gpu/core';
-import { linkBundle, getBundleLabel } from '@use-gpu/shader/wgsl';
-import { useInspectable, useNativeColor, PassReconciler } from '@use-gpu/workbench';
+} from '../../../../core';
+import { linkBundle, getBundleLabel } from '../../../../shader/wgsl';
+import { useInspectable, useNativeColor, PassReconciler } from '../../../../workbench';
 
 import instanceDrawMesh from './vertex/mesh.wgsl';
 import instanceDrawMeshPick from './vertex/mesh-pick.wgsl';
 
 import instanceFragmentMesh from './fragment/mesh.wgsl';
-import instanceFragmentPickGeometry from '@use-gpu/wgsl/render/fragment/pick.wgsl';
+import instanceFragmentPickGeometry from '../../../../wgsl/render/fragment/pick.wgsl';
 
 const {quote} = PassReconciler;
 

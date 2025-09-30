@@ -1,9 +1,9 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/core';
+import type { LC, LiveElement } from '../live';
+import type { VectorLike } from '../core';
 import type { GLTF } from './types';
 import { vec3, mat4, quat } from 'gl-matrix';
 
-import { use, useMemo } from '@use-gpu/live';
+import { use, useMemo } from '../live';
 import { GLTFMesh } from './gltf-mesh';
 
 export type GLTFNodeProps = {

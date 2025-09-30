@@ -1,5 +1,5 @@
-import type { VectorLike } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { VectorLike } from '../core';
+import type { ShaderSource } from '../shader';
 
 export type NodeTransform = {
   position: VectorLike,

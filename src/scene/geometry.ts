@@ -1,11 +1,11 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { CPUGeometry } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../live';
+import type { CPUGeometry } from '../core';
 
-import { memo, yeet, useOne } from '@use-gpu/live';
-import { formatToArchetype } from '@use-gpu/core';
-import { patch } from '@use-gpu/state';
+import { memo, yeet, useOne } from '../live';
+import { formatToArchetype } from '../core';
+import { patch } from '../state';
 
-import { transformPositions, transformNormals, useMatrixContext } from '@use-gpu/workbench';
+import { transformPositions, transformNormals, useMatrixContext } from '../workbench';
 
 export type GeometryProps = PropsWithChildren<CPUGeometry>;
 

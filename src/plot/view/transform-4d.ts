@@ -1,10 +1,10 @@
-import type { LiveComponent, PropsWithChildren, DeferredCall } from '@use-gpu/live';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LiveComponent, PropsWithChildren, DeferredCall } from '../../live';
+import type { TraitProps } from '../../traits';
 
-import { combine, makeUseTrait } from '@use-gpu/traits/live';
-import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
-import { MatrixContext, TransformContext, QueueReconciler, useCombinedTransform, useShaderRef, getShader } from '@use-gpu/workbench';
-import { getBundleKey } from '@use-gpu/shader/wgsl';
+import { combine, makeUseTrait } from '../../traits/live';
+import { provide, useDouble, useOne, useMemo } from '../../live';
+import { MatrixContext, TransformContext, QueueReconciler, useCombinedTransform, useShaderRef, getShader } from '../../workbench';
+import { getBundleKey } from '../../shader/wgsl';
 
 import { composeTransform4D } from '../util/compose-4d';
 import { swizzleMatrix } from '../util/swizzle';
@@ -12,7 +12,7 @@ import { vec4, mat4 } from 'gl-matrix';
 
 import { AxesTrait, Object4DTrait } from '../traits';
 
-import { getCartesian4DPosition } from '@use-gpu/wgsl/transform/cartesian-4d.wgsl';
+import { getCartesian4DPosition } from '../../wgsl/transform/cartesian-4d.wgsl';
 
 const {signal} = QueueReconciler;
 

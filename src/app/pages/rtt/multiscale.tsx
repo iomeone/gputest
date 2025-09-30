@@ -1,17 +1,17 @@
-import type { LC } from '@use-gpu/live';
-import type { DataTexture, TextureSource, OffscreenTarget } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LC } from '../../../live';
+import type { DataTexture, TextureSource, OffscreenTarget } from '../../../core';
+import type { ShaderModule } from '../../../shader';
 
-import React, { Gather, useRef } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React, { Gather, useRef } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 
 import {
   Loop, Pass, FlatCamera, Pick, Cursor,
   RawTexture, RenderTarget, RenderToTexture, FullScreen,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Text,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 import { InfoBox } from '../../ui/info-box';
 

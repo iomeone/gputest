@@ -1,5 +1,5 @@
 import { wrap } from 'comlink';
-import { seq } from '@use-gpu/core';
+import { seq } from '../../core';
 
 export const getConcurrency = () => (
   Math.max(1, Math.min(navigator.hardwareConcurrency * 0.8, navigator.hardwareConcurrency - 2))

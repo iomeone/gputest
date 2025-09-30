@@ -1,8 +1,8 @@
-import type { UseGPURenderContext } from '@use-gpu/core';
-import type { Ref } from '@use-gpu/live';
+import type { UseGPURenderContext } from '../../core';
+import type { Ref } from '../../live';
 import type { Culler, Renderable } from './types';
 
-import { resolve, proxy } from '@use-gpu/core';
+import { resolve, proxy } from '../../core';
 import { mat4, vec3 } from 'gl-matrix';
 
 export const getRenderPassDescriptor = (

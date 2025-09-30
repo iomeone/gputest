@@ -1,5 +1,5 @@
-import { parseNumber } from '@use-gpu/parse';
-import { trait, makeUseTrait } from '@use-gpu/traits/live';
+import { parseNumber } from '../parse';
+import { trait, makeUseTrait } from '../traits/live';
 
 export const GeographicTrait = trait({
   long: parseNumber,

@@ -1,11 +1,11 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { memo, useCallback, useMemo, useNoCallback } from '../../live';
+import { chainTo } from '../../shader/wgsl';
 
 import { useMaterialContext } from '../providers/material-provider';
 import { PickingSource, usePickingShader } from '../providers/picking-provider';
@@ -19,8 +19,8 @@ import { useDataLength } from '../hooks/useDataBinding';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getQuadVertex } from '@use-gpu/wgsl/instance/vertex/quad.wgsl';
-import { getMaskedColor } from '@use-gpu/wgsl/mask/masked.wgsl';
+import { getQuadVertex } from '../../wgsl/instance/vertex/quad.wgsl';
+import { getMaskedColor } from '../../wgsl/mask/masked.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

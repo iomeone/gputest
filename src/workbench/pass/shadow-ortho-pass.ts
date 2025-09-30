@@ -1,14 +1,14 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { ViewUniforms } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../live';
+import type { ViewUniforms } from '../../core';
 import type { Renderable } from '../pass';
 import type { BoundLight } from '../light/types';
 import { mat4 } from 'gl-matrix';
 
-import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { yeet, memo, useMemo, useOne } from '../../live';
 import {
   makeFrustumPlanes, makeGlobalUniforms, uploadBuffer,
   VIEW_UNIFORMS,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';

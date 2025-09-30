@@ -1,5 +1,5 @@
-import type { Time } from '@use-gpu/core';
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import type { Time } from '../../core';
+import { makeContext, useContext, useNoContext } from '../../live';
 
 export type TimeContextProps = Time;
 

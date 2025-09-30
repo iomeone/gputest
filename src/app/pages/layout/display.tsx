@@ -1,15 +1,15 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../../live';
 
-import React from '@use-gpu/live';
-import { TextureSource } from '@use-gpu/core';
+import React from '../../../live';
+import { TextureSource } from '../../../core';
 
 import {
   LinearRGB, Pass, FlatCamera, PanControls, ImageTexture,
   DebugProvider,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Overflow, Text, Element,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 import { LayoutControls } from '../../ui/layout-controls';
 import { InfoBox } from '../../ui/info-box';

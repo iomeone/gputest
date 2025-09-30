@@ -1,4 +1,4 @@
-import type { LC, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement } from '../../live';
 
 import { usePresentContext } from '../providers/present-provider';
 

@@ -1,14 +1,14 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { Rectangle } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { ShaderModule } from '../../shader';
+import type { Rectangle } from '../../core';
 import type { LayoutRenderer, LayoutElement, FitInto } from '../types';
 
-import { use, memo, gather, yeet, useMemo } from '@use-gpu/live';
-import { bindBundle, chainTo } from '@use-gpu/shader/wgsl';
+import { use, memo, gather, yeet, useMemo } from '../../live';
+import { bindBundle, chainTo } from '../../shader/wgsl';
 
 import { memoFit } from '../lib/util';
 
-import { getCombinedClip, getTransformedClip } from '@use-gpu/wgsl/layout/clip.wgsl';
+import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clip.wgsl';
 
 export type TransformProps = PropsWithChildren<{
   clip?: ShaderModule,

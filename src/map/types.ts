@@ -1,4 +1,4 @@
-import type { ColorLike } from '@use-gpu/core';
+import type { ColorLike } from '../core';
 
 export type MVTStyleSheet = Record<string, MVTStyleProperties>;
 

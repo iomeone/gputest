@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { LiveComponent } from '@use-gpu/live';
-import type { TraitProps } from '@use-gpu/traits/live';
+import type { LiveComponent } from '../../live';
+import type { TraitProps } from '../../traits/live';
 
-import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
-import { schemaToArchetype, schemaToEmitters, adjustSchema } from '@use-gpu/core';
-import { yeet, memo, useOne } from '@use-gpu/live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { schemaToArchetype, schemaToEmitters, adjustSchema } from '../../core';
+import { yeet, memo, useOne } from '../../live';
 
-import { useInspectHoverable, useTransformContext, useScissorContext, LINE_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
+import { useInspectHoverable, useTransformContext, useScissorContext, LINE_SCHEMA, LayerReconciler } from '../../workbench';
 
 import { LineTraits } from '../traits';
 

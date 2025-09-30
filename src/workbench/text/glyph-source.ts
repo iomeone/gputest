@@ -1,7 +1,7 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Rectangle } from '@use-gpu/core';
+import type { LiveComponent } from '../../live';
+import type { Rectangle } from '../../core';
 
-import { memo, yeet } from '@use-gpu/live';
+import { memo, yeet } from '../../live';
 
 import { useFontFamily, useFontText, useFontHeight } from './providers/font-provider';
 import { useSDFGlyphData } from './providers/sdf-font-provider';

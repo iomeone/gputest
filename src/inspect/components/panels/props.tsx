@@ -1,7 +1,7 @@
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../../../live';
 import type { Action, InspectAPI } from '../types';
 
-import { formatNode, formatNodeName, YEET } from '@use-gpu/live';
+import { formatNode, formatNodeName, YEET } from '../../../live';
 import { InspectObject } from '../inspect-object';
 import { Spacer } from '../layout';
 

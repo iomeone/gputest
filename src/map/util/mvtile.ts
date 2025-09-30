@@ -1,5 +1,5 @@
-import type { ArchetypeSchema, AggregateItem, ColorLike, FieldArray, TypedArray, VectorEmitter, VectorLike, XY, XYZW } from '@use-gpu/core';
-import type { SegmentDecorator } from '@use-gpu/workbench';
+import type { ArchetypeSchema, AggregateItem, ColorLike, FieldArray, TypedArray, VectorEmitter, VectorLike, XY, XYZW } from '../../core';
+import type { SegmentDecorator } from '../../workbench';
 import type { MVTStyleSheet, MVTStyleProperties } from '../types';
 import type { VectorTile } from 'mapbox-vector-tile';
 
@@ -11,13 +11,13 @@ import {
 
   copyRecursiveNumberArray,
   toCPUDims,
-} from '@use-gpu/core';
+} from '../../core';
 
-import { toChunkCounts } from '@use-gpu/parse';
+import { toChunkCounts } from '../../parse';
 
 import { cutPolygons, clipTileEdges } from './tesselate';
 
-import { getLineSegments, getFaceSegmentsConcave, POINT_SCHEMA, LINE_SCHEMA, FACE_SCHEMA } from '@use-gpu/workbench';
+import { getLineSegments, getFaceSegmentsConcave, POINT_SCHEMA, LINE_SCHEMA, FACE_SCHEMA } from '../../workbench';
 
 const POS = {positions: 'vec2<f32>'};
 const SCHEMAS = {

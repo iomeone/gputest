@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { TextureSource } from '@use-gpu/core';
-import type { GLTF } from '@use-gpu/gltf';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { TextureSource } from '../../../core';
+import type { GLTF } from '../../../gltf';
 
-import React, { use, Gather } from '@use-gpu/live';
+import React, { use, Gather } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -12,10 +12,10 @@ import {
   ImageCubeTexture, PrefilteredEnvMap, Environment,
   DirectionalLight, PointLight, DomeLight,
   Animate, Suspense,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
-import { GLTFData, GLTFModel } from '@use-gpu/gltf';
-import { Scene, Node } from '@use-gpu/scene';
+import { GLTFData, GLTFModel } from '../../../gltf';
+import { Scene, Node } from '../../../scene';
 
 import { EnvMapControls } from '../../ui/envmap-controls';
 import { InfoBox } from '../../ui/info-box';

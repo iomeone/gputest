@@ -1,9 +1,9 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { use, yeet, useMemo, useOne } from '@use-gpu/live';
-import { patch } from '@use-gpu/state';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { use, yeet, useMemo, useOne } from '../../../live';
+import { patch } from '../../../state';
+import { bindBundle } from '../../../shader/wgsl';
 
 import { DrawCall, drawCall } from '../../queue/draw-call';
 import { Dispatch } from '../../queue/dispatch';
@@ -14,8 +14,8 @@ import { useRenderContext } from '../../providers/render-provider';
 import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
-import instanceFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
+import instanceDrawVirtualSolid from '../../../wgsl/render/vertex/virtual-solid.wgsl';
+import instanceFragmentSolid from '../../../wgsl/render/fragment/solid.wgsl';
 
 export type DebugRenderProps = VirtualDraw;
 

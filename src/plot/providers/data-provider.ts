@@ -1,5 +1,5 @@
-import type { TensorArray } from '@use-gpu/core';
-import { makeContext, useContext } from '@use-gpu/live';
+import type { TensorArray } from '../../core';
+import { makeContext, useContext } from '../../live';
 
 export type DataContextProps = Record<string, TensorArray>;
 

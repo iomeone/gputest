@@ -1,7 +1,7 @@
-import type { LC, LiveElement, PropsWithChildren, PropsWithMarkup } from '@use-gpu/live';
-import type { ColorLike } from '@use-gpu/core';
+import type { LC, LiveElement, PropsWithChildren, PropsWithMarkup } from '../../../live';
+import type { ColorLike } from '../../../core';
 
-import React, { use } from '@use-gpu/live';
+import React, { use } from '../../../live';
 
 import {
   Pass, FlatCamera,
@@ -9,13 +9,13 @@ import {
   Cursor,
   Animate,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Present, Slide, Overlay, Step, PresentInfo, KeyboardControls,
-} from '@use-gpu/present';
+} from '../../../present';
 import {
   UI, Layout, Absolute, Flex, Block, Inline, Text,
-} from '@use-gpu/layout';
+} from '../../../layout';
 import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';

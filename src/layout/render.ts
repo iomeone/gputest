@@ -1,13 +1,13 @@
-import type { LiveElement } from '@use-gpu/live';
-import type { Rectangle } from '@use-gpu/core';
+import type { LiveElement } from '../live';
+import type { Rectangle } from '../core';
 import type { RenderInside, RenderOutside, RenderInline, InlineRenderer, InlineLine, UIAggregate } from './types';
 
-import { memoArgs, yeet, useMemo, useNoMemo } from '@use-gpu/live';
-import { bindBundle, chainTo } from '@use-gpu/shader/wgsl';
-import { schemaToArchetype } from '@use-gpu/core';
-import { UI_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
+import { memoArgs, yeet, useMemo, useNoMemo } from '../live';
+import { bindBundle, chainTo } from '../shader/wgsl';
+import { schemaToArchetype } from '../core';
+import { UI_SCHEMA, LayerReconciler } from '../workbench';
 
-import { getCombinedClip, getTransformedClip } from '@use-gpu/wgsl/layout/clip.wgsl';
+import { getCombinedClip, getTransformedClip } from '../wgsl/layout/clip.wgsl';
 import { INSPECT_STYLE } from './lib/constants';
 
 const {quote} = LayerReconciler;

@@ -1,11 +1,11 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Lazy, StorageSource, DataBounds } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
-import type { VectorLike } from '@use-gpu/core';
+import type { LiveComponent } from '../../live';
+import type { Lazy, StorageSource, DataBounds } from '../../core';
+import type { ShaderSource } from '../../shader';
+import type { VectorLike } from '../../core';
 
-import { use, memo, useCallback, useMemo, useOne, useRef, useVersion, useNoCallback, incrementVersion } from '@use-gpu/live';
-import { resolve, uploadBuffer, toDataBounds } from '@use-gpu/core';
-import { shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { use, memo, useCallback, useMemo, useOne, useRef, useVersion, useNoCallback, incrementVersion } from '../../live';
+import { resolve, uploadBuffer, toDataBounds } from '../../core';
+import { shouldEqual, sameShallow } from '../../traits/live';
 
 import { useShader } from '../hooks/useShader';
 import { useCombinedTransform, useNoCombinedTransform } from '../hooks/useCombinedTransform';
@@ -21,11 +21,11 @@ import { useMaterialContext } from '../providers/material-provider';
 import { TransformContextProps } from '../providers/transform-provider';
 import { PassReconciler } from '../reconcilers/index';
 
-import { main as scanVolume } from '@use-gpu/wgsl/contour/scan.wgsl';
-import { main as fitContourLinear } from '@use-gpu/wgsl/contour/fit-linear.wgsl';
-import { main as fitContourQuadratic } from '@use-gpu/wgsl/contour/fit-quadratic.wgsl';
-import { getDualContourVertex } from '@use-gpu/wgsl/instance/vertex/dual-contour.wgsl';
-import { getPassThruColor } from '@use-gpu/wgsl/mask/passthru.wgsl';
+import { main as scanVolume } from '../../wgsl/contour/scan.wgsl';
+import { main as fitContourLinear } from '../../wgsl/contour/fit-linear.wgsl';
+import { main as fitContourQuadratic } from '../../wgsl/contour/fit-quadratic.wgsl';
+import { getDualContourVertex } from '../../wgsl/instance/vertex/dual-contour.wgsl';
+import { getPassThruColor } from '../../wgsl/mask/passthru.wgsl';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { Dispatch } from '../queue/dispatch';

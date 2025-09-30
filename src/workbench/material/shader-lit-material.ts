@@ -1,14 +1,14 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { LC, LiveElement } from '../../live';
+import type { ShaderModule, ShaderSource } from '../../shader';
 
-import { provide, yeet, useMemo } from '@use-gpu/live';
+import { provide, yeet, useMemo } from '../../live';
 
 import { useLightContext } from '../providers/light-provider';
 import { MaterialContext } from '../providers/material-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
-import { getLitFragment } from '@use-gpu/wgsl/instance/fragment/lit.wgsl';
-import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { getLitFragment } from '../../wgsl/instance/fragment/lit.wgsl';
+import { applyPBRMaterial } from '../../wgsl/material/pbr-apply.wgsl';
 
 const {signal} = QueueReconciler;
 

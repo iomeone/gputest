@@ -1,21 +1,21 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Tracks } from '@use-gpu/workbench';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Tracks } from '../../../workbench';
 
-import React, { use, useContext } from '@use-gpu/live';
+import React, { use, useContext } from '../../../live';
 
 import {
   Loop, Pass,
   Cursor, OrbitCamera, OrbitControls,
   Animate,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Plot, Spherical, Axis, Grid, Label, Line, Scale, Tick,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import {
   WebMercator, MVTiles, MVTStyles, MapboxProvider, MapTileProvider,
-} from '@use-gpu/map';
-import { parseColor } from '@use-gpu/parse';
+} from '../../../map';
+import { parseColor } from '../../../parse';
 
 import { PlotControls } from '../../ui/plot-controls';
 import { InfoBox } from '../../ui/info-box';

@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ LightVertex };
+use '../../../wgsl/use/types'::{ LightVertex };
 
 @link fn getVertex(i: u32) -> LightVertex {};
 //@optional @link fn toColorSpace(c: vec4<f32>) -> vec4<f32> { return c; }

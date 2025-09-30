@@ -1,13 +1,13 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
   Pass,
   OrbitCamera, OrbitControls,
   Pick, PickState, Cursor,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 
 import { InfoBox } from '../../ui/info-box';
 

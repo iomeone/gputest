@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Atlas, Rectangle, TextureSource, LambdaSource } from '@use-gpu/core';
+import type { LiveComponent } from '../../live';
+import type { Atlas, Rectangle, TextureSource, LambdaSource } from '../../core';
 
-import { memo, use, yeet, useMemo } from '@use-gpu/live';
-import { useShader, useLambdaSource } from '@use-gpu/workbench';
+import { memo, use, yeet, useMemo } from '../../live';
+import { useShader, useLambdaSource } from '../../workbench';
 
 import { useFontDebug } from './providers/font-provider';
 import { useSDFFontContext, useNoSDFFontContext } from './providers/sdf-font-provider';
@@ -10,7 +10,7 @@ import { useLayoutContext } from '../providers/layout-provider';
 
 //LOGGING.fiber = true;
 
-import { wgsl } from '@use-gpu/shader/wgsl';
+import { wgsl } from '../../shader/wgsl';
 
 type UIAggregate = any;
 

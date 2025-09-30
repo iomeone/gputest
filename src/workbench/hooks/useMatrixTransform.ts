@@ -1,17 +1,17 @@
-import type { DataBounds } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { DataBounds } from '../../core';
+import type { ShaderSource } from '../../shader';
 import type { TransformContextProps, TransformBounds, MatrixRefs } from '../providers/transform-provider';
 
-import { useCallback, useDouble, useMemo, useOne, useVersion, useNoCallback, useNoDouble, useNoOne, useNoVersion } from '@use-gpu/live';
-import { bundleToAttribute, getBundleKey } from '@use-gpu/shader/wgsl';
+import { useCallback, useDouble, useMemo, useOne, useVersion, useNoCallback, useNoDouble, useNoOne, useNoVersion } from '../../live';
+import { bundleToAttribute, getBundleKey } from '../../shader/wgsl';
 import { useMatrixContext, useNoMatrixContext } from '../providers/matrix-provider';
 import { getShader } from './useShader';
 import { getSource } from './useSource';
 
 import { vec3, mat3, mat4 } from 'gl-matrix';
 
-import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl';
-import { getMatrixDifferential } from '@use-gpu/wgsl/transform/diff-matrix.wgsl';
+import { getCartesianPosition } from '../../wgsl/transform/cartesian.wgsl';
+import { getMatrixDifferential } from '../../wgsl/transform/diff-matrix.wgsl';
 
 const NO_MATRIX = mat4.create();
 const MATRIX_BINDING = bundleToAttribute(getCartesianPosition, 'getTransformMatrix');

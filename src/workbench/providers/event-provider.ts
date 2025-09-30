@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 
-import { memo, provide, makeContext, useContext, useMemo, useOne, useResource, useState } from '@use-gpu/live';
-import { makeIdAllocator } from '@use-gpu/core';
+import { memo, provide, makeContext, useContext, useMemo, useOne, useResource, useState } from '../../live';
+import { makeIdAllocator } from '../../core';
 import { PickingContext } from '../providers/picking-provider';
 import { RenderContext } from '../providers/render-provider';
 

@@ -1,21 +1,21 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { ColorLike, XY, XYZW, Rectangle, TypedArray } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { ColorLike, XY, XYZW, Rectangle, TypedArray } from '../../core';
+import type { ShaderModule } from '../../shader';
 import type { Direction, OverflowMode, FitInto, UIAggregate } from '../types';
 
-import { useProp } from '@use-gpu/traits/live';
-import { parseColor } from '@use-gpu/parse';
-import { yeet, use, useMemo } from '@use-gpu/live';
-import { schemaToArchetype } from '@use-gpu/core';
-import { useInspectHoverable, UI_SCHEMA } from '@use-gpu/workbench';
+import { useProp } from '../../traits/live';
+import { parseColor } from '../../parse';
+import { yeet, use, useMemo } from '../../live';
+import { schemaToArchetype } from '../../core';
+import { useInspectHoverable, UI_SCHEMA } from '../../workbench';
 
 import { isHorizontal, memoFit } from '../lib/util';
 import { INSPECT_STYLE } from '../lib/constants';
 
-import { chainTo } from '@use-gpu/shader/wgsl';
-import { useShader, LayerReconciler } from '@use-gpu/workbench';
+import { chainTo } from '../../shader/wgsl';
+import { useShader, LayerReconciler } from '../../workbench';
 
-import { getScrolledPosition } from '@use-gpu/wgsl/layout/scroll.wgsl';
+import { getScrolledPosition } from '../../wgsl/layout/scroll.wgsl';
 
 const {quote} = LayerReconciler;
 

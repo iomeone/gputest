@@ -1,5 +1,5 @@
-import type { CPUGeometry } from '@use-gpu/core';
-import { makeNumberWriter } from '@use-gpu/core';
+import type { CPUGeometry } from '../../../core';
+import { makeNumberWriter } from '../../../core';
 
 type PlaneGeometryProps = {
   width?: number,

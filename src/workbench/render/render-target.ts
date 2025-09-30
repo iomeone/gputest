@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { OffscreenTarget, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { OffscreenTarget, ColorSpace, TextureSource, TextureTarget } from '../../core';
 
-import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
+import { provide, fence, yeet, useContext, useMemo, useOne } from '../../live';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
@@ -18,7 +18,7 @@ import {
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLY,
   seq,
-} from '@use-gpu/core';
+} from '../../core';
 
 const NO_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 

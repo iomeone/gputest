@@ -1,4 +1,4 @@
-import React from '@use-gpu/live';
+import React from '../live';
 
 import { GeometryGLTFPage } from './pages/geometry/gltf';
 import { GeometryLinesPage } from './pages/geometry/lines';

@@ -1,14 +1,14 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { Rectangle } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { ShaderModule } from '../../shader';
+import type { Rectangle } from '../../core';
 import type { LayoutElement, Direction, AlignmentLike, GapLike, Anchor, FitInto } from '../types';
-import type { TraitProps } from '@use-gpu/traits';
+import type { TraitProps } from '../../traits';
 
-import { useProp, shouldEqual, sameShallow } from '@use-gpu/traits/live';
-import { keyed, yeet, memo, gather, useFiber, useMemo } from '@use-gpu/live';
+import { useProp, shouldEqual, sameShallow } from '../../traits/live';
+import { keyed, yeet, memo, gather, useFiber, useMemo } from '../../live';
 import { getFlexMinMax, fitFlex } from '../lib/flex';
 import { makeBoxPicker, memoFit } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
+import { useInspectable, useInspectHoverable } from '../../workbench';
 
 import { BoxTrait, ElementTrait, useBoxTrait, useElementTrait } from '../traits';
 import { evaluateDimension, parseAlignmentXY, parseAnchor, parseDirectionX, parseGapXY } from '../parse';

@@ -1,8 +1,8 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { UseGPURenderContext, ColorSpace, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { UseGPURenderContext, ColorSpace, TextureSource } from '../../core';
 
-import { RenderContext, LayoutContext, DeviceContext } from '@use-gpu/workbench';
-import { provide, use, useCallback, useContext, useMemo, useOne, useRef, incrementVersion } from '@use-gpu/live';
+import { RenderContext, LayoutContext, DeviceContext } from '../../workbench';
+import { provide, use, useCallback, useContext, useMemo, useOne, useRef, incrementVersion } from '../../live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -11,9 +11,9 @@ import {
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLY,
-} from '@use-gpu/core';
+} from '../../core';
 
-import { Loop, useInspectable } from '@use-gpu/workbench';
+import { Loop, useInspectable } from '../../workbench';
 
 import { DEPTH_STENCIL_FORMAT, COLOR_SPACE, BACKGROUND_COLOR } from '../constants';
 import { makePresentationContext } from '../web';

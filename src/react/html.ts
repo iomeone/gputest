@@ -1,4 +1,4 @@
-import { useFiber, useResource, useNoResource } from '@use-gpu/live';
+import { useFiber, useResource, useNoResource } from '../live';
 
 import React from 'react';
 import {createRoot} from 'react-dom/client';

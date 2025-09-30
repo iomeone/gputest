@@ -1,15 +1,15 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { StorageSource, LambdaSource, TypedArray, UniformType, Emitter, DataBounds } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { StorageSource, LambdaSource, TypedArray, UniformType, Emitter, DataBounds } from '../../core';
+import type { ShaderSource } from '../../shader';
 
-import { useMemo, useNoMemo, useOne, useNoOne, useContext, incrementVersion } from '@use-gpu/live';
+import { useMemo, useNoMemo, useOne, useNoOne, useContext, incrementVersion } from '../../live';
 import {
   makeGPUArray, copyNumberArray, emitArray, makeNumberWriter,
   makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
   getBoundingBox, toDataBounds,
   toCPUDims, toGPUDims,
   seq,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
@@ -20,8 +20,8 @@ import { useRenderProp } from '../hooks/useRenderProp';
 import { useSource, useNoSource } from '../hooks/useSource';
 import { getShader } from '../hooks/useShader';
 
-import { chainTo } from '@use-gpu/shader/wgsl';
-import { getInterleaveIndex } from '@use-gpu/wgsl/instance/index/interleave.wgsl';
+import { chainTo } from '../../shader/wgsl';
+import { getInterleaveIndex } from '../../wgsl/instance/index/interleave.wgsl';
 
 const {signal} = QueueReconciler;
 

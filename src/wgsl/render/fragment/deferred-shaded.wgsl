@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/octahedral'::{ encodeOctahedral };
+use '../../../wgsl/codec/octahedral'::{ encodeOctahedral };
 
 struct GBufferSample {
   @location(0) albedo: vec4<f32>,

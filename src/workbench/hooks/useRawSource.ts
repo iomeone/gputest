@@ -1,7 +1,7 @@
-import type { StorageSource, UniformType, TensorArray, TypedArray } from '@use-gpu/core';
+import type { StorageSource, UniformType, TensorArray, TypedArray } from '../../core';
 
-import { useOne, useMemo, useVersion, useNoOne, useNoMemo, useNoVersion, incrementVersion } from '@use-gpu/live';
-import { makeDataBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
+import { useOne, useMemo, useVersion, useNoOne, useNoMemo, useNoVersion, incrementVersion } from '../../live';
+import { makeDataBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS } from '../../core';
 
 import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';
 import { useBufferedSize, useNoBufferedSize } from './useBufferedSize';

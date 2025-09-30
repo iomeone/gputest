@@ -1,8 +1,8 @@
-import type { ColorLike } from '@use-gpu/core';
-import { useProp } from '@use-gpu/traits/live';
-import { parseColor, parseNumber } from '@use-gpu/parse';
+import type { ColorLike } from '../../core';
+import { useProp } from '../../traits/live';
+import { parseColor, parseNumber } from '../../parse';
 
-import { memo, useMemo } from '@use-gpu/live';
+import { memo, useMemo } from '../../live';
 import { useLightContext } from '../providers/light-provider';
 
 import { AMBIENT_LIGHT } from './types';

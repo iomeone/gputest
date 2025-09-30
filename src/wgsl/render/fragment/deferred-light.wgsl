@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view':: { getViewResolution };
+use '../../../wgsl/use/view':: { getViewResolution };
 
 @link fn getFragment(uv: vec2<f32>) -> vec4<f32>;
 

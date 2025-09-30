@@ -1,7 +1,7 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, PropsWithChildren } from '../live';
 
-import { memo, provide } from '@use-gpu/live';
-import { TransformContext, QueueReconciler, useCombinedMatrixTransform } from '@use-gpu/workbench';
+import { memo, provide } from '../live';
+import { TransformContext, QueueReconciler, useCombinedMatrixTransform } from '../workbench';
 
 const {signal} = QueueReconciler;
 

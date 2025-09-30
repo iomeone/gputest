@@ -4,12 +4,12 @@ import {
   optional,
   nullable,
   trait,
-} from '@use-gpu/traits/live';
+} from '../traits/live';
 import {
   parseNumber,
   parseInteger,
   parseColor,
-} from '@use-gpu/parse';
+} from '../parse';
 import {
   parseAnchor,
   parseAnchorXY,

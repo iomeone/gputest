@@ -1,4 +1,4 @@
-import { toFloat16 } from '@use-gpu/core';
+import { toFloat16 } from '../../core';
 
 export const parseRGBM16 = (data: Uint8Array, width: number, height: number, flip: boolean) => {
   const out = new Uint16Array(width * height * 4);

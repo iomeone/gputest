@@ -1,7 +1,7 @@
 import type {
   ArrowFunction, TypedArray, TensorArray, TypedArrayConstructor,
   Blending, VectorLike, ArrayLike, ColorLike, ColorLikes, Side, VectorLikes,
-} from '@use-gpu/core';
+} from '../core';
 import type { Parser, Join, PointShape, Domain } from './types';
 import { mat4, vec4, vec3, vec2, quat } from 'gl-matrix';
 import { toScalarArray, toVectorArray, toMultiVectorArray, toMultiScalarArray, toMultiMultiVectorArray } from './flatten';

@@ -1,6 +1,6 @@
-import type { TextureSource } from '@use-gpu/core';
+import type { TextureSource } from '../../core';
 
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import { makeContext, useContext, useNoContext } from '../../live';
 
 export const FeedbackContext = makeContext<TextureSource>(undefined, 'FeedbackContext');
 

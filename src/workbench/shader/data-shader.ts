@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { StorageSource, LambdaSource, Lazy, TensorArray } from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { StorageSource, LambdaSource, Lazy, TensorArray } from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
 
-import { useMemo } from '@use-gpu/live';
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { useMemo } from '../../live';
+import { bundleToAttributes } from '../../shader/wgsl';
 
 import { useShaderRefs } from '../hooks/useShaderRef';
 import { useLambdaSource } from '../hooks/useLambdaSource';

@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/array'::{ sizeToModulus3, packIndex3, unpackIndex3 };
+use '../../wgsl/use/array'::{ sizeToModulus3, packIndex3, unpackIndex3 };
 use './types'::{ IndirectDrawMeta };
 use './solve'::{ approx3x3 };
 

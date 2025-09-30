@@ -1,6 +1,6 @@
-import type { VectorLike } from '@use-gpu/core';
-import { useMemo } from '@use-gpu/live';
-import { optional, trait, makeUseTrait } from '@use-gpu/traits/live';
+import type { VectorLike } from '../core';
+import { useMemo } from '../live';
+import { optional, trait, makeUseTrait } from '../traits/live';
 import {
   parseBoolean,
   parsePosition,
@@ -9,7 +9,7 @@ import {
   parseScale,
   parseMatrix,
   parseColorOpacity,
-} from '@use-gpu/parse';
+} from '../parse';
 import { vec4 } from 'gl-matrix';
 
 export const ObjectTrait = trait({

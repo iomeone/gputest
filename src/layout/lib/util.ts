@@ -1,12 +1,12 @@
-import type { LiveElement } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { XY, XYZW, Rectangle } from '@use-gpu/core';
+import type { LiveElement } from '../../live';
+import type { ShaderModule } from '../../shader';
+import type { XY, XYZW, Rectangle } from '../../core';
 import type { FitInto, Direction, Alignment, LayoutRenderer, LayoutPicker, InlineRenderer, InlineLine } from '../types';
 
-import { fragment, morph, use } from '@use-gpu/live';
-import { toMurmur53 } from '@use-gpu/state';
-import { bindBundle, chainTo } from '@use-gpu/shader/wgsl';
-import { getCombinedClip, getTransformedClip } from '@use-gpu/wgsl/layout/clip.wgsl';
+import { fragment, morph, use } from '../../live';
+import { toMurmur53 } from '../../state';
+import { bindBundle, chainTo } from '../../shader/wgsl';
+import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clip.wgsl';
 
 export const isHorizontal = (d: Direction) => d === 'x' || d === 'lr' || d === 'rl';
 export const isVertical = (d: Direction) => d === 'y' || d === 'tb' || d === 'bt';

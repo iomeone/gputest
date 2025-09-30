@@ -1,14 +1,14 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { ColorSpace, TextureSource, TextureTarget } from '../../core';
 
-import { seq } from '@use-gpu/core';
-import { provide, yeet, fence, useContext, useMemo } from '@use-gpu/live';
+import { seq } from '../../core';
+import { provide, yeet, fence, useContext, useMemo } from '../../live';
 import { PRESENTATION_FORMAT, COLOR_SPACE } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { ComputeContext } from '../providers/compute-provider';
 
-import { makeStorageTexture } from '@use-gpu/core';
+import { makeStorageTexture } from '../../core';
 
 const DEFAULT_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 

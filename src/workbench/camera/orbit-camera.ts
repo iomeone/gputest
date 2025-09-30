@@ -1,11 +1,11 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/core';
-import { ViewUniforms } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { VectorLike } from '../../core';
+import { ViewUniforms } from '../../core';
 
-import { useProp } from '@use-gpu/traits/live';
-import { parsePosition } from '@use-gpu/parse';
-import { provide, use, useContext, useOne, incrementVersion } from '@use-gpu/live';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition, makeFrustumPlanes } from '@use-gpu/core';
+import { useProp } from '../../traits/live';
+import { parsePosition } from '../../parse';
+import { provide, use, useContext, useOne, incrementVersion } from '../../live';
+import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition, makeFrustumPlanes } from '../../core';
 import { FrameContext } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';

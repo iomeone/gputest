@@ -1,14 +1,14 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, PropsWithChildren } from '../../live';
 import type { Axis4 } from '../types';
-import type { TraitProps } from '@use-gpu/traits';
+import type { TraitProps } from '../../traits';
 
-import { combine, makeUseTrait } from '@use-gpu/traits/live';
-import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
-import { swizzleTo, chainTo } from '@use-gpu/shader/wgsl';
+import { combine, makeUseTrait } from '../../traits/live';
+import { provide, useDouble, useOne, useMemo } from '../../live';
+import { swizzleTo, chainTo } from '../../shader/wgsl';
 import {
   MatrixContext, TransformContext, QueueReconciler,
   useShaderRef, useShader, useCombinedEpsilonTransform,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
@@ -18,7 +18,7 @@ import { mat4 } from 'gl-matrix';
 
 import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getPolarPosition } from '@use-gpu/wgsl/transform/polar.wgsl';
+import { getPolarPosition } from '../../wgsl/transform/polar.wgsl';
 
 const {signal} = QueueReconciler;
 const makeMat4 = () => mat4.create();

@@ -1,5 +1,5 @@
-import type { LiveFiber } from '@use-gpu/live';
-import type { Update } from '@use-gpu/state';
+import type { LiveFiber } from '../../live';
+import type { Update } from '../../state';
 import type { InspectAddIns, InspectAPI } from './types';
 import React, { FC, useState } from 'react';
 import { styled as _styled } from '@stitches/react';

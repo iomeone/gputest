@@ -1,8 +1,8 @@
-import type { LambdaSource, Lazy, TypedArray } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LambdaSource, Lazy, TypedArray } from '../../core';
+import type { ShaderModule } from '../../shader';
 
-import { resolve } from '@use-gpu/core';
-import { useMemo } from '@use-gpu/live';
+import { resolve } from '../../core';
+import { useMemo } from '../../live';
 
 export type SourceLike = {
   length?: Lazy<number>,

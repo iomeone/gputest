@@ -1,13 +1,13 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Rectangle, Tuples, XYZW } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { FontMetrics } from '@use-gpu/glyph';
+import type { LiveComponent } from '../../live';
+import type { Rectangle, Tuples, XYZW } from '../../core';
+import type { ShaderModule } from '../../shader';
+import type { FontMetrics } from '../../glyph';
 import type { InlineLine } from '../types';
 
-import { yeet, useMemo } from '@use-gpu/live';
-import { useSDFFontContext, UI_SCHEMA } from '@use-gpu/workbench';
+import { yeet, useMemo } from '../../live';
+import { useSDFFontContext, UI_SCHEMA } from '../../workbench';
 import { getOriginProjectionX, getOriginProjectionY } from '../lib/util';
-import { schemaToArchetype } from '@use-gpu/core';
+import { schemaToArchetype } from '../../core';
 
 const BLACK = [0, 0, 0, 1];
 

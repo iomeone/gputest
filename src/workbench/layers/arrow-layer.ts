@@ -1,5 +1,5 @@
-import type { LiveComponent } from '@use-gpu/live';
-import { memo, use } from '@use-gpu/live';
+import type { LiveComponent } from '../../live';
+import { memo, use } from '../../live';
 
 import { RawArrows, RawArrowsProps, RawArrowsFlags } from '../primitives/raw-arrows';
 import { RawLines, RawLinesProps, RawLinesFlags } from '../primitives/raw-lines';

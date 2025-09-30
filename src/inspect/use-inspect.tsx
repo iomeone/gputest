@@ -1,7 +1,7 @@
-import type { LiveFiber, LiveComponent, LiveElement, LC, PropsWithChildren } from '@use-gpu/live';
+import type { LiveFiber, LiveComponent, LiveElement, LC, PropsWithChildren } from '../live';
 import type { InspectExtension, InspectAppearance, InspectAddIns, OptionState } from './components/types';
-import { fragment, use, useMemo, useOne, useState } from '@use-gpu/live';
-import { HTML } from '@use-gpu/react';
+import { fragment, use, useMemo, useOne, useState } from '../live';
+import { HTML } from '../react';
 
 import React from 'react';
 import { Inspect } from './components/inspect';

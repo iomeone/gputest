@@ -1,7 +1,7 @@
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../live';
 
-import { formatNode, formatValue } from '@use-gpu/live';
-import { InspectObject } from '@use-gpu/inspect';
+import { formatNode, formatValue } from '../live';
+import { InspectObject } from '../inspect';
 import { styled as _styled } from '@stitches/react';
 
 import React, { useCallback, useState } from 'react';

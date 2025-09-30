@@ -1,5 +1,5 @@
-import type { LiveElement, RenderProp } from '@use-gpu/live';
-import { yeet, useHooks, useNoHooks, useMemo, useNoMemo, formatValue } from '@use-gpu/live';
+import type { LiveElement, RenderProp } from '../../live';
+import { yeet, useHooks, useNoHooks, useMemo, useNoMemo, formatValue } from '../../live';
 
 export type RenderProps<T extends any[]> = {
   render?: (...t: T) => LiveElement,

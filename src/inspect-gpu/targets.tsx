@@ -1,19 +1,19 @@
-import type { LiveComponent, LiveFiber, LiveElement } from '@use-gpu/live';
-import type { LambdaSource, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveFiber, LiveElement } from '../live';
+import type { LambdaSource, TextureSource } from '../core';
 
-import { memo, use, wrap, provide, useFiber, useMemo, useOne, makeContext } from '@use-gpu/live';
-import { LiveCanvas } from '@use-gpu/react';
-import { wgsl } from '@use-gpu/shader/wgsl';
-import { Pass, FlatCamera, FontLoader, Queue, DeviceContext, getShader, getLambdaSource, QueueReconciler } from '@use-gpu/workbench';
-import { AutoCanvas } from '@use-gpu/webgpu';
-import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '@use-gpu/layout';
+import { memo, use, wrap, provide, useFiber, useMemo, useOne, makeContext } from '../live';
+import { LiveCanvas } from '../react';
+import { wgsl } from '../shader/wgsl';
+import { Pass, FlatCamera, FontLoader, Queue, DeviceContext, getShader, getLambdaSource, QueueReconciler } from '../workbench';
+import { AutoCanvas } from '../webgpu';
+import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '../layout';
 
 import React, { Fragment } from 'react';
 
-import { UseInspect } from '@use-gpu/inspect';
+import { UseInspect } from '../inspect';
 import { inspectGPU } from './index';
 
-import { decodeOctahedral } from '@use-gpu/wgsl/codec/octahedral.wgsl';
+import { decodeOctahedral } from '../wgsl/codec/octahedral.wgsl';
 
 const {signal} = QueueReconciler;
 

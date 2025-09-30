@@ -1,17 +1,17 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { ElementType, TensorArray, VectorLike, Emit, Emitter, UniformType } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { ElementType, TensorArray, VectorLike, Emit, Emitter, UniformType } from '../../core';
 
-import { provide, yeet, deprecated, memo, useOne, useMemo, useNoMemo } from '@use-gpu/live';
+import { provide, yeet, deprecated, memo, useOne, useMemo, useNoMemo } from '../../live';
 import {
   seq, makeTensorArray, emitMultiArray, makeNumberWriter, makeNumberSplitter, updateTensor,
-} from '@use-gpu/core';
-import { parseAxis, parseVec4 } from '@use-gpu/parse';
-import { optional, useProp, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+} from '../../core';
+import { parseAxis, parseVec4 } from '../../parse';
+import { optional, useProp, shouldEqual, sameShallow } from '../../traits/live';
 import {
   useTimeContext, useNoTimeContext,
   useAnimationFrame, useNoAnimationFrame,
   useBufferedSize, getRenderFunc,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { useRangeContext, useNoRangeContext } from '../providers/range-provider';
 import { useDataContext, DataContext } from '../providers/data-provider';

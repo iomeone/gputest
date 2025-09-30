@@ -1,14 +1,14 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import React from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
+import React from '../../../live';
 
 import {
   Pass, FlatCamera,
   OrbitCamera, OrbitControls,
   Pick, Cursor, LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Text
-} from '@use-gpu/layout';
+} from '../../../layout';
 import { RawMesh } from '../mesh/components/raw-mesh';
 import { makeMesh, makeTexture } from '../../meshes/cube';
 

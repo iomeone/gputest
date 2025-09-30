@@ -1,9 +1,9 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { TraitProps } from '../../traits';
 
-import { combine, makeUseTrait } from '@use-gpu/traits/live';
-import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
-import { TransformContext, MatrixContext, useCombinedMatrixTransform, QueueReconciler } from '@use-gpu/workbench';
+import { combine, makeUseTrait } from '../../traits/live';
+import { provide, useDouble, useOne, useMemo } from '../../live';
+import { TransformContext, MatrixContext, useCombinedMatrixTransform, QueueReconciler } from '../../workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';

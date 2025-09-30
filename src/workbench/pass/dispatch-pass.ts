@@ -1,6 +1,6 @@
-import type { LC, PropsWithChildren, ArrowFunction } from '@use-gpu/live';
+import type { LC, PropsWithChildren, ArrowFunction } from '../../live';
 
-import { yeet, memo } from '@use-gpu/live';
+import { yeet, memo } from '../../live';
 import { QueueReconciler } from '../reconcilers/index';
 
 const {quote} = QueueReconciler;

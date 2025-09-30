@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { LiveComponent } from '@use-gpu/live';
-import type { ShaderSource } from '@use-gpu/shader';
-import type { TensorArray } from '@use-gpu/core';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { ShaderSource } from '../../shader';
+import type { TensorArray } from '../../core';
+import type { TraitProps } from '../../traits';
 
-import { memo, use, useOne, useMemo, useRef } from '@use-gpu/live';
-import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
-import { adjustSchema } from '@use-gpu/core';
-import { Data, SurfaceLayer, SURFACE_SCHEMA } from '@use-gpu/workbench';
+import { memo, use, useOne, useMemo, useRef } from '../../live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { adjustSchema } from '../../core';
+import { Data, SurfaceLayer, SURFACE_SCHEMA } from '../../workbench';
 
 import { SurfaceTraits } from '../traits';
 

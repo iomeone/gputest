@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren, LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LC, PropsWithChildren, LiveComponent, LiveElement } from '../../live';
 import type { LightEnv, Renderable } from '../pass';
 
-import { keyed, memo, useMemo } from '@use-gpu/live';
-import { makeDepthStencilAttachments } from '@use-gpu/core';
+import { keyed, memo, useMemo } from '../../live';
+import { makeDepthStencilAttachments } from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 

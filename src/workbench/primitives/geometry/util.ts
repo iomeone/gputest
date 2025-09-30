@@ -1,6 +1,6 @@
-import type { CPUGeometry, TypedArray } from '@use-gpu/core';
+import type { CPUGeometry, TypedArray } from '../../../core';
 import { vec3, mat3, mat4 } from 'gl-matrix';
-import { UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
+import { UNIFORM_ARRAY_DIMS } from '../../../core';
 
 export const forMeshTriangles = (() => {
   const v1 = vec3.create();

@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveElement } from '../../live';
+import type { UseGPURenderContext } from '../../core';
 import type { LightEnv, RenderComponents } from '../pass/types';
 
-import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
-import { extractBindings } from '@use-gpu/shader/wgsl';
+import { use, yeet, memo, useMemo, useOne } from '../../live';
+import { extractBindings } from '../../shader/wgsl';
 
 import { PassReconciler } from '../reconcilers/index';
 
@@ -24,8 +24,8 @@ import { Renderer } from './renderer';
 import { LightRender } from './light/light';
 import { LightMaterial } from './light/light-material';
 
-import lightBinding from '@use-gpu/wgsl/use/light.wgsl';
-import shadowBinding from '@use-gpu/wgsl/use/shadow.wgsl';
+import lightBinding from '../../wgsl/use/light.wgsl';
+import shadowBinding from '../../wgsl/use/shadow.wgsl';
 
 const {quote} = PassReconciler;
 

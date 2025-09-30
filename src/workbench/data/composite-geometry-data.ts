@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { GPUGeometry, DataSchema, StorageSource, LambdaSource, CPUGeometry, TypedArray } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { GPUGeometry, DataSchema, StorageSource, LambdaSource, CPUGeometry, TypedArray } from '../../core';
 
-import { keyed, yeet, gather, useMemo, useOne } from '@use-gpu/live';
-import { formatToArchetype } from '@use-gpu/core';
+import { keyed, yeet, gather, useMemo, useOne } from '../../live';
+import { formatToArchetype } from '../../core';
 import mapValues from 'lodash/mapValues.js';
 import groupBy from 'lodash/groupBy.js';
 import { useRenderProp } from '../hooks/useRenderProp';

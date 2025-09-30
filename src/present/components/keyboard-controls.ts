@@ -1,7 +1,7 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../live';
 
-import { useContext, useOne } from '@use-gpu/live';
-import { KeyboardContext } from '@use-gpu/workbench';
+import { useContext, useOne } from '../../live';
+import { KeyboardContext } from '../../workbench';
 import { usePresentContext } from '../providers/present-provider';
 
 export type KeyboardControlsProps = {

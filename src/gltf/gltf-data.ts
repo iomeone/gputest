@@ -1,11 +1,11 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { XY, StorageSource, TextureSource, TypedArray, UniformType } from '@use-gpu/core';
+import type { LC, LiveElement } from '../live';
+import type { XY, StorageSource, TextureSource, TypedArray, UniformType } from '../core';
 import type { GLTF, GLTFAccessorData, GLTFBufferData, GLTFBufferViewData, GLTFImageData, GLTFNodeData, GLTFMeshData, GLTFMaterialData, GLTFSceneData, GLTFTextureData } from './types';
 
-import { use, gather, fence, suspend, yeet, useContext, useOne, useMemo, useState } from '@use-gpu/live';
+import { use, gather, fence, suspend, yeet, useContext, useOne, useMemo, useState } from '../live';
 
-import { DeviceContext, Fetch, useRenderProp } from '@use-gpu/workbench';
-import { makeDynamicTexture, makeStorageBuffer, uploadBuffer, uploadExternalTexture, toDataBounds, UNIFORM_ARRAY_TYPES, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
+import { DeviceContext, Fetch, useRenderProp } from '../workbench';
+import { makeDynamicTexture, makeStorageBuffer, uploadBuffer, uploadExternalTexture, toDataBounds, UNIFORM_ARRAY_TYPES, UNIFORM_ARRAY_DIMS } from '../core';
 
 import { parseBinaryGLTF, parseTextGLTF, toScene, toNode, toMesh, toMaterial } from './parse';
 

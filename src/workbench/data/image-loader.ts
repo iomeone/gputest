@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { ColorSpace, DataTexture } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { ColorSpace, DataTexture } from '../../core';
 
-import { use, useCallback } from '@use-gpu/live';
-import { patch } from '@use-gpu/state';
+import { use, useCallback } from '../../live';
+import { patch } from '../../state';
 import { Fetch } from './fetch';
 
 import { parseHDR } from '../codec/hdr';

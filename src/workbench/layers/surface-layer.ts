@@ -1,20 +1,20 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike, Lazy } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { VectorLike, Lazy } from '../../core';
+import type { ShaderSource } from '../../shader';
 import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { RawFaces } from '../primitives/raw-faces';
 
-import { use, memo, useMemo, useOne } from '@use-gpu/live';
-import { bundleToAttributes } from '@use-gpu/shader/wgsl';
-import { resolve } from '@use-gpu/core';
+import { use, memo, useMemo, useOne } from '../../live';
+import { bundleToAttributes } from '../../shader/wgsl';
+import { resolve } from '../../core';
 
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useSource } from '../hooks/useSource';
 import { useShader } from '../hooks/useShader';
 
-import { getSurfaceIndex, getSurfaceUV } from '@use-gpu/wgsl/plot/surface.wgsl';
-import { getSurfaceNormal } from '@use-gpu/wgsl/plot/surface-normal.wgsl';
+import { getSurfaceIndex, getSurfaceUV } from '../../wgsl/plot/surface.wgsl';
+import { getSurfaceNormal } from '../../wgsl/plot/surface-normal.wgsl';
 
 export type SurfaceLayerProps = {
   position?: VectorLike,

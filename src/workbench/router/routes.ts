@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveNode } from '@use-gpu/live';
-import { memo, morph, use, provide, makeContext, useContext, useMemo } from '@use-gpu/live';
+import type { LiveComponent, LiveNode } from '../../live';
+import { memo, morph, use, provide, makeContext, useContext, useMemo } from '../../live';
 import { RouterContext } from './router';
 import { Route } from './types';
 

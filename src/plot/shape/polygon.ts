@@ -1,9 +1,9 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { ColorLike, ColorLikes, VectorLike, VectorLikes } from '@use-gpu/core';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { ColorLike, ColorLikes, VectorLike, VectorLikes } from '../../core';
+import type { TraitProps } from '../../traits';
 
-import { combine, shouldEqual, sameShallow } from '@use-gpu/traits/live';
-import { memo, use } from '@use-gpu/live';
+import { combine, shouldEqual, sameShallow } from '../../traits/live';
+import { memo, use } from '../../live';
 
 import { InnerFace, FaceProps } from './face';
 import { InnerLine, LineProps } from './line';

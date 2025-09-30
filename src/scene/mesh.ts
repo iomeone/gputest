@@ -1,9 +1,9 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../live';
+import type { GPUGeometry } from '../core';
 
-import { memo, use, wrap } from '@use-gpu/live';
+import { memo, use, wrap } from '../live';
 
-import { FaceLayer } from '@use-gpu/workbench';
+import { FaceLayer } from '../workbench';
 
 import { Primitive } from './primitive';
 

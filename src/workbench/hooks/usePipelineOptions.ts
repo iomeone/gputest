@@ -1,8 +1,8 @@
-import type { Update } from '@use-gpu/state';
-import type { Blending, Side } from '@use-gpu/core';
-import { BLEND_NONE, BLEND_ALPHA, BLEND_PREMULTIPLY, BLEND_ADD, BLEND_SUBTRACT, BLEND_MULTIPLY } from '@use-gpu/core';
-import { useMemo } from '@use-gpu/live';
-import { $set, $delete } from '@use-gpu/state';
+import type { Update } from '../../state';
+import type { Blending, Side } from '../../core';
+import { BLEND_NONE, BLEND_ALPHA, BLEND_PREMULTIPLY, BLEND_ADD, BLEND_SUBTRACT, BLEND_MULTIPLY } from '../../core';
+import { useMemo } from '../../live';
+import { $set, $delete } from '../../state';
 import { useRenderContext } from '../providers/render-provider';
 
 export type PipelineOptions = {

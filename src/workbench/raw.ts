@@ -1,5 +1,5 @@
-import type { LiveFunction, ArrowFunction, PropsWithChildren } from '@use-gpu/live';
-import { imperative } from '@use-gpu/live';
+import type { LiveFunction, ArrowFunction, PropsWithChildren } from '../live';
+import { imperative } from '../live';
 
 export type LiveReturner = (f: ArrowFunction | {children?: ArrowFunction}) => any;
 export const Raw: LiveFunction<LiveReturner> = imperative((f: ArrowFunction | {children?: ArrowFunction}) => {

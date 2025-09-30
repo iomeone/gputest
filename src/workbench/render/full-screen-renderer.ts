@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../live';
 import type { RenderComponents, VirtualDraw, AggregatedCalls } from '../pass/types';
 
-import { use, provide, unquote, multiGather, memo, useCallback, useMemo } from '@use-gpu/live';
+import { use, provide, unquote, multiGather, memo, useCallback, useMemo } from '../../live';
 
 import { PassContext, VariantContext } from '../providers/pass-provider';
 import { PassReconciler } from '../reconcilers/index';

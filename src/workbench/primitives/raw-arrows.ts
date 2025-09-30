@@ -1,11 +1,11 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useOne, useMemo, useNoCallback } from '@use-gpu/live';
-import { getBundleKey } from '@use-gpu/shader/wgsl';
+import { memo, useCallback, useOne, useMemo, useNoCallback } from '../../live';
+import { getBundleKey } from '../../shader/wgsl';
 
 import { PickingSource, usePickingShader } from '../providers/picking-provider';
 import { TransformContextProps } from '../providers/transform-provider';
@@ -22,9 +22,9 @@ import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions
 import { makeArrowFlatGeometry } from './geometry/arrow-flat';
 import { makeArrowGeometry } from './geometry/arrow';
 
-import { getAnchorIndex } from '@use-gpu/wgsl/instance/index/anchor.wgsl';
-import { getArrowVertex } from '@use-gpu/wgsl/instance/vertex/arrow.wgsl';
-import { getPassThruColor } from '@use-gpu/wgsl/mask/passthru.wgsl';
+import { getAnchorIndex } from '../../wgsl/instance/index/anchor.wgsl';
+import { getArrowVertex } from '../../wgsl/instance/vertex/arrow.wgsl';
+import { getPassThruColor } from '../../wgsl/mask/passthru.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

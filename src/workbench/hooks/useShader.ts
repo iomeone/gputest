@@ -1,8 +1,8 @@
-import type { ShaderModule } from '@use-gpu/shader';
+import type { ShaderModule } from '../../shader';
 
-import { useMemo, useNoMemo } from '@use-gpu/live';
-import { makeShaderBindings } from '@use-gpu/core';
-import { bindingsToLinks, bindBundle, bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { useMemo, useNoMemo } from '../../live';
+import { makeShaderBindings } from '../../core';
+import { bindingsToLinks, bindBundle, bundleToAttributes } from '../../shader/wgsl';
 
 // Bind shader sources/constants/lambdas to a loaded shader module
 export const useShader = (

@@ -1,9 +1,9 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { TypedArray, TextureSource, Atlas, Lazy } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { TypedArray, TextureSource, Atlas, Lazy } from '../../core';
+import type { ShaderSource } from '../../shader';
 import type { SDFGlyphData } from '../text/types';
 
-import { gather, use, memo, useOne } from '@use-gpu/live';
+import { gather, use, memo, useOne } from '../../live';
 import { useRawSource } from '../hooks/useRawSource';
 
 import { TransformContextProps } from '../providers/transform-provider';

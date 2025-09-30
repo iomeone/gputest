@@ -1,6 +1,6 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../../live';
 
-import { yeet, memo } from '@use-gpu/live';
+import { yeet, memo } from '../../../live';
 
 import { usePickingContext } from '../../providers/picking-provider';
 import { useInspectable } from '../../hooks/useInspectable';

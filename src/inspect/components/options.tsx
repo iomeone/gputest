@@ -1,6 +1,6 @@
 import React from 'react';
-import { useCursor } from '@use-gpu/state/react';
-import { Cursor } from '@use-gpu/state';
+import { useCursor } from '../../state/react';
+import { Cursor } from '../../state';
 import { SmallButton, OptionsContainer, Spacer } from './layout';
 import { OptionState } from './types';
 

@@ -17,7 +17,7 @@ import type {
   UniformType,
   VectorLike,
 } from './types';
-import { toMurmur53, getObjectKey } from '@use-gpu/state';
+import { toMurmur53, getObjectKey } from '../state';
 import { isTypedArray } from './buffer';
 import {
   makeArrayAggregate,

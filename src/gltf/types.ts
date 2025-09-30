@@ -1,4 +1,4 @@
-import type { StorageSource, TextureSource, TypedArray, UniformType } from '@use-gpu/core';
+import type { StorageSource, TextureSource, TypedArray, UniformType } from '../core';
 import { mat4, vec3, quat } from 'gl-matrix';
 
 export type GLTFRaw<T = any> = {

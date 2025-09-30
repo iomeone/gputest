@@ -1,7 +1,7 @@
 describe('', () => { it("", () => {})});
 
 /*
-import type { Rectangle, XY } from '@use-gpu/core';
+import type { Rectangle, XY } from '../../core';
 import type { Sizing, Margin } from '../types';
 
 import { getBlockMinMax, getBlockMargin, fitBlock } from './block';

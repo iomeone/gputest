@@ -1,7 +1,7 @@
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../live';
 
 import React, { ReactNode, useState } from 'react';
-import { InspectObject } from '@use-gpu/inspect';
+import { InspectObject } from '../inspect';
 import { saveAs } from 'file-saver';
 
 import { styled as _styled } from '@stitches/react';

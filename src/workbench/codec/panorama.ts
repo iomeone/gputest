@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { TextureSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { TextureSource } from '../../core';
+import type { ShaderSource } from '../../shader';
 
-import { yeet, useMemo, useHooks } from '@use-gpu/live';
+import { yeet, useMemo, useHooks } from '../../live';
 import { getShader } from '../hooks/useShader';
 import { getDerivedSource } from '../hooks/useDerivedSource';
 
-import { getEquiToCubeSample } from '@use-gpu/wgsl/render/sample/equi-to-cube.wgsl';
+import { getEquiToCubeSample } from '../../wgsl/render/sample/equi-to-cube.wgsl';
 
 export type PanoramaMapProps = {
   texture?: TextureSource | null,

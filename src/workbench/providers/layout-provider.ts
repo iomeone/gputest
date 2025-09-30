@@ -1,4 +1,4 @@
-import { makeContext, useContext } from '@use-gpu/live';
+import { makeContext, useContext } from '../../live';
 
 type Rectangle = [number, number, number, number];
 type LayoutContextProps = Rectangle;

@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ worldToClip };
+use '../../../../../wgsl/use/view'::{ worldToClip };
 
 @optional @link fn toColorSpace(c: vec4<f32>) -> vec4<f32> { return c; }
 

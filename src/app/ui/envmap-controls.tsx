@@ -1,10 +1,10 @@
 import React from 'react';
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { TextureSource } from '@use-gpu/core';
+import type { LC, LiveElement } from '../../live';
+import type { TextureSource } from '../../core';
 
-import { use, fragment, useState } from '@use-gpu/live';
-import { HTML } from '@use-gpu/react';
-import { ImageTexture, ImageCubeTexture, PanoramaMap, useRouterContext } from '@use-gpu/workbench';
+import { use, fragment, useState } from '../../live';
+import { HTML } from '../../react';
+import { ImageTexture, ImageCubeTexture, PanoramaMap, useRouterContext } from '../../workbench';
 
 const STYLE = {
   position: 'absolute',
