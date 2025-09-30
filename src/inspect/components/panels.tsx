@@ -1,6 +1,6 @@
-import type { LiveFiber } from '../../live';
-import type { Update } from '../../state';
-import type { InspectAddIns } from './types';
+import type { LiveFiber } from '@use-gpu/live';
+import type { Update } from '@use-gpu/state';
+import type { InspectAddIns, InspectAPI } from './types';
 import React, { FC, useState } from 'react';
 import { styled as _styled } from '@stitches/react';
 
@@ -13,7 +13,7 @@ const styled: any = _styled;
 
 export type PanelsProps = {
   fiber: LiveFiber<any>,
-  selectFiber: (fiber?: LiveFiber<any> | null) => void,
+  api: InspectAPI,
   fullSize?: boolean,
   tab: string,
   onTab: (s: Update<string>) => void,
@@ -46,31 +46,31 @@ export const StyledTab = styled('button', {
 });
 
 export const Panels: FC<PanelsProps> = (props: PanelsProps) => {
-  const {fiber, selectFiber, fullSize, tab, onTab } = props;
-  
+  const {fiber, api, fullSize, tab, onTab } = props;
+
   const addIns = useAddIns();
   const {fibers} = usePingContext();
-  
+
   const {props: panels} = addIns;
   const [first] = panels;
   if (!first) return null;
 
   usePingTracker();
   const {tabs} = useAppearance();
-  
+
   const active = panels.filter((panel) => panel.enabled(fiber, fibers));
   const currentTab = active.find((panel) => panel.id === tab) ?? active[0];
   if (!currentTab) return null;
 
   const handleSelectFiber = (fiber: number | LiveFiber<any>) => {
     const f = typeof fiber === 'number' ? fibers.get(fiber) : fiber;
-    selectFiber(f);
+    api.selectFiber(f);
   };
 
   const Wrap = fullSize ? InsetLeftRightBottom : Inset;
 
   return (
-    <Wrap>
+    <Wrap style={{position: 'relative'}}>
       { tabs !== false ? (
         <StyledTabList>
           {active.map((panel) => (
@@ -80,7 +80,7 @@ export const Panels: FC<PanelsProps> = (props: PanelsProps) => {
           ))}
         </StyledTabList>
       ) : null}
-      {fiber ? currentTab!.render(fiber, fibers, handleSelectFiber) : null}
+      {fiber ? currentTab!.render(fiber, fibers, api) : null}
     </Wrap>
   );
 };

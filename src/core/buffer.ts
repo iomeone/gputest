@@ -1,7 +1,14 @@
-import type { TypedArrayConstructor, TypedArray } from './types';
+import type { StorageSource, TypedArrayConstructor, TypedArray, TensorArray } from './types';
 import { TYPED_ARRAYS, TEXTURE_FORMAT_SIZES, TEXTURE_FORMAT_DIMS } from './constants';
+import { incrementVersion } from './id';
+import { LOGGING, decodeUsageFlags } from './debug';
 
 type BufferArray = TypedArray | number[] | ArrayBuffer | number;
+
+export const isTypedArray = (() => {
+  const TypedArray = Object.getPrototypeOf(Uint8Array);
+  return (obj: any) => obj instanceof TypedArray;
+})();
 
 export const getByteSize = (data: BufferArray): number => {
   if (+data === data) return +data;
@@ -24,6 +31,8 @@ export const makeTypedBuffer = (
     usage,
     mappedAtCreation: !!data,
   });
+
+  LOGGING.buffer && console.warn('Allocate typed buffer', {size, ...decodeUsageFlags(usage)});
 
   if (data) {
     const ArrayType = getTypedArrayConstructor(data);
@@ -71,6 +80,8 @@ export const makeTextureReadbackBuffer = (
 
   if (itemsPerRow !== Math.round(itemsPerRow)) throw new Error("Readback size not a multiple of item size");
 
+  LOGGING.buffer && console.warn('Allocate readback buffer', {width, height, format});
+
   const n = bytesPerRow * height;
   const buffer = device.createBuffer({
     size: n,
@@ -78,6 +89,19 @@ export const makeTextureReadbackBuffer = (
   });
 
   return [buffer, bytesPerRow, itemsPerRow, dimsPerItem];
+}
+
+export const clearBuffer = (
+  device: GPUDevice,
+  buffer: GPUBuffer,
+  offset: number = 0,
+  size?: number,
+): void => {
+  const commandEncoder = device.createCommandEncoder();
+  commandEncoder.clearBuffer(buffer, offset, size);
+
+  const command = commandEncoder.finish();
+  device.queue.submit([command]);
 }
 
 export const uploadBuffer = (
@@ -101,3 +125,31 @@ export const uploadBufferRange = (
   // @ts-ignore
   device.queue.writeBuffer(buffer, offset + from, data, from, length);
 }
+
+export const uploadStorage = (
+  device: GPUDevice,
+  source: StorageSource,
+  arrayBuffer: ArrayBuffer,
+  count: number,
+  size?: number[],
+) => {
+  uploadBuffer(device, source.buffer, arrayBuffer);
+
+  if (size) source.size = size;
+  else source.size = [count];
+
+  source.length = count;
+  source.version = incrementVersion(source.version);
+};
+
+export const updateTensor = (
+  tensor: TensorArray,
+  count: number,
+  size?: number[],
+) => {
+  if (size) tensor.size = size;
+  else tensor.size[0] = count;
+
+  tensor.length = count;
+  tensor.version = incrementVersion(tensor.version || 0);
+};

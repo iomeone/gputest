@@ -1,12 +1,13 @@
-import type { LiveFiber, LiveComponent, LiveElement, ArrowFunction, PropsWithChildren } from '../../live';
-import type { OffscreenTarget, ColorSpace, TextureSource, TextureTarget } from '../../core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { OffscreenTarget, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
-import { use, provide, gather, fence, yeet, useCallback, useContext, useFiber, useMemo, useOne, incrementVersion } from '../../live';
+import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 
 import { useInspectable } from '../hooks/useInspectable';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
 import {
   makeColorState,
@@ -16,9 +17,8 @@ import {
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLY,
-} from '../../core';
-
-const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
+  seq,
+} from '@use-gpu/core';
 
 const NO_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 
@@ -34,8 +34,11 @@ export type RenderTargetProps = {
   colorInput?: ColorSpace,
   samples?: number,
   resolution?: number,
+  absolute?: boolean,
+  variant?: string,
 
   render?: (rttContext: OffscreenTarget) => LiveElement,
+  children?: LiveElement | ((rttContext: OffscreenTarget) => LiveElement),
   then?: (target: TextureTarget) => LiveElement,
 };
 
@@ -43,7 +46,7 @@ export type RenderTargetProps = {
 
 Place `@{<Pass>}` directly inside, or leave empty to use yielded target with `@{<RenderToTexture>}`.
 */
-export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithChildren<RenderTargetProps>) => {
+export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTargetProps) => {
   const device = useContext(DeviceContext);
   const renderContext = useContext(RenderContext);
 
@@ -61,7 +64,8 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithC
     backgroundColor = EMPTY_COLOR,
     colorSpace = COLOR_SPACE,
     colorInput = COLOR_SPACE,
-    render,
+    variant = 'textureSample',
+    absolute = false,
     children,
     then,
   } = props;
@@ -93,7 +97,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithC
           format,
         )
       ) : null;
-      if (buffers) buffers.push(resolve ?? render);      
+      if (buffers) buffers.push(resolve ?? render);
 
       const views = buffers ? buffers.map(b => b.createView()) : undefined;
 
@@ -103,7 +107,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithC
     },
     [device, width, height, format, samples, history]
   );
-  
+
   const targetTexture = resolveTexture ?? renderTexture;
 
   const colorStates      = useOne(() => [makeColorState(format, BLEND_PREMULTIPLY)], format);
@@ -138,9 +142,12 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithC
     const swap = () => {
       if (!history) return;
       const {current: index} = counter;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const n = bufferViews!.length;
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const texture = bufferTextures![index];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const view = bufferViews![index];
 
       if (resolveTexture) colorAttachments[0].resolveTarget = view;
@@ -151,23 +158,28 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithC
 
       for (let i = 0; i < history; i++) {
         const j = (index + n - i - 1) % n;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         sources![i].texture = bufferTextures![j];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         sources![i].view = bufferViews![j];
       }
 
       counter.current = (index + 1) % n;
     };
-    
+
     const makeSource = () => ({
       texture: targetTexture,
       view,
       sampler,
       layout,
       format,
+      variant,
+      absolute,
       colorSpace,
       size,
       volatile,
       version: 0,
+      swap: null as any,
     }) as TextureTarget;
 
     const sources = history ? seq(history).map(makeSource) : undefined;
@@ -176,6 +188,8 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithC
     source.history = sources;
     source.swap = swap;
 
+    swap();
+
     const depth = depthStencil ? {
       texture: depthTexture,
       sampler: {},
@@ -183,10 +197,10 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithC
       format: depthStencil,
       size,
       version: 0,
-    } as TextureSource : null;
+    } as TextureSource : undefined;
 
     return [source, sources, depth];
-  }, [targetTexture, depthTexture, width, height, format, samples, history, sampler, depthStencil]);
+  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil]);
 
   const rttContext = useMemo(() => ({
     ...renderContext,
@@ -201,7 +215,8 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithC
     depthStencilState,
     depthStencilAttachment,
     swap: source.swap,
-    source: source,
+    source,
+    depth,
   }), [renderContext, width, height, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source, sources]);
 
   const inspectable = useMemo(() => [
@@ -216,6 +231,7 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: PropsWithC
     },
   });
 
+  const render = getRenderFunc(props);
   if (!(render ?? children)) return yeet(rttContext);
 
   const content = render ? render(rttContext) : children;

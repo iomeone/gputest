@@ -1,9 +1,10 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { ColorLike, VectorLike } from '../../traits';
+import type { LC } from '@use-gpu/live';
+import type { ColorLike, VectorLike } from '@use-gpu/core';
 import type { ShadowMapLike } from './types';
 
-import { parseColor, parseNumber, parseMatrix, parsePosition, parseVec2, useProp } from '../../traits';
-import { memo, useMemo } from '../../live';
+import { useProp } from '@use-gpu/traits/live';
+import { parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '@use-gpu/parse';
+import { memo, use, useMemo } from '@use-gpu/live';
 
 import { useLightContext } from '../providers/light-provider';
 import { useMatrixContext } from '../providers/matrix-provider';
@@ -11,6 +12,7 @@ import { useMatrixContext } from '../providers/matrix-provider';
 import { mat4, vec3, vec4 } from 'gl-matrix';
 
 import { POINT_LIGHT } from './types';
+import { PointHelper } from '../helpers/point-helper';
 
 export type PointLightProps = {
   position?: VectorLike,
@@ -18,18 +20,19 @@ export type PointLightProps = {
   intensity?: number,
   cutoff?: number,
   shadowMap?: ShadowMapLike,
+  debug?: boolean,
 };
 
 const DEFAULT_SHADOW_MAP = {
   size: [2048, 2048],
   depth: [0.1, 1000],
 
-  bias: [1/2, 1/32],
+  bias: [1/4096, 1/512, 0],
   blur: 4,
 };
 
-export const PointLight: LiveComponent<PointLightProps> = memo((props: PointLightProps) => {
-  
+export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => {
+
   const position = useProp(props.position, parsePosition);
   const color = useProp(props.color, parseColor);
   const intensity = useProp(props.intensity, parseNumber, 1);
@@ -43,11 +46,11 @@ export const PointLight: LiveComponent<PointLightProps> = memo((props: PointLigh
 
     const size  = parseVec2(shadowMap.size  ?? DEFAULT_SHADOW_MAP.size);
     const depth = parseVec2(shadowMap.depth ?? DEFAULT_SHADOW_MAP.depth);
-    const bias  = parseVec2(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
+    const bias  = parseVec3(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
     const blur  = parseNumber(shadowMap.blur ?? DEFAULT_SHADOW_MAP.blur);
 
     const matrix = mat4.create();
-    mat4.fromTranslation(matrix, position);
+    mat4.fromTranslation(matrix, position as vec3);
 
     if (parent) mat4.multiply(matrix, parent, matrix);
 
@@ -76,5 +79,7 @@ export const PointLight: LiveComponent<PointLightProps> = memo((props: PointLigh
   const {useLight} = useLightContext();
   useLight(light);
 
-  return null;
+  if (!props.debug) return null;
+
+  return use(PointHelper, { position, color });
 }, 'PointLight');

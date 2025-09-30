@@ -1,3 +1,5 @@
+import { arrayify, shorthands } from './constants';
+
 export const setUint8  = (view: DataView, offset: number, value: number): void => view.setUint8(offset, value);
 export const setUint16 = (view: DataView, offset: number, value: number): void => view.setUint16(offset, value, true);
 export const setUint32 = (view: DataView, offset: number, value: number): void => view.setUint32(offset, value, true);
@@ -6,8 +8,8 @@ export const setInt8   = (view: DataView, offset: number, value: number): void =
 export const setInt16  = (view: DataView, offset: number, value: number): void => view.setInt16(offset, value, true);
 export const setInt32  = (view: DataView, offset: number, value: number): void => view.setInt32(offset, value, true);
 
-const setFloat32 = (view: DataView, offset: number, value: number): void => view.setFloat32(offset, value, true);
-const setFloat64 = (view: DataView, offset: number, value: number): void => view.setFloat64(offset, value, true);
+export const setFloat32 = (view: DataView, offset: number, value: number): void => view.setFloat32(offset, value, true);
+export const setFloat64 = (view: DataView, offset: number, value: number): void => view.setFloat64(offset, value, true);
 
 export const setUint8N = (n: number) => (view: DataView, offset: number, data: Uint8Array): void => {
   for (let i = 0; i < n; ++i) setUint8(view, offset + i, data[i]);
@@ -42,7 +44,7 @@ export const setFloat64N = (n: number) => (view: DataView, offset: number, data:
 };
 
 export const setUint16Nx3 = (n: number) => (view: DataView, offset: number, data: Uint16Array): void => {
-  let nn = n / 3;
+  const nn = n / 3;
   for (let i = 0; i < nn; ++i) {
     const j = i * 3;
     setUint16(view, offset + i * 8,     data[j]);
@@ -53,7 +55,7 @@ export const setUint16Nx3 = (n: number) => (view: DataView, offset: number, data
 };
 
 export const setUint32Nx3 = (n: number) => (view: DataView, offset: number, data: Uint32Array): void => {
-  let nn = n / 3;
+  const nn = n / 3;
   for (let i = 0; i < nn; ++i) {
     const j = i * 3;
     setUint32(view, offset + i * 16,      data[j]);
@@ -64,7 +66,7 @@ export const setUint32Nx3 = (n: number) => (view: DataView, offset: number, data
 };
 
 export const setInt32Nx3 = (n: number) => (view: DataView, offset: number, data: Int32Array): void => {
-  let nn = n / 3;
+  const nn = n / 3;
   for (let i = 0; i < nn; ++i) {
     const j = i * 3;
     setInt32(view, offset + i * 16,      data[j]);
@@ -75,7 +77,7 @@ export const setInt32Nx3 = (n: number) => (view: DataView, offset: number, data:
 };
 
 export const setFloat32Nx3 = (n: number) => (view: DataView, offset: number, data: Float32Array): void => {
-  let nn = n / 3;
+  const nn = n / 3;
   for (let i = 0; i < nn; ++i) {
     const j = i * 3;
     setFloat32(view, offset + i * 16,      data[j]);
@@ -86,7 +88,7 @@ export const setFloat32Nx3 = (n: number) => (view: DataView, offset: number, dat
 };
 
 export const setFloat64Nx3 = (n: number) => (view: DataView, offset: number, data: Float64Array): void => {
-  let nn = n / 3;
+  const nn = n / 3;
   for (let i = 0; i < nn; ++i) {
     const j = i * 3;
     setFloat64(view, offset + i * 32,      data[j]);
@@ -96,7 +98,7 @@ export const setFloat64Nx3 = (n: number) => (view: DataView, offset: number, dat
   }
 };
 
-export const UNIFORM_BYTE_SETTERS = {
+export const UNIFORM_BYTE_SETTERS = arrayify(arrayify(arrayify(shorthands({
   "bool":             setUint8,
   "vec2<bool>":       setUint8N(2),
   "vec3<bool>":       setUint8N(3),
@@ -156,7 +158,7 @@ export const UNIFORM_BYTE_SETTERS = {
   "mat3x4<f16>":      setUint16N(12),
   "mat4x3<f16>":      setUint16Nx3(12),
   "mat4x4<f16>":      setUint16N(16),
-  
+
   "mat2x2<f32>":      setFloat32N(4),
   "mat3x2<f32>":      setFloat32N(6),
   "mat2x3<f32>":      setFloat32Nx3(6),
@@ -206,4 +208,4 @@ export const UNIFORM_BYTE_SETTERS = {
   "vec3to4<u32>": setUint32N(3),
   "vec3to4<i32>": setInt32N(3),
   "vec3to4<f32>": setFloat32N(3),
-};
+}))));

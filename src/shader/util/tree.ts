@@ -16,7 +16,7 @@ export const getChildNodes = (node: SyntaxNode) => {
 export const hasErrorNode = (tree: Tree) => {
   const cursor = tree.cursor();
   do {
-    const {type, from, to} = cursor;
+    const {type} = cursor;
     if (type.isError) return cursor.node;
   } while (cursor.next());
   return false;
@@ -24,13 +24,13 @@ export const hasErrorNode = (tree: Tree) => {
 
 // AST node to tree view + side-by-side tokens
 export const formatAST = (node: SyntaxNode, code?: string, depth: number = 0) => {
-  const {type, from ,to} = node;
+  const {type} = node;
   const prefix = '  '.repeat(depth);
 
   let child = node.firstChild;
 
   const text = code != null ? code.slice(node.from, node.to).replace(/\n/g, "⮐ ") : '';
-  let out = [] as string[];
+  const out = [] as string[];
 
   let line = `${prefix}${type.name}`;
   const n = line.length;
@@ -49,7 +49,7 @@ export const formatAST = (node: SyntaxNode, code?: string, depth: number = 0) =>
 export const formatASTNode = (node: SyntaxNode) => {
   const {type} = node;
   let child = node.firstChild;
-  let inner = [] as string[];
+  const inner = [] as string[];
   while (child) {
     inner.push(formatASTNode(child));
     child = child.nextSibling;
@@ -85,6 +85,7 @@ export const makeASTEmitter = (
     arg?: any,
   ) => {
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const i = opToIndex.get(type)!;
     const row = [i, encode(from), encode(to)];
     if (arg != null) row.push(symbols.indexOf(arg));
@@ -104,7 +105,7 @@ export const makeASTDecompressor = (
   const {indexToOp} = getOpsMap(ops);
 
   const tree = {
-    __nodes: () => nodes,
+    __nodes: nodes,
     cursor: () => {
       let offset = 0;
       const decode = (d: number) => d + offset;
@@ -119,6 +120,7 @@ export const makeASTDecompressor = (
         const node = nodes[i];
         const [op, d1, d2, arg] = node;
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         self.type.name = indexToOp.get(op)!;
         self.from = decode(d1);
         self.to = decode(d2);
@@ -154,3 +156,18 @@ export const makeASTDecompressor = (
   } as any as Tree;
   return tree;
 }
+
+type Decompressor = {
+  (s: (string | number)[]): string[];
+  (s: string | number): string;
+};
+
+export const decompressString = (symbols: string[]): Decompressor => (s: (string | number)[] | string | number): any => {
+  if (typeof s === 'string') return s;
+  if (typeof s === 'number') return symbols[s];
+
+  return s.map(s => {
+    if (typeof s === 'string') return s;
+    if (typeof s === 'number') return symbols[s];
+  });
+};

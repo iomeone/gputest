@@ -11,8 +11,8 @@ const EMPTY_TABLE = {} as any;
 export const makeLoadModule = <T extends SymbolTableT = any>(
   parseShader: (code: string) => Tree,
   makeASTParser: (code: string, tree: Tree, name?: string) => ASTParser<T>,
-  compressAST: (code: string, tree: Tree, symbols?: string[]) => CompressedNode[],
-  decompressAST: (nodes: CompressedNode[], symbols?: string[]) => Tree,
+  compressAST: (code: string, tree: Tree, symbols?: T['symbols'], modules?: T['modules']) => CompressedNode[],
+  decompressAST: (nodes: CompressedNode[], symbols?: T['symbols']) => Tree,
 ) => (
   code: string,
   name: string = 'main',
@@ -28,12 +28,12 @@ export const makeLoadModule = <T extends SymbolTableT = any>(
   const shake = astParser.getShakeTable(table);
 
   if (compressed) {
-    const {symbols} = table;
-    tree = decompressAST(compressAST(code, tree, symbols), symbols);
+    const {symbols, modules} = table;
+    tree = decompressAST(compressAST(code, tree, symbols, modules), symbols);
   }
   const hash = toMurmur53(code);
 
-  return bindEntryPoint({name, code, hash, table, shake, tree}, entry);
+  return bindEntryPoint({name, code, hash, table, shake, tree} as ParsedModule, entry);
 }
 
 // Use cache to load modules
@@ -53,7 +53,7 @@ export const makeLoadModuleWithCache = (
   if (cached) {
     return bindEntryPoint(cached, entry);
   }
-  
+
   const module = loadModule(code, name, undefined, true);
   cache.set(hash, module);
   return bindEntryPoint(module, entry);
@@ -62,7 +62,7 @@ export const makeLoadModuleWithCache = (
 // Load a static (inert) module
 export const loadStaticModule = (code: string, name: string, entry?: string) => {
   const hash = toMurmur53([code, entry]);
-  return ({ name, code, hash, table: EMPTY_TABLE });
+  return ({ name, code, hash, table: EMPTY_TABLE, label: '@static ' + (entry ?? name) });
 }
 
 // Load a virtual (generated) module
@@ -74,7 +74,7 @@ export const loadVirtualModule = <T extends SymbolTableT = any>(
   code?: string,
   key?: number,
 ) => {
-  let symbols = initTable.symbols ?? EMPTY_LIST;
+  const symbols = initTable.symbols ?? EMPTY_LIST;
 
   code = code ?? `@virtual [${symbols.join(' ')}]`;
   hash = hash ?? toMurmur53(code);
@@ -87,17 +87,19 @@ export const loadVirtualModule = <T extends SymbolTableT = any>(
     visibles: symbols,
     ...initTable,
   };
-  return { name, code, hash, table, entry, virtual, key };
+  return { name, code, hash, table, entry, virtual, key, label: code };
 }
 
 // Set entry point of a module, returns new bundle/module.
 // Is the same instance as the original (key = old key/hash), so it merges with copies of itself.
-// But is structurally different (hash = new key), so differences in links are reflected in the shader hash.
+// But is structurally different (hash = new entry), so differences in links are reflected in the shader hash.
 export const bindEntryPoint = <T extends ParsedBundle | ParsedModule>(bundle: T, entry?: string): T => {
+  // eslint-disable-next-line prefer-const
   let {key, hash, module, table} = bundle as any;
 
   table = table ?? module?.table;
   hash = hash ?? module?.hash;
+  key = key ?? module?.key;
 
   if (entry == null && table.symbols?.includes('main')) entry = 'main';
   if (entry == null) return bundle;

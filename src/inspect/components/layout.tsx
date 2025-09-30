@@ -53,6 +53,19 @@ export const SmallButton = styled('button', {
   },
 });
 
+export const InlineButton = styled('div', {
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  margin: '0px 4px',
+  padding: '2px 8px',
+  '&.icon-left': { paddingLeft: 0 },
+  '&.icon-right': { paddingRight: 0 },
+  '&:hover': {
+    background: "#444",
+  },
+});
+
 export const InspectContainer = styled('div', {
   pointerEvents: 'none',
   color: 'var(--LiveInspect-colorText)',
@@ -69,7 +82,7 @@ export const OptionsContainer = styled('div', {
   width: '100%',
 });
 
-export const Selectable = styled('div', {
+export const Selectable = styled('span', {
   userSelect: 'text',
 });
 
@@ -87,8 +100,8 @@ export const InspectToggle = styled('div', {
 });
 
 export const TreeControls = styled('div', {
+  background: 'var(--LiveInspect-backgroundEmpty)',
   pointerEvents: 'auto',
-  background: 'rgba(50, 50, 50, 0.75)',
   zIndex: 10,
 
   display: 'flex',
@@ -193,6 +206,18 @@ export const Label = styled('div', {
   display: 'flex',
 });
 
+export const TreeBanner = styled('div', {
+  background: 'var(--LiveInspect-backgroundEmpty)',
+  padding: '6px 8px',
+  position: 'relative',
+  width: '100%',
+});
+
+export const TreeTip = styled('div', {
+  position: 'relative',
+  top: '10px',
+});
+
 export const TreeWrapper = styled('div', {
   flexGrow: 1,
   padding: '20px',
@@ -202,7 +227,7 @@ export const TreeWrapper = styled('div', {
 });
 
 export const TreeWrapperWithLegend = styled(TreeWrapper, {
-  minHeight: 'calc(100% - 110px)',
+  minHeight: 'calc(100% - 130px)',
 });
 
 export const TreeToggle = styled('div', {
@@ -219,14 +244,17 @@ export const TreeLegend = styled('div', {
   fontSize: '0.9em',
   background: '#000',
   zIndex: 10,
-  
+
   '& > div': {
     position: 'sticky',
     left: 0,
-    display: 'flex',
     width: 'fit-content',
     padding: '20px',
   },
+});
+
+export const TreeLegendColumns = styled('div', {
+  display: 'flex',
 });
 
 export const TreeLegendGroup = styled('div', {
@@ -275,7 +303,7 @@ export const TreeRowOmitted: FC<TreeIndentProps> = ({ indent, children }: TreeIn
   <TreeRowOmittedChunk css={{
     paddingLeft: indent ? `${indent * 20}px` : 0,
   }}>
-    {children}
+    <div style={{height: 0}}>{children}</div>
   </TreeRowOmittedChunk>
 );
 
@@ -290,6 +318,7 @@ export const TreeIndent: FC<TreeIndentProps> = ({ indent, children }: TreeIndent
 const TreeRowInner = styled('div', {
   display: 'flex',
   height: '20px',
+  clear: 'left',
 });
 
 export const DOMMock = styled('div', {

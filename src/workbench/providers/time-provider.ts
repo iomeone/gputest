@@ -1,6 +1,5 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { Time } from '../../core';
-import { provide, makeContext, useContext, useNoContext } from '../../live';
+import type { Time } from '@use-gpu/core';
+import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 
 export type TimeContextProps = Time;
 

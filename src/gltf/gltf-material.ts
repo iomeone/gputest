@@ -1,10 +1,6 @@
-import type { LC, PropsWithChildren, LiveElement } from '../live';
 import type { GLTF } from './types';
 
-import { use, provide, useMemo } from '../live';
-import { mat4 } from 'gl-matrix';
-
-import { PBRMaterialProps, useBoundShader, useNativeColorTexture } from '../workbench';
+import { PBRMaterialProps, useNativeColorTexture } from '@use-gpu/workbench';
 
 type Props = PBRMaterialProps & {
   doubleSided: boolean,
@@ -16,13 +12,9 @@ export const useGLTFMaterial = (
 ) => {
   if (!gltf.bound) throw new Error("GLTF bound data is missing. Load GLTF using <GLTFData>.");
   if (material == null || !gltf.materials?.[material]) {
-    useNativeColorTexture();
-    useNativeColorTexture();
-    useNativeColorTexture();
-    useNativeColorTexture();
     return {};
   }
-  
+
   const {
     pbrMetallicRoughness,
     normalTexture,
@@ -74,7 +66,7 @@ export const useGLTFMaterial = (
         if (roughnessFactor == null) props.roughness = 1.0;
       }
     }
-    
+
     if (normalTexture != null) {
       let map = gltf.bound.texture[normalTexture.index];
       if (map) {
@@ -102,11 +94,12 @@ export const useGLTFMaterial = (
       }
     }
   }
-    
+
   props.albedoMap = useNativeColorTexture(props.albedoMap);
   props.normalMap = useNativeColorTexture(props.normalMap);
   props.occlusionMap = useNativeColorTexture(props.occlusionMap);
   props.emissiveMap = useNativeColorTexture(props.emissiveMap);
+
   props.doubleSided = !!doubleSided;
 
   return props;

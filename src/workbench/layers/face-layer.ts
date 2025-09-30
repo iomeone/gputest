@@ -1,5 +1,7 @@
-import { RawFaces, RawFacesProps } from '../primitives/raw-faces';
+import { RawFaces } from '../primitives/raw-faces';
+import type { RawFacesProps, RawFacesFlags } from '../primitives/raw-faces';
 
+export type FaceLayerFlags = RawFacesFlags;
 export type FaceLayerProps = RawFacesProps;
 
 /** Draws direct or indexed triangles, or segmented (convex) faces. */

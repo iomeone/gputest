@@ -2,11 +2,15 @@
 
 exports[`example linking links two GLSL shaders as modules using a prototype 1`] = `
 "#version 450
+//// @link getColor _01_
+
 uniform vec4 color;
 
 vec4 _01_getColor() {
   return color;
 }
+//// @link main 
+
 vec4 _01_getColor();
 
 void main() {
@@ -16,11 +20,15 @@ void main() {
 
 exports[`example linking links two GLSL shaders from bundle using an import 1`] = `
 "#version 450
+//// @link getColor _01_
+
 uniform vec4 color;
 
 vec4 _01_getColor() {
   return color;
 }
+//// @link main 
+
 void main() {
   gl_FragColor = _01_getColor();
 }"
@@ -28,11 +36,15 @@ void main() {
 
 exports[`example linking links two GLSL shaders from source code using a prototype 1`] = `
 "#version 450
+//// @link color _01_
+
 uniform vec4 color;
 
 vec4 _01_getColor() {
   return color;
 }
+//// @link main 
+
 vec4 _01_getColor();
 
 void main() {
@@ -42,11 +54,15 @@ void main() {
 
 exports[`example linking links two GLSL shaders from source code using an import 1`] = `
 "#version 450
+//// @link color _01_
+
 uniform vec4 color;
 
 vec4 _01_getColor() {
   return color;
 }
+//// @link main 
+
 void main() {
   gl_FragColor = _01_getColor();
 }"
@@ -54,6 +70,8 @@ void main() {
 
 exports[`example linking readme example 1`] = `
 "#version 450
+//// @link color _01_
+
 vec4 _01_getColor() {
   return vec4(_01_used(), 0.5, 0.0, 1.0);
 }
@@ -62,6 +80,8 @@ float _01_used() {
   return 1.0;
 }
 
+
+//// @link main 
 
 void main() {
   gl_FragColor = _01_getColor();

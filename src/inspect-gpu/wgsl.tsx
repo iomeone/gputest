@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react';
 
+import { StyledCompactShader } from './shader';
 import { basicSetup } from 'codemirror';
 import { EditorState } from '@codemirror/state';
 import { EditorView, ViewUpdate, keymap } from '@codemirror/view';
@@ -7,7 +8,7 @@ import { defaultKeymap, indentWithTab } from '@codemirror/commands';
 import { LRLanguage, LanguageSupport } from "@codemirror/language";
 import { createTheme } from '@uiw/codemirror-themes';
 
-import { parser } from '../shader/wgsl';
+import { parser } from '@use-gpu/shader/wgsl';
 import { styleTags, tags as t } from "@lezer/highlight";
 
 export type WGSLProps = {
@@ -82,9 +83,7 @@ const colorTheme = createTheme({
     background: '#000000',
     foreground: '#aedaff',
     caret: '#6a7eff',
-    selection: '#afcfff7a',
-    selectionMatch: '#036dd626',
-    lineHighlight: '#1f201dff',
+    lineHighlight: '#ffffff00',
     gutterBackground: '#303030',
     gutterForeground: '#8090A0',
   },
@@ -104,6 +103,29 @@ const fontTheme = EditorView.theme({
   "& .cm-scroller": {
     fontFamily: 'Fira Code, Menlo, Monaco, Consolas, Bitstream Vera Sans, monospace',
   },
+  "& .cm-search": {
+    fontSize: '16px',
+    overflowX: 'auto',
+  },
+  "& .cm-search input": {
+    fontSize: '15px',
+  },
+  "& .cm-search button": {
+    fontSize: '14px',
+  },
+  "& .cm-search label": {
+    display: 'inline-flex',
+    direction: 'row',
+    alignItems: 'center',
+    position: 'relative',
+    top: '2px',
+  },
+  "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground": {
+    background: "#4377ff80"
+  },
+  '& .cm-selectionMatch': {
+    background: "#4377ff40"
+  },
 });
 
 export function wgslLang() {
@@ -114,7 +136,7 @@ export function wgslLang() {
   return new LanguageSupport(language);
 }
 
-export const renderWGSL = (props: WGSLProps) => <WGSL {...props} />;
+export const renderWGSL = (props: WGSLProps) => <StyledCompactShader><WGSL {...props} /></StyledCompactShader>;
 
 export const WGSL = (props: WGSLProps) => {
   const {code, onChange, onCommit} = props;
@@ -125,7 +147,7 @@ export const WGSL = (props: WGSLProps) => {
   useLayoutEffect(() => {
     const {current: view} = viewRef;
     if (!view) return;
-    
+
     const currentCode = view.state.doc.toString();
     if (code !== currentCode) {
       view.dispatch({
@@ -143,16 +165,16 @@ export const WGSL = (props: WGSLProps) => {
         onChange(v.state.doc.toString());
       }
     });
-    
+
     const handleCommit = (v: EditorView) => {
       try {
         if (onCommit) onCommit(v.state.doc.toString());
       } catch (e) {
         console.error(e);
-      } 
+      }
       return true;
     };
-    
+
     const commitKeys = [
       {
         key: 'Cmd-s',

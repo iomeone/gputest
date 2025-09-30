@@ -1,9 +1,8 @@
-import type { LiveComponent } from '../../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { memo, use, fragment, yeet, useContext, useNoContext, useMemo, useNoMemo, useOne, useNoOne } from '../../../live';
-import { resolve } from '../../../core';
-import { bindBundle, bindingToModule } from '../../../shader/wgsl';
+import { yeet, useMemo, useOne } from '@use-gpu/live';
+import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
 import { getNativeColor } from '../../hooks/useNativeColor';
@@ -12,15 +11,15 @@ import { useRenderContext } from '../../providers/render-provider';
 import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualSolid from '../../../wgsl/render/vertex/virtual-solidwgsl';
-import instanceFragmentSolid from '../../../wgsl/render/fragment/deferred-solidwgsl';
+import instanceDrawVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
+import instanceFragmentSolid from '@use-gpu/wgsl/render/fragment/deferred-solid.wgsl';
 
-import { getScissorColor } from '../../../wgsl/mask/scissorwgsl';
+import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
 export type DeferredSolidRenderProps = VirtualDraw;
 
 export const DeferredSolidRender: LiveComponent<DeferredSolidRenderProps> = (props: DeferredSolidRenderProps) => {
-  let {
+  const {
     links: {
       getVertex,
       getFragment,
@@ -49,7 +48,7 @@ export const DeferredSolidRender: LiveComponent<DeferredSolidRenderProps> = (pro
     const v = bindBundle(vertexShader, links, undefined);
     const f = bindBundle(fragmentShader, links, undefined);
     return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getFragment, colorInput, colorSpace]);
+  }, [vertexShader, fragmentShader, getVertex, getFragment, defines, colorInput, colorSpace]);
 
   const defs = useOne(() => ({...defines, HAS_ALPHA_TO_COVERAGE: true}), defines);
 

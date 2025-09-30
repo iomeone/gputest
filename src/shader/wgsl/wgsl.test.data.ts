@@ -1,9 +1,9 @@
 // Testing shaders
 export const WGSLModules = {
   "getQuadVertex": `
-use '../../wgsl/use/types'::{ SolidVertex };
-use '../../wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale }; 
-use '../../wgsl/geometry/quad'::{ getQuadUV };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/use/view'::{ viewUniforms, worldToClip, getPerspectiveScale };
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
 
 @link fn getPosition(i: i32) -> vec4<f32> {};
 @link fn getColor(i: i32) -> vec4<f32> {};
@@ -50,12 +50,10 @@ use '../../wgsl/geometry/quad'::{ getQuadUV };
 @fragment
 fn main(
   @location(0) fragColor: vec4<f32>,
-  @location(1) fragUV: vec2<f32>,  
+  @location(1) fragUV: vec2<f32>,
 ) -> @location(0) vec4<f32> {
   var outColor = fragColor;
 
-  // TODO: awaiting compound support
-  //outColor.xyz *= outColor.a;
   outColor = vec4<f32>(outColor.xyz * outColor.a, outColor.a);
   outColor = getFragment(outColor, fragUV);
 

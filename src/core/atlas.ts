@@ -1,19 +1,17 @@
 import type { Atlas, TextureSource } from './types';
 
+import { clamp, lerp } from './tuple';
 import { makeTextureDataLayout, makeDynamicTexture, uploadTexture } from './texture';
-import uniq from 'lodash/uniq';
+import uniq from 'lodash/uniq.js';
 
 type Rectangle = [number, number, number, number];
-type Point = [number, number];
+type XY = [number, number];
 
 type Slot = [number, number, number, number, number, number, number, number, number];
 type Bin = Set<Slot>;
 type Bins = Map<number, Set<Slot>>;
 
 const EMPTY: any[] = [];
-const sqr = (x: number) => x * x;
-const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
-const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 
 export const makeAtlasSource = (
   device: GPUDevice,
@@ -47,7 +45,7 @@ export const makeAtlasSource = (
 /**
  * Tight 2D packing texture atlas.
  *
- * For optimal performance, feed items that are sorted large to small, e.g. first Y then X.
+ * For optimal performance, feed items that are sorted large to small, e.g. by area.
  * Will still produce high quality packing otherwise, but performance will degrade significantly.
  */
 export const makeAtlas = (
@@ -57,7 +55,7 @@ export const makeAtlas = (
   maxHeight: number = 4096,
   snap: number = 1,
 ) => {
-  
+
   const ls: Bins = new Map();
   const rs: Bins = new Map();
   const ts: Bins = new Map();
@@ -66,7 +64,9 @@ export const makeAtlas = (
 
   // Place 1 rectangle
   const place = (key: number, w: number, h: number): Rectangle => {
-    if (map.get(key)) throw new Error("key mapped already: " + key);
+    if (!w || !h) throw new Error(`cannot map empty rectangle ${w}x${h} for '${key}'`)
+
+    if (map.get(key)) throw new Error(`key mapped already: ${key}`);
     self.version = self.version + 1;
 
     // Snap to minimum modulus
@@ -74,7 +74,7 @@ export const makeAtlas = (
     const ch = Math.ceil(h / snap) * snap;
 
     // If no next slot, expand and retry
-    const slot = getNextAvailable(cw, ch, true);
+    const slot = getNextAvailable(cw, ch);
     if (!slot) {
       expand();
       return place(key, w, h);
@@ -84,7 +84,7 @@ export const makeAtlas = (
     const rect = [x, y, x + w, y + h] as Rectangle;
 
     // Clip out occupied area from slots
-    if (snap) {
+    if (snap > 1) {
       const clip = [x, y, x + cw, y + ch] as Rectangle;
       clipRectangle(clip);
     }
@@ -97,10 +97,10 @@ export const makeAtlas = (
   // Expand atlas by doubling width or height
   const expand = () => {
     // First height, then width
-    const w = width !== height ? width * 2 : width;
-    const h = width !== height ? height : height * 2;
+    const w = (width  < height && width < maxWidth) ? width * 2 : width;
+    const h = (width >= height || w == width) && height < maxHeight ? height * 2 : height;
 
-    if (w > maxWidth || h > maxHeight) {
+    if (w == width && h == height) {
       throw new Error(`Atlas is full and can't expand any more (${maxWidth}x${maxHeight})`);
     }
 
@@ -118,6 +118,7 @@ export const makeAtlas = (
 
     for (const s of expand) removeSlot(s);
     for (const s of expand) {
+      // eslint-disable-next-line prefer-const
       let [l, t, r, b, nearX, nearY, farX, farY, corner] = s;
       if (r === width) r = w;
       if (b === height) b = h;
@@ -126,6 +127,49 @@ export const makeAtlas = (
 
     self.width = width = w;
     self.height = height = h;
+  };
+
+  const snug = () => {
+    const {width, height} = self;
+    let w = 0;
+    let h = 0;
+
+    for (const k of map.keys()) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const [,, r, b] = map.get(k)!;
+      w = Math.max(r, w);
+      h = Math.max(b, h);
+    }
+    self.width = w;
+    self.height = h;
+
+    if (w !== width || h !== height) {
+      const remove: Slot[] = [];
+      const add: Slot[] = [];
+      for (const s of slots.values()) {
+        const [l, t, r, b, nearX, nearY, farX, farY, corner] = s;
+        if (l >= w || t >= h) {
+          remove.push(s);
+        }
+        else if (r > w || b > h) {
+          const rr = Math.min(r, w);
+          const bb = Math.min(b, h);
+          remove.push(s);
+          add.push([
+            l, t, rr, bb,
+            Math.min(nearX, rr - l),
+            Math.min(nearY, bb - t),
+            Math.min(farX, rr - l),
+            Math.min(farY, bb - t),
+            corner,
+          ]);
+        }
+      }
+      for (const s of remove) removeSlot(s);
+      for (const s of add) addSlot(s);
+    }
+
+    return {width: w, height: h};
   };
 
   // Lazily allocate bin for a particular coordinate
@@ -189,7 +233,7 @@ export const makeAtlas = (
     const rsb = getBin(rs, r);
     const tsb = getBin(ts, t);
     const bsb = getBin(bs, b);
-    
+
     slots.delete(slot);
     lsb.delete(slot);
     rsb.delete(slot);
@@ -201,11 +245,11 @@ export const makeAtlas = (
     if (tsb.size === 0) ts.delete(t);
     if (bsb.size === 0) bs.delete(b);
   };
-  
+
   const map = new Map<number, Rectangle>();
-  
+
   const slotFit = (x: number, near: number, far: number, full: number) => {
-    
+
     // Must not exceed near, unless already close to full
     const f1 = x <= near ? x / near : x / full;
 
@@ -216,13 +260,13 @@ export const makeAtlas = (
   };
 
   // Get highest scoring slot of at least given size
-  const getNextAvailable = (w: number, h: number, debug: boolean = false) => {
+  const getNextAvailable = (w: number, h: number) => {
     let slot: Slot | null = null;
     let max = 0;
 
     for (const s of slots.values()) {
       const [l, t, r, b] = s;
-      
+
       const x = l;
       const y = t;
       const cw = r - l;
@@ -248,7 +292,7 @@ export const makeAtlas = (
 
     return slot;
   }
-  
+
   const stats = {
     slots: 0,
     checks: 0,
@@ -259,10 +303,6 @@ export const makeAtlas = (
   const clipRectangle = (other: Rectangle) => {
     const add = [] as Slot[];
     const remove = [] as Slot[];
-
-    const [l, t, r, b] = other;
-    const w = r - l;
-    const h = b - t;
 
     for (const slot of slots.values()) {
       stats.checks++;
@@ -275,20 +315,21 @@ export const makeAtlas = (
         stats.clips++;
       }
     };
-    
+
     for (const s of remove) removeSlot(s);
     for (const s of add) addSlot(s);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const debugPlacements = () => Array.from(map.keys()).map(k => map.get(k)!);
   const debugSlots = () => Array.from(slots.values()).map(s => s);
 
   const debugValidate = () => {
     const rects = debugPlacements();
-    let n = rects.length;
-    
+    const n = rects.length;
+
     const out: any[] = [];
-    
+
     const box: Rectangle = [Infinity, Infinity, -Infinity, -Infinity];
 
     for (let i = 0; i < n; ++i) {
@@ -323,7 +364,7 @@ export const makeAtlas = (
   addSlot(slot);
 
   const self = {
-    place, map, expand,
+    place, map, expand, snug,
     width, height, version: 0,
     debugPlacements, debugSlots, debugValidate,
   } as Atlas;
@@ -340,17 +381,15 @@ export const uploadAtlasMapping = (
 ): void => {
   const [l, t, r, b] = rect;
 
-  const offset = [l, t] as Point;
-  const size = [r - l, b - t] as Point;
-    
-  const layout = makeTextureDataLayout(size, format);  
+  const offset = [l, t] as XY;
+  const size = [r - l, b - t] as XY;
+
+  const layout = makeTextureDataLayout(size, format);
   uploadTexture(device, texture, data, layout, size, offset);
 }
 
 const intersectRange = (minA: number, maxA: number, minB: number, maxB: number) => !(minA >= maxB || minB >= maxA);
-const intersectRangeEnds = (minA: number, maxA: number, minB: number, maxB: number) => !(minA > maxB || minB > maxA);
 const containsRange = (minA: number, maxA: number, minB: number, maxB: number) => (minA <= minB && maxA >= maxB);
-const getOverlap = (minA: number, maxA: number, minB: number, maxB: number) => Math.max(0, Math.min(maxA, maxB) - Math.max(minA, minB));
 
 type RectLike = Rectangle | Slot;
 
@@ -361,13 +400,6 @@ const containsRectangle = (a: RectLike, b: RectLike): boolean => {
   return containsRange(al, ar, bl, br) && containsRange(at, ab, bt, bb);
 };
 
-const touchRectangle = (a: RectLike, b: RectLike): boolean => {
-  const [al, at, ar, ab] = a;
-  const [bl, bt, br, bb] = b;
-
-  return intersectRangeEnds(al, ar, bl, br) && intersectRangeEnds(at, ab, bt, bb);
-};
-
 const intersectRectangle = (a: RectLike, b: RectLike): boolean => {
   const [al, at, ar, ab] = a;
   const [bl, bt, br, bb] = b;
@@ -376,9 +408,9 @@ const intersectRectangle = (a: RectLike, b: RectLike): boolean => {
 };
 
 const subtractSlot = (a: Slot, b: RectLike): Slot[] => {
-  const [al, at, ar, ab, nearX, nearY, farX, farY, corner] = a;
+  const [al, at, ar, ab, nearX, nearY, farX, farY] = a;
   const [bl, bt, br, bb] = b;
-  
+
   const out: Slot[] = [];
 
   const push = (l: number, t: number, r: number, b: number, nx: number, ny: number, fx: number, fy: number, corner: number) => {

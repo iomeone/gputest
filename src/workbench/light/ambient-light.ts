@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { ColorLike, VectorLike } from '../../traits';
-import { parseColor, parseNumber, useProp } from '../../traits';
+import type { ColorLike } from '@use-gpu/core';
+import { useProp } from '@use-gpu/traits/live';
+import { parseColor, parseNumber } from '@use-gpu/parse';
 
-import { memo, useMemo } from '../../live';
+import { memo, useMemo } from '@use-gpu/live';
 import { useLightContext } from '../providers/light-provider';
 
 import { AMBIENT_LIGHT } from './types';
@@ -16,7 +16,7 @@ export type AmbientLightProps = {
 };
 
 export const AmbientLight = memo((props: AmbientLightProps) => {
-  
+
   const color = useProp(props.color, parseColor, WHITE);
   const intensity = useProp(props.intensity, parseNumber, 1);
 

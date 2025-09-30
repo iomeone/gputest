@@ -1,8 +1,8 @@
-import type { LC, LiveElement } from '../live';
+import type { LC } from '@use-gpu/live';
 import type { Vox, VoxNodeTransform, VoxNodeGroup, VoxNodeShape } from './types';
 
-import { use, memo, provide } from '../live';
-import { Node, Primitive } from '../scene';
+import { use, memo } from '@use-gpu/live';
+import { Node, Primitive } from '@use-gpu/scene';
 
 import { mat4 } from 'gl-matrix';
 

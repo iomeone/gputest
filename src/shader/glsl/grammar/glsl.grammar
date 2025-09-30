@@ -30,8 +30,8 @@ d<term> { @specialize[@name={term}]<Identifier, term> }
 t<term> { @specialize[@name={term}]<Identifier, term> }
 r<term> { @specialize[@name={term}]<Identifier, term> }
 
-unit { externalDeclaration }
-externalDeclaration { FunctionDefinition | Declaration | Preprocessor }
+unit { externalDeclaration* }
+externalDeclaration { FunctionDefinition | GlobalDeclaration | Preprocessor }
 
 comment { commentLine | commentOpen untilCommentClose }
 Preprocessor {
@@ -56,7 +56,7 @@ FunctionDefinition { FunctionPrototype compoundStatement }
 FunctionPrototype { QualifiedType Identifier '(' (ParameterDeclaration (comma ParameterDeclaration)*)? ')' }
 ParameterDeclaration { TypeQualifier? TypeSpecifier (Identifier ArraySpecifier?)? }
 
-Declaration {
+GlobalDeclaration {
   (
     FunctionPrototype |
     VariableDeclaration |
@@ -65,6 +65,33 @@ Declaration {
     QualifiedDeclaration
   ) semicolon
 }
+
+VariableDeclaration { QualifiedType (SingleDeclaration (comma SingleDeclaration)*)? }
+SingleDeclaration { DeclarationSpecifier (!assign assign initializer)? }
+DeclarationSpecifier { Identifier ~qualified ArraySpecifier? }
+
+QualifiedStructDeclaration {
+  TypeQualifier ~qualified (
+    Identifier ~qualified (
+      '{' StructDeclarationList '}' DeclarationSpecifier?
+    )?
+  )?
+}
+
+QualifiedDeclaration {
+  TypeQualifier ~qualified (
+    Identifier ~qualified (comma Identifier)*
+  )?
+}
+
+LocalDeclaration {
+  (
+    VariableDeclaration |
+    k<"precision"> PrecisionQualifier TypeSpecifier
+  ) semicolon
+}
+
+PrivateIdentifier { Identifier }
 
 TypeSpecifier { (basicType | Struct | Identifier ~qualified) ArraySpecifier? }
 ArraySpecifier { (LeftBracket constantExpression RightBracket)* EmptyBrackets | (LeftBracket constantExpression RightBracket)+ EmptyBrackets? }
@@ -75,23 +102,8 @@ QualifiedType { TypeQualifier? TypeSpecifier }
 Struct { k<'struct'> Identifier? '{' StructDeclarationList '}' }
 StructDeclarationList { StructDeclaration* }
 StructDeclaration { TypeQualifier? TypeSpecifier structDeclaratorList semicolon }
-structDeclaratorList { DeclarationSpecifier (comma DeclarationSpecifier)* }
-
-VariableDeclaration { QualifiedType (SingleDeclaration (comma SingleDeclaration)*)? }
-SingleDeclaration { DeclarationSpecifier (!assign assign initializer)? }
-DeclarationSpecifier { Identifier ~qualified ArraySpecifier? }
-QualifiedStructDeclaration {
-  TypeQualifier ~qualified (
-    Identifier ~qualified (
-      '{' StructDeclarationList '}' DeclarationSpecifier?
-    )?
-  )?
-}
-QualifiedDeclaration {
-  TypeQualifier ~qualified (
-    Identifier ~qualified (comma Identifier)*
-  )?
-}
+structDeclaratorList { StructDeclarationSpecifier (comma StructDeclarationSpecifier)* }
+StructDeclarationSpecifier { PrivateIdentifier ~qualified ArraySpecifier? }
 
 initializer {
   assignmentExpression |
@@ -114,7 +126,7 @@ simpleStatement {
   JumpStatement
 }
 
-DeclarationStatement { Declaration }
+DeclarationStatement { LocalDeclaration }
 ExpressionStatement { expression? semicolon }
 SelectionStatement { k<'if'> '(' expression ')' Statement (!else k<"else"> Statement)? }
 Condition { expression | QualifiedType Identifier !assign assign initializer }
@@ -131,7 +143,7 @@ JumpStatement {
   k<"return"> expression? semicolon |
   k<"discard"> semicolon
 }
-fieldSelection { Identifier }
+fieldSelection { PrivateIdentifier }
 
 expression { assignmentExpression (comma assignmentExpression)* }
 
@@ -236,7 +248,7 @@ StorageQualifier {
 InvariantQualifier { k<'invariant'> }
 InterpolationQualifier { ( k<'smooth'> | k<'flat'> | k<'noperspective'> ) }
 LayoutQualifier { ( k<'layout'> '(' LayoutQualifierId (comma LayoutQualifierId)* ')' ) }
-LayoutQualifierId { Identifier (!assign assign constantExpression)? | k<'shared'> }
+LayoutQualifierId { PrivateIdentifier (!assign assign constantExpression)? | k<'shared'> }
 PreciseQualifier { k<'precise'> }
 PrecisionQualifier { ( k<'highp'> | k<'medp'> | k<'lowp'> ) }
 

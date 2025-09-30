@@ -1,37 +1,41 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { StorageSource, LambdaSource, TypedArray, UniformType, Emit, Emitter, Time, DataBounds } from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { StorageSource, LambdaSource, TypedArray, UniformType, Emitter, DataBounds } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import { provide, yeet, signal, useMemo, useNoMemo, useOne, useNoOne, useContext, useNoContext, useYolo, incrementVersion } from '../../live';
+import { useMemo, useNoMemo, useOne, useNoOne, useContext, incrementVersion } from '@use-gpu/live';
 import {
-  makeDataArray, copyNumberArray, emitIntoNumberArray, 
+  makeGPUArray, copyNumberArray, emitArray, makeNumberWriter,
   makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
   getBoundingBox, toDataBounds,
-} from '../../core';
+  toCPUDims, toGPUDims,
+  seq,
+} from '@use-gpu/core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
+import { QueueReconciler } from '../reconcilers/index';
 import { useBufferedSize } from '../hooks/useBufferedSize';
-import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
-import { getBoundShader } from '../hooks/useBoundShader';
+import { useRenderProp } from '../hooks/useRenderProp';
+import { useSource, useNoSource } from '../hooks/useSource';
+import { getShader } from '../hooks/useShader';
 
-import { chainTo } from '../../shader/wgsl';
-import { getIndex } from '../../wgsl/instance/interleavewgsl';
+import { chainTo } from '@use-gpu/shader/wgsl';
+import { getInterleaveIndex } from '@use-gpu/wgsl/instance/index/interleave.wgsl';
 
-const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
+const {signal} = QueueReconciler;
 
-export type RawDataProps = {
+export type RawDataProps<I extends boolean> = {
   /** Set/override input length */
   length?: number,
 
   /** WGSL format per sample */
   format?: string,
-  
+
   /** Input data */
   data?: number[] | TypedArray,
   /** Input emitter expression */
-  expr?: Emitter<Time>,
+  expr?: Emitter,
   /** Emit N items per expr call. Output size is `[items, N]` if items > 1. */
   items?: number,
   /** Emit 0 or N items per expr call. Output size is `[N]` or `[items, N]`. */
@@ -41,39 +45,38 @@ export type RawDataProps = {
   /** Add current `TimeContext` to the `expr` arguments. */
   time?: boolean,
 
-  /** Split output into 1 source per item. */
-  interleaved?: boolean,
+  /** Split multiple emits into multiple source */
+  interleaved?: I,
 
   /** Leave empty to yeet source(s) instead. */
-  render?: (...source: ShaderSource[]) => LiveElement,
+  render?: true extends I ? (sources: ShaderSource[]) => LiveElement : (source: ShaderSource) => LiveElement,
+  children?: true extends I ? (sources: ShaderSource[]) => LiveElement : (source: ShaderSource) => LiveElement,
 };
 
 const NO_BOUNDS = {center: [], radius: 0, min: [], max: []} as DataBounds;
 
 /** 1D array of a WGSL type. Reads input `data` or samples a given `expr` of WGSL type `format`. */
-export const RawData: LiveComponent<RawDataProps> = (props) => {
+export const RawData: LiveComponent<RawDataProps<unknown & boolean>> = <I extends boolean>(props: RawDataProps<I>) => {
   const device = useContext(DeviceContext);
 
   const {
-    format, length,
+    format,
     data, expr,
-    render,
-    items = 1,
     interleaved = false,
     sparse = false,
     live = false,
     time = false,
   } = props;
 
-  const t = Math.max(1, Math.round(items) || 0);
-  const count = t * (length ?? (data?.length || 0));
-  const l = useBufferedSize(count);
+  const items = Math.max(1, Math.round(props.items || 0));
+  const count = (props.length ?? (data?.length || 0));
+  const alloc = useBufferedSize(count);
 
   // Make data buffer
   const [buffer, array, source, dims] = useMemo(() => {
     const f = (format && (format in UNIFORM_ARRAY_DIMS)) ? format as UniformType : 'f32';
 
-    const {array, dims} = makeDataArray(f, l || 1);
+    const {array, dims} = makeGPUArray(f, alloc || 1);
 
     const buffer = makeStorageBuffer(device, array.byteLength);
     const source = {
@@ -86,26 +89,26 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
     };
 
     return [buffer, array, source, dims] as [GPUBuffer, TypedArray, StorageSource, number];
-  }, [device, format, l]);
+  }, [device, format, alloc]);
 
   // Make de-interleaving shader
   let sources: LambdaSource[] | undefined;
   if (interleaved) {
     const binding = useOne(() => ({name: 'getData', format: format as any as UniformType}), format);
-    const getData = useBoundSource(binding, source);
+    const getData = useSource(binding, source);
     sources = useMemo(() => (
-      seq(t).map(i => ({
-        shader: chainTo(getBoundShader(getIndex, [i, t]), getData),
+      seq(items).map(i => ({
+        shader: chainTo(getShader(getInterleaveIndex, [i, items]), getData),
         length: 0,
         size: [0],
         version: 0,
         bounds: source.bounds,
       }))
-    ), [t, getData]);
+    ), [items, getData]);
   }
   else {
     useNoOne();
-    useNoBoundSource();
+    useNoSource();
     useNoMemo();
   }
 
@@ -116,8 +119,11 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
   const refresh = () => {
     let emitted = 0;
 
-    if (data) copyNumberArray(data, array, dims);
-    if (expr) emitted = emitIntoNumberArray(expr, array, dims, clock!);
+    if (data) copyNumberArray(data, array, toCPUDims(dims), toGPUDims(dims));
+    if (expr) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      emitted = emitArray(expr, makeNumberWriter(array, dims), count, clock!);
+    }
     if (data || expr) {
       uploadBuffer(device, buffer, array.buffer);
     }
@@ -128,14 +134,18 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
 
     const {bounds} = source;
     const {center, radius, min, max} = toDataBounds(getBoundingBox(array, Math.ceil(dims)));
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     bounds!.center = center;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     bounds!.radius = radius;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     bounds!.min = min;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     bounds!.max = max;
 
     if (sources) {
       for (const s of sources) {
-        s.length  = source.length / t;
+        s.length  = source.length / items;
         s.size    = source.size.slice(1);
         s.version = source.version;
       }
@@ -153,8 +163,6 @@ export const RawData: LiveComponent<RawDataProps> = (props) => {
   }
 
   const trigger = useOne(() => signal(), source.version);
-  const view = sources
-    ? useYolo(() => render ? render(...sources!) : yeet(sources!), [render, sources])
-    : useYolo(() => render ? render(source) : yeet(source), [render, source]);
+  const view = useRenderProp(props as any, sources ?? source);
   return [trigger, view];
 };

@@ -1,13 +1,12 @@
-import type { StorageSource, Lazy } from '../../core';
-import type { ShaderModule } from '../../shader';
+import type { StorageSource, Lazy } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 
-import { resolve, makeDataBuffer } from '../../core';
-import { useMemo, useNoMemo } from '../../live';
-import { getBoundShader } from '../hooks/useBoundShader';
+import { resolve, makeDataBuffer } from '@use-gpu/core';
+import { getShader } from '../hooks/useShader';
 
-import { getWireframeListVertex } from '../../wgsl/render/wireframe/wireframe-listwgsl';
-import { getWireframeStripVertex } from '../../wgsl/render/wireframe/wireframe-stripwgsl';
-import { main as makeWireframeIndirectCommand } from '../../wgsl/render/wireframe/wireframe-indirectwgsl';
+import { getWireframeListVertex } from '@use-gpu/wgsl/render/wireframe/wireframe-list.wgsl';
+import { getWireframeStripVertex } from '@use-gpu/wgsl/render/wireframe/wireframe-strip.wgsl';
+import { main as makeWireframeIndirectCommand } from '@use-gpu/wgsl/render/wireframe/wireframe-indirect.wgsl';
 
 /** Produce a wireframe vertex shader for a given solid vertex shader. */
 export const getWireframe = (
@@ -18,7 +17,7 @@ export const getWireframe = (
 ) => {
   const i = instanceCount;
   const v = vertexCount;
-  
+
   const isTriangleStrip = topology === 'triangle-strip';
 
   let instanceSize;
@@ -35,14 +34,15 @@ export const getWireframe = (
     instanceCount = () => resolve(v) * resolve(i);
     instanceSize = () => resolve(v);
   }
-  
+
   const shader = isTriangleStrip ? getWireframeStripVertex : getWireframeListVertex;
-  const bound = getBoundShader(shader, [getVertex, instanceSize]);
+  const bound = getShader(shader, [getVertex, instanceSize]);
 
   return {
     getVertex: bound,
     vertexCount,
     instanceCount,
+    topology,
   };
 }
 
@@ -56,7 +56,6 @@ export const getWireframeIndirect = (
   const isTriangleStrip = topology === 'triangle-strip';
 
   const N = 128;
-  const data = new Uint32Array(128);
   const buffer = makeDataBuffer(device, N * 4, GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT);
   const destination = {
     buffer,
@@ -71,14 +70,14 @@ export const getWireframeIndirect = (
   const instanceSize = {...destination, byteOffset: 256, readWrite: false};
   const defines = {isTriangleStrip};
 
-  const boundDispatch = getBoundShader(makeWireframeIndirectCommand, [indirect, destination], defines);
+  const boundDispatch = getShader(makeWireframeIndirectCommand, [indirect, destination], defines);
 
   const shader = isTriangleStrip ? getWireframeStripVertex : getWireframeListVertex;
-  const boundVertex = getBoundShader(shader, [getVertex, instanceSize]);
+  const boundVertex = getShader(shader, [getVertex, instanceSize]);
 
   return {
     getVertex: boundVertex,
     wireframeCommand: boundDispatch,
-    wireframeIndirect: destination, 
+    wireframeIndirect: destination,
   };
 }

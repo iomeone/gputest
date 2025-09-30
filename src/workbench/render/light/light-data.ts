@@ -1,26 +1,28 @@
-import type { LiveComponent, LiveElement } from '../../../live';
-import type { StorageSource, TextureSource } from '../../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { StorageSource, TextureSource, UniformAttribute } from '@use-gpu/core';
 import type { Light, BoundLight } from '../../light/types';
 import type { LightEnv } from '../../pass/types';
 
-import { provide, capture, yeet, signal, makeCapture, useCallback, useCapture, useFiber, useMemo, useOne, useRef, useResource, incrementVersion } from '../../../live';
+import { capture, yeet, makeCapture, useCallback, useCapture, useFiber, useMemo, useOne, useRef, useResource, incrementVersion } from '@use-gpu/live';
 import {
-  makeIdAllocator,
   makeUniformLayout, makeLayoutData, makeLayoutFiller,
   makeStorageBuffer, uploadBuffer, uploadBufferRange,
   makeAtlas, makeTexture, seq,
-} from '../../../core';
-import { scrambleBits53, mixBits53 } from '../../../state';
-import { bindBundle, bundleToAttribute, getBundleKey } from '../../../shader/wgsl';
+} from '@use-gpu/core';
+import { mixBits53 } from '@use-gpu/state';
+import { bundleToAttribute } from '@use-gpu/shader/wgsl';
 
 import { useDeviceContext } from '../../providers/device-provider';
+import { QueueReconciler } from '../../reconcilers/index';
 import { useBufferedSize } from '../../hooks/useBufferedSize';
 
-import { Light as WGSLLight } from '../../../wgsl/use/typeswgsl';
+import { Light as WGSLLight } from '@use-gpu/wgsl/use/types.wgsl';
 
 import { POINT_LIGHT } from '../../light/types';
 
 import { vec2, vec4 } from 'gl-matrix';
+
+const {signal} = QueueReconciler;
 
 type Queued = {id: number, data: Light};
 
@@ -28,7 +30,7 @@ export const SHADOW_PAGE = 4096;
 export const SHADOW_FORMAT = "depth32float";
 
 const LIGHT_ATTRIBUTE = bundleToAttribute(WGSLLight);
-const LIGHT_LAYOUT = makeUniformLayout(LIGHT_ATTRIBUTE.members!);
+const LIGHT_LAYOUT = makeUniformLayout(LIGHT_ATTRIBUTE.format as UniformAttribute[]);
 const LIGHT_BYTE_OFFSET = 16;
 
 const makeAtlasPage = () => makeAtlas(
@@ -43,8 +45,9 @@ export const LightCapture = makeCapture<null>('LightCapture');
 export type UseLight = (l: Light) => void;
 
 export type LightDataProps = {
-  alloc?: number,
+  reserve?: number,
   deferred?: boolean,
+  shadows?: boolean,
   render?: (
     useLight: (l: Light) => void,
   ) => LiveElement,
@@ -55,8 +58,9 @@ export type LightDataProps = {
 
 export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) => {
   const {
-    alloc = 1,
+    reserve = 1,
     deferred = false,
+    shadows = false,
     render,
     then,
   } = props;
@@ -84,14 +88,15 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
   });
 
   // Produce light/shadow sources
-  const Resume = () => {    
+  const Resume = () => {
 
     // Update light data in-place
-    for (let {id, data} of queue) {
+    for (const {id, data} of queue) {
       const {shadow} = data;
 
       if (lights.has(id)) {
         if (shadow) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const d = lights.get(id)!;
           Object.assign(d, data);
           continue;
@@ -119,20 +124,22 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
 
     for (const key of lights.keys()) lightKey = mixBits53(lightKey, key);
     for (const key of maps.keys()) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const {shadow} = maps.get(key)!;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const {size: [w, h]} = shadow!;
       shadowKey = mixBits53(mixBits53(mixBits53(shadowKey, key), w), h);
     }
-    
+
     const lightCount = lights.size;
-    const size = useBufferedSize(Math.max(alloc, lightCount + 1));
+    const size = useBufferedSize(Math.max(reserve, lightCount + 1));
     const device = useDeviceContext();
 
     const prevDataRef = useRef<ArrayBuffer | null>(null);
 
     // Make light storage buffer
     const [storage, data, filler] = useMemo(() => {
-      const data = makeLayoutData(LIGHT_LAYOUT, size);
+      const data = makeLayoutData(LIGHT_LAYOUT, size, LIGHT_BYTE_OFFSET);
       const buffer = makeStorageBuffer(device, data);
 
       const {current: prevData} = prevDataRef;
@@ -158,16 +165,18 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
 
     // Make shadow texture atlas
     const texture = useMemo(() => {
+      if (!shadows) return null;
 
       const atlases = [makeAtlasPage()];
       let [atlas] = atlases;
 
       for (const key of maps.keys()) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const light = maps.get(key)!;
         const {shadow} = light;
         if (shadow) {
           const {size: [w, h], depth: [near, far], bias, blur} = shadow;
-          
+
           let mapping;
           try {
             mapping = atlas.place(key, w, h);
@@ -226,9 +235,9 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
         comparison: true,
         version: 0,
       } as TextureSource;
-      
+
       return source;
-    }, [device, shadowKey]);
+    }, [device, shadows, shadowKey]);
 
     let needsRefresh = prevDataRef.current !== data;
     prevDataRef.current = data;
@@ -240,6 +249,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
 
       const keys = [...lights.keys()];
       const order = seq(keys.length);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const kinds = keys.map(k => lights.get(k)!.kind);
       order.sort((a, b) => (kinds[a] - kinds[b]) || (a - b));
 
@@ -252,23 +262,25 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
 
         const kind = kinds[i];
         if (!subranges.has(kind)) subranges.set(kind, [j, j + 1]);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         else subranges.get(kind)![1] = j + 1;
 
         ++j;
       }
-      
+
       return [map, order.map(i => keys[i]), subranges];
     }, lightKey);
 
     // Order changed lights by index
     const ids = needsRefresh ? [...lights.keys()] : [...changed.values()];
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ids.sort((a, b) => indices.get(a)! - indices.get(b)!);
 
     // Update data sparsely while calculating upload ranges
     let ranges = [];
     let range: [number, number] | null = null;
-    let index = 0;
     for (const id of ids) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const index = indices.get(id)!;
 
       if (!range) ranges.push(range = [index, index + 1]);
@@ -285,6 +297,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
 
       // Don't count point lights if deferred rendering
       if (deferred && subranges.has(POINT_LIGHT)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         count[0] = subranges.get(POINT_LIGHT)![0];
       }
       else {
@@ -300,7 +313,8 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
     }
 
     storage.size[0] = storage.length = lightCount + 1;
-    storage.version = texture.version = incrementVersion(storage.version);
+    storage.version = incrementVersion(storage.version);
+    if (texture) texture.version = incrementVersion(texture.version);
 
     queue.length = 0;
     changed.clear();

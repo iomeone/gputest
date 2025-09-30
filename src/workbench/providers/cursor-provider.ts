@@ -1,8 +1,8 @@
-import type { LiveFiber, LiveComponent, LiveElement, LiveMap } from '../../live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
 
-import { memo, capture, makeCapture, useCapture, useOne, useMemo } from '../../live';
+import { memo, capture, makeCapture, useCapture, useOne } from '@use-gpu/live';
 
-export const CursorState = makeCapture('CursorState');
+export const CursorState = makeCapture<string>('CursorState');
 
 export type CursorProps = {
   cursor?: string,
@@ -10,13 +10,13 @@ export type CursorProps = {
 
 export type CursorProviderProps = {
   element: HTMLElement,
-  children: LiveElement,
+  children?: LiveElement,
 };
 
 export const CursorProvider: LiveComponent<CursorProviderProps> = (props) => {
   const {element, children} = props;
-  
-  const Resume = useOne(() => 
+
+  const Resume = useOne(() =>
     (cursors: string[]) => {
       const cursor = cursors[cursors.length - 1] ?? 'default';
       if (element.style.cursor !== cursor) element.style.cursor = cursor;

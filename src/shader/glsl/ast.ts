@@ -2,7 +2,6 @@ import { SyntaxNode, TreeCursor, Tree } from '@lezer/common';
 import {
   CompressedNode,
   SymbolTable,
-  SymbolRef,
   ModuleRef,
   ImportRef,
   PrototypeRef,
@@ -18,13 +17,12 @@ import {
   ShakeOp,
   RefFlags as RF,
 } from './types';
-import * as T from './grammar/glsl.terms';
+import * as T from './grammar/glsl.terms.js';
 import { GLSL_NATIVE_TYPES } from './constants';
 import { parseString } from '../util/bundle';
-import { getChildNodes, hasErrorNode, formatAST, formatASTNode, makeASTEmitter, makeASTDecompressor } from '../util/tree';
-import uniq from 'lodash/uniq';
+import { getChildNodes, formatAST, makeASTEmitter, makeASTDecompressor } from '../util/tree';
+import uniq from 'lodash/uniq.js';
 
-const NO_DEPS = [] as string[];
 const IGNORE_IDENTIFIERS = new Set(['location', 'set', 'binding']);
 const AST_OPS = ["Shake", "Skip", "Identifier"];
 
@@ -38,18 +36,33 @@ const isSpace = (s: string, i: number) => {
 };
 
 // Parse AST for given code string
-export const makeASTParser = (code: string, tree: Tree) => {
+export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
   const throwError = (t: string, n?: SyntaxNode) => {
     if (!n) throw new Error(`Missing node`);
-    console.log(formatAST(tree.topNode, code));
-    const loc = name != null ? ` in ${name}` : '';
-    throw new Error(`Error parsing: ${t} node '${code.slice(n.from, n.to)}'${loc}\n${formatAST(n, code)}`);
+
+    while (n.parent) {
+      if (n.from !== n.to) break;
+      n = n.parent;
+    }
+
+    let start = n.from;
+    let end = n.to;
+    while (start > 0 && code.charAt(start - 1) !== "\n") start--;
+    while (end < code.length - 1 && code.charAt(end + 1) !== "\n") end++;
+
+    const loc = name != null ? `in '${name}'` : '';
+    throw new Error(
+      `${loc}\n${t} in '${code.slice(n.from, n.to)}'\n\n`+
+      `${code.slice(start, end)}\n`+
+      `${" ".repeat(n.from - start)}^\n\n`+
+      formatAST(n, code)
+    );
   }
 
   const getNodes = (node: SyntaxNode, min?: number) => {
     const nodes = getChildNodes(node);
-    for (const n of nodes) if (node.type.isError) throwError('error', node);
+    for (const n of nodes) if (n.type.isError) throwError('error', n);
     if (min != null && nodes.length < min) throwError(`not enough nodes (${min})`, node);
     return nodes;
   }
@@ -58,9 +71,9 @@ export const makeASTParser = (code: string, tree: Tree) => {
     if (!node) throwError('text');
     return code.slice(node.from, node.to);
   }
-  
+
   const getQualifier = getText;
-  
+
   const getQualifiedType = (node: SyntaxNode): TypeRef => {
     const [a, b] = getNodes(node);
 
@@ -72,7 +85,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
 
     return {name, qualifiers};
   }
-  
+
   const getTypeSpecifier = (node: SyntaxNode): TypeRef => {
     if (node.type.id === T.Identifier) {
       const name = getText(node);
@@ -89,7 +102,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
         return {name};
       }
     }
-    
+
     throw throwError('type specifier', node);
   }
 
@@ -141,11 +154,10 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const type = getQualifiedType(a);
     const name = getText(b);
     const parameters = c ? getNodes(c).map(getText) : [];
-    const symbols = [{name}];
 
     return {name, type, parameters};
   };
-  
+
   const getVariable = (node: SyntaxNode): VariableRef => {
     const [a, ...rest] = getNodes(node, 1);
     const type = getQualifiedType(a);
@@ -153,10 +165,10 @@ export const makeASTParser = (code: string, tree: Tree) => {
 
     return {type, locals};
   }
-  
+
   const getQualifiedStruct = (node: SyntaxNode): QualifiedStructRef => {
-    const [a, b, c, d] = getNodes(node, 3);
-    
+    const [, b, c, d] = getNodes(node, 3);
+
     const type = getQualifiedType(node);
     const name = getText(d ?? b);
     const struct = getStructMembers(c);
@@ -181,7 +193,9 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const at = node.from;
 
     const symbols = [func.name];
-    const identifiers = b ? getIdentifiers(b, symbols) : undefined;
+    const ids1 = getIdentifiers(a, symbols);
+    const ids2 = b ? getIdentifiers(b, symbols) : undefined;
+    const identifiers = ids1 && ids2 ? [...ids1, ...ids2] : ids1 ?? ids2;
 
     return {at, symbols, identifiers, flags, func};
   };
@@ -241,7 +255,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
       const symbols = [type.name];
       return {at, symbols, flags};
     }
-    
+
     throw throwError('declaration', node);
   };
 
@@ -253,7 +267,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     );
   }
 
-  const isGlobal = (node: SyntaxNode): boolean => {  
+  const isGlobal = (node: SyntaxNode): boolean => {
     const pragma = node.prevSibling;
 
     if (!pragma || pragma.type.id !== T.Preprocessor) return false;
@@ -266,7 +280,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     return verb === 'global' || isGlobal(pragma);
   };
 
-  const isExported = (node: SyntaxNode): boolean => {  
+  const isExported = (node: SyntaxNode): boolean => {
     const pragma = node.prevSibling;
 
     if (!pragma || pragma.type.id !== T.Preprocessor) return false;
@@ -279,7 +293,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     return verb === 'export' || isExported(pragma);
   };
 
-  const isOptional = (node: SyntaxNode): boolean => {  
+  const isOptional = (node: SyntaxNode): boolean => {
     const pragma = node.prevSibling;
 
     if (!pragma || pragma.type.id !== T.Preprocessor) return false;
@@ -299,19 +313,18 @@ export const makeASTParser = (code: string, tree: Tree) => {
 
     const visit = () => {
       const {type} = cursor;
-      if (type.name === 'Field') {
-        const sub = cursor.node.cursor();
-        do {} while (sub.firstChild());
-        const t = getText(sub);
-        ids.add(t);
-        cursor.lastChild();
+      if (type.name === 'PrivateIdentifier') {
+        return false;
       }
-      else if (type.name === 'Identifier' || type.name === 'Id') {
+      else if (type.name === 'Identifier') {
         const t = getText(cursor);
         if (!IGNORE_IDENTIFIERS.has(t)) ids.add(t);
       }
     }
-    do { visit(); } while (cursor.next() && cursor.from < to);
+    do {
+      if (visit() === false) cursor.lastChild();
+      if (!cursor.next()) break;
+    } while (cursor.from < to);
 
     return Array.from(ids).filter(s => exclude.indexOf(s) < 0);
   };
@@ -321,7 +334,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
 
     const children = tree.topNode.getChildren(T.Preprocessor);
     for (const child of children) {
-      const [a, b, c, d] = getNodes(child);    
+      const [a, b, c, d] = getNodes(child);
       const directive = getText(a);
       if (directive !== 'pragma') continue;
 
@@ -333,7 +346,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
       if (c.type.id === T.String) {
         refs = [];
         module = parseString(getText(c));
-      } 
+      }
       else {
         refs = getNodes(c).map(getImport);
         module = parseString(getText(d));
@@ -341,7 +354,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
 
       let items = modules[module];
       if (!items) items = modules[module] = [];
-    
+
       items.push(...refs);
     }
 
@@ -361,7 +374,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
   }
 
   const getDeclarations = (): DeclarationRef[] => {
-    const children = tree.topNode.getChildren(T.Declaration);
+    const children = tree.topNode.getChildren(T.GlobalDeclaration);
     return children.map(getDeclaration);
   };
 
@@ -371,6 +384,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const declarations = getDeclarations();
 
     const externals = declarations
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion    
       .filter(d => d.func && !functions.find(f => f.func.name === d.func!.name));
 
     const refs = [...functions, ...declarations];
@@ -383,8 +397,10 @@ export const makeASTParser = (code: string, tree: Tree) => {
     const globals = uniq(globalled.flatMap(r => r.symbols));
     const symbols = uniq(refs.flatMap(r => r.symbols));
 
+    const types = exported.filter(d => (d as DeclarationRef).struct).flatMap(t => t.symbols);
+
     const scope = new Set(symbols ?? []);
-    for (let ref of refs) if (ref.identifiers) {
+    for (const ref of refs) if (ref.identifiers) {
       ref.identifiers = ref.identifiers.filter(s => scope.has(s));
       if (ref.identifiers?.length === 0) ref.identifiers = undefined;
     }
@@ -393,6 +409,7 @@ export const makeASTParser = (code: string, tree: Tree) => {
     for (const {symbols} of externals) for (const symbol of symbols) linkable[symbol] = true;
 
     return {
+      types: orNone(types),
       symbols: orNone(symbols),
       visibles: orNone(visibles),
       globals: orNone(globals),
@@ -420,13 +437,14 @@ export const makeASTParser = (code: string, tree: Tree) => {
     for (const ref of refs) if (ref.identifiers) {
       const {symbols, identifiers} = ref;
       for (const id of identifiers) {
-        for (let s of symbols) link(id, s);
+        for (const s of symbols) link(id, s);
       }
     }
 
     const getAll = (ss: string[], accum: Set<number> = new Set()): Set<number> => {
-      for (let symbol of ss) {
-        let s = lookup.get(symbol)!;
+      for (const symbol of ss) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const s = lookup.get(symbol)!;
         if (!accum.has(s)) {
           accum.add(s);
           const deps = graph.get(symbol);
@@ -485,13 +503,14 @@ export const rewriteUsingAST = (
 
     // Injected by compressed AST only: Skip, Shake
     if (type.name === 'Skip') skip(from, to);
-    
+
     // Top level declaration
-    else if (type.name === 'Declaration' || type.name === 'FunctionDefinition' || type.name === 'Shake') {
+    else if (type.name === 'GlobalDeclaration' || type.name === 'FunctionDefinition' || type.name === 'Shake') {
       if (cursor.node.parent?.type.name !== 'Program') continue;
       if (!shakes) continue;
       if (shakes.has(from)) {
         skip(from, to);
+        // eslint-disable-next-line no-empty
         while (cursor.lastChild()) {};
       }
     }
@@ -500,7 +519,7 @@ export const rewriteUsingAST = (
       const name = code.slice(from, to);
       const replace = rename.get(name);
 
-      if (replace) skip(from, to, replace);      
+      if (replace) skip(from, to, replace);
     }
     // #version preprocessor
     else if (type.name === 'version') {
@@ -521,6 +540,7 @@ export const rewriteUsingAST = (
     // Field accessor
     else if (type.name === 'Field') {
       const sub = cursor.node.cursor();
+      // eslint-disable-next-line no-empty
       do {} while (sub.firstChild());
 
       const name = code.slice(sub.from, sub.to);
@@ -539,16 +559,19 @@ export const rewriteUsingAST = (
 
 // Compress an AST to only the info needed to do symbol replacement and tree shaking
 export const compressAST = (
-  _: string,
+  code: string,
   tree: Tree,
   symbols: string[] = [],
+  modules: ModuleRef[] = [],
 ): CompressedNode[] => {
   const out = [] as any[]
   const emit = makeASTEmitter(out, AST_OPS, symbols);
 
+  const whitelist = new Set([...symbols, ...modules.flatMap((m) => m.symbols)]);
+
   // Pass through nodes from pre-compressed tree immediately
   // @ts-ignore
-  if (tree.__nodes) return tree.__nodes();
+  if (tree.__nodes) return tree.__nodes;
 
   const shake = (from: number, to: number) => emit('Shake',      from, to);
   const skip  = (from: number, to: number) => emit('Skip',       from, to);
@@ -558,12 +581,12 @@ export const compressAST = (
   do {
     const {type, from, to} = cursor;
 
-    if (type.name === 'Declaration' || type.name === 'FunctionDefinition') {
+    if (type.name === 'GlobalDeclaration' || type.name === 'FunctionDefinition') {
       if (cursor.node.parent?.type.name === 'Program') shake(from, to);
     }
     else if (type.name === 'Identifier') {
-      const {from, to} = cursor;
-      ident(from, to);
+      const s = code.slice(from, to);
+      if (whitelist.has(s)) ident(from, to);
     }
     else if (type.name === 'version') {
       cursor.parent();
@@ -581,6 +604,7 @@ export const compressAST = (
     }
     else if (type.name === 'Field') {
       const sub = cursor.node.cursor();
+      // eslint-disable-next-line no-empty
       do {} while (sub.firstChild());
       ident(sub.from, sub.to);
       cursor.lastChild();

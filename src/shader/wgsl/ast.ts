@@ -1,6 +1,5 @@
 import { SyntaxNode, TreeCursor, Tree } from '@lezer/common';
 import {
-  AnnotatedTypeRef,
   AttributeRef,
   AttributesRef,
   CompressedNode,
@@ -23,14 +22,15 @@ import {
   ShakeOp,
   RefFlags as RF,
 } from './types';
-import * as T from './grammar/wgsl.terms';
+import * as T from './grammar/wgsl.terms.js';
 import { WGSL_NATIVE_TYPES } from './constants';
 import { parseString } from '../util/bundle';
-import { getChildNodes, hasErrorNode, formatAST, formatASTNode, makeASTEmitter, makeASTDecompressor } from '../util/tree';
+import { getChildNodes, formatAST, makeASTEmitter, makeASTDecompressor } from '../util/tree';
 import { getTypeName, getAttributeName, getAttributeArgs } from './type';
-import uniq from 'lodash/uniq';
+import uniq from 'lodash/uniq.js';
 
 const NO_STRINGS = [] as string[];
+const NO_MEMBERS = [] as StructMemberRef[];
 const VOID_TYPE = 'void';
 const AUTO_TYPE = 'auto';
 const PRIVATE_ATTRIBUTES = new Set(['@export', '@link', '@global', '@optional', '@infer']);
@@ -55,15 +55,15 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       if (n.from !== n.to) break;
       n = n.parent;
     }
-    
+
     let start = n.from;
     let end = n.to;
     while (start > 0 && code.charAt(start - 1) !== "\n") start--;
     while (end < code.length - 1 && code.charAt(end + 1) !== "\n") end++;
 
-    const loc = name != null ? ` '${name}'` : '';
+    const loc = name != null ? `in '${name}'` : '';
     throw new Error(
-      `Error parsing${loc}: ${t} in '${code.slice(n.from, n.to)}'\n`+
+      `${loc}\n${t} in '${code.slice(n.from, n.to)}'\n\n`+
       `${code.slice(start, end)}\n`+
       `${" ".repeat(n.from - start)}^\n\n`+
       formatAST(n, code)
@@ -72,7 +72,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
   const getNodes = (node: SyntaxNode, min?: number) => {
     const nodes = getChildNodes(node);
-    for (const n of nodes) if (node.type.isError) throwError('error', node);
+    for (const n of nodes) if (n.type.isError) throwError('error', n);
     if (min != null && nodes.length < min) throwError(`not enough tokens (${min})`, node);
     return nodes;
   }
@@ -85,9 +85,9 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
   const getTextAt = (from: number, to: number) => {
     return code.slice(from, to);
   }
-  
+
   ////////////////
-  
+
   const getIdentifiers = (node: SyntaxNode, symbol: string, exclude = NO_STRINGS): string[] | undefined => {
     const cursor = node.cursor();
     const {to} = node;
@@ -96,6 +96,9 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const visit = () => {
       const {type} = cursor;
       if (type.id === T.Attribute) {
+        return false;
+      }
+      if (type.id === T.PrivateIdentifier) {
         return false;
       }
       if (type.id === T.Identifier) {
@@ -110,7 +113,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
     return ids.size ? Array.from(ids) : undefined;
   };
-    
+
   ////////////////
 
   const getImport = (node: SyntaxNode): ImportRef => {
@@ -125,7 +128,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
   const getAttribute = (node: SyntaxNode): AttributeRef => {
     return getTextAt(node.from + 1, node.to);
-    
+
     /*
     const [a, ...rest] = getNodes(node, 1);
 
@@ -154,11 +157,11 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
   const getParameters = (node: SyntaxNode): ParameterRef[] | undefined => {
     const nodes = getNodes(node);
     return nodes.length ? nodes.map(getParameter) : undefined;
-  } 
+  }
 
   const getType = (node: SyntaxNode): TypeRef => {
     return getText(node);
-    
+
     /*
     const [a, ...rest] = getNodes(node, 1);
 
@@ -202,7 +205,10 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const {name, type, parameters} = header;
 
     const exclude = parameters ? parameters.map(p => (p as any).name) : undefined;
-    const identifiers = c ? getIdentifiers(c, name, exclude) : undefined;
+
+    const ids1 = getIdentifiers(b, name, exclude);
+    const ids2 = c ? getIdentifiers(c, name, exclude) : undefined;
+    const identifiers = ids1 && ids2 ? [...ids1, ...ids2] : ids1 ?? ids2;
 
     return {name, type, attr, parameters, identifiers, inferred};
   };
@@ -237,12 +243,13 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
     const attr = getAttributes(a);
     const {name, type, qual} = getVariableDeclaration(b);
-    const value = hasValue ? getText(c) : undefined; 
+    const value = hasValue ? getText(c) : undefined;
 
     let identifiers = hasValue ? getIdentifiers(c, name) : undefined;
     const typeName = getTypeName(type);
     if (!WGSL_NATIVE_TYPES.has(typeName)) {
       if (!identifiers) identifiers = [];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       identifiers!.push(typeName);
     }
 
@@ -251,25 +258,26 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
   const getConstant = (node: SyntaxNode): VariableRef => {
     const nodes = getNodes(node, 2);
-    
-    const [a, b, c,, d] = nodes;
+
+    const [a,, c,, d] = nodes;
     const hasAttributes = a.type.id === T.AttributeList;
     const attr = hasAttributes ? getAttributes(a) : undefined;
 
     const hasValue = !!d;
     const {name, type} = getVariableIdentifier(c);
-    const value = hasValue ? getText(d) : undefined; 
+    const value = hasValue ? getText(d) : undefined;
 
     let identifiers = hasValue ? getIdentifiers(d, name) : undefined;
     const typeName = getTypeName(type);
     if (!WGSL_NATIVE_TYPES.has(typeName)) {
       if (!identifiers) identifiers = [];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       identifiers!.push(typeName);
     }
 
     return {name, type, attr, value, identifiers};
   };
-  
+
   const getTypeAlias = (node: SyntaxNode): TypeAliasRef => {
     const [a,, b,, c] = getNodes(node, 3);
 
@@ -294,10 +302,10 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
   const getStruct = (node: SyntaxNode): StructRef => {
     const [a,, b, c] = getNodes(node, 3);
-    
+
     const attr = getAttributes(a);
     const name = getText(b);
-    const members = getStructMembers(c);
+    const members = c ? getStructMembers(c) : NO_MEMBERS;
 
     return {name, attr, members};
   };
@@ -306,7 +314,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const inferred: InferRef[] = [];
     let index = -1;
 
-    const {name, type, parameters} = func;
+    const {parameters} = func;
     if (typeof func.type !== 'string') {
       const attribute = findAttribute(func.type.attr, 'infer');
       if (attribute != null) {
@@ -356,13 +364,15 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const isOptional = hasAttribute(ref.attr, 'optional');
     const isGlobal   = hasAttribute(ref.attr, 'global');
     const isInfer    = hasAttribute(ref.attr, 'infer')
+    const isBinding  = hasAttribute(ref.attr, 'group')
 
     return (
       (isExported ? RF.Exported : 0) |
       (isExternal ? RF.External : 0) |
       (isOptional ? RF.Optional : 0) |
       (isGlobal   ? RF.Global   : 0) |
-      (isInfer    ? RF.Infer    : 0)
+      (isInfer    ? RF.Infer    : 0) |
+      (isBinding  ? RF.Binding  : 0)
     );
   }
 
@@ -395,6 +405,10 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       const alias = getTypeAlias(a);
       const flags = getFlags(alias);
       const symbol = alias.name;
+
+      if (flags & RF.External) {
+        throw throwError('Cannot @link a type alias. Use `@link struct`.', node);
+      }
       return {at, symbol, flags, alias};
     }
     if (a.type.id === T.StructDeclaration) {
@@ -403,8 +417,13 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       const symbol = struct.name;
       return {at, symbol, flags, struct};
     }
-    
+
     throw throwError('declaration', node);
+  };
+
+  const getEnable = (node: SyntaxNode): string[] => {
+    const [, ...rest] = getNodes(node);
+    return rest.map(getText);
   };
 
   ////////////////
@@ -418,13 +437,13 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
       let module: string;
       let refs: ImportRef[];
-      
-      let verb = getText(a);
+
+      const verb = getText(a);
       if (verb === 'import') {
         if (b.type.id === T.String) {
           refs = [];
           module = parseString(getText(b));
-        } 
+        }
         else {
           refs = getNodes(b).map(getImport);
           module = parseString(getText(c));
@@ -432,13 +451,13 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       }
       else if (verb === 'use') {
         module = parseString(getText(b));
-        refs = !!c ? getNodes(c).map(getImport) : [];
+        refs = c ? getNodes(c).map(getImport) : [];
       }
       else continue;
 
       let items = modules[module];
       if (!items) items = modules[module] = [];
-    
+
       items.push(...refs);
     }
 
@@ -456,23 +475,32 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const children = tree.topNode.getChildren(T.LocalDeclaration);
     return children.map(getDeclaration);
   };
-  
+
+  const getEnables = (): string[] => {
+    const children = tree.topNode.getChildren(T.EnableDirective);
+    return children.flatMap(getEnable);
+  };
+
   ////////////////
 
   const getSymbolTable = (): SymbolTable => {
     const modules = getImports();
     const declarations = getDeclarations();
+    const enables = getEnables();
 
     const externals = declarations.filter(d => d.flags & RF.External);
     const exported  = declarations.filter(d => d.flags & RF.Exported);
     const globalled = declarations.filter(d => d.flags & RF.Global);
+    const bound     = declarations.filter(d => d.flags & RF.Binding);
 
     const symbols  = uniq(declarations.map(r => r.symbol));
     const visibles = uniq(exported.map(r => r.symbol));
     const globals  = uniq(globalled.map(r => r.symbol));
 
+    const types = exported.filter(d => d.alias || d.struct).map(t => t.symbol);
+
     const scope = new Set(symbols ?? []);
-    for (let ref of declarations) {
+    for (const ref of declarations) {
       const {func, variable, constant} = ref;
       if      (func?.identifiers)     func    .identifiers = func    .identifiers.filter(s => scope.has(s));
       else if (variable?.identifiers) variable.identifiers = variable.identifiers.filter(s => scope.has(s));
@@ -487,12 +515,15 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     for (const {symbol} of externals) linkable[symbol] = true;
 
     return {
+      types: orNone(types),
       symbols: orNone(symbols),
       visibles: orNone(visibles),
       globals: orNone(globals),
       modules: orNone(modules),
       externals: orNone(externals),
       exports: orNone(exported),
+      bindings: orNone(bound),
+      enables: orNone(enables),
 
       declarations: orNone(declarations),
       linkable: externals.length ? linkable : undefined,
@@ -522,8 +553,9 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     }
 
     const getAll = (ss: string[], accum: Set<number> = new Set()): Set<number> => {
-      for (let symbol of ss) {
-        let s = lookup.get(symbol)!;
+      for (const symbol of ss) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const s = lookup.get(symbol)!;
         if (!accum.has(s)) {
           accum.add(s);
           const deps = graph.get(symbol);
@@ -542,7 +574,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
 
     return out.length ? out : undefined;
   }
-  
+
   ////////////////
 
   const cursor = tree.cursor();
@@ -601,6 +633,7 @@ export const rewriteUsingAST = (
     if (type.name === 'Optional') {
       if (!optionals || !optionals.has(arg)) {
         skip(from, to);
+        // eslint-disable-next-line no-empty
         while (cursor.lastChild()) {};
       }
     }
@@ -610,8 +643,14 @@ export const rewriteUsingAST = (
 
       if (shaken) {
         skip(from, to);
+        // eslint-disable-next-line no-empty
         while (cursor.lastChild()) {};
       }
+    }
+
+    else if (type.name === 'PrivateIdentifier') {
+      // eslint-disable-next-line no-empty
+      while (cursor.lastChild()) {};
     }
 
     // Any identifier (both full and compressed AST)
@@ -619,7 +658,7 @@ export const rewriteUsingAST = (
       const name = code.slice(from, to);
       const replace = rename.get(name);
 
-      if (replace) skip(from, to, replace);      
+      if (replace) skip(from, to, replace);
     }
 
     // Top level declaration (full AST only)
@@ -629,6 +668,7 @@ export const rewriteUsingAST = (
       if (shaken) {
         // Tree shake entire declaration
         skip(from, to);
+        // eslint-disable-next-line no-empty
         while (cursor.lastChild()) {};
       }
       else {
@@ -640,10 +680,12 @@ export const rewriteUsingAST = (
         const t = code.slice(sub.from, sub.to);
         if (t.match('@infer')) {
           skip(from, to);
+          // eslint-disable-next-line no-empty
           while (cursor.lastChild()) {};
         }
         else if (t.match('@link')) {
           if (t.match('@optional')) {
+            // eslint-disable-next-line no-empty
             while (sub.lastChild()) {};
             sub.next();
             sub.next();
@@ -652,11 +694,13 @@ export const rewriteUsingAST = (
             const arg = code.slice(sub.from, sub.to);
             if (!optionals || !optionals.has(arg)) {
               skip(from, to);
+              // eslint-disable-next-line no-empty
               while (cursor.lastChild()) {};
             }
           }
           else {
             skip(from, to);
+            // eslint-disable-next-line no-empty
             while (cursor.lastChild()) {};
           }
         }
@@ -668,17 +712,20 @@ export const rewriteUsingAST = (
       if (PRIVATE_ATTRIBUTES.has(name)) {
         const {from, to} = cursor;
         skip(from, to);
+        // eslint-disable-next-line no-empty
         while (cursor.lastChild()) {};
       }
       else {
         const replace = rename.get(name);
-        if (replace) skip(from, to, replace);      
+        if (replace) skip(from, to, replace);
       }
     }
     // Import declaration (full AST only)
-    else if (type.name === 'ImportDeclaration') {
+    // Enable declaration (full AST only)
+    else if (type.name === 'ImportDeclaration' || type.name == 'EnableDirective') {
       const {from, to} = cursor;
       skip(from, to);
+      // eslint-disable-next-line no-empty
       while (cursor.lastChild()) {};
     }
   } while (cursor.next());
@@ -694,13 +741,16 @@ export const compressAST = (
   code: string,
   tree: Tree,
   symbols: string[] = [],
+  modules: ModuleRef[] = [],
 ): CompressedNode[] => {
   const out = [] as any[]
   const emit = makeASTEmitter(out, AST_OPS, symbols);
 
+  const whitelist = new Set([...symbols, ...modules.flatMap((m) => m.symbols)]);
+
   // Pass through nodes from pre-compressed tree immediately
   // @ts-ignore
-  if (tree.__nodes) return tree.__nodes();
+  if (tree.__nodes) return tree.__nodes;
 
   const shake = (from: number, to: number) => emit('Shake',      from, to);
   const skip  = (from: number, to: number) => emit('Skip',       from, to);
@@ -712,9 +762,16 @@ export const compressAST = (
   do {
     const {type, from, to} = cursor;
 
+    // Preserve private identifiers
+    if (type.name === 'PrivateIdentifier') {
+      // eslint-disable-next-line no-empty
+      while (cursor.lastChild()) {};
+    }
+
     // Any identifier
-    if (type.name === 'Identifier') {
-      ident(from, to);
+    else if (type.name === 'Identifier') {
+      const s = code.slice(from, to);
+      if (whitelist.has(s)) ident(from, to);
     }
 
     // Top level declaration
@@ -727,10 +784,12 @@ export const compressAST = (
       const t = code.slice(sub.from, sub.to);
       if (t.match('@infer')) {
         skip(from, to);
+        // eslint-disable-next-line no-empty
         while (cursor.lastChild()) {};
       }
       else if (t.match('@link')) {
         if (t.match('@optional')) {
+          // eslint-disable-next-line no-empty
           while (sub.lastChild()) {};
           sub.next();
           sub.next();
@@ -741,6 +800,7 @@ export const compressAST = (
         }
         else {
           skip(from, to);
+          // eslint-disable-next-line no-empty
           while (cursor.lastChild()) {};
         }
       }
@@ -753,6 +813,7 @@ export const compressAST = (
       const name = code.slice(from, to);
       if (PRIVATE_ATTRIBUTES.has(name)) {
         skip(from, to);
+        // eslint-disable-next-line no-empty
         while (cursor.lastChild()) {};
       }
       else {
@@ -760,9 +821,11 @@ export const compressAST = (
       }
     }
     // Import declaration
-    else if (type.name === 'ImportDeclaration') {
+    // Enable directive
+    else if (type.name === 'ImportDeclaration' || type.name == 'EnableDirective') {
       const {from, to} = cursor;
       skip(from, to);
+      // eslint-disable-next-line no-empty
       while (cursor.lastChild()) {};
     }
   } while (cursor.next());

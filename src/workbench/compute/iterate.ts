@@ -1,15 +1,15 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { Lazy } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { Lazy } from '@use-gpu/core';
 
-import { multiGather, yeet, useMemo } from '../../live';
-import { resolve } from '../../core';
+import { multiGather, yeet, useMemo } from '@use-gpu/live';
+import { resolve } from '@use-gpu/core';
 
-export type IterateProps = {
+export type IterateProps = PropsWithChildren<{
   count: Lazy<number>,
-};
+}>;
 
-/** Iteration combinator for multi-gathered lambdas */
-export const Iterate: LiveComponent<IterateProps> = (props: PropsWithChildren<IterateProps>) => {
+/** Iteration combinator for multi-gathered compute lambdas */
+export const Iterate: LiveComponent<IterateProps> = (props: IterateProps) => {
   const {
     count,
     children,
@@ -20,9 +20,14 @@ export const Iterate: LiveComponent<IterateProps> = (props: PropsWithChildren<It
     return useMemo(() => {
       if (!values.compute) return yeet(values);
 
-      const compute = values.compute.map(f => (...args: any[]) => {
-        for (let i = 0; i < c; ++i) f(...args);
-      });
+      const compute = (...args: any[]) => {
+        for (let i = 0; i < c; ++i) {
+          for (const f of values.compute) {
+            f(...args);
+          }
+        }
+      };
+
       return yeet({...values, compute});
     }, [c, values]);
   });

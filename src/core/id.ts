@@ -1,6 +1,4 @@
-import type { UniformAttribute, UniformType } from './types';
-
-const incrementVersion = (v: number) => (((v + 1) | 0) >>> 0) || 1;
+export const incrementVersion = (v: number) => (((v + 1) | 0) >>> 0) || 1;
 
 export const makeIdAllocator = (first = 1) => {
   const used = new Set<number>();

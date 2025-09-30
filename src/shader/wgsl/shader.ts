@@ -1,17 +1,17 @@
 import { Tree } from '@lezer/common';
-import { ParsedModule, ParsedModuleCache, ShaderDefine } from './types';
+import { ParsedModule, ShaderDefine } from './types';
 
 import { makeLoadModule, makeLoadModuleWithCache } from '../util/shader';
 import { makeBundleToAttribute, makeBundleToAttributes } from '../util/bundle';
 import { makeTranspile } from '../util/transpile';
 
 import { makeASTParser, compressAST, decompressAST } from './ast';
-import { toTypeString, toTypeArgs } from './type';
+import { toTypeSymbol, toTypeArgs } from './type';
 import { removeComments, removeWhiteSpace, renameLocals } from './minify';
-import { parser } from './grammar/wgsl';
+import { parser } from './grammar/wgsl.js';
 
 import LRU from 'lru-cache';
-import zip from 'lodash/zip';
+import zip from 'lodash/zip.js';
 
 export { loadStaticModule, loadVirtualModule, bindEntryPoint } from '../util/shader';
 
@@ -35,15 +35,18 @@ export const loadModuleWithCache = makeLoadModuleWithCache(loadModule, DEFAULT_C
 /** Make WGSL constant definitions */
 export const defineConstants = (defs: Record<string, ShaderDefine>): string => {
   const out = [];
-  for (let k in defs) if (k[0] !== '@' && defs[k] != null) out.push(`const ${k} = ${defs[k]};`);
+  for (const k in defs) if (k[0] !== '@' && defs[k] != null) out.push(`const ${k} = ${defs[k]};`);
   return out.join("\n");
 }
 
+/** Make WGSL constant definitions */
+export const defineEnables = (enabled: string[]) => enabled.length ? `enable ${enabled.join(', ')};` : '';
+
 /** Convert a bundle with a defined entry point to a definition for that attribute or type. */
-export const bundleToAttribute = makeBundleToAttribute(toTypeString, toTypeArgs);
+export const bundleToAttribute = makeBundleToAttribute(toTypeSymbol, toTypeArgs);
 
 /** Convert a bundle to a definition for all its attributes. */
-export const bundleToAttributes = makeBundleToAttributes(toTypeString, toTypeArgs);
+export const bundleToAttributes = makeBundleToAttributes(toTypeSymbol, toTypeArgs);
 
 // Simple whitespace / comment removal
 const minifyCode = (code: string) => {
@@ -53,8 +56,37 @@ const minifyCode = (code: string) => {
   return code;
 };
 
+export const symbolDictionary = {
+  A: 'at' as 'at',
+  B: 'bindings' as 'bindings',
+  C: 'vec4<f32>' as 'vec4<f32>',
+  D: 'vec3<f32>' as 'vec3<f32>',
+  E: 'exports' as 'exports',
+  F: 'func' as 'func',
+  G: 'flags' as 'flags',
+  H: 'inferred' as 'inferred',
+  I: 'identifiers' as 'identifiers',
+  J: 'imported' as 'imported',
+  K: 'imports' as 'imports',
+  L: 'linkable' as 'linkable',
+  M: 'members' as 'members',
+  N: 'name' as 'name',
+  O: 'modules' as 'modules',
+  P: 'parameters' as 'parameters',
+  Q: 'qual' as 'qual',
+  R: 'symbol' as 'symbol',
+  S: 'symbols' as 'symbols',
+  T: 'type' as 'type',
+  U: 'struct' as 'struct',
+  V: 'variable' as 'variable',
+  W: 'visibles' as 'visibles',
+  X: 'externals' as 'externals',
+  Y: 'types' as 'types',
+  Z: 'attr' as 'attr',
+};
+
 /** ES/CommonJS Transpiler */
-export const transpileWGSL = makeTranspile('wgsl', 'wgsl', loadModule, compressAST, minifyCode);
+export const transpileWGSL = makeTranspile('wgsl', 'wgsl', symbolDictionary, loadModule, compressAST, minifyCode);
 
 /** Templated literal syntax:
 
@@ -69,7 +101,7 @@ export const wgsl = (literals: TemplateStringsArray, ...tokens: string[]) => {
 /** Format `number` as WGSL `f32` */
 export const f32 = (x: number) => {
   const s = x.toString();
-  return (!s.match(/\./)) ? s + '.0' : s;  
+  return (!s.match(/\./)) ? s + '.0' : s;
 };
 /** Format `number` as WGSL `u32` */
 export const u32 = (x: number) => Math.round(x).toString() + 'u';

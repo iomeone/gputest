@@ -1,9 +1,8 @@
-import type { LiveComponent, ArrowFunction } from '../../live';
-import type { TypedArray, StorageSource, RenderPassMode, DeepPartial, Lazy } from '../../core';
-import type { ShaderModule, ParsedBundle, ParsedModule } from '../../shader';
-import { yeet, memo, useContext, useNoContext, useMemo, useOne, useState, useResource, SUSPEND } from '../../live';
+import type { ArrowFunction } from '@use-gpu/live';
+import type { StorageSource, Lazy, VectorLike } from '@use-gpu/core';
+import type { ParsedBundle } from '@use-gpu/shader';
 
-import uniq from 'lodash/uniq';
+import { yeet, useMemo, useOne, SUSPEND } from '@use-gpu/live';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
@@ -12,20 +11,18 @@ import {
   makeBoundUniforms, makeVolatileUniforms,
   uploadBuffer,
   resolve,
-} from '../../core';
+} from '@use-gpu/core';
 import { useLinkedShader } from '../hooks/useLinkedShader';
 import { useComputePipelineAsync } from '../hooks/useComputePipeline';
 import { useInspectable } from '../hooks/useInspectable'
 
-import keyBy from 'lodash/keyBy';
-import mapValues from 'lodash/mapValues';
-
 export type DispatchProps = {
-  size?: Lazy<number[]>,
+  size?: Lazy<number[] | VectorLike>,
+  group?: Lazy<number[] | VectorLike>,
   shader: ParsedBundle,
   defines?: Record<string, any>,
   indirect?: StorageSource,
-  shouldDispatch?: () => boolean | number | undefined,
+  shouldDispatch?: () => boolean | number | null | undefined,
   onDispatch?: () => void,
 };
 
@@ -46,6 +43,7 @@ export const Dispatch = (props: DispatchProps) => {
 export const dispatch = (props: DispatchProps) => {
   const {
     size = NO_SIZE,
+    group,
     indirect,
     shader: computeShader,
     defines: propDefines,
@@ -74,10 +72,9 @@ export const dispatch = (props: DispatchProps) => {
     [computeShader],
     defines,
   );
-  
+
   // Rendering pipeline
   const [pipeline, isStale] = useComputePipelineAsync(device, module);
-
   if (!pipeline) return suspense ? SUSPEND : NO_CALL;
   if (isStale) return SUSPEND;
 
@@ -98,19 +95,33 @@ export const dispatch = (props: DispatchProps) => {
       dispatches: 0,
       version: null,
     },
+    indirect,
   });
-  
+
   let dispatchVersion: number | null = null;
 
-  let compute = (passEncoder: GPUComputePassEncoder, countDispatch: (d: number) => void) => {
+  const compute = (passEncoder: GPUComputePassEncoder, countDispatch: (d: number, s: number) => void) => {
     onDispatch && onDispatch();
 
     const s = resolve(size ?? NO_SIZE);
-    const d = s.reduce((a: number, b: number) => a * (b || 1), 1);
+    const m = resolve(group ?? null);
 
+    let sx = s[0] || 1;
+    let sy = s[1] || 1;
+    let sz = s[2] || 1;
+
+    const n = sx * sy * sz;
+    if (m) {
+      sx = Math.ceil(sx / m[0]);
+      sy = Math.ceil(sy / (m[1] || 1));
+      sz = Math.ceil(sz / (m[2] || 1));
+    }
+    const d = sx * sy * sz;
+
+    inspected.render.samples = m ? n : 0;
     inspected.render.dispatches = d;
     inspected.render.version = dispatchVersion;
-    countDispatch(d);
+    countDispatch(d, m ? n : 0);
 
     /*
     const bs = [];
@@ -129,9 +140,11 @@ export const dispatch = (props: DispatchProps) => {
     if (volatile.bindGroup) passEncoder.setBindGroup(1, volatile.bindGroup());
 
     if (indirect) passEncoder.dispatchWorkgroupsIndirect(indirect.buffer, indirect.byteOffset ?? 0);
-    else passEncoder.dispatchWorkgroups(s[0], s[1] || 1, s[2] || 1);
+    else {
+      passEncoder.dispatchWorkgroups(sx, sy, sz);
+    }
   };
-  
+
   if (shouldDispatch) {
     return {
       compute: (passEncoder: GPUComputePassEncoder, countDispatch: (d: number) => void) => {
@@ -141,11 +154,11 @@ export const dispatch = (props: DispatchProps) => {
           if (dispatchVersion === d) return;
           dispatchVersion = d;
         }
-        
+
         return compute(passEncoder, countDispatch);
       },
     };
   }
- 
+
   return {compute};
 };

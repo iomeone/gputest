@@ -1,14 +1,14 @@
-import type { Point, Point4, Rectangle } from '../../core';
-import type { LayoutElement, LayoutRenderer, LayoutPicker, Direction, FitInto, AutoPoint, Margin, Alignment, Anchor } from '../types';
+import type { XY, XYZW } from '@use-gpu/core';
+import type { LayoutElement, LayoutRenderer, LayoutPicker, Direction, FitInto, AutoXY, Alignment, Anchor } from '../types';
 
 import { makeFlexCursor } from './cursor';
-import { isHorizontal, getAlignmentAnchor, getAlignmentSpacing } from './util';
+import { isHorizontal, getAlignmentSpacing } from './util';
 
 export const getFlexMinMax = (
   els: LayoutElement[],
   fixed: [number | null, number | null],
   direction: Direction,
-  gap: Point,
+  gap: XY,
   wrap: boolean,
   snap: boolean,
 ) => {
@@ -22,13 +22,11 @@ export const getFlexMinMax = (
 
   let allMinMain = 0;
 
-  let i = 0;
   let caretMain = 0;
   let caretCross = 0;
 
-  const n = els.length;
-  for (const {sizing, margin, absolute} of els) {
-    const [minX, minY, maxX, maxY] = sizing;
+  for (const {sizing, margin} of els) {
+    const [,, maxX, maxY] = sizing;
     const [ml, mt, mr, mb] = margin;
 
     const mx = ml + mr;
@@ -71,9 +69,9 @@ export const getFlexMinMax = (
 export const fitFlex = (
   els: LayoutElement[],
   into: FitInto,
-  fixed: AutoPoint,
+  fixed: AutoXY,
   direction: Direction,
-  gap: Point,
+  gap: XY,
   alignX: Alignment,
   alignY: Alignment,
   anchor: Anchor,
@@ -88,7 +86,6 @@ export const fitFlex = (
 
   const alignMain = isX ? alignX : alignY;
   const alignCross = isX ? alignY : alignX;
-  const anchorRatio = getAlignmentAnchor(anchor);
 
   const isSnap = !!snap;
   const isWrap = !!wrap;
@@ -98,19 +95,19 @@ export const fitFlex = (
 
   const spaceMain  = isX ? containX : containY;
   const spaceCross = isX ? containY : containX;
-  const isMainFixed = spaceMain != null;
-  const isCrossFixed = spaceCross != null;
+  //const isMainFixed = spaceMain != null;
+  //const isCrossFixed = spaceCross != null;
 
-  const sizes   = [] as Point[];
-  const offsets = [] as Point[];
+  const sizes   = [] as XY[];
+  const offsets = [] as XY[];
   const renders = [] as LayoutRenderer[];
   const pickers = [] as (LayoutPicker | null | undefined)[];
 
   const rowIndex = [] as number[];
   const flowEls = [] as LayoutElement[];
 
-  const cursor = makeFlexCursor(spaceMain, alignMain, wrap);
-  
+  const cursor = makeFlexCursor(spaceMain, alignMain, isWrap);
+
   for (const el of els) if (!el.absolute) {
     const {margin, sizing, prefit, grow, shrink, ratioX, ratioY} = el;
     const [ml, mt, mr, mb] = margin;
@@ -139,13 +136,14 @@ export const fitFlex = (
     }
 
     if (snap) basis = Math.round(basis);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     cursor.push(basis!, m, gapMain, grow || 0, shrink || 0);
     flowEls.push(el);
   }
-  
+
   let caretCross = 0;
   let crossIndex = 0;
-  const maxMain = cursor.gather((flexed, start, end, gap, lead) => {    
+  const maxMain = cursor.gather((flexed, start, end, gap, lead) => {
     let caretMain = lead;
     let maxCross = 0;
 
@@ -158,8 +156,8 @@ export const fitFlex = (
       const mx = ml + mr;
       const my = mt + mb;
 
-      let cm = isSnap ? Math.round(caretMain) : caretMain;
-      let mainSize = isSnap ? Math.round(flexed[i]) : flexed[i];
+      const cm = isSnap ? Math.round(caretMain) : caretMain;
+      const mainSize = isSnap ? Math.round(flexed[i]) : flexed[i];
 
       const intoX = containX != null ? containX - mx : null;
       const intoY = containY != null ? containY - my : null;
@@ -188,12 +186,12 @@ export const fitFlex = (
       const m = isX ? mt + mb : ml + mr;
 
       const resolvedAnchor = flex ?? anchor;
-      const [gap, lead] = getAlignmentSpacing(maxCross - sizes[i][isX ? 1 : 0] - m, 1, false, resolvedAnchor as any);
+      const [, lead] = getAlignmentSpacing(maxCross - sizes[i][isX ? 1 : 0] - m, 1, false, resolvedAnchor as any);
       offsets[i][isX ? 1 : 0] += lead;
 
       rowIndex[i] = crossIndex;
     }
-    
+
     caretCross += maxCross + gapCross;
     crossIndex++;
   });
@@ -205,7 +203,7 @@ export const fitFlex = (
       const [gap, lead] = getAlignmentSpacing(crossSlack, crossIndex, false, alignCross);
 
       let i = 0;
-      for (let offset of offsets) {
+      for (const offset of offsets) {
         const d = rowIndex[i++] * gap + lead;
         offset[isX ? 1 : 0] += isSnap ? Math.round(d) : d;
       }
@@ -216,20 +214,20 @@ export const fitFlex = (
   const size = [
     isX ? (containX ?? maxMain) : caretCross,
     isX ? caretCross : (containY ?? maxMain),
-  ] as Point;
+  ] as XY;
 
   for (const el of els) if (el.absolute) {
     const {margin, fit, under} = el;
     const [ml, mt, mr, mb] = margin;
 
-    const absolute = [size[0], size[1], 0, 0] as Point4;
+    const absolute = [size[0], size[1], 0, 0] as XYZW;
     absolute[0] -= ml + mr;
     absolute[1] -= mt + mb;
     absolute[2] = absolute[0];
     absolute[3] = absolute[1];
 
     const {render, pick, size: fitted} = fit(absolute);
-    
+
     if (under) {
       sizes.unshift(fitted);
       renders.unshift(render);
@@ -258,10 +256,13 @@ export const growRow = (slack: number, row: LayoutElement[], sizes: number[]) =>
   const n = row.length;
 
   let weight = 0;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   for (let i = 0; i < n; ++i) if (row[i].grow! > 0) weight += row[i].grow!;
 
   if (weight > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     for (let i = 0; i < n; ++i) if (row[i].grow! > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       sizes[i] += slack * row[i].grow! / weight;
     }
     return true;
@@ -274,11 +275,14 @@ export const shrinkRow = (slack: number, row: LayoutElement[], sizes: number[]):
   const n = row.length;
 
   let weight = 0;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   for (let i = 0; i < n; ++i) if (row[i].shrink!) weight += row[i].shrink! * sizes[i];
 
   if (weight > 0) {
     let negative = 0;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     for (let i = 0; i < n; ++i) if (row[i].shrink! > 0 && sizes[i]) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       sizes[i] += slack * row[i].shrink! * sizes[i] / weight;
       if (sizes[i] < 0) {
         negative += sizes[i];

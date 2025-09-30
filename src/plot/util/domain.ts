@@ -1,4 +1,5 @@
 import type { DomainOptions } from '../types';
+import { seq } from '@use-gpu/core';
 
 // Generate equally spaced ticks in a range at sensible positions.
 //
@@ -11,8 +12,6 @@ import type { DomainOptions } from '../types';
 // @param end - Whether to include a tick at the end
 // @param zero - Whether to include zero as a tick
 // @param nice - Whether to round to a more reasonable interval
-
-const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
 
 export const linear = (
   min: number,
@@ -52,7 +51,7 @@ export const linear = (
     (base % 3 == 0) ? [base / 3, 1, 1 / 3] :
     (base % 5 == 0) ? [base / 5, 1, 1 / 5] :
     [1];
- 
+
   const steps = factors.map(f => ref * f);
 
   // Find step size closest to ideal.
@@ -96,6 +95,6 @@ export const logarithmic = (
   const minL = Math.log(min) / Math.log(base);
   const maxL = Math.log(min) / Math.log(base);
 
-  let ticks = linear(min, max, props);
+  const ticks = linear(minL, maxL, props);
   return ticks.map(x => Math.pow(base, x));
 }

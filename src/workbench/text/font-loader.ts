@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { Font, LazyFontSource } from '../../glyph';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { Font, LazyFontSource } from '@use-gpu/glyph';
 
-import { use, gather, keyed, yeet, useOne } from '../../live';
-import { toHash } from '../../state';
-import { parseWeight } from '../../traits';
-import { Fetch } from '../data';
+import { use, gather, keyed, yeet, useOne } from '@use-gpu/live';
+import { toHash } from '@use-gpu/state';
+import { parseWeight } from '@use-gpu/parse';
+import { Fetch } from '../data/fetch';
 import { FontProvider } from './providers/font-provider';
 
 export type FontSource = {
@@ -18,7 +18,7 @@ export type FontSource = {
 
 export type FontLoaderProps = {
   fonts?: FontSource[],
-  children: LiveElement,
+  children?: LiveElement,
 };
 
 const NO_FONTS: FontSource[] = [];
@@ -29,7 +29,7 @@ export const FontLoader: LiveComponent<FontLoaderProps> = ({fonts = NO_FONTS, ch
     () => fonts
       .map((source: FontSource) => {
         const key = toHash(source);
-        
+
         const {family, style, weight} = source;
         const props = {
           family,

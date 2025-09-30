@@ -1,10 +1,9 @@
-import type { LiveComponent } from '../../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { memo, use, fragment, yeet, useContext, useNoContext, useMemo, useNoMemo, useOne, useNoOne } from '../../../live';
-import { resolve } from '../../../core';
-import { patch, $apply } from '../../../state';
-import { bindBundle, bindingToModule } from '../../../shader/wgsl';
+import { yeet, useMemo, useOne } from '@use-gpu/live';
+import { patch } from '@use-gpu/state';
+import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
 
@@ -14,16 +13,16 @@ import { useViewContext } from '../../providers/view-provider';
 import {
   main as instanceDrawVirtualDepth,
   mainWithDepth as instanceDrawVirtualDepthDepth,
-} from '../../../wgsl/render/vertex/virtual-depthwgsl';
-import instanceFragmentDepth from '../../../wgsl/render/fragment/depthwgsl';
-import instanceFragmentDepthDepth from '../../../wgsl/render/fragment/depth-fragwgsl';
+} from '@use-gpu/wgsl/render/vertex/virtual-depth.wgsl';
+import instanceFragmentDepth from '@use-gpu/wgsl/render/fragment/depth.wgsl';
+import instanceFragmentDepthDepth from '@use-gpu/wgsl/render/fragment/depth-frag.wgsl';
 
-import { getScissorColor } from '../../../wgsl/mask/scissorwgsl';
+import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
 export type ShadowRenderProps = VirtualDraw;
 
 export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRenderProps) => {
-  let {
+  const {
     links: {
       getVertex,
       getFragment,
@@ -59,12 +58,14 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
     return [v, f];
   }, [vertexShader, fragmentShader, getVertex, getFragment, getDepth]);
 
+  const defs = useOne(() => ({...defines, HAS_ALPHA_TO_COVERAGE: true}), defines);
+
   // Inline the render fiber
   const call = {
     ...rest,
     vertex: v,
     fragment: f,
-    defines,
+    defines: defs,
     pipeline,
     renderContext,
     globalLayout,

@@ -1,10 +1,10 @@
-import type { LC, PropsWithChildren, LiveElement } from '../../live';
-import type { UseGPURenderContext } from '../../core';
-import type { LightEnv, RenderComponents, VirtualDraw, AggregatedCalls } from '../pass/types';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { RenderComponents, VirtualDraw, AggregatedCalls } from '../pass/types';
 
-import { use, yeet, provide, multiGather, memo, useMemo, useOne } from '../../live';
+import { use, provide, unquote, multiGather, memo, useCallback, useMemo } from '@use-gpu/live';
 
-import { PassContext } from '../providers/pass-provider';
+import { PassContext, VariantContext } from '../providers/pass-provider';
+import { PassReconciler } from '../reconcilers/index';
 
 import { DebugRender } from './forward/debug';
 import { SolidRender } from './forward/solid';
@@ -14,16 +14,14 @@ import { ComputePass } from '../pass/compute-pass';
 import { DispatchPass } from '../pass/dispatch-pass';
 import { ReadbackPass } from '../pass/readback-pass';
 
-export type FullScreenRendererProps = {
+const {reconcile, quote} = PassReconciler;
+
+export type FullScreenRendererProps = PropsWithChildren<{
   overlay?: boolean,
   merge?: boolean,
-};
+}>;
 
 const NO_ENV: Record<string, any> = {};
-
-const PASSES = [
-  use(ColorPass, {}),
-];
 
 const COMPONENTS = {
   modes: {
@@ -34,19 +32,16 @@ const COMPONENTS = {
   renders: {},
 } as RenderComponents;
 
-export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: PropsWithChildren<FullScreenRendererProps>) => {
+export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: FullScreenRendererProps) => {
   const {
     overlay = false,
     merge = false,
     children,
   } = props;
 
-  const context = useOne(() => {
-    const useVariants = (virtual: VirtualDraw, hovered: boolean) =>
-      useMemo(() => hovered ? [DebugRender] : COMPONENTS.modes[virtual.mode], [virtual, hovered]);
-
-    return {useVariants};
-  });
+  const useVariants = useCallback((virtual: VirtualDraw, hovered: boolean) =>
+    useMemo(() => hovered ? [DebugRender] : COMPONENTS.modes[virtual.mode], [virtual, hovered])
+  );
 
   // Pass aggregrated calls to pass runners
   const Resume = (
@@ -66,5 +61,18 @@ export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: Prop
       ];
     }, [calls, overlay, merge]);
 
-  return provide(PassContext, context, multiGather(children, Resume));
+  return (
+    reconcile(
+      quote(
+        provide(PassContext, NO_ENV,
+          multiGather(
+            unquote(
+              provide(VariantContext, useVariants, children)
+            ),
+            Resume
+          )
+        )
+      )
+    )
+  );
 }, 'FullScreenRenderer');

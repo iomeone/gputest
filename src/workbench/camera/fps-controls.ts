@@ -1,20 +1,19 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { VectorLike } from '../../traits';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { VectorLike } from '@use-gpu/core';
 
-import { parsePosition, useProp } from '../../traits';
-import { useContext, useYolo, useOne, useRef, useResource, useState } from '../../live';
-import { makeOrbitMatrix } from '../../core';
+import { useProp } from '@use-gpu/traits/live';
+import { parseVec3 } from '@use-gpu/parse';
+import { useContext, useHooks, useOne, useRef, useState } from '@use-gpu/live';
+import { makeOrbitMatrix, clamp } from '@use-gpu/core';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { KeyboardContext, MouseContext } from '../providers/event-provider';
+import { useKeyboard, useMouse, useMouseLock } from '../providers/event-provider';
 import { usePerFrame } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { useDerivedState } from '../hooks/useDerivedState';
+import { getRenderFunc } from '../hooks/useRenderProp';
 import { mat4, vec3 } from 'gl-matrix';
 
-const CAPTURE_EVENT = {capture: true};
-
 const π = Math.PI;
-const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 
 export type FPSControlsProps = {
   position?: VectorLike,
@@ -28,7 +27,8 @@ export type FPSControlsProps = {
   moveSpeed?: number,
 
   active?: boolean,
-  render: (phi: number, theta: number, position: vec3) => LiveElement,
+  render?: (phi: number, theta: number, position: vec3) => LiveElement,
+  children?: (phi: number, theta: number, position: vec3) => LiveElement,
 };
 
 export const FPSControls: LiveComponent<FPSControlsProps> = (props) => {
@@ -40,12 +40,11 @@ export const FPSControls: LiveComponent<FPSControlsProps> = (props) => {
     bearingSpeed = 5,
     pitchSpeed   = 5,
     moveSpeed    = 15,
-    
+
     active = true,
-    render,
   } = props;
 
-  const initialPosition = useProp(props.position, parsePosition);
+  const initialPosition = useProp(props.position, parseVec3);
 
   const [bearing, setBearing]   = useDerivedState<number>(initialBearing, version);
   const [pitch, setPitch]       = useDerivedState<number>(initialPitch, version);
@@ -53,21 +52,19 @@ export const FPSControls: LiveComponent<FPSControlsProps> = (props) => {
 
   const [velocity, setVelocity] = useState<vec3>(() => vec3.create());
 
-  const { useMouse, hasLock, beginLock, endLock } = useContext(MouseContext);
-  const { useKeyboard } = useContext(KeyboardContext);
-
   const layout = useContext(LayoutContext);
   const frame = usePerFrame();
 
   const { mouse } = useMouse();
   const { keyboard } = useKeyboard();
+  const { hasLock, beginLock } = useMouseLock();
 
   const size = Math.min(Math.abs(layout[2] - layout[0]), Math.abs(layout[3] - layout[1]));
 
   const lastTimeRef = useRef(0);
 
   useOne(() => {
-    const { x, y, moveX, moveY, buttons, stopped } = mouse;
+    const { moveX, moveY, buttons, stopped } = mouse;
     if (!active || stopped) return;
 
     if (!hasLock) {
@@ -141,5 +138,6 @@ export const FPSControls: LiveComponent<FPSControlsProps> = (props) => {
   if (moving) useAnimationFrame();
   else useNoAnimationFrame();
 
-  return useYolo(() => render(bearing, pitch, position), [render, bearing, pitch, position]);
+  const render = getRenderFunc(props);
+  return useHooks(() => render?.(bearing, pitch, position), [render, bearing, pitch, position]);
 };

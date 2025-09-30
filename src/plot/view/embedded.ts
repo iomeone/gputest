@@ -1,24 +1,24 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { Rectangle } from '../../core'; 
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { Rectangle } from '@use-gpu/core';
 
-import { provide, useContext, useNoContext, useMemo } from '../../live';
-import { bundleToAttributes, chainTo } from '../../shader/wgsl';
+import { provide, wrap, useContext, useNoContext, useMemo } from '@use-gpu/live';
 import {
   TransformContext, LayoutContext,
-  useShaderRef, useBoundShader, useCombinedTransform,
-} from '../../workbench';
+  useShaderRef, useShader, useCombinedTransform,
+} from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
+import { Plot } from '../plot';
 
-import { getCartesianPosition } from '../../wgsl/transform/cartesianwgsl';
+import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl';
 import { mat4, vec3 } from 'gl-matrix';
 
-export type EmbeddedProps = {
+export type EmbeddedProps = PropsWithChildren<{
   layout?: Rectangle,
   normalize?: boolean,
-};
+}>;
 
-export const Embedded: LiveComponent<EmbeddedProps> = (props: PropsWithChildren<EmbeddedProps>) => {
+export const Embedded: LiveComponent<EmbeddedProps> = (props: EmbeddedProps) => {
   const {
     normalize,
     children,
@@ -54,12 +54,12 @@ export const Embedded: LiveComponent<EmbeddedProps> = (props: PropsWithChildren<
   }, [layout, normalize]);
 
   const ref = useShaderRef(matrix);
-  const bound = useBoundShader(getCartesianPosition, [ref]);
+  const bound = useShader(getCartesianPosition, [ref]);
   const context = useCombinedTransform(bound);
 
   return (
     provide(TransformContext, context,
-      provide(RangeContext, range, children ?? [])
+      provide(RangeContext, range, wrap(Plot, children ?? []))
     )
   );
 };

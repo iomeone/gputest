@@ -1,17 +1,15 @@
-import type { LiveComponent, LiveElement, Ref } from '../../live';
-import type { StorageSource, Lazy, UniformAttributeValue } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { StorageSource, Lazy, VectorLike } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { yeet, useMemo, useNoMemo, useOne, useRef } from '../../live';
-import { resolve } from '../../core';
-import { bundleToAttribute, getBundleEntry } from '../../shader/wgsl';
-import { getBoundShader } from '../hooks/useBoundShader';
+import { yeet, useMemo, useNoMemo, useRef } from '@use-gpu/live';
+import { resolve } from '@use-gpu/core';
+import { bundleToAttribute, getBundleEntry } from '@use-gpu/shader/wgsl';
+import { getShader } from '../hooks/useShader';
 import { getDerivedSource } from '../hooks/useDerivedSource';
 import { useShaderRefs } from '../hooks/useShaderRef';
 
 import { useComputeContext } from '../providers/compute-provider';
-import { useFeedbackContext, useNoFeedbackContext } from '../providers/feedback-provider';
-import { RenderContext } from '../providers/render-provider';
 
 import { dispatch } from '../queue/dispatch';
 
@@ -22,7 +20,7 @@ export type KernelProps = {
   args?: Lazy<any>[],
   initial?: boolean,
   history?: boolean | number,
-  size?: Lazy<number[]>,
+  size?: Lazy<number[] | VectorLike>,
   swap?: boolean,
 };
 
@@ -50,22 +48,15 @@ export const Kernel: LiveComponent<KernelProps> = (props) => {
   const targets = useComputeContext();
   const argRefs = useShaderRefs(...args);
 
-  const [dispatchKernel, dispatchSize] = useMemo(() => {
+  const [dispatchKernel, dataSize, workgroupSize] = useMemo(() => {
     const entry = getBundleEntry(shader);
     const symbol = bundleToAttribute(shader, entry);
 
-    const workgroupAttr = symbol.attr?.find(({name}) => name === 'workgroup_size')?.args ?? [];
-    const workgroupSize = workgroupAttr.map(s => parseInt(s) || 1);
+    const workgroupAttr = symbol.attr?.find((attr) => attr.match(/^workgroup_size\(/));
+    const workgroupArgs = workgroupAttr?.split(/[()]/g)[1] ?? '';
+    const workgroupSize = workgroupArgs.split(',').map(s => parseInt(s) || 1);
 
     const dataSize = () => resolve(size) ?? targets[0]?.size;
-    const dispatchSize = () => {
-      const [w, h, d] = dataSize();
-      return [
-        Math.ceil(w / (workgroupSize[0] || 1)),
-        Math.ceil(h / (workgroupSize[1] || 1)),
-        Math.ceil(d / (workgroupSize[2] || 1)),
-      ];
-    };
 
     const f = history ? targets.flatMap(
       t => (
@@ -79,16 +70,16 @@ export const Kernel: LiveComponent<KernelProps> = (props) => {
 
     const values = [dataSize, ...argRefs, ...sources, ...s, ...targets, ...f];
 
-    const kernel = getBoundShader(shader, values);
-    return [kernel, dispatchSize];
+    const kernel = getShader(shader, values);
+    return [kernel, dataSize, workgroupSize];
   }, [shader, targets, source, sources, argRefs, history]);
 
-  let first = useRef(true);
-  initial ? useMemo(() => { first.current = true; }, targets) : useNoMemo();
+  const firstRef = useRef(true);
+  initial ? useMemo(() => { firstRef.current = true; }, targets) : useNoMemo();
 
   const shouldDispatch = initial ? () => {
-    if (!first.current) return false;
-    first.current = false;
+    if (!firstRef.current) return false;
+    firstRef.current = false;
   } : undefined;
 
   const onDispatch = () => {
@@ -97,7 +88,8 @@ export const Kernel: LiveComponent<KernelProps> = (props) => {
 
   return yeet(dispatch({
     shader: dispatchKernel,
-    size: dispatchSize,
+    size: dataSize,
+    group: workgroupSize,
     shouldDispatch,
     onDispatch,
   }));

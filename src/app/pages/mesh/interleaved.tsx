@@ -1,25 +1,19 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { StorageSource, TextureSource, UniformType } from '../../../core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { GPUGeometry, LambdaSource, TextureSource, UniformType } from '@use-gpu/core';
 
-import React, { Gather } from '../../../live';
+import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass, Flat,
-  InterleavedData, PBRMaterial, RawTexture,
+  Pass, FlatCamera, InterleavedData, PBRMaterial, RawTexture,
   OrbitCamera, OrbitControls,
-  Pick, Cursor, FaceLayer,
+  Pick, PickState, Cursor, FaceLayer,
   PointLight,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 
-import { meshVertexArray, makeTexture } from '../../meshes/cube';
+import { InfoBox } from '../../ui/info-box';
 
-const MESH_FIELDS = [
-  ['vec4<f32>', 'position'],
-  ['vec4<f32>', 'normal'],
-  ['vec4<f32>', 'color'],
-  ['vec2<f32>', 'uv'],
-] as [UniformType, string][];
+import { meshVertexArray, meshSchema, makeTexture } from '../../meshes/cube';
 
 const COLOR_ON = [1, 1, 1, 1];
 const COLOR_OFF = [0.5, 0.5, 0.5, 1.0];
@@ -28,11 +22,12 @@ const COLOR_OFF = [0.5, 0.5, 0.5, 1.0];
 export const MeshInterleavedPage: LC = (props) => {
   const dataTexture = makeTexture();
 
-  return (
+  return (<>
+    <InfoBox>Render a clickable cube mesh using &lt;InterleavedData&gt; and &lt;FaceLayer&gt;, wrapped in &lt;Pick&gt;.</InfoBox>
     <Gather
       children={[
         <InterleavedData
-          fields={MESH_FIELDS}
+          schema={meshSchema}
           data={meshVertexArray}
         />,
         <RawTexture
@@ -40,10 +35,10 @@ export const MeshInterleavedPage: LC = (props) => {
         />
       ]}
       then={([
-        positions, normals, colors, uvs,
+        {positions, normals, colors, uvs},
         texture,
       ]: [
-        StorageSource, StorageSource, StorageSource, StorageSource,
+        Record<string, LambdaSource>,
         TextureSource,
       ]) => (
         <>
@@ -52,8 +47,8 @@ export const MeshInterleavedPage: LC = (props) => {
             <Pass picking lights>
               <PointLight position={[-2.5, 3, 2, 1]} intensity={32} />
 
-              <Pick
-                render={({id, hovered, presses}) =>
+              <Pick>{
+                ({id, hovered, presses}: PickState) =>
                   <PBRMaterial albedoMap={texture} albedo={presses.left % 2 ? COLOR_ON : COLOR_OFF}>
                     <FaceLayer
                       id={id}
@@ -65,14 +60,13 @@ export const MeshInterleavedPage: LC = (props) => {
                     />
                     {hovered ? <Cursor cursor='pointer' /> : null}
                   </PBRMaterial>
-                }
-              />
+              }</Pick>
             </Pass>
           </Camera>
         </>
       )}
     />
-  );
+  </>);
 };
 
 const Camera = ({children}: PropsWithChildren<object>) => (

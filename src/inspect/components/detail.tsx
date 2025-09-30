@@ -53,7 +53,7 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
   const sliderRef = useRef<HTMLDivElement>();
   const thumbRef = useRef<HTMLDivElement>();
   const draggingRef = useRef<any>(null);
-  
+
   const setDraggingOn = (e: any, value: number) => {
     const {clientX, clientY} = e;
     draggingRef.current = {
@@ -62,7 +62,7 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
     };
     (e.target as any).setPointerCapture(e.pointerId);
   };
-  
+
   const handlePointerDown = (e: any) => {
     setDraggingOn(e, clamped);
   };
@@ -72,34 +72,34 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
     e.preventDefault();
     e.stopPropagation();
   };
-  
+
   const handlePointerMove = (e: any) => {
     const {current: dragging} = draggingRef;
     const {current: slider} = sliderRef;
     const {current: thumb} = thumbRef;
     if (!dragging || !slider || !thumb) return;
-    
+
     const {width: sliderWidth} = slider.getBoundingClientRect();
     const {width: thumbWidth} = thumb.getBoundingClientRect();
     const delta = sliderWidth - thumbWidth;
 
     const {clientX} = e;
     const {value: anchorValue, anchor: [x]} = dragging;
-    
+
     const offset = (clientX - x) / delta * (max - min);
     const v = min + clamp(Math.round((anchorValue - min + offset) / step) * step, 0, max - min);
     const inf = v >= max ? 1000 : v;
     if (inf !== value) onChange(inf);
   };
-  
+
   const handleTrack = (e: any) => {
     const {current: slider} = sliderRef;
     const {current: thumb} = thumbRef;
     if (!slider || !thumb) return;
-    
+
     const {left, width: sliderWidth} = slider.getBoundingClientRect();
     const {width: thumbWidth} = thumb.getBoundingClientRect();
-    const delta = sliderWidth - thumbWidth;    
+    const delta = sliderWidth - thumbWidth;
 
     const {clientX} = e;
     const v = clamp((clientX - left) / delta, 0, 1) * (max - min);
@@ -108,12 +108,12 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
 
     setDraggingOn(e, v);
   };
-  
+
   useEffect(() => {
     const {current: slider} = sliderRef;
     const {current: thumb} = thumbRef;
     if (!slider || !thumb) return;
-    
+
     const {width: sliderWidth} = slider.getBoundingClientRect();
     const {width: thumbWidth} = thumb.getBoundingClientRect();
     const delta = sliderWidth;
@@ -122,7 +122,7 @@ export const DetailSlider: React.FC<DetailProps> = (props: DetailProps) => {
     thumb.style.left = Math.round(pos * 100) + '%';
     thumb.style.marginLeft = `-${Math.round(thumbWidth / 2)}px`;
   }, [clamped]);
-  
+
   return (
     <StyledSlider
       ref={sliderRef}

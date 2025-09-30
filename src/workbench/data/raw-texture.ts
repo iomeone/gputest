@@ -1,10 +1,13 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TypedArray, DataTexture, TextureSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { DataTexture, TextureSource } from '@use-gpu/core';
 
 import { DeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { yeet, signal, memo, useOne, useMemo, useNoMemo, useContext, useNoContext, useYolo, incrementVersion } from '../../live';
-import { makeSampler, makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '../../core';
+import { QueueReconciler } from '../reconcilers/index';
+import { yeet, useOne, useMemo, useNoMemo, useContext, useHooks, incrementVersion } from '@use-gpu/live';
+import { makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '@use-gpu/core';
+
+const {signal} = QueueReconciler;
 
 export type RawTextureProps = {
   /** Texture data */
@@ -116,6 +119,6 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
   }
 
   const trigger = useOne(() => signal(), source.version);
-  const view = useYolo(() => render ? render(source) : yeet(source), [render, source]);
+  const view = useHooks(() => render ? render(source) : yeet(source), [render, source]);
   return [trigger, view];
 };

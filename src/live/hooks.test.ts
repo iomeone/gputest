@@ -1,6 +1,6 @@
-import type { LiveFiber, LiveComponent, LiveFunction, DeferredCall } from './types';
+import type { LiveFunction } from './types';
 
-import { bind } from './fiber';
+import { bind, makeFiber } from './fiber';
 import { use, provide, makeContext } from './builtin';
 import { makeHostFiber, renderSync } from './tree';
 import { useCallback, useContext, useMemo, useOne, useResource, useState, memoArgs, memoProps } from './hooks';
@@ -10,21 +10,33 @@ type NumberReturner = () => number;
 type FunctionReturner = () => () => any;
 type PropNumberReturner = (x: number) => number;
 
+const bindWithMemo = (f: LiveFunction) => {
+  const fiber = makeFiber(f, null);
+  const bound = bind(f, fiber);
+  const flush = () => fiber.memo = fiber.version;
+  return (...args: any[]) => {
+    const r = bound(...args);
+    flush();
+    return r;
+  };
+};
+
 it('memoizes a function', () => {
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const F: LiveFunction<PropNumberReturner> = memoArgs((x: number): number => {
     return Math.random();
   });
 
   {
-    const result1 = bind(F)(1);
-    const result2 = bind(F)(1);
+    const result1 = bindWithMemo(F)(1);
+    const result2 = bindWithMemo(F)(1);
 
     expect(result1).not.toBe(result2);
   }
 
   {
-    const bound = bind(F);
+    const bound = bindWithMemo(F);
 
     const result1 = bound(1);
     const result2 = bound(1);
@@ -38,12 +50,20 @@ it('memoizes a function', () => {
 it('memoizes a component', () => {
 
   // @ts-ignore
-  const F: LiveFunction<NumberReturner> = memoProps((props): number => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const F: LiveFunction<NumberReturner> = memoProps((props: {foo: number, bar: number}) => {
     return Math.random();
   });
 
   {
-    const bound = bind(F);
+    const result1 = bindWithMemo(F)({ foo: 1, bar: 3 });
+    const result2 = bindWithMemo(F)({ foo: 1, bar: 3 });
+
+    expect(result1).not.toBe(result2);
+  }
+
+  {
+    const bound = bindWithMemo(F);
     const result1 = bound({foo: 1, bar: 1});
     const result2 = bound({foo: 1, bar: 2});
 
@@ -51,7 +71,7 @@ it('memoizes a component', () => {
   }
 
   {
-    const bound = bind(F);
+    const bound = bindWithMemo(F);
     const result1 = bound({foo: 1, bar: 1});
     const result2 = bound({foo: 1, bar: 1});
 
@@ -167,6 +187,7 @@ it('holds memoized callback (hook)', () => {
 it('holds state in memoized component (hook)', () => {
 
   let i: number;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const F: PropNumberReturner = memoArgs((x: number): number => {
     const [foo] = useState(() => Math.random());
     return foo + (i++);
@@ -175,9 +196,9 @@ it('holds state in memoized component (hook)', () => {
   {
 
     i = 0;
-    const result1 = bind(F)(1);
+    const result1 = bindWithMemo(F)(1);
     i = 0;
-    const result2 = bind(F)(1);
+    const result2 = bindWithMemo(F)(1);
 
     expect(result1).not.toBe(result2);
   }
@@ -185,7 +206,7 @@ it('holds state in memoized component (hook)', () => {
   {
     i = 0;
 
-    const bound = bind(F);
+    const bound = bindWithMemo(F);
     const result1 = bound(1);
     const result2 = bound(1);
     const result3 = bound(2);
@@ -243,11 +264,13 @@ it('manages a dependent resource (hook)', () => {
     disposed = 0;
 
     const {fiber, disposal} = makeHostFiber(use(F));
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fiber.bound!();
 
     expect(allocated).toBe(1);
     expect(disposed).toBe(0);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fiber.bound!();
 
     expect(allocated).toBe(1);
@@ -265,11 +288,13 @@ it('manages a dependent resource (hook)', () => {
     disposed = 0;
 
     const {fiber, disposal} = makeHostFiber(use(G));
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fiber.bound!();
 
     expect(allocated).toBe(1);
     expect(disposed).toBe(0);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fiber.bound!();
 
     expect(allocated).toBe(2);
@@ -287,11 +312,13 @@ it('manages a dependent resource (hook)', () => {
     disposed = 0;
 
     const {fiber, disposal} = makeHostFiber(use(H));
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fiber.bound!();
 
     expect(allocated).toBe(1);
     expect(disposed).toBe(0);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fiber.bound!();
 
     expect(allocated).toBe(2);
@@ -328,6 +355,7 @@ it("provides a context", () => {
   expect(result.f).toBe(Root);
 
   expect(result.mount).toBeTruthy();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   expect(result.mount!.mounts).toBeTruthy();
 
   expect(value1).toBe(123);
@@ -365,11 +393,13 @@ it("provides a changing context value", () => {
   const {host: {flush}} = result;
 
   expect(result.mount).toBeTruthy();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   expect(result.mount!.mounts).toBeTruthy();
 
   expect(value1).toBe(123);
   expect(value2).toBe(123);
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   trigger!();
   flush();
 
@@ -409,10 +439,12 @@ it("provides a changing context value on a memoized component", () => {
   const {host: {flush}} = result;
 
   expect(result.mount).toBeTruthy();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   expect(result.mount!.mounts).toBeTruthy();
 
   expect(value).toBe(123);
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   trigger!();
   flush();
 
@@ -449,10 +481,12 @@ it("provides a changing context value with a memoized component in the way", () 
   const {host: {flush}} = result;
 
   expect(result.mount).toBeTruthy();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   expect(result.mount!.mounts).toBeTruthy();
 
   expect(value).toBe(123);
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   trigger!();
   flush();
 

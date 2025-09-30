@@ -1,7 +1,6 @@
-import type { Point } from '../../core';
 import type { Alignment } from './types';
 
-import { makeTuples } from '../../core';
+import { makeTuples } from '@use-gpu/core';
 
 // Alignment to relative anchor position [0...1]
 export const getAlignmentAnchor = (x: Alignment): number => {
@@ -99,13 +98,13 @@ export const makeInlineCursor = (
 
   let start: number = 0;
   let end: number = 0;
-  
+
   let chunkAdvance = 0;
   let chunkIndex = 0;
   let chunkCross = 0;
 
-  let rows: number[] = [];
-  let sizes: number[] = [];
+  const rows: number[] = [];
+  const sizes: number[] = [];
   let index = 0;
 
   const push = (
@@ -173,7 +172,7 @@ export const makeInlineCursor = (
       chunkCross = 0;
     }
   };
-  
+
   const gather = (reduce: InlineReduce) => {
     flush(2);
 

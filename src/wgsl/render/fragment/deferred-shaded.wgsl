@@ -1,4 +1,4 @@
-use '../../../wgsl/codec/octahedral'::{ encodeOctahedral };
+use '@use-gpu/wgsl/codec/octahedral'::{ encodeOctahedral };
 
 struct GBufferSample {
   @location(0) albedo: vec4<f32>,
@@ -30,7 +30,7 @@ fn main(
   @location(3) fragNormal: vec4<f32>,
   @location(4) fragTangent: vec4<f32>,
   @location(5) fragPosition: vec4<f32>,
-  @location(6) fragScissor: vec4<f32>,  
+  @location(6) fragScissor: vec4<f32>,
 ) -> GBufferSample {
 
   var normal = fragNormal;
@@ -76,7 +76,7 @@ struct GBufferSampleWithDepth {
   @location(3) fragNormal: vec4<f32>,
   @location(4) fragTangent: vec4<f32>,
   @location(5) fragPosition: vec4<f32>,
-  @location(6) fragScissor: vec4<f32>,  
+  @location(6) fragScissor: vec4<f32>,
 ) -> GBufferSampleWithDepth {
 
   var normal = fragNormal;

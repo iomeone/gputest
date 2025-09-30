@@ -1,4 +1,4 @@
-import type { Point3 } from '../../core';
+import type { XYZ } from '@use-gpu/core';
 import type {
   RawVox,
   RawChunk,
@@ -6,7 +6,7 @@ import type {
   VoxNodeInfo,
   VoxNodeShape,
   VoxNodeGroup,
-  VoxNodeTransform,  
+  VoxNodeTransform,
   VoxMeta,
   VoxProps,
   VoxOptions,
@@ -60,13 +60,13 @@ export const parseVox = (
   const cameras:   VoxMeta[]  = options.cameras   ? [] : EMPTY_LIST;
   const objects:   VoxProps[] = options.objects   ? [] : EMPTY_LIST;
 
-  const {version, chunks} = parseVoxChunks(data);
+  const {chunks} = parseVoxChunks(data);
 
   const view = new DataView(data);
   for (const {id, children} of chunks) {
     if (id === 'MAIN') {
       if (children) for (const chunk of children) {
-        const {id} = chunk; 
+        const {id} = chunk;
 
         if (id === 'SIZE') {
           const size = parseSIZEChunk(view, chunk);
@@ -117,7 +117,7 @@ export const parseVox = (
       }
     }
   }
-  
+
   if (hasImap) for (let i = 0; i < 256; ++i) palette[imap[i]] = rgba[i];
   else for (let i = 0; i < 256; ++i) palette[i + 1] = rgba[i];
   for (const material of materials) decodeMaterial(material, pbr);
@@ -149,14 +149,13 @@ export const getMipShape = (shape: VoxShape) => {
   const d2 = Math.ceil(d / 2) || 1;
 
   const wh = w * h;
-  const wh2 = w2 * h2;
 
   const out = new Uint8Array(w2 * h2 * d2);
   let o = 0;
   for (let z = 0, z2 = 0; z2 < d2; z += 2, z2++) {
     for (let y = 0, y2 = 0; y2 < h2; y += 2, y2++) {
       for (let x = 0, x2 = 0; x2 < w2; x += 2, x2++) {
-        let i = x + y * w + z * wh;
+        const i = x + y * w + z * wh;
         out[o++] = (
           data[i] || data[i + 1] ||
           data[i + w] || data[i + w + 1] ||
@@ -168,7 +167,7 @@ export const getMipShape = (shape: VoxShape) => {
   }
 
   return {
-    size: [w2, h2, d2] as Point3,
+    size: [w2, h2, d2] as XYZ,
     data: out,
   };
 };
@@ -213,7 +212,7 @@ export const decodeTransform = (frame: VoxProps) => {
 // Decode material to standard PBR parameters
 ///////////////////////////////////////////////////////////////////////////////
 export const decodeMaterial = (material: VoxMeta, pbr: Float32Array) => {
-  const {id, props: {_type, _metal, _rough, _emit, _weight}} = material;
+  const {id, props: {/*_type,*/ _metal, _rough, _emit, _weight}} = material;
   const offset = id * 4;
   pbr[offset    ] = _metal  ? parseFloat(_metal)  : 1;
   pbr[offset + 1] = _rough  ? parseFloat(_rough)  : 1;
@@ -230,12 +229,12 @@ export const parseVoxChunks = (data: ArrayBuffer): RawVox => {
   const ptr = {offset: 0};
 
   const magic = getUint32(view, ptr);
-  if (magic !== 0x20584F56) throw new Error(`Invalid .vox header '0x${magic.toString(16)}'`);
+  if (magic !== VOX_MAGIC) throw new Error(`Invalid .vox header '0x${magic.toString(16)}'`);
 
   const version = getUint32(view, ptr);
   if (version !== 150) throw new Error(`Unsupported .vox version '${version}'`);
 
-  let n = data.byteLength;
+  const n = data.byteLength;
   const chunks: RawChunk[] = [];
   while (ptr.offset < n) {
     chunks.push(getNextChunk(view, ptr));
@@ -258,7 +257,6 @@ export const getNextChunk = (view: DataView, ptr: Pointer): RawChunk => {
   if (childrenSize) {
     children = [];
 
-    let child: RawChunk;
     const end = ptr.offset + childrenSize;
     while (ptr.offset < end) children.push(getNextChunk(view, ptr));
   }
@@ -270,7 +268,7 @@ export const getNextChunk = (view: DataView, ptr: Pointer): RawChunk => {
 // Chunk type parsers
 ///////////////////////////////////////////////////////////////////////////////
 
-export const parseSIZEChunk = (view: DataView, chunk: RawChunk): Point3 => {
+export const parseSIZEChunk = (view: DataView, chunk: RawChunk): XYZ => {
   const {base} = chunk;
   const ptr = {offset: base};
 
@@ -318,14 +316,14 @@ export const parseIMAPChunk = (view: DataView, chunk: RawChunk, imap: Uint32Arra
 };
 
 export const parsePropsChunk = (view: DataView, chunk: RawChunk): VoxProps => {
-  const {base, length} = chunk;
+  const {base} = chunk;
   const ptr = {offset: base};
 
   return getDict(view, ptr);
 };
 
-export const parseMetaChunk = (view: DataView, chunk: RawChunk, hasId: boolean = true): VoxMeta => {
-  const {base, length} = chunk;
+export const parseMetaChunk = (view: DataView, chunk: RawChunk): VoxMeta => {
+  const {base} = chunk;
   const ptr = {offset: base};
 
   const id = getUint32(view, ptr);
@@ -338,7 +336,7 @@ export const parseMetaChunk = (view: DataView, chunk: RawChunk, hasId: boolean =
 };
 
 export const parseNGRPChunk = (view: DataView, chunk: RawChunk): VoxNodeGroup => {
-  const {base, length} = chunk;
+  const {base} = chunk;
   const ptr = {offset: base};
 
   const id = getUint32(view, ptr);
@@ -347,7 +345,7 @@ export const parseNGRPChunk = (view: DataView, chunk: RawChunk): VoxNodeGroup =>
   const n = getUint32(view, ptr);
   const children: number[] = [];
   for (let i = 0; i < n; ++i) children.push(getUint32(view, ptr));
-  
+
   return {
     type: 'group',
     id,
@@ -357,14 +355,14 @@ export const parseNGRPChunk = (view: DataView, chunk: RawChunk): VoxNodeGroup =>
 };
 
 export const parseNTRNChunk = (view: DataView, chunk: RawChunk): VoxNodeTransform => {
-  const {base, length} = chunk;
+  const {base} = chunk;
   const ptr = {offset: base};
 
   const id = getUint32(view, ptr);
   const props = getDict(view, ptr);
 
   const child = getUint32(view, ptr);
-  const _reserved = getInt32(view, ptr);
+  /*const _reserved =*/ getInt32(view, ptr);
   const layer = getInt32(view, ptr);
 
   const n = getInt32(view, ptr);
@@ -392,14 +390,14 @@ export const parseNTRNChunk = (view: DataView, chunk: RawChunk): VoxNodeTransfor
 };
 
 export const parseNSHPChunk = (view: DataView, chunk: RawChunk): VoxNodeShape => {
-  const {base, length} = chunk;
+  const {base} = chunk;
   const ptr = {offset: base};
 
   const id = getUint32(view, ptr);
   const props = getDict(view, ptr);
 
   const n = getInt32(view, ptr);
-  
+
   let model: VoxMeta;
   let models: VoxMeta[] | undefined;
   if (n > 1) {
@@ -470,7 +468,7 @@ export const getDict = (view: DataView, ptr: Pointer): VoxProps => {
 export const getString = (view: DataView, ptr: Pointer): string => {
   const n = getUint32(view, ptr);
 
-  let chars = [];
+  const chars = [];
   for (let i = 0; i < n; ++i) chars.push(getUint8(view, ptr));
   return String.fromCharCode(...chars);
 };

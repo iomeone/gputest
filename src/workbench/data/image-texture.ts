@@ -1,14 +1,19 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { Point, ColorSpace, TextureSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { XY, ColorSpace, TextureSource } from '@use-gpu/core';
+
+import { use, yeet, gather, suspend, useMemo } from '@use-gpu/live';
+import { makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipTextureChain } from '@use-gpu/core';
+import { ImageLoader } from './image-loader';
 
 import { useDeviceContext } from '../providers/device-provider';
-import { use, yeet, gather, memo, useMemo, useYolo } from '../../live';
-import { makeDynamicTexture, uploadExternalTexture, updateMipTextureChain } from '../../core';
-import { Fetch } from './fetch';
+import { useSuspenseContext } from '../providers/suspense-provider';
+import { useRenderProp, getRenderFunc } from '../hooks/useRenderProp';
 
 export type ImageTextureProps = {
   /** URL to image */
   url: string,
+  /** Type hint */
+  format?: string,
   /** Color space to tag texture as. Does not convert input data. */
   colorSpace?: ColorSpace,
   /** MIPs */
@@ -16,7 +21,8 @@ export type ImageTextureProps = {
   /** Texture sampler */
   sampler?: GPUSamplerDescriptor,
   /** Leave empty to yeet texture instead. */
-  render?: (source: TextureSource) => LiveElement,
+  render?: (source: TextureSource | null) => LiveElement,
+  children?: (source: TextureSource | null) => LiveElement,
 };
 
 const countMips = (width: number, height: number): number => {
@@ -30,48 +36,34 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
   const {
     url,
     sampler,
-    mip = true,
+    format,
     colorSpace = 'srgb',
-    render,
+    mip = true,
   } = props;
 
-  const fetch = (
-    use(Fetch, {
-      url,
-      type: 'blob',
-      loading: null,
-      then: (blob: Blob | null) => {
-        if (blob == null) return null;
+  const suspense = useSuspenseContext();
+  const fetch = use(ImageLoader, {url, format, colorSpace});
 
-        return createImageBitmap(blob, {
-          premultiplyAlpha: 'default',
-          colorSpaceConversion: 'none',
-        });
-      },
-    })
-  );
-
-  return gather(fetch, ([bitmap]: ImageBitmap[]) => {
-    if (!bitmap) return null;
+  return gather(fetch, ([resource]: any[]) => {
+    const render = getRenderFunc(props);
+    if (!resource) return suspense ? suspend() : render ? render(null) : yeet(null);
 
     const source = useMemo(() => {
-      const {width, height} = bitmap;
-      const size = [width, height] as Point;
+      const {format, colorSpace} = resource;
 
-      let format: GPUTextureFormat = 'rgba8unorm';
-      let cs = colorSpace;
-      if (colorSpace === 'srgb') {
-        format = 'rgba8unorm-srgb';
-        cs = 'linear';
-      }
+      let size: XY = [0, 0];
+      if ('bitmap' in resource) size = [resource.bitmap.width, resource.bitmap.height];
+      else if ('data' in resource) size = resource.data.size;
 
+      const [width, height] = size;
       const mips = (
         typeof mip === 'number' ? mip :
         mip ? countMips(width, height) : 1
       );
 
       const texture = makeDynamicTexture(device, width, height, 1, format, 1, mips);
-      uploadExternalTexture(device, texture, bitmap, size);
+      if ('bitmap' in resource) uploadExternalTexture(device, texture, resource.bitmap, [width, height], [0, 0]);
+      if ('data' in resource) uploadDataTexture(device, texture, resource.data, [width, height], [0, 0]);
 
       const source = {
         texture,
@@ -87,15 +79,15 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
         mips,
         format,
         size,
-        colorSpace: cs,
+        colorSpace,
         version: 1,
       };
 
       updateMipTextureChain(device, source);
 
       return source;
-    }, [bitmap, sampler]);
+    }, [resource, sampler]);
 
-    return useYolo(() => render ? (source ? render(source) : null) : yeet(source), [render, source]);
+    return useRenderProp(props, source);
   });
 };

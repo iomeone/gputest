@@ -1,18 +1,21 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '../../live';
-import type { Culler, LightEnv, Renderable } from './types';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LightEnv, Renderable } from './types';
 
-import { use, quote, yeet, memo, useMemo, useOne } from '../../live';
+import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 
 import { useRenderContext } from '../providers/render-provider';
 import { useDeviceContext } from '../providers/device-provider';
 import { useViewContext } from '../providers/view-provider';
 import { usePassContext } from '../providers/pass-provider';
+import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
 
 import { getRenderPassDescriptor, drawToPass } from './util';
 
-export type ColorPassProps = {
+const {quote} = QueueReconciler;
+
+export type ColorPassProps = PropsWithChildren<{
   env: {
     light?: LightEnv,
   },
@@ -23,16 +26,19 @@ export type ColorPassProps = {
   },
   overlay?: boolean,
   merge?: boolean,
-};
+}>;
+
+const label = '<ColorPass>';
+const LABEL = { label };
 
 const NO_OPS: any[] = [];
-const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS; 
+const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 
 /** Color render pass.
 
 Draws all opaque calls, then all transparent calls, then all debug wireframes.
 */
-export const ColorPass: LC<ColorPassProps> = memo((props: PropsWithChildren<ColorPassProps>) => {
+export const ColorPass: LC<ColorPassProps> = memo((props: ColorPassProps) => {
   const {
     overlay = false,
     merge = false,
@@ -53,11 +59,17 @@ export const ColorPass: LC<ColorPassProps> = memo((props: PropsWithChildren<Colo
 
   const bindPass = useOne(() => {
     if (!makeBindPass) return () => {};
-    return makeBindPass(light?.storage, light?.texture); 
+    const args = [];
+    if (light) {
+      const {storage, texture} = light;
+      if (storage) args.push({storage});
+      if (texture) args.push({texture});
+    }
+    return makeBindPass(args);
   }, light);
 
   const renderPassDescriptor = useMemo(() =>
-    getRenderPassDescriptor(renderContext, {overlay, merge}),
+    getRenderPassDescriptor(renderContext, {overlay, merge, label}),
     [renderContext, overlay, merge]);
 
   return quote(yeet(() => {
@@ -66,7 +78,7 @@ export const ColorPass: LC<ColorPassProps> = memo((props: PropsWithChildren<Colo
 
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
-    const commandEncoder = device.createCommandEncoder();
+    const commandEncoder = device.createCommandEncoder(LABEL);
     if (!overlay && !merge) renderContext.swap?.();
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -83,9 +95,10 @@ export const ColorPass: LC<ColorPassProps> = memo((props: PropsWithChildren<Colo
     device.queue.submit([command]);
 
     inspect({
-      output: {
+      output: renderContext.source ? {
         color: renderContext.source,
-      },
+        depth: renderContext.depth,
+      } : undefined,
       render: {
         vertices: vs,
         triangles: ts,
@@ -94,5 +107,4 @@ export const ColorPass: LC<ColorPassProps> = memo((props: PropsWithChildren<Colo
 
     return null;
   }));
-
 }, 'ColorPass');

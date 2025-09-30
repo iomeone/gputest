@@ -1,22 +1,17 @@
-import type { LiveComponent } from '../../live';
-import type { TypedArray, TextureSource, Atlas, Lazy, RenderPassMode } from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TypedArray, TextureSource, Atlas, Lazy } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 import type { SDFGlyphData } from '../text/types';
 
-import { gather, use, yeet, keyed, wrap, memo, debug, fragment, provide, useFiber, useOne, useState, useResource } from '../../live';
-import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
-import { makeShaderBindings } from '../../core';
-import { useShaderRef } from '../hooks/useShaderRef';
+import { gather, use, memo, useOne } from '@use-gpu/live';
 import { useRawSource } from '../hooks/useRawSource';
 
-import { useFontFamily } from '../text/providers/font-provider';
+import { TransformContextProps } from '../providers/transform-provider';
 import { SDFFontProvider } from '../text/providers/sdf-font-provider';
-import { DebugAtlas } from '../text/debug-atlas';
 import { GlyphSource } from '../text/glyph-source';
-import { PanControls } from '../camera/pan-controls';
-import { RawLabels } from '../primitives/raw-labels';
+import { RawLabels, RawLabelsFlags } from '../primitives/raw-labels';
 
-export type LabelLayerProps = {
+export type LabelLayerProps = RawLabelsFlags & {
   position?: number[] | TypedArray,
   placement?: number[] | TypedArray,
   offset?: number,
@@ -40,12 +35,15 @@ export type LabelLayerProps = {
   weight?: string | number,
   style?: string,
 
+  instance?: number,
+  instances?: ShaderSource,
+  transform?: TransformContextProps,
+
   flip?: [number, number],
   sdfRadius?: number,
+
   detail?: number,
   count?: Lazy<number>,
-  mode?: RenderPassMode | string,
-  id?: number,
 };
 
 /** Draws flat text labels. */
@@ -73,15 +71,21 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
     weight,
     style,
 
+    instance,
+    instances,
+    transform,
+
     flip,
     sdfRadius,
+
     detail,
+    // eslint-disable-next-line  @typescript-eslint/no-unused-vars    
     count,
     mode = 'opaque',
-    id = 0,
+
+    ...rest
   } = props;
 
-  const key = useFiber().id;
   const strings = useOne(() => labels ?? (label != null ? [label] : []), labels ?? label);
 
   return (
@@ -116,6 +120,10 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
             sdf,
             texture: source,
 
+            instance,
+            instances,
+            transform,
+
             position,
             positions,
             placement,
@@ -133,7 +141,8 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
 
             flip,
             mode,
-            id,
+
+            ...rest,
           });
         },
     })

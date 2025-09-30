@@ -1,12 +1,16 @@
-import type { LiveFiber } from '../../live';
-import { makeContext, useContext, useFiber, useNoContext } from '../../live';
+import type { LiveFiber } from '@use-gpu/live';
+import { makeContext, useContext, useFiber, useNoContext } from '@use-gpu/live';
+import { TimeContext, TimeContextProps } from './time-provider';
 
 type LoopContextProps = {
-  request: (fiber: LiveFiber<any>) => void,
+  buffered: boolean,
+  request: (fiber?: LiveFiber<any>) => TimeContextProps,
 };
 
 export const LoopContext = makeContext<LoopContextProps>({
-  request: () => {},
+  buffered: false,
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  request: () => TimeContext.initialValue!,
 }, 'LoopContext');
 
 export const useAnimationFrame   = () => useContext(LoopContext).request(useFiber());

@@ -1,5 +1,5 @@
-import type { Geometry } from '../../../core';
-import { makeDataEmitter } from '../../../core';
+import type { CPUGeometry } from '@use-gpu/core';
+import { makeNumberWriter } from '@use-gpu/core';
 
 type PlaneGeometryProps = {
   width?: number,
@@ -13,16 +13,16 @@ export const makePlaneGeometry = ({
   height = width,
   axes = 'xy',
   tile = [1, 1],
-}: PlaneGeometryProps = {}): Geometry => {
+}: PlaneGeometryProps = {}): CPUGeometry => {
   const count = 6;
 
   const positions = new Float32Array(count * 4);
   const normals = new Float32Array(count * 4);
   const uvs = new Float32Array(count * 4);
 
-  const {emit: positionEmitter} = makeDataEmitter(positions, 4);
-  const {emit: normalEmitter} = makeDataEmitter(normals, 4);
-  const {emit: uvEmitter} = makeDataEmitter(uvs, 4);
+  const {emit: positionEmitter} = makeNumberWriter(positions, 4);
+  const {emit: normalEmitter} = makeNumberWriter(normals, 4);
+  const {emit: uvEmitter} = makeNumberWriter(uvs, 4);
 
   const [first, second] = axes.split('');
 

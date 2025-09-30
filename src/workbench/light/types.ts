@@ -1,7 +1,3 @@
-import type { VectorLike } from '../../traits';
-import type { TypedArray } from '../../core';
-import type { ShaderModule } from '../../shader';
-
 import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 
 export const AMBIENT_LIGHT = 0;
@@ -18,7 +14,7 @@ export type Light = {
   intensity?: number | null,
   cutoff?: number | null,
   kind: number,
-  
+
   shadow?: ShadowMapProps | null,
 };
 
@@ -27,7 +23,7 @@ export type BoundLight = Light & {
   shadowType?: 'ortho',
   shadowMap?: number,
   shadowUV?: vec4,
-  shadowBias?: vec2,
+  shadowBias?: vec3,
   shadowDepth?: vec2,
   shadowBlur?: number,
 };
@@ -36,7 +32,7 @@ export type ShadowMapProps = {
   type: string,
   size: vec2,
   depth: vec2,
-  bias: vec2,
+  bias: vec3,
   blur: number,
 };
 

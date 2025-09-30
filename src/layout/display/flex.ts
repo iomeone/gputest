@@ -1,26 +1,24 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { ShaderModule } from '../../shader';
-import type { Rectangle } from '../../core';
-import type { LayoutElement, Margin, Dimension, Direction, Alignment, AlignmentLike, GapLike, Anchor, FitInto } from '../types';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { Rectangle } from '@use-gpu/core';
+import type { LayoutElement, Direction, AlignmentLike, GapLike, Anchor, FitInto } from '../types';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { useProp } from '../../traits';
-import { use, yeet, memo, gather, useFiber, useMemo } from '../../live';
+import { useProp, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { keyed, yeet, memo, gather, useFiber, useMemo } from '@use-gpu/live';
 import { getFlexMinMax, fitFlex } from '../lib/flex';
-import {  makeBoxPicker, memoFit, memoLayout } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '../../workbench';
+import { makeBoxPicker, memoFit } from '../lib/util';
+import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
 
-import type { BoxTrait, ElementTrait } from '../types';
-import { useBoxTrait, useElementTrait } from '../traits';
-import { evaluateDimension, parseAlignmentXY, parseAnchor, parseDirectionX, parseGapXY, parseMargin } from '../parse';
+import { BoxTrait, ElementTrait, useBoxTrait, useElementTrait } from '../traits';
+import { evaluateDimension, parseAlignmentXY, parseAnchor, parseDirectionX, parseGapXY } from '../parse';
 import { useImplicitElement } from '../element/element';
 import { BoxLayout } from '../render';
 
-const NO_MARGIN = [0, 0, 0, 0] as Margin;
-
 export type FlexProps =
-  Partial<BoxTrait> &
-  Partial<ElementTrait> &
-{
+  TraitProps<typeof BoxTrait> &
+  TraitProps<typeof ElementTrait> &
+PropsWithChildren<{
   direction?: Direction,
 
   gap?: GapLike,
@@ -29,16 +27,15 @@ export type FlexProps =
 
   wrap?: boolean,
   snap?: boolean,
-};
+}>;
 
-export const Flex: LiveComponent<FlexProps> = memo((props: PropsWithChildren<FlexProps>) => {
+export const Flex: LiveComponent<FlexProps> = memo((props: FlexProps) => {
   const {
     wrap = false,
     snap = true,
-    children,
   } = props;
 
-  const { width, height, aspect, radius, border, stroke, fill, image } = useElementTrait(props);
+  const { width, height, aspect, zIndex } = useElementTrait(props);
   const { margin, grow, shrink, inline, flex } = useBoxTrait(props);
 
   const direction = useProp(props.direction, parseDirectionX);
@@ -50,6 +47,8 @@ export const Flex: LiveComponent<FlexProps> = memo((props: PropsWithChildren<Fle
 
   const inspect = useInspectable();
   const hovered = useInspectHoverable();
+
+  const c = useImplicitElement(props);
 
   const Resume = (els: LayoutElement[]) => {
     return useMemo(() => {
@@ -105,11 +104,12 @@ export const Flex: LiveComponent<FlexProps> = memo((props: PropsWithChildren<Fle
           render: (
             box: Rectangle,
             origin: Rectangle,
+            z: number,
             clip?: ShaderModule | null,
             mask?: ShaderModule | null,
             transform?: ShaderModule | null,
           ) => (
-            sizes.length ? use(BoxLayout, inside, {box, origin, clip, mask, transform}, hovered) : null
+            sizes.length ? keyed(BoxLayout, id, inside, {box, origin, z: z + zIndex, clip, mask, transform}, hovered) : null
           ),
           pick: makeBoxPicker(id, sizes, offsets, pickers),
         };
@@ -129,9 +129,16 @@ export const Flex: LiveComponent<FlexProps> = memo((props: PropsWithChildren<Fle
         fit: memoFit(fit),
         prefit: memoFit(fit),
       });
-    }, [props, els, hovered]);
+    }, [props, els, hovered, zIndex]);
   };
 
-  const c = useImplicitElement(id, radius, border, stroke, fill, image, children);
   return c ? gather(c, Resume) : null;
-}, 'Flex');
+}, shouldEqual({
+  padding: sameShallow(),
+  margin:  sameShallow(),
+  radius:  sameShallow(),
+  border:  sameShallow(),
+  stroke:  sameShallow(),
+  fill:    sameShallow(),
+  image:   sameShallow(),
+}), 'Flex');

@@ -1,26 +1,25 @@
-import type { LC, LiveElement, PropsWithChildren } from '../../live';
-import type { Point4 } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
-import type { ColorLike } from '../../traits';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { provide, yeet, signal, useMemo, useOne } from '../../live';
+import { provide, yeet, useMemo } from '@use-gpu/live';
 
-import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
-import { useNativeColorTexture } from '../hooks/useNativeColor';
-import { useShaderRef } from '../hooks/useShaderRef';
 import { useLightContext } from '../providers/light-provider';
 import { MaterialContext } from '../providers/material-provider';
+import { QueueReconciler } from '../reconcilers/index';
 
-import { getShadedFragment } from '../../wgsl/instance/fragment/shadedwgsl';
+import { getLitFragment } from '@use-gpu/wgsl/instance/fragment/lit.wgsl';
+import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+
+const {signal} = QueueReconciler;
 
 export type ShaderLitMaterialProps = {
   /** Flat shader, for unlit passes (e.g. shadow map)
- 
-  fn getFragment(color: vec4<f32>, uv: vec4<f32>, st: vec4<f32>) -> vec4<f32> 
+
+  fn getFragment(color: vec4<f32>, uv: vec4<f32>, st: vec4<f32>) -> vec4<f32>
   */
   fragment: ShaderModule,
 
-  /** Depth shader, for shadow passes (optional)
+  /** Depth-only shader, for optimized shadow passes (optional)
   fn getDepth(
     alpha: f32,
     uv: vec4<f32>,
@@ -31,7 +30,7 @@ export type ShaderLitMaterialProps = {
   depth?: ShaderModule,
 
   /** Surface shader, for material properties
-  
+
   fn getSurface(
     color: vec4<f32>,
     uv: vec4<f32>,
@@ -43,27 +42,40 @@ export type ShaderLitMaterialProps = {
   */
   surface: ShaderModule,
 
+  /** Environment shader, for reflections
+
+  fn getEnvironment(
+    N: vec3<f32>,
+    V: vec3<f32>,
+    surface: SurfaceFragment,
+  ) -> vec3<f32>
+  */
+  environment?: ShaderModule,
+
   /** Material lighting shader, for lighting model. e.g. `applyPBRMaterial`.
-  
+
   fn getLight(surface: SurfaceFragment) -> vec4<f32> */
-  apply: ShaderModule,
+  apply?: ShaderModule,
   render?: (material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement,
+  children?: LiveElement | ((material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement),
 };
 
-export const ShaderLitMaterial: LC<ShaderLitMaterialProps> = (props: PropsWithChildren<ShaderLitMaterialProps>) => {
+export const ShaderLitMaterial: LC<ShaderLitMaterialProps> = (props: ShaderLitMaterialProps) => {
   const {
     depth,
     fragment,
     surface,
-    apply,
+    environment,
+    apply = applyPBRMaterial,
     render,
     children,
   } = props;
 
   const {useMaterial} = useLightContext();
   const applyLights = useMaterial(apply);
+  const applyEnvironment = environment;
 
-  const getLight = applyLights ? useBoundShader(getShadedFragment, [applyLights]) : useNoBoundShader();
+  const getLight = getLitFragment;
   const getSurface = surface;
   const getFragment = fragment;
   const getDepth = depth;
@@ -77,9 +89,12 @@ export const ShaderLitMaterial: LC<ShaderLitMaterialProps> = (props: PropsWithCh
       getFragment,
       getSurface,
       getLight,
+      applyLights,
+      applyEnvironment,
     },
-  }), [getSurface, getLight, getDepth, getFragment]);
+  }), [getSurface, getLight, getDepth, getFragment, applyLights, applyEnvironment]);
 
   const view = render ? render(context) : children;
   return render ?? children ? provide(MaterialContext, context, [signal(), view]) : yeet(context);
-}
+};
+

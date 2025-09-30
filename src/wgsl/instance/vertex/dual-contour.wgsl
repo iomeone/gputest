@@ -1,8 +1,8 @@
-use '../../../wgsl/use/types'::{ ShadedVertex };
-use '../../../wgsl/use/array'::{ sizeToModulus3, packIndex3 };
-use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale, getViewScale, applyZBias }; 
-use '../../../wgsl/geometry/quad'::{ getQuadIndex };
-use '../../../wgsl/geometry/normal'::{ getOrthoVector };
+use '@use-gpu/wgsl/use/types'::{ ShadedVertex };
+use '@use-gpu/wgsl/use/array'::{ sizeToModulus3, packIndex3 };
+use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale, getViewScale, applyZBias };
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadIndex };
+use '@use-gpu/wgsl/geometry/normal'::{ getOrthoVector };
 
 @link fn getEdgeId(i: u32) -> u32 { };
 @link fn getVertexIndex(i: u32) -> u32 { };
@@ -26,7 +26,7 @@ fn unpackEdgeId(id: u32) -> vec4<u32> {
 }
 
 fn inverseMat3x3(m: mat3x3<f32>) -> mat3x3<f32> {
-  
+
   let a00 = m[0][0];
   let a01 = m[0][1];
   let a02 = m[0][2];
@@ -96,7 +96,7 @@ fn inverseMat3x3(m: mat3x3<f32>) -> mat3x3<f32> {
     if ((parity.x ^ parity.y) != 0u) { gridIndex -= vec3<u32>(1u - ij.x, ij.y, 0u); }
     else { gridIndex -= vec3<u32>(ij.yx, 0u); }
   }
-  
+
   let modulus = sizeToModulus3(gridSize);
   let index = getVertexIndex(packIndex3(gridIndex, modulus));
 

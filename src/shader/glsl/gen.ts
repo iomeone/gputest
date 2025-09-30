@@ -1,10 +1,10 @@
-import { ShaderModule, ParsedBundle, ParsedModule, DataBinding, ModuleRef, RefFlags as RF } from './types';
+import { ShaderModule, DataBinding } from './types';
 
 import { formatMurmur53, toMurmur53, getObjectKey, mixBits, scrambleBits } from '../util/hash';
 import { getBundleHash } from '../util/bundle';
-import { loadVirtualModule } from './shader';
-import { makeSwizzle } from './cast';
 import { PREFIX_VIRTUAL } from '../constants';
+import { loadVirtualModule } from './shader';
+import { makeSwizzle } from './operators/cast';
 
 const NO_SYMBOLS = [] as string[];
 const INT_ARG = ['int'];
@@ -44,6 +44,7 @@ export const makeBindingAccessors = (
   // Hash + readable representation
   const readable = symbols.join(' ');
   const signature = getBindingsKey(bindings).toString(16);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const external = lambdas.map(l => getBundleHash(l.lambda!.shader));
   const unique = `@access [${signature}] [${external}] [${readable}] [${types.join(' ')}]`;
 
@@ -62,29 +63,35 @@ export const makeBindingAccessors = (
   ) => {
     const program: string[] = [];
 
-    for (const {uniform: {name, format: type, args}} of constants) {
-      program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args));
+    for (const {uniform: {name, format: formatOut, args}} of constants) {
+      if (typeof formatOut !== 'string') throw new Error("GLSL struct types not implemented");
+      program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, formatOut, name, args));
     }
 
-    for (const {uniform: {name, format: type, args}, storage} of storages) {
-      const {volatile, format} = storage!;
+    for (const {uniform: {name, format: formatOut}, storage} of storages) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const {volatile, format: formatIn} = storage!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
 
-      if (typeof format === 'object') {
+      if (typeof formatIn === 'object') {
         throw new Error("Virtual struct types not supported in GLSL");
         continue;
       }
 
-      program.push(makeStorageAccessor(namespace, set, base, type, format, name));
+      if (typeof formatOut !== 'string') throw new Error("GLSL struct types not implemented");
+      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name));
     }
 
-    for (const {uniform: {name, format: type, args}, texture} of textures) {
-      const {volatile, layout, variant, absolute, format} = texture!;
+    for (const {uniform: {name, format: formatOut}, texture} of textures) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const {volatile, layout, variant, absolute, format: formatIn} = texture!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
       volatile ? volatileBase++ : bindingBase++;
-      program.push(makeTextureAccessor(namespace, set, base, type, format, name, layout, variant, absolute));
+
+      if (typeof formatOut !== 'string') throw new Error("GLSL struct types not implemented");
+      program.push(makeTextureAccessor(namespace, set, base, formatOut, formatIn, name, layout, variant, absolute));
     }
 
     return program.join('\n');
@@ -98,12 +105,13 @@ export const makeBindingAccessors = (
   }, {
     symbols,
     declarations,
-  }, undefined, hash, code, key);
+  }, undefined, hash, code, key) as ShaderModule;
 
   const links: Record<string, ShaderModule> = {};
   for (const binding of constants) links[binding.uniform.name] = virtual;
   for (const binding of storages)  links[binding.uniform.name] = virtual;
   for (const binding of textures)  links[binding.uniform.name] = virtual;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   for (const lambda  of lambdas)   links[lambda.uniform.name]  = lambda.lambda!.shader;
 
   return links;
@@ -124,11 +132,11 @@ export const makeUniformBlockLayout = (
   set: number | string,
   binding: number | string,
   members: string[],
-) => `
-layout (set = ${set}, binding = ${binding}) uniform ${ns}Type {
+) => (
+`layout (set = ${set}, binding = ${binding}) uniform ${ns}Type {
   ${members.map(m => `${m};`).join('\n  ')}
 } ${ns}Uniform;
-`;
+`);
 
 export const makeUniformFieldAccessor = (
   uniform: string,
@@ -136,11 +144,11 @@ export const makeUniformFieldAccessor = (
   type: string,
   name: string,
   args: any[] | null = INT_ARG,
-) => `
-${type} ${ns}${name}(${args ? args.join(', ') : ''}) {
+) => (
+`${type} ${ns}${name}(${args ? args.join(', ') : ''}) {
   return ${uniform}Uniform.${ns}${name};
 }
-`;
+`);
 
 export const makeStorageAccessor = (
   ns: string,
@@ -149,9 +157,10 @@ export const makeStorageAccessor = (
   type: string,
   format: string,
   name: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   args: string[] = INT_ARG,
-) => `
-layout (std430, set = ${set}, binding = ${binding}) readonly buffer ${ns}${name}Type {
+) => (
+`layout (std430, set = ${set}, binding = ${binding}) readonly buffer ${ns}${name}Type {
   ${format} data[];
 } ${ns}${name}Storage;
 
@@ -159,7 +168,7 @@ ${type} ${ns}${name}(int index) {
   ${format !== type ? `${format} v =` : 'return'} ${ns}${name}Storage.data[index];
 ${format !== type ? `  return ${makeSwizzle(format, type, 'v')};` : ''
 }}
-`;
+`);
 
 export const makeTextureAccessor = (
   ns: string,
@@ -171,9 +180,10 @@ export const makeTextureAccessor = (
   layout: string,
   variant: string = 'sampler2D',
   absolute: boolean = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   args: string[] = UV_ARG,
-) => `
-layout (set = ${set}, binding = ${binding}) uniform ${layout} ${ns}${name}Texture;
+) => (
+`layout (set = ${set}, binding = ${binding}) uniform ${layout} ${ns}${name}Texture;
 layout (set = ${set}, binding = ${binding + 1}) uniform sampler ${ns}${name}Sampler;
 
 ${type} ${ns}${name}(vec2 uv) {
@@ -182,4 +192,4 @@ ${type} ${ns}${name}(vec2 uv) {
   ${format !== type ? `${format} v =` : 'return'} texture(${variant}(${ns}${name}Texture, ${ns}${name}Sampler), uv);
 ${format !== type ? `  return ${makeSwizzle(format, type, 'v')};` : ''
 }}
-`;
+`);

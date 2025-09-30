@@ -1,6 +1,5 @@
 import type { LiveFiber, FiberQueue } from './types';
 import { compareFibers, isSubNode } from './util';
-import { formatNodeName } from './debug';
 
 type Q = {
   fiber: LiveFiber<any>
@@ -23,7 +22,7 @@ export const makeFiberQueue = (init?: LiveFiber<any>[]): FiberQueue => {
   const insert = (fiber: LiveFiber<any>) => {
     if (set.has(fiber)) return;
     set.add(fiber);
-    
+
     // Empty
     if (!queue) {
       tail = queue = {fiber, next: null};
@@ -70,7 +69,6 @@ export const makeFiberQueue = (init?: LiveFiber<any>[]): FiberQueue => {
     set.delete(fiber);
 
     // Pop
-    let i = 0;
     if (queue.fiber === fiber) {
       if (hint === queue) hint = hint.next;
 
@@ -92,12 +90,11 @@ export const makeFiberQueue = (init?: LiveFiber<any>[]): FiberQueue => {
       q = q.next;
     }
   }
-  
+
   // Re-insert all fibers that descend from fiber
   const reorder = (fiber: LiveFiber<any>) => {
     const list: LiveFiber<any>[] = [];
 
-    const {path} = fiber;
     let q = queue;
     let qp = null;
 
@@ -148,7 +145,7 @@ export const makeFiberQueue = (init?: LiveFiber<any>[]): FiberQueue => {
   const pop = (): LiveFiber<any> | null => {
     if (!queue) return null;
 
-    let q = queue;
+    const q = queue;
     queue = q.next;
 
     if (hint === q) hint = hint.next;
@@ -159,7 +156,7 @@ export const makeFiberQueue = (init?: LiveFiber<any>[]): FiberQueue => {
     return q.fiber;
   }
 
-  if (init) for (let i of init) insert(i);
+  if (init) for (const i of init) insert(i);
 
   return {insert, remove, reorder, all, peek, pop} as any;
 }

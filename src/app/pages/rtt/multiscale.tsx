@@ -1,17 +1,19 @@
-import type { LC } from '../../../live';
-import type { DataTexture, TextureSource, OffscreenTarget } from '../../../core';
-import type { ShaderModule } from '../../../shader';
+import type { LC } from '@use-gpu/live';
+import type { DataTexture, TextureSource, OffscreenTarget } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 
-import React, { Gather, useRef } from '../../../live';
-import { wgsl } from '../../../shader/wgsl';
+import React, { Gather, useRef } from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, Pass, Flat, Pick,
+  Loop, Pass, FlatCamera, Pick, Cursor,
   RawTexture, RenderTarget, RenderToTexture, FullScreen,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Text,
-} from '../../../layout';
+} from '@use-gpu/layout';
+
+import { InfoBox } from '../../ui/info-box';
 
 //
 // Classic render-to-texture feedback effect with blur pyramid.
@@ -67,7 +69,7 @@ const initializeShader = wgsl`
 const blurXShader = wgsl`
   @link fn getTextureSize() -> vec2<f32>;
   @link fn getTexture(uv: vec2<f32>) -> vec4<f32>;
-  
+
   @export fn main(uv: vec2<f32>) -> vec4<f32> {
     let h = 1.0 / getTextureSize().x;
 
@@ -114,6 +116,7 @@ const feedbackShader = wgsl`
 
   @link fn getRandomSeed() -> vec4<f32>;
   @link fn getMouse() -> vec2<f32>;
+  @link fn getPaint() -> f32;
 
   @link fn getBlur1(uv: vec2<f32>) -> vec4<f32>;
   @link fn getBlur2(uv: vec2<f32>) -> vec4<f32>;
@@ -126,9 +129,12 @@ const feedbackShader = wgsl`
     var color = vec4<f32>(0.0, 0.0, 0.0, 1.0);
 
     let mouse = getMouse();
+    let paint = getPaint();
     let rnd = getRandomSeed();
-    let pixelSize = 1.0 / getTextureSize();
-  
+    let size = getTextureSize();
+    let pixelSize = 1.0 / size;
+    let aspect = size.y / size.x;
+
     let dq   = pixelSize / 4.0;
     let d4   = pixelSize * 4.0;
     let d8   = pixelSize * 8.0;
@@ -136,7 +142,7 @@ const feedbackShader = wgsl`
     let d32  = pixelSize * 32.0;
     let d128 = pixelSize * 128.0;
 
-    let noise = getNoise(pixel + rnd.xy) - 0.5; // the noise texture itself is static. adding randomizing 
+    let noise = getNoise(pixel + rnd.xy) - 0.5; // the noise texture itself is static. adding randomizing
 
     // overall plane deformation vector (zoom-in on the mouse position)
 
@@ -186,6 +192,27 @@ const feedbackShader = wgsl`
 
     color.x -= ((1 - color.y) - 0.02) * 0.025;
 
+    if (paint > 0.0) {
+      // Random paint splotch
+      let xy = (uv - center) * vec2<f32>(1.0, aspect);
+      let d = length(xy);
+      let r = max(0.0, 1.0 - d * 24.0);
+      let a = atan2(xy.y, xy.x) + noise.z;
+      let ca = cos(a * 8.0);
+      let sa = sin(a * 8.0);
+
+      let level = paint * noise.w * r;
+      let boost = vec4<f32>(
+        r * (1.0 - r) * max(0.0, sa) * sa * 2.0,
+        (1.0 - r) * (1.0 - r) * max(0.0, ca),
+        (1.0 - r) * 2.0,
+        0.0
+      );
+
+      // Tweak color to create opposing colors
+      color += level * boost - r * r * (color.r - r * r * color.b);
+    }
+
     return color;
   };
 `;
@@ -233,9 +260,11 @@ const compositeShader = wgsl`
 export const RTTMultiscalePage: LC = () => {
   const dpi = window.devicePixelRatio;
   const mouseRef = useRef([window.innerWidth / 2 * dpi, window.innerHeight / 2 * dpi]);
+  const paintRef = useRef(0);
   const getRandomSeed = () => [Math.random(), Math.random(), Math.random(), Math.random()];
-  
-  return (
+
+  return (<>
+    <InfoBox>Set up classic Render-To-Texture pipelines and downsampling pyramids</InfoBox>
     <Gather
       children={[
         <RawTexture data={noiseData} sampler={LINEAR_SAMPLER} />,
@@ -260,10 +289,12 @@ export const RTTMultiscalePage: LC = () => {
         OffscreenTarget,
         OffscreenTarget,
       ]) => (
-        <Flat>
-          <Loop live>
-            <Pick all move render={({x, y}) => {
+        <Loop live>
+          <Cursor cursor="pointer" />
+          <FlatCamera>
+            <Pick all move render={({x, y, pressed}) => {
               mouseRef.current = [x * dpi, y * dpi];
+              paintRef.current = +!!pressed.left;
               return null;
             }} />
             <RenderToTexture target={feedbackTarget}>
@@ -273,6 +304,7 @@ export const RTTMultiscalePage: LC = () => {
                   args={[
                     getRandomSeed,
                     mouseRef,
+                    paintRef,
                   ]}
                   sources={[
                     blurTarget1.source,
@@ -355,9 +387,9 @@ export const RTTMultiscalePage: LC = () => {
                 </Layout>
               </UI>
             </Pass>
-          </Loop>
-        </Flat>
+          </FlatCamera>
+        </Loop>
       )}
     />
-  );
+  </>);
 };

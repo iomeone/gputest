@@ -1,8 +1,7 @@
-import type { LiveComponent } from '../../live';
-import type { Rectangle, StorageSource } from '../../core';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Rectangle } from '@use-gpu/core';
 
-import { memo, yeet, useContext, useOne } from '../../live';
-import { makeTuples } from '../../core';
+import { memo, yeet } from '@use-gpu/live';
 
 import { useFontFamily, useFontText, useFontHeight } from './providers/font-provider';
 import { useSDFGlyphData } from './providers/sdf-font-provider';
@@ -19,7 +18,7 @@ export type GlyphSourceProps = {
   wrap?: number,
   snap?: boolean,
   size?: number,
-  
+
   render?: (data: SDFGlyphData) => void,
 };
 
@@ -37,7 +36,7 @@ export const GlyphSource: LiveComponent<GlyphSourceProps> = memo((props: GlyphSo
     size = 48,
     wrap = 0,
     snap,
-    
+
     render,
   } = props;
 
@@ -57,6 +56,6 @@ export const GlyphSource: LiveComponent<GlyphSourceProps> = memo((props: GlyphSo
     wrap,
     snap,
   );
-  
+
   return render ? render(data) : yeet(data);
 }, 'GlyphSource');

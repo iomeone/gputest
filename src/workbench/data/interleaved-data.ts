@@ -1,140 +1,115 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TypedArray, StorageSource, UniformType, Accessor, DataField, DataBounds, ChunkLayout } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LambdaSource, UniformType, VectorLike, DataSchema } from '@use-gpu/core';
 
-import { DeviceContext } from '../providers/device-provider';
+import { useDeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
+import { QueueReconciler } from '../reconcilers/index';
 import { useBufferedSize } from '../hooks/useBufferedSize';
-import { yeet, extend, signal, gather, useOne, useMemo, useNoMemo, useContext, useNoContext, useYolo, incrementVersion } from '../../live';
+import { useRenderProp } from '../hooks/useRenderProp';
+import { useStructSources } from '../hooks/useStructSources';
+import { useOne, useMemo, useNoMemo } from '@use-gpu/live';
 import {
   makePackedLayout,
-  
-  makeDataArray, makeDataAccessor,
-  copyDataArray, copyNumberArray,
-  copyDataArrays, copyNumberArrays,
-  copyDataArraysComposite, copyNumberArraysComposite,
-  copyDataArrayChunked, copyNumberArrayChunked,
-  getChunkCount,
-  makeStorageBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS,
-  getBoundingBox, toDataBounds,
-} from '../../core';
+  normalizeSchema,
+  makeStructAggregateBuffer,
+  makeStructAggregateFields,
+  uploadStorage,
+  isUniformArrayType,
+} from '@use-gpu/core';
+
+const {signal} = QueueReconciler;
 
 export type InterleavedDataProps = {
-  /** Input data, array of structs of values/arrays */
-  data?: TypedArray,
+  /** Input data, array of flat values with packed array-of-structs layout */
+  data?: VectorLike,
   /** WGSL schema of input data */
-  fields?: [UniformType, string][],
+  schema: DataSchema,
   /** Resample `data` on every animation frame. */
   live?: boolean,
 
-  /** Per item `isLoop` accessor */
-  loop?: <T>(t: T[]) => boolean,
-  /** Per item `hasStart` accessor */
-  start?: <T>(t: T[]) => boolean,
-  /** Per item `hasEnd` accessor */
-  end?: <T>(t: T[]) => boolean,
-  
-  /** Segment decorator(s) */
-  on?: LiveElement,
-
   /** Receive 1 source per field, in struct-of-array format. Leave empty to yeet sources instead. */
-  render?: (...sources: StorageSource[]) => LiveElement,
+  render?: (sources: Record<string, LambdaSource>) => LiveElement,
+  children?: (sources: Record<string, LambdaSource>) => LiveElement,
 };
 
-const NO_FIELDS = [] as [UniformType, string][];
-const NO_BOUNDS = {center: [], radius: 0, min: [], max: []} as DataBounds;
-
-/** Convert an interleaved, flat array-of-structs with fields `T` into struct-of-array data. */
+/** Use a flat, packed array with interleaved fields `T` without any struct alignment/padding. */
 export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
-  const device = useContext(DeviceContext);
+  const device = useDeviceContext();
 
   const {
     data,
-    fields,
-    render,
+    schema: propSchema,
     live = false,
   } = props;
 
-  const fs = fields ?? NO_FIELDS;
+  const schema = useOne(() => normalizeSchema(propSchema), propSchema);
   const typedArray = useOne(() => Array.isArray(data) ? new Float32Array(data) : data ?? new Float32Array(256), data);
 
-  // Gather data layout/length
-  const {layout, dataCount, dataStride, bytesPerElement} = useMemo(() => {
-    
-    const uniforms = fs.map(([format, name]) => ({name, format}));
+  const uniforms = useMemo(
+    () => {
+      const out = [];
+      for (const k in schema) {
+        const {format, index, unwelded} = schema[k];
+        const f = format as UniformType;
+        if (index || unwelded) throw new Error(`Use <Data> for indexed and unwelded data`);
+        if (isUniformArrayType(format)) throw new Error(`Use <Data> for array data`);
+        out.push({name: k, format: f});
+      }
+      return out;
+    },
+    [schema]
+  );
 
-    const {length, byteLength, BYTES_PER_ELEMENT} = typedArray;
+  // Gather data layout/length
+  const [packedLayout, dataCount, dataStride, bytesPerElement] = useMemo(() => {
+
+    const {byteLength, BYTES_PER_ELEMENT} = typedArray;
     const layout = makePackedLayout(uniforms);
 
     const dataCount = byteLength / layout.length;
     const dataStride = layout.length / BYTES_PER_ELEMENT;
     const bytesPerElement = BYTES_PER_ELEMENT;
 
-    return {layout, dataCount, dataStride, bytesPerElement};
-  }, [typedArray, fs]);
-  
+    return [layout, dataCount, dataStride, bytesPerElement];
+  }, [typedArray, uniforms]);
+
   const bufferLength = useBufferedSize(dataCount);
 
-  // Make data buffers
-  const [fieldBuffers, fieldSources] = useMemo(() => {
+  // Make aggregate buffer
+  const [aggregateBuffer, fields] = useMemo(() => {
+    const aggregateBuffer = makeStructAggregateBuffer(device, uniforms, bufferLength);
+    const fields = makeStructAggregateFields(aggregateBuffer);
 
-    const fieldBuffers = fs.map(([format], i) => {
-      if (!(format in UNIFORM_ARRAY_DIMS)) throw new Error(`Unknown data format "${format}"`);
-      const f = format as any as UniformType;
+    return [aggregateBuffer, fields];
+  }, [device, uniforms, bufferLength]);
 
-      const {array, dims} = makeDataArray(f, bufferLength);
-
-      const buffer = makeStorageBuffer(device, array.byteLength);
-      const source = {
-        buffer,
-        format,
-        length: 0,
-        size: [0],
-        version: 0,
-        bounds: {...NO_BOUNDS},
-      };
-
-      const offset = layout.attributes[i].offset / bytesPerElement;
-      if (offset !== Math.round(offset)) throw new Error(`Misaligned field "${format}" for typed array "${typedArray}"`);
-
-      return {buffer, array, source, dims, offset};
-    });
-
-    const fieldSources = fieldBuffers.map(f => f.source);
-
-    return [fieldBuffers, fieldSources];
-  }, [device, fs, bufferLength, layout]);
-  
   // Refresh and upload data
   const refresh = () => {
     if (!typedArray) return;
+    const {raw, source} = aggregateBuffer;
+    const {attributes} = packedLayout;
 
-    for (const {buffer, array, source, dims, offset} of fieldBuffers) {
+    let f = 0;
+    for (const k in fields) {
+      const {array, base = 0, stride = 1, dims} = fields[k];
 
-      let src = offset;
-      let dst = 0;
-      for (let i = 0; i < dataCount; ++i, src += dataStride) {
-        let p = src;
-        for (let j = 0; j < dims; ++j) array[dst++] = typedArray[p++];
+      let src = attributes[f].offset / bytesPerElement;
+      let dst = base;
+      for (let i = 0; i < dataCount; ++i) {
+        const p = src;
+        for (let j = 0; j < dims; ++j) array[dst + j] = typedArray[p + j];
+        dst += stride;
+        src += dataStride;
       }
 
-      uploadBuffer(device, buffer, array.buffer);
-
-      source.length  = dataCount;
-      source.size[0] = source.length;
-      source.version = incrementVersion(source.version);
-
-      const {bounds} = source;
-      const {center, radius, min, max} = toDataBounds(getBoundingBox(array, Math.ceil(dims)));
-      bounds.center = center;
-      bounds.radius = radius;
-      bounds.min = min;
-      bounds.max = max;
+      uploadStorage(device, source, raw, dataCount);
+      ++f;
     }
   };
 
   if (!live) {
     useNoAnimationFrame();
-    useMemo(refresh, [device, data, fieldBuffers, dataCount]);
+    useMemo(refresh, [device, data, aggregateBuffer, dataCount]);
   }
   else {
     useAnimationFrame();
@@ -142,8 +117,11 @@ export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
     refresh()
   }
 
-  const trigger = useOne(() => signal(), fieldSources[0]?.version);
+  const {source} = aggregateBuffer;
+  const sources = useStructSources(uniforms, source, 'interleavedData');
 
-  const view = useYolo(() => render ? render(...fieldSources) : yeet(fieldSources), [render, fieldSources]);
+  const trigger = useOne(() => signal(), source.version);
+
+  const view = useRenderProp(props, sources);
   return [trigger, view];
 };

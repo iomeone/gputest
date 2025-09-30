@@ -1,14 +1,13 @@
 import type {
-  UniformType, UniformAttribute, UniformAttributeValue,
-  ShaderModuleDescriptor, StorageSource, DataBinding, TextureSource, LambdaSource,
+  UniformAttribute, UniformAttributeValue,
+  ShaderModule, StorageSource, DataBinding, TextureSource, LambdaSource,
 } from './types';
-import { checkStorageTypes, checkStorageType } from './storage';
-import partition from 'lodash/partition';
+import { checkStorageType } from './storage';
 
 /**
  * Parse a set of shader sources for use with a given set of uniforms/attributes.
  */
-export const makeShaderBindings = <T>(
+export const makeShaderBindings = <T extends ShaderModule>(
   uniforms: (UniformAttribute | UniformAttributeValue)[],
   sources: (StorageSource | TextureSource | LambdaSource<T> | any)[],
 ): DataBinding<T>[] => {
@@ -25,7 +24,7 @@ export const makeShaderBindings = <T>(
 /**
  * Parse a source for use with a given uniform/attribute.
  */
-export const makeShaderBinding = <T>(
+export const makeShaderBinding = <T extends ShaderModule>(
   uniform: UniformAttribute | UniformAttributeValue,
   source?: StorageSource | TextureSource | LambdaSource<T> | T | any,
 ): DataBinding<T> => {
@@ -54,7 +53,21 @@ export const makeShaderBinding = <T>(
 /**
  * Make a binding for a wrapped value (a ref) for use with a given uniform/attribute.
  */
-export const makeRefBinding = <T>(
+export const makeRefBinding = <T extends ShaderModule>(
   uniform: UniformAttribute | UniformAttributeValue,
   value?: {current: T} | T,
 ): DataBinding<T> => ({uniform, constant: value ?? (uniform as any).value});
+
+export const isShaderBinding = <T extends ShaderModule>(
+  source?: StorageSource | TextureSource | LambdaSource<T> | T | any,
+): source is StorageSource | TextureSource | LambdaSource<T> | T => {
+  if (source != null) {
+    return !!(
+      (source.shader) ||
+      (source.module || source.table) ||
+      (source.buffer && (source.buffer instanceof GPUBuffer)) ||
+      (source.texture || source.view)
+    );
+  }
+  return false;
+}

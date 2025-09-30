@@ -1,36 +1,40 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../live';
-import type { Point, Point4, Rectangle } from '../core';
-import type { Placement } from '../traits';
-import type { FitInto, LayoutElement, LayoutPicker } from './types';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { XY, XYZW, Rectangle } from '@use-gpu/core';
+import type { Placement } from '@use-gpu/parse';
+import type { LayoutElement } from './types';
 
-import { parsePlacement, useProp } from '../traits';
-import { memo, signal, provide, gather, use, keyed, fragment, useContext, useCapture, useFiber, useMemo, useOne, incrementVersion } from '../live';
+import { parsePlacement } from '@use-gpu/parse';
+import { useProp } from '@use-gpu/traits/live';
+import { memo, provide, gather, yeet, keyed, fragment, useContext, useMemo, useOne, incrementVersion } from '@use-gpu/live';
+import { schemaToArchetype } from '@use-gpu/core';
 
 import {
   DebugContext, MouseContext, WheelContext, ViewContext,
   LayoutContext, useTransformContext,
   useInspectable, useInspectHoverable, useInspectorSelect, Inspector,
-  useBoundShader, useNoBoundShader,
-} from '../workbench';
+  useShader,
+  QueueReconciler, LayerReconciler,
+  UI_SCHEMA,
+} from '@use-gpu/workbench';
 
-import { chainTo } from '../shader/wgsl';
-import { getLayoutPosition } from '../wgsl/layout/layoutwgsl';
+import { chainTo } from '@use-gpu/shader/wgsl';
+import { getLayoutPosition } from '@use-gpu/wgsl/layout/layout.wgsl';
 
-import { makeBoxInspectLayout } from './lib/util';
-import { UIRectangle } from './shape/ui-rectangle';
+import { INSPECT_STYLE } from './lib/constants';
+
 import { mat4, vec2, vec3 } from 'gl-matrix';
 
-export type LayoutProps = {
+export type LayoutProps = PropsWithChildren<{
   width?: number,
   height?: number,
   placement?: Placement,
   inspect?: boolean,
   render?: () => LiveElement,
-};
+}>;
 
 const DEFAULT_PLACEMENT = vec2.fromValues(1, 1);
 
-export const Layout: LiveComponent<LayoutProps> = memo((props: PropsWithChildren<LayoutProps>) => {
+export const Layout: LiveComponent<LayoutProps> = memo((props: LayoutProps) => {
   const {width, height, render, children} = props;
   const placement = useProp(props.placement, parsePlacement, DEFAULT_PLACEMENT);
 
@@ -40,8 +44,8 @@ export const Layout: LiveComponent<LayoutProps> = memo((props: PropsWithChildren
   // Remove X/Y flip from layout
   const layout = useContext(LayoutContext);
   const [l, t, r, b] = layout;
-  let left = Math.min(l, r);
-  let top = Math.min(t, b);
+  const left = Math.min(l, r);
+  const top = Math.min(t, b);
   let right = Math.max(l, r);
   let bottom = Math.max(t, b);
   if (width != null) right = left + width;
@@ -63,26 +67,25 @@ const Resume = (placement: vec2, inspect: Inspector, hovered: boolean) => (els: 
   const top = Math.min(t, b);
   const w = Math.abs(r - l);
   const h = Math.abs(b - t);
-  const into = [w, h, w, h] as Point4;
+  const into = [w, h, w, h] as XYZW;
 
-  const {id} = useFiber();  
   const pickers: any[] = [];
-  const sizes: Point[] = [];
-  const offsets: Point[] = [];
+  const sizes: XY[] = [];
+  const offsets: XY[] = [];
 
   let {transform} = useTransformContext();
 
   // Global X/Y flip
-  const flip = useOne(() => [0, 0] as Point);
+  const flip = useOne(() => [0, 0] as XY);
   flip[0] = (l > r) ? l + r : 0;
   flip[1] = (t > b) ? b + t : 0;
 
   // Global X/Y shift
-  const shift = useOne(() => [0, 0] as Point);
+  const shift = useOne(() => [0, 0] as XY);
   shift[0] = (placement[0] - 1.0) / 2 * into[0];
   shift[1] = (placement[1] - 1.0) / 2 * into[1];
 
-  const bound = useBoundShader(getLayoutPosition, [flip, shift]);
+  const bound = useShader(getLayoutPosition, [flip, shift]);
   transform = useMemo(() => transform ? chainTo(transform, bound) : bound, [transform, bound]);
 
   // Render children into root container
@@ -97,14 +100,14 @@ const Resume = (placement: vec2, inspect: Inspector, hovered: boolean) => (els: 
     const [w, h] = absolute ? into : size;
     const [ml, mt] = margin;
     const layout = [left + ml, top + mt, left + ml + w, top + mt + h] as Rectangle;
-    
+
     sizes.push([w, h]);
     offsets.push([left + ml, top + mt]);
 
     if (pick) pickers.push((x: number, y: number, scroll: boolean = false) =>
       pick(x, y, layout[0], layout[1], layout[2], layout[3], scroll));
 
-    const el = render(layout, layout, null, null, transform);
+    const el = render(layout, layout, 0, null, null, transform);
 
     if (Array.isArray(el)) out.push(...el);
     else if (el) out.push(el);
@@ -122,11 +125,27 @@ const Resume = (placement: vec2, inspect: Inspector, hovered: boolean) => (els: 
       offsets,
     },
   });
-  if (hovered) out.push(...makeBoxInspectLayout(id, sizes, offsets)([0, 0, 0, 0], [0, 0, 0, 0], null, null, transform));
+
+  const {quote} = LayerReconciler;
+  if (hovered) {
+    const attributes = {
+      rectangle: layout,
+      uv: [0, 0, 1, 1],
+      repeat: 0,
+      ...INSPECT_STYLE.parent,
+    };
+
+    out.push(quote(yeet({
+      count: 1,
+      archetype: schemaToArchetype(UI_SCHEMA, attributes),
+      attributes,
+      transform,
+    })));
+  }
 
   // Add scroll listener
   out.push(keyed(Scroller, -2, pickers, flip, shift));
-  
+
   // Interactive inspect handler
   if (toggleInspect) out.push(keyed(Inspect, -1, pickers, flip, shift));
 
@@ -168,7 +187,7 @@ export const Scroller = (pickers: any[], flip: [number, number], shift: [number,
     for (const picker of pickers) {
       const picked = picker(x, y, true);
       if (picked) {
-        const [id, rectangle, onScroll] = picked;
+        const [,, onScroll] = picked;
         if (onScroll) onScroll(moveX, moveY);
         version = versionRef.current = incrementVersion(versionRef.current);
         return;
@@ -176,11 +195,11 @@ export const Scroller = (pickers: any[], flip: [number, number], shift: [number,
     }
   }, wheel);
 
+  const {signal} = QueueReconciler;
   return useOne(() => signal(), version);
 }
 
 export const Inspect = (pickers: any[], flip: [number, number], shift: [number, number]) => {
-  const { id } = useFiber();
   const { useMouse } = useContext(MouseContext);
   const { uniforms: viewUniforms } = useContext(ViewContext);
   const {
@@ -188,7 +207,7 @@ export const Inspect = (pickers: any[], flip: [number, number], shift: [number, 
     viewSize: { current: [width, height] },
     projectionMatrix: { current: matrix },
   } = viewUniforms;
-  
+
   const setHighlight = useInspectorSelect();
 
   const { mouse, pressed } = useMouse();
@@ -207,7 +226,7 @@ export const Inspect = (pickers: any[], flip: [number, number], shift: [number, 
 
   if (!picked) return null;
 
-  const [pickedId, rectangle] = picked;
+  const [pickedId] = picked;
   useOne(() => setHighlight(pickedId ?? null), pickedId);
   useOne(() => pressed.left && setHighlight(pickedId ?? null, true), pressed.left);
 

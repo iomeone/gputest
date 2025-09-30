@@ -1,19 +1,18 @@
-import type { LC, PropsWithChildren } from '../../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import { makeDepthStencilState } from '../../../core';
-import { yeet, memo } from '../../../live';
+import { yeet, memo } from '@use-gpu/live';
+import { makeDepthStencilState } from '@use-gpu/core';
 
-import { useDeviceContext } from '../../providers/device-provider';
 import { useRenderContext } from '../../providers/render-provider';
 
 import { SHADOW_FORMAT } from '../light/light-data';
 
-export type ShadowBufferProps = {
+export type ShadowBufferProps = PropsWithChildren<{
   format?: GPUTextureFormat,
-};
+}>;
 
 // Provide render context for depth-only shadow passes
-export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: PropsWithChildren<ShadowBufferProps>) => {
+export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProps) => {
   const {
     format = SHADOW_FORMAT,
   } = props;
@@ -28,7 +27,8 @@ export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: PropsWithChildre
     colorInput: 'native',
     colorStates: [],
     colorAttachments: [],
-    depthStencilState: makeDepthStencilState(SHADOW_FORMAT),
+    depthStencilState: makeDepthStencilState(format),
+    swap: () => {},
   };
 
   return yeet({ shadow: context });

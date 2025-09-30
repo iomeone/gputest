@@ -1,21 +1,16 @@
-import type { LiveComponent, LiveElement } from '../../../live';
-import type { ShaderModule } from '../../../shader';
-import type { Lazy, TextureSource } from '../../../core';
-import type { Update } from '../../../state';
-import type { VirtualDraw } from '../../pass/types';
+import type { LiveComponent } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { Lazy, TextureSource } from '@use-gpu/core';
+import type { Update } from '@use-gpu/state';
 import type { BoundLight } from '../../light/types';
 
-import { memo, use, yeet, keyed, useCallback, useMemo, useOne, useRef } from '../../../live';
-import { resolve, uploadBuffer, BLEND_ADD } from '../../../core';
-import { bindBundle } from '../../../shader/wgsl';
-import { $delete } from '../../../state';
+import { memo, yeet, keyed, useMemo, useOne } from '@use-gpu/live';
+import { BLEND_ADD } from '@use-gpu/core';
+import { bindBundle } from '@use-gpu/shader/wgsl';
+import { $delete } from '@use-gpu/state';
 
 import { drawCall } from '../../queue/draw-call';
-import { useBufferedSize } from '../../hooks/useBufferedSize';
-import { useBoundShader } from '../../hooks/useBoundShader';
-import { useRawSource } from '../../hooks/useRawSource';
 
-import { useDeviceContext } from '../../providers/device-provider';
 import { useRenderContext } from '../../providers/render-provider';
 import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
@@ -27,16 +22,16 @@ import { EmissiveLightRender } from './emissive';
 import { FullScreenLightRender } from './full-screen';
 import { PointLightRender } from './point';
 
-import { getLight } from '../../../wgsl/use/lightwgsl';
-import { sampleShadow } from '../../../wgsl/use/shadowwgsl';
+import { getLight } from '@use-gpu/wgsl/use/light.wgsl';
+import { sampleShadow } from '@use-gpu/wgsl/use/shadow.wgsl';
 
-import instanceDrawVirtualLight from '../../../wgsl/render/vertex/virtual-lightwgsl';
-import instanceFragmentLight from '../../../wgsl/render/fragment/deferred-lightwgsl';
+import instanceDrawVirtualLight from '@use-gpu/wgsl/render/vertex/virtual-light.wgsl';
+import instanceFragmentLight from '@use-gpu/wgsl/render/fragment/deferred-light.wgsl';
 
-import { applyLight as applyLightWGSL } from '../../../wgsl/material/lightwgsl';
-import { applyPBRMaterial as applyMaterial } from '../../../wgsl/material/pbr-applywgsl';
-import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directionalwgsl';
-import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/pointwgsl';
+import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl';
+import { applyPBRMaterial as applyMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '@use-gpu/wgsl/shadow/directional.wgsl';
+import { applyPointShadow as applyPointShadowWGSL } from '@use-gpu/wgsl/shadow/point.wgsl';
 
 export type LightRenderProps = {
   lights: Map<number, BoundLight>,
@@ -164,7 +159,7 @@ const LIGHT_RENDERERS = {
 } as Record<number, LiveComponent<any>>;
 
 export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRenderProps) => {
-  let {
+  const {
     lights,
     order,
     subranges,
@@ -179,7 +174,7 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
   const applyLight = useOne(() => {
     const applyDirectionalShadow = shadows ? bindBundle(applyDirectionalShadowWGSL, {sampleShadow}) : null;
     const applyPointShadow = shadows ? bindBundle(applyPointShadowWGSL, {sampleShadow}) : null;
-    
+
     return bindBundle(applyLightWGSL, {
       applyMaterial,
       applyDirectionalShadow,
@@ -188,13 +183,16 @@ export const LightRender: LiveComponent<LightRenderProps> = memo((props: LightRe
   }, shadows);
 
   const out = [...subranges.keys()].map(kind => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const [start, end] = subranges.get(kind)!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const props = {lights, order, start, end, stencil, gbuffer: sources!, getLight, applyLight};
 
     const Component = LIGHT_RENDERERS[kind];
     return Component ? keyed(Component, kind, props) : null;
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   out.push(keyed(EmissiveLightRender, -1, {gbuffer: sources!, getLight}));
 
   return out;
@@ -204,7 +202,7 @@ export const LightDraw = (
   vertexCount: Lazy<number>,
   instanceCount: Lazy<number>,
   firstInstance: Lazy<number>,
-  links: Record<string, ShaderModule>,
+  links: Record<string, ShaderModule | undefined>,
   pipeline?: Update<GPURenderPipelineDescriptor>,
   mode?: string,
 ) => yeet(useLightDraw(vertexCount, instanceCount, firstInstance, links, pipeline, mode));
@@ -213,17 +211,14 @@ export const useLightDraw = (
   vertexCount: Lazy<number>,
   instanceCount: Lazy<number>,
   firstInstance: Lazy<number>,
-  links: Record<string, ShaderModule>,
+  links: Record<string, ShaderModule | undefined>,
   pipeline?: Update<GPURenderPipelineDescriptor>,
   mode = 'light',
 ) => {
-  const device = useDeviceContext();
   const renderContext = useRenderContext();
 
-  const {layout: globalLayout, uniforms: viewUniforms} = useViewContext();
-  const {layout: passLayout, buffers: {gbuffer: [gbuffer]}} = usePassContext();
-
-  const {sources} = gbuffer;
+  const {layout: globalLayout} = useViewContext();
+  const {layout: passLayout} = usePassContext();
 
   const vertexShader = instanceDrawVirtualLight;
   const fragmentShader = instanceFragmentLight;

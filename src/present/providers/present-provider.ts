@@ -1,5 +1,5 @@
 import type { ParsedEffect } from '../types';
-import { provide, makeContext, useContext, useNoContext, useFiber, useOne, useRef } from '../../live';
+import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 
 export type PresentAPI = {
   goTo: (x: number) => void,

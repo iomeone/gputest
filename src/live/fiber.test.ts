@@ -4,7 +4,6 @@ import { bind, makeFiber, renderFiber, updateFiber } from './fiber';
 
 type FooProps = { foo: string };
 type StringFormatter = (foo: string) => string;
-type NumberReturner = () => number;
 
 it('returns a value', () => {
 

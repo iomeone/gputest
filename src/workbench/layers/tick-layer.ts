@@ -1,23 +1,19 @@
-import type { LiveComponent } from '../../live';
-import type {
-  TypedArray, ViewUniforms, DeepPartial, Lazy,
-  UniformPipe, UniformType,
-  VertexData, RenderPassMode,
-} from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TypedArray, Lazy } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import { RawLines } from '../primitives/raw-lines';
+import { RawLines, RawLinesFlags } from '../primitives/raw-lines';
 
-import { use, memo, provide, useCallback, useFiber, useMemo, useOne, useState, useResource } from '../../live';
-import { resolve } from '../../core';
-import { TransformContext, useTransformContext, DEFAULT_TRANSFORM } from '../providers/transform-provider';
-import { useBoundShader } from '../hooks/useBoundShader';
+import { use, memo, provide, useCallback, useOne } from '@use-gpu/live';
+import { resolve } from '@use-gpu/core';
+import { TransformContextProps, TransformContext, useTransformContext, DEFAULT_TRANSFORM } from '../providers/transform-provider';
+import { useShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getTickPosition } from '../../wgsl/instance/vertex/tickwgsl';
-import { getLineSegment } from '../../wgsl/geometry/segmentwgsl';
+import { getTickPosition } from '@use-gpu/wgsl/instance/vertex/tick.wgsl';
+import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
 
-export type TickLayerProps = {
+export type TickLayerProps = RawLinesFlags & {
   position?: number[] | TypedArray,
   size?: number,
   width?: number,
@@ -38,11 +34,12 @@ export type TickLayerProps = {
   offsets?: ShaderSource,
   tangents?: ShaderSource,
 
-  join?: 'miter' | 'round' | 'bevel',
+  instance?: number,
+  instances?: ShaderSource,
+  transform?: TransformContextProps,
 
   detail?: number,
   count?: Lazy<number>,
-  mode?: RenderPassMode | string,
   id?: number,
 };
 
@@ -69,13 +66,16 @@ export const TickLayer: LiveComponent<TickLayerProps> = memo((props: TickLayerPr
     bases,
     join,
 
+    instance,
+    instances,
+    transform,
+
     count = 1,
     detail = 1,
     mode = 'opaque',
-    id = 0,
-  } = props;
 
-  const key = useFiber().id;
+    ...rest
+  } = props;
 
   const p = useShaderRef(position, positions);
   const o = useShaderRef(offset, offsets);
@@ -89,7 +89,7 @@ export const TickLayer: LiveComponent<TickLayerProps> = memo((props: TickLayerPr
   const c = useCallback(() => ((positions as any)?.length ?? resolve(count) ?? 1) * (detail + 1), [positions, count, detail]);
 
   const defines = useOne(() => ({ LINE_DETAIL: detail }), detail);
-  const bound = useBoundShader(getTickPosition, [xf, xd, p, o, d, s, t, b], defines);
+  const bound = useShader(getTickPosition, [xf, xd, p, o, d, s, t, b], defines);
 
   return (
     provide(TransformContext, DEFAULT_TRANSFORM,
@@ -106,9 +106,14 @@ export const TickLayer: LiveComponent<TickLayerProps> = memo((props: TickLayerPr
         zBiases,
         join,
 
+        instance,
+        instances,
+        transform,
+
         count: c,
         mode,
-        id,
+
+        ...rest
       })
     )
   );

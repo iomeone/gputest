@@ -1,26 +1,26 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { UseGPURenderContext, ColorSpace } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { UseGPURenderContext, ColorSpace, TextureSource } from '@use-gpu/core';
 
-import { EventProvider } from '../../workbench';//'/event-provider';
-import { RenderContext } from '../../workbench';//'/providers/render-provider';
-import { LayoutContext } from '../../workbench';//'/providers/layout-provider';
-import { DeviceContext } from '../../workbench';//'/providers/device-provider';
-import { provide, use, signal, imperative, useCallback, useContext, useMemo, useOne, useFiber } from '../../live';
+import { RenderContext, LayoutContext, DeviceContext } from '@use-gpu/workbench';
+import { provide, use, useCallback, useContext, useMemo, useOne, useRef, incrementVersion } from '@use-gpu/live';
 import {
   makeColorState,
   makeColorAttachment,
   makeTargetTexture,
-  makeReadbackTexture,
   makeDepthTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLY,
-} from '../../core';
+} from '@use-gpu/core';
+
+import { Loop, useInspectable } from '@use-gpu/workbench';
 
 import { DEPTH_STENCIL_FORMAT, COLOR_SPACE, BACKGROUND_COLOR } from '../constants';
 import { makePresentationContext } from '../web';
 
-export type CanvasProps = {
+//const {signal} = QueueReconciler;
+
+export type CanvasProps = PropsWithChildren<{
   canvas: HTMLCanvasElement,
 
   format?: GPUTextureFormat,
@@ -29,44 +29,59 @@ export type CanvasProps = {
   colorSpace?: ColorSpace,
   colorInput?: ColorSpace,
   samples?: number,
+
+  width: number,
+  height: number,
   pixelRatio?: number,
-}
+}>;
 
-const getPixelRatio = () => typeof window !== 'undefined' ? window.devicePixelRatio : 1;
-
-export const Canvas: LiveComponent<CanvasProps> = imperative((props: PropsWithChildren<CanvasProps>) => {
+export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
   const {
+    width,
+    height,
+    pixelRatio = 1,
     canvas,
     children,
-    pixelRatio = getPixelRatio(),
     format = navigator.gpu.getPreferredCanvasFormat(),
     depthStencil = DEPTH_STENCIL_FORMAT,
     backgroundColor = BACKGROUND_COLOR,
     colorSpace = COLOR_SPACE,
     colorInput = COLOR_SPACE,
-    samples = 1
+    samples = 1,
   } = props;
 
   const device = useContext(DeviceContext);
 
-  const {width, height} = canvas;
   if (width * height === 0) return;
 
   const layout = useMemo(() => [0, height / pixelRatio, width / pixelRatio, 0], [width, height, pixelRatio]);
 
-  const renderTexture = useMemo(() =>
-    samples > 1
-    ? makeTargetTexture(
-        device,
-        width,
-        height,
-        format,
-        samples,
-      )
-    : null,
-    [device, width, height, format, samples]
-  );
-  
+  // Counters for labels
+  const countRef = useRef({
+    texture: 0,
+    swap: 0,
+  });
+
+  const renderTexture = useMemo(() => {
+    const {current: count} = countRef;
+    count.texture++;
+    count.swap = 0;
+
+    const texture = (
+      samples > 1
+      ? makeTargetTexture(
+          device,
+          width,
+          height,
+          format,
+          samples,
+        )
+      : null
+    );
+    if (texture) texture.label = `<Canvas> RenderTarget ${count.texture}`;
+    return texture;
+  }, [device, width, height, format, samples]);
+
   const colorStates      = useOne(() => [makeColorState(format, BLEND_PREMULTIPLY)], format);
   const colorAttachments = useMemo(() =>
     [makeColorAttachment(renderTexture, null, backgroundColor)],
@@ -78,25 +93,41 @@ export const Canvas: LiveComponent<CanvasProps> = imperative((props: PropsWithCh
     depthTexture,
     depthStencilAttachment,
   ] = useMemo(() => {
-      const texture = makeDepthTexture(device, width, height, depthStencil, samples);
-      const attachment = makeDepthStencilAttachment(texture, depthStencil);
-      return [texture, attachment];
-    },
-    [device, width, height, depthStencil, samples]
-  );
+    const {current: count} = countRef;
 
-  const gpuContext = useMemo(() =>
-    makePresentationContext(device, canvas, format),
+    const texture = makeDepthTexture(device, width, height, depthStencil, samples);
+    texture.label = `<Canvas> DepthTarget ${count.texture}`;
+
+    const attachment = makeDepthStencilAttachment(texture, depthStencil);
+    return [texture, attachment];
+  }, [device, width, height, depthStencil, samples]);
+
+  const gpuContext = useMemo(
+    () => makePresentationContext(device, canvas, format),
     [device, canvas, format, width, height],
   );
-  
+
+  const depth = useMemo(() => ({
+    texture: depthTexture,
+    sampler: {},
+    layout: samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d',
+    format: depthStencil,
+    size: [width, height],
+    version: 0,
+  } as TextureSource), [depthTexture, depthStencil, samples, width, height]);
+
   const swap = useCallback((view?: GPUTextureView) => {
-    view = view ?? gpuContext
+    const {current: count} = countRef;
+    count.swap = incrementVersion(count.swap);
+    depth.version = incrementVersion(depth.version);
+
+    const v = view ?? gpuContext
       .getCurrentTexture()
       .createView();
+    if (!view) v.label = `<Canvas> Swap View ${count.texture} / ${count.swap}`;
 
-    if (samples > 1) colorAttachments[0].resolveTarget = view; 
-    else colorAttachments[0].view = view;
+    if (samples > 1) colorAttachments[0].resolveTarget = v;
+    else colorAttachments[0].view = v;
   }, [gpuContext, samples, colorAttachments])
 
   const renderContext = useOne(() => ({
@@ -116,6 +147,7 @@ export const Canvas: LiveComponent<CanvasProps> = imperative((props: PropsWithCh
     depthStencilAttachment,
 
     swap,
+    depth,
   } as UseGPURenderContext), [
     width,
     height,
@@ -133,21 +165,28 @@ export const Canvas: LiveComponent<CanvasProps> = imperative((props: PropsWithCh
     depthStencilAttachment,
 
     swap,
+    depth,
   ]);
-  
-  const fiber = useFiber();
-  fiber.__inspect = fiber.__inspect ?? {};
-  fiber.__inspect.canvas = {
-    element: canvas,
-    context: gpuContext,
-    device,
-    renderTexture,
-  };
+
+  const inspect = useInspectable();
+  inspect({
+    canvas: {
+      element: canvas,
+      context: gpuContext,
+      device,
+      renderTexture,
+    },
+    depth,
+  });
 
   return [
-    signal(),
     provide(RenderContext, renderContext,
-      provide(LayoutContext, layout, children)
+      provide(LayoutContext, layout,
+        // Wrap everything in a paint-flushing loop so that canvas resize is processed in one pass
+        use(Loop, {
+          children
+        })
+      )
     )
   ];
-}, 'Canvas')
+};

@@ -1,44 +1,48 @@
-import type { LiveComponent } from '../../live';
-import type {
-  TypedArray, ViewUniforms, DeepPartial, Lazy,
-  UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData, TextureSource, LambdaSource, DataBounds,
-} from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Lazy, TextureSource, LambdaSource, DataBounds, VectorLike, UniformAttribute } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
-import { Virtual } from './virtual';
+import { useDraw } from '../hooks/useDraw';
 
-import { use, memo, useCallback, useMemo, useOne, useNoCallback } from '../../live';
-import { bindBundle, bindingsToLinks, getBundleKey } from '../../shader/wgsl';
-import { makeShaderBindings, resolve, BLEND_ALPHA } from '../../core';
+import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
+
+import { PickingSource, usePickingShader } from '../providers/picking-provider';
+import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
+import { useInstancedVertex } from '../hooks/useInstancedVertex';
+import { TransformContextProps } from '../providers/transform-provider';
+
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
-import { useBoundShader } from '../hooks/useBoundShader';
+import { useShader } from '../hooks/useShader';
+import { useSource } from '../hooks/useSource';
 import { useDataLength } from '../hooks/useDataBinding';
-import { usePickingShader } from '../providers/picking-provider';
-import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getLabelVertex } from '../../wgsl/instance/vertex/labelwgsl';
-import { getUIFragment } from '../../wgsl/instance/fragment/uiwgsl';
+import { getLabelVertex } from '@use-gpu/wgsl/instance/vertex/label.wgsl';
+import { getSDFRectangleFragment } from '@use-gpu/wgsl/instance/fragment/sdf-rectangle.wgsl';
 
 const DEFINES = {DEBUG_SDF: false};
+const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
+
+export type RawLabelsFlags = {
+  flip?: [number, number],
+} & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 export type RawLabelsProps = {
   index?: number,
   indices?: ShaderSource,
 
-  rectangle?: number[] | TypedArray,
-  uv?: number[] | TypedArray,
-  st?: number[] | TypedArray,
-  layout?: number[] | TypedArray,
-  sdf?: number[] | TypedArray,
+  rectangle?: VectorLike,
+  uv?: VectorLike,
+  st?: VectorLike,
+  layout?: VectorLike,
+  sdf?: VectorLike,
 
-  position?: number[] | TypedArray,
-  placement?: number[] | TypedArray,
+  position?: VectorLike,
+  placement?: VectorLike,
   offset?: number,
   size?: number,
   depth?: number,
-  color?: number[] | TypedArray,
+  color?: VectorLike,
   expand?: number,
 
   rectangles?: ShaderSource,
@@ -55,16 +59,14 @@ export type RawLabelsProps = {
   colors?: ShaderSource,
   expands?: ShaderSource,
 
-  texture?: TextureSource | LambdaSource | ShaderModule,
-  flip?: [number, number],
+  instance?: number,
+  instances?: ShaderSource,
+  transform?: TransformContextProps,
 
-  lookups?: ShaderSource,
-  ids?:     ShaderSource,
-  lookup?:  number,
-  id?:      number,
+  texture?: TextureSource | LambdaSource | ShaderModule,
 
   count?: Lazy<number>,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
+} & RawLabelsFlags;
 
 export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsProps) => {
   const {
@@ -73,8 +75,11 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
     depthTest,
     depthWrite,
     blend,
-    id = 0,
     count = null,
+
+    instance,
+    instances,
+    transform,
   } = props;
 
   const vertexCount = 4;
@@ -87,7 +92,7 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
   const l = useShaderRef(props.layout, props.layouts);
   const a = useShaderRef(props.sdf, props.sdfs);
 
-  const p = useShaderRef(props.position, props.positions);
+  const p = useSource(POSITIONS, useShaderRef(props.position, props.positions));
   const c = useShaderRef(props.placement, props.placements);
   const o = useShaderRef(props.offset, props.offsets);
   const z = useShaderRef(props.size, props.sizes);
@@ -97,11 +102,12 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
 
   const q  = useShaderRef(props.flip);
 
-  const [xf,, getBounds] = useApplyTransform(p);
+  const {positions, bounds: getBounds} = useApplyTransform(p, transform);
 
   let bounds: Lazy<DataBounds> | null = null;
   if (getBounds && (props.positions as any)?.bounds) {
     bounds = useCallback(() => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return getBounds((props.positions! as any).bounds);
     }, [props.positions, getBounds]);
   }
@@ -109,13 +115,18 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
     useNoCallback();
   }
 
-  const t = props.texture;
-
-  const getVertex = useBoundShader(getLabelVertex, [i, r, u, s, l, a, xf, c, o, z, d, f, e, q]);
+  const boundVertex = useShader(getLabelVertex, [i, r, u, s, l, a, positions, c, o, z, d, f, e, q]);
+  const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount);  
   const getPicking = usePickingShader(props);
-  const getFragment = useBoundShader(getUIFragment, [t], DEFINES);
-  const links = useOne(() => ({getVertex, getFragment, getPicking}),
-    getBundleKey(getVertex) + getBundleKey(getFragment) + (getPicking ? getBundleKey(getPicking) : 0));
+
+  const t = props.texture;
+  const getFragment = useShader(getSDFRectangleFragment, [t], DEFINES);
+
+  const links = useMemo(() => ({
+    getVertex,
+    getFragment,
+    getPicking,
+  }), [getVertex, getFragment, getPicking]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,
@@ -123,21 +134,22 @@ export const RawLabels: LiveComponent<RawLabelsProps> = memo((props: RawLabelsPr
     stripIndexFormat: 'uint16',
     side: 'both',
     alphaToCoverage,
-    depthTest: false,
-    depthWrite: false,
+    depthTest,
+    depthWrite,
     blend,
   });
 
   const defines: Record<string, any> = useMemo(() => ({
     ...defs,
+    ...instanceDefs,
     HAS_EDGE_BLEED: true,
     HAS_MASK: false,
     DEBUG_SDF: false,
-  }), [defs]);
+  }), [defs, instanceDefs]);
 
-  return use(Virtual, {
+  return useDraw({
     vertexCount,
-    instanceCount,
+    instanceCount: totalCount,
     bounds,
 
     links,

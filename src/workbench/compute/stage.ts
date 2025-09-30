@@ -1,31 +1,31 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, Task } from '../../live';
-import type { StorageTarget, TextureTarget } from '../../core';
+import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { StorageTarget, TextureTarget } from '@use-gpu/core';
 
-import { memo, provide, useMemo } from '../../live';
+import { memo, provide, useMemo } from '@use-gpu/live';
 import { ComputeContext } from '../providers/compute-provider';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
 const NO_TARGETS: any[] = [];
 
-export type StageProps = {
+export type StageProps = PropsWithChildren<{
   target?: StorageTarget | TextureTarget,
   targets?: (StorageTarget | TextureTarget)[],
-  live?: boolean,
   render?: () => LiveElement,
-};
+  children?: LiveElement | (() => LiveElement);
+}>;
 
 /** Set the target (`@{ComputeContext}) for compute kernels (`@{<Kernel>}`) inside. */
-export const Stage: LC<StageProps> = memo((props: PropsWithChildren<StageProps>) => {
+export const Stage: LC<StageProps> = memo((props: StageProps) => {
   const {
-    live = false,
     target,
     targets,
     children,
-    render,
   } = props;
 
+  const render = getRenderFunc(props);
   const content = render ? render() : children;
   if (!content) return null;
-  
+
   const context = useMemo(() => targets ?? (target ? [target] : NO_TARGETS), [target, ...(targets ?? NO_TARGETS)]);
 
   return provide(ComputeContext, context, content);

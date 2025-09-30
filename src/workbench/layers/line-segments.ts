@@ -1,39 +1,51 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { StorageSource } from '../../core';
+import type { TypedArray, VectorLike } from '@use-gpu/core';
 
-import { memo, yeet, useMemo } from '../../live';
-import { getChunkCount, generateChunkSegments, alignSizeTo } from '../../core';
+import { useMemo } from '@use-gpu/live';
+import { accumulateChunks, generateChunkSegments, alignSizeTo } from '@use-gpu/core';
 import { useRawSource } from '../hooks/useRawSource';
+import { LINE_SEGMENTS_SCHEMA } from './schemas';
 
-export type LineSegmentsProps = {
-  chunks?: number[],
-  loops?: boolean[],
-
-  render?: (segments: StorageSource, lookups: StorageSource) => LiveElement,
+export type LineSegmentsData = {
+  count: number,
+  segments: TypedArray,
+  slices: TypedArray,
+  unwelds: TypedArray,
 };
 
-/** Produces `segments` composite data for `@{LineLayer}`. */
-export const LineSegments: LiveComponent<LineSegmentsProps> = memo((
-  props: LineSegmentsProps,
-) => {
-  const {chunks, loops, render} = props;
-  if (!chunks) return null;
-  
-  const count = getChunkCount(chunks, loops);
+/** Make index data for line segments data */
+export const getLineSegments = ({
+  chunks, groups, loops,
+}: {
+  chunks: VectorLike,
+  groups?: VectorLike | null,
+  loops?: boolean[] | boolean | null,
+}) => {
+  const count = accumulateChunks(chunks, loops);
 
-  // Make index data for line segments/anchor/trim data
-  const [segmentBuffer, lookupBuffer] = useMemo(() => {
-    const segmentBuffer = new Int8Array(alignSizeTo(count, 4));
-    const lookupBuffer = new Uint32Array(count);
+  const segments = new Int8Array(alignSizeTo(count, 4));
+  const slices = new Uint32Array(groups?.length ?? chunks.length);
+  const unwelds = loops ? new Uint32Array(count) : undefined;
 
-    generateChunkSegments(segmentBuffer, lookupBuffer, chunks, loops);
+  generateChunkSegments(segments, slices, unwelds, chunks, groups, loops);
 
-    return [segmentBuffer, lookupBuffer];
-  }, [chunks, loops, count]);
+  return {count, segments, slices, unwelds, schema: LINE_SEGMENTS_SCHEMA};
+};
+
+export const useLineSegmentsSource = ({
+  chunks, groups, loops,
+}: {
+  chunks: VectorLike,
+  groups?: VectorLike | null,
+  loops?: boolean[] | boolean | null,
+}) => {
+  const {count, segments, slices} = useMemo(
+    () =>getLineSegments({chunks, groups, loops}),
+    [chunks, groups, loops]
+  );
 
   // Bind as shader storage
-  const segments = useRawSource(segmentBuffer, 'i8');
-  const lookups = useRawSource(lookupBuffer, 'u32');
+  const s = useRawSource(segments, 'i8');
+  const l = useRawSource(slices, 'u32');
 
-  return render ? render(segments, lookups) : yeet([segments, lookups]);
-}, 'LineSegments');
+  return {count, segments: s, slices: l};
+};

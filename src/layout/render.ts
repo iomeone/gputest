@@ -1,48 +1,51 @@
-import type { LiveElement } from '../live';
-import type { ShaderModule } from '../shader';
-import type { Point, Point4, Rectangle } from '../core';
-import type { LayoutRenderer, LayoutPicker, RenderInside, RenderOutside, RenderInline, InlineRenderer, InlineLine, UIAggregate } from './types';
+import type { LiveElement } from '@use-gpu/live';
+import type { Rectangle } from '@use-gpu/core';
+import type { RenderInside, RenderOutside, RenderInline, InlineRenderer, InlineLine, UIAggregate } from './types';
 
-import { memoArgs, yeet, fragment, use, useFiber, useMemo, useNoMemo } from '../live';
-import { bindBundle, chainTo } from '../shader/wgsl';
-import { getCombinedClip, getTransformedClip } from '../wgsl/layout/clipwgsl';
+import { memoArgs, yeet, useMemo, useNoMemo } from '@use-gpu/live';
+import { bindBundle, chainTo } from '@use-gpu/shader/wgsl';
+import { schemaToArchetype } from '@use-gpu/core';
+import { UI_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
+
+import { getCombinedClip, getTransformedClip } from '@use-gpu/wgsl/layout/clip.wgsl';
 import { INSPECT_STYLE } from './lib/constants';
 
-const NO_OBJECT: any = {};
+const {quote} = LayerReconciler;
 
 const sameBox = (a: [any, any, any, any], b: [any, any, any, any]) => {
   return (a[0] === b[0]) && (a[1] === b[1]) && (a[2] === b[2]) && (a[3] === b[3]);
 };
 
-type Layout<T> = (
+type Render<T> = (
   inside: RenderInside,
   outside: RenderOutside,
   inspect?: boolean,
 ) => T;
 
-type LayoutArgs<T> = Parameters<Layout<T>>;
+type RenderArgs<T> = Parameters<Render<T>>;
 
-export const memoLayout = <T>(f: Layout<T>, name?: string): Layout<T> => {
-  return memoArgs(f, ([ai, ao, an]: LayoutArgs<T>, [bi, bo, bn]: LayoutArgs<T>) => (
+export const memoRender = <T>(f: Render<T>, name?: string): Render<T> => {
+  return memoArgs(f, ([ai, ao, an]: RenderArgs<T>, [bi, bo, bn]: RenderArgs<T>) => (
     ai === bi &&
     an === bn &&
     sameBox(ao.box, bo.box) &&
     sameBox(ao.origin, bo.origin) &&
     ao.clip === bo.clip &&
     ao.mask === bo.mask &&
-    ao.transform === bo.transform
+    ao.transform === bo.transform &&
+    ao.ref === bo.ref
   ), name);
-}
+};
 
-export const BoxLayout = memoLayout((
+export const BoxLayout = memoRender((
   inside: RenderInside,
   outside: RenderOutside,
   inspect?: boolean,
 ) => {
   const {sizes, offsets, renders, clip, mask, transform, inverse} = inside;
-  const {box, origin, clip: parentClip, mask: parentMask, transform: parentTransform} = outside;
-  
-  const [left, top, right, bottom] = box;
+  const {box, origin, z, clip: parentClip, mask: parentMask, transform: parentTransform, ref} = outside;
+
+  const [left, top] = box;
   const out = [] as LiveElement[];
   const n = sizes.length;
 
@@ -72,6 +75,9 @@ export const BoxLayout = memoLayout((
     : (useNoMemo(), parentClip ?? null)
   ) : (useNoMemo(), clip ?? null);
 
+  const render = ref?.(box, origin);
+  if (render) out.push(render);
+
   for (let i = 0; i < n; ++i) {
     const size = sizes[i];
     const offset = offsets[i];
@@ -84,30 +90,31 @@ export const BoxLayout = memoLayout((
     const t = top + offset[1];
     const r = l + w;
     const b = t + h;
-    
-    const layout = [l, t, r, b] as Rectangle;
-    const el = render(layout, origin, xclip, xmask, xform);
 
-    if (Array.isArray(el)) {
-      if (el.length > 1) out.push(fragment(el as any[]));
-      else out.push(el[0] as any);
-    }
-    else out.push(el);
+    const layout = [l, t, r, b] as Rectangle;
+    const el = render(layout, origin, z, xclip, xmask, xform);
+
+    if (Array.isArray(el)) for (const e of el) out.push(e);
+    else if (el) out.push(el);
   }
 
   if (inspect) {
-    let i = 0;
-    const next = () => useFiber().id.toString() + '-' + i++;
     const yeets = [] as UIAggregate[];
-    yeets.push({
-      id: next(),
+
+    const attributes = {
       rectangle: box,
       uv: [0, 0, 1, 1],
-      count: 1,
       repeat: 0,
+      ...INSPECT_STYLE.parent,
+    };
+
+    yeets.push({
+      count: 1,
+      archetype: schemaToArchetype(UI_SCHEMA, attributes),
+
+      attributes,
       transform: parentTransform,
       bounds: box,
-      ...INSPECT_STYLE.parent,
     });
 
     const [left, top] = box;
@@ -125,23 +132,27 @@ export const BoxLayout = memoLayout((
       const b = t + h;
       const layout = [l, t, r, b] as Rectangle;
 
-      yeets.push({
-        id: next(),
+      const attributes = {
         rectangle: layout,
         uv: [0, 0, 1, 1],
-        count: 1,
         repeat: 0,
+        ...INSPECT_STYLE.child,
+      };
+
+      yeets.push({
+        count: 1,
+        archetype: schemaToArchetype(UI_SCHEMA, attributes),
+
+        attributes,
         transform: xform,
         bounds: layout,
-        ...INSPECT_STYLE.child,
       });
     }
 
-    out.push(yeet(yeets));
+    out.push(quote(yeet(yeets)));
   }
-  
-  if (out.length === 1 && Array.isArray(out[0])) return out[0];
-  return out;
+
+  return out.length ? out.length === 1 ? out[0] : out : null;
 }, 'BoxLayout');
 
 export const InlineLayout = (
@@ -149,25 +160,30 @@ export const InlineLayout = (
   outside: RenderOutside,
   inspect?: boolean,
 ) => {
-  let {ranges, sizes, offsets, renders, key} = inline;
-  const {box, origin, clip, mask, transform} = outside;
+  const {ranges, sizes, offsets, renders, key} = inline;
+  const {box, origin, z, clip, mask, transform, ref} = outside;
 
-  let [left, top, right, bottom] = box;
-  
+  const [left, top] = box;
+
   const n = ranges.length;
 
   let last: InlineRenderer | null = null;
   let lines: InlineLine[] = [];
-  let hash = miniHash(key || -1, miniHash(left, top));
+  const hash = miniHash(key || -1, miniHash(left, top));
 
   const out: LiveElement[] = [];
+  const els: LiveElement[] = [];
   const flush = (render: InlineRenderer) => {
-    const el = render(lines, origin, clip!, mask!, transform!, hash);
-    if (Array.isArray(el)) out.push(...(el as any[]));
-    else out.push(el);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const el = render(lines, origin, z, clip!, mask!, transform!, hash);
+    if (Array.isArray(el)) els.push(...(el as any[]));
+    else els.push(el);
     lines = [];
   };
-  
+
+  const render = ref?.(box, origin);
+  if (render) out.push(render);
+
   for (let i = 0; i < n; ++i) {
     const range = ranges[i];
     const size = sizes[i];
@@ -193,29 +209,34 @@ export const InlineLayout = (
 
   if (last) flush(last);
 
+  if (els.length) out.push(quote(els));
+
   if (inspect) {
-    let i = 0;
-    const next = () => useFiber().id.toString() + '-' + i++;
     const yeets = [] as UIAggregate[];
-    yeets.push({
-      id: next(),
+
+    const attributes = {
       rectangle: box,
       uv: [0, 0, 1, 1],
-      count: 1,
       repeat: 0,
+      ...INSPECT_STYLE.parent,
+    };
+
+    yeets.push({
+      count: 1,
+      archetype: schemaToArchetype(UI_SCHEMA, attributes),
+
+      attributes,
       transform,
       bounds: box,
-      ...INSPECT_STYLE.parent,
     });
 
     const [left, top] = box;
     const n = ranges.length;
     for (let i = 0; i < n; ++i) {
-      const range = ranges[i];
       const size = sizes[i];
       const offset = offsets[i];
 
-      const [x, y, gap] = offset;
+      const [x, y] = offset;
       const l = left + x;
       const t = top + y;
       const r = l + size[0];
@@ -223,22 +244,27 @@ export const InlineLayout = (
 
       const layout = [l, t, r, b] as Rectangle;
 
-      yeets.push({
-        id: next(),
+      const attributes = {
         rectangle: layout,
         uv: [0, 0, 1, 1],
-        count: 1,
         repeat: 0,
+        ...INSPECT_STYLE.child
+      };
+
+      yeets.push({
+        count: 1,
+        archetype: schemaToArchetype(UI_SCHEMA, attributes),
+
+        attributes,
         transform,
         bounds: layout,
-        ...INSPECT_STYLE.child
       });
     }
-  
-    out.push(yeet(yeets));
+
+    out.push(quote(yeet(yeets)));
   }
 
-  return out;
+  return out.length ? out.length === 1 ? out[0] : out : null;
 };
 
 const rot = (a: number, b: number) => ((a << b) | (a >>> (32 - b))) >>> 0;

@@ -1,4 +1,4 @@
-import type { LiveComponent, PropsWithChildren } from '../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 
 export type MapProps = PropsWithChildren<object>;
 

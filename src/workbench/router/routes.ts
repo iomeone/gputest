@@ -1,5 +1,5 @@
-import type { LiveFiber, LiveComponent, LiveNode, LiveElement, Task } from '../../live';
-import { memo, morph, use, provide, makeContext, useContext, useOne, useMemo } from '../../live';
+import type { LiveComponent, LiveNode } from '@use-gpu/live';
+import { memo, morph, use, provide, makeContext, useContext, useMemo } from '@use-gpu/live';
 import { RouterContext } from './router';
 import { Route } from './types';
 
@@ -38,12 +38,10 @@ const joinPath = (a: string, b: string) => {
 const escapeName = (s: string) => s.replace(/[^A-Za-z0-9_-]*/g, '');
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const Outlet = () => {
+export const Outlet = () => {
   const context = useContext(RouteContext);
   return context.routes ? use(Routes, context) : null;
 }
-
-const USE_OUTLET = use(Outlet);
 
 export const Routes: LiveComponent<RoutesProps> = memo((props: RoutesProps) => {
   const {
@@ -120,7 +118,7 @@ export const pathSpecToRegexp = (s: string, exact: boolean = false) => {
       regexp += escapeRegExp(segment);
     }
   }
-  
+
   if (exact) {
     if (segments.length === 0) regexp += '/';
     return new RegExp(regexp + '$');

@@ -12,13 +12,18 @@ struct ViewUniforms {
   viewPixelRatio: f32,
 };
 
-@export @group(VIEW) @binding(0) var<uniform> viewUniforms: ViewUniforms;
+@export @group(GLOBAL) @binding(0) var<uniform> viewUniforms: ViewUniforms;
 
 @export fn getViewPosition() -> vec4<f32> { return viewUniforms.viewPosition; }
 @export fn getViewResolution() -> vec2<f32> { return viewUniforms.viewResolution; }
 @export fn getViewSize() -> vec2<f32> { return viewUniforms.viewSize; }
 @export fn getViewNearFar() -> vec2<f32> { return viewUniforms.viewNearFar; }
-@export fn getViewPixelRatio() -> vec2<f32> { return viewUniforms.viewPixelRatio; }
+@export fn getViewPixelRatio() -> f32 { return viewUniforms.viewPixelRatio; }
+
+@export fn getViewVector(world: vec3<f32>) -> vec3<f32> {
+  let pos = viewUniforms.viewPosition;
+  return pos.xyz - world * pos.w;
+}
 
 @export fn to3D(position: vec4<f32>) -> vec3<f32> {
   return position.xyz / position.w;

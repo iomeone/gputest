@@ -1,18 +1,19 @@
-import type { LC, LiveElement } from '../live';
-import type { TypedArray } from '../core';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { VectorLike } from '@use-gpu/core';
 import type { GLTF } from './types';
 import { vec3, mat4, quat } from 'gl-matrix';
 
-import { use, gather, memo, useMemo, useOne } from '../live';
+import { use, useMemo } from '@use-gpu/live';
 import { GLTFMesh } from './gltf-mesh';
 
 export type GLTFNodeProps = {
   gltf: GLTF,
   node: number,
+
   matrix?: mat4,
 };
 
-export const GLTFNode: LC<GLTFNodeProps> = memo((props: GLTFNodeProps) => {
+export const GLTFNode: LC<GLTFNodeProps> = (props: GLTFNodeProps) => {
   const {
     gltf,
     node,
@@ -51,21 +52,20 @@ export const GLTFNode: LC<GLTFNodeProps> = memo((props: GLTFNodeProps) => {
   }
 
   return self;
-}, 'GLTFNode');
+};
 
 const makeComposeTransform = () => {
 
   const q = quat.create();
   const p = vec3.create();
   const s = vec3.create();
-  const t = mat4.create();
 
   return (
     transform: mat4,
-    position?: vec3 | TypedArray | null,
-    quaternion?: quat | TypedArray | null,
-    scale?: vec3 | TypedArray | null,
-    matrix?: mat4 | TypedArray | null,
+    position?: VectorLike | null,
+    quaternion?: VectorLike | null,
+    scale?: VectorLike | null,
+    matrix?: VectorLike | null,
   ) => {
 
     if (quaternion != null) quat.copy(q, quaternion as any);
@@ -75,8 +75,10 @@ const makeComposeTransform = () => {
 
     if (scale != null) vec3.copy(s, scale as any);
     else vec3.set(s, 1, 1, 1);
-    
+
     mat4.fromRotationTranslationScale(transform, q, p, s);
+    if (matrix != null) mat4.multiply(transform, matrix as mat4, transform);
+
     return transform;
   }
 }

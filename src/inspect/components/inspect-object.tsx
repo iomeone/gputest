@@ -1,8 +1,8 @@
-import React, { FC } from 'react';
+import React, { FC, useRef } from 'react';
 import { InspectProp } from './types';
 
-import { formatNode, formatValue, YEET } from '../../live';
-import { SplitRow, TreeRow, TreeIndent, Label, Spacer } from './layout';
+import { formatNode, formatValue, YEET } from '@use-gpu/live';
+import { SplitRow, TreeRow, TreeIndent, Label, Spacer, Selectable } from './layout';
 import { IconItem, SVGChevronDown, SVGChevronRight } from './svg';
 import { useAddIns } from '../providers/add-in-provider';
 
@@ -43,16 +43,34 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
   } = props;
   if (!object) return null;
 
-  if (seen.has(object)) return <span>{`{Circular}`}</span>;
+  if (seen.has(object)) return <span>{`{Repeated}`}</span>;
   seen.add(object);
 
+  let extra = false;
+  let keys;
+
   if (Array.isArray(object)) {
-    if (object.length > 100) object = object.slice(0, 100);
+    let n = object.length;
+    if (n > 100) {
+      object = object.slice(0, 100);
+      extra = true;
+    }
     if (object.reduce((b: boolean, o: any) => b && typeof o === 'number', true)) {
-      return <span>{`[${object.join(', ')}]`}</span>;
+      return <Selectable>{`[${object.join(', ')}${extra ? '…' : ''}]`}</Selectable>;
     }
   }
-  
+
+  if (object?.constructor?.name?.match(/Array/)) {
+    if (!object.buffer && object.byteLength != null) {
+      object = new Uint8Array(object.slice(0, 100));
+      extra = object.byteLength > 100;
+    }
+    if (object.length > 100) {
+      object = object.slice(0, 100);
+      extra = true;
+    }
+  }
+
   if (object instanceof Map) {
     const o = {} as Record<string, any>;
     let i = 0;
@@ -68,15 +86,11 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
     object = o;
   }
 
-  if (object?.constructor?.name?.match(/Array/)) {
-    if (object.length > 100) {
-      object = object.slice(0, 100);
-      object = Array.from(object);
-      object.push('…');
-    }
-  }
+  const coordsRef = useRef([-1e3, -1e3]);
 
-  const fields = Object.keys(object).map((k: string) => {
+  keys = keys ?? Reflect.ownKeys(object) as string[];
+
+  const fields = keys.map((k: string) => {
     const key = path +'/'+ k;
     const code = (typeof object[k] === 'string' && object[k].length > 80 && object[k].match(/\n/));
     const expandable = (typeof object[k] === 'object' && object[k]) || code;
@@ -84,8 +98,17 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
 
     const icon = <IconItem height={16} top={2}>{expanded !== false ? <SVGChevronDown /> : <SVGChevronRight />}</IconItem>;
     const prefix = expandable ? icon : '';
-    
+
+    const onPointerDown = expandable ? (e: any) => {
+      coordsRef.current = [e.clientX, e.clientY];
+    } : undefined;
+
     const onClick = expandable ? (e: any) => {
+      const {current: [x, y]} = coordsRef;
+      const dx = Math.abs(e.clientX - x);
+      const dy = Math.abs(e.clientY - y);
+      if (dx + dy > 2) return;
+
       toggleState(key);
       e.preventDefault();
       e.stopPropagation();
@@ -123,11 +146,11 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
     const showFull = (typeof object[k] === 'object' && depth < 20) || code;
     if (showFull && expanded) {
       return (
-        <div key={k} onClick={onClick}>
+        <div key={k} onPointerDown={onPointerDown} onClick={onClick}>
           <TreeRow>
             <SplitRow>
               <Label><Prefix>{prefix}</Prefix><div>{k}</div></Label>
-              <div>{proto ?? ''}</div>
+              <Selectable>{proto ?? ''}</Selectable>
             </SplitRow>
           </TreeRow>
           <div>{full}</div>
@@ -136,17 +159,17 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
     }
 
     return (
-      <div key={k} onClick={onClick}>
+      <div key={k} onPointerDown={onPointerDown} onClick={onClick}>
         <TreeRow>
           <SplitRow>
             <Label><Prefix>{prefix}</Prefix><div>{k}</div></Label>
-            <div>{compact}</div>
+            <Selectable>{compact}</Selectable>
           </SplitRow>
         </TreeRow>
       </div>
     );
   });
-  
+
   return <>{fields}</>;
 }
 
@@ -162,7 +185,18 @@ type InspectCodeProps = {
 
 export const InspectCode = (props: InspectCodeProps) => {
   const {code} = props;
+  const render = (code: string) => <div
+    style={{
+      background: '#404040',
+      padding: '3px 5px',
+      font: '11px monospace',
+      lineHeight: '14px',
+      whiteSpace: 'pre',
+      minHeight: '100%',
+    }}>{code}</div>;
+
   const addIns = useAddIns();
+  const addIn = addIns.prop.find((addIn) => addIn.enabled(code)) ?? {render};
 
   return (
     <div
@@ -175,10 +209,9 @@ export const InspectCode = (props: InspectCodeProps) => {
         right: 0,
         height: CODE_HEIGHT,
         overflow: 'auto',
+        userSelect: 'text',
       }}>
-        {
-          addIns.prop.find((addIn) => addIn.enabled(code))?.render({code})
-        }
+        {addIn.render(code)}
       </div>
     </div>
   );

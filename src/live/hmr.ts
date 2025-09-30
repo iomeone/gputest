@@ -19,7 +19,7 @@ export const hot = (fn: LiveFunction<any>, mod: any) => {
 
   const {hot} = mod;
   if (!hot) return fn;
-  
+
   const wrapped = new Proxy((...args: any[]) => {
     const fiber = useFiber();
     useResource((dispose) => {
@@ -44,7 +44,7 @@ export const hot = (fn: LiveFunction<any>, mod: any) => {
       data.fibers = Array.from(fibers);
     });
     accept();
-    
+
     if (data && data.fibers) {
       for (const f of data.fibers) {
         fibers.add(f);

@@ -1,21 +1,23 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { Rectangle, Point, Point4 } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { FitInto, LayoutElement, Dimension, Margin } from '../types';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { Rectangle } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { FitInto, Dimension } from '../types';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { useProp } from '../../traits';
-import { use, memo, gather, provide, yeet, useContext, useFiber } from '../../live';
-import { LayoutContext, TransformContext } from '../../workbench';
-import { getBlockMinMax, getBlockMargin, fitBlock } from '../lib/block';
+import { useProp } from '@use-gpu/traits/live';
+import { memo, provide, yeet, useFiber } from '@use-gpu/live';
+import { LayoutContext, TransformContext, LayerReconciler } from '@use-gpu/workbench';
 import { memoFit, memoLayout } from '../lib/util';
 import { evaluateDimension } from '../parse';
 
-import type { BoxTrait, ElementTrait } from '../types';
-import { useBoxTrait, useElementTrait } from '../traits';
-import { parseDimension, parseMargin } from '../parse';
+import { BoxTrait, useBoxTrait } from '../traits';
+import { parseDimension } from '../parse';
 
-export type EmbedProps = Partial<BoxTrait> &
-{
+const {quote} = LayerReconciler;
+
+export type EmbedProps =
+  TraitProps<typeof BoxTrait> &
+PropsWithChildren<{
   width?: Dimension,
   height?: Dimension,
   snap?: boolean,
@@ -23,13 +25,14 @@ export type EmbedProps = Partial<BoxTrait> &
     key: number,
     layout: Rectangle,
     origin: Rectangle,
+    z: number,
     clip: ShaderModule | null,
     mask: ShaderModule | null,
     transform: ShaderModule | null,
   ) => LiveElement,
-};
+}>;
 
-export const Embed: LiveComponent<EmbedProps> = memo((props: PropsWithChildren<EmbedProps>) => {
+export const Embed: LiveComponent<EmbedProps> = memo((props: EmbedProps) => {
   const {
     snap = true,
     render,
@@ -45,8 +48,6 @@ export const Embed: LiveComponent<EmbedProps> = memo((props: PropsWithChildren<E
 
   const w = width != null && width === +width ? width : null;
   const h = height != null && height === +height ? height : null;
-
-  const fixed = [w, h] as [number | null, number | null];
 
   const sizing = [w ?? 0, h ?? 0, w ?? 1e5, h ?? 1e5];
 
@@ -69,19 +70,20 @@ export const Embed: LiveComponent<EmbedProps> = memo((props: PropsWithChildren<E
       render: memoLayout((
         layout: Rectangle,
         origin: Rectangle,
+        z: number,
         clip: ShaderModule | null,
         mask: ShaderModule | null,
         transform: ShaderModule | null,
       ) => {
         const view = render
-          ? render(id, layout, origin, clip, mask, transform)
+          ? render(id, layout, origin, z, clip, mask, transform)
           : (
             provide(LayoutContext, layout,
               provide(TransformContext, {transform}, children),
               id,
             )
           );
-        return yeet(view);
+        return quote(view);
       }),
     };
   };

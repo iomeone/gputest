@@ -1,28 +1,28 @@
-import type { LC, PropsWithChildren, LiveElement } from '../../../live';
-import type { ShaderModule } from '../../../shader';
+import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
 import type { LightEnv } from '../../pass/types';
 import type { UseLight } from './light-data';
 
-import { use, yeet, provide, fence, useMemo, useOne } from '../../../live';
-import { bindBundle } from '../../../shader/wgsl';
+import { use, provide, useMemo } from '@use-gpu/live';
+import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { LightContext } from '../../providers/light-provider';
 import { LightData, SHADOW_PAGE } from './light-data';
 
-import { getLight, getLightCount } from '../../../wgsl/use/lightwgsl';
-import { sampleShadow } from '../../../wgsl/use/shadowwgsl';
+import { getLight, getLightCount } from '@use-gpu/wgsl/use/light.wgsl';
+import { sampleShadow } from '@use-gpu/wgsl/use/shadow.wgsl';
 
-import { applyLight as applyLightWGSL } from '../../../wgsl/material/lightwgsl';
-import { applyLights as applyLightsWGSL } from '../../../wgsl/material/lightswgsl';
-import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directionalwgsl';
-import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/pointwgsl';
+import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl';
+import { applyLights as applyLightsWGSL } from '@use-gpu/wgsl/material/lights.wgsl';
+import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '@use-gpu/wgsl/shadow/directional.wgsl';
+import { applyPointShadow as applyPointShadowWGSL } from '@use-gpu/wgsl/shadow/point.wgsl';
 
-export type LightMaterialProps = {
+export type LightMaterialProps = PropsWithChildren<{
   shadows?: boolean,
   then?: (light: LightEnv) => LiveElement,
-};
+}>;
 
-export const LightMaterial: LC<LightMaterialProps> = (props: PropsWithChildren<LightMaterialProps>) => {
+export const LightMaterial: LC<LightMaterialProps> = (props: LightMaterialProps) => {
   const {
     shadows,
     children,
@@ -31,6 +31,7 @@ export const LightMaterial: LC<LightMaterialProps> = (props: PropsWithChildren<L
 
   // Provide forward-lit material
   return use(LightData, {
+    shadows,
     render: (
       useLight: UseLight,
     ) => {
@@ -55,11 +56,8 @@ export const LightMaterial: LC<LightMaterialProps> = (props: PropsWithChildren<L
         return {useLight, useMaterial};
       }, [useLight, shadows]);
 
-      // Fence so that lights are never suspended
       return (
-        provide(LightContext, context,
-          fence(children, (v: any) => yeet(v))
-        )
+        provide(LightContext, context, children)
       );
     },
     then,

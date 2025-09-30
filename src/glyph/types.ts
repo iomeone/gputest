@@ -64,6 +64,8 @@ export type RustTextAPI = {
 
   findGlyph: (fontId: number, char: string) => [number, boolean];
   loadMissingGlyph: (fontId: number, glyphId: number, callback: ArrowFunction) => void;
+
+  debugListener: (cb: ArrowFunction) => () => void;
 };
 
 export type Image = {

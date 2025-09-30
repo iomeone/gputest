@@ -1,10 +1,9 @@
 import type { LiveFiber, Task } from './types';
 import {
-  use, keyed, detach, provide, capture, gather, yeet, reconcile, quote, unquote,
+  use, keyed, detach, provide, capture, gather, yeet, reconcileTo, quoteTo, unquote,
   PROVIDE,
-  makeContext, makeCapture,
+  makeContext, makeCapture, makeReconciler,
 } from './builtin';
-import { renderFiber } from './fiber';
 import { memoArgs, useState, useContext, useCapture } from './hooks';
 import { renderSync } from './tree';
 import { formatTree } from './debug';
@@ -66,6 +65,7 @@ it("detaches a subfiber", () => {
   expect(result.f).toBe(Root);
 
   expect(result.mount).toBeTruthy();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   expect(result.mount!.next).toBeTruthy();
 
   expect(keepSubFiber).toBeTruthy();
@@ -102,6 +102,7 @@ it("renders implicit keys with nulls", () => {
     ];
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Node = (x?: number) => {
     rendered.node++;
   };
@@ -163,6 +164,7 @@ it("reacts on the root (setter form)", () => {
     return keyed(Node, Math.random());
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Node = (x?: number) => {
     rendered.node++;
   };
@@ -212,6 +214,7 @@ it("reacts on the root (reducer form)", () => {
     return keyed(Node, Math.random());
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Node = (x?: number) => {
     rendered.node++;
   };
@@ -264,6 +267,7 @@ it("reacts and remounts on the root", () => {
     ];
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Node = (x?: number) => {
     rendered.node++;
   };
@@ -350,6 +354,7 @@ it("reacts and remounts a sub tree", () => {
     ];
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Node = (x?: number) => {
     rendered.node++;
     return;
@@ -422,6 +427,7 @@ it("coalesces updates", () => {
     return keyed(Node, Math.random());
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Node = (x?: number) => {
     rendered.node++;
 
@@ -484,6 +490,7 @@ it("updates with memo in the way", () => {
     return keyed(Node, Math.random());
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Node = (x?: number) => {
     rendered.node++;
 
@@ -494,6 +501,7 @@ it("updates with memo in the way", () => {
   const result = renderSync(use(Root));
   expect(result.host).toBeTruthy();
   expect(result.mount).toBeTruthy();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   expect(result.mount!.mount).toBeTruthy();
   if (!result.host) return;
   if (!result.mount) return;
@@ -564,6 +572,7 @@ it("updates context with memo in the way", () => {
   const result = renderSync(use(Root));
   expect(result.host).toBeTruthy();
   expect(result.mount).toBeTruthy();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   expect(result.mount!.mount).toBeTruthy();
   if (!result.host) return;
   if (!result.mount) return;
@@ -618,7 +627,7 @@ it("does not update context if value is the same", () => {
   const Root = () => {
     rendered.root++;
 
-    const [value, setValue] = useState(0);
+    const [, setValue] = useState(0);
     setTrigger(() => setValue(1));
 
     return provide(context, 0, memoChild);
@@ -641,6 +650,7 @@ it("does not update context if value is the same", () => {
   const result = renderSync(use(Root));
   expect(result.host).toBeTruthy();
   expect(result.mount).toBeTruthy();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   expect(result.mount!.mount).toBeTruthy();
   if (!result.host) return;
   if (!result.mount) return;
@@ -680,7 +690,7 @@ it("does not update context if value is the same", () => {
 });
 
 it("gathers yeeted values", () => {
-  
+
   const Root = () => {
     return gather([
       yeet(1),
@@ -694,18 +704,18 @@ it("gathers yeeted values", () => {
   };
 
   const Node = () => {};
-  
+
   const result = renderSync(use(Root));
   if (!result.host) return;
 
   const {host: {flush}} = result;
   if (flush) flush();
-  
+
   expect(formatTree(result)).toMatchSnapshot();
 });
 
 it("captures values", () => {
-  
+
   const context = makeCapture<number>();
 
   const Root = () => {
@@ -754,11 +764,13 @@ it("yeets from capture", () => {
 });
 
 it("renders quoted tree", () => {
-  
+
+  const Reconciler = makeReconciler('Test');
+
   const Root = () => {
-    return reconcile([
+    return reconcileTo(Reconciler, [
       use(Node),
-      quote(use(Tree)),
+      quoteTo(Reconciler, use(Tree)),
       use(Node),
     ]);
   };
@@ -768,24 +780,25 @@ it("renders quoted tree", () => {
   const Node = (children) => {
     return children;
   };
-  
+
   const result = renderSync(use(Root));
   if (!result.host) return;
 
   const {host: {flush}} = result;
   if (flush) flush();
-  
+
   expect(formatTree(result)).toMatchSnapshot();
 });
 
 it("renders quoted/unquoted trees", () => {
-  
+  const Reconciler = makeReconciler('Test');
+
   const Root = () => {
     return [
-      reconcile(quote(
+      reconcileTo(Reconciler, quoteTo(Reconciler,
         use(Second,
           use(Second,
-            unquote(use(First, quote(use(Second, unquote(use(First, use(First, quote(use(Second)))))))))
+            unquote(use(First, quoteTo(Reconciler, use(Second, unquote(use(First, use(First, quoteTo(Reconciler, use(Second)))))))))
           )
         )
       )),
@@ -794,25 +807,26 @@ it("renders quoted/unquoted trees", () => {
 
   const First = (children) => children;
   const Second = (children) => children;
-  
+
   const result = renderSync(use(Root));
   if (!result.host) return;
 
   const {host: {flush}} = result;
   if (flush) flush();
-  
+
   expect(formatTree(result)).toMatchSnapshot();
 });
 
 it("renders quote/unquote pairs", () => {
-  
+  const Reconciler = makeReconciler('Test');
+
   const Root = () => {
-    return reconcile(use(First,
-      quote(
+    return reconcileTo(Reconciler, use(First,
+      quoteTo(Reconciler,
         use(Second,
           use(Second,
-            unquote(quote(use(Second, unquote(
-              use(First, quote(unquote(use(First, use(First, quote(
+            unquote(quoteTo(Reconciler, use(Second, unquote(
+              use(First, quoteTo(Reconciler, unquote(use(First, use(First, quoteTo(Reconciler,
                 use(Second)
               ))))))
             ))))
@@ -824,13 +838,13 @@ it("renders quote/unquote pairs", () => {
 
   const First = (children) => children;
   const Second = (children) => children;
-  
+
   const result = renderSync(use(Root));
   if (!result.host) return;
 
   const {host: {flush}} = result;
   if (flush) flush();
-  
+
   expect(formatTree(result)).toMatchSnapshot();
 });
 
@@ -874,7 +888,7 @@ it("render reordering", () => {
 
   const Node = ({id}) => {
     rendered.node++;
-    const value = useContext(context);
+    useContext(context);
     rendered.ids.push(id);
   };
 
@@ -885,7 +899,7 @@ it("render reordering", () => {
   const {host: {flush}} = result;
   expect(formatTree(result)).toMatchSnapshot();
   expect(rendered.ids).toEqual([0, 1, 2]);
-  
+
   if (trigger) trigger();
   if (flush) flush();
 

@@ -11,6 +11,7 @@ import {
   bundleToAttributes,
 
   wgsl, f32, i32, u32,
+  symbolDictionary,
 } from './shader';
 
 import {
@@ -20,20 +21,33 @@ import {
   bindingToModule,
   sourceToModule,
   resolveBindings,
+  extractBindings,
 } from './bind';
 
 import {
   castTo,
   swizzleTo,
-} from './cast';
+} from './operators/cast';
 
 import {
   chainTo,
-} from './chain';
+} from './operators/chain';
 
 import {
   diffBy,
-} from './diff';
+} from './operators/diff';
+
+import {
+  explode,
+} from './operators/explode';
+
+import {
+  instanceWith,
+} from './operators/instanced';
+
+import {
+  structType,
+} from './operators/struct';
 
 import {
   linkBundle,
@@ -52,9 +66,16 @@ import {
   getBundleEntry,
   getBundleHash,
   getBundleKey,
+  getBundleLabel,
 } from '../util/bundle';
 
+import {
+  decompressString,
+} from '../util/tree';
+
 import { parser } from './highlight/wgsl';
+
+export * from './types';
 
 export {
   loadModule,
@@ -69,6 +90,7 @@ export {
   bundleToAttributes,
 
   wgsl, f32, i32, u32,
+  symbolDictionary,
 } from './shader';
 
 export {
@@ -78,20 +100,33 @@ export {
   bindingToModule,
   sourceToModule,
   resolveBindings,
+  extractBindings,
 } from './bind';
 
 export {
   castTo,
   swizzleTo,
-} from './cast';
+} from './operators/cast';
 
 export {
   chainTo,
-} from './chain';
+} from './operators/chain';
 
 export {
   diffBy,
-} from './diff';
+} from './operators/diff';
+
+export {
+  explode,
+} from './operators/explode';
+
+export {
+  instanceWith,
+} from './operators/instanced';
+
+export {
+  structType,
+} from './operators/struct';
 
 export {
   linkBundle,
@@ -110,7 +145,12 @@ export {
   getBundleEntry,
   getBundleHash,
   getBundleKey,
+  getBundleLabel,
 } from '../util/bundle';
+
+export {
+  decompressString,
+} from '../util/tree';
 
 export const WGSLLinker = {
   loadModule,
@@ -134,11 +174,15 @@ export const WGSLLinker = {
   bindingToModule,
   sourceToModule,
   resolveBindings,
+  extractBindings,
 
   castTo,
   chainTo,
   diffBy,
+  explode,
+  instanceWith,
   swizzleTo,
+  structType,
 
   makeASTParser,
   compressAST,
@@ -150,10 +194,16 @@ export const WGSLLinker = {
   getBundleEntry,
   getBundleHash,
   getBundleKey,
+  getBundleLabel,
+
+  decompressString,
+  symbolDictionary,
 
   parser,
 };
 
 export { parser } from './highlight/wgsl';
+
+export * from './types';
 
 export default WGSLLinker;

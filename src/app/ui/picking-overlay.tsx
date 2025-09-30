@@ -1,16 +1,15 @@
-import type { LC } from '../../live';
-import React, { useOne } from '../../live';
+import type { LC } from '@use-gpu/live';
+import React, { useOne } from '@use-gpu/live';
 
 import {
-  Flat,
-  PickingContext,
-  useBoundShader, useLambdaSource,
-} from '../../workbench';
+  FlatCamera, PickingContext,
+  useShader, useLambdaSource,
+} from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Inline, Text,
-} from '../../layout';
-import { useContext } from '../../live';
-import { wgsl, bindModule } from '../../shader/wgsl';
+} from '@use-gpu/layout';
+import { useContext } from '@use-gpu/live';
+import { wgsl, bindModule } from '@use-gpu/shader/wgsl';
 
 export const PickingOverlay: LC = () => {
 
@@ -35,10 +34,10 @@ export const PickingOverlay: LC = () => {
       return sqrt(vec4<f32>(a, c, b, 1.0));
     }
   `;
-  
+
   const size = useOne(() => () => source.size, source);
 
-  const boundShader = useBoundShader(colorizeShader, [size, source]);
+  const boundShader = useShader(colorizeShader, [size, source]);
   const textureSource = useLambdaSource(boundShader, source);
 
   const scale = 0.5;
@@ -53,7 +52,8 @@ export const PickingOverlay: LC = () => {
             <Block
               width={textureSource.size[0] * scale}
               height={textureSource.size[1] * scale}
-              image={{texture: textureSource, fit: 'scale'}}
+              texture={textureSource}
+              image={{fit: 'scale'}}
               fill={[0, 0, 0, 1]}
             />
             <Inline align="center" margin={[0, 5]}><Text color={[1, 1, 1, 1]} size={18}>GPU Picking Buffer</Text></Inline>

@@ -1,7 +1,6 @@
-import { Tree } from '@lezer/common';
 import { ShaderDefine } from '../types';
 
-import { defineConstants, loadModule, loadModuleWithCache, DEFAULT_CACHE } from './shader';
+import { defineConstants, defineEnables, loadModuleWithCache, DEFAULT_CACHE } from './shader';
 import { rewriteUsingAST } from './ast';
 import { makeLinker, makeLinkCode, makeLinkBundle, makeLinkModule } from '../util/link';
 
@@ -13,11 +12,11 @@ const getRenames = (
   defines?: Record<string, ShaderDefine> | null,
 ) => {
   const rename = new Map<string, string>();
-  if (defines) for (let k in defines) if (k[0] === '@') rename.set(k, `${defines[k]}`);
+  if (defines) for (const k in defines) if (k[0] === '@') rename.set(k, `${defines[k]}`);
   return rename;
 }
 
-export const linker     = makeLinker(getPreambles, getRenames, defineConstants, rewriteUsingAST);
+export const linker     = makeLinker(getPreambles, getRenames, defineConstants, defineEnables, rewriteUsingAST);
 export const linkBundle = makeLinkBundle(linker);
 export const linkModule = makeLinkModule(linker);
 export const linkCode   = makeLinkCode(linker, loadModuleWithCache, DEFAULT_CACHE);

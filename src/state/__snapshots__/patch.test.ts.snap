@@ -1,20 +1,20 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`patch diffs values 1`] = `
-Object {
-  "foo": Object {
-    "a": Object {
+{
+  "foo": {
+    "a": {
       "$delete": true,
     },
-    "b": Object {
+    "b": {
       "$delete": true,
     },
-    "c": Object {
+    "c": {
       "$delete": true,
     },
     "d": true,
   },
-  "n": Array [
+  "n": [
     2,
   ],
   "s": "hello world",
@@ -23,7 +23,7 @@ Object {
 `;
 
 exports[`patch gets update keys 1`] = `
-Array [
+[
   "d",
   "s",
   "x",
@@ -35,11 +35,11 @@ Array [
 `;
 
 exports[`patch patches primitives 1`] = `
-Object {
-  "foo": Object {
+{
+  "foo": {
     "a": true,
     "b": true,
-    "c": Array [
+    "c": [
       "y",
     ],
   },
@@ -50,8 +50,8 @@ Object {
 `;
 
 exports[`patch patches with $ops 1`] = `
-Object {
-  "foo": Object {
+{
+  "foo": {
     "d": true,
   },
   "n": 1,
@@ -61,23 +61,23 @@ Object {
 `;
 
 exports[`patch revises diffs 1`] = `
-Object {
-  "bar": Object {
-    "obj": Object {
+{
+  "bar": {
+    "obj": {
       "baz": true,
     },
   },
   "d": true,
-  "foo": Object {
+  "foo": {
     "a": false,
     "b": true,
   },
-  "list": Object {
-    "0": Object {
+  "list": {
+    "0": {
       "foo": false,
     },
   },
-  "n": Array [
+  "n": [
     1,
   ],
   "s": "hello",

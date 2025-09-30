@@ -1,4 +1,4 @@
-use '../../wgsl/geometry/normal'::{ getOrthoVector };
+use '@use-gpu/wgsl/geometry/normal'::{ getOrthoVector };
 
 @link fn transformPosition(position: vec4<f32>) -> vec4<f32>;
 @optional @link fn getEpsilon() -> f32 { return 0.001; };

@@ -1,7 +1,8 @@
-import type { LiveComponent, LiveFiber, LiveElement, Task } from '../../live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
 
-import { useAwait, useOne } from '../../live';
+import { useAwait, useOne } from '@use-gpu/live';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type AwaitProps<T> = {
   promise?: Promise<LiveElement>,
   all?: Promise<LiveElement>[],
@@ -16,6 +17,8 @@ export const Await: LiveComponent<AwaitProps<unknown>> = <T>(props: AwaitProps<T
     : () => promise ?? Promise.resolve();
 
   const [value, error] = useAwait<LiveElement | undefined | void>(run, all ?? [promise]);
+  useOne(() => error && console.error(error), error);
+
   return value;
 }
 

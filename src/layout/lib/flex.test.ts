@@ -1,15 +1,14 @@
-import type { Rectangle, Point } from '../../core';
-import type { Margin, Sizing } from '../types';
-
 describe('', () => { it("", () => {})});
 
 /*
+import type { Rectangle, XY } from '@use-gpu/core';
+import type { Margin, Sizing } from '../types';
 
 import { getFlexMinMax, fitFlex } from './flex';
 import { makeBoxLayout } from './util';
 
 describe('flex layout', () => {
-  
+
   let ID = 0;
   const makeElement = (
     width: number,
@@ -27,12 +26,12 @@ describe('flex layout', () => {
       grow,
       shrink,
       fit: () => ({
-        size: [width, height] as Point,
+        size: [width, height] as XY,
         render: (layout: Rectangle) => ({layout}) as any,
       }),
     };
   };
-  
+
   it("gets flex min/max", () => {
     const els = [
       makeElement(50, 50),
@@ -52,7 +51,7 @@ describe('flex layout', () => {
       makeElement(20, 20, 0, 0, 20),
     ];
 
-    const size = [110, 80] as Point;
+    const size = [110, 80] as XY;
     const {sizes, offsets, renders} = fitFlex(els, size, [null, null], 'x', [0, 0], 'start', 'start', 'start', false, true);
 
     expect(sizes).toEqual([[50, 50], [20, 20]]);
@@ -69,7 +68,7 @@ describe('flex layout', () => {
       makeElement(20, 20, 0, 0, 20),
     ];
 
-    const size = [110, 80] as Point;
+    const size = [110, 80] as XY;
     const {sizes, offsets, renders} = fitFlex(els, size, [null, null], 'y', [0, 0], 'start', 'start', 'start', false, true);
 
     expect(sizes).toEqual([[50, 50], [20, 20]]);
@@ -86,7 +85,7 @@ describe('flex layout', () => {
       makeElement(20, 20, 1, 0, 20),
     ];
 
-    const size = [180, 80] as Point;
+    const size = [180, 80] as XY;
     const {sizes, offsets, renders} = fitFlex(els, size, [null, null], 'x', [0, 0], 'start', 'start', 'start', false, true);
 
     expect(sizes).toEqual([[75, 50], [45, 20]]);
@@ -103,7 +102,7 @@ describe('flex layout', () => {
       makeElement(20, 20, 0, 1, 20),
     ];
 
-    const size = [70, 80] as Point;
+    const size = [70, 80] as XY;
     const {sizes, offsets, renders} = fitFlex(els, size, [null, null], 'x', [0, 0], 'start', 'start', 'start', false, true);
 
     expect(sizes).toEqual([[7, 50], [3, 20]]);
@@ -121,7 +120,7 @@ describe('flex layout', () => {
       makeElement(20, 20, 0, 0, 20),
     ];
 
-    const size = [180, 80] as Point;
+    const size = [180, 80] as XY;
     const {sizes, offsets, renders} = fitFlex(els, size, 'x', [0, 0], 'evenly', 'evenly', 'start', false, true);
 
     expect(offsets).toEqual([[27, 25], [123, 35]]);
@@ -138,7 +137,7 @@ describe('flex layout', () => {
       makeElement(20, 20, 0, 0, 20),
     ];
 
-    const size = [180, 80] as Point;
+    const size = [180, 80] as XY;
     const {sizes, offsets, renders} = fitFlex(els, size, 'x', [0, 0], 'center', 'center', 'start', false, true);
 
     expect(offsets).toEqual([[35, 25], [115, 35]]);
@@ -155,7 +154,7 @@ describe('flex layout', () => {
       makeElement(20, 20, 0, 0, 20),
     ];
 
-    const size = [180, 80] as Point;
+    const size = [180, 80] as XY;
     const {sizes, offsets, renders} = fitFlex(els, size, 'x', [0, 0], 'start', 'start', 'center', false, true);
 
     expect(offsets).toEqual([[10, 10], [90, 35]]);
@@ -175,7 +174,7 @@ describe('flex layout', () => {
       makeElement(20, 20, 0, 0, 20),
     ];
 
-    const size = [180, 180] as Point;
+    const size = [180, 180] as XY;
     const {sizes, offsets, renders} = fitFlex(els, size, 'x', [0, 0], 'start', 'start', 'start', true, true);
 
     expect(offsets).toEqual([[10, 10], [80, 10], [20, 70], [70, 60], [20, 120]]);

@@ -233,12 +233,10 @@ export const sdfToGradient = (
   h: number,
   pad: number = 4,
   radius: number = 3,
-  cutoff: number = 0.25,
 ): Image => {
   const wp = w + pad * 2;
   const hp = h + pad * 2;
   const np = wp * hp;
-  const sp = Math.max(wp, hp);
 
   const out = new Uint8Array(np);
   const getData = (x: number, y: number) => (data[4 * (y * wp + x)] ?? 0) / 255 * radius;
@@ -285,7 +283,7 @@ export const solidifyAlpha = (
   // and who don't have black or white neighbors.
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let o = x + y * w;
+      const o = x + y * w;
 
       const a = getData(x, y);
       if (!a || a >= 254) continue;

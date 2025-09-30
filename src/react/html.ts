@@ -1,4 +1,4 @@
-import { useFiber, useResource, useNoResource } from '../live';
+import { useFiber, useResource, useNoResource } from '@use-gpu/live';
 
 import React from 'react';
 import {createRoot} from 'react-dom/client';
@@ -47,9 +47,11 @@ export const HTML: LC<HTMLProps> = ({
   if (style) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useResource((dispose) => {
-      for (let k in style!) (div.style as any)[k] = style[k];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      for (const k in style!) (div.style as any)[k] = style[k];
       dispose(() => {
-        for (let k in style!) (div.style as any)[k] = 'unset';
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        for (const k in style!) (div.style as any)[k] = 'unset';
       });
     }, [div, style]);
   }

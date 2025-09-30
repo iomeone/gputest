@@ -1,8 +1,11 @@
-import type { LC, PropsWithChildren, LiveElement } from '../../live';
-import type { UseGPURenderContext } from '../../core';
+import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { UseGPURenderContext } from '@use-gpu/core';
 import type { LightEnv, RenderComponents } from '../pass/types';
 
-import { use, yeet, memo, useOne } from '../../live';
+import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { extractBindings } from '@use-gpu/shader/wgsl';
+
+import { PassReconciler } from '../reconcilers/index';
 
 import { DebugRender } from './forward/debug';
 import { ShadedRender } from './forward/shaded';
@@ -16,21 +19,27 @@ import { ColorPass } from '../pass/color-pass';
 import { Renderer } from './renderer';
 import { LightMaterial } from './light/light-material';
 
+import lightBinding from '@use-gpu/wgsl/use/light.wgsl';
+import shadowBinding from '@use-gpu/wgsl/use/shadow.wgsl';
+
+const {quote} = PassReconciler;
+
 const DEFAULT_PASSES = [
   use(ColorPass, {}),
 ];
 
 const NO_BUFFERS: Record<string, UseGPURenderContext[]> = {};
 
-export type ForwardRendererProps = {
+export type ForwardRendererProps = PropsWithChildren<{
   lights?: boolean,
   overlay?: boolean,
   merge?: boolean,
 
   buffers?: Record<string, UseGPURenderContext[]>,
+  context?: Record<string, any>,
   passes?: LiveElement[],
   components?: RenderComponents,
-};
+}>;
 
 const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): RenderComponents => {
   return {
@@ -49,13 +58,14 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
   }
 };
 
-export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: PropsWithChildren<ForwardRendererProps>) => {
+export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRendererProps) => {
   const {
     lights = false,
     overlay = false,
     merge = false,
     passes = DEFAULT_PASSES,
     buffers = NO_BUFFERS,
+    context,
     children,
   } = props;
 
@@ -66,9 +76,16 @@ export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: PropsWithC
   const view = lights ? use(LightMaterial, {
     shadows,
     children,
-    then: (light: LightEnv) => 
-      useOne(() => yeet({ env: { light }}), light),
+    then: (light: LightEnv) =>
+      useOne(() => quote(yeet({ env: { light }})), light),
   }) : children;
 
-  return Renderer({ buffers, children: view, components, passes, lights, overlay, merge });
+  // Prepare bind group layout for lighting/shadows
+  const entries = useMemo(() => {
+    const vertex   = [lights && lightBinding];
+    const fragment = [lights && lightBinding, shadows && shadowBinding];
+    return extractBindings([vertex, fragment], 'PASS');
+  }, [lights, shadows]);
+
+  return Renderer({ buffers, context, children: view, components, passes, entries, overlay, merge });
 }, 'ForwardRenderer');

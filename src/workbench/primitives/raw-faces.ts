@@ -1,35 +1,43 @@
-import type { LiveComponent } from '../../live';
-import type {
-  TypedArray, ViewUniforms, DeepPartial, Lazy,
-  UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData, DataBounds,
-} from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds, GPUGeometry } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import { Virtual } from './virtual';
+import { useDraw } from '../hooks/useDraw';
 
-import { use, yeet, memo, useCallback, useMemo, useOne, useNoOne, useNoCallback } from '../../live';
-import { resolve, makeShaderBindings } from '../../core';
+import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
+import { resolve } from '@use-gpu/core';
+
 import { useMaterialContext } from '../providers/material-provider';
+import { PickingSource, usePickingShader } from '../providers/picking-provider';
 import { useScissorContext } from '../providers/scissor-provider';
-import { usePickingShader } from '../providers/picking-provider';
-import { useCombinedTransform } from '../hooks/useCombinedTransform';
-import { useShaderRef } from '../hooks/useShaderRef';
-import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
-import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
+import { TransformContextProps } from '../providers/transform-provider';
 
+import { useShader } from '../hooks/useShader';
+import { useSource } from '../hooks/useSource';
+import { useCombinedTransform, useNoCombinedTransform } from '../hooks/useCombinedTransform';
+import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
+import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getFaceVertex } from '../../wgsl/instance/vertex/facewgsl';
+import { getFaceVertex } from '@use-gpu/wgsl/instance/vertex/face.wgsl';
+import { getInstancedFaceIndex } from '@use-gpu/wgsl/instance/index/face.wgsl';
+
+const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
+
+export type RawFacesFlags = {
+  flat?: boolean,
+  shaded?: boolean,
+  fragDepth?: boolean,
+} & Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>
 
 export type RawFacesProps = {
-  position?: number[] | TypedArray,
-  normal?: number[] | TypedArray,
-  tangent?: number[] | TypedArray,
+  position?: VectorLike,
+  normal?: VectorLike,
+  tangent?: VectorLike,
   segment?: number,
-  uv?: number[] | TypedArray,
-  st?: number[] | TypedArray,
-  color?: number[] | TypedArray,
+  uv?: VectorLike,
+  st?: VectorLike,
+  color?: VectorLike,
   zBias?: number,
 
   positions?: ShaderSource,
@@ -42,33 +50,28 @@ export type RawFacesProps = {
   zBiases?: ShaderSource,
 
   indices?: ShaderSource,
-
-  lookups?: ShaderSource,
-  ids?:     ShaderSource,
-  lookup?:  number,
-  id?:      number,
-
+  instance?: number,
   instances?: ShaderSource,
-  load?: ShaderSource,
+  transform?: TransformContextProps,
 
-  unweldedNormals?: boolean,
-  unweldedTangents?: boolean,
-  unweldedUVs?: boolean,
-  unweldedLookups?: boolean,
+  unwelded?: {
+    colors?: boolean,
+    normals?: boolean,
+    tangents?: boolean,
+    uvs?: boolean,
+    lookups?: boolean,
+  },
 
-  shaded?: boolean,
-  fragDepth?: boolean,
+  mesh?: GPUGeometry,
   count?: Lazy<number>,
 
-  shouldDispatch?: (u: Record<string, any>) => boolean | number | null,
+  shouldDispatch?: (u: Record<string, any>) => boolean | number | null | undefined,
   onDispatch?: (u: Record<string, any>) => void,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
-
-const ZERO = [0, 0, 0, 1];
-const POSITION: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
+} & PickingSource & RawFacesFlags;
 
 export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps) => {
   const {
+    flat = false,
     shaded = false,
     shadow = true,
     count = null,
@@ -81,14 +84,16 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
     depthWrite,
     blend,
 
-    unweldedNormals = false,
-    unweldedTangents = false,
-    unweldedUVs = false,
-    unweldedLookups = false,
+    transform,
+
+    mesh,
+    unwelded = mesh?.unwelded,
 
     shouldDispatch,
     onDispatch,
   } = props;
+
+  const attr = mesh ? {...props, ...mesh.attributes} : props;
 
   // Set up draw as:
   // - individual tris (none)
@@ -98,59 +103,39 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
   const vertexCount = 3;
   const instanceCount = useCallback(() => {
     if (count != null) {
-      const c = resolve(count) || 0;
-      return (props.segments != null) ? Math.max(0, c - 2) : c;
+      const c = (resolve(count) || 0);
+      return (attr.segments != null) ? Math.max(0, c - 2) : (c / 3) | 0;
     }
 
-    const segments = (props.segments as any)?.length;
-    const indices = (props.indices as any)?.length;
-    const positions = (props.positions as any)?.length;
+    const segments = (attr.segments as any)?.length;
+    const indices = (attr.indices as any)?.length;
+    const positions = (attr.positions as any)?.length;
 
     if (segments != null) return segments - 2;
     if (indices != null) return indices / 3;
-    if (positions != null && !props.indices) return positions / 3;
+    if (positions != null && !attr.indices) return positions / 3;
 
     return 0;
-  }, [props.positions, props.indices, props.segments, count]);
+  }, [attr.positions, attr.indices, attr.segments, count]);
 
-  // Instanced draw
-  const hasInstances = !!props.instances;
-  let instanceSize = null;
-  let totalCount = null;
-  if (hasInstances) {
-    instanceSize = useOne(() => hasInstances ? instanceCount : null, hasInstances);
-    totalCount = useCallback(() => (props.instances as any)?.length * resolve(instanceCount), [props.instances, instanceCount]);
-  }
-  else {
-    useNoOne();
-    useNoCallback();
-  }
+  const p = useSource(POSITIONS, useShaderRef(attr.position, attr.positions));
+  const n = useShaderRef(attr.normal, attr.normals);
+  const t = useShaderRef(attr.tangent, attr.tangents);
+  const u = useShaderRef(attr.uv, attr.uvs);
+  const s = useShaderRef(attr.st, attr.sts ?? p);
+  const g = useShaderRef(attr.segment, attr.segments);
+  const c = useShaderRef(attr.color, attr.colors);
+  const z = useShaderRef(attr.zBias, attr.zBiases);
 
-  const p = useShaderRef(props.position, props.positions);
-  const n = useShaderRef(props.normal, props.normals);
-  const t = useShaderRef(props.tangent, props.tangents);
-  const u = useShaderRef(props.uv, props.uvs);
-  const s = useShaderRef(props.st, props.sts);
-  const g = useShaderRef(props.segment, props.segments);
-  const c = useShaderRef(props.color, props.colors);
-  const z = useShaderRef(props.zBias, props.zBiases);
+  const i = useShaderRef(null, attr.indices);
 
-  const i = useShaderRef(null, props.indices);
-  const j = useShaderRef(null, props.instances);
-  const k = useShaderRef(instanceSize);
-  const l = useShaderRef(null, props.load);
-
-  const lookups = useShaderRef(null, props.lookups);
-  const ids = useShaderRef(null, props.ids);
-
-  const {transform: xf, differential: xd, bounds: getBounds} = useCombinedTransform();
+  const {transform: xf, differential: xd, bounds: getBounds} = transform ? (useNoCombinedTransform(), transform) : useCombinedTransform();
   const scissor = useScissorContext();
 
-  const ps = p && props.sts == null ? useBoundSource(POSITION, p) : useNoBoundSource();
-
   let bounds: Lazy<DataBounds> | null = null;
-  if (getBounds && (props.positions as any)?.bounds) {
-    bounds = useCallback(() => getBounds((props.positions! as any).bounds), [props.positions, getBounds]);
+  if (getBounds && (attr.positions as any)?.bounds) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    bounds = useCallback(() => getBounds((attr.positions! as any).bounds), [attr.positions, getBounds]);
   }
   else {
     useNoCallback();
@@ -158,9 +143,19 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
 
   const renderer = shaded ? 'shaded' : 'solid';
   const material = useMaterialContext()[renderer];
-
-  const getVertex = useBoundShader(getFaceVertex, [xf, xd, scissor, ps ?? p, n, t, u, ps ?? s, g, c, z, i, j, k, l]);
-  const getPicking = usePickingShader(props);
+  const boundVertex = useShader(getFaceVertex, [
+    xf, xd, scissor,
+    p, n, t, u, s, g, c, z,
+    i,
+  ]);
+  const [getVertex, totalCount, instanceDefs] = useInstancedVertex(
+    boundVertex,
+    attr.instance,
+    attr.instances,
+    instanceCount,
+    !props.segments ? getInstancedFaceIndex : undefined,
+  );
+  const getPicking = usePickingShader(attr);
 
   const links = useMemo(() => {
     return shaded
@@ -187,24 +182,26 @@ export const RawFaces: LiveComponent<RawFacesProps> = memo((props: RawFacesProps
     blend,
   });
 
-  const hasIndices = !!props.indices;
-  const hasSegments = !!props.segments;
+  const hasIndices = !!attr.indices;
+  const hasSegments = !!attr.segments;
   const defines = useMemo(() => ({
     ...defs,
+    ...instanceDefs,
     HAS_DEPTH: fragDepth,
     HAS_INDICES: hasIndices,
     HAS_SEGMENTS: hasSegments,
-    HAS_INSTANCES: hasInstances,
-    UNWELDED_NORMALS: !!unweldedNormals,
-    UNWELDED_TANGENTS: !!unweldedTangents,
-    UNWELDED_UVS: !!unweldedUVs,
-    UNWELDED_LOOKUPS: !!unweldedLookups,
-  }), [defs, fragDepth, hasIndices, hasSegments, hasInstances, unweldedNormals, unweldedTangents, unweldedUVs, unweldedLookups]);
+    FLAT_NORMALS: flat,
+    UNWELDED_COLORS: !!unwelded?.colors,
+    UNWELDED_NORMALS: !!unwelded?.normals,
+    UNWELDED_TANGENTS: !!unwelded?.tangents,
+    UNWELDED_UVS: !!unwelded?.uvs,
+    UNWELDED_LOOKUPS: !!unwelded?.lookups,
+  }), [defs, flat, fragDepth, instanceDefs, hasSegments, unwelded]);
 
   return (
-    use(Virtual, {
+    useDraw({
       vertexCount,
-      instanceCount: totalCount ?? instanceCount,
+      instanceCount: totalCount,
       bounds,
 
       links,

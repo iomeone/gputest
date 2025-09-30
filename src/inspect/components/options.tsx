@@ -1,5 +1,6 @@
 import React from 'react';
-import { useRefineCursor, Cursor } from '../../state';
+import { useCursor } from '@use-gpu/state/react';
+import { Cursor } from '@use-gpu/state';
 import { SmallButton, OptionsContainer, Spacer } from './layout';
 import { OptionState } from './types';
 
@@ -13,16 +14,15 @@ export type OptionsProps = {
 };
 
 export const Options: React.FC<OptionsProps> = (props: OptionsProps) => {
-  
-  const {cursor, toggleInspect} = props;
-  const useCursor = useRefineCursor(cursor);
 
-  const [depthLimit, setDepthLimit] = useCursor<number>('depth');
-  const [runCounts, setRunCounts] = useCursor<boolean>('counts');
-  const [fullSize, setFullSize] = useCursor<boolean>('fullSize');
-  const [builtins, setBuiltins] = useCursor<boolean>('builtins');
-  const [highlight, setHighlight] = useCursor<boolean>('highlight');
-  const [inspect] = useCursor<boolean>('inspect');
+  const {cursor, toggleInspect} = props;
+
+  const [depthLimit, setDepthLimit] = cursor.depth();
+  const [runCounts, setRunCounts] = cursor.counts();
+  const [fullSize, setFullSize] = cursor.fullSize();
+  const [builtins, setBuiltins] = cursor.builtins();
+  const [highlight, setHighlight] = cursor.highlight();
+  const [inspect] = cursor.inspect();
 
   return (
     <OptionsContainer>

@@ -1,6 +1,6 @@
-use '../../../wgsl/use/types'::{ UIVertex };
-use '../../../wgsl/geometry/quad'::{ getQuadUV };
-use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale }; 
+use '@use-gpu/wgsl/use/types'::{ UIVertex };
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
+use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale };
 
 @optional @link fn getIndex(i: u32) -> u32 { return 0u; };
 @optional @link fn getRectangle(i: u32) -> vec4<f32> { return vec4<f32>(-1.0, -1.0, 1.0, 1.0); };
@@ -41,7 +41,7 @@ use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveSc
   var expand = getExpand(index);
 
   var center = worldToClip(position);
-  
+
   // Lay out quad
   var uv1 = getQuadUV(vertexIndex);
   var xy1 = uv1 * 2.0 - 1.0;
@@ -81,7 +81,7 @@ use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveSc
 
   // Attach to position
   center = vec4<f32>(center.xy + 2.0 * xy * getViewResolution() * center.w, center.zw);
-  
+
   let sdfUV = uv;
   let textureUV = uv;
   let textureST = st;

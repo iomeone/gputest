@@ -1,113 +1,113 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ast gets geometry quad symbol table 1`] = `
-Object {
-  "declarations": Array [
-    Object {
+{
+  "declarations": [
+    {
       "at": 0,
       "flags": 0,
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "QUAD",
       ],
-      "variable": Object {
-        "locals": Array [
-          Object {
+      "variable": {
+        "locals": [
+          {
             "expr": "ivec2(0, 0)",
             "name": "QUAD",
           },
         ],
-        "type": Object {
+        "type": {
           "name": "ivec2",
-          "qualifiers": Array [
+          "qualifiers": [
             "const",
           ],
         },
       },
     },
-    Object {
+    {
       "at": 102,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "getQuadIndex",
-        "parameters": Array [
+        "parameters": [
           "int",
           "vertex",
         ],
-        "type": Object {
+        "type": {
           "name": "ivec2",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "QUAD",
       ],
-      "symbols": Array [
+      "symbols": [
         "getQuadIndex",
       ],
     },
-    Object {
+    {
       "at": 176,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "getQuadUV",
-        "parameters": Array [
+        "parameters": [
           "int",
           "vertex",
         ],
-        "type": Object {
+        "type": {
           "name": "vec2",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "getQuadIndex",
       ],
-      "symbols": Array [
+      "symbols": [
         "getQuadUV",
       ],
     },
   ],
-  "exports": Array [
-    Object {
+  "exports": [
+    {
       "at": 102,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "getQuadIndex",
-        "parameters": Array [
+        "parameters": [
           "int",
           "vertex",
         ],
-        "type": Object {
+        "type": {
           "name": "ivec2",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "QUAD",
       ],
-      "symbols": Array [
+      "symbols": [
         "getQuadIndex",
       ],
     },
-    Object {
+    {
       "at": 176,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "getQuadUV",
-        "parameters": Array [
+        "parameters": [
           "int",
           "vertex",
         ],
-        "type": Object {
+        "type": {
           "name": "vec2",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "getQuadIndex",
       ],
-      "symbols": Array [
+      "symbols": [
         "getQuadUV",
       ],
     },
@@ -116,12 +116,13 @@ Object {
   "globals": undefined,
   "linkable": undefined,
   "modules": undefined,
-  "symbols": Array [
+  "symbols": [
     "QUAD",
     "getQuadIndex",
     "getQuadUV",
   ],
-  "visibles": Array [
+  "types": undefined,
+  "visibles": [
     "getQuadIndex",
     "getQuadUV",
   ],
@@ -129,76 +130,76 @@ Object {
 `;
 
 exports[`ast gets quad vertex declarations 1`] = `
-Array [
-  Object {
+[
+  {
     "at": 175,
     "flags": 0,
-    "func": Object {
+    "func": {
       "name": "getPosition",
-      "parameters": Array [
+      "parameters": [
         "int",
       ],
-      "type": Object {
+      "type": {
         "name": "vec4",
-        "qualifiers": Array [],
+        "qualifiers": [],
       },
     },
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "getPosition",
     ],
   },
-  Object {
+  {
     "at": 198,
     "flags": 0,
-    "func": Object {
+    "func": {
       "name": "getColor",
-      "parameters": Array [
+      "parameters": [
         "int",
       ],
-      "type": Object {
+      "type": {
         "name": "vec4",
-        "qualifiers": Array [],
+        "qualifiers": [],
       },
     },
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "getColor",
     ],
   },
-  Object {
+  {
     "at": 218,
     "flags": 0,
-    "func": Object {
+    "func": {
       "name": "getSize",
-      "parameters": Array [
+      "parameters": [
         "int",
       ],
-      "type": Object {
+      "type": {
         "name": "vec2",
-        "qualifiers": Array [],
+        "qualifiers": [],
       },
     },
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "getSize",
     ],
   },
-  Object {
+  {
     "at": 237,
     "flags": 0,
-    "func": Object {
+    "func": {
       "name": "getDepth",
-      "parameters": Array [
+      "parameters": [
         "int",
       ],
-      "type": Object {
+      "type": {
         "name": "float",
-        "qualifiers": Array [],
+        "qualifiers": [],
       },
     },
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "getDepth",
     ],
   },
@@ -206,22 +207,25 @@ Array [
 `;
 
 exports[`ast gets quad vertex functions 1`] = `
-Array [
-  Object {
+[
+  {
     "at": 274,
     "flags": 1,
-    "func": Object {
+    "func": {
       "name": "getQuadVertex",
-      "parameters": Array [
+      "parameters": [
         "int",
         "vertexIndex",
       ],
-      "type": Object {
+      "type": {
         "name": "SolidVertex",
-        "qualifiers": Array [],
+        "qualifiers": [],
       },
     },
-    "identifiers": Array [
+    "identifiers": [
+      "SolidVertex",
+      "vertexIndex",
+      "instanceIndex",
       "position",
       "getPosition",
       "instanceIndex",
@@ -242,7 +246,7 @@ Array [
       "viewUniforms",
       "SolidVertex",
     ],
-    "symbols": Array [
+    "symbols": [
       "getQuadVertex",
     ],
   },
@@ -250,53 +254,53 @@ Array [
 `;
 
 exports[`ast gets quad vertex imports 1`] = `
-Array [
-  Object {
+[
+  {
     "at": 0,
-    "imports": Array [
-      Object {
+    "imports": [
+      {
         "imported": "SolidVertex",
         "name": "SolidVertex",
       },
     ],
     "name": "use/types",
-    "symbols": Array [
+    "symbols": [
       "SolidVertex",
     ],
   },
-  Object {
+  {
     "at": 0,
-    "imports": Array [
-      Object {
+    "imports": [
+      {
         "imported": "viewUniforms",
         "name": "viewUniforms",
       },
-      Object {
+      {
         "imported": "worldToClip",
         "name": "worldToClip",
       },
-      Object {
+      {
         "imported": "getPerspectiveScale",
         "name": "getPerspectiveScale",
       },
     ],
     "name": "use/view",
-    "symbols": Array [
+    "symbols": [
       "viewUniforms",
       "worldToClip",
       "getPerspectiveScale",
     ],
   },
-  Object {
+  {
     "at": 0,
-    "imports": Array [
-      Object {
+    "imports": [
+      {
         "imported": "getQuadUV",
         "name": "getQuadUV",
       },
     ],
     "name": "geometry/quad",
-    "symbols": Array [
+    "symbols": [
       "getQuadUV",
     ],
   },
@@ -304,296 +308,297 @@ Array [
 `;
 
 exports[`ast gets quad vertex symbol table 1`] = `
-Object {
-  "declarations": Array [
-    Object {
+{
+  "declarations": [
+    {
       "at": 175,
       "flags": 0,
-      "func": Object {
+      "func": {
         "name": "getPosition",
-        "parameters": Array [
+        "parameters": [
           "int",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "getPosition",
       ],
     },
-    Object {
+    {
       "at": 198,
       "flags": 0,
-      "func": Object {
+      "func": {
         "name": "getColor",
-        "parameters": Array [
+        "parameters": [
           "int",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "getColor",
       ],
     },
-    Object {
+    {
       "at": 218,
       "flags": 0,
-      "func": Object {
+      "func": {
         "name": "getSize",
-        "parameters": Array [
+        "parameters": [
           "int",
         ],
-        "type": Object {
+        "type": {
           "name": "vec2",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "getSize",
       ],
     },
-    Object {
+    {
       "at": 237,
       "flags": 0,
-      "func": Object {
+      "func": {
         "name": "getDepth",
-        "parameters": Array [
+        "parameters": [
           "int",
         ],
-        "type": Object {
+        "type": {
           "name": "float",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "getDepth",
       ],
     },
-    Object {
+    {
       "at": 274,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "getQuadVertex",
-        "parameters": Array [
+        "parameters": [
           "int",
           "vertexIndex",
         ],
-        "type": Object {
+        "type": {
           "name": "SolidVertex",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "getPosition",
         "getColor",
         "getSize",
         "getDepth",
       ],
-      "symbols": Array [
+      "symbols": [
         "getQuadVertex",
       ],
     },
   ],
-  "exports": Array [
-    Object {
+  "exports": [
+    {
       "at": 274,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "getQuadVertex",
-        "parameters": Array [
+        "parameters": [
           "int",
           "vertexIndex",
         ],
-        "type": Object {
+        "type": {
           "name": "SolidVertex",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "getPosition",
         "getColor",
         "getSize",
         "getDepth",
       ],
-      "symbols": Array [
+      "symbols": [
         "getQuadVertex",
       ],
     },
   ],
-  "externals": Array [
-    Object {
+  "externals": [
+    {
       "at": 175,
       "flags": 0,
-      "func": Object {
+      "func": {
         "name": "getPosition",
-        "parameters": Array [
+        "parameters": [
           "int",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "getPosition",
       ],
     },
-    Object {
+    {
       "at": 198,
       "flags": 0,
-      "func": Object {
+      "func": {
         "name": "getColor",
-        "parameters": Array [
+        "parameters": [
           "int",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "getColor",
       ],
     },
-    Object {
+    {
       "at": 218,
       "flags": 0,
-      "func": Object {
+      "func": {
         "name": "getSize",
-        "parameters": Array [
+        "parameters": [
           "int",
         ],
-        "type": Object {
+        "type": {
           "name": "vec2",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "getSize",
       ],
     },
-    Object {
+    {
       "at": 237,
       "flags": 0,
-      "func": Object {
+      "func": {
         "name": "getDepth",
-        "parameters": Array [
+        "parameters": [
           "int",
         ],
-        "type": Object {
+        "type": {
           "name": "float",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "getDepth",
       ],
     },
   ],
   "globals": undefined,
-  "linkable": Object {
+  "linkable": {
     "getColor": true,
     "getDepth": true,
     "getPosition": true,
     "getSize": true,
   },
-  "modules": Array [
-    Object {
+  "modules": [
+    {
       "at": 0,
-      "imports": Array [
-        Object {
+      "imports": [
+        {
           "imported": "SolidVertex",
           "name": "SolidVertex",
         },
       ],
       "name": "use/types",
-      "symbols": Array [
+      "symbols": [
         "SolidVertex",
       ],
     },
-    Object {
+    {
       "at": 0,
-      "imports": Array [
-        Object {
+      "imports": [
+        {
           "imported": "viewUniforms",
           "name": "viewUniforms",
         },
-        Object {
+        {
           "imported": "worldToClip",
           "name": "worldToClip",
         },
-        Object {
+        {
           "imported": "getPerspectiveScale",
           "name": "getPerspectiveScale",
         },
       ],
       "name": "use/view",
-      "symbols": Array [
+      "symbols": [
         "viewUniforms",
         "worldToClip",
         "getPerspectiveScale",
       ],
     },
-    Object {
+    {
       "at": 0,
-      "imports": Array [
-        Object {
+      "imports": [
+        {
           "imported": "getQuadUV",
           "name": "getQuadUV",
         },
       ],
       "name": "geometry/quad",
-      "symbols": Array [
+      "symbols": [
         "getQuadUV",
       ],
     },
   ],
-  "symbols": Array [
+  "symbols": [
     "getPosition",
     "getColor",
     "getSize",
     "getDepth",
     "getQuadVertex",
   ],
-  "visibles": Array [
+  "types": undefined,
+  "visibles": [
     "getQuadVertex",
   ],
 }
 `;
 
 exports[`ast gets shake information for geometry/quad AST 1`] = `
-Array [
-  Array [
+[
+  [
     0,
-    Array [
+    [
       0,
       1,
       2,
     ],
   ],
-  Array [
+  [
     102,
-    Array [
+    [
       1,
       2,
     ],
   ],
-  Array [
+  [
     176,
-    Array [
+    [
       2,
     ],
   ],
@@ -601,38 +606,38 @@ Array [
 `;
 
 exports[`ast gets shake information for getQuadVertex AST 1`] = `
-Array [
-  Array [
+[
+  [
     175,
-    Array [
+    [
       0,
       4,
     ],
   ],
-  Array [
+  [
     198,
-    Array [
+    [
       1,
       4,
     ],
   ],
-  Array [
+  [
     218,
-    Array [
+    [
       2,
       4,
     ],
   ],
-  Array [
+  [
     237,
-    Array [
+    [
       3,
       4,
     ],
   ],
-  Array [
+  [
     274,
-    Array [
+    [
       4,
     ],
   ],
@@ -640,16 +645,16 @@ Array [
 `;
 
 exports[`ast gets shake information for use/types AST 1`] = `
-Array [
-  Array [
+[
+  [
     15,
-    Array [
+    [
       0,
     ],
   ],
-  Array [
+  [
     97,
-    Array [
+    [
       1,
     ],
   ],
@@ -657,42 +662,42 @@ Array [
 `;
 
 exports[`ast gets solid fragment declarations 1`] = `
-Array [
-  Object {
+[
+  {
     "at": 54,
     "flags": 0,
-    "func": Object {
+    "func": {
       "name": "getFragment",
-      "parameters": Array [
+      "parameters": [
         "vec4",
       ],
-      "type": Object {
+      "type": {
         "name": "vec4",
-        "qualifiers": Array [],
+        "qualifiers": [],
       },
     },
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "getFragment",
     ],
   },
-  Object {
+  {
     "at": 103,
     "flags": 0,
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "fragIndex",
     ],
-    "variable": Object {
-      "locals": Array [
-        Object {
+    "variable": {
+      "locals": [
+        {
           "expr": null,
           "name": "fragIndex",
         },
       ],
-      "type": Object {
+      "type": {
         "name": "uint",
-        "qualifiers": Array [
+        "qualifiers": [
           "layout(location = 0)",
           "in",
           "flat",
@@ -700,92 +705,92 @@ Array [
       },
     },
   },
-  Object {
+  {
     "at": 148,
     "flags": 0,
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "outColor",
     ],
-    "variable": Object {
-      "locals": Array [
-        Object {
+    "variable": {
+      "locals": [
+        {
           "expr": null,
           "name": "outColor",
         },
       ],
-      "type": Object {
+      "type": {
         "name": "uvec4",
-        "qualifiers": Array [
+        "qualifiers": [
           "layout(location = 0)",
           "out",
         ],
       },
     },
   },
-  Object {
+  {
     "at": 195,
     "flags": 0,
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "fragColor",
     ],
-    "variable": Object {
-      "locals": Array [
-        Object {
+    "variable": {
+      "locals": [
+        {
           "expr": null,
           "name": "fragColor",
         },
       ],
-      "type": Object {
+      "type": {
         "name": "vec4",
-        "qualifiers": Array [
+        "qualifiers": [
           "layout(location = 0)",
           "in",
         ],
       },
     },
   },
-  Object {
+  {
     "at": 235,
     "flags": 0,
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "fragUV",
     ],
-    "variable": Object {
-      "locals": Array [
-        Object {
+    "variable": {
+      "locals": [
+        {
           "expr": null,
           "name": "fragUV",
         },
       ],
-      "type": Object {
+      "type": {
         "name": "vec2",
-        "qualifiers": Array [
+        "qualifiers": [
           "layout(location = 1)",
           "in",
         ],
       },
     },
   },
-  Object {
+  {
     "at": 273,
     "flags": 0,
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "outColor",
     ],
-    "variable": Object {
-      "locals": Array [
-        Object {
+    "variable": {
+      "locals": [
+        {
           "expr": null,
           "name": "outColor",
         },
       ],
-      "type": Object {
+      "type": {
         "name": "vec4",
-        "qualifiers": Array [
+        "qualifiers": [
           "layout(location = 0)",
           "out",
         ],
@@ -796,64 +801,64 @@ Array [
 `;
 
 exports[`ast gets test declarations 1`] = `
-Array [
-  Object {
+[
+  {
     "at": 7,
     "flags": 0,
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "x",
       "y",
     ],
-    "variable": Object {
-      "locals": Array [
-        Object {
+    "variable": {
+      "locals": [
+        {
           "expr": null,
           "name": "x",
         },
-        Object {
+        {
           "expr": null,
           "name": "y",
         },
       ],
-      "type": Object {
+      "type": {
         "name": "float",
-        "qualifiers": Array [],
+        "qualifiers": [],
       },
     },
   },
-  Object {
+  {
     "at": 25,
     "flags": 0,
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "a",
       "b",
       "c",
       "d",
     ],
-    "variable": Object {
-      "locals": Array [
-        Object {
+    "variable": {
+      "locals": [
+        {
           "expr": "3",
           "name": "a",
         },
-        Object {
+        {
           "expr": "1",
           "name": "b",
         },
-        Object {
+        {
           "expr": null,
           "name": "c",
         },
-        Object {
+        {
           "expr": null,
           "name": "d",
         },
       ],
-      "type": Object {
+      "type": {
         "name": "int",
-        "qualifiers": Array [],
+        "qualifiers": [],
       },
     },
   },
@@ -861,24 +866,24 @@ Array [
 `;
 
 exports[`ast gets test declarations with array 1`] = `
-Array [
-  Object {
+[
+  {
     "at": 7,
     "flags": 0,
-    "identifiers": Array [],
-    "symbols": Array [
+    "identifiers": [],
+    "symbols": [
       "QUAD",
     ],
-    "variable": Object {
-      "locals": Array [
-        Object {
+    "variable": {
+      "locals": [
+        {
           "expr": "ivec2(0, 0)",
           "name": "QUAD",
         },
       ],
-      "type": Object {
+      "type": {
         "name": "ivec2",
-        "qualifiers": Array [
+        "qualifiers": [
           "const",
         ],
       },
@@ -888,24 +893,24 @@ Array [
 `;
 
 exports[`ast gets test declarations with qualified declaration 1`] = `
-Array [
-  Object {
+[
+  {
     "at": 7,
     "flags": 0,
-    "symbols": Array [
+    "symbols": [
       "unknown",
     ],
   },
-  Object {
+  {
     "at": 42,
     "flags": 0,
-    "identifiers": Array [],
-    "symbols": Array [],
-    "variable": Object {
-      "locals": Array [],
-      "type": Object {
+    "identifiers": [],
+    "symbols": [],
+    "variable": {
+      "locals": [],
+      "type": {
         "name": "vec2",
-        "qualifiers": Array [
+        "qualifiers": [
           "layout(location = 1)",
           "in",
         ],
@@ -916,159 +921,159 @@ Array [
 `;
 
 exports[`ast gets use types symbol table 1`] = `
-Object {
-  "declarations": Array [
-    Object {
+{
+  "declarations": [
+    {
       "at": 15,
       "flags": 1,
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "SolidVertex",
       ],
-      "variable": Object {
-        "locals": Array [],
-        "type": Object {
-          "members": Array [
-            Object {
+      "variable": {
+        "locals": [],
+        "type": {
+          "members": [
+            {
               "name": "position",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "color",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "uv",
-              "type": Object {
+              "type": {
                 "name": "vec2",
               },
             },
           ],
           "name": "SolidVertex",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
     },
-    Object {
+    {
       "at": 97,
       "flags": 1,
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "MeshVertex",
       ],
-      "variable": Object {
-        "locals": Array [],
-        "type": Object {
-          "members": Array [
-            Object {
+      "variable": {
+        "locals": [],
+        "type": {
+          "members": [
+            {
               "name": "position",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "normal",
-              "type": Object {
+              "type": {
                 "name": "vec3",
               },
             },
-            Object {
+            {
               "name": "color",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "uv",
-              "type": Object {
+              "type": {
                 "name": "vec2",
               },
             },
           ],
           "name": "MeshVertex",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
     },
   ],
-  "exports": Array [
-    Object {
+  "exports": [
+    {
       "at": 15,
       "flags": 1,
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "SolidVertex",
       ],
-      "variable": Object {
-        "locals": Array [],
-        "type": Object {
-          "members": Array [
-            Object {
+      "variable": {
+        "locals": [],
+        "type": {
+          "members": [
+            {
               "name": "position",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "color",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "uv",
-              "type": Object {
+              "type": {
                 "name": "vec2",
               },
             },
           ],
           "name": "SolidVertex",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
     },
-    Object {
+    {
       "at": 97,
       "flags": 1,
       "identifiers": undefined,
-      "symbols": Array [
+      "symbols": [
         "MeshVertex",
       ],
-      "variable": Object {
-        "locals": Array [],
-        "type": Object {
-          "members": Array [
-            Object {
+      "variable": {
+        "locals": [],
+        "type": {
+          "members": [
+            {
               "name": "position",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "normal",
-              "type": Object {
+              "type": {
                 "name": "vec3",
               },
             },
-            Object {
+            {
               "name": "color",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "uv",
-              "type": Object {
+              "type": {
                 "name": "vec2",
               },
             },
           ],
           "name": "MeshVertex",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
     },
@@ -1077,11 +1082,12 @@ Object {
   "globals": undefined,
   "linkable": undefined,
   "modules": undefined,
-  "symbols": Array [
+  "symbols": [
     "SolidVertex",
     "MeshVertex",
   ],
-  "visibles": Array [
+  "types": undefined,
+  "visibles": [
     "SolidVertex",
     "MeshVertex",
   ],
@@ -1089,78 +1095,71 @@ Object {
 `;
 
 exports[`ast gets use view declarations 1`] = `
-Array [
-  Object {
+[
+  {
     "at": 15,
     "flags": 1,
-    "identifiers": Array [
+    "identifiers": [
       "VIEW_BINDGROUP",
       "VIEW_BINDING",
-      "projectionMatrix",
-      "viewMatrix",
-      "viewPosition",
-      "viewResolution",
-      "viewSize",
-      "viewWorldDepth",
-      "viewPixelRatio",
     ],
-    "struct": Object {
+    "struct": {
       "name": "viewUniforms",
-      "struct": Object {
-        "members": Array [
-          Object {
+      "struct": {
+        "members": [
+          {
             "name": "projectionMatrix",
-            "type": Object {
+            "type": {
               "name": "mat4",
             },
           },
-          Object {
+          {
             "name": "viewMatrix",
-            "type": Object {
+            "type": {
               "name": "mat4",
             },
           },
-          Object {
+          {
             "name": "viewPosition",
-            "type": Object {
+            "type": {
               "name": "vec4",
             },
           },
-          Object {
+          {
             "name": "viewResolution",
-            "type": Object {
+            "type": {
               "name": "vec2",
             },
           },
-          Object {
+          {
             "name": "viewSize",
-            "type": Object {
+            "type": {
               "name": "vec2",
             },
           },
-          Object {
+          {
             "name": "viewWorldDepth",
-            "type": Object {
+            "type": {
               "name": "float",
             },
           },
-          Object {
+          {
             "name": "viewPixelRatio",
-            "type": Object {
+            "type": {
               "name": "float",
             },
           },
         ],
       },
-      "type": Object {
+      "type": {
         "name": "ViewUniforms",
-        "qualifiers": Array [
+        "qualifiers": [
           "layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING)",
           "uniform",
         ],
       },
     },
-    "symbols": Array [
+    "symbols": [
       "viewUniforms",
       "ViewUniforms",
     ],
@@ -1169,435 +1168,435 @@ Array [
 `;
 
 exports[`ast gets use view symbol table 1`] = `
-Object {
-  "declarations": Array [
-    Object {
+{
+  "declarations": [
+    {
       "at": 15,
       "flags": 1,
       "identifiers": undefined,
-      "struct": Object {
+      "struct": {
         "name": "viewUniforms",
-        "struct": Object {
-          "members": Array [
-            Object {
+        "struct": {
+          "members": [
+            {
               "name": "projectionMatrix",
-              "type": Object {
+              "type": {
                 "name": "mat4",
               },
             },
-            Object {
+            {
               "name": "viewMatrix",
-              "type": Object {
+              "type": {
                 "name": "mat4",
               },
             },
-            Object {
+            {
               "name": "viewPosition",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "viewResolution",
-              "type": Object {
+              "type": {
                 "name": "vec2",
               },
             },
-            Object {
+            {
               "name": "viewSize",
-              "type": Object {
+              "type": {
                 "name": "vec2",
               },
             },
-            Object {
+            {
               "name": "viewWorldDepth",
-              "type": Object {
+              "type": {
                 "name": "float",
               },
             },
-            Object {
+            {
               "name": "viewPixelRatio",
-              "type": Object {
+              "type": {
                 "name": "float",
               },
             },
           ],
         },
-        "type": Object {
+        "type": {
           "name": "ViewUniforms",
-          "qualifiers": Array [
+          "qualifiers": [
             "layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING)",
             "uniform",
           ],
         },
       },
-      "symbols": Array [
+      "symbols": [
         "viewUniforms",
         "ViewUniforms",
       ],
     },
-    Object {
+    {
       "at": 276,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "worldToView",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "worldToView",
       ],
     },
-    Object {
+    {
       "at": 373,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "viewToClip",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "viewToClip",
       ],
     },
-    Object {
+    {
       "at": 475,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "worldToClip",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewToClip",
         "worldToView",
       ],
-      "symbols": Array [
+      "symbols": [
         "worldToClip",
       ],
     },
-    Object {
+    {
       "at": 571,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "clipToScreen3D",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec3",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "clipToScreen3D",
       ],
     },
-    Object {
+    {
       "at": 690,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "screenToClip3D",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec3",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "screenToClip3D",
       ],
     },
-    Object {
+    {
       "at": 815,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "worldToClip3D",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec3",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewToClip",
         "worldToView",
       ],
-      "symbols": Array [
+      "symbols": [
         "worldToClip3D",
       ],
     },
-    Object {
+    {
       "at": 953,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "getPerspectiveScale",
-        "parameters": Array [
+        "parameters": [
           "float",
           "w",
         ],
-        "type": Object {
+        "type": {
           "name": "float",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "getPerspectiveScale",
       ],
     },
   ],
-  "exports": Array [
-    Object {
+  "exports": [
+    {
       "at": 15,
       "flags": 1,
       "identifiers": undefined,
-      "struct": Object {
+      "struct": {
         "name": "viewUniforms",
-        "struct": Object {
-          "members": Array [
-            Object {
+        "struct": {
+          "members": [
+            {
               "name": "projectionMatrix",
-              "type": Object {
+              "type": {
                 "name": "mat4",
               },
             },
-            Object {
+            {
               "name": "viewMatrix",
-              "type": Object {
+              "type": {
                 "name": "mat4",
               },
             },
-            Object {
+            {
               "name": "viewPosition",
-              "type": Object {
+              "type": {
                 "name": "vec4",
               },
             },
-            Object {
+            {
               "name": "viewResolution",
-              "type": Object {
+              "type": {
                 "name": "vec2",
               },
             },
-            Object {
+            {
               "name": "viewSize",
-              "type": Object {
+              "type": {
                 "name": "vec2",
               },
             },
-            Object {
+            {
               "name": "viewWorldDepth",
-              "type": Object {
+              "type": {
                 "name": "float",
               },
             },
-            Object {
+            {
               "name": "viewPixelRatio",
-              "type": Object {
+              "type": {
                 "name": "float",
               },
             },
           ],
         },
-        "type": Object {
+        "type": {
           "name": "ViewUniforms",
-          "qualifiers": Array [
+          "qualifiers": [
             "layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING)",
             "uniform",
           ],
         },
       },
-      "symbols": Array [
+      "symbols": [
         "viewUniforms",
         "ViewUniforms",
       ],
     },
-    Object {
+    {
       "at": 276,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "worldToView",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "worldToView",
       ],
     },
-    Object {
+    {
       "at": 373,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "viewToClip",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "viewToClip",
       ],
     },
-    Object {
+    {
       "at": 475,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "worldToClip",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec4",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewToClip",
         "worldToView",
       ],
-      "symbols": Array [
+      "symbols": [
         "worldToClip",
       ],
     },
-    Object {
+    {
       "at": 571,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "clipToScreen3D",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec3",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "clipToScreen3D",
       ],
     },
-    Object {
+    {
       "at": 690,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "screenToClip3D",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec3",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "screenToClip3D",
       ],
     },
-    Object {
+    {
       "at": 815,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "worldToClip3D",
-        "parameters": Array [
+        "parameters": [
           "vec4",
           "position",
         ],
-        "type": Object {
+        "type": {
           "name": "vec3",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewToClip",
         "worldToView",
       ],
-      "symbols": Array [
+      "symbols": [
         "worldToClip3D",
       ],
     },
-    Object {
+    {
       "at": 953,
       "flags": 1,
-      "func": Object {
+      "func": {
         "name": "getPerspectiveScale",
-        "parameters": Array [
+        "parameters": [
           "float",
           "w",
         ],
-        "type": Object {
+        "type": {
           "name": "float",
-          "qualifiers": Array [],
+          "qualifiers": [],
         },
       },
-      "identifiers": Array [
+      "identifiers": [
         "viewUniforms",
       ],
-      "symbols": Array [
+      "symbols": [
         "getPerspectiveScale",
       ],
     },
@@ -1606,7 +1605,7 @@ Object {
   "globals": undefined,
   "linkable": undefined,
   "modules": undefined,
-  "symbols": Array [
+  "symbols": [
     "viewUniforms",
     "ViewUniforms",
     "worldToView",
@@ -1617,7 +1616,11 @@ Object {
     "worldToClip3D",
     "getPerspectiveScale",
   ],
-  "visibles": Array [
+  "types": [
+    "viewUniforms",
+    "ViewUniforms",
+  ],
+  "visibles": [
     "viewUniforms",
     "ViewUniforms",
     "worldToView",
@@ -1632,163 +1635,103 @@ Object {
 `;
 
 exports[`ast rewrites a lot of code using the compressed AST 1`] = `
-Array [
-  Array [
+[
+  [
     1,
     1,
     46,
   ],
-  Array [
+  [
     0,
     47,
     79,
   ],
-  Array [
+  [
     2,
     0,
     11,
   ],
-  Array [
+  [
     2,
     12,
     21,
   ],
-  Array [
+  [
     0,
     40,
     85,
   ],
-  Array [
+  [
     2,
-    7,
-    15,
+    35,
+    44,
   ],
-  Array [
-    2,
-    28,
-    37,
-  ],
-  Array [
+  [
     0,
     17,
     57,
   ],
-  Array [
+  [
     2,
-    7,
-    15,
+    30,
+    39,
   ],
-  Array [
-    2,
-    23,
-    32,
-  ],
-  Array [
+  [
     0,
     11,
     48,
   ],
-  Array [
+  [
     2,
-    7,
-    15,
+    30,
+    36,
   ],
-  Array [
-    2,
-    23,
-    29,
-  ],
-  Array [
+  [
     0,
     16,
     300,
   ],
-  Array [
+  [
     2,
     5,
     9,
   ],
-  Array [
+  [
     2,
-    15,
-    26,
+    88,
+    99,
   ],
-  Array [
-    2,
-    14,
-    28,
-  ],
-  Array [
-    2,
-    22,
-    35,
-  ],
-  Array [
+  [
     2,
     16,
-    32,
+    25,
   ],
-  Array [
+  [
     2,
-    21,
-    32,
+    56,
+    57,
   ],
-  Array [
-    2,
-    12,
-    13,
-  ],
-  Array [
-    2,
-    4,
-    13,
-  ],
-  Array [
-    2,
-    10,
-    21,
-  ],
-  Array [
-    2,
-    13,
-    26,
-  ],
-  Array [
-    2,
-    19,
-    30,
-  ],
-  Array [
-    2,
-    14,
-    15,
-  ],
-  Array [
+  [
     2,
     32,
     41,
   ],
-  Array [
+  [
     2,
-    17,
-    30,
+    41,
+    50,
   ],
-  Array [
-    2,
-    24,
-    33,
-  ],
-  Array [
+  [
     2,
     12,
     13,
   ],
-  Array [
+  [
     2,
     11,
     17,
   ],
-  Array [
+  [
     2,
     9,
     10,
@@ -1797,8 +1740,109 @@ Array [
 `;
 
 exports[`ast rewrites a lot of code using the compressed AST 2`] = `
-Object {
-  "__nodes": [Function],
+{
+  "__nodes": [
+    [
+      1,
+      1,
+      46,
+    ],
+    [
+      0,
+      47,
+      79,
+    ],
+    [
+      2,
+      0,
+      11,
+    ],
+    [
+      2,
+      12,
+      21,
+    ],
+    [
+      0,
+      40,
+      85,
+    ],
+    [
+      2,
+      35,
+      44,
+    ],
+    [
+      0,
+      17,
+      57,
+    ],
+    [
+      2,
+      30,
+      39,
+    ],
+    [
+      0,
+      11,
+      48,
+    ],
+    [
+      2,
+      30,
+      36,
+    ],
+    [
+      0,
+      16,
+      300,
+    ],
+    [
+      2,
+      5,
+      9,
+    ],
+    [
+      2,
+      88,
+      99,
+    ],
+    [
+      2,
+      16,
+      25,
+    ],
+    [
+      2,
+      56,
+      57,
+    ],
+    [
+      2,
+      32,
+      41,
+    ],
+    [
+      2,
+      41,
+      50,
+    ],
+    [
+      2,
+      12,
+      13,
+    ],
+    [
+      2,
+      11,
+      17,
+    ],
+    [
+      2,
+      9,
+      10,
+    ],
+  ],
   "cursor": [Function],
 }
 `;
@@ -1814,86 +1858,97 @@ exports[`ast rewrites code using the AST 1`] = `
 `;
 
 exports[`ast rewrites code using the compressed AST 1`] = `
-Array [
-  Array [
+[
+  [
     0,
     5,
     31,
   ],
-  Array [
+  [
     2,
     6,
     14,
   ],
-  Array [
-    2,
-    13,
-    18,
-  ],
-  Array [
+  [
     0,
-    12,
-    108,
+    25,
+    121,
   ],
-  Array [
+  [
     2,
     5,
     9,
   ],
-  Array [
+  [
     2,
-    21,
-    22,
+    46,
+    54,
   ],
-  Array [
+  [
     2,
-    21,
-    22,
-  ],
-  Array [
-    2,
-    4,
-    12,
-  ],
-  Array [
-    2,
-    24,
-    25,
-  ],
-  Array [
-    2,
-    9,
-    10,
+    33,
+    34,
   ],
 ]
 `;
 
 exports[`ast rewrites code using the compressed AST 2`] = `
-Object {
-  "__nodes": [Function],
+{
+  "__nodes": [
+    [
+      0,
+      5,
+      31,
+    ],
+    [
+      2,
+      6,
+      14,
+    ],
+    [
+      0,
+      25,
+      121,
+    ],
+    [
+      2,
+      5,
+      9,
+    ],
+    [
+      2,
+      46,
+      54,
+    ],
+    [
+      2,
+      33,
+      34,
+    ],
+  ],
   "cursor": [Function],
 }
 `;
 
 exports[`ast shakes simple program 1`] = `
-Array [
-  Array [
+[
+  [
     1,
-    Array [
+    [
       0,
       1,
       2,
     ],
   ],
-  Array [
+  [
     38,
-    Array [
+    [
       1,
     ],
   ],
-  Array [
+  [
     83,
-    Array [
+    [
       2,
     ],
   ],
@@ -1911,11 +1966,39 @@ float getA() {
 "
 `;
 
+exports[`ast shakes struct type args 1`] = `
+[
+  [
+    1,
+    [
+      0,
+      1,
+    ],
+  ],
+  [
+    57,
+    [
+      1,
+    ],
+  ],
+]
+`;
+
+exports[`ast shakes struct type args 2`] = `
+"
+struct VertexOutput {
+  vec4 position;
+  vec4 color;
+};
+vec4 main(VertexOutput arg) { return arg.color; }
+    "
+`;
+
 exports[`ast shakes use/view AST 1`] = `
-Array [
-  Array [
+[
+  [
     15,
-    Array [
+    [
       0,
       2,
       4,
@@ -1927,49 +2010,49 @@ Array [
       1,
     ],
   ],
-  Array [
+  [
     276,
-    Array [
+    [
       2,
       4,
       7,
     ],
   ],
-  Array [
+  [
     373,
-    Array [
+    [
       3,
       4,
       7,
     ],
   ],
-  Array [
+  [
     475,
-    Array [
+    [
       4,
     ],
   ],
-  Array [
+  [
     571,
-    Array [
+    [
       5,
     ],
   ],
-  Array [
+  [
     690,
-    Array [
+    [
       6,
     ],
   ],
-  Array [
+  [
     815,
-    Array [
+    [
       7,
     ],
   ],
-  Array [
+  [
     953,
-    Array [
+    [
       8,
     ],
   ],
@@ -2003,10 +2086,10 @@ vec4 worldToClip(vec4 position) {
 `;
 
 exports[`ast shakes use/view AST using compressed AST 1`] = `
-Array [
-  Array [
+[
+  [
     15,
-    Array [
+    [
       0,
       2,
       4,
@@ -2018,49 +2101,49 @@ Array [
       1,
     ],
   ],
-  Array [
+  [
     276,
-    Array [
+    [
       2,
       4,
       7,
     ],
   ],
-  Array [
+  [
     373,
-    Array [
+    [
       3,
       4,
       7,
     ],
   ],
-  Array [
+  [
     475,
-    Array [
+    [
       4,
     ],
   ],
-  Array [
+  [
     571,
-    Array [
+    [
       5,
     ],
   ],
-  Array [
+  [
     690,
-    Array [
+    [
       6,
     ],
   ],
-  Array [
+  [
     815,
-    Array [
+    [
       7,
     ],
   ],
-  Array [
+  [
     953,
-    Array [
+    [
       8,
     ],
   ],

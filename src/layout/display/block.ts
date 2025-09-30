@@ -1,38 +1,37 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { ShaderModule } from '../../shader';
-import type { Rectangle, Point, Point4 } from '../../core';
-import type { LayoutElement, FitInto, Dimension, Direction, MarginLike, Margin } from '../types';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { Rectangle } from '@use-gpu/core';
+import type { LayoutElement, FitInto, Direction, MarginLike } from '../types';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { useProp } from '../../traits';
-import { use, memo, gather, yeet, useFiber, useMemo } from '../../live';
+import { useProp, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { keyed, memo, gather, yeet, useFiber, useMemo } from '@use-gpu/live';
 import { getBlockMinMax, getBlockMargin, fitBlock } from '../lib/block';
-import { isHorizontal, makeBoxPicker, memoFit, memoLayout } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '../../workbench';
+import { isHorizontal, makeBoxPicker, memoFit } from '../lib/util';
+import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
 
-import type { BoxTrait, ElementTrait } from '../types';
-import { useBoxTrait, useElementTrait } from '../traits';
+import { BoxTrait, ElementTrait, useBoxTrait, useElementTrait } from '../traits';
 import { evaluateDimension, parseDirectionY, parseMargin } from '../parse';
 import { useImplicitElement } from '../element/element';
 import { BoxLayout } from '../render';
 
 export type BlockProps =
-  Partial<BoxTrait> &
-  Partial<ElementTrait> &
-{
+  TraitProps<typeof BoxTrait> &
+  TraitProps<typeof ElementTrait> &
+PropsWithChildren<{
   direction?: Direction,
-  
+
   padding?: MarginLike,
   snap?: boolean,
   contain?: boolean,
-};
+}>;
 
-export const Block: LiveComponent<BlockProps> = memo((props: PropsWithChildren<BlockProps>) => {
+export const Block: LiveComponent<BlockProps> = memo((props: BlockProps) => {
   const {
     snap = true,
-    children,
   } = props;
 
-  const { width, height, aspect, radius, border, stroke, fill, image } = useElementTrait(props);
+  const { width, height, aspect, zIndex } = useElementTrait(props);
   const { margin: blockMargin, grow, shrink, inline, flex } = useBoxTrait(props);
 
   const direction = useProp(props.direction, parseDirectionY);
@@ -47,6 +46,8 @@ export const Block: LiveComponent<BlockProps> = memo((props: PropsWithChildren<B
 
   const inspect = useInspectable();
   const hovered = useInspectHoverable();
+
+  const c = useImplicitElement(props);
 
   const Resume = (els: LayoutElement[]) => {
     return useMemo(() => {
@@ -103,17 +104,18 @@ export const Block: LiveComponent<BlockProps> = memo((props: PropsWithChildren<B
           render: (
             box: Rectangle,
             origin: Rectangle,
+            z: number,
             clip?: ShaderModule | null,
             mask?: ShaderModule | null,
             transform?: ShaderModule | null,
           ) => (
-            sizes.length ? use(BoxLayout, inside, {box, origin, clip, mask, transform}, hovered) : null
+            sizes.length ? keyed(BoxLayout, id, inside, {box, origin, z: z + zIndex, clip, mask, transform}, hovered) : null
           ),
           pick: makeBoxPicker(id, sizes, offsets, pickers),
         };
       };
 
-      return yeet({        
+      return yeet({
         sizing,
         margin,
         grow,
@@ -125,9 +127,16 @@ export const Block: LiveComponent<BlockProps> = memo((props: PropsWithChildren<B
         fit: memoFit(fit),
         prefit: memoFit(fit),
       });
-    }, [props, els, hovered]);
+    }, [props, els, hovered, zIndex]);
   };
 
-  const c = useImplicitElement(id, radius, border, stroke, fill, image, children);
   return gather(c, Resume);
-}, 'Block');
+}, shouldEqual({
+  padding: sameShallow(),
+  margin:  sameShallow(),
+  radius:  sameShallow(),
+  border:  sameShallow(),
+  stroke:  sameShallow(),
+  fill:    sameShallow(),
+  image:   sameShallow(),
+}), 'Block');

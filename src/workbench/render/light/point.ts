@@ -1,14 +1,11 @@
-import type { LiveComponent, LiveElement } from '../../../live';
-import type { ShaderModule } from '../../../shader';
+import type { LiveComponent } from '@use-gpu/live';
 import type { LightKindProps } from './light';
-import type { BoundLight } from '../../light/types';
 
-import { use, yeet, useCallback, useMemo, useOne, useRef } from '../../../live';
-import { uploadBuffer } from '../../../core';
-import { bindBundle } from '../../../shader/wgsl';
+import { use, yeet, useCallback, useMemo, useOne, useRef } from '@use-gpu/live';
+import { alignSizeTo, uploadBuffer } from '@use-gpu/core';
 
 import { useBufferedSize } from '../../hooks/useBufferedSize';
-import { useBoundShader } from '../../hooks/useBoundShader';
+import { useShader } from '../../hooks/useShader';
 import { useRawSource } from '../../hooks/useRawSource';
 
 import { useDeviceContext } from '../../providers/device-provider';
@@ -17,8 +14,8 @@ import { useViewContext } from '../../providers/view-provider';
 import { makeSphereGeometry } from '../../primitives/geometry/sphere';
 import { forMeshTriangles } from '../../primitives/geometry/util';
 
-import { getLightVertex } from '../../../wgsl/instance/vertex/lightwgsl';
-import { getLightFragment } from '../../../wgsl/instance/fragment/lightwgsl';
+import { getDeferredLightVertex } from '@use-gpu/wgsl/instance/vertex/deferred-light.wgsl';
+import { getDeferredLightFragment } from '@use-gpu/wgsl/instance/fragment/deferred-light.wgsl';
 
 import { vec3 } from 'gl-matrix';
 
@@ -60,7 +57,7 @@ export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKind
   const getPosition = useRawSource(sphere.attributes.positions, 'vec4<f32>');
   const getIndex = useRawSource(sphere.attributes.indices, 'u16');
 
-  const size = useBufferedSize(end - start);
+  const size = useBufferedSize(alignSizeTo(end - start, 2));
   const instances = useOne(() => new Uint16Array(size), size);
   const outsides = useOne(() => new Uint16Array(size), size);
   const insides = useOne(() => new Uint16Array(size), size);
@@ -69,11 +66,11 @@ export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKind
   const getOutside = useRawSource(outsides, 'u16');
   const getInside = useRawSource(insides, 'u16');
 
-  const getInstanceVertex = useBoundShader(getLightVertex, [getLight, getInstance, getPosition, getIndex, getScale], GEOMETRY_DEFS);
-  const getOutsideVertex  = useBoundShader(getLightVertex, [getLight, getOutside, getPosition, getIndex, getScale], GEOMETRY_DEFS);
-  const getInsideVertex   = useBoundShader(getLightVertex, [getLight, getInside,  getPosition, getIndex], FULLSCREEN_DEFS);
+  const getInstanceVertex = useShader(getDeferredLightVertex, [getLight, getInstance, getPosition, getIndex, getScale], GEOMETRY_DEFS);
+  const getOutsideVertex  = useShader(getDeferredLightVertex, [getLight, getOutside, getPosition, getIndex, getScale], GEOMETRY_DEFS);
+  const getInsideVertex   = useShader(getDeferredLightVertex, [getLight, getInside,  getPosition, getIndex], FULLSCREEN_DEFS);
 
-  const getFragment = useBoundShader(getLightFragment, [...gbuffer, getLight, applyLight]);
+  const getFragment = useShader(getDeferredLightFragment, [...gbuffer, getLight, applyLight]);
 
   const stencilLinks = useMemo(() => ({getVertex: getInstanceVertex}), [getInstanceVertex, getFragment]);
   const outsideLinks = useMemo(() => ({getVertex: getOutsideVertex, getFragment}), [getOutsideVertex, getFragment]);
@@ -92,11 +89,15 @@ export const PointLightRender: LiveComponent<LightKindProps> = (props: LightKind
     let insideCount = 0;
 
     for (let i = start; i < end; ++i) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const light = lights.get(order[i])!;
       const {position, intensity, cutoff} = light;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const radius = Math.sqrt(intensity! * 3.1415 / (cutoff || 1)) * getScale;
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (cull(position!, radius)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         vec3.sub(v3, position! as vec3, viewPosition as vec3);
 
         instances[instanceCount++] = i;

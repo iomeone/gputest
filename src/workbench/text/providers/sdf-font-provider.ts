@@ -1,24 +1,25 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../../live';
-import type { Atlas, Tuples, Rectangle } from '../../../core';
-import type { ShaderSource } from '../../../shader';
-import type { FontMetrics, GlyphMetrics } from '../../../glyph';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { Atlas, Tuples, Rectangle } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { FontMetrics, GlyphMetrics } from '@use-gpu/glyph';
 import type { Alignment } from '../types';
 
-import { fence, provide, memo, yeet, useContext, useFiber, useMemo, useOne, useState, makeContext, incrementVersion } from '../../../live';
-import { glyphToRGBA, glyphToSDF, rgbaToSDF, padRectangle } from '../../../glyph';
-import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '../../../core';
-import { scrambleBits53, mixBits53 } from '../../../state';
+import { fence, provide, memo, yeet, useContext, useNoContext, useFiber, useMemo, makeContext, incrementVersion } from '@use-gpu/live';
+import { glyphToSDF, rgbaToSDF, padRectangle } from '@use-gpu/glyph';
+import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '@use-gpu/core';
+import { scrambleBits53, mixBits53 } from '@use-gpu/state';
 
-import { getBoundShader } from '../../hooks/useBoundShader';
+import { getShader } from '../../hooks/useShader';
 import { makeInlineCursor } from '../cursor';
 import { DebugContext } from '../../providers/debug-provider';
 import { DeviceContext } from '../../providers/device-provider';
 import { FontContext } from './font-provider';
 
-import { getLODBiasedTexture } from '../../../wgsl/fragment/lod-biaswgsl';
+import { getLODBiasedTexture } from '@use-gpu/wgsl/fragment/lod-bias.wgsl';
 
 export const SDFFontContext = makeContext<SDFFontContextProps>(undefined, 'SDFFontContext');
 export const useSDFFontContext = () => useContext(SDFFontContext);
+export const useNoSDFFontContext = () => useNoContext(SDFFontContext);
 
 export type SDFFontContextProps = {
   __debug: {
@@ -31,14 +32,14 @@ export type SDFFontContextProps = {
   getTexture: () => ShaderSource,
 };
 
-export type SDFFontProviderProps = {
+export type SDFFontProviderProps = PropsWithChildren<{
   width?: number,
   height?: number,
   radius?: number,
   pad?: number,
   fence?: (c: LiveElement, then: (t: any) => LiveElement) => LiveElement,
   then?: (atlas: Atlas, source: ShaderSource, gathered: any) => LiveElement
-};
+}>;
 
 const NO_MAPPING = [0, 0, 0, 0] as Rectangle;
 
@@ -70,7 +71,7 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
   fence: op = fence,
   children,
   then,
-}: PropsWithChildren<SDFFontProviderProps>) => {
+}: SDFFontProviderProps) => {
   pad += Math.ceil(radius * 0.75);
 
   const device = useContext(DeviceContext);
@@ -90,17 +91,18 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
       args: ['vec2<f32>', 'f32'],
     };
 
+    // Read-out with LOD bias for sharper SDFs
     const biasedSource = {
-      ...getBoundShader(getLODBiasedTexture, [biasable, -0.5]),
+      ...getShader(getLODBiasedTexture, [biasable, -0.5]),
       colorSpace: 'srgb',
     };
+
+    source.texture.label = 'Font Atlas';
 
     return [glyphs, atlas, source, biasable, biasedSource];
   }, [width, height, radius, pad, subpixel, solidify, preprocess, postprocess]);
 
   const bounds = useMemo(() => makeBoundsTracker());
-
-  // Read-out with LOD bias for sharper SDFs
 
   // Provide context to map glyphs on-demand
   const context = useMemo(() => {
@@ -118,7 +120,7 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
       if (cache) return cache;
 
       // Measure glyph and get image
-      let glyph = rustText.measureGlyph(font, id, scale);
+      const glyph = rustText.measureGlyph(font, id, scale);
       return mapGlyph(key, glyph);
     };
 
@@ -128,15 +130,11 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
       const {image, width: w, height: h, outlineBounds: ob, rgba} = glyph;
       if (image && w && h && ob) {
 
-        let width: number;
-        let height: number;
-        let data: Uint8Array;
-
         // Convert to SDF
-        ({data, width, height} = (rgba ? rgbaToSDF : glyphToSDF)(image, w, h, pad, radius, undefined, subpixel, solidify, preprocess, postprocess));
+        const {data, width, height} = (rgba ? rgbaToSDF : glyphToSDF)(image, w, h, pad, radius, undefined, subpixel, solidify, preprocess, postprocess);
         glyph.outlineBounds = padRectangle(ob, pad);
         glyph.image = data;
-        
+
         try {
           mapping = atlas.place(key, width, height);
           bounds.push(mapping);
@@ -190,8 +188,6 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
     };
   }, [rustText, atlas, source]);
 
-  const {yeeted} = useFiber();
-
   return rustText ? (
     op(
       provide(SDFFontContext, context, children),
@@ -238,12 +234,12 @@ export const useSDFGlyphData = (
       t1: number,
       r1: number,
       b1: number,
-  
+
       l2: number,
       t2: number,
       r2: number,
       b2: number,
-    
+
       index: number
     ) => {
       rectangles[i4  ] = l1;
@@ -255,9 +251,9 @@ export const useSDFGlyphData = (
       uvs[i4+1] = t2;
       uvs[i4+2] = r2;
       uvs[i4+3] = b2;
-    
+
       indices[i] = index;
-    
+
       i4 += 4;
       i++;
     };
@@ -284,7 +280,7 @@ export const useSDFGlyphData = (
 
     const radius = context.getRadius();
     const scale = context.getScale(size);
-    
+
     return {
       id,
       indices,
@@ -300,10 +296,10 @@ export const emitGlyphSpans = (
   context: SDFFontContextProps,
   layout: Rectangle,
   currentIndex: number,
-  
+
   font: number[],
   spans: Tuples<3>,
-  glyphs: Tuples<2>,
+  glyphs: Tuples<4>,
   breaks: Uint32Array,
 
   start: number,
@@ -319,12 +315,12 @@ export const emitGlyphSpans = (
     t1: number,
     r1: number,
     b1: number,
-  
+
     l2: number,
     t2: number,
     r2: number,
     b2: number,
-    
+
     i: number
   ) => void,
 ) => {
@@ -334,14 +330,14 @@ export const emitGlyphSpans = (
   const scale = getScale(size);
 
   let x = left + lead;
-  let y = top;
+  const y = top;
   let sx = snap ? Math.round(x) : x;
 
   spans.iterate((_a, trim, hard, index) => {
     glyphs.iterate((fontIndex: number, id: number, isWhiteSpace: number, kerning: number) => {
       const {glyph, mapping} = getGlyph(font[fontIndex], id, size);
       const {image, layoutBounds, outlineBounds, rgba, scale: glyphScale} = glyph;
-      const [ll, lt, lr, lb] = layoutBounds;
+      const [,, lr] = layoutBounds;
 
       const r = rgba ? -1 : 1;
       const s = scale * glyphScale;
@@ -366,7 +362,7 @@ export const emitGlyphSpans = (
             r * mapping[1],
             r * mapping[2],
             r * mapping[3],
-          
+
             currentIndex,
           );
         }
@@ -389,7 +385,6 @@ export const emitGlyphSpans = (
 
 const makeBoundsTracker = () => {
   const rects: Rectangle[] = [];
-  const log: Rectangle[][] = [];
 
   const joinRectangles = (a: Rectangle, b: Rectangle): Rectangle => {
     const [al, at, ar, ab] = a;

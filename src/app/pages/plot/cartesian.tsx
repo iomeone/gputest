@@ -1,32 +1,35 @@
-import type { LC, PropsWithChildren } from '../../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import React, { use } from '../../../live';
+import React, { use } from '@use-gpu/live';
+import { TensorArray } from '@use-gpu/core';
 
 import {
-  Loop, Pass, Flat,
-  ArrayData, Data, RawData,
+  Loop, Pass,
   OrbitCamera, OrbitControls,
-  Pick, Cursor,
+  Cursor, Environment,
   Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
-  Plot, Cartesian, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '../../../plot';
+  Plot, Cartesian, Axis, Grid, Label, Line, Sampler, Scale, Scissor, Surface, Tick, Transpose,
+} from '@use-gpu/plot';
 import { vec3 } from 'gl-matrix';
+
+import { InfoBox } from '../../ui/info-box';
 
 let t = 0;
 
 const BACKGROUND = [0, 0, 0.09, 1];
 
 export const PlotCartesianPage: LC = () => {
-  
-  return (
-    <Loop>
-      <LinearRGB backgroundColor={BACKGROUND}>
-        <Cursor cursor="move" />
-        <Camera>
-          <Pass>
+
+  return (<>
+    <InfoBox>Plot a sampled surface with &lt;Sampler&gt; in an animated &lt;Cartesian&gt; viewport.</InfoBox>
+    <LinearRGB backgroundColor={BACKGROUND} tonemap="aces" gain={2}>
+      <Cursor cursor="move" />
+      <Camera>
+        <Pass>
+          <Environment preset="park">
             <Plot>
               <Animate
                 loop
@@ -73,21 +76,23 @@ export const PlotCartesianPage: LC = () => {
                     width={5}
                     color={[0.75, 0.75, 0.75, 1]}
                     depth={0.5}
+                    end
                   />
                   <Scale
+                    origin={[0, 0, 3]}
                     divide={5}
                     axis='x'
                   >
                     <Tick
-                      size={20}
-                      width={5}
+                      size={10}
+                      width={2}
                       offset={[0, 1, 0]}
                       color={[0.75, 0.75, 0.75, 1]}
                       depth={0.5}
                     />
                     <Label
                       placement='bottom'
-                      color='#80808080'
+                      color='#40406080'
                       size={24}
                       offset={16}
                       expand={5}
@@ -109,6 +114,7 @@ export const PlotCartesianPage: LC = () => {
                     color={[0.75, 0.75, 0.75, 1]}
                     detail={8}
                     depth={0.5}
+                    end
                   />
                   <Axis
                     axis='z'
@@ -116,42 +122,57 @@ export const PlotCartesianPage: LC = () => {
                     color={[0.75, 0.75, 0.75, 1]}
                     detail={8}
                     depth={0.5}
+                    end
                   />
-                  <Sampled
-                    axes='zx'
-                    format='vec4<f32>'
-                    size={[10, 20]}
-                    expr={(emit, z, x) => {
-                      const v = Math.cos(x) * Math.cos(z);
-                      emit(x, v * .4 + .5, z, 1);
-                    }}
-                  >
-                    <Surface
-                      color={[0.1, 0.3, 1, 1]}
-                    />
-                    <Line
-                      width={2}
-                      color={[0.5, 0.5, 1, 0.5]}
-                      depth={0.5}
-                      zBias={1}
-                    />
-                    <Transpose axes='yx'>
-                      <Line
-                        width={2}
-                        color={[0.5, 0.5, 1, 0.5]}
-                        depth={0.5}
-                        zBias={1}
-                      />
-                    </Transpose>
-                  </Sampled>
+
+                  <Scissor>
+                    <Sampler
+                      axes='zx'
+                      format='vec4<f32>'
+                      size={[10, 20]}
+                      origin={[0, 0, 0]}
+                      items={2}
+                      as={['positions', 'colors']}
+                      expr={(emit, z, x) => {
+                        const v = Math.cos(x) * Math.cos(z);
+                        emit(x, v * .4 + .5, z, 1);
+
+                        const r = Math.max(0.0, v*v*v);
+                        const g = Math.max(0.0, -v*v*v);
+                        const b = .25 + .75 * Math.abs(v);
+                        emit(r, g, b, 1);
+                      }}
+                    >{
+                      ({positions, colors}: Record<string, TensorArray>) => (<>
+                        <Surface positions={positions} colors={colors} />
+                        <Line
+                          positions={positions}
+                          width={2}
+                          color={[0.5, 0.5, 1, 0.25]}
+                          depth={0.5}
+                          zBias={1}
+                          blend="add"
+                        />
+                        <Transpose tensor={positions} axes='yx'>
+                          <Line
+                            width={2}
+                            color={[0.5, 0.5, 1, 0.25]}
+                            depth={0.5}
+                            zBias={1}
+                            blend="add"
+                          />
+                        </Transpose>
+                      </>)
+                    }</Sampler>
+                  </Scissor>
                 </Cartesian>
               </Animate>
             </Plot>
-          </Pass>
-        </Camera>
-      </LinearRGB>
-    </Loop>
-  );
+          </Environment>
+        </Pass>
+      </Camera>
+    </LinearRGB>
+  </>);
 }
 
 const Camera = ({children}: PropsWithChildren<object>) => (

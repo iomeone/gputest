@@ -1,7 +1,7 @@
 // trim
 //
 // o--o--o  o--o--o--o
-// 
+//
 // 0  0  0  3  3  3  3
 // 2  2  2  6  6  6  6
 
@@ -17,7 +17,7 @@
 
   let i = index / n;
   let d = index % n;
-  
+
   let start = i * n;
   let end = start + n - 1u;
 

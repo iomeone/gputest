@@ -1,4 +1,4 @@
-import { makeContext, useContext, useNoContext } from '../../live';
+import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 
 type TileSource = (x: number, y: number, zoom: number) => string;
 

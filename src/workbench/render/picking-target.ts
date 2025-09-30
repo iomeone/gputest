@@ -1,5 +1,5 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { TypedArray, UniformAttribute, TextureSource, OffscreenTarget } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { TypedArray, TextureSource, OffscreenTarget } from '@use-gpu/core';
 
 import {
   PICKING_FORMAT,
@@ -7,12 +7,14 @@ import {
   DEPTH_STENCIL_FORMAT,
 } from '../constants';
 
-import { DeviceContext, RenderContext, PickingContext } from '../providers';
+import { DeviceContext } from '../providers/device-provider';
+import { RenderContext } from '../providers/render-provider';
+import { PickingContext } from '../providers/picking-provider';
 import {
-  memo, use, provide, quote, yeet, makeContext,
-  useMemo, useOne, useNoOne, useResource,
-  useContext, useNoContext, incrementVersion,
-} from '../../live';
+  provide, yeet,
+  useMemo, useOne,
+  useContext, incrementVersion,
+} from '@use-gpu/live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -22,24 +24,24 @@ import {
   makeDepthStencilAttachment,
   makeTextureReadbackBuffer,
   TEXTURE_ARRAY_TYPES,
-  TEXTURE_FORMAT_SIZES,
-} from '../../core';
+  seq,
+} from '@use-gpu/core';
 
-const seq = (n: number, s: number = 0, d: number = 1) => Array.from({ length: n }).map((_, i: number) => s + d * i);
+import { QueueReconciler } from '../reconcilers/index';
 
-type OnPick = (index: number) => void;
+const {quote} = QueueReconciler;
 
-export type PickingProps = {
-  pickingFormat?: GPUTextureFormat, 
+export type PickingProps = PropsWithChildren<{
+  pickingFormat?: GPUTextureFormat,
   pickingColor?: GPUColor,
   depthStencilFormat?: GPUTextureFormat,
   resolution?: number,
-}
+}>;
 
-const NOP = () => {};
+const DEBUG = false;
 
 /** Global picking provider. Provides a screen-sized render target that contains object ID + item index. */
-export const PickingTarget: LiveComponent<PickingProps> = (props: PropsWithChildren<PickingProps>) => {
+export const PickingTarget: LiveComponent<PickingProps> = (props: PickingProps) => {
   const device = useContext(DeviceContext);
   const renderContext = useContext(RenderContext);
 
@@ -52,7 +54,6 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PropsWithChild
     children,
   } = props;
 
-  const {colorStates: renderColorStates} = renderContext;
   const colorStates = useMemo(() => [
     makeColorState(pickingFormat),
   ], [pickingFormat]);
@@ -71,6 +72,9 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PropsWithChild
     const pickingTexture = makeReadbackTexture(device, width, height, pickingFormat);
     const depthTexture = makeDepthTexture(device, width, height, depthStencilFormat);
 
+    pickingTexture.label = '<PickingTarget> Readback';
+    depthTexture.label = '<PickingTarget> DepthTexture';
+
     const colorAttachments = [makeColorAttachment(pickingTexture, null, pickingColor)];
     const depthStencilAttachment = makeDepthStencilAttachment(depthTexture, depthStencilFormat);
 
@@ -78,6 +82,7 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PropsWithChild
     let waiting = false;
     let captured = null as TypedArray | null;
     const captureTexture = async () => {
+      DEBUG && console.log('captureTexture', {waiting, updated})
       if (waiting) return;
       if (!updated) {
         if (captured) captured = null;
@@ -99,6 +104,7 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PropsWithChild
       if (ArrayType) {
         const array = new ArrayType(pickingBuffer.getMappedRange());
         captured = array.slice();
+        DEBUG && console.log('captured texture', captured);
       }
 
       pickingBuffer.unmap();
@@ -108,21 +114,23 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PropsWithChild
 
     const swap = () => {
       updated = true;
-      pickingSource.version = incrementVersion(pickingSource.version);
+      source.version = incrementVersion(source.version);
+      depth.version = incrementVersion(depth.version);
     };
 
     const sampleTexture = (x: number, y: number): number[] => {
-      if (!captured) return seq(itemDims).map(i => 0);
+      if (!captured) return seq(itemDims).map(() => 0);
 
       const xs = Math.round(x * resolution / dpi);
       const ys = Math.round(y * resolution / dpi);
 
       const offset = (itemsPerRow * ys + xs) * itemDims;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const index = seq(itemDims).map(i => captured![offset + i]);
       return index;
     }
-    
-    const pickingSource = {
+
+    const source = {
       texture: pickingTexture,
       sampler: null,
       layout: 'texture_2d<u32>',
@@ -132,6 +140,15 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PropsWithChild
       colorSpace: 'picking',
       version: 0,
       id: Math.floor(Math.random() * 1000),
+    } as TextureSource;
+
+    const depth = {
+      texture: depthTexture,
+      sampler: {},
+      layout: 'texture_depth_2d',
+      format: depthStencilFormat,
+      size: [width, height],
+      version: 0,
     } as TextureSource;
 
     const context = {
@@ -144,12 +161,13 @@ export const PickingTarget: LiveComponent<PickingProps> = (props: PropsWithChild
         colorAttachments,
         depthStencilAttachment,
         swap,
-        source: pickingSource,
+        source,
+        depth,
       } as OffscreenTarget,
       captureTexture,
       sampleTexture,
     };
-    
+
     return context;
   }, [device, renderContext, colorStates, depthStencilState, resolution]);
 

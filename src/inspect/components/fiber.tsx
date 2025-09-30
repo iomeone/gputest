@@ -1,21 +1,23 @@
-import type { LiveFiber } from '../../live';
-import type { Cursor } from '../../state';
-import { formatValue, isSubNode, YEET, DEBUG } from '../../live';
+import type { LiveFiber } from '@use-gpu/live';
+import type { Cursor } from '@use-gpu/state';
+import type { InspectState, InspectAPI } from './types'
+import { formatValue, isSubNode, YEET, DEBUG, RECONCILE } from '@use-gpu/live';
 
 import React, { memo, useMemo, useLayoutEffect, useRef, PropsWithChildren } from 'react';
 
-import { useRefineCursor } from '../../state';
 import { usePingTracker, usePingContext } from '../providers/ping-provider';
 import { Node } from './node';
 import { ReactNode } from './react-node';
-import { ExpandState, SelectState, HoverState, Action } from './types';
+import { ExpandState, SelectState, HoverState, FocusState, Action } from './types';
 
-import { TreeWrapper, TreeWrapperWithLegend, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendGroup, TreeRowOmitted, TreeLegendItem, SplitColumn, SplitColumnFull, Muted } from './layout';
+import { TreeWrapper, TreeWrapperWithLegend, TreeBanner, TreeTip, TreeRow, TreeIndent, TreeLine, TreeToggle, TreeLegend, TreeLegendColumns, TreeLegendGroup, TreeRowOmitted, TreeLegendItem, SplitColumn, SplitColumnFull, Muted, InlineButton } from './layout';
 import { Expandable } from './expandable';
 
-import { IconItem, SVGChevronDown, SVGChevronRight, SVGNextOpen, SVGNextClosed, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput } from './svg';
+import { IconItem, SVGChevronDown, SVGChevronLeft, SVGChevronRight, SVGNextOpen, SVGNextClosed, SVGAtom, SVGHighlightElement, SVGYeet, SVGQuote, SVGDashboard, SVGViewOutput } from './svg';
 
 type FiberTreeProps = {
+  state: InspectState,
+  api: InspectAPI,
   fiber: LiveFiber<any>,
   skipDepth: number,
   depthLimit: number,
@@ -23,33 +25,36 @@ type FiberTreeProps = {
   builtins: boolean,
   highlight: boolean,
   legend: boolean,
-  expandCursor: Cursor<ExpandState>,
-  selectedCursor: Cursor<SelectState>,
-  hoveredCursor: Cursor<HoverState>,
 }
 
+type FiberNavProps = {
+  state: InspectState,
+  api: InspectAPI,
+};
+
 type FiberNodeProps = {
+  state: InspectState,
+  api: InspectAPI,
   fiber: LiveFiber<any>,
   fibers: Map<number, LiveFiber<any>>,
   by?: LiveFiber<any> | null,
-  expandCursor: Cursor<ExpandState>,
-  selectedCursor: Cursor<SelectState>,
-  hoveredCursor: Cursor<HoverState>,
   indent?: number,
   skipDepth?: number,
+  focusDepth?: number,
   renderDepth?: number,
   depthLimit?: number,
   runCounts?: boolean,
   builtins?: boolean,
   highlight?: boolean,
   continuation?: boolean,
+  builtin?: boolean,
   wide?: boolean,
   indented?: number,
 }
 
 type FiberReactNodeProps = {
   reactNode: any,
-  expandCursor: Cursor<ExpandState>,
+  expandedCursor: Cursor<ExpandState>,
   indent?: number,
   first?: boolean,
 }
@@ -74,6 +79,19 @@ const getRenderDepth = (fibers: Map<number, LiveFiber<any>>, fiber: LiveFiber<an
   return renderDepth;
 };
 
+export const FiberNav: React.FC<FiberNavProps> = (props: FiberNavProps) => {
+  const {api: {focusFiber}, state: {focusedCursor}} = props;
+  const [focusState] = focusedCursor();
+  const back = focusState ? (
+    <TreeBanner>
+      <InlineButton className="icon-left" onClick={() => focusFiber(null)}>
+        <IconItem top={0}><SVGChevronLeft /></IconItem> Back to root
+      </InlineButton>
+    </TreeBanner>
+  ) : null;
+  return back;
+};
+
 // Legend at bottom of fiber tree
 export const FiberLegend: React.FC = () => {
   const makeFiber = (name: string) => {
@@ -87,86 +105,91 @@ export const FiberLegend: React.FC = () => {
 
   return (<>
     <TreeLegend><div>
-      <TreeLegendGroup>
-        <TreeLegendItem>
-          <Node
-            fiber={fiber}
-            staticMount={true}
-          />
-          <span>Mounted</span>
-        </TreeLegendItem>
-        <TreeLegendItem>
-          <Node
-            fiber={fiber}
-            staticPing={true}
-          />
-          <span>Updated</span>
-        </TreeLegendItem>
-        <TreeLegendItem>
-          <Node
-            fiber={fiber}
-            hovered={0}
-          />
-          <span>Rendered By</span>
-        </TreeLegendItem>
-      </TreeLegendGroup>
+      <TreeLegendColumns>
+        <TreeLegendGroup>
+          <TreeLegendItem>
+            <Node
+              fiber={fiber}
+              staticMount={true}
+            />
+            <span>Mounted</span>
+          </TreeLegendItem>
+          <TreeLegendItem>
+            <Node
+              fiber={fiber}
+              staticPing={true}
+            />
+            <span>Updated</span>
+          </TreeLegendItem>
+          <TreeLegendItem>
+            <Node
+              fiber={fiber}
+              parents={true}
+            />
+            <span>Rendered By</span>
+          </TreeLegendItem>
+        </TreeLegendGroup>
 
-      <TreeLegendGroup>
-        <TreeLegendItem>
-          <Node
-            fiber={fiber}
-            depends={true}
-          />
-          <span>Dependency</span>
-        </TreeLegendItem>
-        <TreeLegendItem>
-          <Node
-            fiber={fiber}
-            quoted={true}
-          />
-          <span>Portal</span>
-        </TreeLegendItem>
-      </TreeLegendGroup>
+        <TreeLegendGroup>
+          <TreeLegendItem>
+            <Node
+              fiber={fiber}
+              depends={true}
+            />
+            <span>Dependency</span>
+          </TreeLegendItem>
+          <TreeLegendItem>
+            <Node
+              fiber={fiber}
+              quoted={true}
+            />
+            <span>Portal</span>
+          </TreeLegendItem>
+        </TreeLegendGroup>
 
-      <TreeLegendGroup>
-        <TreeLegendItem>
-          <IconItem gap={-5} top={-2}><SVGYeet /></IconItem>
-          <span>Yeet</span>
-        </TreeLegendItem>
+        <TreeLegendGroup>
+          <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGYeet /></IconItem>
+            <span>Yeet</span>
+          </TreeLegendItem>
 
-        <TreeLegendItem>
-          <IconItem gap={-5} top={-2}><SVGQuote /></IconItem>
-          <span>Quote</span>
-        </TreeLegendItem>
+          <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGQuote /></IconItem>
+            <span>Quote</span>
+          </TreeLegendItem>
 
-        <TreeLegendItem>
-          <IconItem gap={-5} top={-2}><SVGHighlightElement /></IconItem>
-          <span>Highlight</span>
-        </TreeLegendItem>
-      </TreeLegendGroup>
+          <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGHighlightElement /></IconItem>
+            <span>Highlight</span>
+          </TreeLegendItem>
+        </TreeLegendGroup>
 
-      <TreeLegendGroup>
-        <TreeLegendItem>
-          <IconItem gap={-5} top={-2}><SVGViewOutput /></IconItem>
-          <span>Output</span>
-        </TreeLegendItem>
+        <TreeLegendGroup>
+          <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGViewOutput /></IconItem>
+            <span>Output</span>
+          </TreeLegendItem>
 
-        <TreeLegendItem>
-          <IconItem gap={-5} top={-2}><SVGDashboard /></IconItem>
-          <span>Layout</span>
-        </TreeLegendItem>
+          <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGDashboard /></IconItem>
+            <span>Layout</span>
+          </TreeLegendItem>
 
-        <TreeLegendItem>
-          <IconItem gap={-5} top={-2}><SVGAtom /></IconItem>
-          <span>React</span>
-        </TreeLegendItem>
-      </TreeLegendGroup>
+          <TreeLegendItem>
+            <IconItem gap={-5} top={-2}><SVGAtom /></IconItem>
+            <span>React</span>
+          </TreeLegendItem>
+        </TreeLegendGroup>
+      </TreeLegendColumns>
+      <TreeTip><Muted>Double click to focus a sub-tree</Muted></TreeTip>
     </div></TreeLegend>
   </>)
 };
 
 // Fiber tree including legend
 export const FiberTree: React.FC<FiberTreeProps> = ({
+  state,
+  api,
   fiber,
   skipDepth,
   depthLimit,
@@ -174,58 +197,65 @@ export const FiberTree: React.FC<FiberTreeProps> = ({
   builtins,
   highlight,
   legend,
-  expandCursor,
-  selectedCursor,
-  hoveredCursor,
 }) => {
   const {fibers} = usePingContext();
   const by = fibers.get(fiber.by);
-  
+  const [focusedId] = state.focusedCursor();
+
   const Wrap = legend ? TreeWrapperWithLegend : TreeWrapper;
-  
-  return (<>
-    <Wrap>
+
+  return (
+    <Wrap style={{paddingTop: focusedId ? 0 : undefined}}>
       <FiberNode
+        state={state}
+        api={api}
         by={by}
         fiber={fiber}
         fibers={fibers}
         renderDepth={0}
         skipDepth={skipDepth}
+        focusDepth={0}
         depthLimit={depthLimit}
         runCounts={runCounts}
         builtins={builtins}
         highlight={highlight}
-        expandCursor={expandCursor}
-        selectedCursor={selectedCursor}
-        hoveredCursor={hoveredCursor}
       />
       {(legend ?? true) ? <FiberLegend /> : null}
     </Wrap>
-  </>);
+  );
 }
 
 // One node in the tree
 export const FiberNode: React.FC<FiberNodeProps> = memo(({
+  state,
+  api,
   by,
   fiber,
   fibers,
+  focusDepth = 0,
   skipDepth = 0,
   renderDepth = 0,
   depthLimit = Infinity,
   runCounts = false,
   builtins = false,
   highlight = true,
-  expandCursor,
-  selectedCursor,
-  hoveredCursor,
   continuation,
+  builtin,
   wide,
   indented = 1,
   indent = 0,
 }) => {
+  const {
+    expandedCursor,
+    selectedCursor,
+    hoveredCursor,
+    focusedCursor,
+  } = state;
+
   let {id, mount, mounts, next, order, host, yeeted, __inspect} = fiber;
-  const [selectState, updateSelectState] = selectedCursor;
-  const [hoverState, updateHoverState] = hoveredCursor;
+  const [selectState] = selectedCursor();
+  const [hoverState] = hoveredCursor();
+  const [focusState] = focusedCursor();
 
   // Avoid jumpyness on hover
   const lockedWide = useMemo(() => (!mount && !mounts && !next), []);
@@ -240,12 +270,20 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
 
   // Resolve hover-state
   const selected = fiber === selectState;
-  const hovered  = hoverState.fiber?.id ?? -1;
-  const parents  = hoverState.fiber?.by === fiber.id;
-  const depends  = hoverState.deps.indexOf(fiber.id) >= 0 || (hoverState.root === fiber);
-  const precedes = hoverState.precs.indexOf(fiber.id) >= 0 || (yeeted?.root === hoverState.fiber && yeeted.value !== undefined);
-  const quoted   = hoverState.fiber?.quote?.to === fiber || fiber?.quote?.to === hoverState.fiber;
-  const unquoted = hoverState.fiber?.unquote?.to === fiber || !!(hoverState.fiber && fiber?.unquote?.to === hoverState.fiber);
+  const {fiber: hoverF, deps, precs, root} = hoverState;
+
+  const hovered  = hoverF?.id ?? -1;
+  const parents  = hoverF?.by === fiber.id;
+  const depends  = deps.indexOf(fiber.id) >= 0 || (root === fiber);
+  const precedes = precs.indexOf(fiber.id) >= 0 || (yeeted?.root === hoverF && yeeted.value !== undefined);
+  const quoted   = (
+    (hoverF?.quote?.to === fiber) ||
+    (hoverF && fiber?.quote?.to === hoverF)
+  );
+  const unquoted = (
+    (hoverF?.unquote?.to === fiber) ||
+    (hoverF && fiber?.unquote?.to === hoverF)
+  );
 
   // Resolve depth-highlighting
   const subnode = hoverState.by ? isSubNode(hoverState.by, fiber) : true;
@@ -253,33 +291,20 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   renderDepth = getRenderDepth(fibers, fiber) ?? renderDepth;
 
   // Resolve node omission
-  const shouldRender = !skipDepth && (renderDepth < depthLimit) && (builtins || !fiber.f?.isLiveBuiltin);
+  const isFocused = !!focusDepth || ((focusState != null) ? fiber.id === focusState : true);
+  const isBuiltin = !builtins && (fiber.f?.isLiveBuiltin || fiber.f?.isLiveReconcile) && (fiber.f !== RECONCILE);
+  const isVisible = (
+    isFocused &&
+    !skipDepth &&
+    (renderDepth < depthLimit)
+  );
+  const shouldRender = !isBuiltin && isVisible;
+  const shouldTerminate = fiber.f?.isLiveReconcile && !builtin && isVisible;
   const shouldAbsolute = !shouldRender && (parents || depends || precedes || quoted || unquoted);
   const shouldStartOpen = fiber.f !== DEBUG && !fiber.__inspect?.react;
 
   // Make click/hover handlers
-  const [select, hover, unhover] = useMemo(() => {
-    const root = () => fiber.yeeted && fiber.type === YEET ? fiber.yeeted.root : null;
-
-    const select  = () => updateSelectState({ $set: fiber });
-    const hover   = () => updateHoverState({ $set: {
-      fiber,
-      by: fibers.get(fiber.by) ?? null,
-      deps: host ? Array.from(host.traceDown(fiber)).map(f => f.id) : [],
-      precs: host ? Array.from(host.traceUp(fiber)) : [],
-      root: root(),
-      depth: renderDepth,
-    } });
-    const unhover = (e: any) => e.altKey || updateHoverState({ $set: {
-      fiber: null,
-      by: null,
-      deps: [],
-      precs: [],
-      root: null,
-      depth: 0,
-    } });
-    return [select, hover, unhover];
-  }, [fiber, updateSelectState, updateHoverState]);
+  const {select, hover, unhover, focus} = useMemo(() => api.makeHandlers(fiber, fibers, renderDepth), [fiber, fibers, api, renderDepth]);
 
   const rowRef = useRef<HTMLDivElement>(null);
   const out = [] as React.ReactElement[];
@@ -300,14 +325,14 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
         if (rect.left < container.left || rect.right > container.right) {
           parent.scrollLeft += rect.left - container.left - 50;
         }
-        
+
         if (rect.top < container.top || rect.bottom > container.bottom) {
           parent.scrollTop += rect.top - container.top - 150;
         }
       }
     }
   }, [selected]);
-  
+
   let ooo = false;
   if (mounts && order) {
     if (order.length !== mounts.size) {
@@ -326,35 +351,37 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
       parents={parents}
       precedes={precedes}
       depends={depends}
-      quoted={quoted}
-      unquoted={unquoted}
+      quoted={!!quoted}
+      unquoted={!!unquoted}
       depth={styleDepth}
       runCount={runCounts}
       onClick={select}
+      onDoubleClick={focus}
       onMouseEnter={hover}
       onMouseLeave={unhover}
       ref={rowRef}
       ooo={ooo}
+      absolute={!!shouldAbsolute}
     />
   ) : null;
-  if (shouldAbsolute) nodeRender = <div style={{position: 'absolute'}}>{nodeRender}</div>;
+  //if (shouldAbsolute) nodeRender = <div style={{position: 'absolute'}}>{nodeRender}</div>;
 
-  // Render single child   
+  // Render single child
   if (mount) {
     out.push(
       <FiberNode
         key='mount'
+        state={state}
+        api={api}
         fiber={mount}
         fibers={fibers}
         skipDepth={skipDepth && (skipDepth - 1)}
+        focusDepth={isFocused ? focusDepth + 1 : 0}
         renderDepth={renderDepth}
         depthLimit={depthLimit}
         runCounts={runCounts}
         builtins={builtins}
         highlight={highlight}
-        expandCursor={expandCursor}
-        selectedCursor={selectedCursor}
-        hoveredCursor={hoveredCursor}
         indent={indent}
         indented={+!!shouldRender}
         wide={!!next}
@@ -370,17 +397,17 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
         out.push(
           <FiberNode
             key={key}
+            state={state}
+            api={api}
             fiber={sub}
             fibers={fibers}
             skipDepth={skipDepth && (skipDepth - 1)}
+            focusDepth={isFocused ? focusDepth + 1 : 0}
             renderDepth={renderDepth}
             depthLimit={depthLimit}
             runCounts={runCounts}
             builtins={builtins}
             highlight={highlight}
-            expandCursor={expandCursor}
-            selectedCursor={selectedCursor}
-            hoveredCursor={hoveredCursor}
             indent={indent}
             indented={+!!shouldRender}
             wide={order.length > 1 || !!next}
@@ -394,13 +421,13 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
   if (shouldRender && __inspect?.react) {
     const {react} = __inspect;
     const node = react.root?.current;
-    
+
     if (node) {
       out.push(
         <FiberReactNode
           key={'react'}
           reactNode={react.root.current}
-          expandCursor={expandCursor}
+          expandedCursor={expandedCursor}
           indent={indent + 1}
           first={true}
         />
@@ -425,27 +452,28 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
 
     nextRender = (
       <FiberNode
+        state={state}
+        api={api}
         fiber={next}
         fibers={fibers}
         skipDepth={skipDepth && (skipDepth - 1)}
+        focusDepth={isFocused ? focusDepth + 1 : 0}
         renderDepth={renderDepth}
         depthLimit={depthLimit}
         runCounts={runCounts}
         builtins={builtins}
         highlight={highlight}
-        expandCursor={expandCursor}
-        selectedCursor={selectedCursor}
-        hoveredCursor={hoveredCursor}
         indented={0}
         wide={true}
         indent={indent}
         continuation
+        builtin={fiber.f?.isLiveBuiltin}
       />
     );
   }
 
   // Compact omitted row
-  if (!shouldRender) {
+  if (!shouldRender && !shouldTerminate) {
     if (skipDepth) return childRender;
     return (<>
       <TreeRowOmitted indent={indent + 1}>{nodeRender}</TreeRowOmitted>
@@ -453,7 +481,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
       {nextRender}
     </>);
   }
-  
+
   // Expandable node
   if (out.length) {
     const openIcon = continuation ? <SVGNextOpen /> : undefined;
@@ -461,7 +489,7 @@ export const FiberNode: React.FC<FiberNodeProps> = memo(({
     return (
       <Expandable
         id={id}
-        expandCursor={expandCursor}
+        expandedCursor={expandedCursor}
         initialValue={shouldStartOpen}
       >{
         (expand, onToggle) => (<>
@@ -507,22 +535,22 @@ export const TreeExpand: React.FC<TreeExpandProps> = ({
 
 export const FiberReactNode: React.FC<FiberReactNodeProps> = memo(({
   reactNode,
-  expandCursor,
+  expandedCursor,
   first = false,
   indent = 0,
 }) => {
   const nodeRender = <ReactNode reactNode={reactNode} root={first} />;
-  
+
   const {child, sibling, _debugID} = reactNode;
 
-  const childRender = child ? <FiberReactNode reactNode={child} expandCursor={expandCursor} indent={indent + (sibling ? 1 : .1)} /> : null;
-  const siblingRender = sibling ? <FiberReactNode reactNode={sibling} expandCursor={expandCursor} indent={indent} /> : null;
+  const childRender = child ? <FiberReactNode reactNode={child} expandedCursor={expandedCursor} indent={indent + (sibling ? 1 : .1)} /> : null;
+  const siblingRender = sibling ? <FiberReactNode reactNode={sibling} expandedCursor={expandedCursor} indent={indent} /> : null;
 
   if (child) {
     return (
       <Expandable
         id={'react-' + _debugID}
-        expandCursor={expandCursor}
+        expandedCursor={expandedCursor}
         initialValue={true}
       >{
         (expand, onToggle) => (<>
@@ -535,7 +563,7 @@ export const FiberReactNode: React.FC<FiberReactNodeProps> = memo(({
           {siblingRender}
         </>)
       }</Expandable>
-    );  
+    );
   }
 
   return (<>

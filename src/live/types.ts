@@ -6,9 +6,11 @@ export type LiveFunction<F extends Function = ArrowFunction> = F;
 export type RawLiveComponent<P> = (props: P) => LiveElement;
 
 // React/JSX types interop
-export type PropsWithChildren<P> = P & { children?: string | LiveNode<any> };
-export type LiveComponent<P = object> = ((props: PropsWithChildren<P>) => any) & { displayName?: string };
+export type PropsWithChildren<P> = P & { children?: LiveElement<any> };
+export type PropsWithMarkup<P> = P & { children?: LiveNode<any> };
+export type LiveComponent<P = object> = ((props: P) => any) & { displayName?: string };
 export type Component<P = object> = LiveComponent<P>;
+export type RenderProp<T extends any[]> = (...args: T) => LiveElement;
 export type LC<P = object> = LiveComponent<P>;
 export type Ref<T> = { current: T; };
 export type RefObject<T> = { current: T | null };
@@ -22,7 +24,7 @@ export type ReactElementInterop = {
 
 export type LivePure<F extends Function = ArrowFunction> = undefined | null | DeferredCall<F> | LivePure<any>[];
 export type LiveElement<F extends Function = ArrowFunction> = undefined | null | DeferredCall<F> | LiveElement[] | ReactElementInterop;
-export type LiveNode<F extends Function = ArrowFunction> = LiveElement<F> | string | ArrowFunction | Array<LiveNode<any>>;
+export type LiveNode<F extends Function = ArrowFunction> = LiveElement<F> | string | number | ArrowFunction | Array<LiveNode<any>>;
 
 // Mounting key
 export type Key = string | number;
@@ -46,6 +48,7 @@ export type Initial<T> = (() => T) | T;
 export type Reducer<T> = T | ((t: T) => T);
 export type Setter<T> = (t: Reducer<T>) => void;
 export type Resource<T> = () => (void | Task | [T, Task]);
+export type DoubleState<T> = [() => T, () => [T, T]];
 
 // Renderer options
 export type RenderOptions = {
@@ -69,7 +72,7 @@ export enum Hook {
   CONTEXT = 5,
   CAPTURE = 6,
   VERSION = 7,
-  YOLO = 8,
+  HOOKS = 8,
 };
 
 // Deferred actions
@@ -88,8 +91,31 @@ export type RenderCallbacks = {
 };
 
 // User=defined context
-export type LiveContext<T> = { initialValue?: T, displayName?: string, context?: true, capture?: false };
-export type LiveCapture<T> = { displayName?: string, capture?: true, context?: false };
+export type LiveContext<T> = {
+  initialValue?: T,
+  displayName?: string,
+  context?: true,
+  capture?: false,
+  reconciler?: false,
+};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type LiveCapture<T> = {
+  displayName?: string,
+  context?: false,
+  capture?: true,
+  reconciler?: false,
+};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type LiveReconciler<T> = {
+  displayName?: string,
+  capture?: false,
+  context?: false,
+  reconciler?: true,
+
+  reconcile: (el: LiveElement) => LiveElement,
+  quote: (el: LiveElement) => LiveElement,
+  signal: () => LiveElement,
+};
 export type LiveMap<T> = Map<LiveFiber<any>, T>;
 
 // Fiber data structure
@@ -130,6 +156,7 @@ export type LiveFiber<F extends Function> = FunctionCall<F> & {
   fork: boolean,
 
   // Quoting state
+  quotes: FiberQuotes<any>,
   quote: FiberQuote<any> | null,
   unquote: FiberQuote<any> | null,
 
@@ -147,8 +174,9 @@ export type FiberContext = {
   roots: ContextRoots,
 };
 
-export type ContextValues = Map<LiveContext<any> | LiveCapture<any>, any>;
-export type ContextRoots = Map<LiveContext<any> | LiveCapture<any>, number | LiveFiber<any>>;
+export type LiveEnvironment = LiveContext<any> | LiveCapture<any>;
+export type ContextValues = Map<LiveEnvironment, any>;
+export type ContextRoots = Map<LiveEnvironment, number | LiveFiber<any>>;
 
 // Fiber yeet state
 export type FiberYeet<A, B> = {
@@ -167,8 +195,10 @@ export type FiberQuote<F extends ArrowFunction> = {
   root: number,
   from: number,
   to: LiveFiber<F>,
-  scope?: FiberQuote<any>,
+  reconciler?: LiveReconciler<any>,
 };
+
+export type FiberQuotes<F extends ArrowFunction> = Map<LiveReconciler<any>, FiberQuote<F>>;
 
 // Priority queue
 export type FiberQueue = {

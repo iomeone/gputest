@@ -1,7 +1,7 @@
-import type { LiveFiber } from '../../live';
+import type { LiveFiber } from '@use-gpu/live';
 import type { Action } from './types';
 
-import { formatValue, formatNodeName, YEET, QUOTE, SIGNAL } from '../../live';
+import { formatValue, formatNodeName, YEET, QUOTE, SIGNAL } from '@use-gpu/live';
 import { styled, keyframes } from "@stitches/react";
 
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
@@ -23,8 +23,11 @@ type NodeProps = {
   parents?: boolean,
   depth?: number,
   ooo?: boolean,
+  terminator?: boolean,
   runCount?: boolean,
+  absolute?: boolean,
   onClick?: (e: any) => void,
+  onDoubleClick?: (e: any) => void,
   onMouseEnter?: (e: any) => void,
   onMouseLeave?: (e: any) => void,
 };
@@ -42,8 +45,11 @@ export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
   parents,
   depth,
   ooo,
+  terminator,
   runCount,
+  absolute,
   onClick,
+  onDoubleClick,
   onMouseEnter,
   onMouseLeave,
 }, ref) => {
@@ -67,7 +73,7 @@ export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
 
   const [version, pinged] = usePingTracker(fiber);
 
-  const classes: string[] = version >= 0 ? [version > 1 ? 'pinged' : 'mounted'] : [];
+  const classes: string[] = [+version > 1 ? 'pinged' : 'mounted'];
 
   if (!pinged) classes.push('cold');
   if (selected) classes.push('selected');
@@ -81,24 +87,29 @@ export const Node = React.forwardRef<HTMLDivElement, NodeProps>(({
   if (hovered !== -1) classes.push('hovering');
   if (hovered === id) classes.push('hovered');
   if (hovered === by) classes.push('by');
-  if (f.isLiveBuiltin) classes.push('builtin');
+  if (absolute) classes.push('absolute');
+  if (f.isLiveBuiltin || f.isLiveReconcile) classes.push('builtin');
   classes.push(`depth-${Math.min(4, depth || 0)}`);
   const className = classes.join(' ');
 
   const handleClick = useCallback((e: any) => {
+    onClick && onClick(e);
     e.stopPropagation();
     e.preventDefault();
-    onClick && onClick(e);
   }, [onClick]);
 
   const name = formatNodeName(fiber);
-  const label = runCount && (name !== ' ') ? <>{name} <Muted>({fiber.runs})</Muted></> : name;
+  const label = runCount && (name !== ' ') && fiber.runs !== 0 ? <>{name} <Muted>({fiber.runs})</Muted></> : name;
 
   return (
     <div
       ref={ref}
       className={"fiber-tree-node " + className}
       onClick={handleClick}
+      onDoubleClick={(e) => {
+        onDoubleClick?.(e);
+        e.stopPropagation();
+      }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >

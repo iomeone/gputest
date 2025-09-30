@@ -1,21 +1,22 @@
-import type { LC } from '../../../live';
-import type { Point4 } from '../../../core';
+import type { LC } from '@use-gpu/live';
+import type { XYZW } from '@use-gpu/core';
 
-import React from '../../../live';
+import React from '@use-gpu/live';
 import { LayoutControls } from '../../ui/layout-controls';
 
 import {
-  LinearRGB, Pass, Flat,
-  PanControls,
+  LinearRGB, Pass, FlatCamera, PanControls,
   DebugProvider,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Overflow, Text, Element,
-} from '../../../layout';
+} from '@use-gpu/layout';
 
-const TRANSPARENT = [1, 1, 1, 0.1] as Point4;
-const BACKGROUND = [0.0, 0.0, 0.09, 1.0] as Point4;
-const FILL = [0.4, 0.7, 1, 0.5] as Point4;
+import { InfoBox } from '../../ui/info-box';
+
+const TRANSPARENT = [1, 1, 1, 0.1] as XYZW;
+const BACKGROUND = [0.0, 0.0, 0.09, 1.0] as XYZW;
+const FILL = [0.4, 0.7, 1, 0.5] as XYZW;
 
 export const LayoutAlignPage: LC = () => {
 
@@ -28,7 +29,8 @@ export const LayoutAlignPage: LC = () => {
     <Element width={140} height={60} fill={FILL} />
   </>)
 
-  const view = (
+  const view = (<>
+    <InfoBox>&lt;Flex&gt; box alignment test cases, plus hybrid row/column layouts.</InfoBox>
     <LinearRGB backgroundColor={BACKGROUND}>
       <Pass>
         <UI>
@@ -37,7 +39,7 @@ export const LayoutAlignPage: LC = () => {
             <Absolute left={0} right={0} top={0} bottom={0}>
               <Overflow y="scroll">
 
-                <Block margin={[10, 0, 10, 50]}>
+                <Block margin={[10, 50, 10, 50]}>
 
                   <Label>Flex Start</Label>
                   <Flex margin={10} gap={[10, 5]} align="start"   anchor="center" height={200} fill={[1, 1, 1, 0.1]}>{BOXES}</Flex>
@@ -75,7 +77,7 @@ export const LayoutAlignPage: LC = () => {
                     <Element width={160} height={30} fill={FILL} flex="end" />
                     <Element width={180} height={100} fill={FILL} flex="center" />
                     <Element width={120} height={50} fill={FILL} flex="start" />
-                  
+
                   </Flex>
                   <Block fill={[1, 1, 1, 0.5]} height={2} />
 
@@ -105,7 +107,7 @@ export const LayoutAlignPage: LC = () => {
                         <Inline align="center"><Text color={[1, 1, 1, 1]}>Minim veniam</Text></Inline>
                       </Block>
                     </Block>
-                    
+
                     <Block width={10} />
 
                     <Block direction='y'>
@@ -134,7 +136,7 @@ export const LayoutAlignPage: LC = () => {
                   </Block>
 
                   <Block fill={[1, 1, 1, 0.5]} height={2} />
-                
+
                   <Label>Flex / Block X / Inline</Label>
                   <Flex margin={10}>
                     <Element width={200} height={50} grow={0} fill={FILL} />
@@ -167,14 +169,14 @@ export const LayoutAlignPage: LC = () => {
         </UI>
       </Pass>
     </LinearRGB>
-  );
+  </>);
 
   const root = document.querySelector('#use-gpu .canvas');
 
   return (
     <LayoutControls
       container={root}
-      render={(mode) => 
+      render={(mode) =>
         <PanControls
           active={mode !== 'inspect'}
           render={(x, y, zoom) =>
@@ -183,9 +185,9 @@ export const LayoutAlignPage: LC = () => {
                 sdf2d: { contours: mode === 'sdf' },
               }}
             >
-              <Flat x={x} y={y} zoom={zoom}>
+              <FlatCamera x={x} y={y} zoom={zoom}>
                 {view}
-              </Flat>
+              </FlatCamera>
             </DebugProvider>
           }
       />}

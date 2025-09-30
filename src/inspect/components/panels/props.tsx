@@ -1,7 +1,7 @@
-import type { LiveFiber } from '../../../live';
-import type { Action } from '../types';
+import type { LiveFiber } from '@use-gpu/live';
+import type { Action, InspectAPI } from '../types';
 
-import { formatNode, formatNodeName, YEET } from '../../../live';
+import { formatNode, formatNodeName, YEET } from '@use-gpu/live';
 import { InspectObject } from '../inspect-object';
 import { Spacer } from '../layout';
 
@@ -15,7 +15,7 @@ const styled: any = _styled;
 type PropsProps = {
   fiber: LiveFiber<any>,
   fibers: Map<number, LiveFiber<any>>,
-  selectFiber: (fiber: LiveFiber<any>) => void,
+  api: InspectAPI,
 };
 
 export const FiberName = styled('span', {
@@ -35,7 +35,7 @@ export const Fiber = styled('div', {
   },
 });
 
-export const Props: React.FC<PropsProps> = ({fiber, fibers, selectFiber}) => {
+export const Props: React.FC<PropsProps> = ({fiber, fibers, api}) => {
   // @ts-ignore
   const {id, f, arg, args, yeeted} = fiber;
   const name = formatNodeName(fiber);
@@ -76,7 +76,13 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers, selectFiber}) => {
       const [children, then, fallback] = args;
       props = {children, then, fallback};
     }
+    else if (f.name === 'QUOTE') {
+      const [reconciler] = args;
+      props = {reconciler: reconciler.displayName};
+    }
     else if (f.name === 'SIGNAL') {
+      const [reconciler] = args;
+      props = {reconciler: reconciler.displayName};
     }
     else {
       if (args.length === 1 && typeof args[0] === 'object') props = args[0];
@@ -86,7 +92,7 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers, selectFiber}) => {
 
   let yt = (yeeted?.value ?? yeeted?.reduced) != null ? (<>
     <div><b>Yeeted</b></div>
-    {yeeted?.value != null ? ( 
+    {yeeted?.value != null ? (
       <div><InspectObject
         object={{value: yeeted?.value}}
         state={state}
@@ -94,7 +100,7 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers, selectFiber}) => {
         path={''}
       /></div>
     ) : null}
-    {yeeted?.reduced != null ? ( 
+    {yeeted?.reduced != null ? (
       <div><InspectObject
         object={{reduced: yeeted?.reduced}}
         state={state}
@@ -105,6 +111,16 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers, selectFiber}) => {
   </>) : null;
 
   let showProps = f !== YEET;
+
+  const getQuote = () => {
+    const {quote} = fiber;
+    if (!quote) return null;
+
+    const {to} = quote;
+    const f = to.mounts?.get(fiber.id);
+    if (f) return renderFiberButton(f, fibers, api);
+    return null;
+  };
 
   const getHistory = () => {
     let parent = fiber;
@@ -117,29 +133,19 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers, selectFiber}) => {
         parent = source as any;
       }
       if (parents.length) {
-        return parents.map((fiber) => {
-          const text = formatNode(fiber);
-          const name = formatNodeName(fiber);
-          const parts = text.split(name);
-          return (
-            <Fiber key={fiber.id} onClick={() => {
-              selectFiber(fiber);
-            }}><div>
-              {parts[0]}
-              <FiberName>{name}</FiberName>
-              {parts.slice(1).join(' ')}
-            </div></Fiber>
-          );
-        });
+        return parents.map((fiber) => renderFiberButton(fiber, fibers, api));
       }
     }
-    return '[Runtime]';
+    return null;
   };
 
+  let [quote, setQuote] = useState(getQuote);
   let [history, setHistory] = useState(getHistory);
   useLayoutEffect(() => {
     const h = getHistory();
-    if (h.length !== history.length) setHistory(h);
+    const q = getQuote();
+    if (h?.map(h => h?.key).join('/') !== history?.map(h => h?.key).join('/')) setHistory(h);
+    if (q?.key !== quote?.key) setQuote(q);
   });
 
   return (<>
@@ -156,9 +162,37 @@ export const Props: React.FC<PropsProps> = ({fiber, fibers, selectFiber}) => {
     ) : null}
     {showProps && yt ? <Spacer /> : null}
     {yt}
+    {quote ? (<>
+      <Spacer />
+      <div><b>Quoted</b></div>
+      <div>{quote}</div>
+    </>) : null}
     <Spacer />
-    <div><b>Rendered By</b></div>
-    <div>{history}</div>
+    {history ? (<>
+      <div><b>Rendered By</b></div>
+      <div>{history}</div>
+    </>) : null}
   </>);
 }
 
+const renderFiberButton = (
+  fiber: LiveFiber<any>,
+  fibers: Map<number, LiveFiber<any>>,
+  api: InspectAPI,
+) => {
+  const text = formatNode(fiber);
+  const name = formatNodeName(fiber);
+  const parts = text.split(name);
+  return (
+    <Fiber
+      key={fiber.id}
+      onMouseEnter={(e: MouseEvent) => e.altKey ? api.hoverFiber(fiber, fibers, 0) : null}
+      onMouseLeave={(e: MouseEvent) => e.altKey ? api.hoverFiber(null, fibers, 0) : null}
+      onClick={() => api.selectFiber(fiber)}
+    ><div>
+      {parts[0]}
+      <FiberName>{name}</FiberName>
+      {parts.slice(1).join(' ')}
+    </div></Fiber>
+  );
+}

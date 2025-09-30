@@ -1,40 +1,46 @@
-import type { LiveComponent } from '../../live';
-import type {
-  TypedArray, ViewUniforms, DeepPartial, Lazy,
-  UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData, DataBounds,
-} from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { Virtual } from './virtual';
+import { useDraw } from '../hooks/useDraw';
 
-import { use, yeet, memo, useCallback, useMemo, useOne, useNoCallback } from '../../live';
-import { bindBundle, bindingsToLinks } from '../../shader/wgsl';
-import { resolve, makeShaderBindings } from '../../core';
-import { useApplyTransform } from '../hooks/useApplyTransform';
-import { useShaderRef } from '../hooks/useShaderRef';
-import { useBoundShader } from '../hooks/useBoundShader';
-import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
-import { useDataLength } from '../hooks/useDataBinding';
-import { usePickingShader } from '../providers/picking-provider';
-import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
+import { memo, useCallback, useMemo, useOne, useNoCallback } from '@use-gpu/live';
+
 import { useMaterialContext } from '../providers/material-provider';
+import { PickingSource, usePickingShader } from '../providers/picking-provider';
+import { TransformContextProps } from '../providers/transform-provider';
 
-import { getLineVertex } from '../../wgsl/instance/vertex/linewgsl';
+import { useApplyTransform } from '../hooks/useApplyTransform';
+import { getShader, useShader } from '../hooks/useShader';
+import { useSource } from '../hooks/useSource';
+import { useDataLength } from '../hooks/useDataBinding';
+import { useInstancedVertex } from '../hooks/useInstancedVertex';
+import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
+import { useShaderRef } from '../hooks/useShaderRef';
+
+import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
+import { getLineVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
+
+const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
+
+export type RawLinesFlags = {
+  join?: 'miter' | 'round' | 'bevel',
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 export type RawLinesProps = {
-  position?: number[] | TypedArray,
+  position?: VectorLike,
   segment?: number,
-  uv?: number[] | TypedArray,
-  st?: number[] | TypedArray,
-  color?: number[] | TypedArray,
+  uv?: VectorLike,
+  st?: VectorLike,
+  color?: VectorLike,
   width?: number,
   depth?: number,
   zBias?: number,
-  trim?: number[] | TypedArray,
+  trim?: VectorLike,
   size?: number,
 
   positions?: ShaderSource,
+
   segments?: ShaderSource,
   uvs?: ShaderSource,
   sts?: ShaderSource,
@@ -45,18 +51,12 @@ export type RawLinesProps = {
   trims?: ShaderSource,
   sizes?: ShaderSource,
 
-  lookups?: ShaderSource,
-  ids?:     ShaderSource,
-  lookup?:  number,
-  id?:      number,
-
-  join?: 'miter' | 'round' | 'bevel',
+  instance?: number,
+  instances?: ShaderSource,
+  transform?: TransformContextProps | ShaderModule,
 
   count?: Lazy<number>,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
-
-const ZERO = [0, 0, 0, 1];
-const POSITION: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
+} & PickingSource & RawLinesFlags;
 
 const LINE_JOIN_SIZE = {
   'bevel': 1,
@@ -77,12 +77,17 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
     depthTest,
     depthWrite,
     blend,
+
+    instance,
+    instances,
+    transform,
+
     count = null,
-    depth = 0,
     join,
   } = props;
 
   // Customize line shader
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const j = (join! in LINE_JOIN_SIZE) ? join! : 'bevel';
 
   const style = LINE_JOIN_STYLE[j];
@@ -93,25 +98,25 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
   const vertexCount = 2 + tris;
   const instanceCount = useDataLength(count, props.positions, -1);
 
-  const p = useShaderRef(props.position, props.positions);
+  // Instanced draw (repeated or random access)
+  const p = useSource(POSITIONS, useShaderRef(props.position, props.positions));
   const u = useShaderRef(props.uv, props.uvs);
-  const s = useShaderRef(props.st, props.sts);
-  const g = useShaderRef(props.segment, props.segments);
+  const s = useShaderRef(props.st, props.sts ?? p);
+  const g = useShaderRef(null, props.segments);
   const c = useShaderRef(props.color, props.colors);
   const w = useShaderRef(props.width, props.widths);
   const d = useShaderRef(props.depth, props.depths);
   const z = useShaderRef(props.zBias, props.zBiases);
   const t = useShaderRef(props.trim, props.trims);
   const e = useShaderRef(props.size, props.sizes);
-  
-  const l = useShaderRef(null, props.lookups);
 
-  const ps = p && props.sts == null ? useBoundSource(POSITION, p) : useNoBoundSource();
+  const auto = useOne(() => props.segment != null ? getShader(getLineSegment, [props.segment]) : null, props.segment);
 
-  const [xf, scissor, getBounds] = useApplyTransform(ps ?? p);
+  const {positions, scissor, bounds: getBounds} = useApplyTransform(p, transform);
 
   let bounds: Lazy<DataBounds> | null = null;
   if (getBounds && (props.positions as any)?.bounds) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     bounds = useCallback(() => getBounds((props.positions! as any).bounds), [props.positions, getBounds]);
   }
   else {
@@ -120,7 +125,14 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
 
   const material = useMaterialContext().solid;
 
-  const getVertex = useBoundShader(getLineVertex, [xf, scissor, u, ps ?? s, g, c, w, d, z, t, e, l, instanceCount]);
+  const boundVertex = useShader(getLineVertex, [
+    positions, scissor,
+    u, s,
+    g ?? auto, c, w, d, z,
+    t, e,
+    instanceCount,
+  ]);
+  const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount);
   const getPicking = usePickingShader(props);
 
   const links = useMemo(() => ({
@@ -143,13 +155,14 @@ export const RawLines: LiveComponent<RawLinesProps> = memo((props: RawLinesProps
 
   const defines = useMemo(() => ({
     ...defs,
+    ...instanceDefs,
     LINE_JOIN_STYLE: style,
     LINE_JOIN_SIZE: segments,
-  }), [defs, style, segments]);
-  
-  return use(Virtual, {
+  }), [defs, instanceDefs, style, segments]);
+
+  return useDraw({
     vertexCount,
-    instanceCount,
+    instanceCount: totalCount,
     bounds,
 
     links,

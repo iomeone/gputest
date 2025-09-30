@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '../../live';
-import type { UseGPURenderContext } from '../../core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { UseGPURenderContext } from '@use-gpu/core';
 
-import { use, multiGather, memo, useMemo } from '../../live';
+import { use, multiGather, memo, useMemo } from '@use-gpu/live';
 
 import { FullScreenRenderer } from './full-screen-renderer';
 import { ForwardRenderer } from './forward-renderer';
@@ -11,7 +11,7 @@ import { GBuffer } from './buffer/gbuffer';
 import { PickingBuffer } from './buffer/picking-buffer';
 import { ShadowBuffer } from './buffer/shadow-buffer';
 
-export type PassProps = {
+export type PassProps = PropsWithChildren<{
   mode?: 'forward' | 'deferred' | 'fullscreen',
 
   shadows?: boolean,
@@ -19,11 +19,11 @@ export type PassProps = {
   picking?: boolean,
   overlay?: boolean,
   merge?: boolean,
-};
+}>;
 
 const NO_BUFFERS: any = {};
 
-export const Pass: LC<PassProps> = memo((props: PropsWithChildren<PassProps>) => {
+export const Pass: LC<PassProps> = memo((props: PassProps) => {
   const {
     mode = 'forward',
     lights = false,
@@ -45,12 +45,12 @@ export const Pass: LC<PassProps> = memo((props: PropsWithChildren<PassProps>) =>
   }
   if (mode === 'forward') {
     if (!shadows && !picking) return use(ForwardRenderer, {buffers: NO_BUFFERS, lights, overlay, merge, children});
-    
+
     const buffers = useMemo(() => [
       shadows ? use(ShadowBuffer, {}) : null,
       picking ? use(PickingBuffer, {}) : null,
     ], [shadows, picking]);
-    
+
     return multiGather(buffers, (buffers: Record<string, UseGPURenderContext[]>) =>
       use(ForwardRenderer, {buffers, lights, overlay, merge, children})
     );

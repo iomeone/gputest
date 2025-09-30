@@ -1,34 +1,32 @@
-import type { LiveComponent } from '../../live';
-import type {
-  TypedArray, ViewUniforms, DeepPartial, Lazy,
-  UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData, RenderPassMode,
-} from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike, Lazy } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { RawFaces } from '../primitives/raw-faces';
 
-import { patch } from '../../state';
-import { use, memo, useMemo, useOne } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
-import { resolve } from '../../core';
+import { use, memo, useMemo, useOne } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { resolve } from '@use-gpu/core';
 
 import { useShaderRef } from '../hooks/useShaderRef';
-import { useBoundSource } from '../hooks/useBoundSource';
-import { useBoundShader } from '../hooks/useBoundShader';
-import { useApplyTransform } from '../hooks/useApplyTransform';
+import { useSource } from '../hooks/useSource';
+import { useShader } from '../hooks/useShader';
 
-import { getSurfaceIndex, getSurfaceNormal, getSurfaceUV } from '../../wgsl/plot/surfacewgsl';
+import { getSurfaceIndex, getSurfaceUV } from '@use-gpu/wgsl/plot/surface.wgsl';
+import { getSurfaceNormal } from '@use-gpu/wgsl/plot/surface-normal.wgsl';
 
 export type SurfaceLayerProps = {
-  position?: number[] | TypedArray,
-  color?: number[] | TypedArray,
-  st?: number[] | TypedArray,
+  position?: VectorLike,
+  color?: VectorLike,
+  uv?: VectorLike,
+  st?: VectorLike,
+  zBias?: VectorLike,
 
   positions?: ShaderSource,
   colors?: ShaderSource,
   sts?: ShaderSource,
+  zBiases?: ShaderSource,
 
   loopX?: boolean,
   loopY?: boolean,
@@ -44,12 +42,16 @@ const [SIZE_BINDING] = bundleToAttributes(getSurfaceIndex);
 /** Draws 2D surfaces across the X and Y data dimension. */
 export const SurfaceLayer: LiveComponent<SurfaceLayerProps> = memo((props: SurfaceLayerProps) => {
   const {
+    // eslint-disable-next-line  @typescript-eslint/no-unused-vars
     position,
+    // eslint-disable-next-line  @typescript-eslint/no-unused-vars
     positions,
     color,
     colors,
     st,
     sts,
+    zBias,
+    zBiases,
 
     loopX = false,
     loopY = false,
@@ -58,31 +60,31 @@ export const SurfaceLayer: LiveComponent<SurfaceLayerProps> = memo((props: Surfa
 
     size,
     mode = 'opaque',
-    id = 0,
     ...rest
   } = props;
 
   const sizeExpr = useMemo(() => () =>
-    (props.positions as any)?.size ?? resolve(size),
+    resolve(size) ?? (props.positions as any)?.size,
     [props.positions, size]);
-  const boundSize = useBoundSource(SIZE_BINDING, sizeExpr);
+  const boundSize = useSource(SIZE_BINDING, sizeExpr);
 
   const countExpr = useOne(() => () => {
     const s = resolve(sizeExpr);
-    return ((s[0] || 1) - +!loopX) * ((s[1] || 1) - +!loopY) * (s[2] || 1) * (s[3] || 1) * 2;
+    return ((s[0] || 1) - +!loopX) * ((s[1] || 1) - +!loopY) * (s[2] || 1) * (s[3] || 1) * 2 * 3;
   }, sizeExpr);
 
   const defines = useMemo(() => ({LOOP_X: !!loopX, LOOP_Y: !!loopY}), [loopX, loopY]);
-  const indices = useBoundShader(getSurfaceIndex, [boundSize], defines);
+  const indices = useShader(getSurfaceIndex, [boundSize], defines);
 
   const p = useShaderRef(props.position, props.positions);
-  const normals = useBoundShader(getSurfaceNormal, [boundSize, p], defines);
+  const ps = useSource({format: 'vec4<f32>', name: 'positions'}, p);
 
-  const uvs = useBoundShader(getSurfaceUV, [boundSize]);
+  const normals = useShader(getSurfaceNormal, [boundSize, ps]);
+
+  const uvs = useShader(getSurfaceUV, [boundSize]);
 
   return use(RawFaces, {
-    position,
-    positions,
+    positions: ps,
     color,
     colors,
     st,
@@ -92,11 +94,13 @@ export const SurfaceLayer: LiveComponent<SurfaceLayerProps> = memo((props: Surfa
     uvs,
     sts,
 
+    zBias,
+    zBiases,
+
     shaded,
     side,
     count: countExpr,
     mode,
-    id,
     ...rest,
   });
 }, 'SurfaceLayer');

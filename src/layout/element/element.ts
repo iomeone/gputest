@@ -1,64 +1,65 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { TextureSource, Point4, Rectangle } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { ColorLike } from '../../traits';
-import type { Dimension, Margin, MarginLike, Base, Fit, Repeat, Anchor, AutoPoint, ImageTrait } from '../types';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { ColorLike, XYZW, Rectangle } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { MarginLike, AutoXY } from '../types';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { use, keyed, yeet, useFiber, useMemo } from '../../live';
+import { use, yeet, useFiber, useMemo } from '@use-gpu/live';
 import { evaluateDimension } from '../parse';
-import { useInspectHoverable } from '../../workbench';
+import { useInspectHoverable, LayerReconciler } from '@use-gpu/workbench';
 
-import type { BoxTrait, ElementTrait } from '../types';
-import { useBoxTrait, useElementTrait } from '../traits';
+import { BoxTrait, ElementTrait, ImageTrait, useBoxTrait, useElementTrait } from '../traits';
 import { INSPECT_STYLE } from '../lib/constants';
 import { memoLayout } from '../lib/util';
 
-import { UIRectangle } from '../shape/ui-rectangle';
+import { SDFRectangle } from '../shape/sdf-rectangle';
 
-export type ElementProps = Partial<BoxTrait> & Partial<ElementTrait> & {
-  id?: number,
+const {quote} = LayerReconciler;
+
+export type ElementProps =
+  TraitProps<typeof BoxTrait> &
+  TraitProps<typeof ElementTrait> &
+PropsWithChildren<{
   snap?: boolean,
   absolute?: boolean,
   under?: boolean,
-};
+}>;
 
-const TRANSPARENT: Point4 = [0, 0, 0, 0];
+const TRANSPARENT: XYZW = [0, 0, 0, 0];
 
-export const Element: LiveComponent<ElementProps> = (props: PropsWithChildren<ElementProps>) => {
+export const Element: LiveComponent<ElementProps> = (props: ElementProps) => {
   const {
     snap = false,
     absolute = false,
     under = false,
-
-    children,
   } = props;
 
-  const { width, height, radius, border, stroke, fill, image } = useElementTrait(props);
+  const { width, height, radius, border, stroke, fill, texture, image, zIndex } = useElementTrait(props);
   const { margin, grow, shrink, inline, flex } = useBoxTrait(props);
 
   const w = typeof width === 'number' ? width : 0;
   const h = typeof height === 'number' ? height : 0;
 
-  const {id: fiberId} = useFiber();
-  const id = props.id ?? fiberId;
   const sizing = [w, h, w, h];
 
   const hovered = useInspectHoverable();
 
-  const fit = (into: AutoPoint) => {
+  const {id} = useFiber();
+
+  const fit = (into: AutoXY) => {
     const w = width != null ? evaluateDimension(width, into[0] || 0, snap) : into[0] || 0;
     const h = height != null ? evaluateDimension(height, into[1] || 0, snap) : into[1] || 0;
     const size = [w ?? 0, h ?? 0];
 
-    let render = memoLayout((
+    const render = memoLayout((
       layout: Rectangle,
       origin: Rectangle,
+      z: number,
       clip: ShaderModule | null,
       mask: ShaderModule | null,
       transform: ShaderModule | null,
     ): LiveElement => (
-      keyed(UIRectangle, id, {
-        id,
+      quote(use(SDFRectangle, {
         layout,
         origin,
 
@@ -67,12 +68,14 @@ export const Element: LiveComponent<ElementProps> = (props: PropsWithChildren<El
         border: hovered ? INSPECT_STYLE.parent.border : border ?? TRANSPARENT,
         radius,
 
+        texture,
         image,
         clip,
         mask,
         transform,
-      })
-    ));
+        zIndex: z + zIndex,
+      }),
+    )));
 
     return {
       size,
@@ -98,17 +101,19 @@ export const Element: LiveComponent<ElementProps> = (props: PropsWithChildren<El
 };
 
 export const useImplicitElement = (
-  id: number,
-  radius: MarginLike,
-  border: MarginLike,
-  stroke: ColorLike,
-  fill: ColorLike,
-  image: Partial<ImageTrait>,
-  children: any,
+  {radius, border, stroke, fill, image, texture, children}: {
+    radius?: MarginLike,
+    border?: MarginLike,
+    stroke?: ColorLike,
+    fill?: ColorLike,
+    image?: Partial<TraitProps<typeof ImageTrait>>,
+    texture?: ShaderSource | null | undefined,
+    children?: any,
+  },
 ) =>
   useMemo(() => {
     const element = (stroke || fill || image) ? (
-      use(Element, {id, radius, border, stroke, fill, image, absolute: true, under: true})
+      use(Element, {radius, border, stroke, fill, image, texture, absolute: true, under: true})
     ) : null;
     return element && children ? [element, children] : element ?? children;
-  }, [id, radius, border, stroke, fill, image, children]);
+  }, [radius, border, stroke, fill, texture, image, children]);

@@ -1,9 +1,11 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { ColorLike, VectorLike } from '../../traits';
+import type { LC } from '@use-gpu/live';
+import type { ColorLike, VectorLike } from '@use-gpu/core';
 import type { ShadowMapLike } from './types';
 
-import { optional, parseColor, parseNumber, parsePosition, parseVec2, parseVec3, useProp } from '../../traits';
-import { memo, useMemo, useOne } from '../../live';
+import { optional, useProp } from '@use-gpu/traits/live';
+import { parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '@use-gpu/parse';
+
+import { memo, use, useMemo, useOne } from '@use-gpu/live';
 
 import { useLightContext } from '../providers/light-provider';
 import { useMatrixContext } from '../providers/matrix-provider';
@@ -11,6 +13,9 @@ import { useMatrixContext } from '../providers/matrix-provider';
 import { mat4, vec3, vec4 } from 'gl-matrix';
 
 import { DIRECTIONAL_LIGHT } from './types';
+import { PointHelper } from '../helpers/point-helper';
+import { VectorHelper } from '../helpers/vector-helper';
+import { AABBHelper } from '../helpers/aabb-helper';
 
 export type DirectionalLightProps = {
   position?: VectorLike,
@@ -18,9 +23,10 @@ export type DirectionalLightProps = {
   color?: ColorLike,
   intensity?: number,
   shadowMap?: ShadowMapLike,
+  debug?: boolean,
 };
 
-const DEFAULT_DIRECTION = vec3.fromValues(1, 3, 2);
+const DEFAULT_DIRECTION = vec4.fromValues(1, 3, 2, 0);
 
 const DEFAULT_SHADOW_MAP = {
   size: [1024, 1024],
@@ -28,14 +34,14 @@ const DEFAULT_SHADOW_MAP = {
   span: [1000, 1000],
   up: [0, 1, 0],
 
-  bias: [1/4096, 1/32],
+  bias: [0, 1/4096, 1/32],
   blur: 4,
 };
 
 const parseOptionalPosition = optional(parsePosition);
 
-export const DirectionalLight = memo((props: DirectionalLightProps) => {
-  
+export const DirectionalLight: LC<DirectionalLightProps> = memo((props: DirectionalLightProps) => {
+
   const position = useProp(props.position, parsePosition, DEFAULT_DIRECTION);
   const direction = useProp(props.direction, parseOptionalPosition);
   const color = useProp(props.color, parseColor);
@@ -49,12 +55,12 @@ export const DirectionalLight = memo((props: DirectionalLightProps) => {
   const {shadowMap} = props;
   const parent = useMatrixContext();
 
-  const [into, shadow] = useMemo(() => {
-    if (!shadowMap) return [null, null];
+  const [into, shadow,, far] = useMemo(() => {
+    if (!shadowMap) return [null, null, 0, 0];
 
     const size  = parseVec2(shadowMap.size  ?? DEFAULT_SHADOW_MAP.size);
     const depth = parseVec2(shadowMap.depth ?? DEFAULT_SHADOW_MAP.depth);
-    const bias  = parseVec2(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
+    const bias  = parseVec3(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
     const span  = parseVec2(shadowMap.span  ?? DEFAULT_SHADOW_MAP.span);
     const up    = parseVec3(shadowMap.up    ?? DEFAULT_SHADOW_MAP.up);
     const blur  = parseNumber(shadowMap.blur ?? DEFAULT_SHADOW_MAP.blur);
@@ -84,12 +90,12 @@ export const DirectionalLight = memo((props: DirectionalLightProps) => {
     matrix[14] += far / (far - near);
 
     const shadow = {type: 'ortho', size, depth, bias, blur};
-    return [matrix, shadow];
+    return [matrix, shadow, near, far];
   }, [position, normal, shadowMap, parent]);
 
   const light = useMemo(() => {
-    let p = vec4.clone(position as any as vec4);
-    let n = vec4.clone(normal as any as vec4);
+    const p = vec4.clone(position as any as vec4);
+    const n = vec4.clone(normal as any as vec4);
     p[3] = 1;
     n[3] = 0;
 
@@ -112,5 +118,16 @@ export const DirectionalLight = memo((props: DirectionalLightProps) => {
   const {useLight} = useLightContext();
   useLight(light);
 
-  return null;
+  if (!props.debug) return null;
+
+  return [
+    use(PointHelper, { position, color }),
+    use(VectorHelper, { position, tangent: normal, color, length: far || 100 }),
+    shadow ? use(AABBHelper, {
+      into,
+      min: [-1, -1, 0],
+      max: [1, 1, 1],
+      color
+    }) : null,
+  ];
 }, 'DirectionalLight');

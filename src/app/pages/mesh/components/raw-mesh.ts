@@ -1,26 +1,28 @@
-import type { LiveComponent } from '../../../../live';
-import type { ViewUniforms, UniformPipe, UniformAttribute, UniformType, VertexData, RenderPassMode, DataTexture } from '../../../../core';
+import type { LiveComponent } from '@use-gpu/live';
+import type { UniformAttribute, VertexData, RenderPassMode, DataTexture } from '@use-gpu/core';
 
-import { useViewContext, useDeviceContext, useRenderContext, usePickingContext } from '../../../../workbench';
-import { yeet, memo, useContext, useNoContext, useFiber, useMemo, useOne, useState, useResource } from '../../../../live';
+import { useViewContext, useDeviceContext, useRenderContext, usePickingContext } from '@use-gpu/workbench';
+import { yeet, memo, useMemo } from '@use-gpu/live';
 import {
   makeVertexBuffers, makeRawTexture, makeMultiUniforms,
-  makeRenderPipeline, makeShaderModuleDescriptor, makeShaderBinding, makeSampler, makeTextureBinding,
+  makeRenderPipeline, makeShaderModuleDescriptor, makeSampler, makeTextureBinding,
   uploadBuffer, uploadDataTexture,
-} from '../../../../core';
-import { linkBundle, bindingToModule, bundleToAttribute } from '../../../../shader/wgsl';
-import { useInspectable, useNativeColor } from '../../../../workbench';
+} from '@use-gpu/core';
+import { linkBundle, getBundleLabel } from '@use-gpu/shader/wgsl';
+import { useInspectable, useNativeColor, PassReconciler } from '@use-gpu/workbench';
 
-import instanceDrawMesh from '../../../../wgsl/app/vertex/meshwgsl';
-import instanceDrawMeshPick from '../../../../wgsl/app/vertex/mesh-pickwgsl';
+import instanceDrawMesh from './vertex/mesh.wgsl';
+import instanceDrawMeshPick from './vertex/mesh-pick.wgsl';
 
-import instanceFragmentMesh from '../../../../wgsl/app/fragment/meshwgsl';
-import instanceFragmentPickGeometry from '../../../../wgsl/render/fragment/pickwgsl';
+import instanceFragmentMesh from './fragment/mesh.wgsl';
+import instanceFragmentPickGeometry from '@use-gpu/wgsl/render/fragment/pick.wgsl';
+
+const {quote} = PassReconciler;
 
 //
 // This component shows how to do "raw" rendering with Use.GPU,
 // without using any of the built-in components or binding gen,
-// but while still fully supporting GPU Picking and color spaces.
+// but while still fully supporting GPU mouse picking and color spaces.
 //
 // It is mainly intended as an anti-example.
 //
@@ -66,8 +68,7 @@ export const RawMesh: LiveComponent<RawMeshProps> = memo((props: RawMeshProps) =
   const device = useDeviceContext();
   const {bind: unbind, uniforms: viewUniforms, defs: viewDefs} = useViewContext();
 
-  // Debug / Picking mode
-  const isDebug = mode === 'debug';
+  // Picking mode
   const isPicking = mode === 'picking';
 
   const renderContext = useRenderContext();
@@ -88,18 +89,17 @@ export const RawMesh: LiveComponent<RawMeshProps> = memo((props: RawMeshProps) =
   // Defines
   const toColorSpace = useNativeColor(colorInput, colorSpace);
   const defines = {
-    '@group(VIEW)': '@group(0)',
-    '@binding(VIEW)': '@binding(0)',
+    '@group(GLOBAL)': '@group(0)',
     '@group(LIGHT)': '@group(0)',
     '@binding(LIGHT)': '@binding(1)',
     'PICKING_ID': id,
+    'UV_PICKING': false,
   };
 
   // Shader
   const vertexShader   = isPicking ? instanceDrawMeshPick         : instanceDrawMesh;
   const fragmentShader = isPicking ? instanceFragmentPickGeometry : instanceFragmentMesh;
 
-  const fiber = useFiber();
   const inspect = useInspectable();
 
   // Rendering pipeline
@@ -107,9 +107,19 @@ export const RawMesh: LiveComponent<RawMeshProps> = memo((props: RawMeshProps) =
     const vertexLinked = linkBundle(vertexShader, {toColorSpace}, defines);
     const fragmentLinked = linkBundle(fragmentShader, {toColorSpace}, defines);
 
-    const vertex = makeShaderModuleDescriptor(vertexLinked, vertexShader.hash ?? 0);
-    const fragment = makeShaderModuleDescriptor(fragmentLinked, fragmentShader.hash ?? 0);
-    
+    const vertex = makeShaderModuleDescriptor(
+      vertexLinked,
+      vertexShader.hash ?? 0,
+      'main',
+      getBundleLabel(vertexShader)
+    );
+    const fragment = makeShaderModuleDescriptor(
+      fragmentLinked,
+      fragmentShader.hash ?? 0,
+      'main',
+      getBundleLabel(fragmentShader)
+    );
+
     inspect({vertex});
     inspect({fragment});
 
@@ -164,8 +174,8 @@ export const RawMesh: LiveComponent<RawMeshProps> = memo((props: RawMeshProps) =
     unbind(passEncoder);
   };
 
-  return yeet({
+  return quote(yeet({
     // Optionally pass `bounds` of type Lazy<DataBounds> to enable culling
     [mode]: {draw}
-  }); 
+  }));
 }, 'Mesh');

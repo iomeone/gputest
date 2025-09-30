@@ -11,8 +11,9 @@ export const makeUseLocalState = (
     if (item) try {
       const obj = JSON.parse(item);
       return unmarshal ? unmarshal(obj) : obj;
+      // eslint-disable-next-line no-empty
     } catch (e) {};
-    
+
     return typeof initial === 'function' ? (initial as any)() : initial;
   });
 
@@ -21,14 +22,15 @@ export const makeUseLocalState = (
     setLastKey(key);
     setState(initial);
   }
-  
+
   const setLocalState = useCallback((value: SetStateAction<T>) => {
     setState((state: T) => {
       state = typeof value === 'function' ? (value as any)(state) : value;
+      // eslint-disable-next-line no-empty
       try { window.localStorage.setItem(key, JSON.stringify(state)); } catch (e) {};
       return state;
     });
   }, []);
-  
+
   return [state, setLocalState];
 };

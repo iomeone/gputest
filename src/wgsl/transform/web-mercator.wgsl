@@ -26,16 +26,16 @@ const limitLat = 85.05113;
   var f = mercatorBend;
   let z = mercatorZoom;
   let n = mercatorNative;
-  
+
   var transformed: vec3<f32>;
 
   var phi: f32; // longitude
   var theta: f32; // latitude
   var y: f32; // y
-  
+
   if (f == 0.0) { f = 0.001; };
   if (f == 1.0) { f = 0.999; };
-  
+
   if (n > 0.0) {
     let rads = position.xy * PI;
     y = rads.y;
@@ -54,7 +54,13 @@ const limitLat = 85.05113;
 
     if (f > 0.0) {
       let mixed = vec3<f32>(mix(vec2<f32>(phi, theta), proj, 1.0 - f), radius);
-      transformed = toSphericalBend(mixed, o, z, f);
+
+      if (f < 0.001) {
+        transformed = toSphericalBendEpsilon(mixed, o, z, f);
+      }
+      else {
+        transformed = toSphericalBend(mixed, o, z, f);
+      }
 
       if (mercatorCentered > 0.0) {
         let mixed = vec3<f32>(
@@ -65,7 +71,12 @@ const limitLat = 85.05113;
             ),
             radius,
           );
-        transformed -= toSphericalBend(mixed, o, z, f);
+          if (f < 0.001) {
+            transformed -= toSphericalBendEpsilon(mixed, o, z, f);
+          }
+          else {
+            transformed -= toSphericalBend(mixed, o, z, f);
+          }
       }
     }
     else {
@@ -103,7 +114,9 @@ fn toSphericalBend(position: vec3<f32>, o: vec3<f32>, z: f32, f: f32) -> vec3<f3
   let f1 = 1.0 - f;
   let fi = 1.0 / f;
 
-  let angles = vec2<f32>((position.x - o.x * PI) * f, (position.y) * f);
+  let p = vec2<f32>((position.x - o.x * PI), position.y);
+  let angles = p * f;
+
   let c = cos(angles);
   let s = sin(angles);
 
@@ -112,9 +125,28 @@ fn toSphericalBend(position: vec3<f32>, o: vec3<f32>, z: f32, f: f32) -> vec3<f3
     s.y * fi,
     (c.x * c.y - 1.0) * fi + f,
   ) * z / PI;
-  
+
   spherical.y -= o.y * z * f1;
-  
+
+  return spherical;
+}
+
+fn toSphericalBendEpsilon(position: vec3<f32>, o: vec3<f32>, z: f32, f: f32) -> vec3<f32> {
+  let f1 = 1.0 - f;
+
+  let p = vec2<f32>((position.x - o.x * PI), position.y);
+  let angles = p * f;
+
+  let c = 1.0 - angles * angles * .5;
+
+  var spherical = vec3<f32>(
+    p.x * c.y,
+    p.y,
+    f,
+  ) * z / PI;
+
+  spherical.y -= o.y * z * f1;
+
   return spherical;
 }
 
@@ -122,6 +154,6 @@ fn rotateToCenter(position: vec3<f32>, o: vec3<f32>, z: f32, f: f32) -> vec3<f32
   let angle = mix(o.z, o.z, f) * f;
   let c = cos(angle);
   let s = sin(angle);
-  
+
   return vec3<f32>(position.x, position.y * c - position.z * s, position.z * c + position.y * s);
 }

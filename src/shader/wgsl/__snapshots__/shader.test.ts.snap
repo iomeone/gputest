@@ -1,0 +1,161 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`shader transpiles wgsl to CJS 1`] = `
+"/* __WGSL_LOADER_GENERATED */
+const {decompressAST, decompressString, symbolDictionary, bindEntryPoint} = require("@use-gpu/shader/wgsl");
+const m0 = require("@use-gpu/wgsl/use/types.wgsl");
+const m1 = require("@use-gpu/wgsl/use/view.wgsl");
+const m2 = require("@use-gpu/wgsl/geometry/quad.wgsl");
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getPosition getColor getSize getDepth getQuadVertex @use-gpu/wgsl/use/types SolidVertex @use-gpu/wgsl/use/view viewUniforms worldToClip getPerspectiveScale @use-gpu/wgsl/geometry/quad getQuadUV link i32 vec2<f32> f32 export vertexIndex instanceIndex SolidVertex viewUniforms instanceIndex center pixelScale".split(' '));
+const table = {[S]:_([0,1,2,3,4]),[W]:_([4]),[O]:[{[A]:0,[N]:_(5),[S]:_([6]),[K]:[{[N]:_(6),[J]:_(6)}]},{[A]:0,[N]:_(7),[S]:_([8,9,10]),[K]:[{[N]:_(8),[J]:_(8)},{[N]:_(9),[J]:_(9)},{[N]:_(10),[J]:_(10)}]},{[A]:0,[N]:_(11),[S]:_([12]),[K]:[{[N]:_(12),[J]:_(12)}]}],[X]:[{[A]:181,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:227,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:270,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:_(15),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:312,[R]:_(3),[G]:2,[F]:{[N]:_(3),[T]:_(16),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}}],[E]:[{[A]:350,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(6),[Z]:_([17]),[P]:[{[N]:_(18),[T]:_(14)},{[N]:_(19),[T]:_(14)}],[I]:_([0,1,2,3])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true}};
+const data = {
+  name: "/getQuadVertex",
+  code: _(["use '",5,"'::{ ",6," };\\nuse '",7,"'::{ ",8,", ",9,", ",10," };\\nuse '",11,"'::{ ",12," };\\n\\n@",13," fn ",0,"(i: i32) -> ",C," {};\\n@",13," fn ",1,"(i: i32) -> ",C," {};\\n@",13," fn ",2,"(i: i32) -> ",15," {};\\n@",13," fn ",3,"(i: i32) -> f32 {};\\n\\n@",17," fn ",4,"(",18,": i32, ",19,": i32) -> ",6," {\\n  var position = ",0,"(",19,");\\n  var color = ",1,"(",19,");\\n  var size = ",2,"(",19,");\\n  var depth = ",3,"(",19,");\\n\\n  var ",23," = ",9,"(position);\\n\\n  var uv = ",12,"(",18,");\\n  var xy = uv * 2.0 - 1.0;\\n\\n  // Lerp between fixed size and full perspective.\\n  var ",24," = ",10,"(",23,".w, depth);\\n  // TODO: awaiting compound support\\n  //size *= ",24,";\\n  size = size * ",24,";\\n\\n  if (HAS_EDGE_BLEED) {\\n    xy = xy * (size + 0.5) / size;\\n    uv = xy * .5 + .5;\\n  }\\n\\n  // TODO: awaiting compound support\\n  //",23,".xy += xy * size * ",8,".viewResolution * ",23,".w;\\n  ",23," = ",C,"(",23,".xy + xy * size * ",8,".viewResolution * ",23,".w, ",23,".zw);\\n\\n  return ",6,"(\\n    ",23,",\\n    color,\\n    uv\\n  );\\n}\\n\\n"]).join(''),
+  hash: 0x131e8ab0013e40,
+  table,
+  shake: [[181,[0,4]],[227,[1,4]],[270,[2,4]],[312,[3,4]],[350,[4]]],
+  tree: decompressAST([[1,0,46],[1,48,128],[1,82,130],[1,51,95],[1,46,87],[1,43,83],[1,42,77],[0,38,928],[1,0,7],[2,11,24],[2,55,66],[2,31,42],[2,42,50],[2,38,45],[2,38,46],[2,41,52],[2,35,44],[2,122,141],[2,366,378],[2,62,73]], table[S]),
+};
+
+const libs = {"@use-gpu/wgsl/use/types": m0, "@use-gpu/wgsl/use/view": m1, "@use-gpu/wgsl/geometry/quad": m2};
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
+
+const __default = getSymbol();
+Object.defineProperty(exports, '__esModule', { value: true });
+Object.assign(exports, __default);
+exports.default = __default;
+    
+exports.getQuadVertex = getSymbol("getQuadVertex");
+"
+`;
+
+exports[`shader transpiles wgsl to CJS 2`] = `
+"/* __WGSL_LOADER_GENERATED */
+const {decompressAST, decompressString, symbolDictionary, bindEntryPoint} = require("@use-gpu/shader/wgsl");
+const m0 = require("@use-gpu/wgsl/use/types.wgsl");
+const m1 = require("@use-gpu/wgsl/use/view.wgsl");
+const m2 = require("@use-gpu/wgsl/geometry/quad.wgsl");
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getPosition getColor getSize getDepth getQuadVertex @use-gpu/wgsl/use/types SolidVertex @use-gpu/wgsl/use/view viewUniforms worldToClip getPerspectiveScale @use-gpu/wgsl/geometry/quad getQuadUV link i32 vec2<f32> f32 export SolidVertex".split(' '));
+const table = {[S]:_([0,1,2,3,4]),[W]:_([4]),[O]:[{[A]:0,[N]:_(5),[S]:_([6]),[K]:[{[N]:_(6),[J]:_(6)}]},{[A]:0,[N]:_(7),[S]:_([8,9,10]),[K]:[{[N]:_(8),[J]:_(8)},{[N]:_(9),[J]:_(9)},{[N]:_(10),[J]:_(10)}]},{[A]:0,[N]:_(11),[S]:_([12]),[K]:[{[N]:_(12),[J]:_(12)}]}],[X]:[{[A]:169,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:210,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:248,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:_(15),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:285,[R]:_(3),[G]:2,[F]:{[N]:_(3),[T]:_(16),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}}],[E]:[{[A]:317,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(6),[Z]:_([17]),[P]:[{[N]:"v",[T]:_(14)},{[N]:"i",[T]:_(14)}],[I]:_([0,1,2,3])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true}};
+const data = {
+  name: "/getQuadVertex",
+  code: _(["use '",5,"'::{",6,"};use '",7,"'::{",8,",",9,",",10,"};use '",11,"'::{",12,"};@",13," fn ",0,"(i:i32)->",C,"{};@",13," fn ",1,"(i:i32)->",C,"{};@",13," fn ",2,"(i:i32)->",15,"{};@",13," fn ",3,"(i:i32)->f32{};@",17," fn ",4,"(v:i32,i:i32)->",6,"{var p=",0,"(i);var c=",1,"(i);var s=",2,"(i);var d=",3,"(i);var c1=",9,"(p);var u=",12,"(v);var x=u*2.0-1.0;var p1=",10,"(c1.w,d);s=s*p1;if(HAS_EDGE_BLEED){x=x*(s+0.5)/s;u=x*.5+.5;}c1=",C,"(c1.xy+x*s*",8,".viewResolution*c1.w,c1.zw);return ",6,"(c1,c,u);}\\n"]).join(''),
+  hash: 0x4329620d6fdf1,
+  table,
+  shake: [[169,[0,4]],[210,[1,4]],[248,[2,4]],[285,[3,4]],[317,[4]]],
+  tree: decompressAST([[1,0,44],[1,45,121],[1,77,123],[1,47,87],[1,41,78],[1,38,74],[1,37,68],[0,32,391],[1,0,7],[2,11,24],[2,28,39],[2,18,29],[2,21,29],[2,18,25],[2,17,25],[2,19,30],[2,21,30],[2,36,55],[2,102,114],[2,47,58]], table[S]),
+};
+
+const libs = {"@use-gpu/wgsl/use/types": m0, "@use-gpu/wgsl/use/view": m1, "@use-gpu/wgsl/geometry/quad": m2};
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
+
+const __default = getSymbol();
+Object.defineProperty(exports, '__esModule', { value: true });
+Object.assign(exports, __default);
+exports.default = __default;
+    
+exports.getQuadVertex = getSymbol("getQuadVertex");
+"
+`;
+
+exports[`shader transpiles wgsl to ES 1`] = `
+"/* __WGSL_LOADER_GENERATED */
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import m0 from "@use-gpu/wgsl/use/types.wgsl";
+import m1 from "@use-gpu/wgsl/use/view.wgsl";
+import m2 from "@use-gpu/wgsl/geometry/quad.wgsl";
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getPosition getColor getSize getDepth getQuadVertex @use-gpu/wgsl/use/types SolidVertex @use-gpu/wgsl/use/view viewUniforms worldToClip getPerspectiveScale @use-gpu/wgsl/geometry/quad getQuadUV link i32 vec2<f32> f32 export vertexIndex instanceIndex SolidVertex viewUniforms instanceIndex center pixelScale".split(' '));
+const table = {[S]:_([0,1,2,3,4]),[W]:_([4]),[O]:[{[A]:0,[N]:_(5),[S]:_([6]),[K]:[{[N]:_(6),[J]:_(6)}]},{[A]:0,[N]:_(7),[S]:_([8,9,10]),[K]:[{[N]:_(8),[J]:_(8)},{[N]:_(9),[J]:_(9)},{[N]:_(10),[J]:_(10)}]},{[A]:0,[N]:_(11),[S]:_([12]),[K]:[{[N]:_(12),[J]:_(12)}]}],[X]:[{[A]:181,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:227,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:270,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:_(15),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:312,[R]:_(3),[G]:2,[F]:{[N]:_(3),[T]:_(16),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}}],[E]:[{[A]:350,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(6),[Z]:_([17]),[P]:[{[N]:_(18),[T]:_(14)},{[N]:_(19),[T]:_(14)}],[I]:_([0,1,2,3])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true}};
+const data = {
+  name: "/getQuadVertex",
+  code: _(["use '",5,"'::{ ",6," };\\nuse '",7,"'::{ ",8,", ",9,", ",10," };\\nuse '",11,"'::{ ",12," };\\n\\n@",13," fn ",0,"(i: i32) -> ",C," {};\\n@",13," fn ",1,"(i: i32) -> ",C," {};\\n@",13," fn ",2,"(i: i32) -> ",15," {};\\n@",13," fn ",3,"(i: i32) -> f32 {};\\n\\n@",17," fn ",4,"(",18,": i32, ",19,": i32) -> ",6," {\\n  var position = ",0,"(",19,");\\n  var color = ",1,"(",19,");\\n  var size = ",2,"(",19,");\\n  var depth = ",3,"(",19,");\\n\\n  var ",23," = ",9,"(position);\\n\\n  var uv = ",12,"(",18,");\\n  var xy = uv * 2.0 - 1.0;\\n\\n  // Lerp between fixed size and full perspective.\\n  var ",24," = ",10,"(",23,".w, depth);\\n  // TODO: awaiting compound support\\n  //size *= ",24,";\\n  size = size * ",24,";\\n\\n  if (HAS_EDGE_BLEED) {\\n    xy = xy * (size + 0.5) / size;\\n    uv = xy * .5 + .5;\\n  }\\n\\n  // TODO: awaiting compound support\\n  //",23,".xy += xy * size * ",8,".viewResolution * ",23,".w;\\n  ",23," = ",C,"(",23,".xy + xy * size * ",8,".viewResolution * ",23,".w, ",23,".zw);\\n\\n  return ",6,"(\\n    ",23,",\\n    color,\\n    uv\\n  );\\n}\\n\\n"]).join(''),
+  hash: 0x131e8ab0013e40,
+  table,
+  shake: [[181,[0,4]],[227,[1,4]],[270,[2,4]],[312,[3,4]],[350,[4]]],
+  tree: decompressAST([[1,0,46],[1,48,128],[1,82,130],[1,51,95],[1,46,87],[1,43,83],[1,42,77],[0,38,928],[1,0,7],[2,11,24],[2,55,66],[2,31,42],[2,42,50],[2,38,45],[2,38,46],[2,41,52],[2,35,44],[2,122,141],[2,366,378],[2,62,73]], table[S]),
+};
+
+const libs = {"@use-gpu/wgsl/use/types": m0, "@use-gpu/wgsl/use/view": m1, "@use-gpu/wgsl/geometry/quad": m2};
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
+export default getSymbol();
+export const getQuadVertex = getSymbol("getQuadVertex");
+"
+`;
+
+exports[`shader transpiles wgsl to ES 2`] = `
+"/* __WGSL_LOADER_GENERATED */
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import m0 from "@use-gpu/wgsl/use/types.wgsl";
+import m1 from "@use-gpu/wgsl/use/view.wgsl";
+import m2 from "@use-gpu/wgsl/geometry/quad.wgsl";
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getPosition getColor getSize getDepth getQuadVertex @use-gpu/wgsl/use/types SolidVertex @use-gpu/wgsl/use/view viewUniforms worldToClip getPerspectiveScale @use-gpu/wgsl/geometry/quad getQuadUV link i32 vec2<f32> f32 export SolidVertex".split(' '));
+const table = {[S]:_([0,1,2,3,4]),[W]:_([4]),[O]:[{[A]:0,[N]:_(5),[S]:_([6]),[K]:[{[N]:_(6),[J]:_(6)}]},{[A]:0,[N]:_(7),[S]:_([8,9,10]),[K]:[{[N]:_(8),[J]:_(8)},{[N]:_(9),[J]:_(9)},{[N]:_(10),[J]:_(10)}]},{[A]:0,[N]:_(11),[S]:_([12]),[K]:[{[N]:_(12),[J]:_(12)}]}],[X]:[{[A]:169,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:210,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:248,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:_(15),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:285,[R]:_(3),[G]:2,[F]:{[N]:_(3),[T]:_(16),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}}],[E]:[{[A]:317,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(6),[Z]:_([17]),[P]:[{[N]:"v",[T]:_(14)},{[N]:"i",[T]:_(14)}],[I]:_([0,1,2,3])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true}};
+const data = {
+  name: "/getQuadVertex",
+  code: _(["use '",5,"'::{",6,"};use '",7,"'::{",8,",",9,",",10,"};use '",11,"'::{",12,"};@",13," fn ",0,"(i:i32)->",C,"{};@",13," fn ",1,"(i:i32)->",C,"{};@",13," fn ",2,"(i:i32)->",15,"{};@",13," fn ",3,"(i:i32)->f32{};@",17," fn ",4,"(v:i32,i:i32)->",6,"{var p=",0,"(i);var c=",1,"(i);var s=",2,"(i);var d=",3,"(i);var c1=",9,"(p);var u=",12,"(v);var x=u*2.0-1.0;var p1=",10,"(c1.w,d);s=s*p1;if(HAS_EDGE_BLEED){x=x*(s+0.5)/s;u=x*.5+.5;}c1=",C,"(c1.xy+x*s*",8,".viewResolution*c1.w,c1.zw);return ",6,"(c1,c,u);}\\n"]).join(''),
+  hash: 0x4329620d6fdf1,
+  table,
+  shake: [[169,[0,4]],[210,[1,4]],[248,[2,4]],[285,[3,4]],[317,[4]]],
+  tree: decompressAST([[1,0,44],[1,45,121],[1,77,123],[1,47,87],[1,41,78],[1,38,74],[1,37,68],[0,32,391],[1,0,7],[2,11,24],[2,28,39],[2,18,29],[2,21,29],[2,18,25],[2,17,25],[2,19,30],[2,21,30],[2,36,55],[2,102,114],[2,47,58]], table[S]),
+};
+
+const libs = {"@use-gpu/wgsl/use/types": m0, "@use-gpu/wgsl/use/view": m1, "@use-gpu/wgsl/geometry/quad": m2};
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
+export default getSymbol();
+export const getQuadVertex = getSymbol("getQuadVertex");
+"
+`;
+
+exports[`shader transpiles wgsl to ES with types 1`] = `
+"/* __WGSL_LOADER_GENERATED */
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint, ParsedModule, ParsedBundle, SymbolTable} from "@use-gpu/shader/wgsl";
+import m0 from "@use-gpu/wgsl/use/types.wgsl";
+import m1 from "@use-gpu/wgsl/use/view.wgsl";
+import m2 from "@use-gpu/wgsl/geometry/quad.wgsl";
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getPosition getColor getSize getDepth getQuadVertex @use-gpu/wgsl/use/types SolidVertex @use-gpu/wgsl/use/view viewUniforms worldToClip getPerspectiveScale @use-gpu/wgsl/geometry/quad getQuadUV link i32 vec2<f32> f32 export vertexIndex instanceIndex SolidVertex viewUniforms instanceIndex center pixelScale".split(' '));
+const table: SymbolTable = {[S]:_([0,1,2,3,4]),[W]:_([4]),[O]:[{[A]:0,[N]:_(5),[S]:_([6]),[K]:[{[N]:_(6),[J]:_(6)}]},{[A]:0,[N]:_(7),[S]:_([8,9,10]),[K]:[{[N]:_(8),[J]:_(8)},{[N]:_(9),[J]:_(9)},{[N]:_(10),[J]:_(10)}]},{[A]:0,[N]:_(11),[S]:_([12]),[K]:[{[N]:_(12),[J]:_(12)}]}],[X]:[{[A]:181,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:227,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:270,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:_(15),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:312,[R]:_(3),[G]:2,[F]:{[N]:_(3),[T]:_(16),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}}],[E]:[{[A]:350,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(6),[Z]:_([17]),[P]:[{[N]:_(18),[T]:_(14)},{[N]:_(19),[T]:_(14)}],[I]:_([0,1,2,3])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true}};
+const data: ParsedModule = {
+  name: "/getQuadVertex",
+  code: _(["use '",5,"'::{ ",6," };\\nuse '",7,"'::{ ",8,", ",9,", ",10," };\\nuse '",11,"'::{ ",12," };\\n\\n@",13," fn ",0,"(i: i32) -> ",C," {};\\n@",13," fn ",1,"(i: i32) -> ",C," {};\\n@",13," fn ",2,"(i: i32) -> ",15," {};\\n@",13," fn ",3,"(i: i32) -> f32 {};\\n\\n@",17," fn ",4,"(",18,": i32, ",19,": i32) -> ",6," {\\n  var position = ",0,"(",19,");\\n  var color = ",1,"(",19,");\\n  var size = ",2,"(",19,");\\n  var depth = ",3,"(",19,");\\n\\n  var ",23," = ",9,"(position);\\n\\n  var uv = ",12,"(",18,");\\n  var xy = uv * 2.0 - 1.0;\\n\\n  // Lerp between fixed size and full perspective.\\n  var ",24," = ",10,"(",23,".w, depth);\\n  // TODO: awaiting compound support\\n  //size *= ",24,";\\n  size = size * ",24,";\\n\\n  if (HAS_EDGE_BLEED) {\\n    xy = xy * (size + 0.5) / size;\\n    uv = xy * .5 + .5;\\n  }\\n\\n  // TODO: awaiting compound support\\n  //",23,".xy += xy * size * ",8,".viewResolution * ",23,".w;\\n  ",23," = ",C,"(",23,".xy + xy * size * ",8,".viewResolution * ",23,".w, ",23,".zw);\\n\\n  return ",6,"(\\n    ",23,",\\n    color,\\n    uv\\n  );\\n}\\n\\n"]).join(''),
+  hash: 0x131e8ab0013e40,
+  table,
+  shake: [[181,[0,4]],[227,[1,4]],[270,[2,4]],[312,[3,4]],[350,[4]]],
+  tree: decompressAST([[1,0,46],[1,48,128],[1,82,130],[1,51,95],[1,46,87],[1,43,83],[1,42,77],[0,38,928],[1,0,7],[2,11,24],[2,55,66],[2,31,42],[2,42,50],[2,38,45],[2,38,46],[2,41,52],[2,35,44],[2,122,141],[2,366,378],[2,62,73]], table[S]),
+};
+
+const libs = {"@use-gpu/wgsl/use/types": m0, "@use-gpu/wgsl/use/view": m1, "@use-gpu/wgsl/geometry/quad": m2};
+const getSymbol = (entry?: string): ParsedBundle => ({module: bindEntryPoint(data, entry), libs});
+export default getSymbol();
+export const getQuadVertex = getSymbol("getQuadVertex");
+"
+`;
+
+exports[`shader transpiles wgsl to ES with types 2`] = `
+"/* __WGSL_LOADER_GENERATED */
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint, ParsedModule, ParsedBundle, SymbolTable} from "@use-gpu/shader/wgsl";
+import m0 from "@use-gpu/wgsl/use/types.wgsl";
+import m1 from "@use-gpu/wgsl/use/view.wgsl";
+import m2 from "@use-gpu/wgsl/geometry/quad.wgsl";
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getPosition getColor getSize getDepth getQuadVertex @use-gpu/wgsl/use/types SolidVertex @use-gpu/wgsl/use/view viewUniforms worldToClip getPerspectiveScale @use-gpu/wgsl/geometry/quad getQuadUV link i32 vec2<f32> f32 export SolidVertex".split(' '));
+const table: SymbolTable = {[S]:_([0,1,2,3,4]),[W]:_([4]),[O]:[{[A]:0,[N]:_(5),[S]:_([6]),[K]:[{[N]:_(6),[J]:_(6)}]},{[A]:0,[N]:_(7),[S]:_([8,9,10]),[K]:[{[N]:_(8),[J]:_(8)},{[N]:_(9),[J]:_(9)},{[N]:_(10),[J]:_(10)}]},{[A]:0,[N]:_(11),[S]:_([12]),[K]:[{[N]:_(12),[J]:_(12)}]}],[X]:[{[A]:169,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:210,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:C,[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:248,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:_(15),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}},{[A]:285,[R]:_(3),[G]:2,[F]:{[N]:_(3),[T]:_(16),[Z]:_([13]),[P]:[{[N]:"i",[T]:_(14)}]}}],[E]:[{[A]:317,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(6),[Z]:_([17]),[P]:[{[N]:"v",[T]:_(14)},{[N]:"i",[T]:_(14)}],[I]:_([0,1,2,3])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true}};
+const data: ParsedModule = {
+  name: "/getQuadVertex",
+  code: _(["use '",5,"'::{",6,"};use '",7,"'::{",8,",",9,",",10,"};use '",11,"'::{",12,"};@",13," fn ",0,"(i:i32)->",C,"{};@",13," fn ",1,"(i:i32)->",C,"{};@",13," fn ",2,"(i:i32)->",15,"{};@",13," fn ",3,"(i:i32)->f32{};@",17," fn ",4,"(v:i32,i:i32)->",6,"{var p=",0,"(i);var c=",1,"(i);var s=",2,"(i);var d=",3,"(i);var c1=",9,"(p);var u=",12,"(v);var x=u*2.0-1.0;var p1=",10,"(c1.w,d);s=s*p1;if(HAS_EDGE_BLEED){x=x*(s+0.5)/s;u=x*.5+.5;}c1=",C,"(c1.xy+x*s*",8,".viewResolution*c1.w,c1.zw);return ",6,"(c1,c,u);}\\n"]).join(''),
+  hash: 0x4329620d6fdf1,
+  table,
+  shake: [[169,[0,4]],[210,[1,4]],[248,[2,4]],[285,[3,4]],[317,[4]]],
+  tree: decompressAST([[1,0,44],[1,45,121],[1,77,123],[1,47,87],[1,41,78],[1,38,74],[1,37,68],[0,32,391],[1,0,7],[2,11,24],[2,28,39],[2,18,29],[2,21,29],[2,18,25],[2,17,25],[2,19,30],[2,21,30],[2,36,55],[2,102,114],[2,47,58]], table[S]),
+};
+
+const libs = {"@use-gpu/wgsl/use/types": m0, "@use-gpu/wgsl/use/view": m1, "@use-gpu/wgsl/geometry/quad": m2};
+const getSymbol = (entry?: string): ParsedBundle => ({module: bindEntryPoint(data, entry), libs});
+export default getSymbol();
+export const getQuadVertex = getSymbol("getQuadVertex");
+"
+`;

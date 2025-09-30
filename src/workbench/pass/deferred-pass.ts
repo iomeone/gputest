@@ -1,19 +1,21 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '../../live';
-import type { Culler, LightEnv, Renderable } from './types';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LightEnv, Renderable } from './types';
 
-import { use, quote, yeet, memo, gather, useMemo, useOne } from '../../live';
+import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 
 import { useRenderContext } from '../providers/render-provider';
 import { useDeviceContext } from '../providers/device-provider';
 import { useViewContext } from '../providers/view-provider';
 import { usePassContext } from '../providers/pass-provider';
+import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
-import { useDepthBlit } from './depth-blit';
 
 import { getRenderPassDescriptor, drawToPass } from './util';
 
-export type DeferredPassProps = {
+const {quote} = QueueReconciler;
+
+export type DeferredPassProps = PropsWithChildren<{
   env: {
     light?: LightEnv,
   },
@@ -26,16 +28,19 @@ export type DeferredPassProps = {
   },
   overlay?: boolean,
   merge?: boolean,
-};
+}>;
 
 const NO_OPS: any[] = [];
-const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS; 
+const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
+
+const label = '<DeferredPass>';
+const LABEL = { label };
 
 /** Deferred render pass.
 
 Draws all opaque calls to gbuffer, then stencils lights, then draws lights, then all transparent calls, then all debug wireframes.
 */
-export const DeferredPass: LC<DeferredPassProps> = memo((props: PropsWithChildren<DeferredPassProps>) => {
+export const DeferredPass: LC<DeferredPassProps> = memo((props: DeferredPassProps) => {
   const {
     overlay = false,
     merge = false,
@@ -62,20 +67,27 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: PropsWithChildre
 
   const bindPass = useOne(() => {
     if (!light || !makeBindPass) return () => {};
-    const {storage, texture} = light;
-    return makeBindPass(storage, texture); 
+    const args = [];
+    if (light) {
+      const {storage, texture} = light;
+      if (storage) args.push({storage});
+      if (texture) args.push({texture});
+    }
+    return makeBindPass(args);
   }, light);
 
   const deferredPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(gbuffer, {
       overlay: false,
       merge,
+      label: '<DeferredPass> GBuffer',
     }),
     [gbuffer, merge]);
 
   const stencilPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(renderContext, {
       stencil: true,
+      label: '<DeferredPass> Stencil',
     }),
     [renderContext]);
 
@@ -83,16 +95,17 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: PropsWithChildre
     getRenderPassDescriptor(renderContext, {
       overlay,
       merge: true,
+      label: '<DeferredPass> Color',
     }),
     [renderContext, overlay]);
-  
+
   return quote(yeet(() => {
     let vs = 0;
     let ts = 0;
 
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
-    const commandEncoder = device.createCommandEncoder();
+    const commandEncoder = device.createCommandEncoder(LABEL);
     if (!overlay && !merge) renderContext.swap?.();
 
     {
@@ -104,6 +117,7 @@ export const DeferredPass: LC<DeferredPassProps> = memo((props: PropsWithChildre
 
     commandEncoder.copyTextureToTexture(
       {texture: depthTexture},
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       {texture: gbuffer.sources![4].texture},
       [width, height, 1]
     );

@@ -4,6 +4,7 @@ import type { LiveFiber } from './types';
 export let CURRENT_FIBER = null as LiveFiber<any> | null;
 export let CURRENT_FIBER_BY = null as number | null;
 
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 export const getCurrentFiber = () => CURRENT_FIBER!;
 export const getCurrentFiberID = () => CURRENT_FIBER?.id;
 export const getCurrentFiberBy = () => CURRENT_FIBER_BY ?? CURRENT_FIBER?.id;

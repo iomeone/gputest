@@ -2,7 +2,7 @@
 
 exports[`GLSL grammar snapshots parses a test program 1`] = `
 Program                                                     ⮐ float foo = 1.0;⮐ 
-  Declaration                                               float foo = 1.0;
+  GlobalDeclaration                                         float foo = 1.0;
     VariableDeclaration                                     float foo = 1.0
       QualifiedType                                         float
         TypeSpecifier                                       float
@@ -23,7 +23,7 @@ Program                                                     ⮐ #define WAT⮐
 
 exports[`GLSL grammar snapshots parses a test program 3`] = `
 Program                                                     ⮐ struct light {⮐  float intensity;⮐  vec3 position;⮐ } lightVar;⮐ ⮐ struct light2 {⮐  float intensity;⮐  vec3 position;⮐ };⮐ 
-  Declaration                                               struct light {⮐  float intensity;⮐  vec3 position;⮐ } lightVar;
+  GlobalDeclaration                                         struct light {⮐  float intensity;⮐  vec3 position;⮐ } lightVar;
     VariableDeclaration                                     struct light {⮐  float intensity;⮐  vec3 position;⮐ } lightVar
       QualifiedType                                         struct light {⮐  float intensity;⮐  vec3 position;⮐ }
         TypeSpecifier                                       struct light {⮐  float intensity;⮐  vec3 position;⮐ }
@@ -34,17 +34,19 @@ Program                                                     ⮐ struct light {�
               StructDeclaration                             float intensity;
                 TypeSpecifier                               float
                   float                                     float
-                DeclarationSpecifier                        intensity
-                  Identifier                                intensity
+                StructDeclarationSpecifier                  intensity
+                  PrivateIdentifier                         intensity
+                    Identifier                              intensity
               StructDeclaration                             vec3 position;
                 TypeSpecifier                               vec3
                   vec3                                      vec3
-                DeclarationSpecifier                        position
-                  Identifier                                position
+                StructDeclarationSpecifier                  position
+                  PrivateIdentifier                         position
+                    Identifier                              position
       SingleDeclaration                                     lightVar
         DeclarationSpecifier                                lightVar
           Identifier                                        lightVar
-  Declaration                                               struct light2 {⮐  float intensity;⮐  vec3 position;⮐ };
+  GlobalDeclaration                                         struct light2 {⮐  float intensity;⮐  vec3 position;⮐ };
     VariableDeclaration                                     struct light2 {⮐  float intensity;⮐  vec3 position;⮐ }
       QualifiedType                                         struct light2 {⮐  float intensity;⮐  vec3 position;⮐ }
         TypeSpecifier                                       struct light2 {⮐  float intensity;⮐  vec3 position;⮐ }
@@ -55,18 +57,20 @@ Program                                                     ⮐ struct light {�
               StructDeclaration                             float intensity;
                 TypeSpecifier                               float
                   float                                     float
-                DeclarationSpecifier                        intensity
-                  Identifier                                intensity
+                StructDeclarationSpecifier                  intensity
+                  PrivateIdentifier                         intensity
+                    Identifier                              intensity
               StructDeclaration                             vec3 position;
                 TypeSpecifier                               vec3
                   vec3                                      vec3
-                DeclarationSpecifier                        position
-                  Identifier                                position
+                StructDeclarationSpecifier                  position
+                  PrivateIdentifier                         position
+                    Identifier                              position
 `;
 
 exports[`GLSL grammar snapshots parses a test program 4`] = `
 Program                                                     ⮐ void main();⮐ 
-  Declaration                                               void main();
+  GlobalDeclaration                                         void main();
     FunctionPrototype                                       void main()
       QualifiedType                                         void
         TypeSpecifier                                       void
@@ -76,37 +80,40 @@ Program                                                     ⮐ void main();⮐
 
 exports[`GLSL grammar snapshots parses a test program 5`] = `
 Program                                                     ⮐ layout(location = 0) in wat;⮐ layout(location = 0) in wat1, wat2;⮐ layout(location = 1) in vec2;⮐ 
-  Declaration                                               layout(location = 0) in wat;
+  GlobalDeclaration                                         layout(location = 0) in wat;
     QualifiedDeclaration                                    layout(location = 0) in wat
       TypeQualifier                                         layout(location = 0) in
         LayoutQualifier                                     layout(location = 0)
           layout                                            layout
           LayoutQualifierId                                 location = 0
-            Identifier                                      location
+            PrivateIdentifier                               location
+              Identifier                                    location
             Number                                          0
         StorageQualifier                                    in
           in                                                in
       Identifier                                            wat
-  Declaration                                               layout(location = 0) in wat1, wat2;
+  GlobalDeclaration                                         layout(location = 0) in wat1, wat2;
     QualifiedDeclaration                                    layout(location = 0) in wat1, wat2
       TypeQualifier                                         layout(location = 0) in
         LayoutQualifier                                     layout(location = 0)
           layout                                            layout
           LayoutQualifierId                                 location = 0
-            Identifier                                      location
+            PrivateIdentifier                               location
+              Identifier                                    location
             Number                                          0
         StorageQualifier                                    in
           in                                                in
       Identifier                                            wat1
       Identifier                                            wat2
-  Declaration                                               layout(location = 1) in vec2;
+  GlobalDeclaration                                         layout(location = 1) in vec2;
     VariableDeclaration                                     layout(location = 1) in vec2
       QualifiedType                                         layout(location = 1) in vec2
         TypeQualifier                                       layout(location = 1) in
           LayoutQualifier                                   layout(location = 1)
             layout                                          layout
             LayoutQualifierId                               location = 1
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        1
           StorageQualifier                                  in
             in                                              in
@@ -116,7 +123,7 @@ Program                                                     ⮐ layout(location 
 
 exports[`GLSL grammar snapshots parses a test program 6`] = `
 Program                                                     ⮐ float foo = 1.0;⮐ #define WAT⮐ void main() {⮐   int bar = wat(5, 6);⮐   int x = 4 + 5 + +6;⮐   struct s { } x;⮐   gl_FragColor = vec4(0.1, 0.2, 0.3, 1.0);⮐ }⮐ 
-  Declaration                                               float foo = 1.0;
+  GlobalDeclaration                                         float foo = 1.0;
     VariableDeclaration                                     float foo = 1.0
       QualifiedType                                         float
         TypeSpecifier                                       float
@@ -138,7 +145,7 @@ Program                                                     ⮐ float foo = 1.0;
     StatementList                                           int bar = wat(5, 6);⮐   int x = 4 + 5 + +6;⮐   struct s { } x;⮐   gl_FragColor = vec4(0.1, 0.2, 0.3, 1.0);
       Statement                                             int bar = wat(5, 6);
         DeclarationStatement                                int bar = wat(5, 6);
-          Declaration                                       int bar = wat(5, 6);
+          LocalDeclaration                                  int bar = wat(5, 6);
             VariableDeclaration                             int bar = wat(5, 6)
               QualifiedType                                 int
                 TypeSpecifier                               int
@@ -152,7 +159,7 @@ Program                                                     ⮐ float foo = 1.0;
                   Number                                    6
       Statement                                             int x = 4 + 5 + +6;
         DeclarationStatement                                int x = 4 + 5 + +6;
-          Declaration                                       int x = 4 + 5 + +6;
+          LocalDeclaration                                  int x = 4 + 5 + +6;
             VariableDeclaration                             int x = 4 + 5 + +6
               QualifiedType                                 int
                 TypeSpecifier                               int
@@ -171,7 +178,7 @@ Program                                                     ⮐ float foo = 1.0;
                     Number                                  6
       Statement                                             struct s { } x;
         DeclarationStatement                                struct s { } x;
-          Declaration                                       struct s { } x;
+          LocalDeclaration                                  struct s { } x;
             VariableDeclaration                             struct s { } x
               QualifiedType                                 struct s { }
                 TypeSpecifier                               struct s { }
@@ -205,7 +212,7 @@ Program                                                     ⮐ void main() {⮐
     StatementList                                           int x = 1;⮐   int y = 2;⮐   if (x) if (y) { } else { }
       Statement                                             int x = 1;
         DeclarationStatement                                int x = 1;
-          Declaration                                       int x = 1;
+          LocalDeclaration                                  int x = 1;
             VariableDeclaration                             int x = 1
               QualifiedType                                 int
                 TypeSpecifier                               int
@@ -216,7 +223,7 @@ Program                                                     ⮐ void main() {⮐
                 Number                                      1
       Statement                                             int y = 2;
         DeclarationStatement                                int y = 2;
-          Declaration                                       int y = 2;
+          LocalDeclaration                                  int y = 2;
             VariableDeclaration                             int y = 2
               QualifiedType                                 int
                 TypeSpecifier                               int
@@ -251,7 +258,7 @@ Program                                                     ⮐ void main() {⮐
     StatementList                                           int x = 1;⮐   /*⮐   int y = 2;⮐   if (x) if (y) { } else { }⮐   */⮐   wat();
       Statement                                             int x = 1;
         DeclarationStatement                                int x = 1;
-          Declaration                                       int x = 1;
+          LocalDeclaration                                  int x = 1;
             VariableDeclaration                             int x = 1
               QualifiedType                                 int
                 TypeSpecifier                               int
@@ -308,7 +315,7 @@ Program                                                     ⮐ #pragma import {
     pragma                                                  pragma
     optional                                                optional
     UntilEOL                                                
-  Declaration                                               int getInt();
+  GlobalDeclaration                                         int getInt();
     FunctionPrototype                                       int getInt()
       QualifiedType                                         int
         TypeSpecifier                                       int
@@ -322,7 +329,7 @@ Program                                                     ⮐ #pragma import {
     pragma                                                  pragma
     export                                                  export
     UntilEOL                                                
-  Declaration                                               void main();
+  GlobalDeclaration                                         void main();
     FunctionPrototype                                       void main()
       QualifiedType                                         void
         TypeSpecifier                                       void
@@ -345,7 +352,7 @@ Program                                                     ⮐ MeshVertex getQu
     StatementList                                           vec2 uv = getQuadUV(vertex);⮐   vec4 position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);⮐   vec4 color = vec4(1.0, 0.0, 1.0, 1.0);⮐   return MeshVertex(position, color, uv);
       Statement                                             vec2 uv = getQuadUV(vertex);
         DeclarationStatement                                vec2 uv = getQuadUV(vertex);
-          Declaration                                       vec2 uv = getQuadUV(vertex);
+          LocalDeclaration                                  vec2 uv = getQuadUV(vertex);
             VariableDeclaration                             vec2 uv = getQuadUV(vertex)
               QualifiedType                                 vec2
                 TypeSpecifier                               vec2
@@ -358,7 +365,7 @@ Program                                                     ⮐ MeshVertex getQu
                   Identifier                                vertex
       Statement                                             vec4 position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
         DeclarationStatement                                vec4 position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
-          Declaration                                       vec4 position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
+          LocalDeclaration                                  vec4 position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
             VariableDeclaration                             vec4 position = vec4(uv * 2.0 - 1.0, 0.0, 1.0)
               QualifiedType                                 vec4
                 TypeSpecifier                               vec4
@@ -379,7 +386,7 @@ Program                                                     ⮐ MeshVertex getQu
                   Number                                    1.0
       Statement                                             vec4 color = vec4(1.0, 0.0, 1.0, 1.0);
         DeclarationStatement                                vec4 color = vec4(1.0, 0.0, 1.0, 1.0);
-          Declaration                                       vec4 color = vec4(1.0, 0.0, 1.0, 1.0);
+          LocalDeclaration                                  vec4 color = vec4(1.0, 0.0, 1.0, 1.0);
             VariableDeclaration                             vec4 color = vec4(1.0, 0.0, 1.0, 1.0)
               QualifiedType                                 vec4
                 TypeSpecifier                               vec4
@@ -409,16 +416,18 @@ Program                                                     ⮐ #version 450⮐ 
     Directive                                               version
       version                                               version
     UntilEOL                                                 450
-  Declaration                                               layout(set = 0, binding = 0) uniform ViewUniforms {⮐   mat4 projectionMatrix;⮐   mat4 viewMatrix;⮐   vec4 viewPosition;⮐   vec4 lightPosition;⮐ } view;
+  GlobalDeclaration                                         layout(set = 0, binding = 0) uniform ViewUniforms {⮐   mat4 projectionMatrix;⮐   mat4 viewMatrix;⮐   vec4 viewPosition;⮐   vec4 lightPosition;⮐ } view;
     QualifiedStructDeclaration                              layout(set = 0, binding = 0) uniform ViewUniforms {⮐   mat4 projectionMatrix;⮐   mat4 viewMatrix;⮐   vec4 viewPosition;⮐   vec4 lightPosition;⮐ } view
       TypeQualifier                                         layout(set = 0, binding = 0) uniform
         LayoutQualifier                                     layout(set = 0, binding = 0)
           layout                                            layout
           LayoutQualifierId                                 set = 0
-            Identifier                                      set
+            PrivateIdentifier                               set
+              Identifier                                    set
             Number                                          0
           LayoutQualifierId                                 binding = 0
-            Identifier                                      binding
+            PrivateIdentifier                               binding
+              Identifier                                    binding
             Number                                          0
         StorageQualifier                                    uniform
           uniform                                           uniform
@@ -427,33 +436,38 @@ Program                                                     ⮐ #version 450⮐ 
         StructDeclaration                                   mat4 projectionMatrix;
           TypeSpecifier                                     mat4
             mat4                                            mat4
-          DeclarationSpecifier                              projectionMatrix
-            Identifier                                      projectionMatrix
+          StructDeclarationSpecifier                        projectionMatrix
+            PrivateIdentifier                               projectionMatrix
+              Identifier                                    projectionMatrix
         StructDeclaration                                   mat4 viewMatrix;
           TypeSpecifier                                     mat4
             mat4                                            mat4
-          DeclarationSpecifier                              viewMatrix
-            Identifier                                      viewMatrix
+          StructDeclarationSpecifier                        viewMatrix
+            PrivateIdentifier                               viewMatrix
+              Identifier                                    viewMatrix
         StructDeclaration                                   vec4 viewPosition;
           TypeSpecifier                                     vec4
             vec4                                            vec4
-          DeclarationSpecifier                              viewPosition
-            Identifier                                      viewPosition
+          StructDeclarationSpecifier                        viewPosition
+            PrivateIdentifier                               viewPosition
+              Identifier                                    viewPosition
         StructDeclaration                                   vec4 lightPosition;
           TypeSpecifier                                     vec4
             vec4                                            vec4
-          DeclarationSpecifier                              lightPosition
-            Identifier                                      lightPosition
+          StructDeclarationSpecifier                        lightPosition
+            PrivateIdentifier                               lightPosition
+              Identifier                                    lightPosition
       DeclarationSpecifier                                  view
         Identifier                                          view
-  Declaration                                               layout(location = 0) in vec4 position;
+  GlobalDeclaration                                         layout(location = 0) in vec4 position;
     VariableDeclaration                                     layout(location = 0) in vec4 position
       QualifiedType                                         layout(location = 0) in vec4
         TypeQualifier                                       layout(location = 0) in
           LayoutQualifier                                   layout(location = 0)
             layout                                          layout
             LayoutQualifierId                               location = 0
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        0
           StorageQualifier                                  in
             in                                              in
@@ -462,14 +476,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     position
         DeclarationSpecifier                                position
           Identifier                                        position
-  Declaration                                               layout(location = 1) in vec4 normal;
+  GlobalDeclaration                                         layout(location = 1) in vec4 normal;
     VariableDeclaration                                     layout(location = 1) in vec4 normal
       QualifiedType                                         layout(location = 1) in vec4
         TypeQualifier                                       layout(location = 1) in
           LayoutQualifier                                   layout(location = 1)
             layout                                          layout
             LayoutQualifierId                               location = 1
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        1
           StorageQualifier                                  in
             in                                              in
@@ -478,14 +493,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     normal
         DeclarationSpecifier                                normal
           Identifier                                        normal
-  Declaration                                               layout(location = 2) in vec4 color;
+  GlobalDeclaration                                         layout(location = 2) in vec4 color;
     VariableDeclaration                                     layout(location = 2) in vec4 color
       QualifiedType                                         layout(location = 2) in vec4
         TypeQualifier                                       layout(location = 2) in
           LayoutQualifier                                   layout(location = 2)
             layout                                          layout
             LayoutQualifierId                               location = 2
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        2
           StorageQualifier                                  in
             in                                              in
@@ -494,14 +510,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     color
         DeclarationSpecifier                                color
           Identifier                                        color
-  Declaration                                               layout(location = 3) in vec2 uv;
+  GlobalDeclaration                                         layout(location = 3) in vec2 uv;
     VariableDeclaration                                     layout(location = 3) in vec2 uv
       QualifiedType                                         layout(location = 3) in vec2
         TypeQualifier                                       layout(location = 3) in
           LayoutQualifier                                   layout(location = 3)
             layout                                          layout
             LayoutQualifierId                               location = 3
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        3
           StorageQualifier                                  in
             in                                              in
@@ -510,14 +527,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     uv
         DeclarationSpecifier                                uv
           Identifier                                        uv
-  Declaration                                               layout(location = 0) out vec4 fragColor;
+  GlobalDeclaration                                         layout(location = 0) out vec4 fragColor;
     VariableDeclaration                                     layout(location = 0) out vec4 fragColor
       QualifiedType                                         layout(location = 0) out vec4
         TypeQualifier                                       layout(location = 0) out
           LayoutQualifier                                   layout(location = 0)
             layout                                          layout
             LayoutQualifierId                               location = 0
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        0
           StorageQualifier                                  out
             out                                             out
@@ -526,14 +544,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     fragColor
         DeclarationSpecifier                                fragColor
           Identifier                                        fragColor
-  Declaration                                               layout(location = 1) out vec2 fragUV;
+  GlobalDeclaration                                         layout(location = 1) out vec2 fragUV;
     VariableDeclaration                                     layout(location = 1) out vec2 fragUV
       QualifiedType                                         layout(location = 1) out vec2
         TypeQualifier                                       layout(location = 1) out
           LayoutQualifier                                   layout(location = 1)
             layout                                          layout
             LayoutQualifierId                               location = 1
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        1
           StorageQualifier                                  out
             out                                             out
@@ -542,14 +561,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     fragUV
         DeclarationSpecifier                                fragUV
           Identifier                                        fragUV
-  Declaration                                               layout(location = 2) out vec3 fragNormal;
+  GlobalDeclaration                                         layout(location = 2) out vec3 fragNormal;
     VariableDeclaration                                     layout(location = 2) out vec3 fragNormal
       QualifiedType                                         layout(location = 2) out vec3
         TypeQualifier                                       layout(location = 2) out
           LayoutQualifier                                   layout(location = 2)
             layout                                          layout
             LayoutQualifierId                               location = 2
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        2
           StorageQualifier                                  out
             out                                             out
@@ -558,14 +578,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     fragNormal
         DeclarationSpecifier                                fragNormal
           Identifier                                        fragNormal
-  Declaration                                               layout(location = 3) out vec3 fragLight;
+  GlobalDeclaration                                         layout(location = 3) out vec3 fragLight;
     VariableDeclaration                                     layout(location = 3) out vec3 fragLight
       QualifiedType                                         layout(location = 3) out vec3
         TypeQualifier                                       layout(location = 3) out
           LayoutQualifier                                   layout(location = 3)
             layout                                          layout
             LayoutQualifierId                               location = 3
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        3
           StorageQualifier                                  out
             out                                             out
@@ -574,14 +595,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     fragLight
         DeclarationSpecifier                                fragLight
           Identifier                                        fragLight
-  Declaration                                               layout(location = 4) out vec3 fragView;
+  GlobalDeclaration                                         layout(location = 4) out vec3 fragView;
     VariableDeclaration                                     layout(location = 4) out vec3 fragView
       QualifiedType                                         layout(location = 4) out vec3
         TypeQualifier                                       layout(location = 4) out
           LayoutQualifier                                   layout(location = 4)
             layout                                          layout
             LayoutQualifierId                               location = 4
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        4
           StorageQualifier                                  out
             out                                             out
@@ -605,11 +627,13 @@ Program                                                     ⮐ #version 450⮐ 
               Binary                                        view.projectionMatrix * view.viewMatrix
                 Field                                       view.projectionMatrix
                   Identifier                                view
-                  Identifier                                projectionMatrix
+                  PrivateIdentifier                         projectionMatrix
+                    Identifier                              projectionMatrix
                 Mul                                         *
                 Field                                       view.viewMatrix
                   Identifier                                view
-                  Identifier                                viewMatrix
+                  PrivateIdentifier                         viewMatrix
+                    Identifier                              viewMatrix
               Mul                                           *
               Identifier                                    position
       Statement                                             fragColor = color;
@@ -628,7 +652,8 @@ Program                                                     ⮐ #version 450⮐ 
             Identifier                                      fragNormal
             Field                                           normal.xyz
               Identifier                                    normal
-              Identifier                                    xyz
+              PrivateIdentifier                             xyz
+                Identifier                                  xyz
       Statement                                             fragLight = view.lightPosition.xyz - position.xyz;
         ExpressionStatement                                 fragLight = view.lightPosition.xyz - position.xyz;
           Assignment                                        fragLight = view.lightPosition.xyz - position.xyz
@@ -637,12 +662,15 @@ Program                                                     ⮐ #version 450⮐ 
               Field                                         view.lightPosition.xyz
                 Field                                       view.lightPosition
                   Identifier                                view
-                  Identifier                                lightPosition
-                Identifier                                  xyz
+                  PrivateIdentifier                         lightPosition
+                    Identifier                              lightPosition
+                PrivateIdentifier                           xyz
+                  Identifier                                xyz
               Sub                                           -
               Field                                         position.xyz
                 Identifier                                  position
-                Identifier                                  xyz
+                PrivateIdentifier                           xyz
+                  Identifier                                xyz
       Statement                                             fragView = view.viewPosition.xyz - position.xyz;
         ExpressionStatement                                 fragView = view.viewPosition.xyz - position.xyz;
           Assignment                                        fragView = view.viewPosition.xyz - position.xyz
@@ -651,28 +679,32 @@ Program                                                     ⮐ #version 450⮐ 
               Field                                         view.viewPosition.xyz
                 Field                                       view.viewPosition
                   Identifier                                view
-                  Identifier                                viewPosition
-                Identifier                                  xyz
+                  PrivateIdentifier                         viewPosition
+                    Identifier                              viewPosition
+                PrivateIdentifier                           xyz
+                  Identifier                                xyz
               Sub                                           -
               Field                                         position.xyz
                 Identifier                                  position
-                Identifier                                  xyz
+                PrivateIdentifier                           xyz
+                  Identifier                                xyz
 `;
 
 exports[`GLSL grammar snapshots parses a test program 12`] = `
-Program                                                     ⮐ #version 450⮐ ⮐ layout(location = 0) in vec4 fragColor;⮐ layout(location = 1) in vec2 fragUV;⮐ ⮐ layout(location = 2) in vec3 fragNormal;⮐ layout(location = 3) in vec3 fragLight;⮐ layout(location = 4) in vec3 fragView;⮐ ⮐ layout(location = 0) out vec4 outColor;⮐ layout(location = 1) out vec4 pickingColor;⮐ ⮐ float PI = 3.141592;⮐ ⮐ float F_DIELECTRIC = 0.04;⮐ ⮐ float getGrid(vec2 uv) {⮐   vec2 xy = abs(fract(uv) - 0.5);⮐   return max(xy.x, xy.y) > 0.45 ? 1.0 : 0.75;⮐ }⮐ ⮐ float saturate(float x) {⮐   return max(x, 0.0);⮐ }⮐ ⮐ float pow5(float x) {⮐   float x2 = x * x;⮐   return x2 * x2 * x;⮐ }⮐ // https://www.shadertoy.com/view/XlKSDR⮐ // D - Normal distribution term⮐ float ndfGGX2(float cosTheta, float alpha) {⮐   float alphaSqr = alpha * alpha;⮐   float denom = cosTheta * cosTheta * (alphaSqr - 1.0) + 1.0f;⮐   return alphaSqr / (PI * denom * denom);⮐ }⮐ ⮐ float ndfGGX(float cosTheta, float alpha) {⮐   float oneMinus = 1.0 - cosTheta * cosTheta;⮐   float a = cosTheta * alpha;⮐   float k = alpha / (oneMinus + a * a);⮐   float d = k * k * (1.0 / PI);⮐   return d;⮐ }⮐ ⮐ // F - Schlick approximation of Fresnel⮐ vec3 fresnelSchlick(float cosTheta, vec3 F0) {⮐   float FT = pow5(1.0f - cosTheta);⮐   return F0 + (1.0 - F0) * FT;⮐ }⮐ ⮐ float fresnelSchlick(float cosTheta, float f0, float f90) {⮐   return f0 + (f90 - f0) * pow(1.0 - cosTheta, 5.0);⮐ }⮐ ⮐ float fdBurley(float dotNL, float dotNV, float dotLH, float alpha) {⮐   float f90 = 0.5 + 2.0 * alpha * dotLH * dotLH;⮐   float lightScatter = fresnelSchlick(dotNL, 1.0, f90);⮐   float viewScatter = fresnelSchlick(dotNV, 1.0, f90);⮐   return lightScatter * viewScatter * (1.0 / PI);⮐ }⮐ ⮐ // G - Geometric attenuation term⮐ float G1X(float dotNX, float k) {⮐   return 1.0f / (dotNX * (1.0f - k) + k);⮐ }⮐ ⮐ float smithGGXCorrelated(float dotNL, float dotNV, float alpha) {⮐   float a2 = alpha * alpha;⮐   float GGXL = dotNV * sqrt((dotNL - a2 * dotNL) * dotNL + a2);⮐   float GGXV = dotNL * sqrt((dotNV - a2 * dotNV) * dotNV + a2);⮐   return 0.5 / (GGXL + GGXV);⮐ }⮐ ⮐ float geometricGGX(float dotNL, float dotNV, float alpha) {⮐   float k = alpha / 2.0f;⮐   return G1X(dotNL, k) * G1X(dotNV, k);⮐ }⮐ ⮐ vec3 PBR(vec3 N, vec3 L, vec3 V, vec3 albedo, float metalness, float roughness) {⮐ ⮐   vec3 diffuseColor = albedo * (1.0 - metalness);⮐   vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);⮐ ⮐   float alpha = roughness * roughness;⮐   float dotNV = saturate(dot(N, V));⮐ ⮐   float radiance = 3.1415;⮐ ⮐   vec3 H = normalize(V + L);⮐   float dotNL = saturate(dot(N, L));⮐   float dotNH = saturate(dot(N, H));⮐   float dotLH = saturate(dot(L, H));⮐ ⮐   vec3 F = fresnelSchlick(dotLH, F0);⮐   float D = ndfGGX(dotNH, alpha);⮐   float G = smithGGXCorrelated(dotNL, dotNV, alpha);⮐   //float G2 = geometricGGX(dotNL, dotNV, alpha);⮐   //return vec3(abs(G - G2) / 100.0);⮐   ⮐   vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);⮐   vec3 Fs = F * D * G;⮐ ⮐   vec3 direct = (Fd + Fs) * radiance * dotNL;⮐   return direct;⮐ }⮐ ⮐ void main() {⮐   vec3 N = normalize(fragNormal);⮐   vec3 L = normalize(fragLight);⮐   vec3 V = normalize(fragView);⮐ ⮐   vec3 albedo = vec3(1.0);//fragColor.rgb;⮐   float metalness = 0.2;⮐   float roughness = 0.8;⮐   ⮐   float grid = getGrid(fragUV);⮐   vec3 color = PBR(N, L, V, albedo, metalness, roughness);⮐   ⮐   outColor = vec4(color * grid, fragColor.a);⮐ }⮐ ⮐ 
+Program                                                     ⮐ #version 450⮐ ⮐ layout(location = 0) in vec4 fragColor;⮐ layout(location = 1) in vec2 fragUV;⮐ ⮐ layout(location = 2) in vec3 fragNormal;⮐ layout(location = 3) in vec3 fragLight;⮐ layout(location = 4) in vec3 fragView;⮐ ⮐ layout(location = 0) out vec4 outColor;⮐ layout(location = 1) out vec4 pickingColor;⮐ ⮐ float PI = 3.141592;⮐ ⮐ float F_DIELECTRIC = 0.04;⮐ ⮐ float getGrid(vec2 uv) {⮐   vec2 xy = abs(fract(uv) - 0.5);⮐   return max(xy.x, xy.y) > 0.45 ? 1.0 : 0.75;⮐ }⮐ ⮐ float saturate(float x) {⮐   return max(x, 0.0);⮐ }⮐ ⮐ float pow5(float x) {⮐   float x2 = x * x;⮐   return x2 * x2 * x;⮐ }⮐ // https://www.shadertoy.com/view/XlKSDR⮐ // D - Normal distribution term⮐ float ndfGGX2(float cosTheta, float alpha) {⮐   float alphaSqr = alpha * alpha;⮐   float denom = cosTheta * cosTheta * (alphaSqr - 1.0) + 1.0f;⮐   return alphaSqr / (PI * denom * denom);⮐ }⮐ ⮐ float ndfGGX(float cosTheta, float alpha) {⮐   float oneMinus = 1.0 - cosTheta * cosTheta;⮐   float a = cosTheta * alpha;⮐   float k = alpha / (oneMinus + a * a);⮐   float d = k * k * (1.0 / PI);⮐   return d;⮐ }⮐ ⮐ // F - Schlick approximation of Fresnel⮐ vec3 fresnelSchlick(float cosTheta, vec3 F0) {⮐   float FT = pow5(1.0f - cosTheta);⮐   return F0 + (1.0 - F0) * FT;⮐ }⮐ ⮐ float fresnelSchlick(float cosTheta, float f0, float f90) {⮐   return f0 + (f90 - f0) * pow(1.0 - cosTheta, 5.0);⮐ }⮐ ⮐ float fdBurley(float dotNL, float dotNV, float dotLH, float alpha) {⮐   float f90 = 0.5 + 2.0 * alpha * dotLH * dotLH;⮐   float lightScatter = fresnelSchlick(dotNL, 1.0, f90);⮐   float viewScatter = fresnelSchlick(dotNV, 1.0, f90);⮐   return lightScatter * viewScatter * (1.0 / PI);⮐ }⮐ ⮐ // G - Geometric attenuation term⮐ float G1X(float dotNX, float k) {⮐   return 1.0f / (dotNX * (1.0f - k) + k);⮐ }⮐ ⮐ float smithGGXCorrelated(float dotNL, float dotNV, float alpha) {⮐   float a2 = alpha * alpha;⮐   float GGXL = dotNV * sqrt((dotNL - a2 * dotNL) * dotNL + a2);⮐   float GGXV = dotNL * sqrt((dotNV - a2 * dotNV) * dotNV + a2);⮐   return 0.5 / (GGXL + GGXV);⮐ }⮐ ⮐ float geometricGGX(float dotNL, float dotNV, float alpha) {⮐   float k = alpha / 2.0f;⮐   return G1X(dotNL, k) * G1X(dotNV, k);⮐ }⮐ ⮐ vec3 PBR(vec3 N, vec3 L, vec3 V, vec3 albedo, float metalness, float roughness) {⮐ ⮐   vec3 diffuseColor = albedo * (1.0 - metalness);⮐   vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);⮐ ⮐   float alpha = roughness * roughness;⮐   float dotNV = saturate(dot(N, V));⮐ ⮐   float radiance = 3.1415;⮐ ⮐   vec3 H = normalize(V + L);⮐   float dotNL = saturate(dot(N, L));⮐   float dotNH = saturate(dot(N, H));⮐   float dotLH = saturate(dot(L, H));⮐ ⮐   vec3 F = fresnelSchlick(dotLH, F0);⮐   float D = ndfGGX(dotNH, alpha);⮐   float G = smithGGXCorrelated(dotNL, dotNV, alpha);⮐   //float G2 = geometricGGX(dotNL, dotNV, alpha);⮐   //return vec3(abs(G - G2) / 100.0);⮐ ⮐   vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);⮐   vec3 Fs = F * D * G;⮐ ⮐   vec3 direct = (Fd + Fs) * radiance * dotNL;⮐   return direct;⮐ }⮐ ⮐ void main() {⮐   vec3 N = normalize(fragNormal);⮐   vec3 L = normalize(fragLight);⮐   vec3 V = normalize(fragView);⮐ ⮐   vec3 albedo = vec3(1.0);//fragColor.rgb;⮐   float metalness = 0.2;⮐   float roughness = 0.8;⮐ ⮐   float grid = getGrid(fragUV);⮐   vec3 color = PBR(N, L, V, albedo, metalness, roughness);⮐ ⮐   outColor = vec4(color * grid, fragColor.a);⮐ }⮐ ⮐ 
   Preprocessor                                              #version 450
     Directive                                               version
       version                                               version
     UntilEOL                                                 450
-  Declaration                                               layout(location = 0) in vec4 fragColor;
+  GlobalDeclaration                                         layout(location = 0) in vec4 fragColor;
     VariableDeclaration                                     layout(location = 0) in vec4 fragColor
       QualifiedType                                         layout(location = 0) in vec4
         TypeQualifier                                       layout(location = 0) in
           LayoutQualifier                                   layout(location = 0)
             layout                                          layout
             LayoutQualifierId                               location = 0
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        0
           StorageQualifier                                  in
             in                                              in
@@ -681,14 +713,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     fragColor
         DeclarationSpecifier                                fragColor
           Identifier                                        fragColor
-  Declaration                                               layout(location = 1) in vec2 fragUV;
+  GlobalDeclaration                                         layout(location = 1) in vec2 fragUV;
     VariableDeclaration                                     layout(location = 1) in vec2 fragUV
       QualifiedType                                         layout(location = 1) in vec2
         TypeQualifier                                       layout(location = 1) in
           LayoutQualifier                                   layout(location = 1)
             layout                                          layout
             LayoutQualifierId                               location = 1
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        1
           StorageQualifier                                  in
             in                                              in
@@ -697,14 +730,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     fragUV
         DeclarationSpecifier                                fragUV
           Identifier                                        fragUV
-  Declaration                                               layout(location = 2) in vec3 fragNormal;
+  GlobalDeclaration                                         layout(location = 2) in vec3 fragNormal;
     VariableDeclaration                                     layout(location = 2) in vec3 fragNormal
       QualifiedType                                         layout(location = 2) in vec3
         TypeQualifier                                       layout(location = 2) in
           LayoutQualifier                                   layout(location = 2)
             layout                                          layout
             LayoutQualifierId                               location = 2
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        2
           StorageQualifier                                  in
             in                                              in
@@ -713,14 +747,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     fragNormal
         DeclarationSpecifier                                fragNormal
           Identifier                                        fragNormal
-  Declaration                                               layout(location = 3) in vec3 fragLight;
+  GlobalDeclaration                                         layout(location = 3) in vec3 fragLight;
     VariableDeclaration                                     layout(location = 3) in vec3 fragLight
       QualifiedType                                         layout(location = 3) in vec3
         TypeQualifier                                       layout(location = 3) in
           LayoutQualifier                                   layout(location = 3)
             layout                                          layout
             LayoutQualifierId                               location = 3
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        3
           StorageQualifier                                  in
             in                                              in
@@ -729,14 +764,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     fragLight
         DeclarationSpecifier                                fragLight
           Identifier                                        fragLight
-  Declaration                                               layout(location = 4) in vec3 fragView;
+  GlobalDeclaration                                         layout(location = 4) in vec3 fragView;
     VariableDeclaration                                     layout(location = 4) in vec3 fragView
       QualifiedType                                         layout(location = 4) in vec3
         TypeQualifier                                       layout(location = 4) in
           LayoutQualifier                                   layout(location = 4)
             layout                                          layout
             LayoutQualifierId                               location = 4
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        4
           StorageQualifier                                  in
             in                                              in
@@ -745,14 +781,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     fragView
         DeclarationSpecifier                                fragView
           Identifier                                        fragView
-  Declaration                                               layout(location = 0) out vec4 outColor;
+  GlobalDeclaration                                         layout(location = 0) out vec4 outColor;
     VariableDeclaration                                     layout(location = 0) out vec4 outColor
       QualifiedType                                         layout(location = 0) out vec4
         TypeQualifier                                       layout(location = 0) out
           LayoutQualifier                                   layout(location = 0)
             layout                                          layout
             LayoutQualifierId                               location = 0
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        0
           StorageQualifier                                  out
             out                                             out
@@ -761,14 +798,15 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     outColor
         DeclarationSpecifier                                outColor
           Identifier                                        outColor
-  Declaration                                               layout(location = 1) out vec4 pickingColor;
+  GlobalDeclaration                                         layout(location = 1) out vec4 pickingColor;
     VariableDeclaration                                     layout(location = 1) out vec4 pickingColor
       QualifiedType                                         layout(location = 1) out vec4
         TypeQualifier                                       layout(location = 1) out
           LayoutQualifier                                   layout(location = 1)
             layout                                          layout
             LayoutQualifierId                               location = 1
-              Identifier                                    location
+              PrivateIdentifier                             location
+                Identifier                                  location
               Number                                        1
           StorageQualifier                                  out
             out                                             out
@@ -777,7 +815,7 @@ Program                                                     ⮐ #version 450⮐ 
       SingleDeclaration                                     pickingColor
         DeclarationSpecifier                                pickingColor
           Identifier                                        pickingColor
-  Declaration                                               float PI = 3.141592;
+  GlobalDeclaration                                         float PI = 3.141592;
     VariableDeclaration                                     float PI = 3.141592
       QualifiedType                                         float
         TypeSpecifier                                       float
@@ -786,7 +824,7 @@ Program                                                     ⮐ #version 450⮐ 
         DeclarationSpecifier                                PI
           Identifier                                        PI
         Number                                              3.141592
-  Declaration                                               float F_DIELECTRIC = 0.04;
+  GlobalDeclaration                                         float F_DIELECTRIC = 0.04;
     VariableDeclaration                                     float F_DIELECTRIC = 0.04
       QualifiedType                                         float
         TypeSpecifier                                       float
@@ -808,7 +846,7 @@ Program                                                     ⮐ #version 450⮐ 
     StatementList                                           vec2 xy = abs(fract(uv) - 0.5);⮐   return max(xy.x, xy.y) > 0.45 ? 1.0 : 0.75;
       Statement                                             vec2 xy = abs(fract(uv) - 0.5);
         DeclarationStatement                                vec2 xy = abs(fract(uv) - 0.5);
-          Declaration                                       vec2 xy = abs(fract(uv) - 0.5);
+          LocalDeclaration                                  vec2 xy = abs(fract(uv) - 0.5);
             VariableDeclaration                             vec2 xy = abs(fract(uv) - 0.5)
               QualifiedType                                 vec2
                 TypeSpecifier                               vec2
@@ -833,10 +871,12 @@ Program                                                     ⮐ #version 450⮐ 
                 Identifier                                  max
                 Field                                       xy.x
                   Identifier                                xy
-                  Identifier                                x
+                  PrivateIdentifier                         x
+                    Identifier                              x
                 Field                                       xy.y
                   Identifier                                xy
-                  Identifier                                y
+                  PrivateIdentifier                         y
+                    Identifier                              y
               Gt                                            >
               Number                                        0.45
             Number                                          1.0
@@ -872,7 +912,7 @@ Program                                                     ⮐ #version 450⮐ 
     StatementList                                           float x2 = x * x;⮐   return x2 * x2 * x;
       Statement                                             float x2 = x * x;
         DeclarationStatement                                float x2 = x * x;
-          Declaration                                       float x2 = x * x;
+          LocalDeclaration                                  float x2 = x * x;
             VariableDeclaration                             float x2 = x * x
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -911,7 +951,7 @@ Program                                                     ⮐ #version 450⮐ 
     StatementList                                           float alphaSqr = alpha * alpha;⮐   float denom = cosTheta * cosTheta * (alphaSqr - 1.0) + 1.0f;⮐   return alphaSqr / (PI * denom * denom);
       Statement                                             float alphaSqr = alpha * alpha;
         DeclarationStatement                                float alphaSqr = alpha * alpha;
-          Declaration                                       float alphaSqr = alpha * alpha;
+          LocalDeclaration                                  float alphaSqr = alpha * alpha;
             VariableDeclaration                             float alphaSqr = alpha * alpha
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -925,7 +965,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                alpha
       Statement                                             float denom = cosTheta * cosTheta * (alphaSqr - 1.0) + 1.0f;
         DeclarationStatement                                float denom = cosTheta * cosTheta * (alphaSqr - 1.0) + 1.0f;
-          Declaration                                       float denom = cosTheta * cosTheta * (alphaSqr - 1.0) + 1.0f;
+          LocalDeclaration                                  float denom = cosTheta * cosTheta * (alphaSqr - 1.0) + 1.0f;
             VariableDeclaration                             float denom = cosTheta * cosTheta * (alphaSqr - 1.0) + 1.0f
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -978,7 +1018,7 @@ Program                                                     ⮐ #version 450⮐ 
     StatementList                                           float oneMinus = 1.0 - cosTheta * cosTheta;⮐   float a = cosTheta * alpha;⮐   float k = alpha / (oneMinus + a * a);⮐   float d = k * k * (1.0 / PI);⮐   return d;
       Statement                                             float oneMinus = 1.0 - cosTheta * cosTheta;
         DeclarationStatement                                float oneMinus = 1.0 - cosTheta * cosTheta;
-          Declaration                                       float oneMinus = 1.0 - cosTheta * cosTheta;
+          LocalDeclaration                                  float oneMinus = 1.0 - cosTheta * cosTheta;
             VariableDeclaration                             float oneMinus = 1.0 - cosTheta * cosTheta
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -995,7 +1035,7 @@ Program                                                     ⮐ #version 450⮐ 
                     Identifier                              cosTheta
       Statement                                             float a = cosTheta * alpha;
         DeclarationStatement                                float a = cosTheta * alpha;
-          Declaration                                       float a = cosTheta * alpha;
+          LocalDeclaration                                  float a = cosTheta * alpha;
             VariableDeclaration                             float a = cosTheta * alpha
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1009,7 +1049,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                alpha
       Statement                                             float k = alpha / (oneMinus + a * a);
         DeclarationStatement                                float k = alpha / (oneMinus + a * a);
-          Declaration                                       float k = alpha / (oneMinus + a * a);
+          LocalDeclaration                                  float k = alpha / (oneMinus + a * a);
             VariableDeclaration                             float k = alpha / (oneMinus + a * a)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1030,7 +1070,7 @@ Program                                                     ⮐ #version 450⮐ 
                         Identifier                          a
       Statement                                             float d = k * k * (1.0 / PI);
         DeclarationStatement                                float d = k * k * (1.0 / PI);
-          Declaration                                       float d = k * k * (1.0 / PI);
+          LocalDeclaration                                  float d = k * k * (1.0 / PI);
             VariableDeclaration                             float d = k * k * (1.0 / PI)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1070,7 +1110,7 @@ Program                                                     ⮐ #version 450⮐ 
     StatementList                                           float FT = pow5(1.0f - cosTheta);⮐   return F0 + (1.0 - F0) * FT;
       Statement                                             float FT = pow5(1.0f - cosTheta);
         DeclarationStatement                                float FT = pow5(1.0f - cosTheta);
-          Declaration                                       float FT = pow5(1.0f - cosTheta);
+          LocalDeclaration                                  float FT = pow5(1.0f - cosTheta);
             VariableDeclaration                             float FT = pow5(1.0f - cosTheta)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1162,7 +1202,7 @@ Program                                                     ⮐ #version 450⮐ 
     StatementList                                           float f90 = 0.5 + 2.0 * alpha * dotLH * dotLH;⮐   float lightScatter = fresnelSchlick(dotNL, 1.0, f90);⮐   float viewScatter = fresnelSchlick(dotNV, 1.0, f90);⮐   return lightScatter * viewScatter * (1.0 / PI);
       Statement                                             float f90 = 0.5 + 2.0 * alpha * dotLH * dotLH;
         DeclarationStatement                                float f90 = 0.5 + 2.0 * alpha * dotLH * dotLH;
-          Declaration                                       float f90 = 0.5 + 2.0 * alpha * dotLH * dotLH;
+          LocalDeclaration                                  float f90 = 0.5 + 2.0 * alpha * dotLH * dotLH;
             VariableDeclaration                             float f90 = 0.5 + 2.0 * alpha * dotLH * dotLH
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1185,7 +1225,7 @@ Program                                                     ⮐ #version 450⮐ 
                     Identifier                              dotLH
       Statement                                             float lightScatter = fresnelSchlick(dotNL, 1.0, f90);
         DeclarationStatement                                float lightScatter = fresnelSchlick(dotNL, 1.0, f90);
-          Declaration                                       float lightScatter = fresnelSchlick(dotNL, 1.0, f90);
+          LocalDeclaration                                  float lightScatter = fresnelSchlick(dotNL, 1.0, f90);
             VariableDeclaration                             float lightScatter = fresnelSchlick(dotNL, 1.0, f90)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1200,7 +1240,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                f90
       Statement                                             float viewScatter = fresnelSchlick(dotNV, 1.0, f90);
         DeclarationStatement                                float viewScatter = fresnelSchlick(dotNV, 1.0, f90);
-          Declaration                                       float viewScatter = fresnelSchlick(dotNV, 1.0, f90);
+          LocalDeclaration                                  float viewScatter = fresnelSchlick(dotNV, 1.0, f90);
             VariableDeclaration                             float viewScatter = fresnelSchlick(dotNV, 1.0, f90)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1281,7 +1321,7 @@ Program                                                     ⮐ #version 450⮐ 
     StatementList                                           float a2 = alpha * alpha;⮐   float GGXL = dotNV * sqrt((dotNL - a2 * dotNL) * dotNL + a2);⮐   float GGXV = dotNL * sqrt((dotNV - a2 * dotNV) * dotNV + a2);⮐   return 0.5 / (GGXL + GGXV);
       Statement                                             float a2 = alpha * alpha;
         DeclarationStatement                                float a2 = alpha * alpha;
-          Declaration                                       float a2 = alpha * alpha;
+          LocalDeclaration                                  float a2 = alpha * alpha;
             VariableDeclaration                             float a2 = alpha * alpha
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1295,7 +1335,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                alpha
       Statement                                             float GGXL = dotNV * sqrt((dotNL - a2 * dotNL) * dotNL + a2);
         DeclarationStatement                                float GGXL = dotNV * sqrt((dotNL - a2 * dotNL) * dotNL + a2);
-          Declaration                                       float GGXL = dotNV * sqrt((dotNL - a2 * dotNL) * dotNL + a2);
+          LocalDeclaration                                  float GGXL = dotNV * sqrt((dotNL - a2 * dotNL) * dotNL + a2);
             VariableDeclaration                             float GGXL = dotNV * sqrt((dotNL - a2 * dotNL) * dotNL + a2)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1324,7 +1364,7 @@ Program                                                     ⮐ #version 450⮐ 
                       Identifier                            a2
       Statement                                             float GGXV = dotNL * sqrt((dotNV - a2 * dotNV) * dotNV + a2);
         DeclarationStatement                                float GGXV = dotNL * sqrt((dotNV - a2 * dotNV) * dotNV + a2);
-          Declaration                                       float GGXV = dotNL * sqrt((dotNV - a2 * dotNV) * dotNV + a2);
+          LocalDeclaration                                  float GGXV = dotNL * sqrt((dotNV - a2 * dotNV) * dotNV + a2);
             VariableDeclaration                             float GGXV = dotNL * sqrt((dotNV - a2 * dotNV) * dotNV + a2)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1383,7 +1423,7 @@ Program                                                     ⮐ #version 450⮐ 
     StatementList                                           float k = alpha / 2.0f;⮐   return G1X(dotNL, k) * G1X(dotNV, k);
       Statement                                             float k = alpha / 2.0f;
         DeclarationStatement                                float k = alpha / 2.0f;
-          Declaration                                       float k = alpha / 2.0f;
+          LocalDeclaration                                  float k = alpha / 2.0f;
             VariableDeclaration                             float k = alpha / 2.0f
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1408,7 +1448,7 @@ Program                                                     ⮐ #version 450⮐ 
               Identifier                                    G1X
               Identifier                                    dotNV
               Identifier                                    k
-  FunctionDefinition                                        vec3 PBR(vec3 N, vec3 L, vec3 V, vec3 albedo, float metalness, float roughness) {⮐ ⮐   vec3 diffuseColor = albedo * (1.0 - metalness);⮐   vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);⮐ ⮐   float alpha = roughness * roughness;⮐   float dotNV = saturate(dot(N, V));⮐ ⮐   float radiance = 3.1415;⮐ ⮐   vec3 H = normalize(V + L);⮐   float dotNL = saturate(dot(N, L));⮐   float dotNH = saturate(dot(N, H));⮐   float dotLH = saturate(dot(L, H));⮐ ⮐   vec3 F = fresnelSchlick(dotLH, F0);⮐   float D = ndfGGX(dotNH, alpha);⮐   float G = smithGGXCorrelated(dotNL, dotNV, alpha);⮐   //float G2 = geometricGGX(dotNL, dotNV, alpha);⮐   //return vec3(abs(G - G2) / 100.0);⮐   ⮐   vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);⮐   vec3 Fs = F * D * G;⮐ ⮐   vec3 direct = (Fd + Fs) * radiance * dotNL;⮐   return direct;⮐ }
+  FunctionDefinition                                        vec3 PBR(vec3 N, vec3 L, vec3 V, vec3 albedo, float metalness, float roughness) {⮐ ⮐   vec3 diffuseColor = albedo * (1.0 - metalness);⮐   vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);⮐ ⮐   float alpha = roughness * roughness;⮐   float dotNV = saturate(dot(N, V));⮐ ⮐   float radiance = 3.1415;⮐ ⮐   vec3 H = normalize(V + L);⮐   float dotNL = saturate(dot(N, L));⮐   float dotNH = saturate(dot(N, H));⮐   float dotLH = saturate(dot(L, H));⮐ ⮐   vec3 F = fresnelSchlick(dotLH, F0);⮐   float D = ndfGGX(dotNH, alpha);⮐   float G = smithGGXCorrelated(dotNL, dotNV, alpha);⮐   //float G2 = geometricGGX(dotNL, dotNV, alpha);⮐   //return vec3(abs(G - G2) / 100.0);⮐ ⮐   vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);⮐   vec3 Fs = F * D * G;⮐ ⮐   vec3 direct = (Fd + Fs) * radiance * dotNL;⮐   return direct;⮐ }
     FunctionPrototype                                       vec3 PBR(vec3 N, vec3 L, vec3 V, vec3 albedo, float metalness, float roughness)
       QualifiedType                                         vec3
         TypeSpecifier                                       vec3
@@ -1438,10 +1478,10 @@ Program                                                     ⮐ #version 450⮐ 
         TypeSpecifier                                       float
           float                                             float
         Identifier                                          roughness
-    StatementList                                           vec3 diffuseColor = albedo * (1.0 - metalness);⮐   vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);⮐ ⮐   float alpha = roughness * roughness;⮐   float dotNV = saturate(dot(N, V));⮐ ⮐   float radiance = 3.1415;⮐ ⮐   vec3 H = normalize(V + L);⮐   float dotNL = saturate(dot(N, L));⮐   float dotNH = saturate(dot(N, H));⮐   float dotLH = saturate(dot(L, H));⮐ ⮐   vec3 F = fresnelSchlick(dotLH, F0);⮐   float D = ndfGGX(dotNH, alpha);⮐   float G = smithGGXCorrelated(dotNL, dotNV, alpha);⮐   //float G2 = geometricGGX(dotNL, dotNV, alpha);⮐   //return vec3(abs(G - G2) / 100.0);⮐   ⮐   vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);⮐   vec3 Fs = F * D * G;⮐ ⮐   vec3 direct = (Fd + Fs) * radiance * dotNL;⮐   return direct;
+    StatementList                                           vec3 diffuseColor = albedo * (1.0 - metalness);⮐   vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);⮐ ⮐   float alpha = roughness * roughness;⮐   float dotNV = saturate(dot(N, V));⮐ ⮐   float radiance = 3.1415;⮐ ⮐   vec3 H = normalize(V + L);⮐   float dotNL = saturate(dot(N, L));⮐   float dotNH = saturate(dot(N, H));⮐   float dotLH = saturate(dot(L, H));⮐ ⮐   vec3 F = fresnelSchlick(dotLH, F0);⮐   float D = ndfGGX(dotNH, alpha);⮐   float G = smithGGXCorrelated(dotNL, dotNV, alpha);⮐   //float G2 = geometricGGX(dotNL, dotNV, alpha);⮐   //return vec3(abs(G - G2) / 100.0);⮐ ⮐   vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);⮐   vec3 Fs = F * D * G;⮐ ⮐   vec3 direct = (Fd + Fs) * radiance * dotNL;⮐   return direct;
       Statement                                             vec3 diffuseColor = albedo * (1.0 - metalness);
         DeclarationStatement                                vec3 diffuseColor = albedo * (1.0 - metalness);
-          Declaration                                       vec3 diffuseColor = albedo * (1.0 - metalness);
+          LocalDeclaration                                  vec3 diffuseColor = albedo * (1.0 - metalness);
             VariableDeclaration                             vec3 diffuseColor = albedo * (1.0 - metalness)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1459,7 +1499,7 @@ Program                                                     ⮐ #version 450⮐ 
                       Identifier                            metalness
       Statement                                             vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);
         DeclarationStatement                                vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);
-          Declaration                                       vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);
+          LocalDeclaration                                  vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness);
             VariableDeclaration                             vec3 F0 = mix(vec3(F_DIELECTRIC), albedo, metalness)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1476,7 +1516,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                metalness
       Statement                                             float alpha = roughness * roughness;
         DeclarationStatement                                float alpha = roughness * roughness;
-          Declaration                                       float alpha = roughness * roughness;
+          LocalDeclaration                                  float alpha = roughness * roughness;
             VariableDeclaration                             float alpha = roughness * roughness
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1490,7 +1530,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                roughness
       Statement                                             float dotNV = saturate(dot(N, V));
         DeclarationStatement                                float dotNV = saturate(dot(N, V));
-          Declaration                                       float dotNV = saturate(dot(N, V));
+          LocalDeclaration                                  float dotNV = saturate(dot(N, V));
             VariableDeclaration                             float dotNV = saturate(dot(N, V))
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1506,7 +1546,7 @@ Program                                                     ⮐ #version 450⮐ 
                     Identifier                              V
       Statement                                             float radiance = 3.1415;
         DeclarationStatement                                float radiance = 3.1415;
-          Declaration                                       float radiance = 3.1415;
+          LocalDeclaration                                  float radiance = 3.1415;
             VariableDeclaration                             float radiance = 3.1415
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1517,7 +1557,7 @@ Program                                                     ⮐ #version 450⮐ 
                 Number                                      3.1415
       Statement                                             vec3 H = normalize(V + L);
         DeclarationStatement                                vec3 H = normalize(V + L);
-          Declaration                                       vec3 H = normalize(V + L);
+          LocalDeclaration                                  vec3 H = normalize(V + L);
             VariableDeclaration                             vec3 H = normalize(V + L)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1533,7 +1573,7 @@ Program                                                     ⮐ #version 450⮐ 
                     Identifier                              L
       Statement                                             float dotNL = saturate(dot(N, L));
         DeclarationStatement                                float dotNL = saturate(dot(N, L));
-          Declaration                                       float dotNL = saturate(dot(N, L));
+          LocalDeclaration                                  float dotNL = saturate(dot(N, L));
             VariableDeclaration                             float dotNL = saturate(dot(N, L))
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1549,7 +1589,7 @@ Program                                                     ⮐ #version 450⮐ 
                     Identifier                              L
       Statement                                             float dotNH = saturate(dot(N, H));
         DeclarationStatement                                float dotNH = saturate(dot(N, H));
-          Declaration                                       float dotNH = saturate(dot(N, H));
+          LocalDeclaration                                  float dotNH = saturate(dot(N, H));
             VariableDeclaration                             float dotNH = saturate(dot(N, H))
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1565,7 +1605,7 @@ Program                                                     ⮐ #version 450⮐ 
                     Identifier                              H
       Statement                                             float dotLH = saturate(dot(L, H));
         DeclarationStatement                                float dotLH = saturate(dot(L, H));
-          Declaration                                       float dotLH = saturate(dot(L, H));
+          LocalDeclaration                                  float dotLH = saturate(dot(L, H));
             VariableDeclaration                             float dotLH = saturate(dot(L, H))
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1581,7 +1621,7 @@ Program                                                     ⮐ #version 450⮐ 
                     Identifier                              H
       Statement                                             vec3 F = fresnelSchlick(dotLH, F0);
         DeclarationStatement                                vec3 F = fresnelSchlick(dotLH, F0);
-          Declaration                                       vec3 F = fresnelSchlick(dotLH, F0);
+          LocalDeclaration                                  vec3 F = fresnelSchlick(dotLH, F0);
             VariableDeclaration                             vec3 F = fresnelSchlick(dotLH, F0)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1595,7 +1635,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                F0
       Statement                                             float D = ndfGGX(dotNH, alpha);
         DeclarationStatement                                float D = ndfGGX(dotNH, alpha);
-          Declaration                                       float D = ndfGGX(dotNH, alpha);
+          LocalDeclaration                                  float D = ndfGGX(dotNH, alpha);
             VariableDeclaration                             float D = ndfGGX(dotNH, alpha)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1609,7 +1649,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                alpha
       Statement                                             float G = smithGGXCorrelated(dotNL, dotNV, alpha);
         DeclarationStatement                                float G = smithGGXCorrelated(dotNL, dotNV, alpha);
-          Declaration                                       float G = smithGGXCorrelated(dotNL, dotNV, alpha);
+          LocalDeclaration                                  float G = smithGGXCorrelated(dotNL, dotNV, alpha);
             VariableDeclaration                             float G = smithGGXCorrelated(dotNL, dotNV, alpha)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1624,7 +1664,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                alpha
       Statement                                             vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);
         DeclarationStatement                                vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);
-          Declaration                                       vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);
+          LocalDeclaration                                  vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha);
             VariableDeclaration                             vec3 Fd = albedo * fdBurley(dotNL, dotNV, dotLH, alpha)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1643,7 +1683,7 @@ Program                                                     ⮐ #version 450⮐ 
                     Identifier                              alpha
       Statement                                             vec3 Fs = F * D * G;
         DeclarationStatement                                vec3 Fs = F * D * G;
-          Declaration                                       vec3 Fs = F * D * G;
+          LocalDeclaration                                  vec3 Fs = F * D * G;
             VariableDeclaration                             vec3 Fs = F * D * G
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1660,7 +1700,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                G
       Statement                                             vec3 direct = (Fd + Fs) * radiance * dotNL;
         DeclarationStatement                                vec3 direct = (Fd + Fs) * radiance * dotNL;
-          Declaration                                       vec3 direct = (Fd + Fs) * radiance * dotNL;
+          LocalDeclaration                                  vec3 direct = (Fd + Fs) * radiance * dotNL;
             VariableDeclaration                             vec3 direct = (Fd + Fs) * radiance * dotNL
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1683,16 +1723,16 @@ Program                                                     ⮐ #version 450⮐ 
         JumpStatement                                       return direct;
           return                                            return
           Identifier                                        direct
-  FunctionDefinition                                        void main() {⮐   vec3 N = normalize(fragNormal);⮐   vec3 L = normalize(fragLight);⮐   vec3 V = normalize(fragView);⮐ ⮐   vec3 albedo = vec3(1.0);//fragColor.rgb;⮐   float metalness = 0.2;⮐   float roughness = 0.8;⮐   ⮐   float grid = getGrid(fragUV);⮐   vec3 color = PBR(N, L, V, albedo, metalness, roughness);⮐   ⮐   outColor = vec4(color * grid, fragColor.a);⮐ }
+  FunctionDefinition                                        void main() {⮐   vec3 N = normalize(fragNormal);⮐   vec3 L = normalize(fragLight);⮐   vec3 V = normalize(fragView);⮐ ⮐   vec3 albedo = vec3(1.0);//fragColor.rgb;⮐   float metalness = 0.2;⮐   float roughness = 0.8;⮐ ⮐   float grid = getGrid(fragUV);⮐   vec3 color = PBR(N, L, V, albedo, metalness, roughness);⮐ ⮐   outColor = vec4(color * grid, fragColor.a);⮐ }
     FunctionPrototype                                       void main()
       QualifiedType                                         void
         TypeSpecifier                                       void
           void                                              void
       Identifier                                            main
-    StatementList                                           vec3 N = normalize(fragNormal);⮐   vec3 L = normalize(fragLight);⮐   vec3 V = normalize(fragView);⮐ ⮐   vec3 albedo = vec3(1.0);//fragColor.rgb;⮐   float metalness = 0.2;⮐   float roughness = 0.8;⮐   ⮐   float grid = getGrid(fragUV);⮐   vec3 color = PBR(N, L, V, albedo, metalness, roughness);⮐   ⮐   outColor = vec4(color * grid, fragColor.a);
+    StatementList                                           vec3 N = normalize(fragNormal);⮐   vec3 L = normalize(fragLight);⮐   vec3 V = normalize(fragView);⮐ ⮐   vec3 albedo = vec3(1.0);//fragColor.rgb;⮐   float metalness = 0.2;⮐   float roughness = 0.8;⮐ ⮐   float grid = getGrid(fragUV);⮐   vec3 color = PBR(N, L, V, albedo, metalness, roughness);⮐ ⮐   outColor = vec4(color * grid, fragColor.a);
       Statement                                             vec3 N = normalize(fragNormal);
         DeclarationStatement                                vec3 N = normalize(fragNormal);
-          Declaration                                       vec3 N = normalize(fragNormal);
+          LocalDeclaration                                  vec3 N = normalize(fragNormal);
             VariableDeclaration                             vec3 N = normalize(fragNormal)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1705,7 +1745,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                fragNormal
       Statement                                             vec3 L = normalize(fragLight);
         DeclarationStatement                                vec3 L = normalize(fragLight);
-          Declaration                                       vec3 L = normalize(fragLight);
+          LocalDeclaration                                  vec3 L = normalize(fragLight);
             VariableDeclaration                             vec3 L = normalize(fragLight)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1718,7 +1758,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                fragLight
       Statement                                             vec3 V = normalize(fragView);
         DeclarationStatement                                vec3 V = normalize(fragView);
-          Declaration                                       vec3 V = normalize(fragView);
+          LocalDeclaration                                  vec3 V = normalize(fragView);
             VariableDeclaration                             vec3 V = normalize(fragView)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1731,7 +1771,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                fragView
       Statement                                             vec3 albedo = vec3(1.0);
         DeclarationStatement                                vec3 albedo = vec3(1.0);
-          Declaration                                       vec3 albedo = vec3(1.0);
+          LocalDeclaration                                  vec3 albedo = vec3(1.0);
             VariableDeclaration                             vec3 albedo = vec3(1.0)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1744,7 +1784,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Number                                    1.0
       Statement                                             float metalness = 0.2;
         DeclarationStatement                                float metalness = 0.2;
-          Declaration                                       float metalness = 0.2;
+          LocalDeclaration                                  float metalness = 0.2;
             VariableDeclaration                             float metalness = 0.2
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1755,7 +1795,7 @@ Program                                                     ⮐ #version 450⮐ 
                 Number                                      0.2
       Statement                                             float roughness = 0.8;
         DeclarationStatement                                float roughness = 0.8;
-          Declaration                                       float roughness = 0.8;
+          LocalDeclaration                                  float roughness = 0.8;
             VariableDeclaration                             float roughness = 0.8
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1766,7 +1806,7 @@ Program                                                     ⮐ #version 450⮐ 
                 Number                                      0.8
       Statement                                             float grid = getGrid(fragUV);
         DeclarationStatement                                float grid = getGrid(fragUV);
-          Declaration                                       float grid = getGrid(fragUV);
+          LocalDeclaration                                  float grid = getGrid(fragUV);
             VariableDeclaration                             float grid = getGrid(fragUV)
               QualifiedType                                 float
                 TypeSpecifier                               float
@@ -1779,7 +1819,7 @@ Program                                                     ⮐ #version 450⮐ 
                   Identifier                                fragUV
       Statement                                             vec3 color = PBR(N, L, V, albedo, metalness, roughness);
         DeclarationStatement                                vec3 color = PBR(N, L, V, albedo, metalness, roughness);
-          Declaration                                       vec3 color = PBR(N, L, V, albedo, metalness, roughness);
+          LocalDeclaration                                  vec3 color = PBR(N, L, V, albedo, metalness, roughness);
             VariableDeclaration                             vec3 color = PBR(N, L, V, albedo, metalness, roughness)
               QualifiedType                                 vec3
                 TypeSpecifier                               vec3
@@ -1807,5 +1847,6 @@ Program                                                     ⮐ #version 450⮐ 
                 Identifier                                  grid
               Field                                         fragColor.a
                 Identifier                                  fragColor
-                Identifier                                  a
+                PrivateIdentifier                           a
+                  Identifier                                a
 `;

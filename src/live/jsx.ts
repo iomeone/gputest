@@ -1,10 +1,9 @@
-import { formatNodeName } from './debug';
 import {
-  capture, fence, gather, multiGather, mapReduce, morph, provide, yeet, quote, unquote, reconcile, suspend, signal,
+  capture, fence, fragment, gather, multiGather, mapReduce, morph, provide, yeet, quoteTo, unquote, reconcileTo, suspend, signalTo,
   CAPTURE, FENCE, GATHER, MULTI_GATHER, MAP_REDUCE, MORPH, PROVIDE, YEET, FRAGMENT, QUOTE, UNQUOTE, RECONCILE, SUSPEND, SIGNAL,
 } from './builtin';
 import { getCurrentFiberBy } from './current';
-import { DeferredCall, ArrowFunction, LiveNode, LiveElement, ReactElementInterop } from './types';
+import { RawLiveComponent } from './types';
 
 const NO_PROPS: any = {};
 
@@ -34,13 +33,18 @@ export const Reconcile = RECONCILE as AnyF;
 export const Quote = QUOTE as AnyF;
 export const Unquote = UNQUOTE as AnyF;
 
-export const createElement = (type: ArrowFunction, props: any, ...children: any[]) => {
+type ChildProp<F extends RawLiveComponent<any>> = Parameters<F>[0]['children'];
+type Children<F extends RawLiveComponent<any>> = ChildProp<F>[];
+
+export const createElement = <F extends RawLiveComponent<any>>(type: F | string, props: any, ...children: Children<F>) => {
   const by = getCurrentFiberBy();
 
+  if (typeof type === 'string') throw new Error(`Can't use Live-flavored JSX to render HTML.'`);
+
   if ((type as any)?.isLiveBuiltin) {
-    switch (type) {
+    switch (type as any) {
       case FRAGMENT:
-        return props?.children ?? children;
+        return fragment(props?.children ?? children, props?.key);
 
       case FENCE:
         return fence(toChildren(props?.children ?? children), props?.then, props?.fallback, props?.key);
@@ -55,7 +59,7 @@ export const createElement = (type: ArrowFunction, props: any, ...children: any[
         return mapReduce(toChildren(props?.children ?? children), props?.map, props?.reduce, props?.then, props?.fallback, props?.key);
 
       case RECONCILE:
-        return reconcile(toChildren(props?.children ?? children), props?.key);
+        return reconcileTo(props?.to, toChildren(props?.children ?? children), props?.key);
 
       case PROVIDE:
         return provide(props?.context, props?.value, toChildren(props?.children ?? children), props?.key);
@@ -64,24 +68,25 @@ export const createElement = (type: ArrowFunction, props: any, ...children: any[
         return capture(props?.context, toChildren(props?.children ?? children), props?.then, props?.key);
 
       case YEET:
-        return yeet((props?.children ?? children)[0], props?.key);
+        return yeet(toChildren(props?.children ?? children), props?.key);
 
       case SIGNAL:
-        return signal(props?.key);
+        return signalTo(props?.to, props?.key);
 
       case SUSPEND:
         return suspend(props?.key);
 
       case QUOTE:
-        return quote(toChildren(props?.children ?? children), props?.key);
+        return quoteTo(props?.to, toChildren(props?.children ?? children), props?.key);
 
       case UNQUOTE:
         return unquote(toChildren(props?.children ?? children), props?.key);
 
-      case MORPH:
+      case MORPH: {
         const c = props?.children ?? children;
         if (c.length === 1) return morph(c[0]);
         return c.map(morph);
+      }
 
       default:
         throw new Error("Builtin `${formatNodeName({f: type})}` unsupported in JSX. Use raw function syntax instead.");
@@ -89,7 +94,7 @@ export const createElement = (type: ArrowFunction, props: any, ...children: any[
   }
 
   if (props) {
-    if (props.children == null) props.children = toChildren(children);
+    if (props.children == null && children.length) props = {...props, children: toChildren(children)};
     return {f: type, args: [props], key: props.key, by};
   }
   else if (children.length) {

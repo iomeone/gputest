@@ -1,16 +1,16 @@
-import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, makePaintRequester, compareFibers, isSubNode } from './util';
+import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, compareFibers, isSubNode } from './util';
 
 it("schedules actions", () => {
-  let run = {a: 0, b: 0} as Record<string, number>;
+  const run = {a: 0, b: 0} as Record<string, number>;
 
-  let fiber = {} as any;
+  const fiber = {} as any;
 
   let flushed = 0;
   let captured = 0;
   let flush = () => {};
   let fibers: any[] = [];
 
-  const dispatch = (f: any) => { 
+  const dispatch = (f: any) => {
     flushed++;
     flush = f;
   };
@@ -42,9 +42,9 @@ it("schedules actions", () => {
 })
 
 it("tracks disposal actions", () => {
-  let run = {a: 0, b: 0} as Record<string, number>;
+  const run = {a: 0, b: 0} as Record<string, number>;
 
-  let fiber = {} as any;
+  const fiber = {} as any;
 
   const trash = makeDisposalTracker();
   trash.track(fiber, () => run.a++);
@@ -63,9 +63,9 @@ it("tracks disposal actions", () => {
 });
 
 it("tracks dependencies", () => {
-  let root = {} as any;
-  let fiber1 = {} as any;
-  let fiber2 = {} as any;
+  const root = {} as any;
+  const fiber1 = {} as any;
+  const fiber2 = {} as any;
 
   const dependency = makeDependencyTracker();
   dependency.depend(fiber1, root.id);
@@ -85,7 +85,7 @@ it("tracks dependencies", () => {
 });
 
 it("resolves node ancestry", () => {
-  
+
   const n1  = {depth: 0, path: [0]} as any;
   const n11 = {depth: 1, path: [0, 0]} as any;
   const n12 = {depth: 1, path: [0, 1]} as any;

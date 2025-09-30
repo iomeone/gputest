@@ -15,8 +15,8 @@ fn main(
   @location(0) fragAlpha: f32,
   @location(1) fragUV: vec4<f32>,
   @location(2) fragST: vec4<f32>,
-  @location(3) fragPosition: vec4<f32>,  
-  @location(4) fragScissor: vec4<f32>,  
+  @location(3) fragPosition: vec4<f32>,
+  @location(4) fragScissor: vec4<f32>,
 ) -> @builtin(frag_depth) f32 {
 
   var fragment = getDepth(fragAlpha, fragUV, fragST, fragPosition);

@@ -65,10 +65,10 @@ export const Resizer: FC<ResizerProps> = (props: ResizerProps) => {
     value,
     onChange,
   } = props;
-  
+
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
-  
+
   const [dragging, setDragging] = useState<boolean>(false);
   const [toValue, setToValue] = useState<any>(() => (e: any) => 0);
 
@@ -77,14 +77,14 @@ export const Resizer: FC<ResizerProps> = (props: ResizerProps) => {
     if (!outer) return;
 
     e.target.setPointerCapture(e.pointerId);
-    
+
     const {clientX, clientY} = e;
     const {left, right, top, bottom} = e.target.getBoundingClientRect();
     const {left: ll, right: rr, top: tt, bottom: bb} = outer.getBoundingClientRect();
 
-    const cx = (left + right) / 2;
-    const cy = (top + bottom) / 2;
-    
+    const cx = side === 'left' ? (left + right) / 2 : right;
+    const cy = side === 'top' ? (top + bottom) / 2 : bottom;
+
     if (side === 'left') {
       const offset = clientX - cx;
       setToValue(() => (e: any) => clamp(((e.clientX - offset) - rr) / (ll - rr) * value, min, max));
@@ -104,7 +104,7 @@ export const Resizer: FC<ResizerProps> = (props: ResizerProps) => {
 
     setDragging(true);
   }, [value, min, max]);
-  
+
   const onPointerUp = useCallback((e: any) => {
     setDragging(false);
   }, []);
@@ -112,12 +112,23 @@ export const Resizer: FC<ResizerProps> = (props: ResizerProps) => {
   const onPointerMove = useCallback((e: any) => {
     onChange(toValue(e));
   }, [toValue, onChange]);
-  
+
   const handlers = {
     onPointerDown,
     onPointerUp,
     onPointerMove: dragging ? onPointerMove : undefined,
   };
+
+  useLayoutEffect(() => {
+      if (!dragging) return;
+
+      // Add workaround for chrome bug - macOS pointerUp while moving mouse does not fire when pointer capture is active
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=1459632&q=pointerup%20event&can=2
+      document.addEventListener('pointerup', onPointerUp as any);
+      return () => {
+          document.removeEventListener('pointerup', onPointerUp as any);
+      };
+  }, [dragging, onPointerUp]);
 
   return (
     <div

@@ -28,7 +28,7 @@ export const ReactNode: React.FC<ReactNodeProps> = ({
       const {stateNode} = reactNode;
       const element = (stateNode?.containerInfo ?? stateNode) as any;
       if (!element) return;
-      
+
       style = element.style?.outline;
       element.style?.setProperty('outline', INSPECT_STYLE);
       setHovered(true);
@@ -42,10 +42,10 @@ export const ReactNode: React.FC<ReactNodeProps> = ({
       element.style?.setProperty('outline', style);
       setHovered(false);
     };
-    
+
     return {onMouseEnter, onMouseLeave};
   }, []);
-  
+
   const className = hovered ? 'hovered' : null;
 
   return (

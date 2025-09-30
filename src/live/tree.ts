@@ -1,4 +1,4 @@
-import type { Key, Task, LiveFiber, LiveElement, LiveNode, LivePure, DeferredCall, DeferredCallInterop, FiberQueue, HostInterface, RenderCallbacks, RenderOptions, ArrowFunction, ReactElementInterop } from './types';
+import type { Task, LiveFiber, LiveNode, DeferredCall, HostInterface, RenderOptions, ArrowFunction } from './types';
 
 import { makeFiber, renderFiber, updateFiber, disposeFiber, reactInterop } from './fiber';
 import { makeActionScheduler, makeDependencyTracker, makeDisposalTracker, makeStackSlicer, getOnPaint } from './util';
@@ -15,7 +15,6 @@ const DEFAULT_RENDER_OPTIONS = {
 const START = +new Date();
 
 const NO_NODE = () => null;
-const NO_ARGS = [] as any[];
 
 // Create new runtime host
 export const makeHost = (
@@ -86,6 +85,7 @@ export const makeHostFiber = (
 // Resolve a LiveElement root to a call
 export const resolveRootNode = (children: LiveNode<any>): DeferredCall<any> => {
   const c = reactInterop(children);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if (Array.isArray(c)) return morph(use(() => c))!;
   if (typeof c === 'string') return use(NO_NODE);
   if (typeof c === 'function') return use(c);
@@ -111,8 +111,10 @@ export const renderWithDispatch = (
     const flush = (fibers: LiveFiber<any>[]) => {
       (LOG || LOGGING.tick) && console.log('----------------------------');
       LOG && console.log('Dispatch to Roots', fibers.map(formatNode), +new Date() - START, 'ms');
+      // eslint-disable-next-line no-debugger
       if (!fibers.length) debugger;
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (fibers.length) renderFibers(host!, fibers);
     };
 
@@ -140,7 +142,9 @@ export const renderWithDispatch = (
   }
 
   if (host) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (dispatch) dispatch(() => renderFibers(host!, [fiber!]));
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     else renderFibers(host!, [fiber!]);
   }
 
@@ -162,7 +166,7 @@ export const renderFibers = (
     host.depth(fiber.depth);
     host.__stats.dispatch++;
 
-    LOG && console.log('Next Sub-Root', formatNode(fiber));
+    LOG && console.log(`Next Sub-Root #${fiber.id}`, formatNode(fiber));
 
     const element = renderFiber(fiber);
     updateFiber(fiber, element);
@@ -175,6 +179,7 @@ export const renderFibers = (
 export const traverseFiber = (fiber: LiveFiber<any>, f: (f: LiveFiber<any>) => void) => {
   const {mount, mounts, next} = fiber;
   if (mount) traverseFiber(mount, f);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if (mounts) for (const k of mounts.keys()) traverseFiber(mounts.get(k)!, f);
   if (next) traverseFiber(next, f);
 }

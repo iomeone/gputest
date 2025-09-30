@@ -1,37 +1,47 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { ShaderSource } from '../../shader';
-import type { StorageSource, Geometry } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { CPUGeometry, GPUGeometry, StorageSource, LambdaSource } from '@use-gpu/core';
 
-import { use, yeet, useOne } from '../../live';
-import zipObject from 'lodash/zipObject';
+import { use, useMemo } from '@use-gpu/live';
+import mapValues from 'lodash/mapValues.js';
+import { useRenderProp } from '../hooks/useRenderProp';
 
 import { Data } from './data';
 
-export type GeometryDataProps = {
-  geometry: Geometry,
-  render?: (sources: Record<string, ShaderSource>) => LiveElement,
+export type GeometryDataProps = CPUGeometry & {
+  render?: (source: GPUGeometry) => LiveElement,
+  children?: (source: GPUGeometry) => LiveElement,
 };
 
 export const GeometryData: LiveComponent<GeometryDataProps> = (props: GeometryDataProps) => {
   const {
-    geometry: {attributes, formats},
-    render,
+    count,
+    topology,
+    attributes,
+    formats,
+    unwelded,
   } = props;
 
-  const fields = useOne(() =>
-    Object.keys(attributes).map(k => [
-      formats[k],
-      attributes[k],
-    ]),
-    attributes
+  const schema = useMemo(() =>
+    mapValues(attributes, (_, k) => ({
+      format: `array<${formats[k]}>`,
+      index: k === 'indices',
+      unwelded: !!unwelded?.[k],
+    })),
+    [attributes, formats],
   );
 
   return (
     use(Data, {
-      fields,
-      render: (...sources: StorageSource[]) => {
-        const out = zipObject(Object.keys(attributes), sources);
-        return render ? render(out) : yeet(out);
+      schema,
+      data: attributes,
+      render: (sources: Record<string, StorageSource | LambdaSource>) => {
+        const out = {
+          count,
+          topology,
+          attributes: sources,
+          unwelded,
+        };
+        return useRenderProp(props, out);
       },
     })
   );

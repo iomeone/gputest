@@ -1,23 +1,25 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import { useOne, useResource, useState } from '../../live';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import { useOne, useResource, useState } from '@use-gpu/live';
+import { getRenderFunc } from '@use-gpu/workbench';
 
 export type AutoSizeProps = {
   canvas: HTMLCanvasElement,
   render?: (width: number, height: number, pixelRatio: number) => LiveElement,
-}
+  children?: (width: number, height: number, pixelRatio: number) => LiveElement,
+};
 
 const getCanvasSize = (window: Window, canvas: HTMLCanvasElement): [number, number, number] => {
   const pixelRatio = window?.devicePixelRatio ?? 1;
   const {parentElement} = canvas;
   if (parentElement) {
     const {offsetWidth, offsetHeight} = parentElement;
-    return [offsetWidth, offsetHeight, pixelRatio];
+    return [pixelRatio * offsetWidth, pixelRatio * offsetHeight, pixelRatio];
   }
   return [pixelRatio * window.innerWidth, pixelRatio * window.innerHeight, pixelRatio];
 }
 
-export const AutoSize: LiveComponent<AutoSizeProps> = (props: PropsWithChildren<AutoSizeProps>) => {
-  const {canvas, render, children} = props;
+export const AutoSize: LiveComponent<AutoSizeProps> = (props: AutoSizeProps) => {
+  const {canvas, children} = props;
 
   useResource(() => {
     canvas.style.position = 'absolute';
@@ -26,17 +28,17 @@ export const AutoSize: LiveComponent<AutoSizeProps> = (props: PropsWithChildren<
     canvas.style.width = '100%';
     canvas.style.height = '100%';
   }, [canvas]);
- 
+
   const [size, setSize] = useState(() => getCanvasSize(window, canvas));
 
   const [width, height, pixelRatio] = size;
-  const w = Math.round(width * pixelRatio);
-  const h = Math.round(height * pixelRatio);
+  const w = Math.round(width);
+  const h = Math.round(height);
 
   useOne(() => canvas.width = w, w);
   useOne(() => canvas.height = h, h);
-  useOne(() => canvas.style.width = `${Math.round(width)}px`, width);
-  useOne(() => canvas.style.height = `${Math.round(height)}px`, height);
+  useOne(() => canvas.style.width = `${Math.round(width / pixelRatio)}px`, width);
+  useOne(() => canvas.style.height = `${Math.round(height / pixelRatio)}px`, height);
 
   useResource((dispose) => {
     const resize = () => {
@@ -57,5 +59,6 @@ export const AutoSize: LiveComponent<AutoSizeProps> = (props: PropsWithChildren<
     });
   }, [canvas]);
 
-  return render ? render(width, height, pixelRatio) : (children ?? null);
+  const render = getRenderFunc(props);
+  return render ? render(w, h, pixelRatio) : (children ?? null);
 };

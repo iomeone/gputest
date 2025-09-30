@@ -1,28 +1,56 @@
 import type {
-  UniformAllocation, VirtualAllocation, VolatileAllocation, GlobalAllocation, SharedAllocation,
+  UniformAllocation, VirtualAllocation, VolatileAllocation, GlobalAllocation,
   UniformAttribute, UniformAttributeDescriptor,
   UniformLayout, UniformType,
   UniformPipe, UniformByteSetter, UniformFiller, UniformDataSetter, UniformValueSetter,
+  TypedArrayConstructor,
   DataBinding,
-  StorageSource,
-  TextureSource,
-  Lazy,
 } from './types';
-import { UNIFORM_ATTRIBUTE_SIZES, UNIFORM_ATTRIBUTE_ALIGNS } from './constants';
+import { UNIFORM_ATTRIBUTE_SIZES, UNIFORM_ATTRIBUTE_ALIGNS, UNIFORM_ARRAY_TYPES, UNIFORM_ARRAY_DIMS } from './constants';
 import { UNIFORM_BYTE_SETTERS } from './bytes';
 
-import { getObjectKey, toMurmur53, mixBits53 } from '../state';
-import { makeBindGroupLayout, makeBindGroupLayoutEntries } from './bindgroup';
+import { getObjectKey, toMurmur53, mixBits53 } from '@use-gpu/state';
+import { makeBindGroupLayout } from './bindgroup';
 import { makeUniformBuffer } from './buffer';
 import { makeSampler } from './texture';
 import { alignSizeTo } from './data';
 import { resolve } from './lazy';
 
 const NO_BINDINGS = {} as any;
+const noSetter = (format: string): UniformByteSetter => () => { throw new Error(`Setter unimplemented for '${format}'`); }
 
-export const getUniformAttributeSize = (format: UniformType): number => UNIFORM_ATTRIBUTE_SIZES[format];
-export const getUniformAttributeAlign = (format: UniformType): number => UNIFORM_ATTRIBUTE_ALIGNS[format];
-export const getUniformByteSetter = (format: UniformType): UniformByteSetter => UNIFORM_BYTE_SETTERS[format];
+export const isUniformVecType = (type: string) => !!type.match(/^(vec[0-9])+/);
+export const isUniformArrayType = (type: string) => !!type.match(/^array</);
+
+export const getUniformArrayDepth = (type: string): number => (type.match(/^(array<)+/)?.[0]?.length || 0) / 6;
+export const getUniformElementType = (type: string): string =>
+  isUniformArrayType(type)
+  ? getUniformElementType(type.replace(/^array<(.*)>$/, '$1'))
+  : type;
+
+export const toTypeString = (t: string | any): string => {
+  if (typeof t === 'string') return t;
+  if (t.entry != null) return `T<${t.entry}>`;
+  if (t.module?.entry != null) return `T<${t.module.entry}>`;
+  if (t.name != null) return t.name;
+  if (t.type != null) return toTypeString(t.type);
+  if (Array.isArray(t)) return `[${t.map(toTypeString).join(',')}]`;
+  return 'void';
+};
+
+export const toCPUDims = (dims: number): number => dims !== Math.round(dims) ? Math.ceil(dims) * 3 / 4 : dims;
+export const toGPUDims = (dims: number): number => Math.ceil(dims);
+
+export const getUniformDims = (format: UniformType): number => UNIFORM_ARRAY_DIMS[format];
+export const getUniformSize = (format: UniformType): number => UNIFORM_ATTRIBUTE_SIZES[format];
+export const getUniformAlign = (format: UniformType): number => UNIFORM_ATTRIBUTE_ALIGNS[format];
+export const getUniformByteSetter = (format: UniformType): UniformByteSetter => (UNIFORM_BYTE_SETTERS as any)[format] ?? noSetter(format);
+
+export const getUniformArrayType = (format: UniformType): TypedArrayConstructor => UNIFORM_ARRAY_TYPES[format];
+export const getUniformArraySize = (format: UniformType, length: number): number => {
+  const size = getUniformSize(format);
+  return alignSizeTo(length * size, 4);
+};
 
 export const makeGlobalUniforms = (
   device: GPUDevice,
@@ -140,17 +168,17 @@ export const makeVolatileUniforms = <T>(
   const hasBindings = !!bindings.length;
   if (!hasBindings) return NO_BINDINGS;
 
-  let depths = [];
+  const depths = [];
   for (const b of bindings) {
     if (b.storage?.volatile) depths.push(+b.storage.volatile);
     else if (b.texture?.volatile) depths.push(+b.texture.volatile);
   }
-  let depth = depths.length > 1 ? lcm(depths) : depths[0];
-  
+  const depth = depths.length > 1 ? lcm(depths) : depths[0];
+
   if (depth === 1) {
     let lastKey = -1;
     let cached: GPUBindGroup | null = null;
-  
+
     const bindGroup = () => {
 
       let key = 0;
@@ -187,7 +215,7 @@ export const makeVolatileUniforms = <T>(
     for (const b of bindings) {
       let v: any = undefined;
       if (b.texture) v = b.texture.view ?? b.texture.texture;
-      else if (b.storage) v = b.storage.buffer;      
+      else if (b.storage) v = b.storage.buffer;
 
       ids.push(getObjectKey(v));
     }
@@ -226,7 +254,7 @@ export const makeDataBindingsEntries = <T>(
   binding: number = 0,
 ): GPUBindGroupEntry[] => {
   const entries = [] as any[];
-  
+
   for (const b of bindings) {
     if (b.storage) {
       const {storage} = b;
@@ -308,7 +336,7 @@ export const makePackedLayout = (
   for (const {name, format} of uniforms) {
     if (typeof format === 'object') throw new Error(`Struct cannot be used as uniform member types`);
 
-    const s = getUniformAttributeSize(format);
+    const s = getUniformSize(format as UniformType);
     const o = alignSizeTo(offset, align);
     out.push({name, offset: o, format});
 
@@ -330,10 +358,10 @@ export const makeUniformLayout = (
   for (const {name, format} of uniforms) {
     if (typeof format === 'object') throw new Error(`Struct cannot be used as uniform member types`);
 
-    const s = getUniformAttributeSize(format);
-    const a = getUniformAttributeAlign(format);
+    const a = getUniformAlign(format as UniformType);
     if (a === 0) throw new Error(`Type ${format} is not host-shareable or unimplemented`);
 
+    const s = getUniformSize(format as UniformType);
     const o = alignSizeTo(offset, a);
     out.push({name, offset: o, format});
     max = Math.max(max, a);
@@ -341,8 +369,8 @@ export const makeUniformLayout = (
     offset = o + s;
   }
 
-  const s = alignSizeTo(offset, max);
-  return {length: s - base, attributes: out, offsets: [base]};
+  const a = alignSizeTo(offset, max);
+  return {length: a - base, attributes: out, offsets: [base]};
 };
 
 export const makeMultiUniformLayout = (
@@ -369,9 +397,10 @@ export const makeMultiUniformLayout = (
 export const makeLayoutData = (
   layout: UniformLayout,
   count: number = 1,
+  extra: number = 0,
 ): ArrayBuffer => {
   const {length} = layout;
-  const data = new ArrayBuffer(length * count);
+  const data = new ArrayBuffer(length * count + extra);
   return data;
 }
 
@@ -396,7 +425,7 @@ export const makeLayoutFiller = (
     if (!attr) return;
 
     const {offset, format} = attr;
-    const setter = getUniformByteSetter(format);
+    const setter = getUniformByteSetter(format as UniformType);
 
     const o = value;
     const v = resolve(o);
@@ -405,12 +434,12 @@ export const makeLayoutFiller = (
 
   const setData = (index: number, item: any) => {
     const base = index * length;
-    for (let k in item) {
+    for (const k in item) {
       const attr = map.get(k);
       if (!attr) continue;
 
       const {offset, format} = attr;
-      const setter = getUniformByteSetter(format);
+      const setter = getUniformByteSetter(format as UniformType);
 
       const o = item[k];
       const v = resolve(o);
@@ -459,7 +488,7 @@ const gcd = (a: number, b: number) => {
   let max = Math.max(a, b);
   let min = Math.min(a, b);
   while (min) {
-    let mod = max % min;
+    const mod = max % min;
     max = min;
     min = mod;
   }

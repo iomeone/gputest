@@ -1,20 +1,19 @@
-import type {
-  BoxTrait,
-  ElementTrait,
-  ImageTrait,
-} from './types';
 import {
   makeUseTrait,
   makeParseTrait,
   optional,
-  parseNumber,
-  parseColor,
-} from '../traits';
+  nullable,
+  trait,
+} from '@use-gpu/traits/live';
 import {
-  parseAlignmentXY,
+  parseNumber,
+  parseInteger,
+  parseColor,
+} from '@use-gpu/parse';
+import {
   parseAnchor,
   parseAnchorXY,
-  parseBase,
+  parseBaseline,
   parseDimension,
   parseFit,
   parseMargin,
@@ -22,44 +21,40 @@ import {
   parseTexture,
 } from './parse';
 
-const BOX_TRAIT = {
+export const BoxTrait = trait({
   grow: parseNumber,
   shrink: parseNumber,
   margin: parseMargin,
-  inline: optional(parseBase),
+  inline: optional(parseBaseline),
   flex: optional(parseAnchor),
-};
-
-const BOX_DEFAULTS = {
+}, {
   shrink: 1,
-};
+});
 
-const IMAGE_TRAIT = {
+export const ImageTrait = trait({
+  texture: optional(nullable(parseTexture)), // deprecated
   width: optional(parseDimension),
   height: optional(parseDimension),
-  texture: optional(parseTexture),
   fit: parseFit,
   repeat: parseRepeat,
   align: parseAnchorXY,
-};
+});
 
-const IMAGE_DEFAULTS = {};
-
-const ELEMENT_TRAIT = {
+export const ElementTrait = trait({
   width: optional(parseDimension),
   height: optional(parseDimension),
   aspect: optional(parseNumber),
-  
+
   radius: optional(parseMargin),
   border: optional(parseMargin),
   stroke: optional(parseColor),
   fill: optional(parseColor),
 
-  image: optional(makeParseTrait(IMAGE_TRAIT, IMAGE_DEFAULTS)),
-};
+  texture: optional(nullable(parseTexture)), // deprecated
+  image: optional(makeParseTrait(ImageTrait)),
+  zIndex: parseInteger,
+});
 
-const ELEMENT_DEFAULTS = {};
-
-export const useBoxTrait     = makeUseTrait<BoxTrait>(BOX_TRAIT, BOX_DEFAULTS);
-export const useElementTrait = makeUseTrait<ElementTrait>(ELEMENT_TRAIT, ELEMENT_DEFAULTS);
-export const useImageTrait   = makeUseTrait<ImageTrait>(IMAGE_TRAIT, IMAGE_DEFAULTS);
+export const useBoxTrait     = makeUseTrait(BoxTrait);
+export const useElementTrait = makeUseTrait(ElementTrait);
+export const useImageTrait   = makeUseTrait(ImageTrait);

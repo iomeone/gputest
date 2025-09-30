@@ -1,6 +1,6 @@
-import type { DataBinding, StorageSource } from './types';
+import type { DataBinding, ShaderStructType, UniformFormat, UniformAttribute } from './types';
 import { UNIFORM_ATTRIBUTE_SIZES, UNIFORM_ATTRIBUTE_ALIGNS } from './constants';
-import { makeUniformLayout } from './uniform';
+import { makeUniformLayout, toTypeString } from './uniform';
 
 const BINDING_TEXTURE_TYPES = {
   'texture_1d': { viewDimension: '1d' },
@@ -63,7 +63,7 @@ export const makeBindGroupLayoutEntries = (
   binding: number = 0,
 ): GPUBindGroupLayoutEntry[] => {
   const out = [];
-  for (let b of bindings) {
+  for (const b of bindings) {
     const v = typeof visibilities === 'number' ? visibilities : (visibilities.get(b) || 7);
     const l = makeBindingLayoutEntry(b, v, out.length + binding);
     if (Array.isArray(l)) out.push(...l);
@@ -77,13 +77,13 @@ export const makeBindingLayoutEntry = (
   visibility: GPUShaderStageFlags,
   binding: number,
 ): GPUBindGroupLayoutEntry | GPUBindGroupLayoutEntry[] => {
-  if (b.storage) {
-    const minBindingSize = getMinBindingSize(b.storage.format);
-    if (b.storage!.readWrite) return {binding, visibility, buffer: {type: 'storage', minBindingSize}};
+  if (b.storage != null) {
+    const minBindingSize = getMinBindingSize(b.storage.format, b.storage.type);
+    if (b.storage.readWrite) return {binding, visibility, buffer: {type: 'storage', minBindingSize}};
     return {binding, visibility, buffer: {type: 'read-only-storage', minBindingSize}};
   }
-  if (b.texture) {
-    const hasSampler = !!(b.texture!.sampler && (b.uniform!.args !== null));
+  if (b.texture != null) {
+    const hasSampler = !!(b.texture.sampler && (b.uniform.args !== null));
 
     const textureType = b.uniform.args ? b.texture.layout : (b.uniform.format as string);
     const textureVariant = b.texture.variant ?? (b.uniform.args ? null : 'textureLoad');
@@ -93,7 +93,7 @@ export const makeBindingLayoutEntry = (
     const texture = {binding, visibility, ...props};
 
     if (hasSampler) {
-      const type = (b.texture!.comparison ? 'comparison' : 'filtering') as GPUSamplerBindingType;
+      const type = (b.texture.comparison ? 'comparison' : 'filtering') as GPUSamplerBindingType;
       const sampler = {binding: binding + 1, visibility, sampler: {type}};
       return [texture, sampler];
     }
@@ -131,39 +131,35 @@ export const makeBindGroup = (
   });
 }
 
-export const getMinBindingSize = (format: string | any) => {
-  if (typeof format === 'string') {
-    format = format.replace(/^array<([^>]+)>$/, '$1');
-    format = format.replace(/^vec3to4</, 'vec4<');
-    format = format.replace(/^(u|i)(8|16)$/, 'u32');
-    const size = (UNIFORM_ATTRIBUTE_SIZES as any)[format] ?? 0;
-    const align = (UNIFORM_ATTRIBUTE_ALIGNS as any)[format] ?? 0;
+export const getMinBindingSize = (
+  format: UniformFormat | UniformAttribute[],
+  type?: ShaderStructType,
+) => {
+  if (type) {
+    const {module} = type;
+    const {entry, table: {declarations}} = module as any;
+    const {struct} = declarations.find((d: any) => d.struct?.name === entry);
+    if (!struct) return 0;
+
+    const members = struct.members.map((m: any) => ({name: m.name, format: toTypeString(m.type)}));
+    const layout = makeUniformLayout(members);
+
+    return layout.length;
+  }
+
+  if (Array.isArray(format)) {
+    const layout = makeUniformLayout(format);
+    return layout.length;
+  }
+  else if (typeof format === 'string') {
+    let f = format as string;
+    f = f.replace(/^array<([^>]+)>$/, '$1');
+    f = f.replace(/^vec3to4</, 'vec4<');
+    f = f.replace(/^(u|i)(8|16)$/, 'u32');
+    const size = (UNIFORM_ATTRIBUTE_SIZES as any)[f] ?? 0;
+    const align = (UNIFORM_ATTRIBUTE_ALIGNS as any)[f] ?? 0;
     return align ? Math.ceil(size / align) * align : size;
   }
-  if (!format) return 0;
 
-  const {module} = format;
-  const {entry, table: {declarations}} = module;
-  const {struct} = declarations.find((d: any) => d.struct?.name === entry);
-  if (!struct) return 0;
-
-  const members = struct.members.map((m: any) => ({name: m.name, format: toTypeString(m.type)}));
-  const layout = makeUniformLayout(members);
-  return layout.length;
+  return 0;
 };
-
-export const toTypeString = (t: any | string): string => {
-  if (typeof t === 'object') {
-    if (t.type) return toTypeString(t.type);
-    if (t.args) return `${t.name}<${t.args.map((t: any) => toTypeString(t)).join(',')}>`;
-    else return t.name;
-  }
-  return t;
-}
-
-export const toTypeArgs = (t: (any | string)[]): string[] => {
-  return t?.map(toTypeString) ?? [];
-}
-
-const maximum = (a: number, b: number) => Math.max(a, b);
-const alignAdd = (a: number, b: number) => Math.ceil(a / b) * b + b;

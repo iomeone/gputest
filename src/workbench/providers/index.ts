@@ -2,6 +2,7 @@ export * from './compute-provider';
 export * from './cursor-provider';
 export * from './debug-provider';
 export * from './device-provider';
+export * from './environment-provider';
 export * from './event-provider';
 export * from './feedback-provider';
 export * from './frame-provider';

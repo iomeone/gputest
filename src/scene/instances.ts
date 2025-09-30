@@ -1,108 +1,92 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../live';
-import type { StorageSource } from '../core';
-import type { ShaderSource } from '../shader';
-import type { ObjectTrait } from './types';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { GPUGeometry, StorageSource } from '@use-gpu/core';
 
-import { use, memo, provide, yeet, useCallback, useMemo, useOne, tagFunction } from '../live';
-import { bindEntryPoint } from '../shader/wgsl';
+import { use, useCallback, useOne, tagFunction } from '@use-gpu/live';
+import { makeUseTrait, combine, TraitProps } from '@use-gpu/traits/live';
 
 import {
   FaceLayer,
   InstanceData,
-  TransformContext,
-  MatrixContext,
+  UseInstance,
+  IndexedTransform,
   useMatrixContext,
-  useCombinedTransform,
-  getBoundShader,
-} from '../workbench';
+} from '@use-gpu/workbench';
 
-import { useObjectTrait } from './traits';
+import { ColorTrait, ObjectTrait } from './traits';
 import { composeTransform } from './lib/compose';
-
-import { loadInstance } from '../wgsl/transform/instancewgsl';
-import { getCartesianPosition } from '../wgsl/transform/cartesianwgsl';
-import { getMatrixDifferential } from '../wgsl/transform/diff-matrixwgsl';
 
 import { mat3, mat4 } from 'gl-matrix';
 
-export type InstancesProps = {
-  mesh: Record<string, ShaderSource>,
+const Traits = combine(ColorTrait, ObjectTrait);
+const useTraits = makeUseTrait(Traits);
+
+export type InstancesProps = PropsWithChildren<{
+  mesh: GPUGeometry,
   shaded?: boolean,
   side?: 'front' | 'back' | 'both',
   format?: 'u16' | 'u32',
   render?: (Instance: LiveComponent<InstanceProps>) => LiveElement,
+}>;
+
+export type InstanceProps = TraitProps<typeof Traits>;
+
+const INSTANCE_SCHEMA = {
+   matrices:       {format: 'mat4x4<f32>', prop: 'matrix'},
+   normalMatrices: {format: 'mat3x3<f32>', prop: 'normalMatrix'},
+   colors:         {format: 'vec4<f32>',   prop: 'color'},
 };
 
-export type InstanceProps = Partial<ObjectTrait>;
-
-const INSTANCE_FIELDS = [
-  ['mat4x4<f32>', 'matrix'],
-  ['mat3x3<f32>', 'normalMatrix'],
-];
-
-export const Instances: LiveComponent<InstancesProps> = (props: PropsWithChildren<InstancesProps>) => {
+export const Instances: LiveComponent<InstancesProps> = (props: InstancesProps) => {
   const {
     mesh,
     shaded,
     side,
-    format,
+    format = 'u16',
     render,
   } = props;
 
-  const Resume = useCallback((instances: StorageSource, fieldSources: StorageSource[]) => {
-    
-    const [view, boundPosition, boundDifferential] = useMemo(() => {
-
-      const [matrices, normalMatrices] = fieldSources;
-
-      const load = getBoundShader(loadInstance, [matrices, normalMatrices]);
-      const matrix = bindEntryPoint(load, 'getTransformMatrix');
-      const normalMatrix = bindEntryPoint(load, 'getNormalMatrix');
-
-      const boundPosition = getBoundShader(getCartesianPosition, [matrix]);
-      const boundDifferential = getBoundShader(getMatrixDifferential, [matrix, normalMatrix]);
-
-      const view = use(FaceLayer, {...mesh, instances, load, shaded, side});
-      return [view, boundPosition, boundDifferential];
-    }, [instances, fieldSources]);
-
-    const context = useCombinedTransform(boundPosition, boundDifferential);
-
-    return (
-      provide(TransformContext, context, view)
-    );
+  const Resume = useCallback((sources: Record<string, StorageSource>) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const {matrices, normalMatrices, ...rest} = sources;
+    const instance = useCallback(() => matrices.length, [matrices]);
+    return use(IndexedTransform, {
+      ...sources,
+      children: use(FaceLayer, {...rest, instance, mesh, shaded, side}),
+    });
   }, [mesh]);
 
   return use(InstanceData, {
     format,
-    fields: INSTANCE_FIELDS,
-    render: (useInstance: () => (data: Record<string, any>) => void) => {
-      const Instance = useOne(() => makeInstance(useInstance), useInstance);
+    schema: INSTANCE_SCHEMA,
+    render: (useInstance: UseInstance) => {
+      const Instance = useOne(() => makeInstancer(useInstance), useInstance);
       return render ? render(Instance as any) : null;
     },
     then: Resume,
   })
 };
 
-const makeInstance = (
-  useInstance: () => (data: Record<string, any>) => void,
-) => tagFunction((props: Partial<ObjectTrait>) => {
+const makeInstancer = (
+  useInstance: UseInstance,
+) => tagFunction((props: Partial<InstanceProps>) => {
   const parent = useMatrixContext();
   const updateInstance = useInstance();
 
-  const {position: p, scale: s, quaternion: q, rotation: r, matrix: m} = useObjectTrait(props);
-  const [matrix, normalMatrix] = useOne(() => [
-    mat4.create(),
-    mat3.create(),
-  ]);
+  const {color, position: p, scale: s, quaternion: q, rotation: r, matrix: m} = useTraits(props) as any;
+  const ref = useOne(() => ({
+    matrix: mat4.create(),
+    normalMatrix: mat3.create(),
+    composed: mat4.create(),
+  }));
 
   useOne(() => {
+    const {matrix, normalMatrix, composed} = ref;
+
     if (m) {
       mat4.copy(matrix, m);
       if (p || r || q || s) {
-        const t = mat4.create();
-        composeTransform(t, p, r, q, s);
-        mat4.multiply(matrix, matrix, t);
+        composeTransform(composed, p, r, q, s);
+        mat4.multiply(matrix, matrix, composed);
       }
     }
     else if (p || r || q || s) {
@@ -112,7 +96,7 @@ const makeInstance = (
     if (parent) mat4.multiply(matrix, parent, matrix);
     mat3.normalFromMat4(normalMatrix, matrix);
 
-    updateInstance({matrix, normalMatrix});
+    updateInstance({matrix, normalMatrix, color});
   }, props);
 
   return null;

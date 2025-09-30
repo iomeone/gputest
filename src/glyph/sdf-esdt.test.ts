@@ -1,26 +1,8 @@
-import { esdt, esdt1d, resolveSDF } from './sdf-esdt';
-import { makeSDFStage } from './sdf';
-
-const INF = 1e10;
-
-const fmt = (d: number[], w: number, h: number) => {
-  const m: any[][] = [];
-  for (let y = 0; y < h; y++) {
-    const r: any[] = [];
-    for (let x = 0; x < w; x++) {
-      const v = +d[x + y * w];
-      r.push(v > 1000 ? 'I' : v.toFixed(2));
-    }
-    m.push(r);
-  }
-  return m;
-}
-
-const sqr = (x: number) => x * x;
+import { esdt1d, resolveSDF, glyphToESDT } from './sdf-esdt';
 
 describe('edt', () => {
   it('edt1d pixel aligned', () => {
-    
+
     const I = 1e10;
     const mask = [0, 0, 0, I, I, I, I, I, I, 0, 0, 0] as any;
     const xs   = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] as any;
@@ -29,19 +11,19 @@ describe('edt', () => {
     const offset = 0;
     const stride = 1;
     const length = mask.length;
-    
+
     const f = [] as any;
     const z = [] as any;
     const b = [] as any;
     const t = [] as any;
     const v = [] as any;
-    
+
     esdt1d(mask, xs, ys, offset, stride, length, f, z, b, t, v, 1);
     expect(xs).toEqual([0, 0, 0,-1,-2,-3, 3, 2, 1, 0, 0, 0])
   });
 
   it('edt1d fractional left', () => {
-    
+
     const I = 1e10;
     const F = -0.25;
     const mask = [0, 0, 0, I, I, I, I, I, I, 0, 0, 0] as any;
@@ -51,20 +33,20 @@ describe('edt', () => {
     const offset = 0;
     const stride = 1;
     const length = mask.length;
-    
+
     const f = [] as any;
     const z = [] as any;
     const b = [] as any;
     const t = [] as any;
     const v = [] as any;
-    
+
     esdt1d(mask, xs, ys, offset, stride, length, f, z, b, t, v, 1);
-    
+
     expect(xs).toEqual([0, 0, F,-1+F,-2+F,-3+F,3+F,2+F,1+F, F, 0, 0])
   });
 
   it('edt1d signed pixel aligned', () => {
-    
+
     const I = 1e10;
     const outer = [I, I, I,  0, 0, 0, 0, 0,  0, I, I, I] as any;
     const inner = [0, 0, 0,  0, I, I, I, I,  0, 0, 0, 0] as any;
@@ -79,13 +61,13 @@ describe('edt', () => {
     const offset = 0;
     const stride = 1;
     const length = outer.length;
-    
+
     const f = [] as any;
     const z = [] as any;
     const b = [] as any;
     const t = [] as any;
     const v = [] as any;
-    
+
     esdt1d(outer, xo, yo, offset, stride, length, f, z, b, t, v, 1);
     esdt1d(inner, xi, yi, offset, stride, length, f, z, b, t, v, -1);
 
@@ -94,7 +76,7 @@ describe('edt', () => {
   });
 
   it('edt1d signed fractional left-left', () => {
-    
+
     const I = 1e10;
     const outer = [I, I, I, 0, 0, 0, 0, 0, 0, I, I, I] as any;
     const inner = [0, 0, 0, 0, I, I, I, I, 0, 0, 0, 0] as any;
@@ -111,13 +93,13 @@ describe('edt', () => {
     const offset = 0;
     const stride = 1;
     const length = outer.length;
-    
+
     const f = [] as any;
     const z = [] as any;
     const b = [] as any;
     const t = [] as any;
     const v = [] as any;
-    
+
     esdt1d(outer, xo, yo, offset, stride, length, f, z, b, t, v, 1);
     esdt1d(inner, xi, yi, offset, stride, length, f, z, b, t, v, -1);
 
@@ -126,7 +108,7 @@ describe('edt', () => {
   });
 
   it('edt1d signed fractional right-right', () => {
-    
+
     const I = 1e10;
     const outer = [I, I, I, 0, 0, 0, 0, 0, 0, I, I, I] as any;
     const inner = [0, 0, 0, 0, I, I, I, I, 0, 0, 0, 0] as any;
@@ -143,13 +125,13 @@ describe('edt', () => {
     const offset = 0;
     const stride = 1;
     const length = outer.length;
-    
+
     const f = [] as any;
     const z = [] as any;
     const b = [] as any;
     const t = [] as any;
     const v = [] as any;
-    
+
     esdt1d(outer, xo, yo, offset, stride, length, f, z, b, t, v, 1);
     esdt1d(inner, xi, yi, offset, stride, length, f, z, b, t, v, -1);
 
@@ -158,7 +140,7 @@ describe('edt', () => {
   });
 
   it('edt1d signed fractional left-right', () => {
-    
+
     const I = 1e10;
     const outer = [I, I, I, 0, 0, 0, 0, 0, 0, I, I, I] as any;
     const inner = [0, 0, 0, 0, I, I, I, I, 0, 0, 0, 0] as any;
@@ -177,13 +159,13 @@ describe('edt', () => {
     const offset = 0;
     const stride = 1;
     const length = outer.length;
-    
+
     const f = [] as any;
     const z = [] as any;
     const b = [] as any;
     const t = [] as any;
     const v = [] as any;
-    
+
     esdt1d(outer, xo, yo, offset, stride, length, f, z, b, t, v, 1);
     esdt1d(inner, xi, yi, offset, stride, length, f, z, b, t, v, -1);
 
@@ -192,7 +174,7 @@ describe('edt', () => {
   });
 
   it('edt1d signed fractional right-left', () => {
-    
+
     const I = 1e10;
     const outer = [I, I, I, 0, 0, 0, 0, 0, 0, I, I, I] as any;
     const inner = [0, 0, 0, 0, I, I, I, I, 0, 0, 0, 0] as any;
@@ -211,13 +193,13 @@ describe('edt', () => {
     const offset = 0;
     const stride = 1;
     const length = outer.length;
-    
+
     const f = [] as any;
     const z = [] as any;
     const b = [] as any;
     const t = [] as any;
     const v = [] as any;
-    
+
     esdt1d(outer, xo, yo, offset, stride, length, f, z, b, t, v, 1);
     esdt1d(inner, xi, yi, offset, stride, length, f, z, b, t, v, -1);
 
@@ -226,8 +208,7 @@ describe('edt', () => {
   });
 
   it('edt2d transverse pixel aligned', () => {
-    
-    const I = 1e10;
+
     const mask = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] as any;
     const xs   = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] as any;
     const ys   = [0, 0, 0,-1.1,-2,-2,-2,-2,-1.1, 0, 0, 0] as any;
@@ -235,16 +216,55 @@ describe('edt', () => {
     const offset = 0;
     const stride = 1;
     const length = mask.length;
-    
+
     const f = [] as any;
     const z = [] as any;
     const b = [] as any;
     const t = [] as any;
     const v = [] as any;
-    
+
     esdt1d(mask, xs, ys, offset, stride, length, f, z, b, t, v, 1);
-    
+
     expect(xs).toEqual([0, 0, 0,-1,  -1, 0, 0,   1, 1, 0, 0, 0])
     expect(ys).toEqual([0, 0, 0, 0,-1.1,-2,-2,-1.1, 0, 0, 0, 0])
+  });
+
+  it('glyphToESDT handles checker-board patterns correctly', () => {
+
+    const w = 8;
+    const h = 4;
+    const image = [
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 1, 0, 0, 0, 0, 0, 0],
+      [0, 0, 1, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+    const imageUint8 = Uint8Array.from(image.flat().map(x => x * 255));
+    expect(imageUint8.length).toEqual(w * h);
+
+    const pad = 1;
+    const result = glyphToESDT(imageUint8, null, 8, 4, pad, 4, 0.5)
+    expect(result.width).toEqual(w + pad*2);
+    expect(result.height).toEqual(h + pad*2);
+
+    const withoutPadding: number[][] = []
+    for (let y = 0; y < h; y++) {
+      const slice: number[] = [];
+      withoutPadding.push(slice);
+
+      for (let x = 0; x < w; x++) {
+        const i = (x + pad) + (y + pad) * result.width
+        slice.push(result.data[i * 4])
+      }
+    }
+
+    const expected = [
+      [ 69,  96,  69,  24,   0,   0,   0,   0],
+      [ 96, 141, 114,  69,  17,   0,   0,   0],
+      [ 69, 114, 141,  96,  32,   0,   0,   0],
+      [ 24,  69,  96,  69,  17,   0,   0,   0]
+    ];
+
+    expect(withoutPadding).toEqual(expected)
   });
 });

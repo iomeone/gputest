@@ -1,6 +1,6 @@
-import type { ShaderModule } from '../../shader';
+import type { ShaderModule } from '@use-gpu/shader';
 
-import { makeContext, useContext } from '../../live';
+import { makeContext, useContext } from '@use-gpu/live';
 
 export type MaskContextProps = ShaderModule | null
 

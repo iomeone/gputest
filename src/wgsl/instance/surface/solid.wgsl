@@ -1,4 +1,4 @@
-use '../../../wgsl/use/types'::{ SurfaceFragment };
+use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
 
 @link fn getMaterial(
   color: vec4<f32>,

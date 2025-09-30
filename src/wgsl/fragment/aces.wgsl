@@ -22,7 +22,7 @@ fn RRTAndODTFit(v: vec3<f32>) -> vec3<f32> {
 
 @export fn tonemapACES(color: vec4<f32>) -> vec4<f32> {
   var rgb = color.rgb;
-  
+
   rgb = ACES_INPUT * rgb;
   rgb = RRTAndODTFit(rgb);
   rgb = ACES_OUTPUT * rgb;

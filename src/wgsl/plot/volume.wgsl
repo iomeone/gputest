@@ -1,5 +1,5 @@
-use '../../wgsl/geometry/strip'::{ getStripIndex };
-use '../../use/array'::{ sizeToModulus4, packIndex4, unpackIndex4 }
+use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
+use '@use-gpu/wgsl/use/array'::{ sizeToModulus4, packIndex4, unpackIndex4 }
 
 @link fn getSize(i: u32) -> vec4<u32> {};
 @optional @link fn getPosition(index: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); }
@@ -55,6 +55,6 @@ fn offsetIndex(index: vec4<u32>, size: vec4<u32>, offset: vec3<i32>) -> vec4<u32
     if (sz < 0) { sz = 0; }
     if (sz >= i32(size.z)) { sz = i32(size.z) - 1; }
   }
-  
+
   return vec4<u32>(u32(sx), u32(sy), u32(sz), index.w);
 }

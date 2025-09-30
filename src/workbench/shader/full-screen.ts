@@ -1,14 +1,14 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TextureSource, Lazy } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TextureSource, Lazy } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
-import { use, useMemo } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
+import { use, useMemo } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
 import { useRenderContext } from '../providers/render-provider';
 import { useShaderRefs } from '../hooks/useShaderRef';
 import { getDerivedSource } from '../hooks/useDerivedSource';
-import { getBoundShader } from '../hooks/useBoundShader';
-import { RawFullScreen } from '../primitives';
+import { getShader } from '../hooks/useShader';
+import { RawFullScreen } from '../primitives/index';
 
 export type FullScreenProps = {
   texture?: TextureSource,
@@ -68,11 +68,11 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
       const allArgs = [...argRefs, ...sources, ...s, ...f];
 
       const values = bindings.map(b => {
-        let k = b.name;
+        const k = b.name;
         return links[k] ? links[k] : allArgs.shift();
       });
 
-      t = getBoundShader(shader, values);
+      t = getShader(shader, values);
     }
 
     return use(RawFullScreen, {

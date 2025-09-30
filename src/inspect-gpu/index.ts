@@ -1,5 +1,5 @@
-import type { LiveFiber } from '../live';
-import type { InspectExtension, InspectAddIns } from '../inspect';
+import type { LiveFiber } from '@use-gpu/live';
+import type { InspectExtension, InspectAddIns } from '@use-gpu/inspect';
 
 import { renderCanvas } from './canvas';
 import { renderGeometry } from './geometry';
@@ -49,7 +49,7 @@ export const inspectGPU: InspectExtension = (): InspectAddIns => ({
   prop: [
     {
       id: 'wgsl',
-      enabled: (code: string) => code.length > 100 && !!code.slice(0, 100).match(/\b(@link|@optional|@export|fn)\b/),
+      enabled: (code: string) => !!code.slice(0, 200).match(/\b(::{|@link|@optional|@export|fn)\b/),
       render: (code: string) => renderWGSL({code}),
     },
   ],

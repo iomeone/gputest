@@ -1,23 +1,23 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { ShaderModule } from '../../shader';
-import type { Rectangle, UniformAttribute } from '../../core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { Rectangle } from '@use-gpu/core';
 import type { LayoutRenderer, LayoutElement, FitInto } from '../types';
 
-import { use, memo, gather, yeet, useMemo } from '../../live';
-import { bindBundle, chainTo } from '../../shader/wgsl';
+import { use, memo, gather, yeet, useMemo } from '@use-gpu/live';
+import { bindBundle, chainTo } from '@use-gpu/shader/wgsl';
 
-import { memoFit, memoLayout } from '../lib/util';
+import { memoFit } from '../lib/util';
 
-import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clipwgsl';
+import { getCombinedClip, getTransformedClip } from '@use-gpu/wgsl/layout/clip.wgsl';
 
-export type TransformProps = {
+export type TransformProps = PropsWithChildren<{
   clip?: ShaderModule,
   mask?: ShaderModule,
   transform?: ShaderModule,
   inverse?: ShaderModule,
-};
+}>;
 
-export const Transform: LiveComponent<TransformProps> = memo((props: PropsWithChildren<TransformProps>) => {
+export const Transform: LiveComponent<TransformProps> = memo((props: TransformProps) => {
   const {
     clip,
     mask,
@@ -37,6 +37,7 @@ export const Transform: LiveComponent<TransformProps> = memo((props: PropsWithCh
           render: (
             box: Rectangle,
             origin: Rectangle,
+            z: number,
             parentClip: ShaderModule | null,
             parentMask: ShaderModule | null,
             parentTransform: ShaderModule | null,
@@ -44,6 +45,7 @@ export const Transform: LiveComponent<TransformProps> = memo((props: PropsWithCh
             use(TransformLayout,
               box,
               origin,
+              z,
               parentClip,
               parentMask,
               parentTransform,
@@ -56,7 +58,7 @@ export const Transform: LiveComponent<TransformProps> = memo((props: PropsWithCh
           ),
         };
       };
-      
+
       return {
         ...item,
         fit: memoFit(fit),
@@ -69,6 +71,7 @@ export const Transform: LiveComponent<TransformProps> = memo((props: PropsWithCh
 const TransformLayout = (
   box: Rectangle,
   origin: Rectangle,
+  z: number,
   parentClip: ShaderModule | null,
   parentMask: ShaderModule | null,
   parentTransform: ShaderModule | null,
@@ -100,7 +103,7 @@ const TransformLayout = (
     ) : (parentClip ?? clip) ?? null,
     [parentClip, clip],
   );
-  
+
   const xclip = useMemo(
     () => inverse ? (
       bindBundle(
@@ -114,5 +117,5 @@ const TransformLayout = (
     [pclip, inverse],
   );
 
-  return render(box, box, xclip, xmask, xform);
+  return render(box, box, z, xclip, xmask, xform);
 };

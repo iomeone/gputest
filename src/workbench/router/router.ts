@@ -1,16 +1,16 @@
-import type { LiveComponent, LiveNode, PropsWithChildren } from '../../live';
-import { makeContext, memo, provide, use, useContext, useMemo, useOne, useResource, useState } from '../../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import { makeContext, memo, provide, use, useContext, useMemo, useResource, useState } from '@use-gpu/live';
 import { Routes } from './routes';
-import { QueryParams, Route, RouterState, RouterLink, RouterAPI } from './types';
+import { QueryParams, Route, RouterState, RouterAPI } from './types';
 
 export const RouterContext = makeContext<RouterAPI>(undefined, 'RouterContext');
 
-export type RouterProps = {
+export type RouterProps = PropsWithChildren<{
   source?: any,
   routes?: Record<string, Route>,
   base?: string,
   hash?: boolean,
-};
+}>;
 
 export const Router: LiveComponent<RouterProps> = memo(({
   source,
@@ -18,7 +18,7 @@ export const Router: LiveComponent<RouterProps> = memo(({
   base,
   hash,
   children,
-}: PropsWithChildren<RouterProps>) => {
+}: RouterProps) => {
 
   const src = useMemo(() => source ?? makeBrowserHistory(base, hash), [source ?? base, hash]);
 
@@ -68,7 +68,7 @@ export const makeRelativeURL = (base: string, path: string, query?: QueryParams 
   }
   if (query) {
     let i = 0;
-    for (let k in query) {
+    for (const k in query) {
       const vs = query[k];
       path = path + (i++ ? '?' : '&') + encodeURIComponent(k) + '=' + encodeURIComponent(vs);
     }
@@ -86,7 +86,7 @@ export const makeBrowserHistory = (base: string = '', hash?: boolean) => {
   // Initialize from #!/ in URL for static SPA.
   const hasHash = location.hash.match(/^#!\//);
   if (hasHash || hash) {
-    let [path, query] = (hasHash && location.hash.slice(2).split('?')) || ['/', ''];
+    const [path, query] = (hasHash && location.hash.slice(2).split('?')) || ['/', ''];
     history.replaceState({path, query}, document.title, makeRelativeURL(base, path, query, hash));
   }
 
@@ -94,7 +94,7 @@ export const makeBrowserHistory = (base: string = '', hash?: boolean) => {
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
-  let self = {
+  const self = {
     resource: (callback: any) => {
       const handlePopState = (e?: PopStateEvent) => callback(e);
       window.addEventListener('popstate', handlePopState);
@@ -106,15 +106,16 @@ export const makeBrowserHistory = (base: string = '', hash?: boolean) => {
       if (location.pathname.indexOf(base) === 0) return '/' + location.pathname.slice(base.length);
       return location.pathname;
     },
-    
+
     query: () => {
       const out = {} as Record<string, string>;
-      
+
       let {search} = location;
       if (hash) search = location.hash.slice(2).split('?')[1] ?? '';
-      
+
       if (search.length) {
         const params = new URLSearchParams(search);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         for (const k of (params as any).keys()) out[k] = params.get(k)!;
       }
       return out;
@@ -143,6 +144,6 @@ export const makeBrowserHistory = (base: string = '', hash?: boolean) => {
       return {href, onClick};
     },
   };
-  
+
   return self;
 };

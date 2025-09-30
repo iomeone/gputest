@@ -9,7 +9,7 @@ export * from './display/transform';
 export * from './element/element';
 export * from './element/text';
 export * from './shape/glyphs';
-export * from './shape/ui-rectangle';
+export * from './shape/sdf-rectangle';
 
 export * from './layout';
 export * from './ui';

@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef } from 'react';
 
-import type { LiveFiber, LiveElement } from '../live';
-import { render as renderLive, unmount as unmountLive, resolveRootNode } from '../live';
+import type { LiveFiber, LiveElement } from '@use-gpu/live';
+import { render as renderLive, unmount as unmountLive, resolveRootNode } from '@use-gpu/live';
 
 export type LiveCanvasProps = {
   /** CSS styles to apply to the `<canvas>` */
@@ -30,7 +30,7 @@ export const LiveCanvas: React.FunctionComponent<LiveCanvasProps> = ({style, ren
         }
         return;
       }
-      
+
       const element = (typeof content === 'function') ? content(el.current) : content;
       const rootNode = resolveRootNode(element);
       fiber.current = renderLive(rootNode, fiber.current);

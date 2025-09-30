@@ -13,7 +13,7 @@ fn signNotZero(xy: vec2<f32>) -> vec2<f32> {
   return result;
 }
 
-/** Returns a unit vector. Argument o is an octahedral vector packed via octEncode,
+/** Returns a unit vector. Argument o is an octahedral vector packed via encodeOctahedral,
     on the [-1, +1] square */
 @export fn decodeOctahedral(o: vec2<f32>) -> vec3<f32> {
   var v = vec3<f32>(o.x, o.y, 1.0 - abs(o.x) - abs(o.y));

@@ -1,39 +1,39 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { UniformAttributeValue } from '../../core';
-import type { VectorLike } from '../../traits';
-import type { AxesTrait, ObjectTrait, Swizzle } from '../types';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '../../traits';
-import { use, provide, signal, useContext, useOne, useMemo } from '../../live';
-import { bundleToAttributes, chainTo } from '../../shader/wgsl';
-import {
-  TransformContext,
-  useShaderRef, useBoundShader, useBoundSource, useCombinedTransform,
-} from '../../workbench';
+import { combine, makeUseTrait } from '@use-gpu/traits/live';
+import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
+import { TransformContext, MatrixContext, useCombinedMatrixTransform, QueueReconciler } from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
 import { swizzleMatrix } from '../util/swizzle';
-import { mat3, mat4 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 
-import { useAxesTrait, useObjectTrait } from '../traits';
+import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getCartesianPosition } from '../../wgsl/transform/cartesianwgsl';
-import { getMatrixDifferential } from '../../wgsl/transform/diff-matrixwgsl';
+const {signal} = QueueReconciler;
+const makeMat4 = () => mat4.create();
 
-const MATRIX_BINDINGS = bundleToAttributes(getCartesianPosition);
+const Traits = combine(AxesTrait, ObjectTrait);
+const useTraits = makeUseTrait(Traits);
 
-export type CartesianProps = Partial<AxesTrait> & Partial<ObjectTrait>;
+export type CartesianProps = PropsWithChildren<TraitProps<typeof Traits>>;
 
-export const Cartesian: LiveComponent<CartesianProps> = (props: PropsWithChildren<CartesianProps>) => {
+export const Cartesian: LiveComponent<CartesianProps> = (props: CartesianProps) => {
   const {
     children,
   } = props;
 
-  const {range: g, axes: a} = useAxesTrait(props);
-  const {position: p, scale: s, quaternion: q, rotation: r, matrix: m} = useObjectTrait(props);
+  const {
+    range: g, axes: a,
+    position: p, scale: s, quaternion: q, rotation: r, matrix: m,
+  } = useTraits(props);
 
-  const [matrix, normalMatrix] = useMemo(() => {
+  const [swapMatrix] = useDouble(makeMat4);
+  const composed = useOne(makeMat4);
+
+  const matrix = useMemo(() => {
     const x = g[0][0];
     const y = g[1][0];
     const z = g[2][0];
@@ -41,7 +41,7 @@ export const Cartesian: LiveComponent<CartesianProps> = (props: PropsWithChildre
     const dy = (g[1][1] - y) || 1;
     const dz = (g[2][1] - z) || 1;
 
-    const matrix = mat4.create();
+    const matrix = swapMatrix();
     mat4.set(matrix,
       2/dx, 0, 0, 0,
       0, 2/dy, 0, 0,
@@ -55,41 +55,31 @@ export const Cartesian: LiveComponent<CartesianProps> = (props: PropsWithChildre
 
     // Swizzle output axes
     if (a !== 'xyzw') {
-      const t = mat4.create();
-      swizzleMatrix(t, a);
-      mat4.multiply(matrix, t, matrix);
+      swizzleMatrix(composed, a);
+      mat4.multiply(matrix, composed, matrix);
     }
 
     // Then apply transform (so these are always relative to the world basis, not the internal basis)
     if (m) {
       mat4.multiply(matrix, m, matrix);
     }
+
     if (p || r || q || s) {
-      const t = mat4.create();
-      composeTransform(t, p, r, q, s);
-      mat4.multiply(matrix, t, matrix);
+      composeTransform(composed, p, r, q, s);
+      mat4.multiply(matrix, composed, matrix);
     }
 
-    const normalMatrix = mat3.normalFromMat4(mat3.create(), matrix);
-
-    return [matrix, normalMatrix];
+    return matrix;
   }, [g, a, p, r, q, s, m]);
 
-  const matrixRef = useShaderRef(matrix);
-  const normalMatrixRef = useShaderRef(normalMatrix);
-
-  const boundMatrix = useBoundSource(MATRIX_BINDINGS[0], matrixRef);
-  const boundPosition = useBoundShader(getCartesianPosition, [boundMatrix]);
-  const boundDifferential = useBoundShader(getMatrixDifferential, [boundMatrix, normalMatrixRef]);
-
-  const context = useCombinedTransform(boundPosition, boundDifferential);
+  const [context, combined] = useCombinedMatrixTransform(matrix);
 
   return [
     signal(),
-    provide(TransformContext, context,
-      provide(RangeContext, g, children ?? [])
+      provide(MatrixContext, combined,
+        provide(RangeContext, g,
+          provide(TransformContext, context, children ?? [])
+      )
     )
   ];
 };
-
-

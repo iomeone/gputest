@@ -1,15 +1,16 @@
-import type { LC, PropsWithChildren } from '../../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import React from '../../../live';
+import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass, Flat,
-  Data, RawData, Raw, LineSegments,
+  Pass,
   OrbitCamera, OrbitControls,
-  Pick, Cursor, PointLayer, LineLayer,
-  RenderToTexture,
-} from '../../../workbench';
+  Pick, PickState, Cursor,
+} from '@use-gpu/workbench';
+
+import { InfoBox } from '../../ui/info-box';
+
 import { RawMesh } from './components/raw-mesh';
 import { makeMesh, makeTexture } from '../../meshes/cube';
 
@@ -17,24 +18,26 @@ export const MeshRawPage: LC = (props) => {
   const mesh = makeMesh();
   const texture = makeTexture();
 
-  return (
-    <>
-      <Cursor cursor='move' />
-      <Camera>
-        <Pass picking>
-          <Pick
-            render={({id, hovered, presses}) => [
-              // <RawMesh> is a fully hand-coded component, intended as an anti-example
-              // of how to integrate fully custom rendering code with classic vertex attributes.
-              <RawMesh texture={texture} mesh={mesh} blink={presses.left} />,
-              <RawMesh id={id} texture={texture} mesh={mesh} mode={'picking'} />,
-              hovered ? <Cursor cursor='pointer' /> : null,
-            ]}
-          />
-        </Pass>
-      </Camera>
-    </>
-  );
+  return (<>
+    <InfoBox>Render a clickable cube mesh using a fully hand-rolled draw call and shaders (if you really want to).</InfoBox>
+    <Cursor cursor='move' />
+    <Camera>
+      <Pass picking>
+        <Pick>{
+          ({id, hovered, presses}: PickState) => [
+            // <RawMesh> is a fully hand-coded component, intended as an anti-example
+            // of how to integrate fully custom rendering code with classic GL-style vertex attributes.
+            <RawMesh texture={texture} mesh={mesh} blink={presses.left} />,
+
+            // For mouse picking, we render a copy to the picking buffer with the given ID
+            <RawMesh id={id} texture={texture} mesh={mesh} mode='picking' />,
+
+            hovered ? <Cursor cursor='pointer' /> : null,
+          ]
+        }</Pick>
+      </Pass>
+    </Camera>
+  </>);
 };
 
 const Camera = ({children}: PropsWithChildren<object>) => (
@@ -42,7 +45,8 @@ const Camera = ({children}: PropsWithChildren<object>) => (
     radius={5}
     bearing={0.5}
     pitch={0.3}
-    render={(radius: number, phi: number, theta: number, target: vec3) =>
+  >{
+    (radius: number, phi: number, theta: number, target: vec3) =>
       <OrbitCamera
         radius={radius}
         phi={phi}
@@ -51,6 +55,5 @@ const Camera = ({children}: PropsWithChildren<object>) => (
       >
         {children}
       </OrbitCamera>
-    }
-  />
+  }</OrbitControls>
 );

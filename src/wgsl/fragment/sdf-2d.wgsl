@@ -35,7 +35,7 @@
   // Box outer SDF (approx)
   var d1 = max(xy.x, xy.y);
   var outer = -d1;
-  
+
   // Box inner SDF (approx)
   var flipUV = vec4<f32>(uv, 1.0 - uv);
   var tl = flipUV.xy * box;
@@ -74,7 +74,7 @@
   tr -= border.zy;
   bl -= border.xw;
   br -= border.zw;
-  
+
   var innerRadius = max(
     vec4<f32>(0.0),
     radius - vec4<f32>(

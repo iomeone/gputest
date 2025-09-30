@@ -1,81 +1,103 @@
-import type { LiveComponent } from '../../live';
-import type { ShaderSource } from '../../shader';
-import type { VectorLike } from '../../traits';
-import type { ArrowTrait, ColorTrait, LineTrait, ROPTrait } from '../types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { LiveComponent } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { useProp, parseVec4 } from '../../traits';
-import { useBoundShader, useBoundSource, useLambdaSource, useShaderRef, ArrowLayer } from '../../workbench';
-import { use, provide, useCallback, useContext, useOne, useMemo } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
+import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { adjustSchema, schemaToArchetype, schemaToEmitters } from '@use-gpu/core';
+import { yeet, memo, useOne } from '@use-gpu/live';
 
-import { DataContext } from '../providers/data-provider';
-import {
-  useArrowTrait,
-  useColorTrait,
-  useLineTrait,
-  useROPTrait,
-} from '../traits';
-import { vec4 } from 'gl-matrix';
+import { useInspectHoverable, useTransformContext, useScissorContext, ARROW_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
 
-import { getLineSegment } from '../../wgsl/geometry/segmentwgsl';
-import { getLineAnchor } from '../../wgsl/geometry/anchorwgsl';
-import { getLineTrim } from '../../wgsl/geometry/trimwgsl';
+import { ArrowTraits } from '../traits';
 
-const ARROW_ATTRIBUTES = bundleToAttributes(getLineAnchor);
-const [, START_ATTRIBUTE, END_ATTRIBUTE] = ARROW_ATTRIBUTES;
+const {quote} = LayerReconciler;
 
-export type ArrowProps =
-  Partial<ArrowTrait> &
-  Partial<ColorTrait> &
-  Partial<LineTrait> &
-  Partial<ROPTrait> & {
+const useTraits = makeUseTrait(ArrowTraits);
 
-  colors?: ShaderSource,
-  widths?: ShaderSource,
-  depths?: ShaderSource,
-};
+export type ArrowProps = TraitProps<typeof ArrowTraits>;
 
-export const Arrow: LiveComponent<ArrowProps> = (props) => {
-  const {colors, widths, depths} = props;
+export const Arrow: LiveComponent<ArrowProps> = memo((props) => {
 
-  const positions = useContext(DataContext) ?? undefined;
-
-  const {size, start, end, detail} = useArrowTrait(props);
-  const {width, depth, join} = useLineTrait(props);
-  const color = useColorTrait(props);
-  const rop = useROPTrait(props);
-
-  const detailExpr = useOne(() => () => ((positions as any)?.size?.[0] || 1) - 1, positions);
-  const countExpr = useOne(() => () => ((positions as any)?.length || 0) * (+start + +end) / 2, positions);
-
-  const boundStart = useBoundSource(START_ATTRIBUTE, useShaderRef(+start));
-  const boundEnd = useBoundSource(END_ATTRIBUTE, useShaderRef(+end));
-  const deps = [detailExpr, boundStart, boundEnd];
-
-  const segments = useOne(() => useBoundShader(getLineSegment, [detailExpr]), detailExpr);
-  const anchors = useMemo(() => useBoundShader(getLineAnchor, [detailExpr, boundStart, boundEnd]), deps);
-  const trims = useMemo(() => useBoundShader(getLineTrim, [detailExpr, boundStart, boundEnd]), deps);
-
-  return (
-    use(ArrowLayer, {
+  const parsed = useTraits(props);
+  const {
       positions,
+      color,
+      colors,
+      width,
+      widths,
+      size,
+      sizes,
+      depth,
+      depths,
+      zIndex,
+      zBias,
+      zBiases,
+
+      id,
+      ids,
+      lookup,
+      lookups,
+
+      count,
+      sparse,
+      chunks,
+      groups,
+      loop,
+      loops,
+      start,
+      starts,
+      end,
+      ends,
+
+      schema: _,
+      formats,
+      tensor,
+
       segments,
+      slices,
       anchors,
       trims,
+      unwelds,
 
-      color,
-      width,
-      depth,
-      join,
-      detail,
+      sources,
+      ...flags
+  } = parsed;
 
-      colors,
-      widths,
-      depths,
+  if (zIndex && zBias == null) parsed.zBias = zIndex;
 
-      ...rop,
-      count: countExpr,
-    })
-  );
-};
+  const hovered = useInspectHoverable();
+  if (hovered) flags.mode = "debug";
+
+  const scissor = useScissorContext();
+  const context = useTransformContext();
+  const {transform, nonlinear, matrix: refs} = context;
+
+  const schema = useOne(() => adjustSchema(ARROW_SCHEMA, formats), formats);
+  const attributes = schemaToEmitters(schema, parsed as any);
+  const archetype = schemaToArchetype(schema, attributes, flags, refs, sources);
+
+  // eslint-disable-next-line no-debugger
+  if (Number.isNaN(count)) debugger;
+  if (!count || !positions) return;
+
+  const shapes = {
+    arrow: {
+      count,
+      archetype,
+      attributes,
+      flags,
+      refs,
+      schema,
+      scissor,
+      sources,
+      transform: nonlinear ?? context,
+      zIndex,
+    },
+  };
+
+  return quote(yeet(shapes));
+}, shouldEqual({
+  position: sameShallow(sameShallow()),
+  color: sameShallow(),
+}), 'Arrow');
 

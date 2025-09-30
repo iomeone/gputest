@@ -1,84 +1,88 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement } from '../../live';
-import type { TextureSource, ViewUniforms } from '../../core';
-import type { LightEnv, Renderable } from '../pass';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { ViewUniforms } from '@use-gpu/core';
+import type { Renderable } from '../pass';
 import type { BoundLight } from '../light/types';
 import { mat4 } from 'gl-matrix';
 
-import { use, quote, yeet, wrap, memo, useMemo, useOne } from '../../live';
+import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
-  makeFrustumPlanes, makeGlobalUniforms, makeOrthogonalMatrix, uploadBuffer,
-} from '../../core';
+  makeFrustumPlanes, makeGlobalUniforms, uploadBuffer,
+  VIEW_UNIFORMS,
+} from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';
-import { useViewContext } from '../providers/view-provider';
+import { QueueReconciler } from '../reconcilers/index';
 
 import { useFrustumCuller } from '../hooks/useFrustumCuller'
 import { useInspectable } from '../hooks/useInspectable'
 
-import { SHADOW_FORMAT, SHADOW_PAGE } from '../render/light/light-data';
+import { SHADOW_PAGE } from '../render/light/light-data';
 import { drawToPass } from './util';
 
 import { useDepthBlit } from './depth-blit';
 
-export type ShadowOrthoPassProps = {
+const {quote} = QueueReconciler;
+
+export type ShadowOrthoPassProps = PropsWithChildren<{
   calls: {
     shadow?: Renderable[],
   },
   map: BoundLight,
   descriptors: GPURenderPassDescriptor[],
-  texture: TextureSource,
-};
+}>;
 
 const NO_OPS: any[] = [];
-const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS; 
+const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
+
+const label = '<ShadowOrthoPass>';
+const LABEL = { label };
 
 /** Orthographic shadow render pass.
 
 Draws all shadow calls to an orthographic shadow map.
 */
-export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: PropsWithChildren<ShadowOrthoPassProps>) => {
+export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: ShadowOrthoPassProps) => {
   const {
     calls,
     map,
     descriptors,
-    texture,
   } = props;
 
   const inspect = useInspectable();
 
   const device = useDeviceContext();
   const {buffers: {shadow: [renderContext]}} = usePassContext();
-  const {defs, uniforms: viewUniforms} = useViewContext();
 
   const shadows = toArray(calls['shadow'] as Renderable[]);
 
   const binding = useMemo(() =>
-    makeGlobalUniforms(device, [defs]),
-    [device, defs]);
+    makeGlobalUniforms(device, [VIEW_UNIFORMS]),
+    [device]);
 
   const {bindGroup, buffer, pipe} = binding;
 
-  const uniforms = useOne(() => ({
-    ...viewUniforms,
+  const uniforms: ViewUniforms = useOne(() => ({
     projectionMatrix: { current: mat4.fromValues(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) },
     projectionViewMatrix: { current: mat4.create() },
-    projectionViewFrustum: { current: null },
+    projectionViewFrustum: { current: null as any },
+    inverseViewMatrix: { current: mat4.create() },
+    inverseProjectionViewMatrix: { current: mat4.create() },
     viewMatrix: { current: mat4.create() },
-    viewPosition: { current: [0, 0] },
-    viewNearFar: { current: [0, 0] },
-    viewResolution: { current: [0, 0] },
-    viewSize: { current: [0, 0] },
-    viewWorldDepth: { current: 1 },
+    viewPosition: { current: [0, 0, 0, 1] },
+    viewNearFar: { current: null as any },
+    viewResolution: { current: null as any },
+    viewSize: { current: null as any },
+    viewWorldDepth: { current: [1, 1] },
     viewPixelRatio: { current: 1 },
-  }), viewUniforms) as any as ViewUniforms;
+  }));
 
   const {viewPosition, projectionViewFrustum} = uniforms;
   const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
 
   const {
     into,
-    position,
+    normal,
     shadow,
     shadowMap,
     shadowUV,
@@ -87,14 +91,14 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: PropsWithC
   const {
     depth: [near, far],
     size: [width, height],
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   } = shadow!;
 
   uniforms.viewNearFar.current = [ near, far ];
   uniforms.viewResolution.current = [ 1 / width, 1 / height ];
   uniforms.viewSize.current = [ width, height ];
-  uniforms.viewWorldDepth.current = [1, 1];
-  uniforms.viewPixelRatio.current = 1;
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const clear = useDepthBlit(renderContext, descriptors[shadowMap!], shadowUV!, SHADOW_PAGE);
 
   const draw = quote(yeet(() => {
@@ -103,8 +107,10 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: PropsWithC
 
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     uniforms.viewMatrix.current = into!;
-    uniforms.viewPosition.current = position!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    uniforms.viewPosition.current = [-normal![0], -normal![1], -normal![2], 0];
 
     const {projectionViewMatrix, projectionViewFrustum, projectionMatrix, viewMatrix} = uniforms;
     projectionViewMatrix.current = mat4.multiply(mat4.create(), projectionMatrix.current, viewMatrix.current);
@@ -113,15 +119,20 @@ export const ShadowOrthoPass: LC<ShadowOrthoPassProps> = memo((props: PropsWithC
     pipe.fill(uniforms);
     uploadBuffer(device, buffer, pipe.data);
 
-    const commandEncoder = device.createCommandEncoder();
+    const commandEncoder = device.createCommandEncoder(LABEL);
 
     clear(commandEncoder);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const x = shadowUV![0] * SHADOW_PAGE;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const y = shadowUV![1] * SHADOW_PAGE;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const w = (shadowUV![2] - shadowUV![0]) * SHADOW_PAGE;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const h = (shadowUV![3] - shadowUV![1]) * SHADOW_PAGE;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const passEncoder = commandEncoder.beginRenderPass(descriptors[shadowMap!]);
     passEncoder.setViewport(x, y, w, h, 0, 1);
     passEncoder.setScissorRect(x, y, w, h);

@@ -1,19 +1,18 @@
-import type { LiveFiber, LiveComponent, LiveElement, Task, PropsWithChildren } from '../../live';
-import type { ColorSpace, TextureSource, TextureTarget } from '../../core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
-import { use, provide, gather, yeet, fence, useCallback, useContext, useFiber, useMemo, useOne, incrementVersion } from '../../live';
-import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
+import { seq } from '@use-gpu/core';
+import { provide, yeet, fence, useContext, useMemo } from '@use-gpu/live';
+import { PRESENTATION_FORMAT, COLOR_SPACE } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { ComputeContext } from '../providers/compute-provider';
 
-import { makeStorageTexture } from '../../core';
-
-const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
+import { makeStorageTexture } from '@use-gpu/core';
 
 const DEFAULT_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 
-export type TextureBufferProps = {
+export type TextureBufferProps = PropsWithChildren<{
   width?: number,
   height?: number,
   history?: number,
@@ -23,13 +22,14 @@ export type TextureBufferProps = {
   samples?: number,
   resolution?: number,
   filterable?: boolean,
+  label?: string,
 
   render?: (texture: TextureTarget) => LiveElement,
   then?: (texture: TextureTarget) => LiveElement,
-};
+}>;
 
 /** Read-write GPU texture buffer for compute. Will perform frame-buffer flipping with N frames of history. */
-export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: PropsWithChildren<TextureBufferProps>) => {
+export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureBufferProps) => {
   const device = useContext(DeviceContext);
   const renderContext = useContext(RenderContext);
 
@@ -43,6 +43,7 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: PropsWit
     filterable = false,
     sampler = DEFAULT_SAMPLER,
     colorSpace = COLOR_SPACE,
+    label,
     children,
     render,
     then,
@@ -55,6 +56,7 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: PropsWit
           device,
           width,
           height,
+          1,
           format,
           samples,
         );
@@ -64,11 +66,16 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: PropsWit
           device,
           width,
           height,
+          1,
           format,
         )
       ) : null;
-      if (buffers) buffers.push(buffer);      
 
+      let i = 0;
+      if (buffers) for (const b of buffers) b.label = [label ?? 'textureBuffer', 'history', ++i].filter(s => s != null).join(' ');
+      buffer.label = label ?? 'textureBuffer';
+
+      if (buffers) buffers.push(buffer);
       const views = buffers ? buffers.map(b => b.createView()) : undefined;
 
       const counter = { current: 0 };
@@ -80,7 +87,7 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: PropsWit
 
   const targetTexture = bufferTexture;
 
-  const [source, sources] = useMemo(() => {
+  const source = useMemo(() => {
     const view = targetTexture.createView();
     const size = [width, height] as [number, number];
     const volatile = history ? history + 1 : 0;
@@ -92,10 +99,14 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: PropsWit
 
     const swap = () => {
       if (!history) return;
+
       const {current: index} = counter;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const n = bufferViews!.length;
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const texture = bufferTextures![index];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const view = bufferViews![index];
 
       source.texture = texture;
@@ -103,13 +114,15 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: PropsWit
 
       for (let i = 0; i < history; i++) {
         const j = (index + n - i - 1) % n;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         sources![i].texture = bufferTextures![j];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         sources![i].view = bufferViews![j];
       }
 
       counter.current = (index + 1) % n;
     };
-    
+
     const makeSource = () => ({
       texture: targetTexture,
       view,
@@ -129,7 +142,9 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: PropsWit
     source.swap = swap;
     source.history = sources;
 
-    return [source, sources];
+    swap();
+
+    return source;
   }, [targetTexture, width, height, format, history, sampler]);
 
   if (!(render ?? children)) return yeet(source);

@@ -1,13 +1,14 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { AxesTrait, ObjectTrait, Axis4, Swizzle } from '../types';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { Axis4 } from '../types';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale } from '../../traits';
-import { use, provide, signal, useContext, useOne, useMemo } from '../../live';
-import { swizzleTo, chainTo } from '../../shader/wgsl';
+import { combine, makeUseTrait } from '@use-gpu/traits/live';
+import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
+import { swizzleTo, chainTo } from '@use-gpu/shader/wgsl';
 import {
-  TransformContext,
-  useShaderRef, useBoundShader, useCombinedTransform,
-} from '../../workbench';
+  MatrixContext, TransformContext, QueueReconciler,
+  useShaderRef, useShader, useCombinedEpsilonTransform,
+} from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
@@ -15,17 +16,23 @@ import { recenterAxis } from '../util/axis';
 import { swizzleMatrix, toBasis, invertBasis } from '../util/swizzle';
 import { mat4 } from 'gl-matrix';
 
-import { useAxesTrait, useObjectTrait } from '../traits';
+import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getPolarPosition } from '../../wgsl/transform/polarwgsl';
+import { getPolarPosition } from '@use-gpu/wgsl/transform/polar.wgsl';
 
-export type PolarProps = Partial<AxesTrait> & Partial<ObjectTrait> & {
+const {signal} = QueueReconciler;
+const makeMat4 = () => mat4.create();
+
+const Traits = combine(AxesTrait, ObjectTrait);
+const useTraits = makeUseTrait(Traits);
+
+export type PolarProps = TraitProps<typeof Traits> & PropsWithChildren<{
   bend?: number,
   helix?: number,
   on?: Axis4,
-};
+}>;
 
-export const Polar: LiveComponent<PolarProps> = (props: PropsWithChildren<PolarProps>) => {
+export const Polar: LiveComponent<PolarProps> = (props: PolarProps) => {
   const {
     bend = 1,
     helix = 0,
@@ -33,8 +40,13 @@ export const Polar: LiveComponent<PolarProps> = (props: PropsWithChildren<PolarP
     children,
   } = props;
 
-  const {range: g, axes: a} = useAxesTrait(props);
-  const {position: p, scale: s, quaternion: q, rotation: r, matrix: m} = useObjectTrait(props);
+  const {
+    range: g, axes: a,
+    position: p, scale: s, quaternion: q, rotation: r, matrix: m,
+  } = useTraits(props);
+
+  const [swapMatrix] = useDouble(makeMat4);
+  const composed = useOne(makeMat4);
 
   const [focus, aspect, matrix, swizzle, range, epsilon] = useMemo(() => {
     const x = g[0][0];
@@ -48,7 +60,7 @@ export const Polar: LiveComponent<PolarProps> = (props: PropsWithChildren<PolarP
     const inv = invertBasis(a);
     const sx = s ? s[inv.indexOf('x')] : 1;
     const sy = s ? s[inv.indexOf('y')] : 1;
-    const sz = s ? s[inv.indexOf('z')] : 1;
+    // const sz = s ? s[inv.indexOf('z')] : 1;
 
     // Epsilon for differential transport
     const epsilon = (Math.abs(dx) + Math.abs(dy) + Math.abs(dz)) / 3000;
@@ -66,11 +78,11 @@ export const Polar: LiveComponent<PolarProps> = (props: PropsWithChildren<PolarP
     const fdx = dx + (ady * idx - dx) * bend;
     const sdx = fdx / sx;
     const sdy = dy  / sy;
-    
+
     const aspect = Math.abs(sdx / sdy);
     const focus = bend > 0 ? 1 / bend - 1 : 0;
 
-    const matrix = mat4.create();
+    const matrix = swapMatrix();
     mat4.set(matrix,
       2/fdx, 0, 0, 0,
       0,  2/dy, 0, 0,
@@ -84,9 +96,8 @@ export const Polar: LiveComponent<PolarProps> = (props: PropsWithChildren<PolarP
 
     // Swizzle output axes
     if (a !== 'xyzw') {
-      const t = mat4.create();
-      swizzleMatrix(t, a);
-      mat4.multiply(matrix, t, matrix);
+      swizzleMatrix(composed, a);
+      mat4.multiply(matrix, composed, matrix);
     }
 
     // Then apply transform (so these are always relative to the world basis, not the internal basis)
@@ -94,20 +105,18 @@ export const Polar: LiveComponent<PolarProps> = (props: PropsWithChildren<PolarP
       mat4.multiply(matrix, m, matrix);
     }
     if (p || r || q || s) {
-      const t = mat4.create();
-      composeTransform(t, p, r, q, s);
-      mat4.multiply(matrix, t, matrix);
+      composeTransform(composed, p, r, q, s);
+      mat4.multiply(matrix, composed, matrix);
     }
 
     // Swizzle active polar axis
     let swizzle: string | null = null;
     if (on !== 'x') {
       const order = swizzle = toBasis(on);
-      const t = mat4.create();
 
       // Apply inverse polar basis as part of view matrix (right multiply)
-      swizzleMatrix(t, invertBasis(order));
-      mat4.multiply(matrix, matrix, t);
+      swizzleMatrix(composed, invertBasis(order));
+      mat4.multiply(matrix, matrix, composed);
     }
 
     // Adjust radial range
@@ -130,7 +139,7 @@ export const Polar: LiveComponent<PolarProps> = (props: PropsWithChildren<PolarP
   const h = useShaderRef(helix);
   const e = useShaderRef(epsilon);
 
-  const bound = useBoundShader(getPolarPosition, [t, b, f, c, h]);
+  const bound = useShader(getPolarPosition, [t, b, f, c, h]);
 
   // Apply input basis as a cast
   const xform = useMemo(() => {
@@ -138,14 +147,16 @@ export const Polar: LiveComponent<PolarProps> = (props: PropsWithChildren<PolarP
     return chainTo(swizzleTo('vec4<f32>', 'vec4<f32>', swizzle), bound);
   }, [bound, swizzle]);
 
-  const context = useCombinedTransform(xform, null, null, e);
+  const context = useCombinedEpsilonTransform(xform, e);
 
   const rangeMemo = useOne(() => range, JSON.stringify(range));
 
   return [
     signal(),
-    provide(TransformContext, context,
-      provide(RangeContext, rangeMemo, children ?? [])
+    provide(MatrixContext, null,
+      provide(TransformContext, context,
+        provide(RangeContext, rangeMemo, children ?? [])
+      )
     )
   ];
 };

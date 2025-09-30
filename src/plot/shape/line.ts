@@ -1,61 +1,93 @@
-import type { LiveComponent } from '../../live';
-import type { ShaderSource } from '../../shader';
-import type { VectorLike } from '../../traits';
-import type { ColorTrait, LineTrait, ROPTrait } from '../types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { LiveComponent } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits/live';
 
-import { use, provide, useCallback, useContext, useOne, useMemo } from '../../live';
-import { bundleToAttribute } from '../../shader/wgsl';
+import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { schemaToArchetype, schemaToEmitters, adjustSchema } from '@use-gpu/core';
+import { yeet, memo, useOne } from '@use-gpu/live';
 
-import { useBoundShader, LineLayer } from '../../workbench';
-import { DataContext } from '../providers/data-provider';
-import {
-  useColorTrait,
-  useLineTrait,
-  useROPTrait,
-} from '../traits';
-import { vec4 } from 'gl-matrix';
+import { useInspectHoverable, useTransformContext, useScissorContext, LINE_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
 
-import { getLineSegment } from '../../wgsl/geometry/segmentwgsl';
+import { LineTraits } from '../traits';
 
-const LINE_ATTRIBUTE = bundleToAttribute(getLineSegment, 'getLineDetail');
+const {quote} = LayerReconciler;
 
-export type LineProps =
-  Partial<ColorTrait> &
-  Partial<LineTrait> &
-  Partial<ROPTrait> & {
+const useTraits = makeUseTrait(LineTraits);
 
-  colors?: ShaderSource,
-  widths?: ShaderSource,
-  depths?: ShaderSource,
-};
+export type LineProps = TraitProps<typeof LineTraits>;
 
-export const Line: LiveComponent<LineProps> = (props) => {
-  const {colors, widths, depths} = props;
-
-  const positions = useContext(DataContext) ?? undefined;
-
-  const {width, depth, join} = useLineTrait(props);
-  const color = useColorTrait(props);
-  const rop = useROPTrait(props);
-
-  const detailExpr = useOne(() => () => ((positions as any)?.size?.[0] || 1) - 1, positions);
-  const segments = useOne(() => useBoundShader(getLineSegment, [detailExpr]), detailExpr);
-
-  return (
-    use(LineLayer, {
+export const InnerLine: LiveComponent<LineProps> = (props) => {
+  const parsed = useTraits(props);
+  const {
       positions,
-      segments,
-
       color,
-      width,
-      depth,
-      join,
-
       colors,
+      width,
       widths,
+      depth,
       depths,
-      ...rop,
-    })
-  );
+      zIndex,
+      zBias,
+      zBiases,
+
+      id,
+      ids,
+      lookup,
+      lookups,
+
+      count,
+      chunks,
+      groups,
+      loop,
+      loops,
+
+      schema: _,
+      formats,
+      tensor,
+
+      segments,
+      slices,
+      unwelds,
+
+      sources,
+      ...flags
+  } = parsed;
+
+  if (zIndex && zBias == null) parsed.zBias = zIndex;
+
+  const hovered = useInspectHoverable();
+  if (hovered) flags.mode = "debug";
+
+  const scissor = useScissorContext();
+  const context = useTransformContext();
+  const {transform, nonlinear, matrix: refs} = context;
+
+  const schema = useOne(() => adjustSchema(LINE_SCHEMA, formats), formats);
+  const attributes = schemaToEmitters(schema, parsed as any);
+  const archetype = schemaToArchetype(schema, attributes, flags, refs, sources);
+
+  // eslint-disable-next-line no-debugger
+  if (Number.isNaN(count)) debugger;
+  if (!count || !positions) return;
+
+  const shapes = {
+    line: {
+      count,
+      archetype,
+      attributes,
+      flags,
+      refs,
+      schema: formats ? schema : undefined,
+      scissor,
+      sources,
+      transform: nonlinear ?? context,
+      zIndex,
+    },
+  };
+  return quote(yeet(shapes));
 };
 
+export const Line = memo(InnerLine, shouldEqual({
+  position: sameShallow(sameShallow()),
+  color: sameShallow(),
+}), 'Line');

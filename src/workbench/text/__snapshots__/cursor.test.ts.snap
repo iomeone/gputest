@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`layout cursor makes centered rows with hard breaks and multiple items 1`] = `
-Array [
-  Array [
+[
+  [
     0,
     4,
     0,
@@ -11,7 +11,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     4,
     7,
     0,
@@ -20,7 +20,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     7,
     9,
     0,
@@ -29,7 +29,7 @@ Array [
     30,
     1,
   ],
-  Array [
+  [
     9,
     10,
     0,
@@ -51,8 +51,8 @@ Float32Array [
 `;
 
 exports[`layout cursor makes centered rows with soft-wrapped breaks 1`] = `
-Array [
-  Array [
+[
+  [
     0,
     3,
     0,
@@ -61,7 +61,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     3,
     5,
     0,
@@ -70,7 +70,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     5,
     7,
     0,
@@ -79,7 +79,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     7,
     9,
     0,
@@ -88,7 +88,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     9,
     10,
     0,
@@ -108,8 +108,8 @@ Float32Array [
 `;
 
 exports[`layout cursor makes justified rows with soft-wrapped breaks 1`] = `
-Array [
-  Array [
+[
+  [
     0,
     3,
     0,
@@ -118,7 +118,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     3,
     5,
     100,
@@ -127,7 +127,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     5,
     7,
     0,
@@ -136,7 +136,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     7,
     9,
     200,
@@ -145,7 +145,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     9,
     10,
     0,
@@ -165,8 +165,8 @@ Float32Array [
 `;
 
 exports[`layout cursor makes right-justified rows with soft-wrapped breaks 1`] = `
-Array [
-  Array [
+[
+  [
     0,
     3,
     0,
@@ -175,7 +175,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     3,
     5,
     0,
@@ -184,7 +184,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     5,
     7,
     0,
@@ -193,7 +193,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     7,
     9,
     0,
@@ -202,7 +202,7 @@ Array [
     30,
     0,
   ],
-  Array [
+  [
     9,
     10,
     0,

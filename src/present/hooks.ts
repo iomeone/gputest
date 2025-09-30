@@ -1,24 +1,22 @@
-import type { Rectangle, Point4 } from '../core';
+import type { Rectangle, XYZW } from '@use-gpu/core';
 import type { ParsedEffect } from './types';
 import { SLIDE_EFFECTS } from './traits';
 
-import { useContext, useMemo, useOne, useRef, useFiber } from '../live';
-import { bundleToAttributes } from '../shader/wgsl';
-import { useTimeContext, LoopContext, useBoundSource, useBoundShader, useShaderRef } from '../workbench';
+import { clamp, lerp } from '@use-gpu/core';
+import { useContext, useMemo, useOne, useRef, useFiber } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { useTimeContext, LoopContext, useSource, useShader, useShaderRef } from '@use-gpu/workbench';
 import { usePresentContext } from './providers/present-provider';
 
-import { getSlideMask } from '../wgsl/present/maskwgsl';
-import { getSlideMotion } from '../wgsl/present/motionwgsl';
+import { getSlideMask } from '@use-gpu/wgsl/present/mask.wgsl';
+import { getSlideMotion } from '@use-gpu/wgsl/present/motion.wgsl';
 
 const ATTRIBUTES = bundleToAttributes(getSlideMotion);
-const NO_VEC4: Point4 = [0, 0, 0, 0];
+const NO_VEC4: XYZW = [0, 0, 0, 0];
 const EPSILON = 1e-3;
 
 const π = Math.PI;
 const τ = π*2;
-
-const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
-const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
 type Sampler = (t: number) => number;
 
@@ -31,16 +29,16 @@ export const usePresentTransition = (
   initial?: number,
 ) => {
   const e = useRef(0);
-  const d = useRef<Point4>(NO_VEC4);
+  const d = useRef<XYZW>(NO_VEC4);
   const v = useRef(0);
   const l = useShaderRef(layout);
 
-  const es = useBoundSource(ATTRIBUTES[0], e);
-  const ds = useBoundSource(ATTRIBUTES[1], d);
-  const vs = useBoundSource(ATTRIBUTES[2], v);
+  const es = useSource(ATTRIBUTES[0], e);
+  const ds = useSource(ATTRIBUTES[1], d);
+  const vs = useSource(ATTRIBUTES[2], v);
 
-  const mask = useBoundShader(getSlideMask, [es, ds, vs]);
-  const transform = useBoundShader(getSlideMotion, [es, ds, vs, l]);
+  const mask = useShader(getSlideMask, [es, ds, vs]);
+  const transform = useShader(getSlideMotion, [es, ds, vs, l]);
 
   const useUpdateTransition = () => {
     const {useTransition, isVisible} = usePresentContext();
@@ -52,6 +50,7 @@ export const usePresentTransition = (
     useOne(() => {
       const fx = isEnter ? enter : exit;
       const {type, direction} = fx;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const index = SLIDE_EFFECTS.indexOf(type!) || 0;
 
       e.current = index;
@@ -102,7 +101,7 @@ export const makeUseTransition = (
       if (value != null) {
         let boost = 0;
         let from = value;
-        let to = target;
+        const to = target;
 
         // Sample ongoing transition to determine velocity boost
         const {current: time} = timeRef;
@@ -125,11 +124,13 @@ export const makeUseTransition = (
     const {current: time} = timeRef;
     const {current: sampler} = samplerRef;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (time != null) timeRef.current! += delta / 1000;
     if (time == null || sampler == null) return valueRef.current ?? -1;
 
     const fiber = useFiber();
     if (time < delay + duration) request(fiber);
+    else samplerRef.current = null;
 
     let offset = sampler(time);
     const {ease} = offset < 0 ? enter : exit;
@@ -149,11 +150,11 @@ const makeSampler = (
 ) => (
   time: number,
 ) => {
-  let t = clamp((time - delay) / duration, 0, 1);
+  const t = clamp((time - delay) / duration, 0, 1);
 
   let f = lerp(from, to, t);
   if (boost) {
-    let i = clamp(time / duration, 0, 1);
+    const i = clamp(time / duration, 0, 1);
     f += boost * duration * i * (1 - i) * (1 - i);
   }
 

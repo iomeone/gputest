@@ -1,12 +1,12 @@
-import type { LiveFiber } from '../../../live';
+import type { LiveFiber } from '@use-gpu/live';
 import type { Action } from '../types';
-import { formatNode, formatValue } from '../../../live';
+import { formatNode, formatValue } from '@use-gpu/live';
 
-import { Hook } from '../../../live';
+import { Hook } from '@use-gpu/live';
 import React, { useState } from 'react';
 import { SplitRow, Label, Spacer } from '../layout';
 import { InspectObject } from '../inspect-object';
-import chunk from 'lodash/chunk';
+import chunk from 'lodash/chunk.js';
 
 const STATE_SLOTS = 3;
 
@@ -16,10 +16,10 @@ type CallProps = {
 
 export const Call: React.FC<CallProps> = ({fiber}) => {
   // @ts-ignore
-  const {id, depth, runs, path, order, keys, type, state, context, yeeted, quote, unquote, mount, mounts, next, ...rest} = fiber;
+  const {id, depth, runs, path, order, keys, type, state, context, yeeted, quotes, quote, unquote, mount, mounts, next, ...rest} = fiber;
 
   let props = {id, runs, depth, path, keys, '[internals]': rest} as any;
-  let env = {context, yeeted, quote, unquote} as any;
+  let env = {context, yeeted, quotes, unquote, quote: (quote as any)?.displayName} as any;
   let rendered = {type, mount, mounts, next, order} as any;
 
   if (!mount) delete rendered.mount;
@@ -28,7 +28,8 @@ export const Call: React.FC<CallProps> = ({fiber}) => {
 
   if (!context.values.size) delete env.context;
   if (!yeeted) delete env.yeeted;
-  if (!quote) delete env.quote;
+  if (!quotes) delete env.quotes;
+  if (!env.quote) delete env.quote;
   if (!unquote) delete env.unquote;
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -49,7 +50,7 @@ export const Call: React.FC<CallProps> = ({fiber}) => {
       {Object.keys(env).length ? (<>
         <Spacer />
         <div><b>Environment</b></div>
-        <div><InspectObject object={env} state={expanded} toggleState={toggleExpanded} /></div>        
+        <div><InspectObject object={env} state={expanded} toggleState={toggleExpanded} /></div>
       </>) : null}
       {hooks.length ? (<>
         <Spacer />
@@ -63,8 +64,10 @@ export const Call: React.FC<CallProps> = ({fiber}) => {
 }
 
 const hookToObject = (
-  state: any[],
-) => {
+  state?: any[],
+): Record<string, any> | null => {
+  if (!state) return null;
+
   const [type, a, b] = state;
   if (type === Hook.STATE) {
     return {state: a, setter: b};
@@ -84,8 +87,8 @@ const hookToObject = (
   if (type === Hook.VERSION) {
     return {version: b, value: a};
   }
-  if (type === Hook.YOLO) {
-    return a ? {skip: a} : {scope: b};
+  if (type === Hook.HOOKS) {
+    return {scope: a ? chunk(a, STATE_SLOTS).map(hookToObject) : null};
   }
   return null;
 }

@@ -1,5 +1,3 @@
-export * from './axis-helper';
-
 export * from './arrow-segments';
 export * from './face-segments';
 export * from './line-segments';
@@ -13,7 +11,8 @@ export * from './point-layer';
 export * from './surface-layer';
 export * from './tick-layer';
 
-export * from './virtual-layers';
+export * from './indexed-transform';
 
-export * from './parse';
+export * from './schemas';
+export * from './virtual-layers';
 export * from './types';

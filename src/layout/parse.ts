@@ -1,8 +1,6 @@
-import type { TextureSource } from '../core';
-import type { Alignment, AlignmentLike, Anchor, AnchorLike, Base, Dimension, Direction, Fit, Gap, GapLike, Margin, MarginLike, OverflowMode, Repeat } from './types';
-import { makeParseEnum, makeParseObject } from '../traits';
- 
-const explode = new Proxy({}, {get: () => { throw new Error('Invalid texture source'); }}) as any as TextureSource;
+import type { ShaderSource } from '@use-gpu/shader';
+import type { Alignment, AlignmentLike, Anchor, AnchorLike, Baseline, Dimension, Direction, Fit, Gap, GapLike, Margin, MarginLike, OverflowMode, Repeat } from './types';
+import { makeParseEnum, makeParseObject } from '@use-gpu/parse';
 
 export const makeParseDimension = (def: Dimension | null = null) => (x?: string | number): Dimension | null => {
   if (typeof x === 'string' || typeof x === 'number') return x;
@@ -37,16 +35,16 @@ export const makeParseMargin = (def: Margin = [0, 0, 0, 0]) => (m?: MarginLike):
   m != null ? [m, m, m, m] :
   def;
 
-export const parseTexture = makeParseObject<TextureSource>(explode); 
+export const parseTexture    = makeParseObject<ShaderSource>();
 
 export const parseAlignment  = makeParseEnum<Alignment>(['start', 'center', 'end', 'justify', 'justify-start', 'justify-center', 'justify-end', 'between', 'evenly']);
 export const parseAnchor     = makeParseEnum<Anchor>(['start', 'center', 'end']);
-export const parseBase       = makeParseEnum<Base>(['start', 'base', 'base-center', 'center', 'end']);
+export const parseBaseline   = makeParseEnum<Baseline>(['start', 'base', 'base-center', 'center', 'end']);
 export const parseDirectionX = makeParseEnum<Direction>(['x', 'y', 'lr', 'rl', 'tb', 'bt']);
 export const parseDirectionY = makeParseEnum<Direction>(['y', 'x', 'lr', 'rl', 'tb', 'bt']);
 export const parseFit        = makeParseEnum<Fit>(['none', 'contain', 'cover', 'scale']);
 export const parseOverflow   = makeParseEnum<OverflowMode>(['visible', 'scroll', 'hidden', 'auto']);
-export const parseRepeat     = makeParseEnum<Repeat>(['x', 'y', 'xy', 'none']);
+export const parseRepeat     = makeParseEnum<Repeat>(['xy', 'x', 'y', 'none']);
 
 export const parseDimension   = makeParseDimension();
 export const parseAlignmentXY = makeParseAlignmentXY();

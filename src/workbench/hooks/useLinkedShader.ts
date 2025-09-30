@@ -1,18 +1,15 @@
-import type { ShaderModuleDescriptor } from '../../core';
-import type { ParsedModule, ParsedBundle, ShaderDefine } from '../../shader';
+import type { ShaderModuleDescriptor } from '@use-gpu/core';
+import type { ParsedBundle, ShaderDefine } from '@use-gpu/shader';
 
-import { toHash } from '../../state';
-import { resolveBindings, linkBundle, getBundleHash, getBundleKey } from '../../shader/wgsl';
-import { formatMurmur53, mixBits53, toMurmur53 } from '../../state';
-import { makeShaderModuleDescriptor, makeBindGroupLayoutEntries, makeUniformLayoutEntry } from '../../core';
-import { useFiber, useMemo, useOne } from '../../live';
+import { resolveBindings, linkBundle, getBundleHash, getBundleKey, getBundleLabel } from '@use-gpu/shader/wgsl';
+import { formatMurmur53, mixBits53, toMurmur53 } from '@use-gpu/state';
+import { makeShaderModuleDescriptor, makeBindGroupLayoutEntries, makeUniformLayoutEntry } from '@use-gpu/core';
+import { useMemo, useOne } from '@use-gpu/live';
 import { useForceUpdate } from './useForceUpdate';
 import { useInspectable } from './useInspectable';
 import LRU from 'lru-cache';
 
 const NO_LIBS = {} as Record<string, any>;
-
-type RenderShader = [ShaderModuleDescriptor, ShaderModuleDescriptor];
 
 const VERSION_CACHE = new LRU<string, number>();
 const MODULE_CACHE = new LRU<string, any>();
@@ -22,7 +19,6 @@ export const useLinkedShader = (
   stages: (ParsedBundle | null | undefined)[],
   defines: Record<string, ShaderDefine> | null | undefined,
 ) => {
-  const fiber = useFiber();
   const inspect = useInspectable();
 
   // Live shader editing (persistent within mount only)
@@ -90,10 +86,11 @@ export const useLinkedShader = (
 
       let result = MODULE_CACHE.get(key);
       if (result == null) {
+        const label = getBundleLabel(module);
         const linked = hot.get(key) ?? linkBundle(module, NO_LIBS, defines);
         const version = (VERSION_CACHE.get(key) ?? 0) + 1;
         VERSION_CACHE.set(key, version);
-        result = makeShaderModuleDescriptor(linked, `${key}-${version}`, entry);
+        result = makeShaderModuleDescriptor(linked, `${key}-${version}`, entry, label);
         MODULE_CACHE.set(key, result);
       }
       out.push(result);

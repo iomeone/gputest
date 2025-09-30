@@ -1,18 +1,19 @@
-import type { LC } from '../../../live';
+import type { LC } from '@use-gpu/live';
 
-import React, { use } from '../../../live';
+import React, { use } from '@use-gpu/live';
 
 import {
-  Loop, Pass, Flat,
-  ArrayData, Data, RawData,
-  OrbitCamera, OrbitControls,
-  Pick, Cursor,
+  Loop, Pass, FlatCamera,
+  Cursor,
   Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
-  Plot, Polar, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '../../../plot';
+  Plot, Polar, Axis, Grid, Label, Line, Sampler, Scale, Surface, Tick, Transpose,
+} from '@use-gpu/plot';
+
+import { InfoBox } from '../../ui/info-box';
+
 const π = Math.PI;
 const EPS = 1e-3;
 
@@ -26,10 +27,11 @@ const thetaFormatter = (θ: number) => {
 };
 
 export const PlotPolarPage: LC = () => {
-  
-  return (
-    <Loop>
-      <Flat relative>
+
+  return (<>
+    <InfoBox>Plot curves and grids in an animated &lt;Polar&gt; viewport.</InfoBox>
+    <LinearRGB>
+      <FlatCamera relative>
         <Pass>
           <Plot>
             <Animate
@@ -69,7 +71,6 @@ export const PlotPolarPage: LC = () => {
                   unit={π}
                   base={2}
                   divide={4}
-                  end={true}
                   axis='x'
                 >
                   <Tick
@@ -86,7 +87,8 @@ export const PlotPolarPage: LC = () => {
                     offset={16}
                     expand={5}
                     depth={0.5}
-                    format={thetaFormatter}
+                    formatter={thetaFormatter}
+                    blend="alpha"
                   />
                   <Label
                     placement='bottom'
@@ -95,7 +97,7 @@ export const PlotPolarPage: LC = () => {
                     offset={16}
                     expand={0}
                     depth={0.5}
-                    format={thetaFormatter}
+                    formatter={thetaFormatter}
                   />
                 </Scale>
 
@@ -105,12 +107,13 @@ export const PlotPolarPage: LC = () => {
                   color={[0.75, 0.75, 0.75, 1]}
                   detail={8}
                   depth={0.5}
+                  end
                 />
 
-                <Sampled
+                <Sampler
                   axes='x'
                   format='vec2<f32>'
-                  size={[256]}
+                  size={[512]}
                   expr={(emit, θ) => {
                     const r = Math.cos(θ * 8) * .4 + .6;
                     emit(θ, r);
@@ -118,16 +121,16 @@ export const PlotPolarPage: LC = () => {
                 >
                   <Line
                     width={4}
-                    color={0x3090FF}
+                    color={'#3090FF'}
                     depth={0.5}
                     zBias={1}
                   />
-                </Sampled>
+                </Sampler>
               </Polar>
             </Animate>
           </Plot>
         </Pass>
-      </Flat>
-    </Loop>
-  );
+      </FlatCamera>
+    </LinearRGB>
+  </>);
 };

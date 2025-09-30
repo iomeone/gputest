@@ -1,14 +1,14 @@
-use '../../../wgsl/use/types'::{ SolidVertex };
-use '../../../wgsl/geometry/quad'::{ getQuadIndex };
-use '../../../wgsl/geometry/strip'::{ getStripIndex };
-use '../../../wgsl/geometry/line'::{ getLineJoin };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/use/view'::{ getViewPixelRatio };
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadIndex };
+use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
+use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
 
 @link fn getVertex(v: u32, i: u32) -> SolidVertex {};
 @link fn getInstanceSize() -> u32 {};
 
 @export fn getWireframeListVertex(vertexIndex: u32, instanceIndex: u32) -> SolidVertex {
-  let vi = vertexIndex;
-  var ij = getStripIndex(vi - (vi / 3u) * 2u);
+  var ij = getStripIndex(vertexIndex);
   var xy = vec2<f32>(ij) * 2.0 - 1.0;
 
   var n = getInstanceSize();
@@ -40,7 +40,7 @@ use '../../../wgsl/geometry/line'::{ getLineJoin };
   var a = getVertex(ia, i);
   var b = getVertex(ib, i);
   var c = getVertex(ic, i);
-  
+
   if (a.position.w < 0.0 || b.position.w < 0.0 || c.position.w < 0.0) {
     return SolidVertex(
       vec4<f32>(0.0),
@@ -56,12 +56,13 @@ use '../../../wgsl/geometry/line'::{ getLineJoin };
   var right = b.position.xyz / b.position.w;
   var other = c.position.xyz / c.position.w;
 
+  let lineWidth = getViewPixelRatio() * 2.0;
   var join: vec3<f32>;
   if (ij.x > 0u) {
-    join = getLineJoin(left, right, other, f32(ij.x) - 1.0, xy.y, 2.0, 3, 0);
+    join = getLineJoin(left, right, other, f32(ij.x) - 1.0, xy.y, lineWidth, 3, 0);
   }
   else {
-    join = getLineJoin(other, left, right, 1.0, xy.y, 2.0, 3, 0);
+    join = getLineJoin(other, left, right, 1.0, xy.y, lineWidth, 3, 0);
   }
 
   return SolidVertex(

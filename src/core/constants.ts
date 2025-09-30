@@ -1,4 +1,4 @@
-import type {TypedArrayConstructor, UniformType} from './types';
+import type { TypedArrayConstructor, UniformType } from './types';
 
 export const TYPED_ARRAYS: TypedArrayConstructor[] = [
   Int8Array, Uint8Array,
@@ -41,25 +41,26 @@ export const VERTEX_SIZES = {
   "sint32x4": 16,
 };
 
+// For reference, conversion from vertex types to WGSL types (unused)
 export const VERTEX_TO_UNIFORM = {
-  "uint8x2": "#!UNIMPLEMENTED",
-  "uint8x4": "#!UNIMPLEMENTED",
-  "sint8x2": "#!UNIMPLEMENTED",
-  "sint8x4": "#!UNIMPLEMENTED",
+  "uint8x2": "vec2<u8>",
+  "uint8x4": "vec4<u8>",
+  "sint8x2": "vec2<i8>",
+  "sint8x4": "vec4<i8>",
   "unorm8x2": "#!UNIMPLEMENTED",
   "unorm8x4": "#!UNIMPLEMENTED",
   "snorm8x2": "#!UNIMPLEMENTED",
   "snorm8x4": "#!UNIMPLEMENTED",
-  "uint16x2": "#!UNIMPLEMENTED",
-  "uint16x4": "#!UNIMPLEMENTED",
-  "sint16x2": "#!UNIMPLEMENTED",
-  "sint16x4": "#!UNIMPLEMENTED",
+  "uint16x2": "vec2<u16>",
+  "uint16x4": "vec4<u16>",
+  "sint16x2": "vec2<i16>",
+  "sint16x4": "vec4<i16>",
   "unorm16x2": "#!UNIMPLEMENTED",
   "unorm16x4": "#!UNIMPLEMENTED",
   "snorm16x2": "#!UNIMPLEMENTED",
   "snorm16x4": "#!UNIMPLEMENTED",
-  "float16x2": "#!UNIMPLEMENTED",
-  "float16x4": "#!UNIMPLEMENTED",
+  "float16x2": "vec2<f16>",
+  "float16x4": "vec4<f16>",
   "float32": "f32",
   "float32x2": "vec2<f32>",
   "float32x3": "vec3<f32>",
@@ -74,7 +75,23 @@ export const VERTEX_TO_UNIFORM = {
   "sint32x4": "vec4<i32>",
 };
 
-export const UNIFORM_ATTRIBUTE_SIZES: {[t in UniformType]: number} = {
+/** @hidden */
+export const shorthands = <A extends string, B>(sizes: Record<A, B>): Record<A, B> => {
+  for (const k of Object.keys(sizes) as A[]) {
+    let match;
+    if ((match = k.match(/^vec([0-9])<([iuf])32>$/)) != null) (sizes as any)[`vec${match[1]}${match[2]}`] = sizes[k];
+    if ((match = k.match(/^vec([0-9])<f16>$/)) != null) (sizes as any)[`vec${match[1]}h`] = sizes[k];
+  }
+  return sizes;
+};
+
+/** @hidden */
+export const arrayify = <A extends string, B>(sizes: Record<A, B>): Record<A, B> => {
+  for (const k of Object.keys(sizes) as A[]) (sizes as any)[`array<${k}>` as any] = sizes[k];
+  return sizes;
+};
+
+export const UNIFORM_ATTRIBUTE_SIZES = arrayify(arrayify(arrayify(shorthands({
   "bool":         1,
   "vec2<bool>":   2,
   "vec3<bool>":   3,
@@ -124,7 +141,7 @@ export const UNIFORM_ATTRIBUTE_SIZES: {[t in UniformType]: number} = {
   "mat3x4<i32>":  48,
   "mat4x3<i32>":  64,
   "mat4x4<i32>":  64,
-  
+
   "mat2x2<f16>":  8,
   "mat3x2<f16>":  12,
   "mat2x3<f16>":  12,
@@ -183,9 +200,9 @@ export const UNIFORM_ATTRIBUTE_SIZES: {[t in UniformType]: number} = {
   "vec3to4<u32>": 12,
   "vec3to4<i32>": 12,
   "vec3to4<f32>": 12,
-};
+})))) as Record<UniformType, number>;
 
-export const UNIFORM_ATTRIBUTE_ALIGNS: {[t in UniformType]: number} = {
+export const UNIFORM_ATTRIBUTE_ALIGNS = arrayify(arrayify(arrayify(shorthands({
   ...UNIFORM_ATTRIBUTE_SIZES,
 
   "bool":         0, // Not host-shareable
@@ -221,7 +238,7 @@ export const UNIFORM_ATTRIBUTE_ALIGNS: {[t in UniformType]: number} = {
   "mat3x4<i32>":  16,
   "mat4x3<i32>":  16,
   "mat4x4<i32>":  16,
-  
+
   "mat2x2<f16>":  4,
   "mat3x2<f16>":  4,
   "mat2x3<f16>":  8,
@@ -280,9 +297,9 @@ export const UNIFORM_ATTRIBUTE_ALIGNS: {[t in UniformType]: number} = {
   "vec3to4<u32>": 0,
   "vec3to4<i32>": 0,
   "vec3to4<f32>": 0,
-};
+})))) as Record<UniformType, number>;
 
-export const UNIFORM_ARRAY_DIMS = {
+export const UNIFORM_ARRAY_DIMS = arrayify(arrayify(arrayify(shorthands({
   "bool":         1,
   "vec2<bool>":   2,
   "vec3<bool>":   3.5,
@@ -391,9 +408,9 @@ export const UNIFORM_ARRAY_DIMS = {
   "vec3to4<u32>": 3,
   "vec3to4<i32>": 3,
   "vec3to4<f32>": 3,
-};
+})))) as Record<UniformType, number>;
 
-export const UNIFORM_ARRAY_TYPES = {
+export const UNIFORM_ARRAY_TYPES = arrayify(arrayify(arrayify(shorthands({
   "bool":         Uint32Array,
   "vec2<bool>":   Uint32Array,
   "vec3<bool>":   Uint32Array,
@@ -502,7 +519,7 @@ export const UNIFORM_ARRAY_TYPES = {
   "vec3to4<u32>": Uint32Array,
   "vec3to4<i32>": Int32Array,
   "vec3to4<f32>": Float32Array,
-};
+})))) as Record<UniformType, TypedArrayConstructor>;
 
 export const TEXTURE_FORMAT_SIZES = {
   // 8-bit formats
@@ -764,7 +781,7 @@ export const TEXTURE_SHADER_TYPES = {
   "rg16uint": 'vec2<u32>',        // u16
   "rg16sint": 'vec2<i32>',        // i16
   "rg16float": 'vec2<f32>',       // f32
-  "rgba8unorm": 'vec4<f32>', 
+  "rgba8unorm": 'vec4<f32>',
   "rgba8unorm-srgb": 'vec4<f32>',
   "rgba8snorm": 'vec4<f32>',
   "rgba8uint": 'vec4<u32>',       // u8
@@ -812,7 +829,7 @@ export const BLEND_ALPHA = {
   alpha: {
     operation: "add",
     srcFactor: "one",
-    dstFactor: "one-minus-src-alpha",      
+    dstFactor: "one-minus-src-alpha",
   },
 } as any as GPUBlendState;
 
@@ -825,7 +842,7 @@ export const BLEND_PREMULTIPLY = {
   alpha: {
     operation: "add",
     srcFactor: "one",
-    dstFactor: "one-minus-src-alpha",      
+    dstFactor: "one-minus-src-alpha",
   },
 } as any as GPUBlendState;
 
@@ -838,7 +855,7 @@ export const BLEND_ADD = {
   alpha: {
     operation: "add",
     srcFactor: "one",
-    dstFactor: "one-minus-src-alpha",      
+    dstFactor: "one-minus-src-alpha",
   },
 } as any as GPUBlendState;
 
@@ -851,7 +868,7 @@ export const BLEND_SUBTRACT = {
   alpha: {
     operation: "add",
     srcFactor: "one",
-    dstFactor: "one-minus-src-alpha",      
+    dstFactor: "one-minus-src-alpha",
   },
 } as any as GPUBlendState;
 
@@ -864,6 +881,6 @@ export const BLEND_MULTIPLY = {
   alpha: {
     operation: "add",
     srcFactor: "one",
-    dstFactor: "one-minus-src-alpha",      
+    dstFactor: "one-minus-src-alpha",
   },
 } as any as GPUBlendState;

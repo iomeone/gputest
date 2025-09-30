@@ -11,6 +11,7 @@ import {
   bundleToAttributes,
 
   glsl, float, int, uint,
+  symbolDictionary,
 } from './shader';
 
 import {
@@ -25,15 +26,23 @@ import {
 import {
   castTo,
   swizzleTo,
-} from './cast';
+} from './operators/cast';
 
 import {
   chainTo,
-} from './chain';
+} from './operators/chain';
 
 import {
   diffBy,
-} from './diff';
+} from './operators/diff';
+
+import {
+  explode,
+} from './operators/explode';
+
+import {
+  structType,
+} from './operators/struct';
 
 import {
   linkBundle,
@@ -54,9 +63,16 @@ import {
   getBundleEntry,
   getBundleHash,
   getBundleKey,
+  getBundleLabel,
 } from '../util/bundle';
 
+import {
+  decompressString,
+} from '../util/tree';
+
 import { parser } from './grammar/glsl';
+
+export * from './types';
 
 export {
   loadModule,
@@ -71,6 +87,7 @@ export {
   bundleToAttributes,
 
   glsl, float, int, uint,
+  symbolDictionary,
 } from './shader';
 
 export {
@@ -85,15 +102,23 @@ export {
 export {
   castTo,
   swizzleTo,
-} from './cast';
+} from './operators/cast';
 
 export {
   chainTo,
-} from './chain';
+} from './operators/chain';
 
 export {
   diffBy,
-} from './diff';
+} from './operators/diff';
+
+export {
+  explode,
+} from './operators/explode';
+
+export {
+  structType,
+} from './operators/struct';
 
 export {
   linkBundle,
@@ -114,7 +139,12 @@ export {
   getBundleEntry,
   getBundleHash,
   getBundleKey,
+  getBundleLabel,
 } from '../util/bundle';
+
+export {
+  decompressString,
+} from '../util/tree';
 
 export const GLSLLinker = {
   loadModule,
@@ -144,7 +174,9 @@ export const GLSLLinker = {
   castTo,
   chainTo,
   diffBy,
+  explode,
   swizzleTo,
+  structType,
 
   makeASTParser,
   compressAST,
@@ -156,11 +188,16 @@ export const GLSLLinker = {
   getBundleEntry,
   getBundleHash,
   getBundleKey,
+  getBundleLabel,
+
+  decompressString,
+  symbolDictionary,
 
   parser,
 };
 
-export { parser } from './grammar/glsl';
+export { parser } from './grammar/glsl.js';
 
+export * from './types';
 
 export default GLSLLinker;

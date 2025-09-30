@@ -1,15 +1,17 @@
-import type { UseGPURenderContext } from '../../core';
+import type { UseGPURenderContext } from '@use-gpu/core';
+import type { Ref } from '@use-gpu/live';
 import type { Culler, Renderable } from './types';
 
-import { resolve, proxy } from '../../core';
+import { resolve, proxy } from '@use-gpu/core';
 import { mat4, vec3 } from 'gl-matrix';
 
 export const getRenderPassDescriptor = (
   renderContext: UseGPURenderContext,
-  {overlay, merge, stencil}: {
+  {overlay, merge, stencil, label}: {
     overlay?: boolean,
     merge?: boolean,
     stencil?: boolean,
+    label?: string,
   }
 ) => {
   let {colorAttachments, depthStencilAttachment} = renderContext;
@@ -32,6 +34,7 @@ export const getRenderPassDescriptor = (
   }
 
   const renderPassDescriptor: GPURenderPassDescriptor = {
+    label,
     colorAttachments,
     depthStencilAttachment: depthStencilAttachment ?? undefined,
   };
@@ -44,7 +47,7 @@ export const getDrawOrder = (cull: Culler, calls: Renderable[], sign: number = 1
   const order: number[] = [];
   const depths: (number | boolean)[] = [];
 
-  for (const {draw, bounds} of calls) {
+  for (const {bounds} of calls) {
     let depth: number | boolean;
     if (bounds) {
       const {center, radius} = resolve(bounds);
@@ -76,7 +79,7 @@ export const drawToPass = (
   calls: Renderable[],
   passEncoder: GPURenderPassEncoder,
   countGeometry: (v: number, t: number) => void,
-  uniforms: Record<string, any>,
+  uniforms: Record<string, Ref<any>>,
   sign: number = 1,
   flip: boolean = false,
 ) => {

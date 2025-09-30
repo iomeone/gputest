@@ -1,12 +1,15 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TextureSource, Lazy } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { TextureSource, LambdaSource, Lazy } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
-import { yeet, useMemo, useYolo } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
+import { useMemo } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+
 import { useShaderRefs } from '../hooks/useShaderRef';
+import { useLambdaSource } from '../hooks/useLambdaSource';
 import { getDerivedSource } from '../hooks/useDerivedSource';
-import { getBoundShader } from '../hooks/useBoundShader';
+import { getShader } from '../hooks/useShader';
+import { useRenderProp } from '../hooks/useRenderProp';
 
 export type TextureShaderProps = {
   texture: TextureSource,
@@ -16,10 +19,12 @@ export type TextureShaderProps = {
   sources?: ShaderSource[],
   args?: Lazy<any>[],
 
-  render?: (source: ShaderModule) => LiveElement,
+  render?: (source: LambdaSource) => LiveElement,
+  children?: (source: LambdaSource) => LiveElement,
 };
 
 const NO_SOURCES: ShaderSource[] = [];
+const NO_SOURCE = { length: 0, size: [0] };
 
 /** Texture shader for custom UV sampling of a 2D input texture.
 
@@ -36,7 +41,6 @@ export const TextureShader: LiveComponent<TextureShaderProps> = (props) => {
     source,
     sources = NO_SOURCES,
     args = NO_SOURCES,
-    render,
   } = props;
 
   const argRefs = useShaderRefs(...args);
@@ -54,12 +58,14 @@ export const TextureShader: LiveComponent<TextureShaderProps> = (props) => {
     const allArgs = [...argRefs, ...sources, ...s];
 
     const values = bindings.map(b => {
-      let k = b.name;
+      const k = b.name;
       return links[k] ? links[k] : allArgs.shift();
     });
 
-    return getBoundShader(shader, values);
+    return getShader(shader, values);
   }, [shader, texture, args.length, source, sources]);
 
-  return useYolo(() => render ? render(getTexture) : yeet(getTexture), [render, getTexture]);
+  const output = useLambdaSource(getTexture, texture ?? source ?? NO_SOURCE);
+
+  return useRenderProp(props, output);
 };

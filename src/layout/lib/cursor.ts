@@ -1,7 +1,6 @@
-import type { Point } from '../../core';
 import type { Alignment } from '../types';
 
-import { makeTuples } from '../../core';
+import { makeTuples } from '@use-gpu/core';
 import { getAlignmentSpacing } from './util';
 
 type InlineReduce = (
@@ -48,13 +47,13 @@ export const makeInlineCursor = (
 
   let start: number = 0;
   let end: number = 0;
-  
+
   let chunkAdvance = 0;
   let chunkIndex = 0;
   let chunkCross = 0;
 
-  let rows: number[] = [];
-  let sizes: number[] = [];
+  const rows: number[] = [];
+  const sizes: number[] = [];
   let index = 0;
 
   const push = (
@@ -122,7 +121,7 @@ export const makeInlineCursor = (
       chunkCross = 0;
     }
   };
-  
+
   const gather = (reduce: InlineReduce) => {
     spanCount++;
     flush(2);
@@ -191,10 +190,10 @@ export const makeFlexCursor = (
   let start: number = 0;
   let end: number = 0;
 
-  let rows: number[] = [];
-  let sizes: number[] = [];
-  let grows: number[] = [];
-  let shrinks: number[] = [];
+  const rows: number[] = [];
+  const sizes: number[] = [];
+  const grows: number[] = [];
+  const shrinks: number[] = [];
   let index = 0;
 
   const push = (
@@ -226,6 +225,8 @@ export const makeFlexCursor = (
     if (n) {
       const spanSize = spanMain - spanTrim;
       chunkMain = Math.max(chunkMain, spanSize);
+      
+      // eslint-disable-next-line no-debugger
       if (Number.isNaN(chunkMain)) debugger;
 
       rows.push(start, end, spanSize);
@@ -234,7 +235,7 @@ export const makeFlexCursor = (
     spanMain = 0;
     spanTrim = 0;
   };
-  
+
   const gather = (reduce: FlexReduce): number => {
     flush();
 
@@ -248,15 +249,15 @@ export const makeFlexCursor = (
       index: number,
     ) => {
       let slack = (into ?? chunkMain) - main;
-      
+
       if (slack > 0 && growRow(slack, grows, sizes, start, end)) slack = 0;
       if (slack < 0 && shrinkRow(slack, shrinks, sizes, start, end)) slack = 0;
-      
+
       const [gap, lead] = getAlignmentSpacing(slack, end - start, index === l, align);
 
       reduce(sizes, start, end, gap, lead);
     });
-    
+
     return into ?? chunkMain;
   };
 

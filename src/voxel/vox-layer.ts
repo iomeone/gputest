@@ -1,27 +1,31 @@
-import type { LC, LiveElement, Ref } from '../live';
-import type { TextureSource, StorageSource } from '../core';
+import type { LC, Ref } from '@use-gpu/live';
+import type { GPUGeometry, TextureSource, StorageSource, LambdaSource } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { PipelineOptions } from '@use-gpu/workbench';
 
-import { gather, use, quote, yeet, memo, useCallback, useOne } from '../live';
+import { seq } from '@use-gpu/core';
+import { gather, use, memo, useCallback, useMemo, useOne } from '@use-gpu/live';
 import {
   useMatrixContext,
-  useBoundShader, useLambdaSource, useDebugContext, useShaderRef,
+  useShader, useNoShader, useLambdaSource, useDebugContext, useShaderRef,
+  useEnvironmentContext,
   FaceLayer, GeometryData, ShaderLitMaterial,
   makeBoxGeometry,
-} from '../workbench';
-import { wgsl, bindBundle, bindEntryPoint } from '../shader/wgsl';
+} from '@use-gpu/workbench';
+import { wgsl, bindBundle, bindEntryPoint } from '@use-gpu/shader/wgsl';
 
-import { applyPBRMaterial } from '../wgsl/material/pbr-applywgsl';
-import { getViewPosition, worldToDepth } from '../wgsl/use/viewwgsl';
-import { SurfaceFragment, DepthFragment } from '../wgsl/use/typeswgsl';
+import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { applyPBREnvironment } from '@use-gpu/wgsl/material/pbr-environment.wgsl';
+import { getViewPosition, worldToDepth } from '@use-gpu/wgsl/use/view.wgsl';
+import { SurfaceFragment, DepthFragment } from '@use-gpu/wgsl/use/types.wgsl';
 
 import { vec3, mat3, mat4 } from 'gl-matrix';
 
-const clamp = (x: number, min: number, max: number) => Math.max(min, Math.min(max, x));
-
-export type VoxLayerProps = {
-  shape: TextureSource[],
-  palette: StorageSource,
-  pbr: StorageSource,
+export type VoxLayerProps = Pick<PipelineOptions, 'blend' | 'mode'> & {
+  shape: (TextureSource | StorageSource | LambdaSource)[],
+  palette: ShaderSource,
+  pbr: ShaderSource,
+  sdf?: boolean,
 };
 
 // Transform a unit size box to the right dimensions
@@ -53,12 +57,15 @@ const surfaceShader = bindBundle(wgsl`
 @link fn getIsInside() -> f32;
 @link fn getInsideOrigin() -> vec3<f32>;
 
-@link fn getTexture0(uvw: vec3<i32>, level: u32) -> u32;
-@link fn getTexture1(uvw: vec3<i32>, level: u32) -> u32;
-@link fn getTexture2(uvw: vec3<i32>, level: u32) -> u32;
+@optional @link fn getSDF(uvw: vec3<f32>, level: u32) -> f32 { return 0.0; };
 
 @link fn getPalette(i: u32, level: u32) -> vec4<f32>;
 @link fn getPBR(i: u32) -> vec4<f32>;
+
+@link fn getTexture0(uvw: vec3<u32>, level: u32) -> u32;
+@optional @link fn getTexture1(uvw: vec3<u32>, level: u32) -> u32 { return 0; };
+@optional @link fn getTexture2(uvw: vec3<u32>, level: u32) -> u32 { return 0; };
+@optional @link fn getTexture3(uvw: vec3<u32>, level: u32) -> u32 { return 0; };
 
 struct VoxelHit {
   position: vec3<f32>,
@@ -100,8 +107,8 @@ fn traceIntoVolume(origin: vec3<f32>, ray: vec3<f32>, size: vec3<i32>) -> VoxelH
     axis = vec3<f32>(0.0);
     pos = origin + ray / 2.0;
 
-    var uvw = vec3<i32>(floor(pos));
-    let index = getTexture0(uvw, 0u);
+    var uvw = clamp(vec3<i32>(floor(pos)), vec3<i32>(0), size - 1);
+    let index = getTexture0(vec3<u32>(uvw), 0u);
     if (index > 0u) {
       return VoxelHit(pos, -ray, index, 1u);
     }
@@ -124,7 +131,7 @@ fn traceOnVolume(origin: vec3<f32>, ray: vec3<f32>, size: vec3<i32>) -> VoxelHit
   let axis = step(front3.yzx, front3) * step(front3.zxy, front3);
 
   // Start just inside surface voxels
-  var pos = origin + ray * 1e-5;
+  var pos = origin + ray * 1e-4;
   var uvw = vec3<i32>(floor(pos));
 
   // Maximum trace distance
@@ -145,7 +152,7 @@ fn traceVolumeSteps(
   distMax: f32,
 ) -> VoxelHit {
   var steps = 0u;
-  var mip: u32 = 2;
+  var mip: u32 = MIP_LEVELS - 1;
   var dist: f32 = 0.0;
 
   // Signs for ray direction
@@ -156,7 +163,32 @@ fn traceVolumeSteps(
   var axis = initialAxis;
   for (var i = 0u; i < 8u; i++) {
 
-    if (mip > 0) {
+    if (SDF_LEVEL >= 0 && i32(mip) == SDF_LEVEL) {
+      let level = f32(1 << mip);
+      let maxSteps = 64u;
+
+      var current = (pos + dist * ray) / level;
+      for (var j = 0u; j <= maxSteps; j++) {
+        steps++;
+
+        let d = getSDF(current, 0u) - .5;
+        if (d < 1.0) {
+          if (SDF_LEVEL == 0) {
+            return VoxelHit(current * level, vec3<f32>(0.0), 1u, steps);
+          }
+          else {
+            mip--;
+            break;
+          }
+        }
+        dist += d * level;
+        current += ray * d;
+
+        if (dist >= distMax) { break; }
+      }
+    }
+
+    else if (MIP_LEVELS > 1 && mip > 0) {
       let level = f32(1 << mip);
       let maxSteps = 12 + (mip - 1) * 128;
       let invAbsL = invAbs * level;
@@ -170,14 +202,15 @@ fn traceVolumeSteps(
       for (var j = 0u; j <= maxSteps; j++) {
         steps++;
 
-        if (j == maxSteps) {
+        if (j == maxSteps && mip < MIP_LEVELS - 1) {
           mip++;
           break;
         }
 
         var index: u32;
-        if (mip == 2) { index = getTexture2(uvw, 0u); }
-        else { index = getTexture1(uvw, 0u); }
+        if (MIP_LEVELS > 3 && mip == 3) { index = getTexture3(vec3<u32>(uvw), 0u); }
+        else if (MIP_LEVELS > 2 && mip == 2) { index = getTexture2(vec3<u32>(uvw), 0u); }
+        else { index = getTexture1(vec3<u32>(uvw), 0u); }
 
         if (index > 0u) {
           mip--;
@@ -203,7 +236,7 @@ fn traceVolumeSteps(
       for (var j = 0u; j < 12u; j++) {
         steps++;
 
-        let index = getTexture0(uvw, 0u);
+        let index = getTexture0(vec3<u32>(uvw), 0u);
         if (index > 0u) {
           return VoxelHit(pos + dist * ray, axis * signF, index, steps);
         }
@@ -216,7 +249,7 @@ fn traceVolumeSteps(
         if (dist >= distMax) { break; }
       }
 
-      mip = 2;
+      mip = MIP_LEVELS - 1;
     }
 
     if (dist >= distMax) { break; }
@@ -233,9 +266,9 @@ fn traceVolumeSteps(
   tangent: vec4<f32>,
   position: vec4<f32>,
 ) -> SurfaceFragment {
-  let viewPosition = getViewPosition().xyz;
+  let viewPosition = getViewPosition();
   let surfacePosition = position.xyz;
-  let toSurface = surfacePosition - viewPosition;
+  let toSurface = surfacePosition * viewPosition.w - viewPosition.xyz;
 
   let r = getRayMatrix();
   let s = getSize();
@@ -250,11 +283,11 @@ fn traceVolumeSteps(
     let origin = saturate(uv.xyz) * vec3<f32>(s);
     hit = traceOnVolume(origin, ray, s);
   }
-  
+
   var albedo: vec4<f32>;
   var emissive: vec4<f32>;
   var material: vec4<f32>;
-  
+
   if (DEBUG_STEPS) {
     let t = f32(hit.steps) / 64.0;
     albedo = vec4<f32>(0.0, 0.0, 0.0, 1.0);
@@ -267,7 +300,7 @@ fn traceVolumeSteps(
 
     let palette = getPalette(hit.index, 0u);
     let pbr = getPBR(hit.index - 1);
-  
+
     albedo = palette * (1.0 - pbr.z);
     emissive = palette * pbr.z;
     material = vec4<f32>(pbr.x, pbr.y, 0.0, 0.0);
@@ -297,9 +330,9 @@ fn traceVolumeSteps(
   st: vec4<f32>,
   position: vec4<f32>,
 ) -> DepthFragment {
-  let viewPosition = getViewPosition().xyz;
+  let viewPosition = getViewPosition();
   let surfacePosition = position.xyz;
-  let toSurface = surfacePosition - viewPosition;
+  let toSurface = surfacePosition * viewPosition.w - viewPosition.xyz;
 
   let r = getRayMatrix();
   let s = getSize();
@@ -314,7 +347,7 @@ fn traceVolumeSteps(
     let origin = saturate(uv.xyz) * vec3<f32>(s);
     hit = traceOnVolume(origin, ray, s);
   }
-  
+
   if (hit.index == 0u) { discard; }
 
   let m = getMatrix();
@@ -330,6 +363,9 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
     shape,
     palette,
     pbr,
+    sdf,
+    blend,
+    mode,
   } = props;
 
   const geometry = useOne(() => makeBoxGeometry({
@@ -339,18 +375,23 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
   }));
 
   return gather(
-    use(GeometryData, {geometry}),
-    ([mesh]: Record<string, StorageSource>[]) => {
-      const {positions, normals, uvs} = mesh;
+    use(GeometryData, geometry),
+    ([mesh]: GPUGeometry[]) => {
+      const {attributes: {positions, uvs}} = mesh;
+      const mips = shape.length;
 
       const DEBUG_STEPS = useDebugContext()?.voxel?.iterations;
-      const defs = useOne(() => ({DEBUG_STEPS}), DEBUG_STEPS);
+      const defs = useMemo(() => ({
+        DEBUG_STEPS,
+        MIP_LEVELS: mips,
+        SDF_LEVEL: sdf ? mips - 1 : -1,
+      }), [DEBUG_STEPS, mips, sdf]);
 
       // Get bounding box / ray transform
       const parent = useMatrixContext();
       const [matrix, inverse, ray, normal] = useOne(() => {
         if (!parent) return [mat4.create(), mat4.create(), mat3.create(), mat3.create()];
-        
+
         const m = mat4.clone(parent);
         const i = mat4.clone(m);
         mat4.invert(i, i);
@@ -373,10 +414,9 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
         const sy = size[1] / 2;
         const sz = (size[2] || 1) / 2;
 
-        const {inverseViewMatrix, viewMatrix, viewPosition, viewNearFar} = uniforms;
+        const {inverseViewMatrix, viewPosition, viewNearFar} = uniforms;
         const {current: iVM} = inverseViewMatrix;
         const {current: viewP} = viewPosition;
-        const {current: viewM} = viewMatrix;
         const {current: viewNF} = viewNearFar;
 
         const offset = vec3.fromValues(iVM[8], iVM[9], iVM[10]);
@@ -408,31 +448,40 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
         return origin3;
       }, [inverse]);
 
-      const boundPosition = useBoundShader(vertexShader, [positions, size]);
+      const boundPosition = useShader(vertexShader, [positions, size]);
       const getPosition = useLambdaSource(boundPosition, positions);
 
       const insideRef = useShaderRef(0);
       const originRef = useShaderRef([0, 0, 0]) as Ref<number[] | vec3>;
 
-      const getSurface = useBoundShader(surfaceShader, [
+      const sources = seq(4).map(i => shape[i] ?? null);
+
+      const getSurface = useShader(surfaceShader, [
         matrix, ray, normal, size, insideRef, originRef,
-        ...shape, palette, pbr,
+        sdf, palette, pbr, ...sources
       ], defs);
       const getDepth = bindEntryPoint(getSurface, "mainDepthOnly");
+
+      const environmentMap = useEnvironmentContext();
+      const getEnvironment = environmentMap
+        ? useShader(applyPBREnvironment, [environmentMap])
+        : useNoShader();
 
       return [
         use(ShaderLitMaterial, {
           depth: getDepth,
           surface: getSurface,
           apply: applyPBRMaterial,
+          environment: getEnvironment,
           children: [
             use(FaceLayer, {
               positions: getPosition,
               uvs,
-              normals,
               fragDepth: true,
               shaded: true,
-              shouldDispatch: (uniforms: Record<string, any>) => {
+              blend,
+              mode,
+              shouldDispatch: (uniforms: Record<string, Ref<any>>) => {
                 insideRef.current = +inside(uniforms);
                 return !insideRef.current;
               },
@@ -440,12 +489,13 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
             use(FaceLayer, {
               positions: getPosition,
               uvs,
-              normals,
               fragDepth: true,
               shaded: true,
               side: 'back',
               depthTest: false,
-              shouldDispatch: (uniforms: Record<string, any>) => {
+              blend,
+              mode,
+              shouldDispatch: (uniforms: Record<string, Ref<any>>) => {
                 insideRef.current = +inside(uniforms);
                 originRef.current = origin(uniforms);
                 return !!insideRef.current;

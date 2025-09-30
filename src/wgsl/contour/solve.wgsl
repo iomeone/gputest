@@ -1,7 +1,7 @@
 @export fn approx3x3(system: mat3x4<f32>) -> vec3<f32> {
   let trace = abs(vec3<f32>(system[0][0], system[1][1], system[2][2]));
   let maxAxis = max(trace.x, max(trace.y, trace.z));
-  
+
   if (maxAxis == trace.x) {
     if (trace.y > trace.z) {
       return orthogonalize3x3(system, 0u, 1u, 2u);
@@ -39,10 +39,10 @@ fn orthogonalize3x3(
   var v1 = matrix[i];
   var v2 = matrix[j];
   var v3 = matrix[k];
-  
+
   let id1 = 1.0 / dot(v1.xyz, v1.xyz);
   var projected = v1.xyz * (v1.w * id1);
-  
+
   v2 = v2 - v1 * (dot(v2.xyz, v1.xyz) * id1);
   v3 = v3 - v1 * (dot(v3.xyz, v1.xyz) * id1);
 
@@ -70,7 +70,7 @@ fn orthogonalize3x3(
       }
     }
   }
-  
+
   /*
   let ap = abs(projected) * 2.0;
   let maxAbs = max(ap.x, max(ap.y, ap.z));

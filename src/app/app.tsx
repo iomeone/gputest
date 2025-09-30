@@ -1,20 +1,20 @@
-import type { LC } from '../live';
+import type { LC } from '@use-gpu/live';
 
-import React, { hot, into, useFiber, useMemo, useOne, useResource, useState } from '../live';
-import { HTML } from '../react';
-import { AutoCanvas, WebGPU } from '../webgpu';
-import { DebugProvider, FontLoader, Router, Routes } from '../workbench';
+import React, { hot, into, useFiber, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { AutoCanvas, FPSCounter, WebGPU } from '@use-gpu/webgpu';
+import { DebugProvider, FontLoader, Router, Routes, useKeyboard } from '@use-gpu/workbench';
 
-import { UseInspect } from '../inspect';
-import { inspectGPU } from '../inspect-gpu';
-import '../inspect/theme.css';
+import { UseInspect } from '@use-gpu/inspect';
+import { inspectGPU } from '@use-gpu/inspect-gpu';
+import '@use-gpu/inspect/theme.css';
 
 import { makeRoutes } from './routes';
 import { makePicker } from './ui/page-picker';
 
 import { FALLBACK_MESSAGE } from './fallback';
 
-import NOTO_SEQUENCES from './noto-emoji.json';
+import NOTO_SEQUENCES from './noto-emoji';
 
 // @ts-ignore
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -42,8 +42,15 @@ const useInspector = () => {
   return inspect;
 };
 
+export const FPSToggle = () => {
+  const [fps, setFPS] = useState(false);
+  const {keyboard} = useKeyboard();
+  useOne(() => keyboard.keys.f && setFPS(!fps), keyboard.keys.f);
+  return fps ? <FPSCounter container="#use-gpu > .canvas" top={32} /> : null;
+};
+
 export const App: LC = hot(() => {
-  
+
   const root = document.querySelector('#use-gpu')!;
   const inner = document.querySelector('#use-gpu .canvas')!;
 
@@ -53,7 +60,7 @@ export const App: LC = hot(() => {
       <Routes routes={makePicker(root)} />
     </Router>
   ), root);
-  
+
   const fonts = useOne(() => [
     {
       family: 'Lato',
@@ -105,6 +112,7 @@ export const App: LC = hot(() => {
         <FontLoader fonts={fonts}>
           {router}
         </FontLoader>
+        <FPSToggle />
       </AutoCanvas>
     </WebGPU>
   ), [root, fonts, router]);

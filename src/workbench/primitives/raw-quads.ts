@@ -1,38 +1,38 @@
-import type { LiveComponent } from '../../live';
-import type {
-  TypedArray, ViewUniforms, DeepPartial, Lazy,
-  UniformPipe, UniformAttribute, UniformAttributeValue, UniformType,
-  VertexData, LambdaSource, DataBounds,
-} from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import { Virtual } from './virtual';
+import { useDraw } from '../hooks/useDraw';
 
-import { use, memo, useCallback, useOne, useMemo, useNoCallback } from '../../live';
-import { bindBundle, bindingsToLinks, chainTo } from '../../shader/wgsl';
-import { makeShaderBindings, resolve } from '../../core';
+import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
+import { chainTo } from '@use-gpu/shader/wgsl';
+
+import { useMaterialContext } from '../providers/material-provider';
+import { PickingSource, usePickingShader } from '../providers/picking-provider';
+import { TransformContextProps } from '../providers/transform-provider';
 
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
-import { useBoundShader } from '../hooks/useBoundShader';
-import { useBoundSource, useNoBoundSource } from '../hooks/useBoundSource';
+import { useShader, useNoShader } from '../hooks/useShader';
+import { useSource } from '../hooks/useSource';
 import { useDataLength } from '../hooks/useDataBinding';
-import { usePickingShader } from '../providers/picking-provider';
+import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
-import { useMaterialContext } from '../providers/material-provider';
 
-import { getQuadVertex } from '../../wgsl/instance/vertex/quadwgsl';
-import { getMaskedColor } from '../../wgsl/mask/maskedwgsl';
+import { getQuadVertex } from '@use-gpu/wgsl/instance/vertex/quad.wgsl';
+import { getMaskedColor } from '@use-gpu/wgsl/mask/masked.wgsl';
+
+const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 
 export type RawQuadsProps = {
-  position?: number[] | TypedArray,
-  rectangle?: number[] | TypedArray,
-  color?: number[] | TypedArray,
+  position?: VectorLike,
+  rectangle?: VectorLike,
+  color?: VectorLike,
   depth?: number,
   zBias?: number,
   mask?: number,
-  uv?: number[] | TypedArray,
-  st?: number[] | TypedArray,
+  uv?: VectorLike,
+  st?: VectorLike,
 
   positions?: ShaderSource,
   rectangles?: ShaderSource,
@@ -43,13 +43,12 @@ export type RawQuadsProps = {
   uvs?: ShaderSource,
   sts?: ShaderSource,
 
-  lookups?: ShaderSource,
+  instance?: number,
+  instances?: ShaderSource,
+  transform?: TransformContextProps,
 
-  id?: number,
   count?: Lazy<number>,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
-
-const POSITION: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
+} & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
 
 export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps) => {
   const {
@@ -58,48 +57,55 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
     depthWrite,
     blend,
     mode = 'opaque',
-    id = 0,
+
+    instance,
+    instances,
+    transform,
+
     count = null,
   } = props;
 
   const vertexCount = 4;
   const instanceCount = useDataLength(count, props.positions);
 
-  const p = useShaderRef(props.position, props.positions);
+  const p = useSource(POSITIONS, useShaderRef(props.position, props.positions));
   const r = useShaderRef(props.rectangle, props.rectangles);
   const c = useShaderRef(props.color, props.colors);
   const d = useShaderRef(props.depth, props.depths);
   const z = useShaderRef(props.zBias, props.zBiases);
   const u = useShaderRef(props.uv, props.uvs);
-  const s = useShaderRef(props.st, props.sts);
-
-  const l = useShaderRef(null, props.lookups);
+  const s = useShaderRef(props.st, props.sts ?? p);
 
   const m = (mode !== 'debug') ? (props.masks ?? props.mask) : null;
-  
-  const ps = p && props.sts == null ? useBoundSource(POSITION, p) : useNoBoundSource();
 
-  const [xf, scissor, getBounds] = useApplyTransform(ps ?? p);
+  const {positions, scissor, bounds: getBounds} = useApplyTransform(p, transform);
 
   let bounds: Lazy<DataBounds> | null = null;
   if (getBounds && (props.positions as any)?.bounds) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     bounds = useCallback(() => getBounds((props.positions! as any).bounds), [props.positions, getBounds]);
   }
   else {
     useNoCallback();
   }
 
-  const {getFragment, ...material} = useMaterialContext().solid;
+  const material = useMaterialContext().solid;
 
-  const getVertex = useBoundShader(getQuadVertex, [xf, scissor, r, c, d, z, u, ps ?? s, l, instanceCount]);
+  const boundVertex = useShader(getQuadVertex, [
+    positions, scissor,
+    r,
+    c, d, z, u, s,
+    instanceCount,
+  ]);
+  const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount);
   const getPicking = usePickingShader(props);
-  const applyMask = m ? useBoundShader(getMaskedColor, [m]) : null;
+  const applyMask = m ? useShader(getMaskedColor, [m]) : useNoShader();
 
-  const links = useOne(() => ({
+  const links = useMemo(() => ({
     getVertex,
     getPicking,
-    getFragment: getFragment && applyMask ? chainTo(applyMask, getFragment) : getFragment,
     ...material,
+    getFragment: material.getFragment && applyMask ? chainTo(applyMask, material.getFragment) : material.getFragment,
   }), [getVertex, getPicking, applyMask, material]);
 
   const [pipeline, defs] = usePipelineOptions({
@@ -115,12 +121,13 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
 
   const defines: Record<string, any> = useMemo(() => ({
     ...defs,
+    ...instanceDefs,
     HAS_EDGE_BLEED: true,
-  }), [defs]);
+  }), [defs, instanceDefs]);
 
-  return use(Virtual, {
+  return useDraw({
     vertexCount,
-    instanceCount,
+    instanceCount: totalCount,
     bounds,
 
     links,

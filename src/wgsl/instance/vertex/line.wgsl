@@ -1,8 +1,8 @@
-use '../../../wgsl/use/types'::{ SolidVertex };
-use '../../../wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipLineIntoView, getPerspectiveScale, applyZBias3 };
-use '../../../wgsl/geometry/strip'::{ getStripIndex };
-use '../../../wgsl/geometry/line'::{ getLineJoin };
-use '../../../wgsl/geometry/arrow'::{ getArrowSize };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipLineIntoView, getPerspectiveScale, applyZBias3 };
+use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
+use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
+use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
 
 @optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 @optional @link fn getScissor(i: u32) -> vec4<f32> { return vec4<f32>(1.0); };
@@ -15,11 +15,11 @@ use '../../../wgsl/geometry/arrow'::{ getArrowSize };
 @optional @link fn getWidth(i: u32) -> f32 { return 1.0; };
 @optional @link fn getDepth(i: u32) -> f32 { return 0.0; };
 @optional @link fn getZBias(i: u32) -> f32 { return 0.0; };
-  
+
 @optional @link fn getTrim(i: u32) -> vec4<u32> { return vec4<u32>(0u, 0u, 0u, 0u); };
 @optional @link fn getSize(i: u32) -> f32 { return 3.0; };
 
-@optional @link fn getInstanceCount() -> f32 { return 1.0; }
+@optional @link fn getSegmentCount() -> f32 { return 1.0; }
 
 const ARROW_ASPECT: f32 = 2.5;
 
@@ -60,10 +60,10 @@ fn trimAnchor(
   return vec4<f32>(center, 1.0);
 }
 
-@export fn getLineVertex(vertexIndex: u32, instanceIndex: u32) -> SolidVertex {
+@export fn getLineVertex(vertexIndex: u32, elementIndex: u32) -> SolidVertex {
   var ij = getStripIndex(vertexIndex);
 
-  var segmentLeft = getSegment(instanceIndex);
+  var segmentLeft = getSegment(elementIndex);
   if (segmentLeft == 0 || segmentLeft == 2) {
     return SolidVertex(
       vec4<f32>(0.0),
@@ -82,28 +82,28 @@ fn trimAnchor(
   var joinIndex: u32;
   if (ij.x == 0u) {
     joinIndex = u32(LINE_JOIN_SIZE);
-    cornerIndex = instanceIndex;
+    cornerIndex = elementIndex;
   }
   else {
     joinIndex = ij.x - 1u;
-    cornerIndex = instanceIndex + 1u;
+    cornerIndex = elementIndex + 1u;
   }
 
-  let trim = getTrim(instanceIndex);
+  let trim = getTrim(elementIndex);
   var trimMode = i32(trim.z);
 
   let rectangleUV = getUV(cornerIndex);
   let st4 = getST(cornerIndex);
 
   let uv = mix(rectangleUV.xy, rectangleUV.zw, uv1);
-  let uv4 = vec4<f32>(uv, f32(instanceIndex) / getInstanceCount(), 0.0);
+  let uv4 = vec4<f32>(uv, f32(elementIndex) / getSegmentCount(), 0.0);
 
   let segment = getSegment(cornerIndex);
   let color = getColor(cornerIndex);
   var width = getWidth(cornerIndex);
   let depth = getDepth(cornerIndex);
   let zBias = getZBias(cornerIndex);
-  
+
   var centerPos = getPosition(cornerIndex);
   var beforePos = centerPos;
   var afterPos = centerPos;
@@ -149,7 +149,7 @@ fn trimAnchor(
         centerPos = trimAnchor(maxLength, endPos.xyz, nextPos.xyz, centerPos.xyz, beforePos.xyz, width, size, both, end.w, depth);
       }
     }
-    
+
     if (centerPos.w == 0.0) {
       return SolidVertex(
         vec4<f32>(0.0),

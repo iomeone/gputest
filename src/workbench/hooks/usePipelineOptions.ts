@@ -1,13 +1,14 @@
-import type { Update } from '../../state';
-import { BLEND_NONE, BLEND_ALPHA, BLEND_PREMULTIPLY, BLEND_ADD, BLEND_SUBTRACT, BLEND_MULTIPLY } from '../../core';
-import { useMemo } from '../../live';
-import { $set, $delete } from '../../state';
+import type { Update } from '@use-gpu/state';
+import type { Blending, Side } from '@use-gpu/core';
+import { BLEND_NONE, BLEND_ALPHA, BLEND_PREMULTIPLY, BLEND_ADD, BLEND_SUBTRACT, BLEND_MULTIPLY } from '@use-gpu/core';
+import { useMemo } from '@use-gpu/live';
+import { $set, $delete } from '@use-gpu/state';
 import { useRenderContext } from '../providers/render-provider';
 
 export type PipelineOptions = {
   mode: string,
-  blend: 'none' | 'alpha' | 'premultiply' | 'add' | 'subtract' | 'multiply' | GPUBlendState,
-  side: 'front' | 'back' | 'both',
+  blend: Blending | GPUBlendState,
+  side: Side,
   shadow: boolean,
   scissor: any,
   depthWrite: boolean,
@@ -67,13 +68,13 @@ export const usePipelineOptions = (
     const multisample = {
       alphaToCoverageEnabled: alphaToCoverage && samples > 1,
     };
-  
+
     const fragment = {
       targets: {
         0: {blend: typeof blend === 'object' ? $set(blend) : (BLENDS[blend] ?? $delete())},
       } as any
     };
-  
+
     const depthStencil = {
       depthWriteEnabled: depthWrite != null ? depthWrite : undefined,
       depthCompare: depthTest === false ? 'always' as GPUCompareFunction : undefined,

@@ -14,12 +14,12 @@ export const IconRow = ({height = 16, gap = 4, children}: PropsWithChildren<Icon
   if (!children) return null;
 
   const render = Array.isArray(children) ? children.flatMap((c, i) => [<span key={i.toString()} style={{paddingLeft: gap}} />, c]) : children;
-  
+
   return <div style={{display: 'inline-block', height, position: 'relative', top: 3/16 * height}}>{render}</div>;
 };
 
 type SVGProps = {
-  color?: string,  
+  color?: string,
   title?: string,
   size?: string | number,
 };
@@ -61,6 +61,17 @@ export const SVGChevronDown = ({color = '#fff', title = undefined, size = 16}: S
       viewBox="0 0 16 16"
     >
     <polygon points="12.8,6.3 11.4,4.9 8,8.3 4.6,4.9 3.2,6.3 7.8,10.9 8,11.1 "/>
+    </svg>
+  </div>
+);
+
+export const SVGChevronLeft = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+    >
+    <polygon points="9.7,3.2 11.1,4.6 7.7,8 11.1,11.4 9.7,12.8 5.1,8.2 4.9,8 "/>
     </svg>
   </div>
 );

@@ -1,25 +1,27 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { Rectangle, Emit, DataTexture } from '../../../core';
-import type { Image } from '../../../glyph';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Rectangle, Emit, DataTexture } from '@use-gpu/core';
+import type { Image } from '@use-gpu/glyph';
 
-import React, { Morph } from '../../../live';
-import { memo, fragment } from '../../../live';
-import { makeRawTexture } from '../../../core';
-import { padRGBA, glyphToRGBA, glyphToSDF, rgbaToSDF, rgbaToGlyph, sdfToGradient, makeSDFStage, paintSubpixelOffsets } from '../../../glyph';
+import React, { Morph } from '@use-gpu/live';
+import { memo, fragment } from '@use-gpu/live';
+import { makeRawTexture } from '@use-gpu/core';
+import { padRGBA, glyphToRGBA, glyphToSDF, rgbaToSDF, rgbaToGlyph, sdfToGradient, makeSDFStage, paintSubpixelOffsets } from '@use-gpu/glyph';
 import { GlyphControls } from '../../ui/glyph-controls';
 import { vec3 } from 'gl-matrix';
 
 import {
-  LinearRGB, Pass, Flat, RawTexture,
+  LinearRGB, Pass, FlatCamera, RawTexture,
   OrbitCamera, OrbitControls, PanControls,
   useDeviceContext, useFontContext, LayoutContext, DebugProvider,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
-  UI, Layout, Block, Inline, Text, Flex, Embed,
-} from '../../../layout';
+  UI, Layout, Block, Inline, Text, Flex, Embed, Element,
+} from '@use-gpu/layout';
 import {
-  Embedded, Axis, Grid, Scale, Tick, Point, Arrow, Sampled,
-} from '../../../plot';
+  Embedded, Axis, Grid, Scale, Tick, Point, Arrow, Sampler,
+} from '@use-gpu/plot';
+
+import { InfoBox } from '../../ui/info-box';
 
 const SIZE = 64;
 const DETAIL = 64;
@@ -29,12 +31,14 @@ const BACKGROUND = [0, 0, 0.09, 1];
 const WHITE = [1, 1, 1, 1];
 const WHITE_TRANSPARENT = [1, 1, 1, 0.75];
 const MARGIN_TOP = [0, 3, 0, 0];
+const NO_REPEAT = {repeat: 'none'};
 
 export const LayoutGlyphPage: LC = () => {
 
   const root = document.querySelector('#use-gpu .canvas');
 
-  return (
+  return (<>
+    <InfoBox>Extremely zoomable diagram with detail inside the pixels. Use &lt;Sampler&gt; to produce dense and sparse data sets and render them in a &lt;Flex&gt; layout.</InfoBox>
     <GlyphControls
       container={root}
       hasGlyph
@@ -72,12 +76,14 @@ export const LayoutGlyphPage: LC = () => {
               key="glyph"
               active={true}
               zoom={2}
+              minZoom={0.25}
+              maxZoom={400}
               anchor={[0, 0]}
               render={(x, y, zoom) =>
                 <Morph>
-                  <Flat x={x} y={y} zoom={zoom} focus={1/3}>
+                  <FlatCamera x={x} y={y} zoom={zoom} focus={1/3}>
                     <GlyphView subpixel={subpixel} contours={contours} preprocess={preprocess} postprocess={postprocess} glyph={glyph} />
-                  </Flat>
+                  </FlatCamera>
                 </Morph>
               }
             />
@@ -85,7 +91,7 @@ export const LayoutGlyphPage: LC = () => {
         ]
       }
     />
-  );
+  </>);
 };
 
 type GlyphViewProps = {
@@ -117,7 +123,7 @@ const roundUp2 = (v: number) => {
 const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: GlyphViewProps) => {
   const device = useDeviceContext();
   const rustText = useFontContext();
-  
+
   glyph = glyph ?? '@';
   const [glyphId, loaded] = rustText.findGlyph(0, glyph);
   const glyphMetrics = rustText.measureGlyph(0, glyphId ?? 5, DETAIL * 1.5);
@@ -170,7 +176,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
 
   const {xo, yo, xi, yi} = sdf1;
   const {xo: xo2, yo: yo2, xi: xi2, yi: yi2} = sdf2;
-  
+
   const outerField = {
     xs: xo,
     ys: yo,
@@ -236,7 +242,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
         emit(x + dx, y + dy, 0, 1);
       }
     };
-  
+
   const debugFrame = (image: Image) => (
     image ? <TextureFrame texture={{
       data: image.data,
@@ -245,7 +251,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
       size: [image.width, image.height],
     }}>
 
-      { image.xi && image.yi ? <Sampled
+      { image.xi && image.yi ? <Sampler
         axes='xy'
         format='vec4<f32>'
         size={padded}
@@ -260,10 +266,10 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
           height: image.height,
         })}
       >
-        <Arrow width={2} color={0x4080ff} depth={0.01} detail={4} zBias={ZBIAS_DATA} />
-      </Sampled> : null}
+        <Arrow flat end width={2} color='#4080ff' depth={0.01} zBias={ZBIAS_DATA} />
+      </Sampler> : null}
 
-      { image.xo && image.yo ? <Sampled
+      { image.xo && image.yo ? <Sampler
         axes='xy'
         format='vec4<f32>'
         size={padded}
@@ -278,21 +284,21 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
           height: image.height,
         })}
       >
-        <Arrow width={2} color={0x40c0ff} depth={0.01} detail={4} zBias={ZBIAS_DATA} />
-      </Sampled> : null}
+        <Arrow flat end width={2} color='#40c0ff' depth={0.01} zBias={ZBIAS_DATA} />
+      </Sampler> : null}
     </TextureFrame> : null
   );
-  
+
   return (
     <DebugProvider debug={{sdf2d: {subpixel, contours, preprocess, postprocess, solidify: true}}}>
       <LinearRGB backgroundColor={BACKGROUND}>
         <Pass>
           <UI>
             <Layout placement="center">
-              <Flex direction="y" anchor={"center"} align={"center"} height={'100%'}>
+              <Flex direction="y" anchor="center" align="center" height='100%'>
                 <Block width={1400}>
                   <Block margin={20}>
-                    <Inline align={"center"}>
+                    <Inline align="center">
                       <Text
                         size={32}
                         detail={64}
@@ -302,120 +308,120 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
                       />
                     </Inline>
                   </Block>
-                  <Flex align={"center"} gap={10}>
+                  <Flex align="center" gap={10}>
                     <Block width={rgbaTexture.size[0]} height={rgbaTexture.size[1] * 2 + 32}>
                       <TextureFrame texture={rgbaTexture}>
-                      {subpixel ? <>
-                        <Sampled
-                          axes='xy'
-                          format='vec4<f32>'
-                          size={padded}
-                          items={1}
-                          sparse
-                          centered
-                          index
-                          expr={gridEmitter(outerField)}
-                        >
-                          <Point size={0.5} depth={1} color={'#808080'} shape={'circleOutlined'} zBias={ZBIAS_DATA} />
-                        </Sampled>
+                        {subpixel ? <>
+                          <Sampler
+                            axes='xy'
+                            format='vec4<f32>'
+                            size={padded}
+                            items={1}
+                            sparse
+                            centered
+                            index
+                            expr={gridEmitter(outerField)}
+                          >
+                            <Point size={0.5} depth={1} color='#808080' shape='circle' hollow zBias={ZBIAS_DATA} />
+                          </Sampler>
 
-                        <Sampled
-                          axes='xy'
-                          format='vec4<f32>'
-                          size={padded}
-                          items={1}
-                          sparse
-                          centered
-                          index
-                          expr={pointEmitter(outerField)}
-                        >
-                          <Point size={0.5} depth={1} color={preprocess ? '#80808080' : '#808080'} shape={'circle'} zBias={ZBIAS_DATA} />
-                        </Sampled>
+                          <Sampler
+                            axes='xy'
+                            format='vec4<f32>'
+                            size={padded}
+                            items={1}
+                            sparse
+                            centered
+                            index
+                            expr={pointEmitter(outerField)}
+                          >
+                            <Point size={0.5} depth={1} color={preprocess ? '#80808080' : '#808080'} shape='circle' zBias={ZBIAS_DATA} />
+                          </Sampler>
 
-                        {preprocess ? <Sampled
-                          axes='xy'
-                          format='vec4<f32>'
-                          size={padded}
-                          items={1}
-                          sparse
-                          centered
-                          index
-                          expr={pointEmitter(innerField)}
-                        >
-                          <Point size={0.5} depth={1} color={'#808080'} shape={'circle'} zBias={ZBIAS_DATA + 1} />
-                        </Sampled> : null}
+                          {preprocess ? <Sampler
+                            axes='xy'
+                            format='vec4<f32>'
+                            size={padded}
+                            items={1}
+                            sparse
+                            centered
+                            index
+                            expr={pointEmitter(innerField)}
+                          >
+                            <Point size={0.5} depth={1} color='#808080' shape='circle' zBias={ZBIAS_DATA + 1} />
+                          </Sampler> : null}
 
-                        <Sampled
-                          axes='xy'
-                          format='vec4<f32>'
-                          size={padded}
-                          items={2}
-                          sparse
-                          centered
-                          index
-                          expr={arrowEmitter(preprocess ? innerField : outerField)}
-                        >
-                          <Arrow width={3} depth={0.05} color={0x40c0ff} detail={4} zBias={ZBIAS_DATA} />
-                        </Sampled>
+                          <Sampler
+                            axes='xy'
+                            format='vec4<f32>'
+                            size={padded}
+                            items={2}
+                            sparse
+                            centered
+                            index
+                            expr={arrowEmitter(preprocess ? innerField : outerField)}
+                          >
+                            <Arrow flat end width={3} depth={0.05} color='#40c0ff' zBias={ZBIAS_DATA} />
+                          </Sampler>
                         </> : null}
                       </TextureFrame>
 
                       <TextureFrame texture={rgbaTexture}>
-                      {subpixel ? <>
-                        <Sampled
-                          axes='xy'
-                          format='vec4<f32>'
-                          size={padded}
-                          items={1}
-                          sparse
-                          centered
-                          index
-                          expr={shiftedPointEmitter(outer2Field)}
-                        >
-                          <Point size={0.5} depth={1} color={0x4080ff} zBias={ZBIAS_DATA} />
-                        </Sampled>
+                        {subpixel ? <>
+                          <Sampler
+                            axes='xy'
+                            format='vec4<f32>'
+                            size={padded}
+                            items={1}
+                            sparse
+                            centered
+                            index
+                            expr={shiftedPointEmitter(outer2Field)}
+                          >
+                            <Point size={0.5} depth={1} color='#4080ff' zBias={ZBIAS_DATA} />
+                          </Sampler>
 
-                        <Sampled
-                          axes='xy'
-                          format='vec4<f32>'
-                          size={padded}
-                          items={1}
-                          sparse
-                          centered
-                          index
-                          expr={shiftedPointEmitter(inner2Field)}
-                        >
-                          <Point size={0.5} depth={1} color={0x40c0ff} zBias={ZBIAS_DATA} />
-                        </Sampled>
+                          <Sampler
+                            axes='xy'
+                            format='vec4<f32>'
+                            size={padded}
+                            items={1}
+                            sparse
+                            centered
+                            index
+                            expr={shiftedPointEmitter(inner2Field)}
+                          >
+                            <Point size={0.5} depth={1} color='#40c0ff' zBias={ZBIAS_DATA} />
+                          </Sampler>
 
-                        <Sampled
-                          axes='xy'
-                          format='vec4<f32>'
-                          size={padded}
-                          items={2}
-                          sparse
-                          centered
-                          index
-                          expr={arrowEmitter(outer2Field)}
-                        >
-                          <Arrow width={3} depth={0.05} color={0x4080ff} detail={4} zBias={ZBIAS_DATA} />
-                        </Sampled>
+                          <Sampler
+                            axes='xy'
+                            format='vec4<f32>'
+                            size={padded}
+                            items={2}
+                            sparse
+                            centered
+                            index
+                            expr={arrowEmitter(outer2Field)}
+                          >
+                            <Arrow flat end width={3} depth={0.05} color='#4080ff' zBias={ZBIAS_DATA} />
+                          </Sampler>
 
-                        <Sampled
-                          axes='xy'
-                          format='vec4<f32>'
-                          size={padded}
-                          items={2}
-                          sparse
-                          centered
-                          index
-                          expr={arrowEmitter(inner2Field)}
-                        >
-                          <Arrow width={3} depth={0.05} color={0x40c0ff} detail={4} zBias={ZBIAS_DATA} />
-                        </Sampled>
+                          <Sampler
+                            axes='xy'
+                            format='vec4<f32>'
+                            size={padded}
+                            items={2}
+                            sparse
+                            centered
+                            index
+                            expr={arrowEmitter(inner2Field)}
+                          >
+                            <Arrow flat end width={3} depth={0.05} color='#40c0ff' zBias={ZBIAS_DATA} />
+                          </Sampler>
                         </> : null}
                       </TextureFrame>
-                    
+
                       <Label>Alpha{subpixel ? ' + Offsets' + (preprocess ? ' (Relaxed)' : '') : ''}</Label>
                     </Block>
 
@@ -428,24 +434,26 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
                         {debugFrame(debugs[1])}
                         {debugFrame(debugs[2])}
                         <Label>{subpixel ? "ESDT Outside" : "EDT Outside"}</Label>
-                      </Block>                
+                      </Block>
                       <Block>
                         {debugFrame(debugs[3])}
                         {debugFrame(debugs[4])}
                         <Label>{subpixel ? "ESDT Inside" : "EDT Inside"}</Label>
-                      </Block>                
+                      </Block>
                       <Block>
                         {debugFrame(debugs[5])}
                         <Label>{subpixel ? "X and Y Offsets" + (postprocess ? '\n(Relaxed)' : '') : "Squared Distance"}</Label>
-                      </Block>                
+                      </Block>
                     </> : null}
 
                     <RawTexture data={sdfTexture} render={(texture) =>
                       <Block>
-                        <Block width={paddedWidth} height={paddedHeight} fill={[0.0, 0.0, 0.0, 1.0]} image={{
-                          texture,
-                          repeat: 'none',
-                        }} />
+                        <Element
+                          width={paddedWidth}
+                          height={paddedHeight}
+                          fill={[0.0, 0.0, 0.0, 1.0]}
+                          texture={texture}
+                          image={NO_REPEAT} />
                         <Label>SDF</Label>
                       </Block>
                     }/>
@@ -477,33 +485,32 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
   );
 }, 'View');
 
-type TextureFrameProps = {
+type TextureFrameProps = PropsWithChildren<{
   texture: any,
   margin?: number,
-}
+}>;
 
-const TextureFrame: LC<TextureFrameProps> = (props: PropsWithChildren<TextureFrameProps>) => {
+const TextureFrame: LC<TextureFrameProps> = (props: TextureFrameProps) => {
   const {margin, texture, children} = props;
   const {size: [width, height]} = texture;
-  
+
   return (
     <RawTexture data={texture} render={(texture) =>
       <Block margin={margin} width={width} height={height} fill={[0.0, 0.0, 0.0, 1.0]} image={{
-        texture,
         fit: 'contain',
         repeat: 'none',
-      }}>
+      }} texture={texture}>
         <Embed width="100%" height="100%">
           <Embedded>
-            <Axis axis="x" width={5} color={0x808080} end={false} />
-            <Axis axis="y" width={5} color={0x808080} end={false} />
-            <Grid axes="xy" width={2} color={0xcccccc} first={{divide: width / 10}} second={{divide: height / 10}} zBias={ZBIAS_GRID} />
+            <Axis axis="x" width={5} color='#808080' end={false} />
+            <Axis axis="y" width={5} color='#808080' end={false} />
+            <Grid axes="xy" width={2} color='#a0a0a0' first={{divide: width / 10}} second={{divide: height / 10}} zBias={ZBIAS_GRID} />
 
             <Scale axis="x" unit={1} divide={width}>
-              <Tick size={10} width={2.5} color={0xc0c0c0} depth={0} zBias={ZBIAS_DATA} />
+              <Tick size={10} width={2.5} color='#c0c0c0' depth={0} zBias={ZBIAS_DATA} />
             </Scale>
             <Scale axis="y" unit={1} divide={height}>
-              <Tick size={10} width={2.5} color={0xc0c0c0} depth={0} offset={[1, 0, 0]} zBias={ZBIAS_DATA} />
+              <Tick size={10} width={2.5} color='#c0c0c0' depth={0} offset={[1, 0, 0]} zBias={ZBIAS_DATA} />
             </Scale>
             {children}
           </Embedded>
@@ -515,11 +522,11 @@ const TextureFrame: LC<TextureFrameProps> = (props: PropsWithChildren<TextureFra
 
 type LabelProps = {
   children: string | string[],
-}
+};
 
-const Label: LC<LabelProps> = (props: PropsWithChildren<LabelProps>) => (
+const Label: LC<LabelProps> = (props: LabelProps) => (
   <Block margin={MARGIN_TOP}>
-    <Inline align={"center"}>
+    <Inline align="center">
       <Text
         size={10}
         snap={false}

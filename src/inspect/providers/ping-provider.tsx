@@ -1,5 +1,5 @@
-import type { LiveFiber, ArrowFunction } from '../../live';
-import { formatNodeName, incrementVersion } from '../../live';
+import type { LiveFiber, ArrowFunction } from '@use-gpu/live';
+import { formatNodeName, incrementVersion } from '@use-gpu/live';
 
 import React, { memo, createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -63,6 +63,7 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
     let timer: Timer | null = null;
     let reset: Timer | null = null;
 
+    //
     let queue: PingEntry[] = [];
     let hot: PingEntry[] = [];
     let version = 0;
@@ -77,46 +78,32 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
 
       const q = queue.slice();
       queue.length = 0;
-      
+
       const seen = new Set<number>();
       const mounts = new Set<number>();
 
       ReactDOM.unstable_batchedUpdates(() => {
+        // Ping each queued fiber's listeners
         for (const [id, v, active] of q) {
           seen.add(id);
 
           const s = map.get(id)!;
-          if (!s) {
-            mounts.add(id);
-            continue;
-          }
+          if (!s) continue;
 
           const fs = s.values();
           for (const f of fs) f(v, active);
         }
+        // Unping last fiber's listeners
         for (const [id, v] of hot) if (!seen.has(id)) {
-          const s = map.get(id)!;
-          if (!s) {
-            mounts.add(id);
-            continue;
-          }
-
-          const fs = s.values();
-          for (const f of fs) f(v, false);
-        }
-      
-        for (const f of all) f(version, false);
-      });
-
-      setTimeout(() => {
-        for (const id of mounts) {
           const s = map.get(id)!;
           if (!s) continue;
 
           const fs = s.values();
-          for (const f of fs) f(0, true);
+          for (const f of fs) f(v, false);
         }
-      }, 0);
+        // Ping global listeners
+        for (const f of all) f(version, false);
+      });
 
       hot = q;
     };
@@ -128,12 +115,14 @@ export const PingProvider: React.FC<PingProviderProps> = ({fiber, children}) => 
       queue.push([fiber.id, fiber.runs, !!active]);
 
       if (!timer) {
+        // Schedule immediate 'on' flush
         timer = setTimeout(flush, 0);
 
+        // Schedule 'off' flush in 200ms if idle
         if (reset) clearTimeout(reset);
-        reset = setTimeout(timeout, 100);
+        reset = setTimeout(() => setTimeout(timeout, 16), 200);
       }
-      
+
       if (fiber.bound) { if (!fibers.get(fiber.id)) fibers.set(fiber.id, fiber); }
       else { fibers.delete(fiber.id); }
     };
@@ -160,7 +149,7 @@ export const usePingTracker = (fiber?: LiveFiber<any>) => {
   const [live, setLive] = useState<boolean>(false);
 
   useLayoutEffect(() => {
-    const ping = (version: number, live: boolean) => {      
+    const ping = (version: number, live: boolean) => {
       if (live) setVersion(version);
       setLive(live);
       forceUpdate();

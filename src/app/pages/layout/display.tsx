@@ -1,16 +1,18 @@
-import type { LC } from '../../../live';
+import type { LC } from '@use-gpu/live';
 
-import React from '../../../live';
-import { LayoutControls } from '../../ui/layout-controls';
+import React from '@use-gpu/live';
+import { TextureSource } from '@use-gpu/core';
 
 import {
-  LinearRGB, Pass, Flat,
-  PanControls,
+  LinearRGB, Pass, FlatCamera, PanControls, ImageTexture,
   DebugProvider,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Overflow, Text, Element,
-} from '../../../layout';
+} from '@use-gpu/layout';
+
+import { LayoutControls } from '../../ui/layout-controls';
+import { InfoBox } from '../../ui/info-box';
 
 const BLACK_SHADE = [0, 0, 0, .9];
 const GRAY_TRANSPARENT = [0.5, 0.5, 0.5, 0.5];
@@ -20,9 +22,12 @@ const WHITE = [1, 1, 1, 1];
 const MARGIN_LEFT = [24, 0, 0, 0];
 const MARGIN_TOP = [0, 24, 0, 0];
 
+const FIT_SCALE = {fit: 'scale'};
+
 export const LayoutDisplayPage: LC = () => {
 
-  const view = (
+  const view = (<>
+    <InfoBox>Create flex, block and inline layouts using the layout package. Fully scalable, rendered using distance fields.</InfoBox>
     <LinearRGB>
       <Pass>
         <UI>
@@ -98,6 +103,34 @@ export const LayoutDisplayPage: LC = () => {
                       <Text size={16} color={WHITE} lineHeight={24}>{" exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."}</Text>
                     </Inline>
 
+                    <ImageTexture
+                      url="/textures/test.png"
+                      colorSpace="srgb"
+                    >{
+                      (texture: TextureSource | null) =>
+                        <Flex align="center" width="100%" height={300}>
+                          <Block
+                            fill="#3090ff" 
+                            width={300}
+                            height={300}
+                            margin={20}
+                            texture={texture}
+                            image={FIT_SCALE}
+                          />
+                        </Flex>
+                    }</ImageTexture>
+
+                    <Block margin={[0, 40, 0, 0]} height={2} fill={WHITE} />
+
+                    <Inline margin={MARGIN_TOP}>
+                      <Text size={16} color={WHITE} weight="bold" lineHeight={24}>{"Lorem ipsum dolor sit amet,"}</Text>
+                      <Text size={16} color={WHITE} lineHeight={24}>{" consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n"}</Text>
+
+                      <Text size={16} color={WHITE} lineHeight={24}>{"Lorem x ipsum dolor sit amet, x consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n"}</Text>
+
+                      <Text size={16} color={WHITE} lineHeight={24}>{"Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n"}</Text>
+                    </Inline>
+
                     <Block margin={[0, 20, 0, 0]} height={2} fill={WHITE} />
 
                     <Inline margin={MARGIN_TOP}>
@@ -108,25 +141,14 @@ export const LayoutDisplayPage: LC = () => {
 
                       <Text size={16} color={WHITE} lineHeight={24}>{"Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n"}</Text>
                     </Inline>
-                  
-                    <Block margin={[0, 20, 0, 0]} height={2} fill={WHITE} />
-
-                    <Inline margin={MARGIN_TOP}>
-                      <Text size={16} color={WHITE} weight="bold" lineHeight={24}>{"Lorem ipsum dolor sit amet,"}</Text>
-                      <Text size={16} color={WHITE} lineHeight={24}>{" consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n"}</Text>
-
-                      <Text size={16} color={WHITE} lineHeight={24}>{"Lorem x ipsum dolor sit amet, x consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n"}</Text>
-
-                      <Text size={16} color={WHITE} lineHeight={24}>{"Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n"}</Text>
-                    </Inline>
 
                     <Block margin={[0, 20, 0, 0]} height={2} fill={WHITE} />
-                    
+
                   </Block>
                 </Overflow>
               </Block>
             </Flex>
-                     
+
             <Absolute bottom={10} height={40} left={0} right={0}>
               <Flex width="100%" height="100%" align="center">
                 <Flex align="center">
@@ -143,14 +165,14 @@ export const LayoutDisplayPage: LC = () => {
         </UI>
       </Pass>
     </LinearRGB>
-  );
+  </>);
 
   const root = document.querySelector('#use-gpu .canvas');
 
   return (
     <LayoutControls
       container={root}
-      render={(mode) => 
+      render={(mode) =>
         <DebugProvider
           debug={{
             sdf2d: { contours: mode === 'sdf' },
@@ -159,9 +181,9 @@ export const LayoutDisplayPage: LC = () => {
           <PanControls
             active={mode !== 'inspect'}
             render={(x, y, zoom) =>
-              <Flat x={x} y={y} zoom={zoom}>
+              <FlatCamera x={x} y={y} zoom={zoom}>
                 {view}
-              </Flat>
+              </FlatCamera>
             }
         />
       </DebugProvider>

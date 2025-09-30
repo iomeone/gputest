@@ -1,44 +1,34 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '../../live';
+import type { LC, PropsWithChildren, ArrowFunction } from '@use-gpu/live';
 
-import { use, quote, yeet, memo, useContext, useMemo } from '../../live';
-import { useInspectable } from '../hooks/useInspectable'
+import { yeet, memo } from '@use-gpu/live';
+import { QueueReconciler } from '../reconcilers/index';
 
-export type DispatchPassProps = {
+const {quote} = QueueReconciler;
+
+export type DispatchPassProps = PropsWithChildren<{
   calls: {
     dispatch?: ArrowFunction[],
   },
-};
+}>;
 
 const NO_OPS: any[] = [];
-const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS; 
+const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
 
 /** Dispatch pass.
 
 Executes all dispatch calls.
 */
-export const DispatchPass: LC<DispatchPassProps> = memo((props: PropsWithChildren<DispatchPassProps>) => {
+export const DispatchPass: LC<DispatchPassProps> = memo((props: DispatchPassProps) => {
   const {
     calls,
   } = props;
 
-  const inspect = useInspectable();
-
   const dispatches = toArray(calls['dispatch'] as ArrowFunction[]);
 
   const run = () => {
-    let ds = 0;
-    
-    const countDispatch = (d: number) => { ds += d; };
-
     if (dispatches.length) {
       for (const f of dispatches) f();
     }
-
-    inspect({
-      render: {
-        dispatchCount: ds,
-      },
-    });
 
     return null;
   };

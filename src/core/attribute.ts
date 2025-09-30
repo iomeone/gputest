@@ -21,3 +21,4 @@ export const makeVertexAttributeLayout = (
 
   return {arrayStride, attributes: out};
 };
+

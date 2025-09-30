@@ -1,4 +1,4 @@
-import type { LiveComponent } from '../../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type { VirtualDraw } from '../../pass/types';
 
 import { UIRender } from '../forward/ui';

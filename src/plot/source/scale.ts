@@ -1,85 +1,78 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { StorageSource, LambdaSource, UniformType } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { VectorLike } from '../../traits';
-import type { ScaleTrait, AxisTrait } from '../types';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { TensorArray } from '@use-gpu/core';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { parseVec4, useProp } from '../../traits';
-import { yeet, provide, useOne, useMemo, useNoMemo, useContext, incrementVersion } from '../../live';
-import { useRawSource, useBoundShader, useShaderRef } from '../../workbench';
+import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { parsePosition } from '@use-gpu/parse';
+import { memo, yeet, provide, useMemo, useNoMemo } from '@use-gpu/live';
+import { toTensorArray, fillNumberArray } from '@use-gpu/core';
+import { getRenderFunc } from '@use-gpu/workbench';
 
-import { DataContext, ValuesContext } from '../providers/data-provider';
-import { RangeContext } from '../providers/range-provider';
+import { useDataContext, DataContext } from '../providers/data-provider';
+import { useRangeContext } from '../providers/range-provider';
 
-import { useScaleTrait, useAxisTrait } from '../traits';
 import { logarithmic, linear } from '../util/domain';
 
-import { getScalePosition } from '../../wgsl/plot/scalewgsl';
+import {
+  ScaleTrait,
+  AxisTrait,
+} from '../traits';
 
-import { vec4 } from 'gl-matrix';
+const Traits = combine(
+  ScaleTrait,
+  AxisTrait,
+  trait({
+    origin: parsePosition,
+  }),
+);
 
-export type ScaleProps = Partial<ScaleTrait> & Partial<AxisTrait> & {
-  origin?: VectorLike,
-  render?: (positions: LambdaSource, values: Float32Array) => LiveElement,
+const useTraits = makeUseTrait(Traits);
+
+export type ScaleProps = TraitProps<typeof Traits> & {
+  /** Omit to provide data context `positions` and `values` instead. */
+  render?: (data: {positions: TensorArray, values: TensorArray}) => LiveElement,
+  children?: LiveElement | ((data: {positions: TensorArray, values: TensorArray}) => LiveElement),
 };
 
-export const Scale: LiveComponent<ScaleProps> = (props: PropsWithChildren<ScaleProps>) => {
+export const Scale: LiveComponent<ScaleProps> = memo((props: ScaleProps) => {
 
   const {
-    origin,
-    render,
     children,
   } = props;
 
-  const {axis, range} = useAxisTrait(props);
-  const domainOptions = useScaleTrait(props);
+  const {axis, range, origin, ...domainOptions} = useTraits(props);
 
-  const parentRange = useContext(RangeContext);
+  const parentRange = useRangeContext();
   const r = range ?? parentRange[axis];
-  const p = useProp(origin, parseVec4);
 
-  // Generate tick scale
-  const newValues = useMemo(() => {
+  // Generate value scale
+  const values = useMemo(() => {
     const f = (props.mode === 'log') ? logarithmic : linear;
-    return new Float32Array(f(r[0], r[1], domainOptions));
+    return toTensorArray('f32', new Float32Array(f(r[0], r[1], domainOptions)));
   }, [r[0], r[1], props]);
+  const version = useMemo(() => [], [...values.array]);
 
-  const values = useMemo(() => newValues, newValues as any);
-  const data = useRawSource(values, 'f32');
+  // Generate positions aligned with origin
   const n = values.length;
+  const positions = useMemo(() => {
+    const vs = values.array;
+    const array = new Float32Array(n * 4);
+    fillNumberArray(origin, array, 4, 4, 0, 0, n);
+    for (let i = 0; i < n; ++i) array[i * 4 + axis] = vs[i];
+    return toTensorArray('vec4<f32>', array);
+  }, [version, origin]);
 
-  // Make tick vertex shader
-  const og = vec4.clone(p as any);
-  og[axis] = 0;
+  const render = getRenderFunc(props);
 
-  const o = useShaderRef(og);
-  const a = useShaderRef(axis);
-  const bound = useBoundShader(getScalePosition, [data, a, o]);
+  const tensors = useMemo(() => ({positions, values}), [positions, version]);
+  const dataContext = useDataContext();
+  const context = !render && children ? useMemo(() => ({
+    ...dataContext,
+    ...tensors,
+  }), [dataContext, tensors]) : useNoMemo();
 
-  // Expose position source
-  const source = useMemo(() => ({
-    shader: bound,
-    alloc: (data as any).alloc,
-    length: n,
-    size: [n],
-    version: 0,
-  }), [bound]);
-
-  useOne(() => {
-    source.length = n;
-    source.size[0] = n;
-  }, n);
-
-  useOne(() => {
-    source.version = incrementVersion(source.version);
-  }, values);
-
-  return useMemo(() => {
-    if (render == null && children === undefined) return yeet(source);
-    return (
-      provide(ValuesContext, values,
-        provide(DataContext, source, render != null ? render(source, values) : children)
-      )
-    );
-  }, [render, children, source, values]);
-}
+  return render ? render(tensors) : children ? provide(DataContext, context, children) : yeet(tensors);
+}, shouldEqual({
+  origin: sameShallow(),
+  range: sameShallow(sameShallow()),
+}), 'Scale');

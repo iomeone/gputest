@@ -1,49 +1,75 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TypedArray, StorageSource, UniformType, DataField } from '../../core';
-import { capture, yeet, makeContext, useCapture, useContext, useNoContext, useMemo, useOne, useRef, useResource, incrementVersion, makeCapture } from '../../live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { DataSchema, StructAggregateBuffer, StorageSource, UniformType } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import { capture, useCapture, useMemo, useOne, useRef, useResource, incrementVersion, makeCapture } from '@use-gpu/live';
 import {
   makeIdAllocator,
-  makeDataArray, copyNumberArrayRange,
-  makeStorageBuffer, uploadBuffer, uploadBufferRange, UNIFORM_ARRAY_DIMS,
-} from '../../core';
+  copyNumberArray,
+  
+  normalizeSchema,
+  makeArrayAggregateBuffer,
+  makeStructAggregateBuffer,
+  makeStructAggregateFields,
+  isUniformArrayType,
+
+  uploadBuffer, uploadBufferRange,
+  toCPUDims, toGPUDims,
+} from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
+import { QueueReconciler } from '../reconcilers/index';
 import { useBufferedSize } from '../hooks/useBufferedSize';
+import { getRenderFunc } from '../hooks/useRenderProp';
+import { getInstancedAggregate } from '../hooks/useInstancedSources';
 
-type Queued = {instance: number, data: Record<string, any>};
-type FieldBuffer = {
-  buffer: GPUBuffer,
-  array: TypedArray,
-  source: StorageSource,
-  dims: number,
-  accessor: string,
-};
+const {signal} = QueueReconciler;
 
-export type InstanceDataProps = {
-  format?: 'u16' | 'u32',
-  fields: [string, string][],
-  alloc?: number,
+type Queued = {instances: number[], datas: Record<string, any>[]};
+
+export type UseInstance = () => (data: Record<string, any>) => void;
+
+export type InstanceDataProps<I extends 'u16' | 'u32' | undefined> = {
+  format?: I,
+  schema: DataSchema,
+  reserve?: number,
 
   render?: (useInstance: () => (data: Record<string, any>) => void) => LiveElement,
-  then?: (indices: StorageSource, data: StorageSource[]) => LiveElement,
+  children?: (useInstance: () => (data: Record<string, any>) => void) => LiveElement,
+  then?: 'u16' | 'u32' extends I
+    ? (data: Record<string, ShaderSource>, indices: StorageSource) => LiveElement
+    : (data: Record<string, ShaderSource>) => LiveElement
 };
 
-export const InstanceData: LiveComponent<InstanceDataProps> = (props) => {
+export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undefined>> = <I extends 'u16' | 'u32' | undefined>(props: InstanceDataProps<I>) => {
   const {
-    fields: fs,
-    format = 'u16',
-    alloc = 64,
+    schema: propSchema,
+    format,
+    reserve = 64,
     then,
-    render,
-    children,
   } = props;
 
   const device = useDeviceContext();
   const versionRef = useRef(0);
 
+  const schema = useOne(() => normalizeSchema(propSchema), propSchema);
+  const uniforms = useMemo(
+    () => {
+      const out = [];
+      for (const k in schema) {
+        const {format, index, unwelded} = schema[k];
+        const f = format as UniformType;
+        if (index || unwelded) throw new Error(`Indexed and unwelded data not supported in <InstanceData>. Use <Data>.`);
+        if (isUniformArrayType(f)) throw new Error(`Array data not supported in <InstanceData>. Use <Data>.`);
+        out.push({name: k, format: f});
+      }
+      return out;
+    },
+    [schema]
+  );
+
   const [ids, queue, InstanceCapture] = useOne(() => [
     makeIdAllocator(0),
-    [] as Queued[],
+    {instances: [], datas: []} as Queued,
     makeCapture('InstanceCapture'),
   ]);
 
@@ -51,7 +77,10 @@ export const InstanceData: LiveComponent<InstanceDataProps> = (props) => {
   const useInstance = useMemo(() => {
 
     const makeUpdateInstance = (instance: number) => (data: Record<string, any>) => {
-      queue.push({instance, data});
+      queue.instances.push(instance);
+      queue.datas.push(data);
+
+      return instance;
     };
 
     const useInstance = () => {
@@ -67,108 +96,98 @@ export const InstanceData: LiveComponent<InstanceDataProps> = (props) => {
     };
 
     return useInstance;
-  }, [device, fs]);
+  }, [device, uniforms]);
 
   // Produce instance sources
-  const Resume = () => {    
-    const size = Math.max(alloc, ids.max());
-    const bufferLength = useBufferedSize(size);
+  const Resume = () => {
+    const size = Math.max(reserve, ids.max());
+    const alloc = useBufferedSize(size);
 
-    const prevBuffersRef = useRef(null as FieldBuffer[] | null);
+    const prevBufferRef = useRef(null as StructAggregateBuffer | null);
 
     // Make/resize data buffers + index buffer
-    const [fieldBuffers, fieldSources, indexBuffer, indexSource] = useMemo(() => {
-      const {current: prevBuffers} = prevBuffersRef;
+    const [aggregateBuffer, indexBuffer, fields, sources] = useMemo(() => {
+      const aggregateBuffer = makeStructAggregateBuffer(device, uniforms, alloc);
+      const {current: prevBuffer} = prevBufferRef;
 
-      const fieldBuffers = fs.map(([format, accessor], i) => {
-        if (!(format in UNIFORM_ARRAY_DIMS)) throw new Error(`Unknown data format "${format}"`);
-        const f = format as any as UniformType;
-        const {array, dims} = makeDataArray(f, bufferLength);
-
-        if (prevBuffers) {
-          const prevArray = prevBuffers[i].array;
-          const n = Math.min(prevArray.length, array.length);
-          for (let i = 0; i < n; ++i) array[i] = prevArray[i];
-        }
-
-        const buffer = makeStorageBuffer(device, array.byteLength);
-        const source = {
-          buffer,
-          format,
-          length: bufferLength,
-          size: [bufferLength],
-          version: 0,
-        };
-
-        return {buffer, array, source, dims, accessor};
-      });
-
-      const fieldSources = fieldBuffers.map(f => f.source);
-
-      let indexBuffer, indexSource;
-      {
-        if (format !== 'u16' && format !== 'u32') throw new Error(`Unknown index format "${format}"`);
-        const {array, dims} = makeDataArray(format, bufferLength);
-        const buffer = makeStorageBuffer(device, array.byteLength);
-        const source = indexSource = {
-          buffer,
-          format,
-          length: 0,
-          size: [0],
-          version: 0,
-        };
-        indexBuffer = {buffer, array, source, dims: 1};
+      if (prevBuffer) {
+        const from = new Uint32Array(prevBuffer.raw);
+        const to = new Uint32Array(aggregateBuffer.raw);
+        copyNumberArray(from, to, 1, 1, 0, 0, Math.min(from.length, to.length));
       }
 
-      return [fieldBuffers, fieldSources, indexBuffer, indexSource];
-    }, [device, fs, bufferLength]);
+      if (format != null && format !== 'u16' && format !== 'u32') throw new Error(`Unknown index format "${format}"`);
+      const indexBuffer = format ? makeArrayAggregateBuffer(device, format, alloc) : null;
 
-    let needsRefresh = prevBuffersRef.current !== fieldBuffers
-    prevBuffersRef.current = fieldBuffers;
+      const fields = makeStructAggregateFields(aggregateBuffer);
+      const sources = getInstancedAggregate(aggregateBuffer, indexBuffer?.source);
+
+      return [aggregateBuffer, indexBuffer, fields, sources];
+    }, [device, uniforms, alloc]);
+
+    const needsRefresh = prevBufferRef.current !== aggregateBuffer;
+    prevBufferRef.current = aggregateBuffer;
 
     // Update data sparsely while calculating upload ranges
-    let ranges = [];
+    const ranges = [];
     let range = null;
-    for (const {instance, data} of queue) {
+    const {instances, datas} = queue;
+    const n = instances.length;
+    for (let i = 0; i < n; ++i) {
+      const instance = instances[i];
+      const data = datas[i];
+
       if (!range) ranges.push(range = [instance, instance + 1]);
       else if (range[1] === instance) range[1]++;
       else ranges.push(range = [instance, instance + 1]);
 
-      for (const {array, dims, accessor} of fieldBuffers) {
-        const v = data[accessor];
-        if (v != null) copyNumberArrayRange(v, array, 0, instance * Math.ceil(dims), Math.ceil(dims), dims);
-      }
-    }
-    if (needsRefresh) ranges = [[0, size]];
+      for (const k in fields) {
+        const {prop = k} = schema[k];
+        const {array, base = 0, stride = 1, dims} = fields[k];
+        const v = data[prop];
 
-    // Upload changed ranges
-    if (ranges.length) {
-      for (const {buffer, array, dims} of fieldBuffers) {
-        const stride = Math.ceil(dims) * (array.byteLength / array.length);
-        for (const [from, to] of ranges) {
-          uploadBufferRange(device, buffer, array.buffer, from * stride, (to - from) * stride);
+        if (v != null) {
+          const fromDims = toCPUDims(dims);
+          const toDims = toGPUDims(dims);
+          copyNumberArray(v, array, fromDims, toDims, 0, base + instance * stride, 1, stride);
         }
       }
     }
 
-    queue.length = 0;
+    // Upload changed ranges
+    const {buffer, raw, layout} = aggregateBuffer;
+    const {length: stride} = layout;
+    if (needsRefresh) {
+      uploadBufferRange(device, buffer, raw, 0, size * stride);
+      versionRef.current = incrementVersion(versionRef.current);
+    }
+    else if (ranges.length) {
+      for (const [from, to] of ranges) {
+        uploadBufferRange(device, buffer, raw, from * stride, (to - from) * stride);
+      }
+      versionRef.current = incrementVersion(versionRef.current);
+    }
+    queue.instances.length = queue.datas.length = 0;
 
     // Update instance ID buffer
     const version = ids.version();
     useOne(() => {
-      const {buffer, array} = indexBuffer;
+      if (!indexBuffer) return;
+      const {buffer, array, source} = indexBuffer;
 
       let i = 0;
       for (const id of ids.all()) array[i++] = id;
       uploadBuffer(device, buffer, array.buffer);
 
-      indexSource.length = i;
-      indexSource.size[0] = i;
-      indexSource.version = version;
+      source.length = i;
+      source.size[0] = i;
+      source.version = version;
     }, version);
 
-    return then ? then(indexSource, fieldSources) : null;
+    const trigger = useOne(() => signal(), versionRef.current);
+    return then ? [trigger, then(sources, indexBuffer?.source as any)] : trigger;
   };
 
+  const render = getRenderFunc(props);
   return render ? capture(InstanceCapture, render(useInstance), Resume) : null;
 };

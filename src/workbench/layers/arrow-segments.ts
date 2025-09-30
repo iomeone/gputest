@@ -1,60 +1,79 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { StorageSource } from '../../core';
+import type { TypedArray, VectorLike } from '@use-gpu/core';
 
-import { memo, yeet, useMemo } from '../../live';
-import { getChunkCount, generateChunkSegments, generateChunkAnchors, alignSizeTo } from '../../core';
+import { useMemo } from '@use-gpu/live';
+import { accumulateChunks, generateChunkSegments, generateChunkAnchors, alignSizeTo } from '@use-gpu/core';
 import { useRawSource } from '../hooks/useRawSource';
+import { ARROW_SEGMENTS_SCHEMA } from './schemas';
 
-export type ArrowSegmentsProps = {
-  chunks?: number[],
-  loops?: boolean[],
-  starts?: boolean[],
-  ends?: boolean[],
-
-  render?: (segments: StorageSource, anchors: StorageSource, trim: StorageSource, lookups: StorageSource) => LiveElement,
+export type ArrowSegmentsData = {
+  count: number,
+  sparse: number,
+  segments: TypedArray,
+  anchors: TypedArray,
+  trims: TypedArray,
+  slices: TypedArray,
+  unwelds: TypedArray,
 };
 
-/** Produces `segments`, `anchors`, `trims` composite data for `@{ArrowLayer}`. */
-export const ArrowSegments: LiveComponent<ArrowSegmentsProps> = memo((
-  props: ArrowSegmentsProps,
+/** Make index data for arrow segments/anchor/trim data */
+export const getArrowSegments = ({
+  chunks, groups, loops, starts, ends,
+}: {
+  chunks: VectorLike,
+  groups?: VectorLike | null,
+  loops?: boolean[] | boolean | null,
+  starts?: boolean[] | boolean | null,
+  ends?: boolean[] | boolean | null,
+}) => {
+  const count = accumulateChunks(chunks, loops);
+
+  const segments = new Int8Array(alignSizeTo(count, 4));
+  const slices = new Uint32Array(groups?.length ?? chunks.length);
+  const unwelds = loops ? new Uint32Array(count, 2) : undefined;
+  const anchors = new Uint32Array(count * 4);
+  const trims = new Uint32Array(count * 4);
+
+  generateChunkSegments(segments, slices, unwelds, chunks, groups, loops, starts, ends);
+  const sparse = generateChunkAnchors(anchors, trims, chunks, loops, starts, ends);
+
+  return {
+    count,
+    sparse,
+    segments,
+    anchors,
+    trims,
+    slices,
+    unwelds,
+    schema: ARROW_SEGMENTS_SCHEMA,
+  };
+}
+
+export const useArrowSegmentsSource = (
+  chunks: VectorLike,
+  groups?: VectorLike | null,
+  loops?: boolean[] | boolean | null,
+  starts?: boolean[] | boolean | null,
+  ends?: boolean[] | boolean | null,
 ) => {
-  const {chunks, loops, starts, ends, render} = props;
-  if (!chunks) return null;
-
-  const {segments, anchors, trims, lookups} = useArrowSegments(chunks, loops, starts, ends);
-
-  return render ? render(segments, anchors, trims, lookups) : yeet([segments, anchors, trims, lookups]);
-}, 'ArrowSegments');
-
-export const useArrowSegments = (
-  chunks: number[],
-  loops?: boolean[],
-  starts?: boolean[],
-  ends?: boolean[],
-) => {
-  const count = getChunkCount(chunks, loops);
-
-  // Make index data for line segments/anchor/trim data
-  const [segmentBuffer, anchorBuffer, trimBuffer, lookupBuffer, anchorCount] = useMemo(() => {
-    const segmentBuffer = new Int8Array(alignSizeTo(count, 4));
-    const anchorBuffer = new Uint32Array(count * 4);
-    const trimBuffer = new Uint32Array(count * 4);
-    const lookupBuffer = new Uint32Array(count);
-
-    generateChunkSegments(segmentBuffer, lookupBuffer, chunks, loops, starts, ends);
-    const anchorCount = generateChunkAnchors(anchorBuffer, trimBuffer, chunks, loops, starts, ends);
-
-    return [segmentBuffer, anchorBuffer, trimBuffer, lookupBuffer, anchorCount];
-  }, [chunks, loops, starts, ends, count]);
+  const {count, sparse, segments, anchors, trims, slices} = useMemo(
+    () => getArrowSegments({chunks, groups, loops, starts, ends}),
+    [chunks, groups, loops, starts, ends]
+  );
 
   // Bind as shader storage
-  const segments = useRawSource(segmentBuffer, 'i8');
-  const anchors = useRawSource(anchorBuffer, 'vec4<u32>');
-  const trims = useRawSource(trimBuffer, 'vec4<u32>');
-  const lookups = useRawSource(lookupBuffer, 'u32');
+  const s = useRawSource(segments, 'i8');
+  const a = useRawSource(anchors, 'vec4<u32>');
+  const t = useRawSource(trims, 'vec4<u32>');
 
-  anchors.length = anchorCount;
-  anchors.size[0] = anchorCount;
-  
-  return {segments, anchors, trims, lookups};
+  a.length = sparse;
+  a.size[0] = sparse;
+
+  return {
+    count,
+    sparse,
+    slices,
+    segments: s,
+    anchors: a,
+    trims: t,
+  };
 }

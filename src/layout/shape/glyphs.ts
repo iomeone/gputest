@@ -1,21 +1,18 @@
-import type { LiveComponent } from '../../live';
-import type { Rectangle, TextureSource, Tuples, Point4 } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { FontMetrics } from '../../glyph';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Rectangle, Tuples, XYZW } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { FontMetrics } from '@use-gpu/glyph';
 import type { InlineLine } from '../types';
 
-import { use, yeet, useContext, useMemo } from '../../live';
-import { SDFFontProvider, useSDFFontContext } from '../../workbench';
-import { evaluateDimension } from '../parse';
+import { yeet, useMemo } from '@use-gpu/live';
+import { useSDFFontContext, UI_SCHEMA } from '@use-gpu/workbench';
 import { getOriginProjectionX, getOriginProjectionY } from '../lib/util';
-import { ARCHETYPES } from '../types';
+import { schemaToArchetype } from '@use-gpu/core';
 
 const BLACK = [0, 0, 0, 1];
 
 export type GlyphsProps = {
-  id: number,
-
-  color?: Point4,
+  color?: XYZW,
   opacity?: number,
   size?: number,
   detail?: number,
@@ -28,8 +25,9 @@ export type GlyphsProps = {
   breaks: Uint32Array,
   height: FontMetrics,
   lines: InlineLine[],
-  
+
   origin: Rectangle,
+  zIndex: number,
   clip?: ShaderModule | null,
   mask?: ShaderModule | null,
   transform?: ShaderModule | null,
@@ -37,7 +35,6 @@ export type GlyphsProps = {
 
 export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
   const {
-    id,
     color = BLACK,
     opacity = 1,
     expand = 0,
@@ -56,13 +53,14 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     clip,
     mask,
     transform,
+    zIndex,
   } = props;
 
   const sdfFont = useSDFFontContext();
 
   return useMemo(() => {
     const { getGlyph, getScale, getRadius, getTexture } = sdfFont;
-    
+
     const adjust = size / detail;
     const radius = getRadius();
     const scale = getScale(detail) * adjust;
@@ -70,7 +68,7 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
 
     const fill = color.slice();
     fill[3] *= opacity;
-  
+
     const rectangles = [] as number[];
     const uvs = [] as number[];
     const sts = [] as number[];
@@ -81,18 +79,16 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     for (const {layout, start, end, gap} of lines) {
       const [l, t] = layout;
 
-      const {ascent, lineHeight} = height;
+      const {ascent} = height;
       let x = snap ? Math.round(l) : l;
-      let y = snap ? Math.round(t + ascent) : t + ascent;
-      
-      let first = true;
+      const y = snap ? Math.round(t + ascent) : t + ascent;
 
       let sx = x;
       spans.iterate((_a, trim, _h, index) => {
         glyphs.iterate((fontIndex: number, glyphId: number, isWhiteSpace: number, kerning: number) => {
           const {glyph, mapping} = getGlyph(font[fontIndex], glyphId, detail);
           const {image, layoutBounds, outlineBounds, rgba, scale: glyphScale} = glyph;
-          const [ll, lt, lr, lb] = layoutBounds;      
+          const [,,lr,] = layoutBounds;
 
           const r = rgba ? -1 : 1;
           const s = scale * glyphScale;
@@ -140,8 +136,9 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
       }, start, end);
     }
 
-    const render = count ? {
-      id,
+    if (!count) return null;
+
+    const attributes = {
       rectangles,
       uvs,
       sts,
@@ -149,15 +146,19 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
       border: [expand, Math.min(size / 32, 1.0) * 0.25, 0, 0],
       sdf: [radius, scale, size, 0],
       fill,
-      texture,
+    };
+
+    return yeet({
       count,
+      archetype: schemaToArchetype(UI_SCHEMA, attributes),
+
+      attributes,
+      bounds,
+      texture,
       clip,
       mask,
       transform,
-      bounds,
-      archetype: ARCHETYPES.glyphs,
-    } : null;
-
-    return yeet(render);
-  }, [props, sdfFont]);
+      zIndex,
+    });
+  }, [props, sdfFont, zIndex]);
 };

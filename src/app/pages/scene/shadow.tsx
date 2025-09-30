@@ -1,39 +1,40 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { StorageSource, TextureSource, UniformType } from '../../../core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { GPUGeometry, StorageSource, TextureSource, UniformType } from '@use-gpu/core';
 
-import React, { Gather, memo, useOne } from '../../../live';
+import React, { Gather, memo, useOne } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
+import { seq } from '@use-gpu/core';
 
 import {
-  Loop, Pass, Flat, Animate, LinearRGB,
+  Loop, Pass, FlatCamera, Animate, LinearRGB,
   GeometryData, PBRMaterial, ImageTexture,
-  OrbitCamera, OrbitControls,
+  OrbitCamera, OrbitControls, Environment,
   Cursor,
   DirectionalLight, PointLight, AmbientLight,
   Data, PointLayer,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 
 import {
   Scene, Node, Mesh, Instances,
-} from '../../../scene';
+} from '@use-gpu/scene';
+
+import { InfoBox } from '../../ui/info-box';
 
 const SHADOW_MAP_DIRECTIONAL = {
   size: [2048, 2048],
   span: [50, 50],
-  depth: [0, 250],
-  bias: [1/2048, 1/32],
+  depth: [0, 100],
+  bias: [1/4096, 1/512, 0],
   blur: 4,
 };
 
 const SHADOW_MAP_POINT = {
   size: [2048, 2048],
   depth: [0.1, 50],
-  bias: [1, 1/32],
+  bias: [1/128, 1/64, 1/16],
   blur: 4,
 };
-
-const seq = (n: number, s: number = 0, d: number = 1): number[] => Array.from({ length: n }).map((_, i: number) => s + d * i);
 
 const sampler = {
   addressModeU: 'repeat',
@@ -43,11 +44,6 @@ const sampler = {
 const boxGeometry = makeBoxGeometry({ width: 2 });
 const planeGeometry = makePlaneGeometry({ width: 100, height: 100, axes: 'xz' });
 const sphereGeometry = makeSphereGeometry({ width: 2, tile: [6, 3] });
-
-const lightFields = [
-  ['vec4<f32>', 'position'],
-  ['vec4<f32>', 'color'],
-] as [UniformType, string][];
 
 const lightData = [
   {
@@ -66,12 +62,13 @@ const lightData = [
 
 export const SceneShadowPage: LC = (props) => {
 
-  return (
+  return (<>
+    <InfoBox>&lt;DirectionalLight&gt; and &lt;PointLight&gt; with shadow map (forward renderer)</InfoBox>
     <Gather
       children={[
-        <GeometryData geometry={boxGeometry} />,
-        <GeometryData geometry={planeGeometry} />,
-        <GeometryData geometry={sphereGeometry} />,
+        <GeometryData {...boxGeometry} />,
+        <GeometryData {...planeGeometry} />,
+        <GeometryData {...sphereGeometry} />,
         <ImageTexture url="/textures/test.png" sampler={sampler} />,
       ]}
       then={([
@@ -80,25 +77,25 @@ export const SceneShadowPage: LC = (props) => {
         sphereMesh,
         texture,
       ]: [
-        Record<string, StorageSource>,
-        Record<string, StorageSource>,
-        Record<string, StorageSource>,
+        GPUGeometry,
+        GPUGeometry,
+        GPUGeometry,
         TextureSource,
       ]) => (
         <LinearRGB tonemap="aces" gain={1}>
-          <Loop>
-            <Cursor cursor='move' />
-            <Camera>
-              <Pass lights shadows>
-                <AmbientLight intensity={0.25} />
-                <DirectionalLight position={lightData[0].position} intensity={1}   color={lightData[0].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />
-                <DirectionalLight position={lightData[1].position} intensity={0.5} color={lightData[1].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />
-                <PointLight       position={lightData[2].position} intensity={100} color={lightData[2].color} shadowMap={SHADOW_MAP_POINT} />
+          <Cursor cursor='move' />
+          <Camera>
+            <Pass lights shadows>
+              <AmbientLight intensity={0.2} />
+              <DirectionalLight position={lightData[0].position} intensity={1}   color={lightData[0].color} shadowMap={SHADOW_MAP_DIRECTIONAL} debug />
+              <DirectionalLight position={lightData[1].position} intensity={0.5} color={lightData[1].color} shadowMap={SHADOW_MAP_DIRECTIONAL} debug />
+              <PointLight       position={lightData[2].position} intensity={100} color={lightData[2].color} shadowMap={SHADOW_MAP_POINT} debug />
 
+              <Environment preset="none">
                 <Scene>
 
                   <Node position={[0, -4, 0]}>
-                    <PBRMaterial albedo={0x808080} roughness={0.7}>
+                    <PBRMaterial albedo={'#808080'} roughness={0.7}>
                       <Mesh
                         mesh={planeMesh}
                         side="both"
@@ -139,24 +136,16 @@ export const SceneShadowPage: LC = (props) => {
                       </>)}
                     />
                   </PBRMaterial>
-              
+
                 </Scene>
+              </Environment>
 
-                <Data
-                  fields={lightFields}
-                  data={lightData}
-                  render={(positions: StorageSource, colors: StorageSource) => (
-                    <PointLayer positions={positions} colors={colors} size={50} depth={0.5} />
-                  )}
-                />
-
-              </Pass>
-            </Camera>
-          </Loop>
+            </Pass>
+          </Camera>
         </LinearRGB>
       )}
     />
-  );
+  </>);
 };
 
 const Camera = ({children}: PropsWithChildren<object>) => (

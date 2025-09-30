@@ -1,7 +1,7 @@
 import { patch, diff, revise, $set, $apply, $patch, $delete, getUpdateKeys } from './patch';
 
 describe('patch', () => {
-  
+
   it('patches primitives', () => {
     const state = {
       s: 'hello',
@@ -42,7 +42,7 @@ describe('patch', () => {
     };
     expect(patch(state, update)).toMatchSnapshot();
   })
-  
+
   it('diffs values', () => {
     const state = {
       s: 'hello',
@@ -107,7 +107,7 @@ describe('patch', () => {
       n: [2],
       list: {0: {foo: true}},
     };
-    
+
     const keys = getUpdateKeys(update);
     expect(keys).toMatchSnapshot();
   });

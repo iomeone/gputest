@@ -1,25 +1,21 @@
-import type { ShaderModule } from '../../shader';
+import type { ShaderModule } from '@use-gpu/shader';
 
-import { makeContext, useContext } from '../../live';
-import { parseColor, useProp } from '../../traits';
-import { bindBundle } from '../../shader/wgsl';
+import { makeContext, useContext } from '@use-gpu/live';
+import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { DEFAULT_LIGHT_CONTEXT } from '../providers/light-provider';
 
-import { getPassThruColor } from '../../wgsl/mask/passthruwgsl';
+import { getPassThruColor } from '@use-gpu/wgsl/mask/passthru.wgsl';
 
-import { getDefaultPBRMaterial } from '../../wgsl/material/pbr-defaultwgsl';
-import { applyPBRMaterial } from '../../wgsl/material/pbr-applywgsl';
+import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { getDefaultPBRMaterial } from '@use-gpu/wgsl/material/pbr-default.wgsl';
 
-import { getShadedFragment } from '../../wgsl/instance/fragment/shadedwgsl';
-import { getMaterialSurface } from '../../wgsl/instance/surface/materialwgsl';
+import { getLitFragment } from '@use-gpu/wgsl/instance/fragment/lit.wgsl';
+import { getMaterialSurface } from '@use-gpu/wgsl/instance/surface/material.wgsl';
 
 // Default PBR shader with built-in light
 const getSurface = bindBundle(getMaterialSurface, {
   getMaterial: getDefaultPBRMaterial,
-});
-const getLight = bindBundle(getShadedFragment, {
-  applyLights: DEFAULT_LIGHT_CONTEXT.bindMaterial(applyPBRMaterial),
 });
 export const DEFAULT_MATERIAL_CONTEXT = {
   solid: {
@@ -27,7 +23,8 @@ export const DEFAULT_MATERIAL_CONTEXT = {
   },
   shaded: {
     getSurface,
-    getLight,
+    getLight: getLitFragment,
+    applyLights: DEFAULT_LIGHT_CONTEXT.bindMaterial(applyPBRMaterial),
   },
 };
 

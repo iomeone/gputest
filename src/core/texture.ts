@@ -1,7 +1,7 @@
-import type { DataTexture, ExternalTexture, DataBinding, Point, Point3, TextureSource } from './types';
-import { TYPED_ARRAYS, TEXTURE_FORMAT_SIZES, TEXTURE_FORMAT_DIMS } from './constants';
+import type { DataTexture, ExternalTexture, VectorLike, XY, XYZ, TextureSource } from './types';
+import { TEXTURE_FORMAT_SIZES } from './constants';
 
-const NO_OFFSET = [0, 0, 0] as Point3;
+const NO_OFFSET = [0, 0, 0] as XYZ;
 
 export const makeSampler = (
   device: GPUDevice,
@@ -65,12 +65,14 @@ export const makeStorageTexture = (
   device: GPUDevice,
   width: number,
   height: number,
+  depth: number,
   format: GPUTextureFormat,
   sampleCount: number = 1,
   mipLevelCount: number = 1,
+  dimension: GPUTextureDimension = '2d',
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING;
-  return makeTexture(device, width, height, 1, format, usage, sampleCount, mipLevelCount);
+  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, dimension);
 }
 
 export const makeReadbackTexture = (
@@ -91,16 +93,16 @@ export const makeRawTexture = (
   mipLevelCount: number = 1,
 ) => {
   const {size, format} = dataTexture;
-  const [w, h, d] = size as Point3;
+  const [w, h, d] = size as XYZ;
 
   return makeDynamicTexture(device, w, h, d || 1, format ?? 'rgba8unorm', 1, mipLevelCount);
 }
 
 export const makeTextureDataLayout = (
-  size: Point | Point3,
+  size: VectorLike,
   format: GPUTextureFormat,
 ) => {
-  const [w, h, d] = size as Point3;
+  const [w, h] = size as XYZ;
 
   const s = TEXTURE_FORMAT_SIZES[format] || 1;
 
@@ -118,12 +120,13 @@ export const uploadDataTexture = (
   device: GPUDevice,
   texture: GPUTexture,
   dataTexture: DataTexture,
+  size?: VectorLike,
+  offset: VectorLike = NO_OFFSET,
   mipLevel: GPUIntegerCoordinate = 0,
 ): void => {
-  const {data, size, format} = dataTexture;
-
-  const layout = makeTextureDataLayout(size, format ?? 'rgba8unorm');
-  uploadTexture(device, texture, data, layout, size, undefined, mipLevel);
+  const {data, size: s, format} = dataTexture;
+  const layout = makeTextureDataLayout(size ?? s, format ?? 'rgba8unorm');
+  uploadTexture(device, texture, data, layout, size ?? s, offset, mipLevel);
 }
 
 export const uploadTexture = (
@@ -131,16 +134,16 @@ export const uploadTexture = (
   texture: GPUTexture,
   data: ArrayBuffer,
   layout: GPUImageDataLayout,
-  size: Point | Point3,
-  offset: Point | Point3 = NO_OFFSET,
+  size: VectorLike,
+  offset: VectorLike = NO_OFFSET,
   mipLevel: GPUIntegerCoordinate = 0,
   aspect: GPUTextureAspect = "all",
 ): void => {
 
-  const [x, y, z] = offset as Point3;
+  const [x, y, z] = offset as XYZ;
   const origin = { x, y, z: z || 0 };
 
-  const [width, height, depth] = size as Point3;
+  const [width, height, depth] = size as XYZ;
   // @ts-ignore
   const extent = [width, height, depth || 1];
 
@@ -159,11 +162,11 @@ export const uploadExternalTexture = (
   device: GPUDevice,
   texture: GPUTexture,
   source: any,
-  size: Point | Point3,
-  to?: Point | Point3,
+  size: XY | XYZ,
+  to?: XY | XYZ,
 ): void => {
 
-  const [w, h, d] = size as Point3;
+  const [w, h, d] = size as XYZ;
   const extent = [w, h, d || 1];
   const origin = to ?? [0, 0, 0];
 
@@ -198,7 +201,7 @@ export const resizeTextureSource = (
     mipLevel,
     aspect,
   }
-  
+
   const [w, h, d] = source.size;
   const commandEncoder = device.createCommandEncoder();
   commandEncoder.copyTextureToTexture(src, dst, [w, h, d || 1]);

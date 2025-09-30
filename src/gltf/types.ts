@@ -1,7 +1,7 @@
-import type { StorageSource, TextureSource, TypedArray } from '../core';
+import type { StorageSource, TextureSource, TypedArray, UniformType } from '@use-gpu/core';
 import { mat4, vec3, quat } from 'gl-matrix';
 
-export type GLTF<T = any> = {
+export type GLTFRaw<T = any> = {
   accessors?:   GLTFAccessorData<T>[],
   bufferViews?: GLTFBufferViewData<T>[],
   buffers?:     GLTFBufferData<T>[],
@@ -13,9 +13,14 @@ export type GLTF<T = any> = {
   scenes?:      GLTFSceneData<T>[],
   textures?:    GLTFTextureData<T>[],
   scene?:       number,
+};
 
+export type GLTF<T = any> = GLTFRaw<T> & {
+  data: {
+    arrays: TypedArray[],
+    formats: UniformType[],
+  },
   bound?: {
-    data: TypedArray[],
     storage: StorageSource[],
     texture: TextureSource[],
   },
@@ -55,6 +60,7 @@ export type GLTFMeshData<T = any> = GLTFObject<T> & {
 };
 
 export type GLTFPrimitiveData<T = any> = GLTFObject<T> & {
+  count?: number,
   attributes: Record<string, number>,
   indices?: number,
   material?: number,
@@ -136,7 +142,7 @@ export type GLTFAccessorData<T = any> = GLTFObject<T> & {
   componentType: number,
   count: number,
   type: string,
-  
+
   bufferView?: number,
   byteOffset?: number,
   normalized?: number,

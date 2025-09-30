@@ -1,9 +1,9 @@
 import React, { CSSProperties } from 'react';
-import type { LC, LiveElement } from '../../live';
+import type { LC, LiveElement } from '@use-gpu/live';
 
-import { use, fragment, useCallback, useResource, useState } from '../../live';
-import { HTML } from '../../react';
-import { useRouterContext } from '../../workbench';
+import { use, fragment, useCallback, useResource, useState } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { useRouterContext } from '@use-gpu/workbench';
 
 const STYLE: CSSProperties = {
   position: 'absolute',
@@ -13,25 +13,25 @@ const STYLE: CSSProperties = {
   width: '300px',
   padding: '20px',
   background: 'rgba(0, 0, 0, .75)',
-  
+
   zIndex: 100,
 };
 
 const NOTE: CSSProperties = {
   position: 'absolute',
 
-  bottom: '20px',
+  bottom: '80px',
   left: '50%',
   width: '300px',
   marginLeft: '-150px',
 
   padding: '20px',
   background: 'rgba(0, 0, 0, .75)',
-  
+
   zIndex: 100,
   pointerEvents: 'none',
   textAlign: 'center',
-  
+
   transition: 'opacity 1s ease-out',
 };
 
@@ -115,7 +115,7 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
     e.preventDefault();
     setDragging(false);
   }, []);
-  
+
   const handleDrop = useCallback((e: any) => {
     e.preventDefault();
     if (!e.dataTransfer.files) return;
@@ -159,7 +159,7 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
     const buffer = await fetch(url).then(r => r.arrayBuffer());
     setBuffer(buffer);
   }, [fileId, customFile]);
-  
+
   useResource((dispose) => {
     const timer = setTimeout(() => setNote(false), 10000);
     dispose(() => clearTimeout(timer));
@@ -178,7 +178,7 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
       container,
       style: {...NOTE, opacity: note ? 1 : 0},
       children: (<>
-        Drag and drop a file here to view it
+        Drag and drop a file to view it
       </>)
     }),
     use(HTML, {
@@ -187,7 +187,7 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
       children: (<>
         <div>
           <p><b>Consecutive bytes as (X,Y,Z) histogram</b></p>
-        
+
           <label>Show file:</label>
           <select style={{marginLeft: 20}} value={customFile ?? fileId} onChange={(e) => {
             setCustomFile(null);

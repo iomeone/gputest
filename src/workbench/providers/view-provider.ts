@@ -1,16 +1,19 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { DataBounds, ViewUniforms, UniformAttribute } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { ViewUniforms, UniformAttribute } from '@use-gpu/core';
 
-import { provide, signal, yeet, makeContext, useCallback, useContext, useNoContext, useMemo, useRef } from '../../live';
-import { VIEW_UNIFORMS, makeGlobalUniforms, uploadBuffer, makeBindGroupLayout } from '../../core';
+import { provide, makeContext, useCallback, useContext, useNoContext, useMemo } from '@use-gpu/live';
+import { makeGlobalUniforms, uploadBuffer } from '@use-gpu/core';
 import { useDeviceContext } from '../providers/device-provider';
-import { useFrustumCuller } from '../hooks/useFrustumCuller';
+import { useFrustumCuller, useNoFrustumCuller } from '../hooks/useFrustumCuller';
+import { QueueReconciler } from '../reconcilers/index';
 
-import { mat4, vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
+
+const {signal} = QueueReconciler;
 
 const DEFAULT_VIEW_CONTEXT = {
   defs: [] as any,
-  uniforms: [] as any,
+  uniforms: {} as any,
   layout: null as any,
   cull: () => true,
   bind: (() => {}) as any,
@@ -26,13 +29,19 @@ export type ViewContextProps = {
   cull: (center: vec3 | number[], radius: number) => number | boolean,
 };
 
-export type ViewProviderProps = {
+export type ViewProviderProps = PropsWithChildren<{
   defs: UniformAttribute[],
   uniforms: ViewUniforms,
-};
+  cull?: boolean,
+}>;
 
-export const ViewProvider: LiveComponent<ViewProviderProps> = (props: PropsWithChildren<ViewProviderProps>) => {
-  const {defs, uniforms, children} = props;
+export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProviderProps) => {
+  const {
+    defs,
+    uniforms,
+    cull: cullProp,
+    children,
+  } = props;
 
   const device = useDeviceContext();
 
@@ -49,7 +58,9 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: PropsWithC
   }, [bindGroup]);
 
   const {projectionViewFrustum, viewPosition} = uniforms;
-  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
+  const cull = !cullProp
+    ? useFrustumCuller(viewPosition, projectionViewFrustum)
+    : (useNoFrustumCuller(), cullProp);
 
   const context = useMemo(() => ({
     bind,
@@ -57,7 +68,7 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: PropsWithC
     layout,
     defs,
     uniforms,
-  }), [bindGroup, layout, defs, uniforms]);
+  }), [bindGroup, cull, layout, defs, uniforms]);
 
   return [
     signal(),

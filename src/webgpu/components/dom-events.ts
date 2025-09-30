@@ -1,7 +1,7 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 
-import { use, memo, useMemo, useOne, useResource, useState } from '../../live';
-import { EventProvider, MouseState, WheelState, KeyboardState } from '../../workbench';//'/providers/event-provider';
+import { use, memo, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { EventProvider, MouseState, WheelState, KeyboardState } from '@use-gpu/workbench';//'/providers/event-provider';
 
 const WHEEL_STEP = 120;
 const PIXEL_STEP = 10;
@@ -9,12 +9,12 @@ const DELTA_MULTIPLIER = [1, 4, 80];
 
 const formatKey = (key: string) => key[0].toLowerCase() + key.slice(1);
 
-export type DOMEventsProps = {
+export type DOMEventsProps = PropsWithChildren<{
   element: HTMLElement,
   autofocus?: boolean,
   capture?: boolean,
   iframe?: boolean,
-};
+}>;
 
 const toButton = (button: number) => {
   if (button === 0) return 'left';
@@ -36,7 +36,6 @@ const makeMouseState = () => ({
   y: 0,
   moveX: 0,
   moveY: 0,
-  stopped: false,
 } as MouseState);
 
 const makeWheelState = () => ({
@@ -46,7 +45,6 @@ const makeWheelState = () => ({
   moveY: 0,
   spinX: 0,
   spinY: 0,
-  stopped: false,
 } as WheelState);
 
 const makeKeyboardState = () => ({
@@ -58,10 +56,9 @@ const makeKeyboardState = () => ({
   },
   keys: {},
   key: null,
-  stopped: false,
 } as KeyboardState);
 
-export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: PropsWithChildren<DOMEventsProps>) => {
+export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: DOMEventsProps) => {
   const {element, autofocus, capture, iframe, children} = props;
 
   const captureOptions = useOne(() => ({capture: !!capture}), capture);
@@ -112,7 +109,6 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: PropsWithCh
             shift: e.shiftKey,
             meta:  e.metaKey,
           },
-          stopped: false,
         };
       });
     };
@@ -128,7 +124,6 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: PropsWithCh
             [k]: true,
           },
           key: k,
-          stopped: false,
         };
       });
     };
@@ -144,7 +139,6 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: PropsWithCh
             [k]: false,
           },
           key: k,
-          stopped: false,
         };
       });
     };
@@ -159,7 +153,7 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: PropsWithCh
       const {
         clientX, clientY,
         deltaMode, deltaX, deltaY,
-        detail, axis, HORIZONTAL_AXIS,
+        detail, axis,
         wheelDelta, wheelDeltaX, wheelDeltaY,
       } = (e as any);
 
@@ -196,14 +190,13 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: PropsWithCh
       const x = clientX - left;
       const y = clientY - top;
 
-      setWheel((state) => ({
+      setWheel(() => ({
         x,
         y,
         moveX,
         moveY,
         spinX,
         spinY,
-        stopped: false,
       }));
 
       onMove(clientX, clientY);
@@ -223,7 +216,6 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: PropsWithCh
         y,
         moveX: moveX ?? x - state.x,
         moveY: moveY ?? y - state.y,
-        stopped: false,
       }));
     };
 
@@ -261,12 +253,16 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: PropsWithCh
 
     const onMouseDown = (e: PointerEvent) => {
       const {button, buttons, clientX, clientY} = e;
-      if (e.target) (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      if (e.target) try {
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
 
       onButtons(buttons, button);
       onMove(clientX, clientY, 0, 0);
       onModifiers(e);
 
+      // Iframe + pointercapture bug
       // https://bugs.chromium.org/p/chromium/issues/detail?id=1300622
       if (!iframe) e.preventDefault();
       e.stopPropagation();
@@ -305,14 +301,13 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: PropsWithCh
       e.preventDefault();
       e.stopPropagation();
     };
-    
+
     const onWindowBlur = () => {
       setKeyboard((state) => {
         return {
           ...state,
           keys: {},
           key: null,
-          stopped: true,
         };
       });
     };

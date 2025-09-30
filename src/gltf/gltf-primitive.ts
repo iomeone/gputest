@@ -1,27 +1,19 @@
-import type { LC, LiveElement } from '../live';
-import type { UniformAttribute, DataBounds } from '../core';
+import type { LC, LiveElement } from '@use-gpu/live';
 import type { GLTF, GLTFPrimitiveData } from './types';
 
-import { flattenIndexedArray } from '../core';
-import { bundleToAttributes } from '../shader/wgsl';
-import { use, provide, useCallback, useOne, useNoOne, useMemo, useNoMemo, useVersion, useNoCallback, useNoVersion } from '../live';
-import { generateTangents } from '../vendor/mikkt';
-import { vec3, mat3, mat4 } from 'gl-matrix';
+import { toUnweldedArray } from '@use-gpu/core';
+import { use, provide, useMemo, useNoMemo } from '@use-gpu/live';
+import { generateTangents } from 'mikktspace';
+import { mat4 } from 'gl-matrix';
 
 import {
   FaceLayer, FaceLayerProps,
   PBRMaterial,
   TransformContext,
-  useBoundSource, useNoBoundSource,
-  useBoundShader, useNoBoundShader,
+  useCombinedMatrixTransform, useNoCombinedMatrixTransform,
   useRawSource, useNoRawSource,
-  useShaderRef, useNoShaderRef,
-} from '../workbench';
-import { getCartesianPosition } from '../wgsl/transform/cartesianwgsl'
-import { getMatrixDifferential } from '../wgsl/transform/diff-matrixwgsl'
+} from '@use-gpu/workbench';
 import { useGLTFMaterial } from './gltf-material';
-
-const MATRIX_BINDINGS = bundleToAttributes(getCartesianPosition);
 
 export type GLTFPrimitiveProps = {
   gltf: GLTF,
@@ -34,20 +26,24 @@ export const GLTFPrimitive: LC<GLTFPrimitiveProps> = (props) => {
   const {
     gltf,
     primitive,
-    transform,
+    transform: matrix,
   } = props;
-  if (!gltf.bound) throw new Error("GLTF bound data is missing. Load GLTF using <GLTFData>.");
+  if (!gltf.bound) throw new Error("GLTF bound data is missing. Load GLTF using <GLTFData unbound={false}>.");
 
-  const {bound: {storage}} = gltf;
-  const {attributes, indices, material, mode} = primitive;
-  const {POSITION, NORMAL, TANGENT, TEXCOORD_0} = attributes;
+  const {data: {arrays}, bound: {storage}} = gltf;
+  const {
+    attributes: {POSITION, NORMAL, TANGENT, TEXCOORD_0},
+    indices,
+    material,
+  } = primitive;
 
-  const pbrMaterial = useGLTFMaterial(gltf, material);  
+  const pbrMaterial = useGLTFMaterial(gltf, material);
 
   const faces: Partial<FaceLayerProps> = {
+    flat: NORMAL == null,
     shaded: true,
     color: [1, 1, 1, 1],
-    unweldedTangents: true,
+    unwelded: {tangents: true},
     side: pbrMaterial.doubleSided ? 'both' : 'front',
   };
 
@@ -58,19 +54,19 @@ export const GLTFPrimitive: LC<GLTFPrimitiveProps> = (props) => {
   if (indices    != null) faces.indices   = storage[indices];
 
   // Generate mikkTSpace tangents
-  if (faces.positions && faces.normals && faces.uvs && !faces.tangents) {
-    let ps = gltf.bound.data[POSITION];
-    let ns = gltf.bound.data[NORMAL];
-    let ts = gltf.bound.data[TEXCOORD_0];
+  if (TANGENT != null && (faces.positions && faces.normals && faces.uvs && !faces.tangents)) {
+    let ps = arrays[POSITION];
+    let ns = arrays[NORMAL];
+    let ts = arrays[TEXCOORD_0];
 
     const tangents = useMemo(() => {
       if (indices != null) {
         // Unweld mesh
-        const inds = gltf.bound?.data?.[indices] as any;
+        const inds = arrays[indices];
         if (inds) {
-          ps = flattenIndexedArray(ps as any, inds, 3);
-          ns = flattenIndexedArray(ns as any, inds, 3);
-          ts = flattenIndexedArray(ts as any, inds, 2);
+          ps = toUnweldedArray(ps as any, inds, 3);
+          ns = toUnweldedArray(ns as any, inds, 3);
+          ts = toUnweldedArray(ts as any, inds, 2);
         }
       }
 
@@ -87,53 +83,17 @@ export const GLTFPrimitive: LC<GLTFPrimitiveProps> = (props) => {
     useNoRawSource();
   }
 
-  const render = use(FaceLayer, faces);
+  const render = use(PBRMaterial, {...pbrMaterial, children: use(FaceLayer, faces)});
 
   let view: LiveElement = render;
-  if (transform) {
-    const [normalMatrix, matrixScale] = useOne(() => {
-      const normalMatrix = mat3.normalFromMat4(mat3.create(), transform);
-
-      const s = mat4.getScaling(vec3.create(), transform);
-      const matrixScale = Math.max(Math.abs(s[0]), Math.abs(s[1]), Math.abs(s[2]));
-
-      return [normalMatrix, matrixScale];
-    }, transform);
-
-    const t = useShaderRef(transform);
-    const c = useShaderRef(normalMatrix);
-    const s = useShaderRef(matrixScale);
-
-    // Apply matrix transform
-    // (share uniform between both functions)
-    const m     = useBoundSource(MATRIX_BINDINGS[0], t);
-    const xform = useBoundShader(getCartesianPosition, [m]);
-    const dform = useBoundShader(getMatrixDifferential, [m, c]);
-
-    const cullBounds = useOne(() => ({ center: [], radius: 0, min: [], max: [] } as DataBounds));
-    const getBounds = useCallback((bounds: DataBounds) => {
-      vec3.transformMat4(cullBounds.center as any, bounds.center as any, (t as any).current);
-      cullBounds.radius = (s as any).current * bounds.radius;
-      return cullBounds;
-    });
-
-    const context = useOne(() => ({transform: xform, differential: dform, bounds: getBounds}));
+  if (matrix) {
+    const [context] = useCombinedMatrixTransform(matrix);
 
     view = provide(TransformContext, context, view);
   }
   else {
-    useNoOne();
-    useNoShaderRef();
-    useNoShaderRef();
-    useNoShaderRef();
-    useNoBoundShader();
-    useNoBoundShader();
-    useNoOne();
-    useNoCallback();
-    useNoOne();
+    useNoCombinedMatrixTransform();
   }
 
-  return (
-    use(PBRMaterial, {...pbrMaterial, children: view})
-  );
+  return view;
 };

@@ -518,14 +518,16 @@ impl UseRustText {
             let lb = font.glyph_bounds(&glyph);
             let layout_bounds = vec!(lb.min.x, lb.min.y, lb.max.x, lb.max.y);
 
-            let rgba = unscaled_font.glyph_raster_image(
+            let rgba = unscaled_font.glyph_raster_image2(
                 GlyphId(id as u16),
                 f32::round(scale) as u16,
             );
 
             match rgba {
                 Some(rgba) => {
-                    let s = scale / rgba.scale;
+                    let glyph_scale: f32 = rgba.pixels_per_em.into();
+                    
+                    let s = scale / glyph_scale;
                     let l = rgba.origin.x;
                     let t = lb.min.y / s;
 
@@ -536,7 +538,7 @@ impl UseRustText {
                         id,
 
                         layout_bounds,
-                        outline_bounds: Some(vec!(l, t, l + rgba.scale, t + rgba.scale * aspect)),
+                        outline_bounds: Some(vec!(l, t, l + glyph_scale, t + glyph_scale * aspect)),
 
                         image: Some(bytes),
                         width,

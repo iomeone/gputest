@@ -5,7 +5,7 @@ Program                                                     ⮐ var foo: f32 = 1
   LocalDeclaration                                          ⮐ var foo: f32 = 1.0;
     GlobalVariableDeclaration                               ⮐ var foo: f32 = 1.0
       AttributeList                                         
-      VariableDeclaration                                   var foo: f32
+      GlobalVariable                                        var foo: f32
         Keyword                                             var
         VariableIdentifier                                  foo: f32
           Identifier                                        foo
@@ -39,12 +39,14 @@ Program                                                     ⮐ struct light {�
       StructBodyDeclaration                                 {⮐   intensity: f32,⮐   position: vec3<f32>,⮐ }
         StructMember                                        ⮐   intensity: f32
           AttributeList                                     
-          Identifier                                        intensity
+          PrivateIdentifier                                 intensity
+            Identifier                                      intensity
           TypeDeclaration                                   f32
             Type                                            f32
         StructMember                                        ⮐   position: vec3<f32>
           AttributeList                                     
-          Identifier                                        position
+          PrivateIdentifier                                 position
+            Identifier                                      position
           TypeDeclaration                                   vec3<f32>
             Type                                            vec3
             TypeDeclaration                                 f32
@@ -92,7 +94,8 @@ Program                                                     ⮐ struct A {⮐   
             Attribute                                       @location(0)
               Identifier                                    location
               IntLiteral                                    0
-          Identifier                                        x
+          PrivateIdentifier                                 x
+            Identifier                                      x
           TypeDeclaration                                   f32
             Type                                            f32
         StructMember                                        @location(1) y: f32
@@ -100,7 +103,8 @@ Program                                                     ⮐ struct A {⮐   
             Attribute                                       @location(1)
               Identifier                                    location
               IntLiteral                                    1
-          Identifier                                        y
+          PrivateIdentifier                                 y
+            Identifier                                      y
           TypeDeclaration                                   f32
             Type                                            f32
   LocalDeclaration                                          @fragment⮐ fn fragShader(in1: A, @location(2) in2: f32) -> @location(0) vec4<f32> {⮐ }
@@ -167,7 +171,8 @@ Program                                                     ⮐ const foo: f32 =
       StructBodyDeclaration                                 { x: i32 }
         StructMember                                         x: i32
           AttributeList                                     
-          Identifier                                        x
+          PrivateIdentifier                                 x
+            Identifier                                      x
           TypeDeclaration                                   i32
             Type                                            i32
   LocalDeclaration                                          ⮐ fn main() -> @builtin vec4<f32> {⮐   var bar: i32 = wat(5, 6);⮐   let x: i32 = 4 + 5 + -6 + (-7);⮐   return vec4<f32>(0.1, 0.2, 0.3, 1.0);⮐ }
@@ -187,12 +192,11 @@ Program                                                     ⮐ const foo: f32 =
               Type                                          f32
       CompoundStatement                                     {⮐   var bar: i32 = wat(5, 6);⮐   let x: i32 = 4 + 5 + -6 + (-7);⮐   return vec4<f32>(0.1, 0.2, 0.3, 1.0);⮐ }
         Statement                                           var bar: i32 = wat(5, 6);
-          VariableDeclaration                               var bar: i32
-            Keyword                                         var
-            VariableIdentifier                              bar: i32
-              Identifier                                    bar
-              TypeDeclaration                               i32
-                Type                                        i32
+          Keyword                                           var
+          VariableIdentifier                                bar: i32
+            Identifier                                      bar
+            TypeDeclaration                                 i32
+              Type                                          i32
           Assign                                            =
           Value                                             wat(5, 6)
             FunctionCall                                    wat
@@ -300,7 +304,8 @@ Program                                                     ⮐ fn main() {⮐  
           Value                                             1
             IntLiteral                                      1
         Statement                                           wat();
-          Identifier                                        wat
+          FunctionCall                                      wat
+            Identifier                                      wat
 `;
 
 exports[`WGSL grammar snapshots parses a test program 10`] = `
@@ -510,14 +515,14 @@ Program                                                     ⮐ var foo;⮐ // v
   LocalDeclaration                                          ⮐ var foo;
     GlobalVariableDeclaration                               ⮐ var foo
       AttributeList                                         
-      VariableDeclaration                                   var foo
+      GlobalVariable                                        var foo
         Keyword                                             var
         VariableIdentifier                                  foo
           Identifier                                        foo
   LocalDeclaration                                          ⮐ // var foo;⮐ var foo;
     GlobalVariableDeclaration                               ⮐ // var foo;⮐ var foo
       AttributeList                                         
-      VariableDeclaration                                   var foo
+      GlobalVariable                                        var foo
         Keyword                                             var
         VariableIdentifier                                  foo
           Identifier                                        foo
@@ -533,17 +538,195 @@ Program                                                     ⮐ struct __undersc
       StructBodyDeclaration                                 {⮐   foo: f32,⮐   _bar: f32,⮐   __baz: f32,⮐ }
         StructMember                                        ⮐   foo: f32
           AttributeList                                     
-          Identifier                                        foo
+          PrivateIdentifier                                 foo
+            Identifier                                      foo
           TypeDeclaration                                   f32
             Type                                            f32
         StructMember                                        ⮐   _bar: f32
           AttributeList                                     
-          Identifier                                        _bar
+          PrivateIdentifier                                 _bar
+            Identifier                                      _bar
           TypeDeclaration                                   f32
             Type                                            f32
         StructMember                                        ⮐   __baz: f32
           AttributeList                                     
-          Identifier                                        __baz
+          PrivateIdentifier                                 __baz
+            Identifier                                      __baz
           TypeDeclaration                                   f32
             Type                                            f32
+`;
+
+exports[`WGSL grammar snapshots parses a test program 16`] = `
+Program                                                     ⮐ @fragment fn main(arg: VertexOutput) -> @location(0) vec4f { return arg.color; }⮐ 
+  LocalDeclaration                                          @fragment fn main(arg: VertexOutput) -> @location(0) vec4f { return arg.color; }
+    FunctionDeclaration                                     @fragment fn main(arg: VertexOutput) -> @location(0) vec4f { return arg.color; }
+      AttributeList                                         @fragment
+        Attribute                                           @fragment
+          Identifier                                        fragment
+      FunctionHeader                                        fn main(arg: VertexOutput) -> @location(0) vec4f
+        Keyword                                             fn
+        Identifier                                          main
+        ParamList                                           arg: VertexOutput
+          Param                                             arg: VertexOutput
+            AttributeList                                   
+            Identifier                                      arg
+            TypeDeclaration                                 VertexOutput
+              Identifier                                    VertexOutput
+        ReturnType                                          -> @location(0) vec4f
+          AttributeList                                     @location(0)
+            Attribute                                       @location(0)
+              Identifier                                    location
+              IntLiteral                                    0
+          TypeDeclaration                                   vec4f
+            Type                                            vec4f
+      CompoundStatement                                     { return arg.color; }
+        Statement                                           return arg.color;
+          Keyword                                           return
+          Identifier                                        arg
+          FieldAccess                                       .color
+            PrivateIdentifier                               color
+              Identifier                                    color
+`;
+
+exports[`WGSL grammar snapshots parses a test program 17`] = `
+Program                                                     ⮐ ⮐ fn _0n_getInstancedVertex(vertexIndex: u32, instanceIndex: u32) -> _0h_SolidVertex {⮐   var elementIndex: u32;⮐ ⮐   if (HAS_INSTANCES) {⮐     let mappedIndex = _0n_getMappedIndex(instanceIndex);⮐     elementIndex = mappedIndex.x;⮐ ⮐     let uniformIndex = mappedIndex.y;⮐     _0g_loadIndex(uniformIndex);⮐   }⮐   else {⮐     elementIndex = instanceIndex;⮐   }⮐ ⮐   return _0m_getLineVertex(vertexIndex, elementIndex);⮐ };⮐ 
+  LocalDeclaration                                          ⮐ ⮐ fn _0n_getInstancedVertex(vertexIndex: u32, instanceIndex: u32) -> _0h_SolidVertex {⮐   var elementIndex: u32;⮐ ⮐   if (HAS_INSTANCES) {⮐     let mappedIndex = _0n_getMappedIndex(instanceIndex);⮐     elementIndex = mappedIndex.x;⮐ ⮐     let uniformIndex = mappedIndex.y;⮐     _0g_loadIndex(uniformIndex);⮐   }⮐   else {⮐     elementIndex = instanceIndex;⮐   }⮐ ⮐   return _0m_getLineVertex(vertexIndex, elementIndex);⮐ }
+    FunctionDeclaration                                     ⮐ ⮐ fn _0n_getInstancedVertex(vertexIndex: u32, instanceIndex: u32) -> _0h_SolidVertex {⮐   var elementIndex: u32;⮐ ⮐   if (HAS_INSTANCES) {⮐     let mappedIndex = _0n_getMappedIndex(instanceIndex);⮐     elementIndex = mappedIndex.x;⮐ ⮐     let uniformIndex = mappedIndex.y;⮐     _0g_loadIndex(uniformIndex);⮐   }⮐   else {⮐     elementIndex = instanceIndex;⮐   }⮐ ⮐   return _0m_getLineVertex(vertexIndex, elementIndex);⮐ }
+      AttributeList                                         
+      FunctionHeader                                        fn _0n_getInstancedVertex(vertexIndex: u32, instanceIndex: u32) -> _0h_SolidVertex
+        Keyword                                             fn
+        Identifier                                          _0n_getInstancedVertex
+        ParamList                                           vertexIndex: u32, instanceIndex: u32
+          Param                                             vertexIndex: u32
+            AttributeList                                   
+            Identifier                                      vertexIndex
+            TypeDeclaration                                 u32
+              Type                                          u32
+          Param                                              instanceIndex: u32
+            AttributeList                                   
+            Identifier                                      instanceIndex
+            TypeDeclaration                                 u32
+              Type                                          u32
+        ReturnType                                          -> _0h_SolidVertex
+          AttributeList                                     
+          TypeDeclaration                                   _0h_SolidVertex
+            Identifier                                      _0h_SolidVertex
+      CompoundStatement                                     {⮐   var elementIndex: u32;⮐ ⮐   if (HAS_INSTANCES) {⮐     let mappedIndex = _0n_getMappedIndex(instanceIndex);⮐     elementIndex = mappedIndex.x;⮐ ⮐     let uniformIndex = mappedIndex.y;⮐     _0g_loadIndex(uniformIndex);⮐   }⮐   else {⮐     elementIndex = instanceIndex;⮐   }⮐ ⮐   return _0m_getLineVertex(vertexIndex, elementIndex);⮐ }
+        Statement                                           var elementIndex: u32;
+          Keyword                                           var
+          VariableIdentifier                                elementIndex: u32
+            Identifier                                      elementIndex
+            TypeDeclaration                                 u32
+              Type                                          u32
+        Statement                                           if (HAS_INSTANCES) {⮐     let mappedIndex = _0n_getMappedIndex(instanceIndex);⮐     elementIndex = mappedIndex.x;⮐ ⮐     let uniformIndex = mappedIndex.y;⮐     _0g_loadIndex(uniformIndex);⮐   }⮐   else {⮐     elementIndex = instanceIndex;⮐   }
+          Keyword                                           if
+          Identifier                                        HAS_INSTANCES
+          CompoundStatement                                 {⮐     let mappedIndex = _0n_getMappedIndex(instanceIndex);⮐     elementIndex = mappedIndex.x;⮐ ⮐     let uniformIndex = mappedIndex.y;⮐     _0g_loadIndex(uniformIndex);⮐   }
+            Statement                                       let mappedIndex = _0n_getMappedIndex(instanceIndex);
+              Keyword                                       let
+              VariableIdentifier                            mappedIndex
+                Identifier                                  mappedIndex
+              Assign                                        =
+              Value                                         _0n_getMappedIndex(instanceIndex)
+                FunctionCall                                _0n_getMappedIndex
+                  Identifier                                _0n_getMappedIndex
+                Identifier                                  instanceIndex
+            Statement                                       elementIndex = mappedIndex.x;
+              Identifier                                    elementIndex
+              Assign                                        =
+              Identifier                                    mappedIndex
+              FieldAccess                                   .x
+                PrivateIdentifier                           x
+                  Identifier                                x
+            Statement                                       let uniformIndex = mappedIndex.y;
+              Keyword                                       let
+              VariableIdentifier                            uniformIndex
+                Identifier                                  uniformIndex
+              Assign                                        =
+              Value                                         mappedIndex.y
+                Identifier                                  mappedIndex
+                FieldAccess                                 .y
+                  PrivateIdentifier                         y
+                    Identifier                              y
+            Statement                                       _0g_loadIndex(uniformIndex);
+              FunctionCall                                  _0g_loadIndex
+                Identifier                                  _0g_loadIndex
+              Identifier                                    uniformIndex
+          Keyword                                           else
+          CompoundStatement                                 {⮐     elementIndex = instanceIndex;⮐   }
+            Statement                                       elementIndex = instanceIndex;
+              Identifier                                    elementIndex
+              Assign                                        =
+              Identifier                                    instanceIndex
+        Statement                                           return _0m_getLineVertex(vertexIndex, elementIndex);
+          Keyword                                           return
+          FunctionCall                                      _0m_getLineVertex
+            Identifier                                      _0m_getLineVertex
+          Identifier                                        vertexIndex
+          Identifier                                        elementIndex
+`;
+
+exports[`WGSL grammar snapshots parses a test program 18`] = `
+Program                                                     ⮐ ⮐ fn main() {⮐   let ACES_OUTPUT = mat3x3(⮐      1.60475, -0.10208, -0.00327,⮐     -0.53108,  1.10813, -0.07276,⮐     -0.07367, -0.00605,  1.07602,⮐   );⮐ }⮐ ⮐ 
+  LocalDeclaration                                          ⮐ ⮐ fn main() {⮐   let ACES_OUTPUT = mat3x3(⮐      1.60475, -0.10208, -0.00327,⮐     -0.53108,  1.10813, -0.07276,⮐     -0.07367, -0.00605,  1.07602,⮐   );⮐ }
+    FunctionDeclaration                                     ⮐ ⮐ fn main() {⮐   let ACES_OUTPUT = mat3x3(⮐      1.60475, -0.10208, -0.00327,⮐     -0.53108,  1.10813, -0.07276,⮐     -0.07367, -0.00605,  1.07602,⮐   );⮐ }
+      AttributeList                                         
+      FunctionHeader                                        fn main()
+        Keyword                                             fn
+        Identifier                                          main
+        ParamList                                           
+        ReturnType                                          
+      CompoundStatement                                     {⮐   let ACES_OUTPUT = mat3x3(⮐      1.60475, -0.10208, -0.00327,⮐     -0.53108,  1.10813, -0.07276,⮐     -0.07367, -0.00605,  1.07602,⮐   );⮐ }
+        Statement                                           let ACES_OUTPUT = mat3x3(⮐      1.60475, -0.10208, -0.00327,⮐     -0.53108,  1.10813, -0.07276,⮐     -0.07367, -0.00605,  1.07602,⮐   );
+          Keyword                                           let
+          VariableIdentifier                                ACES_OUTPUT
+            Identifier                                      ACES_OUTPUT
+          Assign                                            =
+          Value                                             mat3x3(⮐      1.60475, -0.10208, -0.00327,⮐     -0.53108,  1.10813, -0.07276,⮐     -0.07367, -0.00605,  1.07602,⮐   )
+            TypeDeclaration                                 mat3x3
+              Type                                          mat3x3
+            FloatLiteral                                    1.60475
+            Sub                                             -
+            FloatLiteral                                    0.10208
+            Sub                                             -
+            FloatLiteral                                    0.00327
+            Sub                                             -
+            FloatLiteral                                    0.53108
+            FloatLiteral                                    1.10813
+            Sub                                             -
+            FloatLiteral                                    0.07276
+            Sub                                             -
+            FloatLiteral                                    0.07367
+            Sub                                             -
+            FloatLiteral                                    0.00605
+            FloatLiteral                                    1.07602
+`;
+
+exports[`WGSL grammar snapshots parses a test program 19`] = `
+Program                                                     ⮐ ⮐ const ACES_OUTPUT = mat3x3(⮐    1.60475, -0.10208, -0.00327,⮐   -0.53108,  1.10813, -0.07276,⮐   -0.07367, -0.00605,  1.07602,⮐ );⮐ ⮐ 
+  LocalDeclaration                                          ⮐ ⮐ const ACES_OUTPUT = mat3x3(⮐    1.60475, -0.10208, -0.00327,⮐   -0.53108,  1.10813, -0.07276,⮐   -0.07367, -0.00605,  1.07602,⮐ );
+    GlobalConstantDeclaration                               ⮐ ⮐ const ACES_OUTPUT = mat3x3(⮐    1.60475, -0.10208, -0.00327,⮐   -0.53108,  1.10813, -0.07276,⮐   -0.07367, -0.00605,  1.07602,⮐ )
+      AttributeList                                         
+      Keyword                                               const
+      VariableIdentifier                                    ACES_OUTPUT
+        Identifier                                          ACES_OUTPUT
+      Assign                                                =
+      Value                                                 mat3x3(⮐    1.60475, -0.10208, -0.00327,⮐   -0.53108,  1.10813, -0.07276,⮐   -0.07367, -0.00605,  1.07602,⮐ )
+        TypeDeclaration                                     mat3x3
+          Type                                              mat3x3
+        FloatLiteral                                        1.60475
+        Sub                                                 -
+        FloatLiteral                                        0.10208
+        Sub                                                 -
+        FloatLiteral                                        0.00327
+        Sub                                                 -
+        FloatLiteral                                        0.53108
+        FloatLiteral                                        1.10813
+        Sub                                                 -
+        FloatLiteral                                        0.07276
+        Sub                                                 -
+        FloatLiteral                                        0.07367
+        Sub                                                 -
+        FloatLiteral                                        0.00605
+        FloatLiteral                                        1.07602
 `;

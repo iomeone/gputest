@@ -1,6 +1,10 @@
 import type { TypedArray, Tuples } from './types';
 
 export const seq = (n: number, s: number = 0, d: number = 1): number[] => Array.from({ length: n }).map((_, i: number) => s + d * i);
+export const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
+export const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
+
+export const toArray = <T>(t?: T | T[] | null) => Array.isArray(t) ? t : t != null ? [t] : [];
 
 export const makeTuples = <N extends number, T = number>(array: TypedArray | T[], dims: N): Tuples<N, T> => {
   const n = array.length / dims;
@@ -9,7 +13,7 @@ export const makeTuples = <N extends number, T = number>(array: TypedArray | T[]
   const aa: T[] = array as any;
 
   const get = (i: number, j: number) => aa[i * dims + j];
-  
+
   const length = n;
 
   const iterate = (f: (...args: any[]) => void, start: number = 0, end: number = n) => {
@@ -17,7 +21,7 @@ export const makeTuples = <N extends number, T = number>(array: TypedArray | T[]
 
     while (start < 0) start += n;
     while (end < 0) end += n;
-    
+
     const s = start * dims;
     const e = end * dims;
 

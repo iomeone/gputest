@@ -1,4 +1,4 @@
-use '../../wgsl/use/array'::{ sizeToModulus3, packIndex3 };
+use '@use-gpu/wgsl/use/array'::{ sizeToModulus3, packIndex3 };
 use './types'::{ IndirectDrawMetaAtomic };
 
 @link var<storage, read_write> indirectDraw: IndirectDrawMetaAtomic;

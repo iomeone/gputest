@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import { yeet, fence, provide, makeContext, useContext, useNoContext, useOne, useRef, SUSPEND } from '../../live';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import { yeet, fence, provide, makeContext, useContext, useNoContext, useOne, useRef, SUSPEND } from '@use-gpu/live';
 
 type SuspenseContextProps = boolean;
 
@@ -8,11 +8,11 @@ export const SuspenseContext = makeContext<SuspenseContextProps>(false, 'Suspens
 export const useSuspenseContext = () => useContext(SuspenseContext);
 export const useNoSuspenseContext = () => useNoContext(SuspenseContext);
 
-type SuspenseProps = {
+type SuspenseProps = PropsWithChildren<{
   fallback?: LiveElement,
-};
+}>;
 
-export const Suspense: LiveComponent<SuspenseProps> = (props: PropsWithChildren<SuspenseProps>) => {
+export const Suspense: LiveComponent<SuspenseProps> = (props: SuspenseProps) => {
   const {fallback} = props;
 
   const lastValue = useRef<any>();

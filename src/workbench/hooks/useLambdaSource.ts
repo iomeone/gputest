@@ -1,31 +1,30 @@
-import type { LambdaSource, StorageSource, Lazy } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { ArrowFunction } from '../../live';
+import type { LambdaSource, Lazy, TypedArray } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 
-import { resolve } from '../../core';
-import { useMemo } from '../../live';
+import { resolve } from '@use-gpu/core';
+import { useMemo } from '@use-gpu/live';
 
-type GetProps = {
+export type SourceLike = {
   length?: Lazy<number>,
-  size?: Lazy<number[]>,
+  size?: Lazy<number[] | TypedArray>,
 };
 
-export const useLambdaSource = (shader: ShaderModule, getProps: GetProps) =>
-  useMemo(() => getLambdaSource(shader, getProps), [shader, getProps]);
+export const useLambdaSource = (shader: ShaderModule, sourceProps: SourceLike) =>
+  useMemo(() => getLambdaSource(shader, sourceProps), [shader, sourceProps]);
 
-export const getLambdaSource = (shader: ShaderModule, getProps: GetProps) =>
+export const getLambdaSource = (shader: ShaderModule, sourceProps: SourceLike) =>
   new Proxy({
     shader,
   }, {
     get: (target, s) => {
       if (s === 'length') {
-        if (getProps.length) return resolve(getProps.length);
-        if (getProps.size) return resolve(getProps.size).reduce((a, b) => a * b, 1);
+        if (sourceProps.length != null) return resolve(sourceProps.length);
+        if (sourceProps.size != null) return (resolve(sourceProps.size) as number[]).reduce((a, b) => a * b, 1);
         return 0;
       }
       if (s === 'size') {
-        if (getProps.size) return resolve(getProps.size);
-        if (getProps.length) return [resolve(getProps.length)];
+        if (sourceProps.size != null) return resolve(sourceProps.size);
+        if (sourceProps.length != null) return [resolve(sourceProps.length)];
         return [0];
       }
       return (target as any)[s];

@@ -1,18 +1,18 @@
-import type { LiveComponent, LiveElement } from '../../../live';
-import type { RustTextAPI, Font } from '../../../glyph';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { RustTextAPI, Font } from '@use-gpu/glyph';
 
-import { parseWeight } from '../../../traits';
-import { provide, useAwait, makeContext, useContext, useMemo, useOne } from '../../../live';
-import { makeTuples } from '../../../core';
-import { RustText, packStrings } from '../../../glyph';
-import { useForceUpdate } from '../../hooks';
+import { parseWeight } from '@use-gpu/parse';
+import { provide, makeContext, useContext, useMemo, useOne, useResource } from '@use-gpu/live';
+import { makeTuples } from '@use-gpu/core';
+import { RustText, packStrings } from '@use-gpu/glyph';
+import { useForceUpdate } from '../../hooks/useForceUpdate';
 
 export const FontContext = makeContext<RustTextAPI>(undefined, 'FontContext');
 export const useFontContext = () => useContext(FontContext);
 
 export type FontProviderProps = {
   fonts: Font[],
-  children: LiveElement,
+  children?: LiveElement,
 };
 
 export const FontProvider: LiveComponent<FontProviderProps> = ({fonts, children}) => {
@@ -59,7 +59,7 @@ export const useFontText = (
     const spans = makeTuples(m, 3);
     const glyphs = makeTuples(g, 4);
     const missing = makeTuples(i, 2);
-    
+
     missing.iterate((index: number, glyph: number) =>
       rustText.loadMissingGlyph(stack[index], glyph, forceUpdate)
     );
@@ -76,8 +76,9 @@ export const useFontHeight = (
 ) => {
   const rustText = useFontContext();
   const [id] = stack;
-  
+
   return useMemo(() => {
+    // eslint-disable-next-line prefer-const
     let {ascent, descent, lineHeight: fontHeight, xHeight, emUnit} = rustText.measureFont(id, size);
 
     const lh = lineHeight ?? fontHeight;
@@ -89,3 +90,12 @@ export const useFontHeight = (
     return {ascent, descent, lineHeight: lh, xHeight: xh, emUnit};
   }, [id, size, lineHeight, rustText]);
 }
+
+export const useFontDebug = () => {
+  const [, forceUpdate] = useForceUpdate();
+  const rustText = useFontContext();
+
+  useResource((dispose) => {
+    dispose(rustText.debugListener(forceUpdate));
+  }, []);
+};

@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from '@lezer/lr';
-import { UntilEOL, untilCommentClose } from './glsl.terms';
+import { UntilEOL, untilCommentClose } from './glsl.terms.js';
 
 export const untilEOLToken = new ExternalTokenizer(
   (input, stack) => {

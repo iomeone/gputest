@@ -1,55 +1,83 @@
-import type { LiveComponent } from '../../live';
-import type { ShaderSource } from '../../shader';
-import type { VectorLike } from '../../traits';
-import type { ColorTrait, PointTrait, ROPTrait } from '../types';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { LiveComponent } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits/live';
 
-import { PointLayer } from '../../workbench';
-import { use, provide, useCallback, useContext, useOne, useMemo } from '../../live';
+import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { adjustSchema, schemaToArchetype, schemaToAttributes, toCPUDims, getTensorLength, getUniformDims } from '@use-gpu/core';
+import { yeet, memo, useOne } from '@use-gpu/live';
 
-import { DataContext } from '../providers/data-provider';
-import {
-  useColorTrait,
-  usePointTrait,
-  useROPTrait,
-} from '../traits';
-import { vec4 } from 'gl-matrix';
+import { useInspectHoverable, useTransformContext, POINT_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
 
-export type PointProps =
-  Partial<ColorTrait> &
-  Partial<PointTrait> &
-  Partial<ROPTrait> & {
+import { PointTraits } from '../traits';
 
-  colors?: ShaderSource,
-  sizes?: ShaderSource,
-  depths?: ShaderSource,
-  stroke?: number,
-};
+const {quote} = LayerReconciler;
 
-export const Point: LiveComponent<PointProps> = (props) => {
-  const {colors, sizes, depths, stroke} = props;
+const useTraits = makeUseTrait(PointTraits);
 
-  const positions = useContext(DataContext) ?? undefined;
+export type PointProps = TraitProps<typeof PointTraits>;
 
-  const {size, depth, shape} = usePointTrait(props);
-  const color = useColorTrait(props);
-  const rop = useROPTrait(props);
-
-  return (
-    use(PointLayer, {
+export const Point: LiveComponent<PointProps> = memo((props) => {
+  const parsed = useTraits(props);
+  const {
+      position,
       positions,
-
       color,
-      size,
-      depth,
-      shape,
-      
       colors,
+      size,
       sizes,
+      depth,
       depths,
-      stroke,
-      
-      ...rop,
-    })
-  );
-};
+      zIndex,
+      zBias,
+      zBiases,
 
+      id,
+      ids,
+      lookup,
+      lookups,
+
+      formats,
+      tensor,
+
+      sources,
+      ...flags
+  } = parsed;
+
+  if (zIndex && zBias == null) parsed.zBias = zIndex;
+
+  const hovered = useInspectHoverable();
+  if (hovered) flags.mode = "debug";
+
+  const context = useTransformContext();
+  const {transform, nonlinear, matrix: refs} = context;
+
+  const schema = useOne(() => adjustSchema(POINT_SCHEMA, formats), formats);
+  const attributes = schemaToAttributes(schema, parsed as any);
+  const archetype = schemaToArchetype(schema, attributes, flags, refs, sources);
+
+  const dims = toCPUDims(getUniformDims(schema.positions.format));
+  const count = tensor ? getTensorLength(tensor) : positions ? (attributes.positions?.length / dims) || 0 : 1;
+
+  // eslint-disable-next-line no-debugger
+  if (Number.isNaN(count)) debugger;
+  if (!count || !(position || positions)) return;
+
+  const shapes = {
+    point: {
+      count,
+      archetype,
+      attributes,
+      flags,
+      refs,
+      schema,
+      sources,
+      transform: nonlinear ?? context,
+      zIndex,
+    },
+  };
+
+  return quote(yeet(shapes));
+}, shouldEqual({
+  position: sameShallow(),
+  color: sameShallow(),
+}), 'Point');

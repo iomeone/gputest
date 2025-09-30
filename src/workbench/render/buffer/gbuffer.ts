@@ -1,16 +1,16 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '../../../live';
-import type { TextureTarget, UseGPURenderContext } from '../../../core';
+import type { LC } from '@use-gpu/live';
+import type { TextureTarget } from '@use-gpu/core';
 
-import { yeet, memo, provide, fence, useMemo, useOne } from '../../../live';
+import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
 import {
-  makeColorAttachment, makeColorState, makeDepthTexture, makeDepthStencilAttachment, makeDepthStencilState, makeTargetTexture,
-} from '../../../core';
+  makeColorAttachment, makeColorState, makeTargetTexture,
+} from '@use-gpu/core';
 
 import { useDeviceContext } from '../../providers/device-provider';
 import { useRenderContext } from '../../providers/render-provider';
 import { useInspectable } from '../../hooks/useInspectable';
 
-export const GBuffer: LC = memo((props: PropsWithChildren<object>) => {
+export const GBuffer: LC = memo(() => {
   const device = useDeviceContext();
   const renderContext = useRenderContext();
 
@@ -28,7 +28,7 @@ export const GBuffer: LC = memo((props: PropsWithChildren<object>) => {
   // Set up GBuffer layout
   const formats = useMemo(() => [
     'rgba8unorm',
-    'rgba16float', 
+    'rgba16float',
     'rgba8unorm',
     hasFloat ? 'rg11b10ufloat' : 'rgb10a2unorm',
     format,

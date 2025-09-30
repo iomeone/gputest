@@ -1,19 +1,26 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '../../live';
-import type { ComputeToPass, ComputeCounter } from './types';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { ComputeToPass, CommandToBuffer, ComputeCounter } from './types';
 
-import { quote, yeet, memo } from '../../live';
+import { yeet, memo } from '@use-gpu/live';
 import { useDeviceContext } from '../providers/device-provider';
 import { useInspectable } from '../hooks/useInspectable'
+import { QueueReconciler } from '../reconcilers/index';
 
-export type ComputePassProps = {
+const {quote} = QueueReconciler;
+
+export type ComputePassProps = PropsWithChildren<{
   calls: {
+    pre?: CommandToBuffer[],
     compute?: ComputeToPass[],
   },
   immediate?: boolean,
-};
+}>;
 
 const NO_OPS: any[] = [];
-const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS; 
+const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
+
+const label = '<ComputePass>';
+const LABEL = { label };
 
 const computeToContext = (
   commandEncoder: GPUCommandEncoder,
@@ -29,7 +36,7 @@ const computeToContext = (
 
 Executes all compute calls. Can optionally run immediately instead of per-frame.
 */
-export const ComputePass: LC<ComputePassProps> = memo((props: PropsWithChildren<ComputePassProps>) => {
+export const ComputePass: LC<ComputePassProps> = memo((props: ComputePassProps) => {
   const {
     immediate,
     calls,
@@ -39,24 +46,34 @@ export const ComputePass: LC<ComputePassProps> = memo((props: PropsWithChildren<
 
   const device = useDeviceContext();
 
+  const pres = toArray(calls['pre'] as CommandToBuffer[]);
   const computes = toArray(calls['compute'] as ComputeToPass[]);
 
   const run = () => {
     let ds = 0;
-    
-    const countDispatch = (d: number) => { ds += d; };
+    let ss = 0;
+
+    const countDispatch = (d: number, s: number) => { ds += d; ss += s; };
+
+    const queue: GPUCommandBuffer[] = []
+    for (const f of pres) {
+      const q = f();
+      if (q) queue.push(q);
+    }
 
     if (computes.length) {
-      const commandEncoder = device.createCommandEncoder();
+      const commandEncoder = device.createCommandEncoder(LABEL);
       computeToContext(commandEncoder, computes, countDispatch);
 
       const command = commandEncoder.finish();
-      device.queue.submit([command]);
+      queue.push(command);
     }
+    device.queue.submit(queue);
 
     inspect({
       render: {
-        dispatchCount: ds,
+        dispatches: ds,
+        samples: ss,
       },
     });
 

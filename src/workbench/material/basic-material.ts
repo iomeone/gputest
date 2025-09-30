@@ -1,34 +1,30 @@
-import type { LC, LiveElement, PropsWithChildren } from '../../live';
-import type { Point4 } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
-import type { ColorLike } from '../../traits';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { ColorLike, XYZW } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import { provide, yeet, signal, useMemo, useOne } from '../../live';
-import { parseColor, useProp } from '../../traits';
-import { bindBundle } from '../../shader/wgsl';
+import { useOne } from '@use-gpu/live';
+import { useProp } from '@use-gpu/traits/live';
+import { parseColor } from '@use-gpu/parse';
 
-import { useBoundShader, useNoBoundShader } from '../hooks/useBoundShader';
+import { useShader } from '../hooks/useShader';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { useShaderRef } from '../hooks/useShaderRef';
-import { useLightContext } from '../providers/light-provider';
-import { MaterialContext } from '../providers/material-provider';
 
 import { ShaderFlatMaterial } from './shader-flat-material';
 
-import { getBasicMaterial } from '../../wgsl/material/basic-materialwgsl';
-import { getSolidSurface } from '../../wgsl/instance/surface/solidwgsl';
-import { getSolidFragment } from '../../wgsl/instance/fragment/solidwgsl';
+import { getBasicMaterial } from '@use-gpu/wgsl/material/basic-material.wgsl';
 
 export type BasicMaterialProps = {
   color?: ColorLike,
   colorMap?: ShaderSource,
 
   render?: (material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement,
+  children?: LiveElement | ((material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement),
 };
 
-const WHITE = [1, 1, 1, 1] as Point4;
+const WHITE = [1, 1, 1, 1] as XYZW;
 
-export const BasicMaterial: LC<BasicMaterialProps> = (props: PropsWithChildren<BasicMaterialProps>) => {
+export const BasicMaterial: LC<BasicMaterialProps> = (props: BasicMaterialProps) => {
   const {
     //color,
     colorMap,
@@ -42,13 +38,13 @@ export const BasicMaterial: LC<BasicMaterialProps> = (props: PropsWithChildren<B
   const t = useNativeColorTexture(colorMap);
 
   const c = useShaderRef(color);
-  let cm = useShaderRef(null, t);
+  const cm = useShaderRef(null, t);
 
   const defines = useOne(() => ({
     HAS_COLOR_MAP: !!colorMap,
   }), colorMap);
 
-  const getFragment = useBoundShader(getBasicMaterial, [c, cm], defines);
+  const getFragment = useShader(getBasicMaterial, [c, cm], defines);
 
   return ShaderFlatMaterial({
     fragment: getFragment,

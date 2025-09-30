@@ -1,12 +1,9 @@
 import type {
-  Initial, Setter, Reducer, Key, Task,
-  LiveFunction, LiveComponent, LiveFiber, LiveCapture, LiveContext, LiveElement, LiveNode,
-  FunctionCall, DeferredCall, HostInterface, ArrowFunction,
-  ReactElementInterop,
+  Key, LiveFunction, LiveFiber, LiveCapture, LiveContext, LiveReconciler, LiveElement, LiveNode,
+  DeferredCall, ArrowFunction,
 } from './types';
 
-import { compareFibers, tagFunction } from './util';
-import { bustFiberMemo } from './fiber';
+import { tagFunction } from './util';
 import { getCurrentFiberID } from './current';
 
 /** @hidden */
@@ -96,8 +93,9 @@ export const extend = (
   calls: LiveNode<any>,
   props: Record<string, any>,
 ): LiveElement => {
-  if (typeof calls === 'string') return null;
-  if (typeof calls === 'function') return null;
+  if (typeof calls === 'string') throw new Error(`Cannot extend props of string child '${calls}'`);
+  if (typeof calls === 'number') throw new Error(`Cannot extend props of number child '${calls}'`);
+  if (typeof calls === 'function') throw new Error(`Cannot extend props of function child '${calls}'`);
   if (!calls) return calls;
 
   if (Array.isArray(calls)) return calls.map(call => extend(call, props)) as any;
@@ -108,8 +106,33 @@ export const extend = (
     const [existing, ...rest] = calls.args;
     return ({...calls, args: [{...existing, ...props}, ...rest] });
   }
-  if (!calls) return calls;
+
   return ({...calls, args: [props] } as any);
+}
+
+/** Mutate arguments in-place on an existing call or calls. */
+export const mutate = (
+  calls: LiveNode<any>,
+  props: Record<string, any>,
+): LiveElement => {
+  if (typeof calls === 'string') throw new Error(`Cannot extend props of string child '${calls}'`);
+  if (typeof calls === 'number') throw new Error(`Cannot extend props of number child '${calls}'`);
+  if (typeof calls === 'function') throw new Error(`Cannot extend props of function child '${calls}'`);
+  if (!calls) return;
+
+  if (Array.isArray(calls)) {
+    calls.forEach(call => mutate(call, props)) as any;
+  }
+  else if ('props' in calls) {
+    for (const k in props) calls.props[k] = props[k];
+  }
+  else if (calls.args?.length) {
+    const ps = calls.args[0];
+    for (const k in props) ps[k] = props[k];
+  }
+  else {
+    calls.args = [props];
+  }
 }
 
 /** Morph a call to a Live function.
@@ -129,7 +152,7 @@ export const morph = (
 
 The callback is invoked with a render function, which it can call repeatedly to render the detached fiber. */
 export const detach = <F extends ArrowFunction>(
-  call: DeferredCall<F>,
+  call: DeferredCall<F> | DeferredCall<F>[],
   callback: (render: () => void, fiber: LiveFiber<F>) => void,
   key?: Key,
 ): DeferredCall<() => void> => ({f: DETACH, args: [call, callback], key, by: getCurrentFiberID()} as any);
@@ -138,9 +161,13 @@ export const detach = <F extends ArrowFunction>(
 export const fragment = (
   calls: LiveNode<any>,
   key?: Key,
-): DeferredCall<() => void> => {
+): LiveElement => {
+  if (key !== null) {
+    if (Array.isArray(calls)) return {f: FRAGMENT, args: calls, key};
+    return calls != null ? {f: FRAGMENT, args: [calls], key} : null;
+  }
   if (Array.isArray(calls)) return calls as any;
-  return [calls] as any;
+  return calls != null ? [calls] as any : null;
 }
 
 /** Wrap a fragment in a debug node to mark it. */
@@ -209,52 +236,98 @@ export const capture = <T, C>(
 ): DeferredCall<() => void> => ({f: CAPTURE, args: [context, calls, then], key, by: getCurrentFiberID()} as any);
 
 /** Reconcile quoted calls to a separate tree. */
-export const reconcile = <T>(
+export const reconcileTo = <T>(
+  reconciler: LiveReconciler<T>,
   calls?: LiveNode<any>,
   key?: Key,
-): DeferredCall<() => void> => ({f: RECONCILE, args: calls, key, by: getCurrentFiberID()} as any);
+): DeferredCall<() => void> => ({f: RECONCILE, args: [reconciler, calls], key, by: getCurrentFiberID()} as any);
 
-/** Quote a subtree and reconcile it. */
-export const quote = <T>(
+/** Quote a subtree and reconcile it into the given reconciler context. */
+export const quoteTo = <T>(
+  reconciler: LiveReconciler<T>,
   calls?: LiveNode<any>,
   key?: Key,
-): DeferredCall<() => void> => ({f: QUOTE, args: calls, key, by: getCurrentFiberID()} as any);
+): DeferredCall<() => void> => {
+  if (!reconciler?.reconciler) throw new Error("Missing reconciler for quote");
+  return ({f: QUOTE, args: [reconciler, calls], key, by: getCurrentFiberID()} as any);
+};
 
 /** Escape from quote. */
-export const unquote = <T>(
+export const unquote = (
   calls?: LiveNode<any>,
   key?: Key,
 ): DeferredCall<() => void> => ({f: UNQUOTE, args: calls, key, by: getCurrentFiberID()} as any);
 
+/** Signal = quote yeet an empty value */
+export const signalTo = <T>(reconciler: LiveReconciler<T>, key?: Key) => {
+  if (!reconciler?.reconciler) throw new Error("Missing reconciler for signal");
+  return ({f: SIGNAL, args: [reconciler], key, by: getCurrentFiberID()} as any);
+};
+
 /** Yeet a suspend symbol. */
 export const suspend = (key?: Key) => yeet(SUSPEND, key);
-
-/** Yeet a fast signal() signal. */
-export const signal = (key?: Key) => ({f: SIGNAL, args: null, key, by: getCurrentFiberID()} as any);
 
 /** LOL. Look, _you_ go try to make JSX.Element polymorphic. */
 export const into = (children: any): any => children;
 
-export interface MakeContext<T> {
+/** Make deprecated warning for component. */
+export const deprecated = <F extends ArrowFunction>(
+  f: LiveFunction<F>,
+  oldName: string,
+  newName?: string,
+): LiveFunction<F> => {
+  let warning = false;
+
+  const wrapped = (props: any) => {
+    if (!warning) {
+      const unmemo = (s?: string) => s ? s.replace(/Memo\(([^\)]+)\)/g, '$1') : null;
+
+      console.warn(`<${oldName}> is deprecated. Use <${unmemo(newName) ?? (f as any).displayName ?? f.name}> instead.`);
+      warning = true;
+    }
+    return f(props);
+  };
+
+  return new Proxy(wrapped, {
+    get: (target, s) => {
+      if (s === 'name') return oldName;
+      return (target as any)[s];
+    },
+  }) as any;
+};
+
+export interface MakeContext {
   <T>(initialValue: T, displayName?: string): LiveContext<T>;
   <T>(initialValue: undefined, displayName?: string): LiveContext<T>;
   <T>(initialValue: null, displayName?: string): LiveContext<T | null>;
 };
 
 /** Make Live context for holding shared value for child nodes (defaulted, required or optional). */
-export const makeContext: MakeContext<unknown> = <T>(initialValue?: T | null, displayName?: string) => ({
+export const makeContext: MakeContext = <T>(initialValue?: T | null, displayName?: string) => ({
   initialValue,
   displayName,
   context: true,
 });
 
-/** Make Live capture for holding shared value for child nodes (defaulted, required or optional). */
+/** Make Live capture for holding shared value for child nodes */
 export const makeCapture = <T>(displayName?: string): LiveCapture<T> => ({
   displayName,
   capture: true,
 });
 
-// Tag a component as imperative, always re-rendered from above even if props/state didn't change
+/** Make Live reconciler for incrementally rendering quoted child nodes */
+export const makeReconciler = <T>(displayName?: string): LiveReconciler<T> => {
+  const self: LiveReconciler<T> = {
+    displayName,
+    reconciler: true,
+    reconcile: (el: LiveElement): LiveElement => reconcileTo(self, el),
+    quote: (el: LiveElement): LiveElement => quoteTo(self, el),
+    signal: () => signalTo(self),
+  };
+  return self;
+};
+
+/** Tag a component as imperative, always re-rendered from above even if props/state didn't change (deprecated) */
 export const makeImperativeFunction = (
   component: LiveFunction<any>,
   displayName?: string,

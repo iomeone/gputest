@@ -1,9 +1,8 @@
-import type { ViewUniforms } from '../../core';
-import type { Ref } from '../../live';
+import type { Ref } from '@use-gpu/live';
 
-import { useCallback, useNoCallback } from '../../live';
-import { distanceToFrustum } from '../../core';
-import { mat4, vec3, vec4 } from 'gl-matrix';
+import { useCallback, useNoCallback } from '@use-gpu/live';
+import { distanceToFrustum } from '@use-gpu/core';
+import { vec3, vec4 } from 'gl-matrix';
 
 const sqr = (x: number) => x * x;
 
@@ -23,4 +22,3 @@ export const useFrustumCuller = (
 }, [positionRef, frustumRef]);
 
 export const useNoFrustumCuller = useNoCallback;
-

@@ -1,10 +1,10 @@
-import { ShaderModule, ParsedBundle, ParsedModule, DataBinding, ModuleRef, RefFlags as RF } from './types';
+import { ShaderModule, LambdaSource, UniformAttribute, DataBinding, ModuleRef, RefFlags as RF } from './types';
 
 import { formatMurmur53, toMurmur53, getObjectKey, mixBits, scrambleBits } from '../util/hash';
-import { getBundleHash, getBundleEntry, toModule } from '../util/bundle';
+import { getBundleHash, getBundleEntry, getBundleName, toBundle, toModule } from '../util/bundle';
 import { getBindingArgument } from '../util/bind';
-import { loadVirtualModule } from './shader';
-import { makeSwizzle } from './cast';
+import { loadVirtualModule, bundleToAttribute } from './shader';
+import { castTo, makeSwizzle } from './operators/cast';
 import { PREFIX_VIRTUAL } from '../constants';
 import { VIRTUAL_BINDGROUP, VOLATILE_BINDGROUP } from './constants';
 
@@ -34,10 +34,10 @@ const getTypeKey = (b: DataBinding) =>
   (+!!b.constant) +
   (+!!b.storage) * 2 +
   (+!!b.lambda) * 4 +
-  (+!!b.texture) * 8 + 
+  (+!!b.texture) * 8 +
   (+!!(b.storage?.volatile || b.texture?.volatile)) * 16;
 
-const getFormatKey = (b: DataBinding) => 
+const getFormatKey = (b: DataBinding) =>
   b.texture ? toMurmur53(b.texture?.format) ^
               toMurmur53(b.texture?.layout) ^
               toMurmur53(b.texture?.variant) ^
@@ -71,28 +71,24 @@ export const makeBindingAccessors = (
     flags: RF.Exported,
   })) as any[];
 
-  // Handle struct types for storage
+  // Inject import for storage struct types
   const libs: Record<string, ShaderModule> = {};
   const modules = storages.map(({uniform, storage}) => {
-    const {format} = uniform;
-    const {format: type} = storage!;
+    const {type: typeOut} = uniform;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const {type: typeIn} = storage!;
 
-    const object = (
-      typeof type === 'object' ? type :
-      typeof format === 'object' ? format :
-      null
-    );
-
-    if (object) {
-      const entry = getBundleEntry(object);
+    const type = typeOut ?? typeIn;
+    if (type) {
+      const entry = getBundleEntry(type);
       if (entry != null) {
-        const module = toModule(object);
+        const module = toModule(type);
         libs[module.name] = module;
         return {
           at: 0,
           name: module.name,
           imports: [{name: entry, imported: entry}],
-          symbols: [format],
+          symbols: [entry],
         } as ModuleRef;
       }
     }
@@ -103,6 +99,7 @@ export const makeBindingAccessors = (
   // Hash + readable representation
   const readable = symbols.join(' ');
   const signature = getBindingsKey(bindings).toString(16);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const external = lambdas.map(l => getBundleHash(l.lambda!.shader));
   const unique = `@access [${signature}] [${external}] [${readable}] [${types.join(' ')}]`;
 
@@ -124,73 +121,78 @@ export const makeBindingAccessors = (
     const volatileSet = getBindingArgument(rename.get(VOLATILE_BINDGROUP));
 
     for (const {uniform: {name, format: type, args}} of constants) {
+      if (typeof type !== 'string') throw new Error(`Cannot make uniform for struct type`);
       program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args as any));
     }
 
-    for (const {uniform: {name, format: type, args}, storage} of storages) {
-      const {volatile, format, readWrite} = storage!;
+    for (const {uniform: {name, format: formatOut, type: typeOut, args}, storage} of storages) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const {volatile, format: formatIn, type: typeIn, readWrite} = storage!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
 
-      const object = (
-        typeof type === 'object' ? type :
-        typeof format === 'object' ? format :
-        null
-      );
+      const type = typeOut ?? typeIn;
+      if (type) {
+        const format = type === typeOut ? formatOut : formatIn;
+        const entry = getBundleEntry(type);
+        let t = (entry ? rename.get(entry) : null) ?? entry ?? 'unknown';
+        if (t === 'unknown') throw new Error(`Invalid type '${getBundleName(type)}'. Module has no entry point.`);
 
-      if (object) {
-        const entry = getBundleEntry(object);
-        const t = (entry ? rename.get(entry) : null) ?? entry ?? 'unknown';
-        if (t === 'unknown') debugger;
-
+        if (format === 'array<T>') t = `array<${t}>`;
         program.push(makeStorageAccessor(namespace, set, base, t, t, name, readWrite, args));
         continue;
       }
 
-      if (typeof format === 'string') {
-        if (is3to4(format)) {
-          const accessor = name + '3to4';
-          program.push(makeVec3to4Accessor(namespace, type, to3(format), name, accessor));
-          program.push(makeStorageAccessor(namespace, set, base, to4(format), to4(format), accessor, readWrite));
-          continue;
-        }
-        else if (is8to32(format)) {
-          const accessor = name + '8to32';
-          program.push(make8to32Accessor(namespace, type, to32(format), name, accessor));
-          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
-          continue;
-        }
-        else if (is16to32(format)) {
-          const accessor = name + '16to32';
-          program.push(make16to32Accessor(namespace, type, to32(format), name, accessor));
-          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
-          continue;
-        }
-        else if (isVec8to32(format)) {
-          const accessor = name + 'Vec8to32';
-          const wide = to32(format).replace('i32', 'u32');
-          program.push(makeVec8to32Accessor(namespace, type, wide, name, accessor));
-          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
-          continue;
-        }
-        else if (isVec16to32(format)) {
-          const accessor = name + 'Vec16to32';
-          const wide = to32(format).replace('i32', 'u32');
-          program.push(makeVec16to32Accessor(namespace, type, wide, name, accessor));
-          program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
-          continue;
-        }
+      if (Array.isArray(formatIn) || Array.isArray(formatOut)) throw new Error(`Cannot bind data to a type`);
+
+      if (formatIn === 'T' || formatOut === 'T') {
+        // eslint-disable-next-line no-debugger
+        debugger;
       }
 
-      program.push(makeStorageAccessor(namespace, set, base, type, format as string, name, readWrite, args));
+      if (is3to4(formatIn)) {
+        const accessor = name + '3to4';
+        program.push(makeStorageAccessor(namespace, set, base, to4(formatIn), to4(formatIn), accessor, readWrite));
+        program.push(makeVec3to4Accessor(namespace, formatOut, to3(formatIn), name, accessor));
+        continue;
+      }
+      else if (is8to32(formatIn)) {
+        const accessor = name + '8to32';
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(make8to32Accessor(namespace, formatOut, to32(formatIn), name, accessor));
+        continue;
+      }
+      else if (is16to32(formatIn)) {
+        const accessor = name + '16to32';
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(make16to32Accessor(namespace, formatOut, to32(formatIn), name, accessor));
+        continue;
+      }
+      else if (isVec8to32(formatIn)) {
+        const accessor = name + 'Vec8to32';
+        const wide = to32(formatIn).replace('i32', 'u32');
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeVec8to32Accessor(namespace, formatOut, wide, name, accessor));
+        continue;
+      }
+      else if (isVec16to32(formatIn)) {
+        const accessor = name + 'Vec16to32';
+        const wide = to32(formatIn).replace('i32', 'u32');
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeVec16to32Accessor(namespace, formatOut, wide, name, accessor));
+        continue;
+      }
+
+      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name, readWrite, args));
     }
 
-    for (const {uniform: {name, format: type, args}, texture} of textures) {
-      const {volatile, layout, variant, absolute, sampler, comparison, format, aspect} = texture!;
+    for (const {uniform: {name, format: formatOut, args}, texture} of textures) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const {volatile, layout, variant, absolute, sampler, comparison, format: formatIn, aspect} = texture!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
       if (sampler && args !== null) volatile ? volatileBase++ : bindingBase++;
-      program.push(makeTextureAccessor(namespace, set, base, type, format, name, layout, variant, aspect, absolute, !!sampler, !!comparison, args));
+      program.push(makeTextureAccessor(namespace, set, base, formatOut as string, formatIn, name, layout, variant, aspect, absolute, !!sampler, !!comparison, args));
     }
 
     return program.join('\n');
@@ -213,12 +215,67 @@ export const makeBindingAccessors = (
   } : virtual;
 
   const links: Record<string, ShaderModule> = {};
-  for (const binding of constants) links[binding.uniform.name] = bundle;
-  for (const binding of storages)  links[binding.uniform.name] = bundle;
-  for (const binding of textures)  links[binding.uniform.name] = bundle;
-  for (const lambda  of lambdas)   links[lambda.uniform.name]  = lambda.lambda!.shader;
+  for (const {uniform} of constants) links[uniform.name] = bundle;
+  for (const {uniform} of storages)  links[uniform.name] = bundle;
+  for (const {uniform} of textures)  links[uniform.name] = bundle;
+  for (const {uniform, lambda} of lambdas)   {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const needsCast = !checkLambdaType(uniform, lambda!);
+    links[uniform.name] = needsCast
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      ? castTo(lambda!.shader, uniform.format as string)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      : lambda!.shader;
+  }
 
   return links;
+};
+
+export const checkLambdaType = (
+  uniform: UniformAttribute,
+  lambda: LambdaSource,
+) => {
+  const {name, format: from} = uniform;
+
+  const bundle = toBundle(lambda.shader);
+  const {format: to} = bundleToAttribute(bundle);
+
+  if (Array.isArray(from) || Array.isArray(to)) return true;
+
+  let f = from;
+  let t = to;
+
+  if (f === t) return true;
+  if (t === 'auto') return true;
+  if (t == null) {
+    console.warn(`Unable to determine lambda format for uniform ${uniform.name} -> bundle ${getBundleEntry(bundle)}`)
+    return true;
+  }
+
+  // Remove vec<..> to allow for automatic widening/narrowing
+  f = f.replace(/vec[0-9]/, '').replace(/^<|>$/g, '');
+  t = t.replace(/vec[0-9]/, '').replace(/^<|>$/g, '');
+
+  // Shorthand
+  if (f.match(/^vec[0-9]uif$/)) f += '32';
+  if (f.match(/^vec[0-9]h$/))   f = 'f16';
+  if (t.match(/^vec[0-9]uif$/)) t += '32';
+  if (t.match(/^vec[0-9]h$/))   t = 'f16';
+
+  if (f !== t) {
+    // Remove bit size to allow for automatic widening/narrowing
+    const fromScalar = f.replace(/([uif])([0-9]+)/, '$1__');
+    const toScalar   = t.replace(/([uif])([0-9]+)/, '$1__');
+
+    if (fromScalar !== toScalar) {
+      // uppercase = struct type, allow any
+      if (from.match(/[A-Z]/) && to) return true;
+
+      throw new Error(`Invalid format ${to} bound for ${from} "${name}" (${fromScalar} != ${toScalar})`);
+    }
+  }
+
+  return false;
 };
 
 export const makeUniformBlock = (
@@ -236,12 +293,12 @@ export const makeUniformBlockLayout = (
   set: number | string,
   binding: number | string,
   members: string[],
-) => `
-struct ${ns}Type {
+) => (
+`struct ${ns}Type {
   ${members.map(m => `${m},`).join('\n  ')}
 };
 @group(${set}) @binding(${binding}) var<uniform> ${ns}Uniform: ${ns}Type;
-`;
+`);
 
 export const makeUniformFieldAccessor = (
   uniform: string,
@@ -251,11 +308,11 @@ export const makeUniformFieldAccessor = (
   args: string[] | null = INT_ARG,
 ) => {
   if (args == null) throw new Error("Constants cannot be bound directly to storage/textures");
-  return `
-fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} {
+  return (
+`fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} {
   return ${uniform}Uniform.${ns}${name};
 }
-`;
+`);
 };
 
 export const makeStorageAccessor = (
@@ -269,20 +326,20 @@ export const makeStorageAccessor = (
   args: string[] | null = INT_ARG,
 ) => {
   const access = readWrite ? 'storage, read_write' : 'storage';
-  
+
   if (args === null) {
     return `@group(${set}) @binding(${binding}) var<${access}> ${ns}${name}: ${type};\n`;
   }
 
   const hasCast = needsCast(format, type);
-  return `
-@group(${set}) @binding(${binding}) var<${access}> ${ns}${name}Storage: array<${format}>;
+  return (
+`@group(${set}) @binding(${binding}) var<${access}> ${ns}${name}Storage: array<${format}>;
 
 fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} {
   ${hasCast ? 'let v =' : 'return'} ${ns}${name}Storage[${args.length ? arg(0) : '0u'}];
 ${hasCast ? `  return ${makeSwizzle(format, type, 'v')};\n` : ''
 }}
-`;
+`);
 }
 
 export const makeTextureAccessor = (
@@ -294,6 +351,7 @@ export const makeTextureAccessor = (
   name: string,
   layout: string,
   variant: string = 'textureSample',
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   aspect: string = 'all',
   absolute: boolean = false,
   sampler: boolean = true,
@@ -310,14 +368,14 @@ export const makeTextureAccessor = (
 
   const t = layout.match(/<([^>]+)>/)?.[1] ?? 'f32';
   const shaderType = (
-    layout.match(/depth/) ? 'f32' : 
+    layout.match(/depth/) ? 'f32' :
     `vec4<${t}>`
   );
 
   const hasCast = needsCast(shaderType, type);
 
-  return `
-@group(${set}) @binding(${binding}) var ${ns}${name}Texture: ${layout};
+  return (
+`@group(${set}) @binding(${binding}) var ${ns}${name}Texture: ${layout};
 ${sampler ? `@group(${set}) @binding(${binding + 1}) var ${ns}${name}Sampler: ${comparison ? 'sampler_comparison' : 'sampler'};\n` : ''}
 fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} {
   ${absolute ?
@@ -325,7 +383,7 @@ fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} 
   }${hasCast ? 'let v =' : 'return'} ${variant}(${ns}${name}Texture, ${sampler ? `${ns}${name}Sampler, ` : ''}${args.map((_, i) => `${i === 0 && absolute ? 'relUV' : arg(i)}`).join(', ')});
 ${hasCast ? '  return ' + makeSwizzle(shaderType, type, 'v') + ';\n' : ''
 }}
-`
+`)
 };
 
 export const makeVec3to4Accessor = (
@@ -334,8 +392,8 @@ export const makeVec3to4Accessor = (
   format: string,
   name: string,
   accessor: string,
-) => `
-fn ${ns}${name}(i: u32) -> ${type} {
+) => (
+`fn ${ns}${name}(i: u32) -> ${type} {
   let i3 = i * 3u;
   let b = i3 / 4u;
 
@@ -350,10 +408,10 @@ fn ${ns}${name}(i: u32) -> ${type} {
   else if (f3 == 1u) { v = v1.yzw; }
   else if (f3 == 2u) { v = ${format}(v1.zw, v2.x); }
   else { v = ${format}(v1.w, v2.xy); }
-  
+
   return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
-`;
+`);
 
 export const make8to32Accessor = (
   ns: string,
@@ -361,8 +419,8 @@ export const make8to32Accessor = (
   format: string,
   name: string,
   accessor: string,
-) => `
-fn ${ns}${name}(i: u32) -> ${type} {
+) => (
+`fn ${ns}${name}(i: u32) -> ${type} {
   let b2 = i >> 2u;
   let f4 = i & 3u;
 
@@ -370,7 +428,7 @@ fn ${ns}${name}(i: u32) -> ${type} {
   var v: ${format} = ${format}((word >> (f4 << 3u)) & 0xFFu);
   return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
-`;
+`);
 
 export const make16to32Accessor = (
   ns: string,
@@ -378,16 +436,16 @@ export const make16to32Accessor = (
   format: string,
   name: string,
   accessor: string,
-) => `
-fn ${ns}${name}(i: u32) -> ${type} {
+) => (
+`fn ${ns}${name}(i: u32) -> ${type} {
   let b2 = i >> 1u;
   let f2 = i & 1u;
 
   let word = u32(${ns}${accessor}(b2));
-  var v: ${format} = ${format}((word >> (f2 << 4u)) & 0xFFFFu);  
+  var v: ${format} = ${format}((word >> (f2 << 4u)) & 0xFFFFu);
   return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
-`;
+`);
 
 export const makeVec8to32Accessor = (
   ns: string,
@@ -397,25 +455,25 @@ export const makeVec8to32Accessor = (
   accessor: string,
 ) => {
   if (format.match(/^vec2/)) {
-    return `
-fn ${ns}${name}(i: u32) -> ${type} {
-  let i2 = i / 2u;
+    return (
+`fn ${ns}${name}(i: u32) -> ${type} {
+  let i2 = i >> 1u;
   let f2 = i & 1u;
   let word = ${ns}${accessor}(i2);
   let short = word >> (f2 << 4u);
   let v = (vec2<u32>(short) >> vec2<u32>(0, 8)) & vec2<u32>(0xFF);
   return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
-`;
+`);
   }
   else {
-    return `
-fn ${ns}${name}(i: u32) -> ${type} {
+    return (
+`fn ${ns}${name}(i: u32) -> ${type} {
   let word = ${ns}${accessor}(i);
   let v = (vec4<u32>(word) >> vec4<u32>(0, 8, 16, 24)) & vec4<u32>(0xFF);
   return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
-`;
+`);
   }
 }
 
@@ -427,23 +485,23 @@ export const makeVec16to32Accessor = (
   accessor: string,
 ) => {
   if (format.match(/^vec2/)) {
-    return `
-fn ${ns}${name}(i: u32) -> ${type} {
+    return (
+`fn ${ns}${name}(i: u32) -> ${type} {
   let word = ${ns}${accessor}(i);
   let v = (vec2<u32>(word, word) >> vec2<u32>(0, 16)) & vec2<u32>(0xFFFF);
   return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
-`;
+`);
   }
   else {
-    return `
-fn ${ns}${name}(i: u32) -> ${type} {
+    return (
+`fn ${ns}${name}(i: u32) -> ${type} {
   let i2 = i * 2;
   let word1 = ${ns}${accessor}(i2);
   let word2 = ${ns}${accessor}(i2 + 1);
   let v = (vec4<u32>(word1, word1, word2, word2) >> vec4<u32>(0, 16, 0, 16)) & vec4<u32>(0xFFFF);
   return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
-`;
+`);
   }
 };

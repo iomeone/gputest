@@ -1,11 +1,12 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { VectorLike } from '../../traits';
-import { ViewUniforms, UniformAttribute } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { VectorLike } from '@use-gpu/core';
+import { ViewUniforms } from '@use-gpu/core';
 
-import { parsePosition, useProp } from '../../traits';
-import { provide, use, useContext, useOne, incrementVersion } from '../../live';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition, makeFrustumPlanes } from '../../core';
-import { FrameContext, usePerFrame } from '../providers/frame-provider';
+import { useProp } from '@use-gpu/traits/live';
+import { parsePosition } from '@use-gpu/parse';
+import { provide, use, useContext, useOne, incrementVersion } from '@use-gpu/live';
+import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition, makeFrustumPlanes } from '@use-gpu/core';
+import { FrameContext } from '../providers/frame-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
@@ -24,7 +25,7 @@ const DEFAULT_ORBIT_CAMERA = {
   far: 1000,
 };
 
-export type OrbitCameraProps = {
+export type OrbitCameraProps = PropsWithChildren<{
   phi?: number,
   theta?: number,
   radius?: number,
@@ -37,9 +38,7 @@ export type OrbitCameraProps = {
 
   focus?: number,
   scale?: number | null,
-};
-
-let t = 0;
+}>;
 
 export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
   const {
@@ -50,7 +49,7 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
 
   const layout = useContext(LayoutContext);
 
-  let {
+  const {
     phi    = DEFAULT_ORBIT_CAMERA.phi,
     theta  = DEFAULT_ORBIT_CAMERA.theta,
     radius = DEFAULT_ORBIT_CAMERA.radius,
@@ -66,19 +65,19 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
   const target = useProp(props.target, parsePosition);
 
   const uniforms = useOne(() => ({
-    projectionMatrix: { current: null },
-    projectionViewMatrix: { current: null },
-    projectionViewFrustum: { current: null },
+    projectionMatrix: { current: null as any },
+    projectionViewMatrix: { current: null as any },
+    projectionViewFrustum: { current: null as any },
     inverseViewMatrix: { current: mat4.create() },
     inverseProjectionViewMatrix: { current: mat4.create() },
-    viewMatrix: { current: null },
-    viewPosition: { current: null },
-    viewNearFar: { current: null },
-    viewResolution: { current: null },
-    viewSize: { current: null },
-    viewWorldDepth: { current: null },
-    viewPixelRatio: { current: null },
-  })) as any as ViewUniforms;
+    viewMatrix: { current: null as any },
+    viewPosition: { current: null as any },
+    viewNearFar: { current: null as any },
+    viewResolution: { current: null as any },
+    viewSize: { current: null as any },
+    viewWorldDepth: { current: null as any },
+    viewPixelRatio: { current: null as any },
+  })) as ViewUniforms;
 
   const unit = scale != null ? height / pixelRatio / scale : 1;
 
@@ -107,7 +106,7 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);
 
-  return provide(FrameContext, frame.current, 
+  return provide(FrameContext, frame.current,
     use(ViewProvider, {
       defs: VIEW_UNIFORMS,
       uniforms,

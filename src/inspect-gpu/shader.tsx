@@ -1,7 +1,7 @@
-import type { LiveFiber } from '../live';
+import type { LiveFiber } from '@use-gpu/live';
 
-import { formatNode, formatValue } from '../live';
-import { InspectObject } from '../inspect';
+import { formatNode, formatValue } from '@use-gpu/live';
+import { InspectObject } from '@use-gpu/inspect';
 import { styled as _styled } from '@stitches/react';
 
 import React, { useCallback, useState } from 'react';
@@ -17,6 +17,13 @@ export const Selectable = styled('div', {
 export const Spacer = styled('div', {
   width: '20px',
   height: '20px',
+});
+
+export const StyledCompactShader = styled('div', {
+  background: 'rgba(255, 255, 255, 0.1)',
+  fontFamily: '"Fira Code", "Bitstream Vera Mono", monospace',
+  fontSize: '11px',
+  lineHeight: '12px',
 });
 
 const StyledShader = styled('div', {
@@ -85,13 +92,14 @@ export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
   const uniforms = fiber.__inspect?.uniforms;
   const bindings = fiber.__inspect?.bindings;
   const volatiles = fiber.__inspect?.volatiles;
+  const indirect = fiber.__inspect?.indirect;
 
   const [state, setState] = useState<Record<string, boolean>>({});
   const toggleState = (id: string) => setState((state) => ({
     ...state,
     [id]: !state[id],
   }));
-  
+
   const toObject = (us: any[]) => {
     const out: Record<string, any> = {};
     for (let u of us) {
@@ -120,8 +128,12 @@ export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
   const isMac = navigator.platform.match(/^Mac/);
   const cmd = isMac ? '⌘' : 'Ctrl';
 
-  return (<>
-    {uniforms || bindings ? (<>
+  return (<div style={{maxHeight: '80vh'}}>
+    {uniforms?.length || bindings?.length || volatiles?.length || indirect ? (<>
+      {indirect ? <>
+        <div><b>Indirect Dispatch</b></div>
+        <InspectObject object={{source: indirect}} state={state} toggleState={toggleState} path={'i'} />
+      </> : null}
       {uniforms?.length ? <>
         <div><b>Constants</b></div>
         <InspectObject object={toObject(uniforms)} state={state} toggleState={toggleState} path={'u'} />
@@ -143,5 +155,5 @@ export const Shader: React.FC<ShaderProps> = ({type, fiber}) => {
     <StyledShader><Selectable>
       <WGSL code={shader.code} onCommit={handleCommit} />
     </Selectable></StyledShader>
-  </>);
+  </div>);
 }

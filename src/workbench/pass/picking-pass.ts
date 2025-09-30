@@ -1,32 +1,38 @@
-import type { LC, PropsWithChildren, LiveFiber, LiveElement, ArrowFunction } from '../../live';
-import type { Culler, Renderable } from '../pass';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Renderable } from '../pass';
 
-import { use, quote, yeet, memo, useMemo } from '../../live';
+import { yeet, memo, useMemo } from '@use-gpu/live';
 
 import { usePickingContext } from '../providers/picking-provider';
 import { useDeviceContext } from '../providers/device-provider';
 import { useViewContext } from '../providers/view-provider';
+import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
 
 import { getRenderPassDescriptor, drawToPass } from './util';
 
-export type PickingPassProps = {
+const {quote} = QueueReconciler;
+
+export type PickingPassProps = PropsWithChildren<{
   calls: {
     picking?: Renderable[],
   },
   overlay?: boolean,
   merge?: boolean,
-};
+}>;
 
 const NO_OPS: any[] = [];
-const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS; 
+const toArray = <T>(x?: T[]): T[] => Array.isArray(x) ? x : NO_OPS;
+
+const label = '<PickingPass>';
+const LABEL = { label };
 
 /** Picking render pass.
 
 Draws all pickable objects as object ID / vertex ID pairs.
 */
-export const PickingPass: LC<PickingPassProps> = memo((props: PropsWithChildren<PickingPassProps>) => {
+export const PickingPass: LC<PickingPassProps> = memo((props: PickingPassProps) => {
   const {
     overlay = false,
     merge = false,
@@ -44,7 +50,7 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PropsWithChildren<
   const pickings  = toArray(calls['picking'] as Renderable[]);
 
   const renderPassDescriptor = useMemo(() =>
-    getRenderPassDescriptor(renderContext, {overlay, merge}),
+    getRenderPassDescriptor(renderContext, {overlay, merge, label}),
     [renderContext, overlay, merge]);
 
   return quote(yeet(() => {
@@ -53,7 +59,7 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PropsWithChildren<
 
     const countGeometry = (v: number, t: number) => { vs += v; ts += t; };
 
-    const commandEncoder = device.createCommandEncoder();
+    const commandEncoder = device.createCommandEncoder(LABEL);
     if (!overlay && !merge) renderContext.swap?.();
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -69,6 +75,7 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PropsWithChildren<
     inspect({
       output: {
         picking: renderContext.source,
+        depth: renderContext.depth,
       },
       render: {
         vertices: vs,

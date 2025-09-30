@@ -6,7 +6,7 @@ const trim = (s: string) => s.replace(/(^\s+|\s+$)/g, '');
 describe("example linking", () => {
 
   it("links two GLSL shaders from source code using an import", () => {
-    
+
     const color = trim(`
 #pragma global
 uniform vec4 color;
@@ -15,7 +15,7 @@ uniform vec4 color;
 vec4 getColor() {
   return color;
 }`);
-    
+
     const main = trim(`
 #pragma import { getColor } from 'color';
 
@@ -23,14 +23,14 @@ void main() {
   gl_FragColor = getColor();
 }
 `);
-    
+
     const linked = linkCode(main, {color});
     expect(linked).toMatchSnapshot();
-    
+
   });
 
   it("links two GLSL shaders from bundle using an import", () => {
-    
+
     const color = trim(`
 #pragma global
 uniform vec4 color;
@@ -39,7 +39,7 @@ uniform vec4 color;
 vec4 getColor() {
   return color;
 }`);
-    
+
     const main = trim(`
 #pragma import { getColor } from 'path/to/getColor';
 
@@ -62,11 +62,11 @@ void main() {
 
     const linked = linkBundle(bundle);
     expect(linked).toMatchSnapshot();
-    
+
   });
-  
+
   it("links two GLSL shaders from source code using a prototype", () => {
-    
+
     const getColor = trim(`
 #pragma global
 uniform vec4 color;
@@ -75,7 +75,7 @@ uniform vec4 color;
 vec4 getColor() {
   return color;
 }`);
-    
+
     const main = trim(`
 vec4 getColor();
 
@@ -86,10 +86,10 @@ void main() {
     const linked = linkCode(main, {}, {getColor});
     expect(linked).toMatchSnapshot();
   });
-  
-  
+
+
   it("links two GLSL shaders as modules using a prototype", () => {
-    
+
     const getColor = loadModule(trim(`
 #pragma global
 uniform vec4 color;
@@ -98,7 +98,7 @@ uniform vec4 color;
 vec4 getColor() {
   return color;
 }`), 'getColor');
-    
+
     const main = loadModule(trim(`
 vec4 getColor();
 
@@ -111,7 +111,7 @@ void main() {
   });
 
   it("readme example", () => {
-    
+
     const color = trim(`
 #pragma export
 vec4 getColor() {
@@ -125,7 +125,7 @@ float used() {
 void unused() {
   // ...
 }`);
-    
+
     const main = trim(`
 #pragma import { getColor } from 'path/to/color'
 

@@ -3,26 +3,34 @@ import { reactInterop } from './fiber';
 
 const {prototype: {hasOwnProperty}} = Object;
 
+const ARRAY_OR_BUFFER = /Array$|^ArrayBuffer$/;
+
 export type LoggingOptions = {
   tick: boolean,
   dispatch: boolean,
-  fiber: boolean,
+  mount: boolean,
+  render: boolean,
+  quote: boolean,
+  detach: boolean,
 };
 
 /** @hidden */
 export const LOGGING = {
   tick: false,
   dispatch: false,
-  fiber: false,
+  mount: false,
+  render: false,
+  quote: false,
+  detach: false,
 } as Record<string, boolean>;
 
 /** Turn on logging for the Live run-time. Very chatty.
-
+- `tick`: Log a divider between tree renders
 - `dispatch`: All dispatches to roots and sub-roots.
 - `fiber`: All updates to individual fibers.
 */
 export const setLogging = (options: LoggingOptions) => {
-  for (let k in options) LOGGING[k] = (options as any)[k];
+  for (const k in options) LOGGING[k] = (options as any)[k];
 };
 
 export const formatSnapshot = (arg: any, depth: number = 0): string => {
@@ -51,10 +59,10 @@ export const formatSnapshotArg = (arg: any, depth: number = 0): string => {
 
 export const formatTree = (root: LiveFiber<any>, depth: number = 0): string => {
   const {mount, mounts, order, next} = root;
-  let out = [];
+  const out = [];
 
   const prefix = '  '.repeat(depth);
-  
+
   out.push(prefix + '<' + formatNodeName(root) +' '+ formatSnapshot(root.args) + '>');
 
   if (mount) {
@@ -69,7 +77,7 @@ export const formatTree = (root: LiveFiber<any>, depth: number = 0): string => {
   }
 
   if (next) {
-    out.push(formatTree(next, depth + 1));
+    out.push(formatTree(next, depth));
   }
 
   return out.join("\n");
@@ -78,8 +86,8 @@ export const formatTree = (root: LiveFiber<any>, depth: number = 0): string => {
 export const formatNodeName = <F extends Function>(_node: LiveElement<F>): string => {
   const node = reactInterop(_node) as DeferredCall<F> | null;
   if (!node) return 'null';
-  
-  const {f, arg, args} = node;
+
+  const {f, args} = node;
 
   // @ts-ignore
   let name = (f?.displayName ?? f?.name) || 'Fiber';
@@ -155,7 +163,7 @@ export const formatNode = <F extends Function>(_node: LiveElement<F>): string =>
         args.push(formatValue({reduce, initial}));
       }
       else if (node.f.name === 'PROVIDE') {
-        const [context,,, isMemo] = node.args;
+        const [context] = node.args;
         args.push(formatValue(context));
       }
       else if (node.f.name === 'MORPH') {
@@ -182,27 +190,30 @@ export const formatNode = <F extends Function>(_node: LiveElement<F>): string =>
   return `<${name}${args ? args.join(' ') : ''}>`;
 }
 
+export const formatArrayLike = (x: any, seen: WeakMap<object, boolean> = new WeakMap()) => {
+  if (!x.buffer && x.byteLength != null) x = new Uint8Array(x.slice(0, 100));
+
+  const out = [];
+  const length = x.length ?? 0;
+  const n = Math.min(length, 100);
+  for (let i = 0; i < n; ++i) {
+    out.push(`${formatShortValue(x[i], seen)}`);
+  }
+  if (length > 100) out.push('…');
+  return '[' + out.join(', ') + ']';
+};
+
 export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap()): string => {
   if (!x) return '' + x;
-  if (Array.isArray(x)) {
+  if (Array.isArray(x) || x?.constructor?.name?.match(ARRAY_OR_BUFFER)) {
     if (seen.get(x)) return '[Repeated]';
     seen.set(x, true);
 
-    const out = [];
-    let n = Math.min(x.length, 100);
-    for (let i = 0; i < n; ++i) {
-      out.push(`${formatShortValue(x[i], seen)}`);
-    }
-    if (x.length > 100) out.push('…');
-    return '[' + out.join(', ') + ']';
+    return formatArrayLike(x, seen);
   }
   if (typeof x === 'object') {
     if (seen.get(x)) return '[Repeated]';
     seen.set(x, true);
-
-    if (x.constructor.name.match(/Array/)) {
-      if (x.length > 100) x = x.slice(0, 100);
-    }
 
     const signature = Object.keys(x).join('/');
     if (signature === 'f/args/key/by' || signature === 'f/arg/key/by') return formatNode(x);
@@ -211,7 +222,7 @@ export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap
     for (const k in x) if (hasOwnProperty.call(x, k)) {
       out.push(`${k}: ${formatShortValue(x[k], seen)}`);
     }
-    
+
     const proto = x.__proto__ !== Object.prototype ? x.__proto__.constructor.name : '';
     const label = x.label;
     return proto + (label?.length ? ':' + label : '') + '{' + out.join(', ') + '}';
@@ -221,13 +232,8 @@ export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap
 
 export const formatShortValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap()): string => {
   if (!x) return '' + x;
-  if (Array.isArray(x)) {
-    let extra = '';
-    if (x.length > 100) {
-      x = x.slice(0, 100);
-      extra = ', …';
-    }
-    return '[' + x.map((x: any) => formatShortValue(x, seen)).join(', ') + extra + ']';
+  if (Array.isArray(x) || x?.constructor?.name?.match(ARRAY_OR_BUFFER)) {
+    return formatArrayLike(x, seen);
   }
   if (typeof x === 'boolean') return x ? 'true' : 'false';
   if (typeof x === 'number') return formatNumber(x, 5);
@@ -236,17 +242,23 @@ export const formatShortValue = (x: any, seen: WeakMap<object, boolean> = new We
   if (typeof x === 'function') {
     const name = `${x.displayName ?? x.name}(…)`;
     const body = x.toString().split(/=>/)[1];
-    return body != null ? name + truncate(body.replace(/\s+/g, ' '), 40) : name;
+    return body != null ? (
+      name + truncate(
+        body
+        .replace(/\s+/g, ' ')
+        .replace(/\(0,_use_gpu_[a-z_]+__WEBPACK_IMPORTED_MODULE_[0-9]+__.resolve\)/g, '')
+      , 40)
+    ) : name;
   }
   if (typeof x === 'object') {
-    if (x.constructor.name.match(/Array/)) {
+    if (x.constructor.name.match(ARRAY_OR_BUFFER)) {
       if (x.length > 100) x = x.slice(0, 100);
     }
 
     const signature = Object.keys(x).join('/');
     if (signature === 'f/args/key' || signature === 'f/arg/key') return `<${formatNodeName(x)} …/>`;
 
-    return '{...}';
+    return '{…}';
   }
   return '' + x;
 }
@@ -261,4 +273,4 @@ const truncate = (s: string, n: number) => {
   s = s.replace(/\s+/g, ' ');
   if (s.length < n) return s;
   return s.slice(0, n) + '…';
-}
+};

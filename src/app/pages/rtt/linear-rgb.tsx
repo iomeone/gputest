@@ -1,22 +1,25 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import React from '../../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
-  Pass, Flat,
+  Pass, FlatCamera,
   OrbitCamera, OrbitControls,
   Pick, Cursor, LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Text
-} from '../../../layout';
+} from '@use-gpu/layout';
 import { RawMesh } from '../mesh/components/raw-mesh';
 import { makeMesh, makeTexture } from '../../meshes/cube';
+
+import { InfoBox } from '../../ui/info-box';
 
 export const RTTLinearRGBPage: LC = () => {
   const mesh = makeMesh();
   const texture = makeTexture();
 
-  return (
+  return (<>
+    <InfoBox>Use Linear RGB for gamma-correct and HDR rendering</InfoBox>
     <LinearRGB>
       <Cursor cursor='move' />
       <Camera>
@@ -30,7 +33,7 @@ export const RTTLinearRGBPage: LC = () => {
           />
         </Pass>
       </Camera>
-      <Flat>
+      <FlatCamera>
         <Pass overlay>
           <UI>
             <Layout>
@@ -59,9 +62,9 @@ export const RTTLinearRGBPage: LC = () => {
             </Layout>
           </UI>
         </Pass>
-      </Flat>
+      </FlatCamera>
     </LinearRGB>
-  );
+  </>);
 };
 
 const Camera = ({children}: PropsWithChildren<object>) => (

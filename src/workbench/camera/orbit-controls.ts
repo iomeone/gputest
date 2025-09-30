@@ -1,18 +1,17 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { VectorLike } from '../../traits';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { VectorLike } from '@use-gpu/core';
 
-import { parsePosition, useProp } from '../../traits';
-import { useContext, useOne, useResource, useState, useYolo } from '../../live';
-import { makeOrbitMatrix } from '../../core';
+import { useProp } from '@use-gpu/traits/live';
+import { parseVec3 } from '@use-gpu/parse';
+import { useContext, useOne, useHooks } from '@use-gpu/live';
+import { makeOrbitMatrix, clamp } from '@use-gpu/core';
 import { KeyboardContext, MouseContext, WheelContext } from '../providers/event-provider';
 import { LayoutContext } from '../providers/layout-provider';
 import { useDerivedState } from '../hooks/useDerivedState';
+import { getRenderFunc } from '../hooks/useRenderProp';
 import { mat4, vec3 } from 'gl-matrix';
 
-const CAPTURE_EVENT = {capture: true};
-
 const π = Math.PI;
-const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 const maybeClamp = (x: number, a?: number, b?: number) => {
   if (a != null) x = Math.max(x, a);
   if (b != null) x = Math.min(x, b);
@@ -39,7 +38,8 @@ export type OrbitControlsProps = {
   maxPitch?: number,
 
   active?: boolean,
-  render: (radius: number, bearing: number, pitch: number, target: vec3) => LiveElement,
+  render?: (radius: number, bearing: number, pitch: number, target: vec3) => LiveElement,
+  children?: (radius: number, bearing: number, pitch: number, target: vec3) => LiveElement,
 };
 
 export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
@@ -62,10 +62,9 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
     maxPitch,
 
     active = true,
-    render,
   } = props;
 
-  const initialTarget = useProp(props.target, parsePosition);
+  const initialTarget = useProp(props.target, parseVec3);
 
   const [radius, setRadius]   = useDerivedState<number>(initialRadius, version);
   const [bearing, setBearing] = useDerivedState<number>(initialBearing, version);
@@ -79,7 +78,7 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
   const layout = useContext(LayoutContext);
 
   const { mouse } = useMouse();
-  const { wheel } = useWheel();
+  const { wheel, stop: stopWheel } = useWheel();
   const { keyboard } = useKeyboard();
 
   const size = Math.min(Math.abs(layout[2] - layout[0]), Math.abs(layout[3] - layout[1]));
@@ -98,7 +97,7 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
   }
 
   useOne(() => {
-    const { x, y, moveX, moveY, buttons, stopped } = mouse;
+    const { moveX, moveY, buttons, stopped } = mouse;
     if (!active || stopped) return;
 
     const speedX = bearingSpeed / size;
@@ -118,7 +117,7 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
   }, mouse);
 
   useOne(() => {
-    const {moveX, moveY, spinY, stop, stopped} = wheel;
+    const {moveX, moveY, spinY, stopped} = wheel;
     const speedY = radiusSpeed;
     if (!active || stopped) return;
 
@@ -129,9 +128,9 @@ export const OrbitControls: LiveComponent<OrbitControlsProps> = (props) => {
     }
     else if (spinY) setRadius((radius: number) => maybeClamp(radius * Math.pow(2, spinY * speedY), minRadius, maxRadius));
 
-    stop();
+    if (active) stopWheel();
   }, wheel);
 
-  return useYolo(() => render(radius, bearing, pitch, target), [render, radius, bearing, pitch, target]);
+  const render = getRenderFunc(props);
+  return useHooks(() => render?.(radius, bearing, pitch, target), [render, radius, bearing, pitch, target]);
 };
-

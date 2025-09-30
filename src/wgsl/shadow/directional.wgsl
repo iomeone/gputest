@@ -1,4 +1,4 @@
-use '../../wgsl/use/types'::{ Light, SurfaceFragment };
+use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
 
 @optional @link fn sampleShadow(uv: vec2<f32>, index: u32, level: f32) -> f32 { return 1.0; }
 
@@ -8,15 +8,15 @@ use '../../wgsl/use/types'::{ Light, SurfaceFragment };
 ) -> f32 {
   let index = u32(light.shadowMap);
 
-  let pos = light.into * vec4<f32>(surface.position.xyz + surface.normal.xyz * light.shadowBias.y, 1.0);
-  if (abs(pos.x) > 1 || abs(pos.y) > 1) {
+  let pos = light.into * vec4<f32>(surface.position.xyz + surface.normal.xyz * light.shadowBias.z, 1.0);
+  if (abs(pos.x) > 1.0 || abs(pos.y) > 1.0) {
     return 1.0;
   }
 
   let n = dot(surface.normal.xyz, light.normal.xyz);
   let slope = (1.0 - abs(n));
 
-  let depth = pos.z + slope * light.shadowBias.x;
+  let depth = pos.z * (1.0 + light.shadowBias.x) + slope * light.shadowBias.y;
   let blur = light.shadowBlur;
   var s = 0.0;
 
@@ -51,7 +51,7 @@ use '../../wgsl/use/types'::{ Light, SurfaceFragment };
   else {
     s += sampleShadow(uvm, index, depth);
   }
-  
+
   return s;
 };
 

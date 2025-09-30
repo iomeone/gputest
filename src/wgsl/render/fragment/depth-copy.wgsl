@@ -10,7 +10,7 @@ fn main(
   @location(0) fragAlpha: f32,
   @location(1) fragUV: vec4<f32>,
   @location(2) fragST: vec4<f32>,
-  @location(3) fragScissor: vec4<f32>,  
+  @location(3) fragScissor: vec4<f32>,
 ) -> @builtin(frag_depth) f32 {
 
   var outColor = vec4<f32>(1.0, 1.0, 1.0, fragAlpha);

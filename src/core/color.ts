@@ -1,5 +1,3 @@
-import type { ColorSpace } from './types';
-
 export const makeColorState = (format: GPUTextureFormat, blend?: GPUBlendState): GPUColorTargetState => ({
   format,
   blend,

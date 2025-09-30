@@ -1,4 +1,4 @@
-use '../../wgsl/use/array'::{ sizeToModulus3, packIndex3, unpackIndex3 };
+use '@use-gpu/wgsl/use/array'::{ sizeToModulus3, packIndex3, unpackIndex3 };
 use './types'::{ IndirectDrawMeta };
 
 @link var<storage, read_write> indirectDraw: IndirectDrawMeta;
@@ -50,7 +50,7 @@ fn getZeroLevel(a: f32, b: f32) -> f32 {
   var p = vec3<f32>(0.0);
   var n = vec3<f32>(0.0);
   var w = 0.0;
-  
+
   if (p000 * p100 < 0.0) {
     var f = getZeroLevel(p000, p100);
 

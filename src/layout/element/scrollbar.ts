@@ -1,23 +1,23 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TextureSource, Point, Point4, Rectangle } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { ColorLike } from '../../traits';
+import type { LiveComponent } from '@use-gpu/live';
+import type { ColorLike, XY, XYZW, Rectangle, TypedArray } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 import type { Direction, OverflowMode, FitInto, UIAggregate } from '../types';
 
-import { parseColor, useProp } from '../../traits';
-import { keyed, yeet, use, useFiber, useMemo } from '../../live';
-import { makeShaderBinding } from '../../core';
-import { evaluateDimension } from '../parse';
-import { isHorizontal, memoFit } from '../lib/util';
-import { useInspectHoverable } from '../../workbench';
+import { useProp } from '@use-gpu/traits/live';
+import { parseColor } from '@use-gpu/parse';
+import { yeet, use, useMemo } from '@use-gpu/live';
+import { schemaToArchetype } from '@use-gpu/core';
+import { useInspectHoverable, UI_SCHEMA } from '@use-gpu/workbench';
 
+import { isHorizontal, memoFit } from '../lib/util';
 import { INSPECT_STYLE } from '../lib/constants';
 
-import { UIRectangle } from '../shape/ui-rectangle';
-import { chainTo } from '../../shader/wgsl';
-import { useBoundShader } from '../../workbench';
+import { chainTo } from '@use-gpu/shader/wgsl';
+import { useShader, LayerReconciler } from '@use-gpu/workbench';
 
-import { getScrolledPosition } from '../../wgsl/layout/scrollwgsl';
+import { getScrolledPosition } from '@use-gpu/wgsl/layout/scroll.wgsl';
+
+const {quote} = LayerReconciler;
 
 export type ScrollBarProps = {
   direction?: Direction,
@@ -27,22 +27,22 @@ export type ScrollBarProps = {
   thumb?: ColorLike,
 
   overflow?: OverflowMode,
-  scrollRef?: Point,
-  sizeRef?: Point4,
+  scrollRef?: XY,
+  sizeRef?: XYZW,
   transform?: ShaderModule,
 };
 
-const NO_POINT: Point = [0, 0];
+const NO_POINT: XY = [0, 0];
 
-const NO_POINT4: Point4 = [0, 0, 0, 0];
-const TRACK: Point4 = [0, 0, 0, .5];
-const THUMB: Point4 = [1, 1, 1, .5];
+const NO_POINT4: XYZW = [0, 0, 0, 0];
+const TRACK: XYZW = [0, 0, 0, .5];
+const THUMB: XYZW = [1, 1, 1, .5];
 
 export const ScrollBar: LiveComponent<ScrollBarProps> = (props) => {
   const {
     direction = 'y',
     size = 10,
-    
+
     overflow = 'scroll',
     scrollRef = NO_POINT,
     sizeRef = NO_POINT4,
@@ -61,11 +61,12 @@ export const ScrollBar: LiveComponent<ScrollBarProps> = (props) => {
       render: (
         layout: Rectangle,
         origin: Rectangle,
+        z: number,
         clip?: ShaderModule,
         mask?: ShaderModule,
         transform?: ShaderModule,
       ) => (
-        use(Render, sizeRef, scrollRef, overflow, size, track, thumb, isX, layout, origin, clip, mask, transform, hovered)
+        quote(use(Bar, sizeRef, scrollRef, overflow, size, track, thumb, isX, layout, origin, z, clip, mask, transform, hovered))
       ),
       /*
       pick: (x: number, y: number, l: number, t: number, r: number, b: number, scroll?: boolean) => {
@@ -85,33 +86,32 @@ export const ScrollBar: LiveComponent<ScrollBarProps> = (props) => {
   });
 };
 
-const Render = (
-  sizeRef: Point4,
-  scrollRef: Point,
+const Bar = (
+  sizeRef: XYZW,
+  scrollRef: XY,
 
   overflow: OverflowMode,
   size: number,
-  track: ColorLike,
-  thumb: ColorLike,
+  track: TypedArray,
+  thumb: TypedArray,
   isX: boolean,
 
   layout: Rectangle,
   origin: Rectangle,
+  z: number,
   clip?: ShaderModule,
   mask?: ShaderModule,
   transform?: ShaderModule,
 
   inspect?: boolean,
 ) => {
-  const {id} = useFiber();
-
   const shift = useMemo(() => isX
     ? () => [scrollRef[0] / sizeRef[2] * sizeRef[0], 0]
     : () => [0, scrollRef[1] / sizeRef[3] * sizeRef[1]],
     [scrollRef, sizeRef]
   );
 
-  const thumbTransform = useBoundShader(getScrolledPosition, [shift]);
+  const thumbTransform = useShader(getScrolledPosition, [shift]);
 
   return useMemo(() => {
     const [outerWidth, outerHeight, innerWidth, innerHeight] = sizeRef;
@@ -119,7 +119,7 @@ const Render = (
     const w = isX ? outerWidth : size;
     const h = isX ? size : outerHeight;
 
-    const [l, t, r, b] = layout;        
+    const [l, t, r, b] = layout;
     const ll = isX ? l : r - w;
     const tt = isX ? b - h : t;
 
@@ -134,34 +134,48 @@ const Render = (
     const showThumb = showTrack && f < 1;
 
     const yeets: UIAggregate[] = [];
-    if (showTrack) yeets.push({
-      id: id.toString() + '-0',
-      rectangle: trackBox,
-      bounds: trackBox,
-      uv: [0, 0, 1, 1],
-      fill:   track as any,
-      radius: [size/2, size/2, size/2, size/2] as Rectangle,
-      ...(inspect ? INSPECT_STYLE.parent : undefined),
+    if (showTrack) {
+      const attributes = {
+        rectangle: trackBox,
+        uv: [0, 0, 1, 1],
+        fill:   track as any,
+        radius: [size/2, size/2, size/2, size/2] as Rectangle,
+        ...(inspect ? INSPECT_STYLE.parent : undefined),
+      };
 
-      clip,
-      mask,
-      transform,
-      count: 1,
-    });
-    if (showThumb) yeets.push({
-      id: id.toString() + '-1',
-      rectangle: thumbBox,
-      bounds: thumbBox,
-      uv: [0, 0, 1, 1],
-      fill:   thumb as any,
-      radius: [size/2, size/2, size/2, size/2] as Rectangle,
-      ...(inspect ? INSPECT_STYLE.parent : undefined),
+      yeets.push({
+        count: 1,
+        archetype: schemaToArchetype(UI_SCHEMA, attributes),
 
-      clip,
-      mask,
-      transform: transform ? chainTo(transform, thumbTransform) : thumbTransform,
-      count: 1,
-    });
+        attributes,
+        bounds: trackBox,
+        clip,
+        mask,
+        transform,
+        zIndex: z,
+      });
+    }
+    if (showThumb) {
+      const attributes = {
+        rectangle: thumbBox,
+        uv: [0, 0, 1, 1],
+        fill:   thumb as any,
+        radius: [size/2, size/2, size/2, size/2] as Rectangle,
+        ...(inspect ? INSPECT_STYLE.parent : undefined),
+      };
+
+      yeets.push({
+        count: 1,
+        archetype: schemaToArchetype(UI_SCHEMA, attributes),
+
+        attributes,
+        bounds: thumbBox,
+        clip,
+        mask,
+        transform: transform ? chainTo(transform, thumbTransform) : thumbTransform,
+        zIndex: z,
+      });
+    }
     return yeet(yeets);
-  }, [...sizeRef, thumbTransform, overflow, isX, layout, origin, clip, mask, transform, inspect]);
+  }, [...sizeRef, thumbTransform, overflow, isX, layout, origin, z, clip, mask, transform, inspect]);
 }

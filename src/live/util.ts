@@ -59,25 +59,25 @@ export const makeDependencyTracker = () => {
       let list = precedents.get(fiber);
       if (!list) precedents.set(fiber, list = new Set());
 
-      let exist = list.has(root);
+      const exist = list.has(root);
       if (!exist) list.add(root);
     }
-    
+
     let list = dependencies.get(root);
     if (!list) dependencies.set(root, list = new Set());
 
-    let exist = list.has(fiber);
+    const exist = list.has(fiber);
     if (!exist) list.add(fiber);
     return !exist;
   }
 
   const undepend = (fiber: LiveFiber<any>, root: number) => {
     {
-      let list = precedents.get(fiber);
+      const list = precedents.get(fiber);
       if (list) list.delete(root);
     }
 
-    let list = dependencies.get(root);
+    const list = dependencies.get(root);
     if (list) {
       list.delete(fiber);
       if (list.size === 0) dependencies.delete(root);
@@ -109,7 +109,7 @@ export const makeDisposalTracker = () => {
   }
 
   const untrack = (fiber: LiveFiber<any>, t: Task) => {
-    let list = disposal.get(fiber);
+    const list = disposal.get(fiber);
     if (!list) return;
 
     const i = list.indexOf(t);
@@ -154,22 +154,15 @@ export const getOnPaint = () => typeof window !== 'undefined' ? window.requestAn
 /** Compare dependency arrays */
 export const isSameDependencies = (
   prev: any[] | undefined,
-  next: any[] | undefined,
+  next: any[],
 ) => {
-  let valid = true;
-  if (next === undefined && prev === undefined) return true;
-  if (prev === undefined) valid = false;
-  if (next != null && prev != null) {
-    if (next === prev) return true;
+  if (prev === undefined) return false;
+  if (next === prev) return true;
 
-    const n = prev.length || 0;
-    if (n !== next.length || 0) valid = false;
-    else for (let i = 0; i < n; ++i) if (prev[i] !== next[i]) {
-      valid = false;
-      break;
-    }
-  }
-  return valid;
+  const l = prev.length;
+  if (l !== next.length) return false;
+  for (let i = 0; i < l; ++i) if (prev[i] !== next[i]) return false;
+  return true;
 }
 
 /** Check if B is a subnode of A */
@@ -193,9 +186,9 @@ export const compareFibers = (a: LiveFiber<any>, b: LiveFiber<any>) => {
 
   const aks = a.keys;
   const bks = b.keys;
-  
+
   let aj = aks ? aks[0] : null;
-  let bj = bks ? bks[0] : null; 
+  let bj = bks ? bks[0] : null;
   let asi = 1;
   let bsi = 1;
 
@@ -225,6 +218,6 @@ export const compareFibers = (a: LiveFiber<any>, b: LiveFiber<any>) => {
 
 /** Tag an anonymous function with a random number ID. */
 export const tagFunction = <F extends ArrowFunction>(f: F, name?: string) => {
-  (f as any).displayName = name ?? `${Math.floor(Math.random() * 10000)}`;
+  if ((f as any).displayName == null) (f as any).displayName = name ?? `${Math.floor(Math.random() * 10000)}`;
   return f;
 }

@@ -1,28 +1,25 @@
-import type { LiveComponent, ArrowFunction, Ref } from '../../live';
-import type { DataBounds, TypedArray, StorageSource, RenderPassMode, Lazy, UniformLayout, UniformAttribute, UseGPURenderContext, VolatileAllocation } from '../../core';
-import type { ShaderModule, ParsedBundle, ParsedModule } from '../../shader';
-import type { Update } from '../../state';
-import type { Culler } from '../pass/types';
+import type { ArrowFunction, Ref } from '@use-gpu/live';
+import type { DataBounds, StorageSource, RenderPassMode, Lazy, UniformAttribute, UseGPURenderContext, VolatileAllocation } from '@use-gpu/core';
+import type { ParsedBundle } from '@use-gpu/shader';
+import type { Update } from '@use-gpu/state';
 
-import { yeet, memo, useMemo, useNoMemo, useOne, useNoOne, useState, SUSPEND } from '../../live';
-import { patch, $apply } from '../../state';
+import { yeet, useMemo, useNoMemo, useOne, useNoOne, SUSPEND } from '@use-gpu/live';
+import { patch, $apply } from '@use-gpu/state';
 import {
   makeMultiUniforms, makeBoundUniforms, makeVolatileUniforms,
   VIEW_UNIFORMS,
   uploadBuffer,
   resolve,
-} from '../../core';
+} from '@use-gpu/core';
+import { getBundleLabel } from '@use-gpu/shader';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
 
 import { useLinkedShader } from '../hooks/useLinkedShader';
 import { usePipelineLayout, useNoPipelineLayout } from '../hooks/usePipelineLayout';
-import { useRenderPipelineAsync, useNoRenderPipelineAsync, setShaderLog, getShaderLog } from '../hooks/useRenderPipeline';
+import { useRenderPipelineAsync, useNoRenderPipelineAsync } from '../hooks/useRenderPipeline';
 import { useInspectable } from '../hooks/useInspectable'
-
-import keyBy from 'lodash/keyBy';
-import mapValues from 'lodash/mapValues';
 
 export type DrawCallProps = {
   pipeline?: Update<GPURenderPipelineDescriptor>,
@@ -32,12 +29,12 @@ export type DrawCallProps = {
   instanceCount?: Lazy<number>,
   firstVertex?: Lazy<number>,
   firstInstance?: Lazy<number>,
-  bounds?: Lazy<DataBounds>,
+  bounds?: Lazy<DataBounds> | null,
   indirect?: StorageSource | null,
 
   vertex: ParsedBundle,
   fragment?: ParsedBundle | null,
-  
+
   globalLayout?: GPUBindGroupLayout,
   passLayout?: GPUBindGroupLayout,
 
@@ -47,21 +44,21 @@ export type DrawCallProps = {
 
   renderContext: UseGPURenderContext,
 
-  shouldDispatch?: (uniforms: Record<string, Ref<any>>) => boolean | number | undefined,
+  shouldDispatch?: (uniforms: Record<string, Ref<any>>) => boolean | number | null | undefined,
   onDispatch?: (uniforms: Record<string, Ref<any>>) => void,
 
   defines?: Record<string, any>,
 };
 
 const GLOBAL_DEFINES = {
-  '@group(VIEW)': '@group(0)',
+  '@group(GLOBAL)': '@group(0)',
   '@group(VIRTUAL)': '@group(1)',
   '@group(VOLATILE)': '@group(2)',
 };
 
 const PASS_DEFINES = {
-  '@group(VIEW)': '@group(0)',
-  '@group(LIGHT)': '@group(1)',
+  '@group(GLOBAL)': '@group(0)',
+  '@group(PASS)': '@group(1)',
   '@group(VIRTUAL)': '@group(2)',
   '@group(VOLATILE)': '@group(3)',
 };
@@ -135,6 +132,7 @@ export const drawCall = (props: DrawCallProps) => {
   : useNoPipelineLayout();
 
   // Rendering pipeline
+  // eslint-disable-next-line prefer-const
   let [pipeline, isStale] = useRenderPipelineAsync(
     device,
     renderContext,
@@ -184,7 +182,7 @@ export const drawCall = (props: DrawCallProps) => {
   }
 
   const base = 1 + +!!passLayout;
-  
+
   // Uniforms
   const uniform = useMemo(() => {
     if (globalLayout) return null;
@@ -210,8 +208,9 @@ export const drawCall = (props: DrawCallProps) => {
       instances: 0,
       triangles: 0,
     },
+    indirect,
   });
-  
+
   const isStrip = topology === 'triangle-strip';
   const isVolatileGlobal = typeof uniform?.bindGroup === 'function';
 
@@ -261,7 +260,14 @@ export const drawCall = (props: DrawCallProps) => {
     if (volatile.bindGroup) passEncoder.setBindGroup(base + 1, volatile.bindGroup());
 
     if (indirect) passEncoder.drawIndirect(indirect.buffer, indirect.byteOffset ?? 0);
-    else passEncoder.draw(v, i, fv, fi);
+    else {
+      if (Number.isNaN(v * i * fv * fi)) console.warn(
+        'NaN draw call',
+        vertexShader && getBundleLabel(vertexShader),
+        fragmentShader && getBundleLabel(fragmentShader),
+      );
+      else passEncoder.draw(v, i, fv, fi);
+    }
   };
 
   let draw = inner;
@@ -278,7 +284,7 @@ export const drawCall = (props: DrawCallProps) => {
         if (dispatchVersion === d) return;
         dispatchVersion = d;
       }
-      
+
       return inner(passEncoder, countGeometry, uniforms, flip);
     };
   }

@@ -1,63 +1,12 @@
-import { useOne } from '../live';
-import {
-  makeUseTrait,
-  useProp,
-  parseNumber,
-  parseInteger,
-  parseBoolean,
-  parseString,
-  parseStringArray,
-  parseStringFormatter,
-  parseVector,
-  parseVec4,
-  parsePosition,
-  parseRotation,
-  parseQuaternion,
-  parseColor,
-  parseScale,
-  parseMatrix,
-  parseJoin,
-  parseBlending,
-  parsePlacement,
-  parseWeight,
-  parseRange,
-  parseRanges,
-  parseAxes,
-  parseAxis,
-  parseIntegerPositive,
-  parseDomain,
-  optional,
-} from '../traits';
-import {
-  parsePointShape,
-} from '../workbench';
-import type {
-  GeographicTrait,
-  ObjectTrait,
-} from './types';
+import { parseNumber } from '@use-gpu/parse';
+import { trait, makeUseTrait } from '@use-gpu/traits/live';
 
-import { vec4 } from 'gl-matrix';
-
-const GEOGRAPHIC_TRAIT = {
+export const GeographicTrait = trait({
   long: parseNumber,
   lat: parseNumber,
   zoom: parseNumber,
-};
-
-const GEOGRAPHIC_DEFAULTS = {
-  origin: [0, 0, 0],
+}, {
   zoom: 1,
-};
+});
 
-const OBJECT_TRAIT = {
-  position:   optional(parsePosition),
-  scale:      optional(parseScale),
-  quaternion: optional(parseQuaternion),
-  rotation:   optional(parseRotation),
-  matrix:     optional(parseMatrix),
-};
-
-const OBJECT_DEFAULTS = {};
-
-export const useGeographicTrait = makeUseTrait<GeographicTrait>(GEOGRAPHIC_TRAIT, GEOGRAPHIC_DEFAULTS);
-export const useObjectTrait  = makeUseTrait<ObjectTrait>(OBJECT_TRAIT, OBJECT_DEFAULTS);
+export const useGeographicTrait = makeUseTrait(GeographicTrait);

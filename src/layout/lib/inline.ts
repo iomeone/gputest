@@ -1,12 +1,12 @@
-import type { Point, Point4, Rectangle } from '../../core';
-import type { InlineElement, LayoutElement, InlineRenderer, LayoutRenderer, LayoutPicker, Direction, FitInto, Margin, Alignment, Anchor, Base } from '../types';
+import type { XY, XYZW } from '@use-gpu/core';
+import type { InlineElement, LayoutElement, InlineRenderer, LayoutPicker, Direction, FitInto, Alignment, Anchor, Baseline } from '../types';
 
-import { makeTuples } from '../../core';
+import { makeTuples } from '@use-gpu/core';
 import { makeInlineCursor } from './cursor';
 import { getAlignmentSpacing, isHorizontal, makeMiniHash } from './util';
 
 const NO_RENDER = () => null;
-const NO_MARGIN: Point4 = [0, 0, 0, 0];
+const NO_MARGIN: XYZW = [0, 0, 0, 0];
 
 export const resolveInlineBlockElements = (els: (InlineElement | LayoutElement)[], direction: Direction) => {
 
@@ -19,7 +19,6 @@ export const resolveInlineBlockElements = (els: (InlineElement | LayoutElement)[
     if ('spans' in el) out.push(el);
     else {
       const {fit, absolute, margin, inline = 'center'} = el;
-      const [ml, mt, mr, mb] = margin;
 
       const block = fit(into);
       const {size} = block;
@@ -53,7 +52,6 @@ export const getInlineMinMax = (
   let allMinMain = 0;
   let allMaxMain = 0;
 
-  let i = 0;
   let caretMain = 0;
   let caretCross = 0;
 
@@ -70,8 +68,7 @@ export const getInlineMinMax = (
       caretMain = 0;
     }
   };
-  
-  const n = els.length;
+
   for (const {spans, height, margin, absolute} of els) {
     const [ml, mt, mr, mb] = margin ?? NO_MARGIN;
     if (!absolute) {
@@ -80,8 +77,6 @@ export const getInlineMinMax = (
       caretMain += isX ? ml : mt;
       spans.iterate(perSpan);
       caretMain += isX ? mr : mb;
-
-      ++i;
     }
   }
 
@@ -108,7 +103,7 @@ export const fitInline = (
   into: FitInto,
   direction: Direction,
   align: Alignment,
-  anchor: Base,
+  anchor: Baseline,
   wrap: boolean,
   snap: boolean,
 ) => {
@@ -121,12 +116,10 @@ export const fitInline = (
   let caretCross = 0;
   let maxMain = 0;
 
-  const n = els.length;
-
-  const ranges  = [] as Point[];
-  const sizes   = [] as Point[];
+  const ranges  = [] as XY[];
+  const sizes   = [] as XY[];
   const offsets = [] as [number, number, number][];
-  const anchors = [] as Point[];
+  const anchors = [] as XY[];
   const renders = [] as InlineRenderer[];
   const pickers = [] as (LayoutPicker | null)[];
 
@@ -137,7 +130,7 @@ export const fitInline = (
   const cursor = makeInlineCursor(wrap ? spaceMain || 0 : 0, align, isSnap);
 
   for (const el of els) {
-    const {spans, block, margin, absolute, height: {lineHeight, ascent, descent, xHeight}} = el;
+    const {spans, margin, height: {lineHeight, ascent, descent, xHeight}} = el;
     const [ml, mt, mr, mb] = margin ?? NO_MARGIN;
 
     const n = spans.length;
@@ -162,7 +155,7 @@ export const fitInline = (
   // Process produced spans
   let i = 0;
   let span = 0;
-  const layouts = cursor.gather((start, end, gap, lead, count, lineHeight, ascent, descent, xHeight, index) => {
+  cursor.gather((start, end, gap, lead, count, lineHeight, ascent, descent, xHeight) => {
     let n = end - start;
     let mainPos = isSnap ? Math.round(lead) : lead;
 
@@ -179,16 +172,16 @@ export const fitInline = (
     while (n > 0 && i < els.length) {
       const el = els[i];
       const {spans, height, margin, inline, block, render, pick} = el;
-      const {ascent: a, descent: d, lineHeight: lh} = height;
+      const {ascent: a, lineHeight: lh} = height;
       const [ml, mt, mr, mb] = margin ?? NO_MARGIN;
-      
+
       const last = spans.length - span;
       const count = Math.min(n, last);
 
       const indentStart = span  === 0    ? (isX ? ml : mt) : 0;
       const indentEnd   = count === last ? (isX ? mr : mb) : 0;
       mainPos += indentStart;
-      
+
       const resolvedAnchor = inline ?? anchor;
 
       let crossPos = caretCross;
@@ -222,7 +215,7 @@ export const fitInline = (
       mainPos += indentEnd;
 
       deduct = count === last ? 0 : gap + t;
-      const size = (isX ? [accum - deduct, lh] : [lh, accum - deduct]) as Point;
+      const size = (isX ? [accum - deduct, lh] : [lh, accum - deduct]) as XY;
 
       ranges.push([s, e]);
       sizes.push(size);
@@ -232,9 +225,9 @@ export const fitInline = (
 
       span += count;
       n -= count;
-      
+
       if (count === last) {
-        if (block) anchors.push(offset as number[] as Point);
+        if (block) anchors.push(offset as number[] as XY);
         i++;
         span = 0;
       }
@@ -243,9 +236,9 @@ export const fitInline = (
     maxMain = Math.max(maxMain, mainPos - deduct, 0);
     caretCross += lineHeight;
   });
-  
+
   const size = isX ? [into[0] ?? maxMain, caretCross] : [caretCross, into[1] ?? maxMain];
-  
+
   return {
     size,
     ranges,

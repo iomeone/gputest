@@ -1,23 +1,24 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { Tracks } from '../../../workbench';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Tracks } from '@use-gpu/workbench';
 
-import React, { use } from '../../../live';
+import React, { use, useContext } from '@use-gpu/live';
 
 import {
-  Loop, Pass, Flat,
-  RawData, PointLayer,
+  Loop, Pass,
   Cursor, OrbitCamera, OrbitControls,
   Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
-  Plot, Spherical, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '../../../plot';
+  Plot, Spherical, Axis, Grid, Label, Line, Scale, Tick,
+} from '@use-gpu/plot';
 import {
-  WebMercator, MVTiles, MapboxProvider, MapTileProvider,
-} from '../../../map';
+  WebMercator, MVTiles, MVTStyles, MapboxProvider, MapTileProvider,
+} from '@use-gpu/map';
+import { parseColor } from '@use-gpu/parse';
 
 import { PlotControls } from '../../ui/plot-controls';
+import { InfoBox } from '../../ui/info-box';
 
 import { vec3 } from 'gl-matrix';
 
@@ -36,17 +37,51 @@ const thetaFormatter = (θ: number) => {
 
 const USE_MAPBOX = false;
 
+export const styleSheet = {
+  water: {
+    face: {
+      stroke: parseColor('#a0a7ff'),
+      fill: parseColor('#30407f'),
+      width: 3,
+      depth: 0.5,
+      zBias: 3,
+    }
+  },
+  admin: {
+    line: {
+      color: parseColor('#8087ff'),
+      width: 2,
+      depth: 0.5,
+      zBias: 2,
+    },
+  },
+  road: {
+    line: {
+      color: parseColor('#50579f'),
+      width: 2,
+      depth: 0.5,
+      zBias: 2,
+    },
+  },
+  background: {
+    face: {
+      fill: parseColor('#0a0a10'),
+      zBias: -300,
+    }
+  },
+};
+
 // @ts-ignore
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 // @ts-ignore
-const accessToken = "pk......";
+const accessToken = process.env.MAPBOX_TOKEN;
 
 export const MapWebMercatorPage: LC = () => {
 
   const base = isDevelopment ? '/' : '/demo/';
-  const url = base + "tiles/:zoom-:x-:y.mvt";
-  
+  const url = base + "tiles/{zoom}-{x}-{y}.mvt";
+
   const tracks = {
     zoom: [
       [ 0, 1],
@@ -91,115 +126,118 @@ export const MapWebMercatorPage: LC = () => {
     ],
   } as Tracks;
 
-  return (
-    <Loop>
-      <Cursor cursor='move' />
-      <LinearRGB>
-        <Camera>
-          <Pass>
-            <Plot>
-              <Animate
-                loop
-                delay={1}
-                speed={2}
-                tracks={tracks}
-                duration={75}
+  return (<>
+    <InfoBox>Render MVT vector tiles in a Web Mercator projection using the map package.</InfoBox>
+    <Cursor cursor='move' />
+    <LinearRGB>
+      <Camera>
+        <Pass>
+          <Plot>
+            <Animate
+              loop
+              delay={1}
+              speed={2}
+              tracks={tracks}
+              duration={75}
+            >
+              <WebMercator
+                bend={1}
+                range={[[-1.5, 1.5], [-.5 - 2/3, .5 + 2/3]]}
+                long={90}
+                lat={20}
+                zoom={1}
+                scale={[3, 3, 3]}
+                centered
+                scissor
+                native
               >
-                <WebMercator
-                  bend={1}
-                  range={[[-1.5, 1.5], [-.5 - 2/3, .5 + 2/3]]}
-                  long={90}
-                  lat={20}
-                  zoom={1}
-                  scale={[3, 3, 3]}
-                  centered
-                  scissor
-                  native
-                >
+                <MVTStyles styles={styleSheet}>
                   {USE_MAPBOX ? (
                     <MapboxProvider accessToken={accessToken}>
-                      <MVTiles />
+                      <MVTiles detail={1} />
                     </MapboxProvider>
                   ) : (
                     <MapTileProvider url={url}>
-                      <MVTiles detail={3} />
+                      <MVTiles detail={1} maxLevel={3} />
                     </MapTileProvider>
                   )}
-                </WebMercator>
-                <WebMercator
-                  bend={1}
-                  range={[[-1, 1], [-2/3, 2/3]]}
-                  long={90}
-                  lat={20}
-                  zoom={1}
-                  scale={[3, 3, 3]}
-                  centered
+                </MVTStyles>
+              </WebMercator>
+              <WebMercator
+                bend={0}
+                range={[[-1, 1], [-2/3, 2/3]]}
+                long={90}
+                lat={20}
+                zoom={1}
+                scale={[3, 3, 3]}
+                centered
+              >
+                <Grid
+                  axes='xy'
+                  origin={[0, 0, 0]}
+                  width={2}
+                  first={{ unit: 360, base: 2, detail: 48, divide: 8, end: true }}
+                  second={{ unit: 360, base: 2, detail: 48, divide: 8, end: true }}
+                  color={[0.75, 0.75, 0.75, 0.125]}
+                  depth={0.5}
+                  zBias={10}
+                />
+
+                <Axis
+                  axis='x'
+                  width={5}
+                  color={[0.75, 0.75, 0.75, 1]}
+                  depth={0.5}
+                  detail={64}
+                  zBias={20}
+                />
+                <Scale
+                  unit={360}
+                  base={2}
+                  divide={8}
+                  axis='x'
                 >
-                  <Grid
-                    axes='xy'
-                    origin={[0, 0, 0]}
-                    width={2}
-                    first={{ unit: 360, base: 2, detail: 48, divide: 8, end: true }}
-                    second={{ unit: 360, base: 2, detail: 48, divide: 8, end: true }}
-                    color={[0.75, 0.75, 0.75, 0.125]}
-                    depth={0.5}
-                    zBias={10}
-                  />
-
-                  <Axis
-                    axis='x'
+                  <Tick
+                    size={20}
                     width={5}
+                    offset={[0, 1, 0]}
                     color={[0.75, 0.75, 0.75, 1]}
                     depth={0.5}
-                    detail={64}
                   />
-                  <Scale
-                    unit={360}
-                    base={2}
-                    divide={8}
-                    axis='x'
-                  >
-                    <Tick
-                      size={20}
-                      width={5}
-                      offset={[0, 1, 0]}
-                      color={[0.75, 0.75, 0.75, 1]}
-                      depth={0.5}
-                    />
-                  </Scale>
+                </Scale>
 
-                  <Axis
-                    axis='y'
+                <Axis
+                  axis='y'
+                  width={5}
+                  origin={[45, 0, 0]}
+                  color={[0.75, 0.75, 0.75, 1]}
+                  detail={32}
+                  depth={0.5}
+                  zBias={20}
+                />
+                <Scale
+                  origin={[45, 0, 0]}
+                  unit={360}
+                  base={2}
+                  divide={8}
+                  axis='y'
+                >
+                  <Tick
+                    size={20}
                     width={5}
-                    origin={[45, 0, 0]}
+                    offset={[1, 0, 0]}
                     color={[0.75, 0.75, 0.75, 1]}
-                    detail={32}
                     depth={0.5}
                   />
-                  <Scale
-                    origin={[45, 0, 0]}
-                    unit={360}
-                    base={2}
-                    divide={8}
-                    axis='y'
-                  >
-                    <Tick
-                      size={20}
-                      width={5}
-                      offset={[1, 0, 0]}
-                      color={[0.75, 0.75, 0.75, 1]}
-                      depth={0.5}
-                    />
-                  </Scale>
-                
-                </WebMercator>
-              </Animate>
-            </Plot>
-          </Pass>
-        </Camera>
-      </LinearRGB>
-    </Loop>
-  );
+                </Scale>
+
+              </WebMercator>
+            </Animate>
+          </Plot>
+        </Pass>
+      </Camera>
+    </LinearRGB>
+  </>);
 };
 
 const Camera = ({children}: PropsWithChildren<object>) => (

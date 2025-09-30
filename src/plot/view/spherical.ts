@@ -1,32 +1,39 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { AxesTrait, ObjectTrait, Swizzle } from '../types';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { Swizzle } from '../types';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { parseMatrix, parsePosition, parseRotation, parseQuaternion, parseScale, useProp } from '../../traits';
-import { use, provide, signal, useContext, useOne, useMemo } from '../../live';
-import { chainTo, swizzleTo } from '../../shader/wgsl';
+import { combine, makeUseTrait, useProp } from '@use-gpu/traits/live';
+import { parseAxes } from '@use-gpu/parse';
+import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
+import { chainTo, swizzleTo } from '@use-gpu/shader/wgsl';
 import {
-  TransformContext,
-  useShaderRef, useBoundShader, useCombinedTransform,
-} from '../../workbench';
-import { parseAxes } from '../../traits';
+  MatrixContext, TransformContext, QueueReconciler,
+  useShaderRef, useShader, useCombinedEpsilonTransform,
+} from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
 import { recenterAxis } from '../util/axis';
-import { swizzleMatrix, invertBasis, toBasis } from '../util/swizzle';
+import { swizzleMatrix, invertBasis } from '../util/swizzle';
 import { mat4 } from 'gl-matrix';
 
-import { useAxesTrait, useObjectTrait } from '../traits';
+import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getSphericalPosition } from '../../wgsl/transform/sphericalwgsl';
+import { getSphericalPosition } from '@use-gpu/wgsl/transform/spherical.wgsl';
 
-export type SphericalProps = Partial<AxesTrait> & Partial<ObjectTrait> & {
+const {signal} = QueueReconciler;
+const makeMat4 = () => mat4.create();
+
+const Traits = combine(AxesTrait, ObjectTrait);
+const useTraits = makeUseTrait(Traits);
+
+export type SphericalProps = TraitProps<typeof Traits> & PropsWithChildren<{
   bend?: number,
   helix?: number,
   on?: Swizzle,
-};
+}>;
 
-export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildren<SphericalProps>) => {
+export const Spherical: LiveComponent<SphericalProps> = (props: SphericalProps) => {
   const {
     bend = 1,
     helix = 0,
@@ -34,8 +41,13 @@ export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildre
   } = props;
 
   const on = useProp(props.on, parseAxes);
-  const {range: g, axes: a} = useAxesTrait(props);
-  const {position: p, scale: s, quaternion: q, rotation: r, matrix: m} = useObjectTrait(props);
+  const {
+    range: g, axes: a,
+    position: p, scale: s, quaternion: q, rotation: r, matrix: m,
+  } = useTraits(props);
+
+  const [swapMatrix] = useDouble(makeMat4);
+  const composed = useOne(makeMat4);
 
   const [focus, aspectX, aspectY, scaleY, matrix, swizzle, range, epsilon] = useMemo(() => {
     const x = g[0][0];
@@ -71,7 +83,7 @@ export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildre
     const sdx = fdx / sx;
     const sdy = fdy / sy;
     const sdz = dz  / sz;
-    
+
     const aspectX = Math.abs(sdx / sdz);
     const aspectY = Math.abs(sdy / sdz / aspectX);
 
@@ -82,7 +94,7 @@ export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildre
 
     const focus = bend > 0 ? 1 / bend - 1 : 0;
 
-    const matrix = mat4.create();
+    const matrix = swapMatrix();
     mat4.set(matrix,
       2/fdx, 0, 0, 0,
       0, 2/fdy, 0, 0,
@@ -96,9 +108,8 @@ export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildre
 
     // Swizzle output axes
     if (a !== 'xyzw') {
-      const t = mat4.create();
-      swizzleMatrix(t, a);
-      mat4.multiply(matrix, t, matrix);
+      swizzleMatrix(composed, a);
+      mat4.multiply(matrix, composed, matrix);
     }
 
     // Then apply transform (so these are always relative to the world basis, not the internal basis)
@@ -106,20 +117,18 @@ export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildre
       mat4.multiply(matrix, m, matrix);
     }
     if (p || r || q || s) {
-      const t = mat4.create();
-      composeTransform(t, p, r, q, s);
-      mat4.multiply(matrix, t, matrix);
+      composeTransform(composed, p, r, q, s);
+      mat4.multiply(matrix, composed, matrix);
     }
 
     // Swizzle active spherical axes
     let swizzle: string | null = null;
     if (on.slice(0, 3) !== 'xyz') {
       const order = swizzle = on;
-      const t = mat4.create();
 
       // Apply inverse basis as part of view matrix (right multiply)
-      swizzleMatrix(t, invertBasis(order));
-      mat4.multiply(matrix, matrix, t);
+      swizzleMatrix(composed, invertBasis(order));
+      mat4.multiply(matrix, matrix, composed);
     }
 
     // Adjust radial range
@@ -130,7 +139,7 @@ export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildre
       const min = Math.max(-focus / aspectX, from);
       range[2] = [min, max];
     }
-    
+
     return [focus, aspectX, aspectY, scaleY, matrix, swizzle, range, epsilon];
   }, [g, a, p, r, q, s, bend, helix]);
 
@@ -143,7 +152,7 @@ export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildre
   const c = useShaderRef(scaleY);
   const e = useShaderRef(epsilon);
 
-  const bound = useBoundShader(getSphericalPosition, [t, b, f, u, v, c]);
+  const bound = useShader(getSphericalPosition, [t, b, f, u, v, c]);
 
   // Apply input basis as a cast
   const xform = useMemo(() => {
@@ -151,14 +160,16 @@ export const Spherical: LiveComponent<SphericalProps> = (props: PropsWithChildre
     return chainTo(swizzleTo('vec4<f32>', 'vec4<f32>', swizzle), bound);
   }, [bound, swizzle]);
 
-  const context = useCombinedTransform(xform, null, null, e);
+  const context = useCombinedEpsilonTransform(xform, e);
 
   const rangeMemo = useOne(() => range, JSON.stringify(range));
 
   return [
     signal(),
-    provide(TransformContext, context,
-      provide(RangeContext, rangeMemo, children ?? [])
+    provide(MatrixContext, null,
+      provide(TransformContext, context,
+        provide(RangeContext, rangeMemo, children ?? [])
+      )
     )
   ];
 };

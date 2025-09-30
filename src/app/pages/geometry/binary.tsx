@@ -1,26 +1,27 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { DataField, StorageSource } from '../../../core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { DataSchema, GPUAttributes, LambdaSource, StorageSource } from '@use-gpu/core';
 
-import React, { Gather, yeet, use, useMemo } from '../../../live';
-import { wgsl } from '../../../shader/wgsl';
+import React, { Gather, yeet, use, useOne, useMemo } from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
+import { clamp } from '@use-gpu/core';
 
 import {
-  Loop, Pass, Flat,
-  ArrayData, Data, DataShader, RawData,
+  Pass, Data, DataShader,
   OrbitCamera, OrbitControls,
-  Pick, Cursor, Fetch,
+  Pick, Cursor,
   PointLayer,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
-  Plot, Cartesian, Axis, Grid, Label, Line, Sampled, Scale, Surface, Tick, Transpose,
-} from '../../../plot';
+  Plot, Cartesian, Grid,
+} from '@use-gpu/plot';
+
 import { BinaryControls } from '../../ui/binary-controls';
+import { InfoBox } from '../../ui/info-box';
+
 import { vec3 } from 'gl-matrix';
 
 let t = 0;
-
-const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
 
 const RANGE = [[0, 256], [0, 256], [0, 256]];
 const GRID = { divide: 16, base: 2, end: true };
@@ -88,23 +89,30 @@ const arrayBufferToXYZ = (buffer: ArrayBuffer) => {
 
     bins++;
   }
-  
+
   if (min == max) min--;
 
   return {
     level,
     range: [min, max],
     count: bins,
-    fields: [
-      ['vec4<u8>', positions],
-      ['u32', counts],
-    ] as DataField[],
+    values: {
+      schema: {
+        positions: 'array<vec4<u8>>',
+        counts: 'array<u32>',
+      } as DataSchema,
+      data: {
+        positions,
+        counts,
+      },
+    },
   };
 };
 
 // uint8 -> f32 conversion for positions
 // Could just use a Float32Array but we're feeling frugal.
-// Because u8 doesn't exist in WGSL, vec4<u8> arrives as a vec4<u32> after polyfilling
+//
+// As u8 doesn't exist in WGSL, vec4<u8> arrives as a vec4<u32> after polyfilling by @use-gpu/shader
 const positionShader = wgsl`
   @link fn getData(i: u32) -> vec4<u32>;
 
@@ -147,7 +155,7 @@ const colorShader = wgsl`
       let g = sin(t * 4.0 + 2.09) * .5 + .5;
       let b = sin(t * 4.0 + 4.18) * .5 + .5;
 
-      let tint = vec3<f32>(r, g, b);      
+      let tint = vec3<f32>(r, g, b);
       let luma = max(0.0, t);
       color = vec4<f32>(luma * tint, 1.0);
     }
@@ -170,16 +178,19 @@ export const GeometryBinaryPage: LC = () => {
 
   const root = document.querySelector('#use-gpu .canvas');
 
-  return (
+  return (<>
+    <InfoBox>Load a dataset using &lt;Data&gt; and color it using a custom &lt;DataShader&gt;. Render with &lt;PointLayer&gt;.</InfoBox>
     <BinaryControls
       container={root}
       render={({mode, buffer, gamma, transparent}) => {
         const data = useMemo(() => buffer ? arrayBufferToXYZ(buffer) : null, [buffer]);
 
+        const grey = Math.pow(0.25, gamma);
+        const gridColor = useOne(() => [grey, grey, grey, 1], grey);
+
         const viz = useMemo(() => data ? (
-          <Data
-            fields={data.fields}
-            render={(positions, counts) => (
+          <Data {...data.values}>{
+            ({positions, counts}: GPUAttributes) => (
               <Gather
                 children={[
                   <DataShader
@@ -192,7 +203,7 @@ export const GeometryBinaryPage: LC = () => {
                     args={[mode, transparent, data.range, data.level]}
                   />,
                 ]}
-                then={([positions, colors]: StorageSource[]) => (
+                then={([positions, colors]: LambdaSource[]) => (
                   <PointLayer
                     count={data.count}
                     positions={positions}
@@ -205,65 +216,61 @@ export const GeometryBinaryPage: LC = () => {
                   />
                 )}
               />
-            )}
-          />
+            )
+          }</Data>
         ) : null, [data, mode, transparent]);
 
         const view = useMemo(() => (
           <Camera>
             <Pass>
-              <Plot>
-                <Cartesian
-                  range={RANGE}
-                >
-                  {viz}
-                  <Grid
-                    color="#202020"
-                    axes='xy'
-                    width={2}
-                    first={GRID}
-                    second={GRID}
-                    depth={0.5}
-                    zBias={-5}
-                    auto
-                  />
-                  <Grid
-                    color="#202020"
-                    axes='xz'
-                    width={2}
-                    first={GRID}
-                    second={GRID}
-                    depth={0.5}
-                    zBias={-5}
-                    auto
-                  />
-                  <Grid
-                    color="#202020"
-                    axes='yz'
-                    width={2}
-                    first={GRID}
-                    second={GRID}
-                    depth={0.5}
-                    zBias={-5}
-                    auto
-                  />
-                </Cartesian>
-              </Plot>
+              <Cartesian
+                range={RANGE}
+              >
+                {viz}
+                <Grid
+                  color={gridColor}
+                  axes='xy'
+                  width={2}
+                  first={GRID}
+                  second={GRID}
+                  depth={0.5}
+                  zBias={-5}
+                  auto
+                />
+                <Grid
+                  color={gridColor}
+                  axes='xz'
+                  width={2}
+                  first={GRID}
+                  second={GRID}
+                  depth={0.5}
+                  zBias={-5}
+                  auto
+                />
+                <Grid
+                  color={gridColor}
+                  axes='yz'
+                  width={2}
+                  first={GRID}
+                  second={GRID}
+                  depth={0.5}
+                  zBias={-5}
+                  auto
+                />
+              </Cartesian>
             </Pass>
           </Camera>
-        ), [viz]);
+        ), [viz, gridColor]);
 
         return (
-          <Loop>
-            <LinearRGB tonemap="aces" colorInput="linear" gain={gamma}>
-              <Cursor cursor="move" />
-              {view}
-            </LinearRGB>
-          </Loop>
+          <LinearRGB tonemap="aces" colorInput="linear" gain={gamma}>
+            <Cursor cursor="move" />
+            {view}
+          </LinearRGB>
         );
       }}
     />
-  );
+  </>);
 }
 
 const Camera = ({children}: PropsWithChildren<object>) => (

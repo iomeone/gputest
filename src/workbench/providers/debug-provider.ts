@@ -1,9 +1,8 @@
-import type { DeepPartial, StorageSource, LambdaSource, TypedArray } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { LC, PropsWithChildren } from '../../live';
+import type { DeepPartial } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import { provide, memo, makeContext, useContext, useMemo } from '../../live';
-import { patch } from '../../state';
+import { provide, memo, makeContext, useContext, useMemo } from '@use-gpu/live';
+import { patch } from '@use-gpu/state';
 
 export const DEBUG_DEFAULTS = {
   voxel: {
@@ -37,9 +36,9 @@ export type DebugContextProps = {
   },
 };
 
-export type DebugProviderProps = {
+export type DebugProviderProps = PropsWithChildren<{
   debug: DeepPartial<DebugContextProps>,
-};
+}>;
 
 export const DebugContext = makeContext<DebugContextProps>(DEBUG_DEFAULTS, 'DebugContext');
 export const useDebugContext = () => useContext(DebugContext);

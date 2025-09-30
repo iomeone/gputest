@@ -1,15 +1,14 @@
-import type { Rectangle, Point } from '../../core';
-import type { Sizing, Margin } from '../types';
-
 describe('', () => { it("", () => {})});
 
 /*
+import type { Rectangle, XY } from '@use-gpu/core';
+import type { Sizing, Margin } from '../types';
 
 import { getBlockMinMax, getBlockMargin, fitBlock } from './block';
 import { makeBoxLayout } from './util';
 
 describe('block layout', () => {
-  
+
   let ID = 0;
   const makeElement = (
     width: number,
@@ -23,7 +22,7 @@ describe('block layout', () => {
       sizing,
       margin,
       fit: () => ({
-        size: [width, height] as Point,
+        size: [width, height] as XY,
         render: (layout: Rectangle) => ({layout}) as any,
       }),
     };
@@ -94,7 +93,7 @@ describe('block layout', () => {
       const sizingY = getBlockMargin(els, [0, 0, 0, 0], [5, 3, 7, 10], 'y', false);
       expect(sizingY).toEqual([0, 7, 0, 10]);
     }
-    
+
     {
       const sizingX = getBlockMargin(els, [-5, -10, -25, 5], [0, 0, 0, 0], 'x', false);
       expect(sizingX).toEqual([5, -10, -5, 5]);
@@ -110,7 +109,7 @@ describe('block layout', () => {
       makeElement(20, 20, 20),
     ];
 
-    const size = [110, 80] as Point;
+    const size = [110, 80] as XY;
     const {sizes, offsets, renders} = fitBlock(els, size, [0, 0], [0, 0, 0, 0], 'x', false);
 
     expect(offsets).toEqual([[0, 10], [70, 20]]);
@@ -127,7 +126,7 @@ describe('block layout', () => {
       makeElement(20, 20, 20),
     ];
 
-    const size = [110, 80] as Point;
+    const size = [110, 80] as XY;
     const {sizes, offsets, renders} = fitBlock(els, size, [0, 0], [0, 0, 0, 0], 'y', false);
 
     expect(offsets).toEqual([[10, 0], [20, 70]]);

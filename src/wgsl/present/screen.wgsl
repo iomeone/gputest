@@ -1,6 +1,6 @@
-use '../../wgsl/use/types'::{ SolidVertex };
-use '../../wgsl/geometry/quad'::{ getQuadUV };
-use '../../wgsl/use/view'::{ worldToClip, worldToClip3D, to3D, getViewResolution, getViewSize }; 
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToClip3D, to3D, getViewResolution, getViewSize };
 
 @optional @link fn getRectangle(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); }
 @optional @link fn getFill(i: u32)      -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.5, 1.0); }
@@ -17,7 +17,7 @@ use '../../wgsl/use/view'::{ worldToClip, worldToClip3D, to3D, getViewResolution
   var uv1 = getQuadUV(vertexIndex);
   var xy1 = uv1 * 2.0 - 1.0;
   let box = rectangle.zw - rectangle.xy;
-  
+
   // Get corner without motion
   var unmoved = vec4<f32>(mix(rectangle.xy, rectangle.zw, uv1), 0.0, 1.0);
   var corner4 = worldToClip(applyTransform(unmoved));

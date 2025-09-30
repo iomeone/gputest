@@ -4,11 +4,16 @@ exports[`bind binds an external 1`] = `
 "#version 450
 #define TEST true
 
+//// @link getColor _01_
+
+
     vec4 _01_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
     
+//// @link sub 
+
 
     vec4 _01_getColor();
-    
+
     vec4 colorUsed() { return vec4(0.0, 0.1, 0.2, 0.0); }
     vec4 getColor() {
       return _01_getColor() + colorUsed();
@@ -20,11 +25,16 @@ exports[`bind binds an external 2`] = `
 "#version 450
 #define TEST true
 
+//// @link getColor _01_
+
+
     vec4 _01_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
     
+//// @link sub 
+
 
     vec4 _01_getColor();
-    
+
     vec4 colorUsed() { return vec4(0.0, 0.1, 0.2, 0.0); }
     vec4 getColor() {
       return _01_getColor() + colorUsed();
@@ -36,16 +46,23 @@ exports[`bind binds an external 3`] = `
 "#version 450
 #define TEST true
 
+//// @link getColor _01_
+
+
     vec4 _01_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
     
+//// @link sub _02_
+
 
     vec4 _01_getColor();
-    
+
     vec4 _02_colorUsed() { return vec4(0.0, 0.1, 0.2, 0.0); }
     vec4 _02_getColor() {
       return _01_getColor() + _02_colorUsed();
     }
     
+//// @link main 
+
 
     vec4 _02_getColor();
     void main() {
@@ -58,16 +75,17 @@ exports[`bind binds an external 3`] = `
 
 exports[`bind links data bindings 1`] = `
 "#version 450
+//// @link @virtual _01_
 
 layout (set = VIRTUAL_BINDGROUP, binding = 1) uniform _VT_Type {
   vec4 _VT_1_getColor;
 } _VT_Uniform;
 
+//// @link @access [getColor getSize] [m2t6xjush0] _VT_1_
 
 vec4 _VT_1_getColor(int) {
   return _VT_Uniform._VT_1_getColor;
 }
-
 
 layout (std430, set = VIRTUAL_BINDGROUP, binding = 0) readonly buffer _VT_1_getSizeType {
   vec2 data[];
@@ -77,10 +95,12 @@ vec2 _VT_1_getSize(int index) {
   return _VT_1_getSizeStorage.data[index];
 }
 
+//// @link code 
+
 
     vec4 _VT_1_getColor(int);
     vec2 _VT_1_getSize(int);
-    
+
     void main() {
       _VT_1_getColor(0);
       _VT_1_getSize(0);
@@ -89,90 +109,90 @@ vec2 _VT_1_getSize(int index) {
 `;
 
 exports[`bind makes deterministic links for data bindings 1`] = `
-Object {
+{
   "base": undefined,
-  "code": "@access [getColor getSize] [m2t4yiqqhw]",
-  "name": "_VT_n4rw9c",
-  "storages": Array [
-    Object {
-      "storage": Object {
-        "buffer": Object {},
+  "code": "@access [getColor getSize] [m2t6xjush0]",
+  "name": "_VT_2znyn7",
+  "storages": [
+    {
+      "storage": {
+        "buffer": {},
         "format": "vec2",
         "length": 10,
-        "size": Array [
+        "size": [
           10,
         ],
         "version": 1,
       },
-      "uniform": Object {
-        "args": Array [
+      "uniform": {
+        "args": [
           "int",
         ],
         "format": "vec2",
         "name": "getSize",
-        "value": Array [
+        "value": [
           1,
           1,
         ],
       },
     },
   ],
-  "table": Object {
-    "declarations": Array [
-      Object {
+  "table": {
+    "declarations": [
+      {
         "at": 0,
         "flags": 0,
-        "func": Object {
+        "func": {
           "name": "getColor",
-          "parameters": Array [
+          "parameters": [
             "int",
           ],
-          "type": Object {
+          "type": {
             "name": "vec4",
           },
         },
-        "symbols": Array [],
+        "symbols": [],
       },
-      Object {
+      {
         "at": 0,
         "flags": 0,
-        "func": Object {
+        "func": {
           "name": "getSize",
-          "parameters": Array [
+          "parameters": [
             "int",
           ],
-          "type": Object {
+          "type": {
             "name": "vec2",
           },
         },
-        "symbols": Array [],
+        "symbols": [],
       },
     ],
-    "symbols": Array [
+    "symbols": [
       "getColor",
       "getSize",
     ],
-    "visibles": Array [
+    "visibles": [
       "getColor",
       "getSize",
     ],
   },
-  "textures": Array [],
-  "uniforms": Array [
-    Object {
-      "constant": Array [
+  "textures": [],
+  "uniforms": [
+    {
+      "constant": [
         1,
         0.5,
         1,
         1,
       ],
-      "uniform": Object {
-        "args": Array [
+      "uniform": {
+        "args": [
           "int",
         ],
         "format": "vec4",
         "name": "getColor",
-        "value": Array [
+        "value": [
           0,
           0.5,
           1,

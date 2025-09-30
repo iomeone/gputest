@@ -1,9 +1,9 @@
-import type { LiveComponent } from '../../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { memo, use, fragment, yeet, useContext, useNoContext, useMemo, useNoMemo, useOne, useNoOne } from '../../../live';
-import { resolve } from '../../../core';
-import { bindBundle, bindingToModule } from '../../../shader/wgsl';
+import { use, yeet, useMemo, useOne } from '@use-gpu/live';
+import { patch } from '@use-gpu/state';
+import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { DrawCall, drawCall } from '../../queue/draw-call';
 import { Dispatch } from '../../queue/dispatch';
@@ -14,13 +14,13 @@ import { useRenderContext } from '../../providers/render-provider';
 import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualSolid from '../../../wgsl/render/vertex/virtual-solidwgsl';
-import instanceFragmentSolid from '../../../wgsl/render/fragment/solidwgsl';
+import instanceDrawVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
+import instanceFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
 
 export type DebugRenderProps = VirtualDraw;
 
 export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderProps) => {
-  let {
+  const {
     vertexCount: vC = 0,
     instanceCount: iC = 0,
     indirect,
@@ -29,12 +29,14 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
       getVertex: gV,
     },
 
-    pipeline,
+    pipeline: propPipeline,
     defines,
     ...rest
   } = props;
 
-  const topology = (pipeline as any)?.primitive?.topology ?? 'triangle-list';
+  if (gV == null) throw new Error("No vertex shader provided");
+
+  const topology = (propPipeline as any)?.primitive?.topology ?? 'triangle-list';
 
   const device = useDeviceContext();
   const renderContext = useRenderContext();
@@ -44,6 +46,8 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
 
   const vertexShader = instanceDrawVirtualSolid;
   const fragmentShader = instanceFragmentSolid;
+
+  const pipeline = useOne(() => patch(propPipeline, {primitive: {topology: 'triangle-strip'}}), propPipeline);
 
   // Binds links into shader
   const [v, f, vertexCount, instanceCount, wireframeCommand, wireframeIndirect] = useMemo(() => {
@@ -55,9 +59,19 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
 
     // Decorate vertex shader with wireframe operator
     if (indirect) {
-      ({getVertex, wireframeCommand, wireframeIndirect} = getWireframeIndirect(device, gV, indirect, topology));
+      ({
+        getVertex,
+        wireframeCommand,
+        wireframeIndirect,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      } = getWireframeIndirect(device, gV!, indirect, topology));
     } else  {
-      ({getVertex, vertexCount, instanceCount} = getWireframe(gV, vC, iC, topology));
+      ({
+        getVertex,
+        vertexCount,
+        instanceCount,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      } = getWireframe(gV!, vC, iC, topology));
     }
 
     const links = {getVertex};

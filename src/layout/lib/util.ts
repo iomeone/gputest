@@ -1,13 +1,12 @@
-import type { LiveElement } from '../../live';
-import type { ShaderModule } from '../../shader';
-import type { Point, Point4, Rectangle } from '../../core';
-import type { FitInto, AutoPoint, Direction, Gap, MarginLike, Margin, Alignment, Anchor, Dimension, LayoutRenderer, LayoutPicker, InlineRenderer, InlineLine, UIAggregate } from '../types';
+import type { LiveElement } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { XY, XYZW, Rectangle } from '@use-gpu/core';
+import type { FitInto, Direction, Alignment, LayoutRenderer, LayoutPicker, InlineRenderer, InlineLine } from '../types';
 
-import { yeet, fragment, morph, use } from '../../live';
-import { toMurmur53 } from '../../state';
-import { bindBundle, chainTo } from '../../shader/wgsl';
-import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clipwgsl';
-import { INSPECT_STYLE } from './constants';
+import { fragment, morph, use } from '@use-gpu/live';
+import { toMurmur53 } from '@use-gpu/state';
+import { bindBundle, chainTo } from '@use-gpu/shader/wgsl';
+import { getCombinedClip, getTransformedClip } from '@use-gpu/wgsl/layout/clip.wgsl';
 
 export const isHorizontal = (d: Direction) => d === 'x' || d === 'lr' || d === 'rl';
 export const isVertical = (d: Direction) => d === 'y' || d === 'tb' || d === 'bt';
@@ -17,14 +16,13 @@ const sameBox = (a: [any, any, any, any], b: [any, any, any, any]) => {
   return (a[0] === b[0]) && (a[1] === b[1]) && (a[2] === b[2]) && (a[3] === b[3]);
 };
 
-const NO_OBJECT: any = {};
-
 type Fitter<T> = (into: FitInto) => T;
 export const memoFit = <T>(f: Fitter<T>): Fitter<T> => {
   let last: FitInto | undefined;
   let value: T | null = null;
   return (into: FitInto) => {
     if (last && sameBox(last, into)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return value!;
     }
     value = f(into);
@@ -36,13 +34,16 @@ export const memoFit = <T>(f: Fitter<T>): Fitter<T> => {
 type Layout<T> = (
   box: Rectangle,
   origin: Rectangle,
+  z: number,
   clip: ShaderModule | null,
   mask: ShaderModule | null,
   transform: ShaderModule | null,
 ) => T;
+
 export const memoLayout = <T>(f: Layout<T>): Layout<T> => {
   let lastBox: Rectangle | undefined;
   let lastOrigin: Rectangle | undefined;
+  let lastZ: number | undefined;
   let lastClip: ShaderModule | null | undefined;
   let lastMask: ShaderModule | null | undefined;
   let lastTransform: ShaderModule | null | undefined;
@@ -51,22 +52,28 @@ export const memoLayout = <T>(f: Layout<T>): Layout<T> => {
   return (
     box: Rectangle,
     origin: Rectangle,
+    z: number,
     clip: ShaderModule | null,
     mask: ShaderModule | null,
     transform: ShaderModule | null,
   ) => {
+    // eslint-disable-next-line no-debugger
+    if (z !== z) debugger;
     if (
       lastBox && sameBox(lastBox, box) &&
       lastOrigin && sameBox(lastOrigin, origin) &&
+      lastZ === z &&
       lastClip === clip &&
       lastMask === mask &&
       lastTransform === transform
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return value!;
     }
-    value = f(box, origin, clip, mask, transform);
+    value = f(box, origin, z, clip, mask, transform);
     lastBox = box;
     lastOrigin = origin;
+    lastZ = z;
     lastClip = clip;
     lastMask = mask;
     lastTransform = transform;
@@ -77,13 +84,16 @@ export const memoLayout = <T>(f: Layout<T>): Layout<T> => {
 type Inline<T> = (
   lines: InlineLine[],
   origin: Rectangle,
+  z: number,
   clip: ShaderModule | null,
   mask: ShaderModule | null,
   transform: ShaderModule | null,
 ) => T;
+
 export const memoInline = <T>(f: Inline<T>): Inline<T> => {
   let lastHash: number | undefined;
   let lastOrigin: Rectangle | undefined;
+  let lastZ: number | undefined;
   let lastClip: ShaderModule | null | undefined;
   let lastMask: ShaderModule | null | undefined;
   let lastTransform: ShaderModule | null | undefined;
@@ -92,6 +102,7 @@ export const memoInline = <T>(f: Inline<T>): Inline<T> => {
   return (
     lines: InlineLine[],
     origin: Rectangle,
+    z: number,
     clip: ShaderModule | null,
     mask: ShaderModule | null,
     transform: ShaderModule | null,
@@ -101,15 +112,18 @@ export const memoInline = <T>(f: Inline<T>): Inline<T> => {
     if (
       lastHash && lastHash === hash &&
       lastOrigin && sameBox(lastOrigin, origin) &&
+      lastZ === z &&
       lastClip === clip &&
       lastMask === mask &&
       lastTransform === transform
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return value!;
     }
-    value = f(lines, origin, clip, mask, transform);
+    value = f(lines, origin, z, clip, mask, transform);
     lastHash = hash;
     lastOrigin = origin;
+    lastZ = z;
     lastClip = clip;
     lastMask = mask;
     lastTransform = transform;
@@ -117,7 +131,7 @@ export const memoInline = <T>(f: Inline<T>): Inline<T> => {
   };
 }
 
-export const mergePadding = (a: Point4, b: Point4) => {
+export const mergePadding = (a: XYZW, b: XYZW) => {
   return [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3]];
 }
 
@@ -128,9 +142,10 @@ export const mergeMargin = (a: number, b: number) => {
   return Math.min(a, b);
 }
 
+// DEPRECATED (tests only)
 export const makeBoxLayout = (
-  sizes: Point[],
-  offsets: Point[],
+  sizes: XY[],
+  offsets: XY[],
   renders: LayoutRenderer[],
   clip?: ShaderModule | null,
   mask?: ShaderModule | null,
@@ -143,7 +158,7 @@ export const makeBoxLayout = (
   parentMask?: ShaderModule | null,
   parentTransform?: ShaderModule | null,
 ) => {
-  const [left, top, right, bottom] = box;
+  const [left, top] = box;
   const out = [] as LiveElement[];
   const n = sizes.length;
 
@@ -174,7 +189,7 @@ export const makeBoxLayout = (
     const t = top + offset[1];
     const r = l + w;
     const b = t + h;
-    
+
     const layout = [l, t, r, b] as Rectangle;
     const el = morph(use(render, layout, origin, xclip, xmask, xform));
 
@@ -184,128 +199,46 @@ export const makeBoxLayout = (
     }
     else out.push(el);
   }
-  
+
   if (out.length === 1 && Array.isArray(out[0])) return out[0];
   return out;
 };
 
-export const makeBoxInspectLayout = (
-  id: number,
-  sizes: Point[],
-  offsets: Point[],
-  renders?: LayoutRenderer[],
-  clip?: ShaderModule | null,
-  mask?: ShaderModule | null,
-  transform?: ShaderModule | null,
-  inverse?: ShaderModule | null,
-) => (
-  box: Rectangle,
-  origin: Rectangle,
-  parentClip?: ShaderModule | null,
-  parentMask?: ShaderModule | null,
-  parentTransform?: ShaderModule | null,
-) => {
-  let out = renders ? makeBoxLayout(sizes, offsets, renders, clip, mask, transform, inverse)(box, origin, parentClip, parentMask, parentTransform) : [];
-  
-  const xform = parentTransform && transform ? chainTo(parentTransform, transform) : parentTransform ?? transform;
-  /*
-  const xmask = parentMask && mask ? chainTo(parentMask, mask) : parentMask ?? mask;
-  const xclip = parentClip ? (
-    transform
-    ? bindBundle(
-        clip ? getCombinedClip : getTransformedClip,
-        {
-          getParent: parentClip,
-          getSelf: clip ?? null,
-          applyTransform: inverse ?? null,
-        }
-      )
-    : parentClip
-  ) : clip;
-  */
-
-  let i = 0;
-  const next = () => id.toString() + '-' + i++;
-  const yeets = [] as UIAggregate[];
-  yeets.push({
-    id: next(),
-    rectangle: box,
-    uv: [0, 0, 1, 1],
-    count: 1,
-    repeat: 0,
-    //clip: parentClip,
-    //mask: parentMask,
-    transform: parentTransform,
-    bounds: box,
-    ...INSPECT_STYLE.parent,
-  });
-
-  const [left, top] = box;
-  const n = sizes.length;
-  for (let i = 0; i < n; ++i) {
-    const size = sizes[i];
-    const offset = offsets[i];
-
-    const w = size[0];
-    const h = size[1];
-
-    const l = left + offset[0];
-    const t = top + offset[1];
-    const r = l + w;
-    const b = t + h;
-    const layout = [l, t, r, b] as Rectangle;
-
-    yeets.push({
-      id: next(),
-      rectangle: layout,
-      uv: [0, 0, 1, 1],
-      count: 1,
-      repeat: 0,
-      //clip: xclip,
-      //mask: xmask,
-      transform: xform,
-      bounds: layout,
-      ...INSPECT_STYLE.child,
-    });
-  }
-  
-  out = [...out, yeet(yeets)];
-  return out;
-}
-
 export const makeInlineLayout = (
-  ranges: Point[],
-  sizes: Point[],
+  ranges: XY[],
+  sizes: XY[],
   offsets: [number, number, number][],
   renders: InlineRenderer[],
   key?: number,
 ) => (
   box: Rectangle,
   origin: Rectangle,
+  z: number,
   clip?: ShaderModule | null,
   mask?: ShaderModule | null,
   transform?: ShaderModule | null,
 ) => {
-  let [left, top, right, bottom] = box;
+  const [left, top] = box;
   const n = ranges.length;
 
   let last: InlineRenderer | null = null;
   let lines: InlineLine[] = [];
 
-  let miniHash = makeMiniHash();
+  const miniHash = makeMiniHash();
   miniHash(key);
   miniHash(left);
   key = miniHash(top);
 
   const out: LiveElement[] = [];
   const flush = (render: InlineRenderer) => {
-    const el = render(lines, origin, clip!, mask!, transform!, key);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const el = render(lines, origin, z, clip!, mask!, transform!, key);
     if (Array.isArray(el)) out.push(...(el as any[]));
     else out.push(el);
 
     lines = [];
   };
-  
+
   for (let i = 0; i < n; ++i) {
     const range = ranges[i];
     const size = sizes[i];
@@ -334,77 +267,12 @@ export const makeInlineLayout = (
   return out;
 };
 
-export const makeInlineInspectLayout = (
-  id: number,
-  ranges: Point[],
-  sizes: Point[],
-  offsets: [number, number, number][],
-  renders?: InlineRenderer[],
-  key?: number,
-) => (
-  box: Rectangle,
-  origin: Rectangle,
-  clip?: ShaderModule | null,
-  mask?: ShaderModule | null,
-  transform?: ShaderModule | null,
-) => {
-  let out = renders ? makeInlineLayout(ranges, sizes, offsets, renders, key)(box, origin, clip, mask, transform) : [];
-
-  let i = 0;
-  const next = () => id.toString() + '-' + i++;
-  const yeets = [] as UIAggregate[];
-  yeets.push({
-    id: next(),
-    rectangle: box,
-    uv: [0, 0, 1, 1],
-    count: 1,
-    repeat: 0,
-    //clip,
-    //mask,
-    transform,
-    bounds: box,
-    ...INSPECT_STYLE.parent,
-  });
-
-  const [left, top] = box;
-  const n = ranges.length;
-  for (let i = 0; i < n; ++i) {
-    const range = ranges[i];
-    const size = sizes[i];
-    const offset = offsets[i];
-
-    const [x, y, gap] = offset;
-    const l = left + x;
-    const t = top + y;
-    const r = l + size[0];
-    const b = t + size[1];
-
-    const layout = [l, t, r, b] as Rectangle;
-
-    yeets.push({
-      id: next(),
-      rectangle: layout,
-      uv: [0, 0, 1, 1],
-      count: 1,
-      repeat: 0,
-      //clip,
-      //mask,
-      transform,
-      bounds: layout,
-      ...INSPECT_STYLE.child
-    });
-  }
-  
-  out = [...out, yeet(yeets)];
-  return out;
-};
-
 export const makeBoxPicker = (
   id: number,
-  sizes: Point[],
-  offsets: Point[],
+  sizes: XY[],
+  offsets: XY[],
   pickers: (LayoutPicker | null | undefined)[],
-  scrollPos?: Point,
+  scrollPos?: XY,
   onScroll?: (dx: number, dy: number) => void,
   pickable: boolean = true,
 ) => (
@@ -440,9 +308,9 @@ export const makeBoxPicker = (
       tt -= scrollPos[1];
     }
 
-    let rr = ll + w;
-    let bb = tt + h;
-    
+    const rr = ll + w;
+    const bb = tt + h;
+
     const sub = pick && pick(x, y, ll, tt, rr, bb, scroll);
     if (sub) return sub;
   }
@@ -550,7 +418,7 @@ export const getOriginProjection = (box: Rectangle, origin: Rectangle): Rectangl
 
   const projX = (x: number) => (x - l) / (r - l);
   const projY = (y: number) => (y - t) / (b - t);
-  
+
   const [ll, tt, rr, bb] = box;
   return [projX(ll), projY(tt), projX(rr), projY(bb)];
 };

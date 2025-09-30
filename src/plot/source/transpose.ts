@@ -1,68 +1,75 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { LambdaSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { TensorArray } from '@use-gpu/core';
 
-import { yeet, use, gather, provide, useContext, useMemo, useOne } from '../../live';
-import { bindBundle, bundleToAttribute, castTo, chainTo } from '../../shader/wgsl';
-import { useBoundSource, useDataBinding, useLambdaSource } from '../../workbench';
+import { yeet, provide, useMemo, useNoMemo, useOne } from '@use-gpu/live';
+import { makeCopyPipe, toCPUDims } from '@use-gpu/core';
+import { getRenderFunc } from '@use-gpu/workbench';
+import { parseAxes } from '@use-gpu/parse';
 
-import { DataContext } from '../providers/data-provider';
-import { parseAxes, parseAxis } from '../../traits';
+import { useDataContext, DataContext } from '../providers/data-provider';
+import { toOrder } from '../util/swizzle';
 
-import plotArray, { packIndex, unpackIndex } from '../../wgsl/plot/arraywgsl';
-
-const SIZE_BINDING = bundleToAttribute(plotArray, 'getSize');
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const toModulus = (size: number[]) => size.reduce((a, b) => (a.push(a.at(-1)! * b), a), [1]);
 
 export type TransposeProps = {
   axes?: string,
-  render?: (source: LambdaSource) => LiveElement,
+  as?: string,
+  tensor?: TensorArray,
+
+  render?: (data: TensorArray) => LiveElement,
+  children?: LiveElement | ((data: TensorArray) => LiveElement),
 };
 
 export const Transpose: LiveComponent<TransposeProps> = (props) => {
   const {
     axes = 'xyzw',
-    render,
+    as = 'positions',
     children,
-    ...rest
+    tensor,
   } = props;
 
-  // Grab source data
-  const data = useContext(DataContext) ?? undefined;
+  const dataContext = useDataContext();
+  const data = tensor ?? dataContext[as];
   if (!data) return;
 
-  const [binding, length, size] = useDataBinding(data);
   const swizzle = useOne(() => parseAxes(axes), axes);
+  const {array, size, dims} = data;
 
-  // Construct size + index swizzle shader
-  const getSizeIn = useBoundSource(SIZE_BINDING, size);
-  const getDataIn = useBoundSource(binding, data);
-  const getDataOut = useMemo(() => {
-    const getSizeOut = castTo(getSizeIn, 'vec4<u32>', swizzle);
+  const value = useMemo(() => {
+    const order = toOrder(swizzle);
 
-    const unpack = bindBundle(unpackIndex, {getSize: getSizeOut});
-    const pack = bindBundle(packIndex, {getSize: getSizeIn});
+    const sizeIn = [...size];
+    while (sizeIn.length < order.length) sizeIn.push(1);
+    const sizeOut = order.map(i => sizeIn[i]);
 
-    return chainTo(chainTo(castTo(unpack, 'vec4<u32>', swizzle), pack), getDataIn);
-  }, [getDataIn, getSizeIn, swizzle]);
+    const modulusIn = toModulus(sizeIn);
+    const modulusOut = toModulus(sizeOut);
 
-  // Swizzle size + index locally
-  const getSourceProps = useMemo(() => {
-    const basis = swizzle.split('').map(parseAxis);
-    return {
-      length,
-      size: () => {
-        const s = size();
-        return basis.map(i => s[i] ?? 1);
-      },
+    const index = (i: number) => {
+      let j = 0;
+      let accum = 0;
+      for (const b of order) {
+        const k = ((i % modulusOut[j + 1]) / modulusOut[j]) | 0;
+        accum += k * modulusIn[b];
+        ++j;
+      }
+      return accum;
     };
-  }, [data, swizzle]);
 
-  const source = useLambdaSource(getDataOut, getSourceProps);
+    const out = array.slice();
+    makeCopyPipe({index})(array, out, toCPUDims(dims));
 
-  return useMemo(() => {
-    if (render == null && children === undefined) return yeet(source);
-    return (
-      provide(DataContext, source, render != null ? render(source) : children)
-    );
-  }, [render, children, source]);
+    return {
+      ...data,
+      array: out,
+      size: sizeOut,
+    };
+  }, [size, swizzle, data]);
+
+  const render = getRenderFunc(props);
+
+  const context = !render && children ? useMemo(() => ({...dataContext, [as]: value}), [dataContext, value, as]) : useNoMemo();
+
+  return render ? render(value) : children ? provide(DataContext, context, children) : yeet(value);
 };
-

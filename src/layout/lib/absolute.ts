@@ -1,5 +1,5 @@
-import type { Point, Rectangle } from '../../core';
-import type { LayoutElement, LayoutRenderer, LayoutPicker, FitInto, AutoPoint, AutoRectangle, Direction } from '../types';
+import type { Rectangle } from '@use-gpu/core';
+import type { LayoutElement, FitInto, AutoXY, AutoRectangle, Direction } from '../types';
 
 import { evaluateDimension } from '../parse';
 import { fitBlock } from './block';
@@ -22,18 +22,19 @@ export const fitAbsoluteBox = (
 ) => {
   const [iw, ih, fw, fh] = into;
   const box = resolveAbsoluteBox([0, 0, iw ?? fw, ih ?? fh], l, t, r, b, w, h, a, snap);
+  // eslint-disable-next-line prefer-const
   let [left, top, right, bottom] = box;
 
   const fixed = [
     left != null && right != null ? right - left : null,
     top != null && bottom != null ? bottom - top : null,
-  ] as AutoPoint;
+  ] as AutoXY;
 
   const isX = isHorizontal(direction);
   const shrinkWrap = isX ? fixed[0] === null : fixed[1] === null;
 
   const {size, sizes, offsets, renders, pickers} = fitBlock(els, into, fixed, NO_LAYOUT, direction, true, shrinkWrap);
-  
+
   if (left == null) left = right != null && size[0] != null ? right - size[0] : 0;
   if (top == null) top = bottom != null && size[1] != null ? bottom - size[1] : 0;
 
@@ -62,19 +63,24 @@ export const resolveAbsoluteBox = (
     right,
     bottom,
   ] = box;
-  
+
   let width = right - left;
   let height = bottom - top;
 
   let favorW = false;
   let favorH = false;
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if (l != null) left   += evaluateDimension(l, width)!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if (r != null) right  -= evaluateDimension(r, width)!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if (t != null) top    += evaluateDimension(t, height)!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if (b != null) bottom -= evaluateDimension(b, height)!;
 
   if (w != null) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     width = evaluateDimension(w, width)!;
     if (l != null || r == null) right = left + width;
     else left = right - width;
@@ -82,6 +88,7 @@ export const resolveAbsoluteBox = (
   }
 
   if (h != null) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     height = evaluateDimension(h, height)!;
     if (t != null || b == null) bottom = top + height;
     else top = bottom - height;

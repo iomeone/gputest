@@ -13,7 +13,7 @@
 @export fn getLineAnchor(index: u32) -> vec4<u32> {
   let s = getAnchorStart();
   let e = getAnchorEnd();
-  
+
   let hasBoth = s != 0 && e != 0;
 
   var i = index;

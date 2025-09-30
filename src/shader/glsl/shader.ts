@@ -1,15 +1,15 @@
 import { Tree } from '@lezer/common';
-import { ParsedModule, ParsedModuleCache, ShaderDefine } from './types';
+import { ParsedModule, ShaderDefine } from './types';
 
 import { makeLoadModule, makeLoadModuleWithCache } from '../util/shader';
 import { makeBundleToAttribute, makeBundleToAttributes } from '../util/bundle';
 import { makeTranspile } from '../util/transpile';
 
 import { makeASTParser, compressAST, decompressAST } from './ast';
-import { toTypeString, toTypeArgs } from './type';
+import { toTypeSymbol, toTypeArgs } from './type';
 import { parser } from './grammar/glsl';
 import LRU from 'lru-cache';
-import zip from 'lodash/zip';
+import zip from 'lodash/zip.js';
 
 export { loadStaticModule, loadVirtualModule, bindEntryPoint } from '../util/shader';
 
@@ -33,15 +33,19 @@ export const loadModuleWithCache = makeLoadModuleWithCache(loadModule, DEFAULT_C
 /** Make GLSL definitions */
 export const defineConstants = (defs: Record<string, ShaderDefine>): string => {
   const out = [];
-  for (let k in defs) if (defs[k] !== false && defs[k] !== null) out.push(`#define ${k} ${defs[k]}`);
+  for (const k in defs) if (defs[k] !== false && defs[k] !== null) out.push(`#define ${k} ${defs[k]}`);
   return out.join("\n");
 }
 
+/** Make GLSL enable definitions */
+// eslint-disable-next-line no-irregular-whitespace
+export const defineEnables = (enabled: string[]) => enabled.map(e => `#extension ${e}​ : enable`).join('\n');
+
 /** Convert a bundle with a defined entry point to a definition for that attribute or type. */
-export const bundleToAttribute = makeBundleToAttribute(toTypeString, toTypeArgs);
+export const bundleToAttribute = makeBundleToAttribute(toTypeSymbol, toTypeArgs);
 
 /** Convert a bundle to a definition for all its attributes. */
-export const bundleToAttributes = makeBundleToAttributes(toTypeString, toTypeArgs);
+export const bundleToAttributes = makeBundleToAttributes(toTypeSymbol, toTypeArgs);
 
 // Simple whitespace removal
 const minifyCode = (code: string) => {
@@ -50,8 +54,35 @@ const minifyCode = (code: string) => {
   return code;
 };
 
+export const symbolDictionary = {
+  A: 'at' as 'at',
+  B: 'bindings' as 'bindings',
+  E: 'exports' as 'exports',
+  F: 'func' as 'func',
+  G: 'flags' as 'flags',
+  H: 'inferred' as 'inferred',
+  I: 'identifiers' as 'identifiers',
+  J: 'imported' as 'imported',
+  K: 'imports' as 'imports',
+  L: 'linkable' as 'linkable',
+  M: 'members' as 'members',
+  N: 'name' as 'name',
+  O: 'modules' as 'modules',
+  P: 'parameters' as 'parameters',
+  Q: 'qual' as 'qual',
+  R: 'symbol' as 'symbol',
+  S: 'symbols' as 'symbols',
+  T: 'type' as 'type',
+  U: 'struct' as 'struct',
+  V: 'variable' as 'variable',
+  W: 'visibles' as 'visibles',
+  X: 'externals' as 'externals',
+  Y: 'types' as 'types',
+  Z: 'attr' as 'attr',
+};
+
 /** ES/CommonJS Transpiler */
-export const transpileGLSL = makeTranspile('glsl', 'glsl', loadModule, compressAST, minifyCode);
+export const transpileGLSL = makeTranspile('glsl', 'glsl', symbolDictionary, loadModule, compressAST, minifyCode);
 
 /** Templated literal syntax:
 
@@ -66,7 +97,7 @@ export const glsl = (literals: TemplateStringsArray, ...tokens: string[]) => {
 /** Format `number` as GLSL `float` */
 export const float = (x: number) => {
   const s = x.toString();
-  return (!s.match(/\./)) ? s + '.0' : 0;  
+  return (!s.match(/\./)) ? s + '.0' : 0;
 };
 /** Format `number` as GLSL `uint` */
 export const uint = (x: number) => Math.round(x).toString();

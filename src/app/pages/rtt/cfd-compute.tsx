@@ -1,27 +1,28 @@
-import type { LC } from '../../../live';
-import type { Emit, StorageTarget } from '../../../core';
+import type { LC } from '@use-gpu/live';
+import type { Emit, StorageTarget } from '@use-gpu/core';
 
-import React, { Gather, use, useMemo } from '../../../live';
-import { wgsl } from '../../../shader/wgsl';
+import React, { Gather, use, useMemo } from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, Flat, Pass, OrbitCamera, RawData, PointLayer, Pick,
+  Loop, FlatCamera, Pass, OrbitCamera, RawData, PointLayer, Pick,
   ComputeBuffer, Compute, Stage, Iterate, Kernel, Suspense, RawFullScreen,
-  useBoundShader, useLambdaSource, useShaderRefs,
-} from '../../../workbench';
+  useShader, useLambdaSource, useShaderRefs,
+} from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Element, Inline, Text,
-} from '../../../layout';
+} from '@use-gpu/layout';
 
-import { main as generateInitial }  from './cfd-compute/initialwgsl';
-import { main as pushVelocity }     from './cfd-compute/pushwgsl';
-import { main as updateDivCurl }    from './cfd-compute/divergence-curlwgsl';
-import { main as updatePressure }   from './cfd-compute/pressurewgsl';
-import { main as projectVelocity }  from './cfd-compute/projectwgsl';
-import { main as advectVelocity }   from './cfd-compute/advectwgsl';
-import { main as advectMcCormack }  from './cfd-compute/mccormackwgsl';
+import { main as generateInitial }  from './cfd-compute/initial.wgsl';
+import { main as pushVelocity }     from './cfd-compute/push.wgsl';
+import { main as updateDivCurl }    from './cfd-compute/divergence-curl.wgsl';
+import { main as updatePressure }   from './cfd-compute/pressure.wgsl';
+import { main as projectVelocity }  from './cfd-compute/project.wgsl';
+import { main as advectVelocity }   from './cfd-compute/advect.wgsl';
+import { main as advectMcCormack }  from './cfd-compute/mccormack.wgsl';
 
 import { CFDControls } from '../../ui/cfd-controls';
+import { InfoBox } from '../../ui/info-box';
 
 //
 // A pure compute-shader implementation of fluid dynamics,
@@ -82,12 +83,13 @@ export const RTTCFDComputePage: LC = () => {
 
   const dpi = window.devicePixelRatio;
 
-  const advectForwards = useBoundShader(advectVelocity, [], {TIME_STEP: 1.0});
-  const advectBackwards = useBoundShader(advectVelocity, [], {TIME_STEP: -1.0});
+  const advectForwards = useShader(advectVelocity, [], {TIME_STEP: 1.0});
+  const advectBackwards = useShader(advectVelocity, [], {TIME_STEP: -1.0});
 
   const root = document.querySelector('#use-gpu .canvas');
 
-  return (
+  return (<>
+    <InfoBox>Fluid dynamics simulation using a compute shader on storage buffers</InfoBox>
     <CFDControls
       container={root}
       hasInspect
@@ -133,7 +135,7 @@ export const RTTCFDComputePage: LC = () => {
                 </Stage>
               </Compute>
             )} />
-            
+
             <Loop live>
 
               <Compute>
@@ -156,7 +158,7 @@ export const RTTCFDComputePage: LC = () => {
                 </Suspense>
               </Compute>
 
-              <Flat>
+              <FlatCamera>
                 <Pass>
 
                   <VisualizeField field={velocity} />
@@ -185,17 +187,17 @@ export const RTTCFDComputePage: LC = () => {
                   ) : null}
 
                 </Pass>
-              </Flat>
+              </FlatCamera>
 
             </Loop>
           </>)}
       />
     } />
-  );
+  </>);
 };
 
 const VisualizeField = ({field}: {field: StorageTarget}) => {
-  const boundShader = useBoundShader(colorizeShader, [field, () => field.size, 1]);
+  const boundShader = useShader(colorizeShader, [field, () => field.size, 1]);
   const textureSource = useLambdaSource(boundShader, field);
   return (
     <RawFullScreen texture={textureSource} />
@@ -204,9 +206,9 @@ const VisualizeField = ({field}: {field: StorageTarget}) => {
 
 const DebugField = ({field, gain}: {field: StorageTarget, gain: number}) => {
   const dpi = window.devicePixelRatio;
-  const boundShader = useBoundShader(debugShader, [field, () => field.size, gain || 1]);
+  const boundShader = useShader(debugShader, [field, () => field.size, gain || 1]);
   const textureSource = useLambdaSource(boundShader, field);
   return (
-    <Element width={field.size[0] / 2 / dpi} height={field.size[1] / 2 / dpi} image={{texture: textureSource, fit: 'scale'}} />
+    <Element width={field.size[0] / 2 / dpi} height={field.size[1] / 2 / dpi} image={{fit: 'scale'}} texture={textureSource} />
   );
 };

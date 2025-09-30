@@ -1,5 +1,5 @@
-import type { Point, Point4, Rectangle } from '../../core';
-import type { FitInto, AutoPoint, Direction, LayoutElement, LayoutRenderer, LayoutPicker, Margin } from '../types';
+import type { XY, XYZW, Rectangle } from '@use-gpu/core';
+import type { FitInto, AutoXY, Direction, LayoutElement, LayoutRenderer, LayoutPicker, Margin } from '../types';
 
 import { isHorizontal, mergeMargin } from './util';
 
@@ -26,12 +26,11 @@ export const getBlockMinMax = (
   let i = 0;
   let m = 0;
 
-  const n = els.length;
   if (isX) for (const {sizing, margin, absolute} of els) {
     if (!absolute) {
       const [minX, minY, maxX, maxY] = sizing;
       const [ml, mt, mr, mb] = margin;
-    
+
       allMinX = allMinX != null && minX !== null ? allMinX + minX : null;
       allMinY = allMinY != null && minY !== null ? Math.max(allMinY, minY + mt + mb) : null;
 
@@ -116,8 +115,8 @@ export const getBlockMargin = (
 export const fitBlock = (
   els: LayoutElement[],
   into: FitInto,
-  fixed: AutoPoint,
-  padding: Point4,
+  fixed: AutoXY,
+  padding: XYZW,
   direction: Direction,
   contain: boolean,
   shrinkWrap?: boolean,
@@ -133,8 +132,8 @@ export const fitBlock = (
   let m = 0;
 
   // Resolved fit size
-  const resolved = fixed.slice() as Point;
-  
+  const resolved = fixed.slice() as XY;
+
   if (shrinkWrap) {
     if (!isX && fixed[0] == null) resolved[0] = Math.min(into[0] ?? Infinity, els.reduce((a, b) => Math.max(a, b.sizing[2]), 0));
     if ( isX && fixed[1] == null) resolved[1] = Math.min(into[1] ?? Infinity, els.reduce((a, b) => Math.max(a, b.sizing[3]), 0));
@@ -154,8 +153,8 @@ export const fitBlock = (
     (fixed[1] ?? into[3]) - (pt + pb),
   ] as FitInto;
 
-  const sizes = [] as Point[];
-  const offsets = [] as Point[];
+  const sizes = [] as XY[];
+  const offsets = [] as XY[];
   const renders = [] as LayoutRenderer[];
   const pickers = [] as (LayoutPicker | null | undefined)[];
 
@@ -197,14 +196,14 @@ export const fitBlock = (
     }
     ++i;
   }
-  
+
   if (contain && m) {
     if (isX) w += m;
     else h += m;
   }
 
   for (const el of els) if (el.stretch) {
-    const {margin, fit, under} = el;
+    const {margin, fit} = el;
     const [ml, mt, mr, mb] = margin;
 
     const size = [...resolved, resolved[0] ?? into[2], resolved[1] ?? into[3]] as FitInto;
@@ -237,14 +236,15 @@ export const fitBlock = (
     const {margin, fit, under} = el;
     const [ml, mt, mr, mb] = margin;
 
-    const size = [resolved[0]!, resolved[1]!, 0, 0] as Point4;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const size = [resolved[0]!, resolved[1]!, 0, 0] as XYZW;
     size[0] -= ml + mr;
     size[1] -= mt + mb;
     size[2] = size[0];
     size[3] = size[1];
 
     const {render, pick, size: fitted} = fit(size);
-    
+
     if (under) {
       sizes.unshift(fitted);
       renders.unshift(render);
@@ -258,7 +258,7 @@ export const fitBlock = (
       offsets.push([ml, mt]);
     }
   }
-  
+
   return {
     size: resolved,
     sizes,

@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`explode explodes a struct 1`] = `
+"//// @link @struct  _01_
+
+struct _01_struct {
+  foo: vec2<f32>,
+  bar: u32,
+};
+
+//// @link source _02_
+
+var<storage> _02_source: array<_01_struct>;
+
+//// @link @explode _03_
+
+fn _03_foo(i: u32) -> vec2<f32> {
+  return _02_source[i].foo;
+}
+fn _03_bar(i: u32) -> u32 {
+  return _02_source[i].bar;
+}
+
+//// @link main 
+
+fn main() {
+  _03_foo(0u);
+  _03_bar(0u);
+}
+"
+`;

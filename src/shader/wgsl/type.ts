@@ -1,4 +1,6 @@
-import { TypeLike, ParameterLike } from '../types';
+import { FormatLike, TypeLike, ParameterLike } from '../types';
+
+const ARRAY_REGEXP = /^array<([^>]+)>$/;
 
 export const getTypeName = (s: string) => {
   const i = s.indexOf('<');
@@ -24,4 +26,20 @@ export const toTypeString = (t: TypeLike): string => {
 
 export const toTypeArgs = (t: ParameterLike[]): string[] => {
   return t?.map(p => typeof p === 'object' ? toTypeString(p.type) : p) ?? [];
+};
+
+export const toTypeSymbol = (t: TypeLike): FormatLike<string> => {
+  let type = toTypeString(t);
+  if (!type.match(/[A-Z]/)) return {format: type};
+
+  let depth = 0;
+  while (type.match(ARRAY_REGEXP)) {
+    type = type.replace(ARRAY_REGEXP, '$1');
+    depth++;
+  }
+
+  if (depth === 0) return {format: 'T', type};
+  if (depth === 1) return {format: 'array<T>', type};
+
+  throw new Error(`WGSL array depth > 1 unsupported`);
 };

@@ -1,5 +1,6 @@
-import type { SharedAllocation, StorageSource, UniformAttribute, DataBinding } from './types';
+import type { SharedAllocation, StorageSource, UniformAttribute } from './types';
 import { makeBindGroupLayout } from './bindgroup';
+import { toTypeString } from './uniform';
 
 export const makeSharedStorage = (
   device: GPUDevice,
@@ -26,6 +27,7 @@ export const makeStorageBinding = (
   set: number = 0,
 ): GPUBindGroup => {
   const sources = [] as StorageSource[];
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   for (const k in links) if (links[k]) sources.push(links[k]!);
 
   const entries = makeStorageEntries(sources);
@@ -55,8 +57,6 @@ export const makeStorageEntries = (
   return entries;
 };
 
-const toTypeName = (s: any) => s?.module?.entry ?? s?.entry ?? s;
-
 export const checkStorageTypes = (
   uniforms: UniformAttribute[],
   links: Record<string, StorageSource | null | undefined>,
@@ -65,7 +65,7 @@ export const checkStorageTypes = (
     const link = links[u.name];
     checkStorageType(u, link)
   }
-} 
+}
 
 export const checkStorageType = (
   uniform: UniformAttribute,
@@ -74,22 +74,31 @@ export const checkStorageType = (
   const {name, format: from} = uniform;
   const to = link?.format;
 
-  const fromName = toTypeName(from);
-  const toName = toTypeName(to);
-  
+  if (Array.isArray(from) || Array.isArray(to)) return;
+
+  const fromName = toTypeString(from);
+  const toName = toTypeString(to);
+
   let f = fromName;
   let t = toName;
-  
+
   if (link && t != null && f !== t) {
+
     // Remove array<atomic<..>>
     f = f.replace(/array?/, '').replace(/^<|>$/g, '');
     f = f.replace(/atomic?/, '').replace(/^<|>$/g, '');
-    t = t.replace(/array?/, '').replace(/^<|>$/g, ''); 
-    t = t.replace(/atomic?/, '').replace(/^<|>$/g, ''); 
+    t = t.replace(/array?/, '').replace(/^<|>$/g, '');
+    t = t.replace(/atomic?/, '').replace(/^<|>$/g, '');
 
     // Remove vec<..> to allow for automatic widening/narrowing
     f = f.replace(/vec[0-9](to[0-9])?/, '').replace(/^<|>$/g, '');
-    t = t.replace(/vec[0-9](to[0-9])?/, '').replace(/^<|>$/g, ''); 
+    t = t.replace(/vec[0-9](to[0-9])?/, '').replace(/^<|>$/g, '');
+
+    // Shorthand
+    if (f.match(/^uif$/)) f += '32';
+    if (f.match(/^h$/))   f = 'f16';
+    if (t.match(/^uif$/)) t += '32';
+    if (t.match(/^h$/))   t = 'f16';
 
     if (f !== t) {
       // Remove bit size to allow for automatic widening/narrowing
@@ -97,11 +106,11 @@ export const checkStorageType = (
       const toScalar   = t.replace(/([uif])([0-9]+)/, '$1__');
 
       if (fromScalar !== toScalar) {
-        // uppercase = struct type, allow any (u)int
-        if (fromName.match(/[A-Z]/) && toName.match(/^[ui]/)) return;
+        // uppercase = struct type, allow any
+        if (fromName.match(/[A-Z]/) && toName) return;
 
         console.warn(`Invalid format ${to} bound for ${from} "${name}" (${fromScalar} != ${toScalar})`);
       }
     }
   }
-} 
+}

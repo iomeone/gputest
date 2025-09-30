@@ -29,7 +29,7 @@ export const fill1d = (
           fillSpan(data, offset, stride, length, i, 0);
         }
         else {
-          let m = Math.floor((s + i) / 2);
+          const m = Math.floor((s + i) / 2);
           fillSpan(data, offset, stride, length, s, m);
           fillSpan(data, offset, stride, length, i, m);
         }

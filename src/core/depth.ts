@@ -27,7 +27,7 @@ export const makeDepthStencilAttachment = (
   stencilStoreOp: GPUStoreOp = 'store',
 ): GPURenderPassDepthStencilAttachment => {
   const hasStencil = depthFormat.match(/stencil/);
-  
+
   if (hasStencil) {
     return {
       view: depthTexture.createView(),
@@ -61,7 +61,7 @@ export const makeDepthStencilAttachments = (
   stencilStoreOp: GPUStoreOp = 'store',
 ): GPURenderPassDepthStencilAttachment[] => {
   const hasStencil = depthFormat.match(/stencil/);
-  
+
   if (hasStencil) {
     return seq(depthLayers).map(i => ({
       view: depthTexture.createView({baseArrayLayer: i, arrayLayerCount: 1}),

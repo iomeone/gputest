@@ -1,5 +1,4 @@
-import type { TypedArray } from '../../core';
-import type { FontProps } from '../../glyph';
+import type { TypedArray } from '@use-gpu/core';
 
 export type Alignment = 'start' | 'center' | 'end' | 'justify' | 'justify-start' | 'justify-center' | 'justify-end' | 'between' | 'evenly';
 

@@ -1,26 +1,32 @@
-import type { LiveElement, LC, PropsWithChildren } from '../../live';
-import type { TypedArray, StorageSource, Emit, Time } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
+import type { LiveElement, LC, PropsWithChildren } from '@use-gpu/live';
+import type { TypedArray, StorageSource, Emit } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 
 import { useDeviceContext } from '../providers/device-provider';
+import { QueueReconciler } from '../reconcilers/index';
 
-import { yeet, signal, useMemo, useNoMemo, useOne, useYolo } from '../../live';
-import { bundleToAttribute } from '../../shader/wgsl';
-import { incrementVersion } from '../../live';
-import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '../../core';
+import { useMemo, useNoMemo, useOne } from '@use-gpu/live';
+import { bundleToAttribute } from '@use-gpu/shader/wgsl';
+import { incrementVersion } from '@use-gpu/live';
+import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '@use-gpu/core';
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 
-export type StructDataProps = {
+import { useRenderProp } from '../hooks/useRenderProp';
+
+const {signal} = QueueReconciler;
+
+export type StructDataProps = PropsWithChildren<{
   /** Set/override input length */
   length?: number,
-  
+
   /** Struct WGSL type */
-  format?: ShaderModule,
+  format?: 'T' | 'array<T>',
+  type?: ShaderModule,
 
   /** Input data */
-  data?: number[] | TypedArray,
+  data?: Record<string, number | number[] | TypedArray>[],
   /** Input emitter expression */
   expr?: (emit: Emit, ...args: any[]) => void,
   /** Emit 0 or 1 item per `expr` call. */
@@ -31,39 +37,39 @@ export type StructDataProps = {
   live?: boolean,
 
   /** Leave empty to yeet source instead. */
-  render?: (...source: ShaderSource[]) => LiveElement,
-};
+  render?: (source: StorageSource) => LiveElement,
+  children?: (source: StorageSource) => LiveElement,
+}>;
 
-export const StructData: LC<StructDataProps> = (props: PropsWithChildren<StructDataProps>) => {
+export const StructData: LC<StructDataProps> = (props: StructDataProps) => {
   const {
     length,
     data,
-    
+
     sparse,
     expr,
     time,
-    
-    format,
-    live,
 
-    render,
+    format = 'array<T>',
+    type,
+    live,
   } = props;
 
-  if (!format || typeof (format as any) === 'string') throw new Error("<StructData> format must be a shader module");
+  if (!type || typeof type === 'string') throw new Error("<StructData> type must be a WGSL shader type");
 
   // Make struct uniform layout
-  const [bindings, layout] = useOne(() => {
-    const bindings = bundleToAttribute(format);
-    if (!bindings.members) throw new Error("<StructData> format is not a shader struct");
+  const layout = useOne(() => {
+    const bindings = bundleToAttribute(type);
+    if (!Array.isArray(bindings.format)) throw new Error(`<StructData> type '${bindings.name}' is not a struct type`);
 
-    const layout = makeUniformLayout(bindings.members);
-    return [bindings, layout];
-  }, format);
-  
+    const layout = makeUniformLayout(bindings.format);
+    return layout;
+  }, type);
+
   // Get size
   const count = (length ?? (data?.length || 0));
   const l = useBufferedSize(count);
-  
+
   const device = useDeviceContext();
 
   // Make storage buffer
@@ -74,6 +80,7 @@ export const StructData: LC<StructDataProps> = (props: PropsWithChildren<StructD
     const source = {
       buffer,
       format,
+      type,
       length: 0,
       size: [0],
       version: 1,
@@ -92,11 +99,14 @@ export const StructData: LC<StructDataProps> = (props: PropsWithChildren<StructD
   const refresh = () => {
     let emitted = 0;
 
-    if (data) filler.fill(data);
+    if (data) {
+      filler.fill(data);
+    }
     if (expr) {
       let field = 0;
       const emit = (...args: any[]) => filler.setValue(emitted, field++, args);
       for (let i = 0; i < count; ++i) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expr(emit, i, count, clock!);
 
         if (field) {
@@ -125,6 +135,6 @@ export const StructData: LC<StructDataProps> = (props: PropsWithChildren<StructD
   }
 
   const trigger = useOne(() => signal(), source.version);
-  const view = useYolo(() => render ? render(source) : yeet(source), [render, source]);
+  const view = useRenderProp(props, source);
   return [trigger, view];
 };

@@ -1,12 +1,11 @@
-import type { Geometry } from '../../../core';
-import { makeVertexAttributeLayout } from '../../../core';
+import type { CPUGeometry } from '@use-gpu/core';
 
 const τ = Math.PI * 2;
 
 export const makeArrowGeometry = (
   detail: number = 8,
   width: number = 2.5
-): Geometry => {
+): CPUGeometry => {
   const positions = makeArrowVertices(detail, width);
 
   return {
@@ -17,15 +16,10 @@ export const makeArrowGeometry = (
 }
 
 const makeArrowVertices = (detail: number, width: number = 2.5) => {
-  const tris = detail + (detail - 2);
 
   const ring = [] as [number, number, number, number][];
   //const normals = [] as number[];
   const vertices = [] as number[];
-  
-  const a = Math.atan2(1, width);
-  const nx = -Math.sin(a);
-  const ny = Math.cos(a);
 
   for (let i = 0; i <= detail; ++i) {
     {
@@ -56,6 +50,6 @@ const makeArrowVertices = (detail: number, width: number = 2.5) => {
     vertices.push(...ring[i]);
     vertices.push(...ring[i + 1]);
   }
-  
+
   return new Float32Array(vertices);
 };

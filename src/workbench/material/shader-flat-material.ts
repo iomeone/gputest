@@ -1,34 +1,35 @@
-import type { LC, LiveElement, PropsWithChildren } from '../../live';
-import type { Point4 } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
-import type { ColorLike } from '../../traits';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { provide, yeet, signal, useMemo, useOne } from '../../live';
+import { provide, yeet, useMemo } from '@use-gpu/live';
 
-import { useBoundShader } from '../hooks/useBoundShader';
-import { useLightContext } from '../providers/light-provider';
 import { MaterialContext } from '../providers/material-provider';
+import { QueueReconciler } from '../reconcilers/index';
+import { useShader } from '../hooks/useShader';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
-import { getSolidSurface } from '../../wgsl/instance/surface/solidwgsl';
-import { getSolidFragment } from '../../wgsl/instance/fragment/solidwgsl';
+import { getSolidSurface } from '@use-gpu/wgsl/instance/surface/solid.wgsl';
+import { getSolidFragment } from '@use-gpu/wgsl/instance/fragment/solid.wgsl';
+
+const {signal} = QueueReconciler;
 
 export type ShaderFlatMaterialProps = {
   /** Flat shader, for both lit and unlit passes (e.g. shadow map).
-  
+
   fn getFragment(color: vec4<f32>, uv: vec4<f32>, st: vec4<f32>) -> vec4<f32>
    */
   fragment: ShaderModule,
   render?: (material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement,
+  children?: LiveElement | ((material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement),
 };
 
-export const ShaderFlatMaterial: LC<ShaderFlatMaterialProps> = (props: PropsWithChildren<ShaderFlatMaterialProps>) => {
+export const ShaderFlatMaterial: LC<ShaderFlatMaterialProps> = (props: ShaderFlatMaterialProps) => {
   const {
     fragment,
-    render,
     children,
   } = props;
 
-  const getSurface = useBoundShader(getSolidSurface, [fragment]);
+  const getSurface = useShader(getSolidSurface, [fragment]);
   const getLight = getSolidFragment;
   const getFragment = fragment;
 
@@ -43,6 +44,7 @@ export const ShaderFlatMaterial: LC<ShaderFlatMaterialProps> = (props: PropsWith
     },
   }), [getSurface, getLight]);
 
+  const render = getRenderFunc(props);
   const view = render ? render(context) : children;
   return render ?? children ? provide(MaterialContext, context, [signal(), view]) : yeet(context);
 }

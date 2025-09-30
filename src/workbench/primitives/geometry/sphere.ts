@@ -1,5 +1,5 @@
-import type { Geometry } from '../../../core';
-import { makeDataEmitter } from '../../../core';
+import type { CPUGeometry } from '@use-gpu/core';
+import { makeNumberWriter } from '@use-gpu/core';
 
 const τ = Math.PI * 2;
 
@@ -21,7 +21,7 @@ export const makeSphereGeometry = ({
   uvw = false,
   detail: [detailAxis, detailAround] = [16, 32],
   tile = [1, 1, 1],
-}: SphereGeometryProps = {}): Geometry => {
+}: SphereGeometryProps = {}): CPUGeometry => {
   const verts = (detailAxis + 1) * (detailAround + 1);
   const tris = detailAxis * detailAround * 2;
   const count = tris * 3;
@@ -31,10 +31,10 @@ export const makeSphereGeometry = ({
   const uvs = new Float32Array(verts * 4);
   const indices = new Uint16Array(tris * 3);
 
-  const {emit: positionEmitter} = makeDataEmitter(positions, 4);
-  const {emit: normalEmitter} = makeDataEmitter(normals, 4);
-  const {emit: uvEmitter} = makeDataEmitter(uvs, 4);
-  const {emit: indexEmitter} = makeDataEmitter(indices, 1);
+  const {emit: positionEmitter} = makeNumberWriter(positions, 4);
+  const {emit: normalEmitter} = makeNumberWriter(normals, 4);
+  const {emit: uvEmitter} = makeNumberWriter(uvs, 4);
+  const {emit: indexEmitter} = makeNumberWriter(indices, 1);
 
   const emitPosition = (x: number, y: number, z: number) => {
     if      (axis === 'x') positionEmitter(z * width / 2, x * height / 2, y * depth / 2, 1.0);

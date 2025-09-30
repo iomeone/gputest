@@ -1,4 +1,4 @@
-import type { Rectangle, Point, Point3, TextureSource, VertexData } from './types';
+import type { Rectangle, VectorLike, TextureSource, VertexData } from './types';
 
 import { makeVertexAttributeLayout } from './attribute';
 import { makeColorAttachment, makeColorState } from './color';
@@ -63,7 +63,7 @@ fn fragmentMain(
 
 const MIP_UVS = makeVertexAttributeLayout([{ name: 'uv', format: 'float32x2' }]);
 
-const makeMipMesh = (bounds: Rectangle[], size: Point | Point3): VertexData => {
+const makeMipMesh = (bounds: Rectangle[], size: VectorLike): VertexData => {
   let i = 0;
   const [w, h] = size;
 
@@ -131,21 +131,21 @@ export const updateMipTextureChain = (
     baseArrayLayer: layer ?? 0,
     dimension: layer != null ? '2d-array' : '2d',
   }));
-  
+
   const renderPassDescriptors = seq(mips).map(i => ({
     colorAttachments: [makeColorAttachment(views[i], null, NO_CLEAR, 'load')],
   } as GPURenderPassDescriptor));
 
   let cache = MIP_PIPELINES.get(device);
   if (!cache) MIP_PIPELINES.set(device, cache = new Map());
-  
+
   const key = [format, layout].join('/');
   let pipeline = cache.get(key);
   if (!pipeline) {
     const shader = layer != null ? MIP_SHADER_2D_ARRAY : MIP_SHADER_2D;
 
-    const vertex = makeShaderModuleDescriptor(shader, 'mip-v', 'vertexMain');
-    const fragment = makeShaderModuleDescriptor(shader, 'mip-f', 'fragmentMain');
+    const vertex = makeShaderModuleDescriptor(shader, 'mip-v', 'vertexMain', 'builtin/mip');
+    const fragment = makeShaderModuleDescriptor(shader, 'mip-f', 'fragmentMain', 'builtin/mip');
     const colorStates = [makeColorState(format as GPUTextureFormat)];
 
     pipeline = makeRenderPipeline(device, vertex, fragment, colorStates, undefined, 1, {
@@ -158,16 +158,18 @@ export const updateMipTextureChain = (
     cache.set(key, pipeline);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const bindGroups = seq(mips).map((mip: number) => makeTextureBinding(device, pipeline!, views[mip], sampler));
 
   const commandEncoder = device.createCommandEncoder();
   for (let i = 1; i < mips; ++i) {
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptors[i]);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     passEncoder.setPipeline(pipeline!);
     passEncoder.setBindGroup(0, bindGroups[i - 1]);
     passEncoder.setVertexBuffer(0, vertexBuffer);
     passEncoder.draw(mesh.count, 1, 0, 0);
-    passEncoder.end();    
+    passEncoder.end();
   }
 
   device.queue.submit([commandEncoder.finish()]);

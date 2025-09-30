@@ -1,17 +1,12 @@
-import type { UseGPURenderContext, ShaderModuleDescriptor, DeepPartial } from '../../core';
-import type { Update } from '../../state';
+import type { UseGPURenderContext, ShaderModuleDescriptor, DeepPartial } from '@use-gpu/core';
+import type { Update } from '@use-gpu/state';
 
-import { makeRenderPipeline, makeRenderPipelineAsync } from '../../core';
-import { useMemo, useNoMemo, useOne, useNoOne, useState, useNoState } from '../../live';
-import { toMurmur53 } from '../../state';
-import { useMemoKey } from './useMemoKey';
-import { DeviceContext } from '../providers/device-provider';
+import { makeRenderPipeline, makeRenderPipelineAsync } from '@use-gpu/core';
+import { useMemo, useNoMemo, useOne, useNoOne, useState, useNoState } from '@use-gpu/live';
+import { toMurmur53 } from '@use-gpu/state';
 import LRU from 'lru-cache';
 
 const DEBUG = false;
-
-const NO_DEPS = [] as any[];
-const NO_LIBS = {} as Record<string, any>;
 
 type RenderShader = [ShaderModuleDescriptor, ShaderModuleDescriptor | null];
 
@@ -124,6 +119,7 @@ export const useRenderPipelineAsync = (
     const [vertex, fragment] = shader;
     const key = pipelineKey.toString() +'/'+ vertex.hash.toString() +'-'+ (fragment ? fragment.hash.toString() : 0);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const cached = cache!.get(key);
     if (cached) {
       DEBUG && console.log('async render pipeline cache hit', key);
@@ -158,7 +154,9 @@ export const useRenderPipelineAsync = (
     DEBUG && console.log('async render pipeline miss', key);
 
     // Mark key as pending
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (pending!.has(key)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       pending!.get(key)!.then((pipeline: GPURenderPipeline) => resolve(pipeline));
       return null;
     }
@@ -177,11 +175,14 @@ export const useRenderPipelineAsync = (
     promise.then((pipeline: GPURenderPipeline) => {
       DEBUG && console.log('async render pipeline resolved', key);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       cache!.set(key, pipeline);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       pending!.delete(key);
 
       return resolve(pipeline);
     });
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     pending!.set(key, promise);
 
     return null;

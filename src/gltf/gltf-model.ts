@@ -1,9 +1,11 @@
-import type { LC, LiveElement } from '../live';
-import type { TypedArray } from '../core';
+import type { LC } from '@use-gpu/live';
+import type { TypedArray } from '@use-gpu/core';
 import { GLTF, GLTFNodeData } from './types';
 
-import { use, gather, memo, useMemo, useOne } from '../live';
-import { GLTFTree } from './gltf-tree';
+import { use, memo, useMemo } from '@use-gpu/live';
+import { GLTFNode } from './gltf-node';
+import { useMatrixContext } from '@use-gpu/workbench';
+import { seq, toArray } from '@use-gpu/core';
 
 export type GLTFModelProps = {
   gltf: GLTF,
@@ -15,9 +17,6 @@ export type GLTFModelProps = {
 
 const NO_ROOTS: number[] = [];
 
-const toArray = <T>(t?: T | T[] | null) => Array.isArray(t) ? t : t != null ? [t] : [];
-const seq = (n: number, start: number = 0, step: number = 1) => Array.from({length: n}).map((_, i) => start + i * step);
-
 export const GLTFModel: LC<GLTFModelProps> = memo((props: GLTFModelProps) => {
   const {
     gltf,
@@ -26,7 +25,9 @@ export const GLTFModel: LC<GLTFModelProps> = memo((props: GLTFModelProps) => {
     nodes: propNodes,
   } = props;
 
-  return useMemo(() => {
+  const matrix = useMatrixContext();
+
+  const roots = useMemo(() => {
     const {scenes, nodes} = gltf;
 
     const getNodeIndex = (id: number | string): number | null => {
@@ -47,7 +48,8 @@ export const GLTFModel: LC<GLTFModelProps> = memo((props: GLTFModelProps) => {
       else roots = seq(nodes?.length || 0);
     }
 
-    // Render as GLTFTree
-    return Array.from(roots).map(root => root != null ? use(GLTFTree, {gltf, node: root}) : null);
+    return Array.from(roots);
   }, [gltf, propNode, propScene]);
+
+  return roots.map(root => root != null ? use(GLTFNode, {gltf, node: root, matrix}) : null);
 }, 'GLTFModel');

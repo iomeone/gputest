@@ -1,9 +1,13 @@
+// Keys. Don't make more than 2^53 of these.
 let KEY = 0;
 const KEYS = new WeakMap<object, number>();
 
+/** Get new unique key */
 export const makeKey = (): number => ++KEY;
+
+/** Get unique key for object */
 export const getObjectKey = (v: any) => {
-  if (v && typeof v === 'object') {
+  if (v && (typeof v === 'object' || typeof v === 'function')) {
     const c = KEYS.get(v);
     if (c != null) return c;
 
@@ -14,7 +18,10 @@ export const getObjectKey = (v: any) => {
   return 0;
 }
 
-const HASH_KEY = 0xf1c3a587;
+/** Set global hashing key. Default `0xf1c3a587` */
+export const setGlobalHashKey = (k?: number) => HASH_KEY = (k ?? DEFAULT_HASH_KEY);
+const DEFAULT_HASH_KEY = 0xf1c3a587;
+let HASH_KEY = DEFAULT_HASH_KEY;
 
 const C1 = 0xcc9e2d51;
 const C2 = 0x1b873593;
@@ -26,16 +33,20 @@ const add = (a: number, b: number) => ((a|0) + (b|0)) >>> 0;
 const rot = (a: number, b: number) => ((a << b) | (a >>> (32 - b))) >>> 0;
 const mul = Math.imul;
 
+/** Pack 2 uint32's into one uint53 / float64. B is truncated. */
 export const toUint53 = (a: number, b: number) => {
-  return a + ((b & 0x1fffff) * 0x100000000);
+  return (a >>> 0) + ((b & 0x1fffff) * 0x100000000);
 }
 
+/** Format murmur53 value as a base64 string. */
 export const formatMurmur53 = (uint: number) => {
   return uint.toString(36).slice(-10);
 }
 
+/** Hash value and return a base64 string. */
 export const toHash = <T>(t: T) => formatMurmur53(toMurmur53(t));
 
+/** Hash value and return a uint53. */
 export const toMurmur53 = (s: any) => {
   if (typeof s === 'string') return getStringHash(s);
   if (typeof s === 'number') return getNumberHash(s);
@@ -45,7 +56,7 @@ export const toMurmur53 = (s: any) => {
   if (Array.isArray(s)) return getArrayHash(s);
   if (isTypedArray(s)) return getTypedArrayHash(s);
   if (s) return getObjectHash(s);
-  
+
   return scrambleBits53(mixBits53(HASH_KEY, -1));
 }
 
@@ -66,7 +77,7 @@ const getBooleanHash = (b: boolean) => scrambleBits53(mixBits53(HASH_KEY + 255, 
 
 const getArrayHash = (t: any[]) => {
   let h = mixBits53(HASH_KEY + 1023, 0);
-  for (let v of t) {
+  for (const v of t) {
     h = mixBits53(h, toMurmur53(v));
   }
   return scrambleBits53(h, t.length);
@@ -75,7 +86,7 @@ const getArrayHash = (t: any[]) => {
 const getObjectHash = (t: Record<string, any>) => {
   let i = 0;
   let h = mixBits53(HASH_KEY + 4095, 0);
-  for (let k in t) {
+  for (const k in t) {
     h = mixBits53(h, toMurmur53(k));
     h = mixBits53(h, toMurmur53(t[k]));
     ++i;
@@ -98,7 +109,7 @@ const isTypedArray = (() => {
   const TypedArray = Object.getPrototypeOf(Uint8Array);
   return (obj: any) => obj instanceof TypedArray;
 })();
-  
+
 const getTypedArrayHash = (t: TypedArray) => {
   let h = mixBits53(HASH_KEY + 16383, 0);
 
@@ -114,7 +125,7 @@ const getTypedArrayHash = (t: TypedArray) => {
     h = integerArrayToMurmur53(t, h);
   }
   else {
-    let n = t.length;
+    const n = t.length;
     for (let i = 0; i < n; ++i) h = mixBits53(h, getNumberHashInner(t[i]));
   }
 
@@ -123,12 +134,12 @@ const getTypedArrayHash = (t: TypedArray) => {
 
 const integerArrayToMurmur53 = (list: number[] | TypedArray, seed: number = 0) => {
   const n = list.length;
-  
+
   let a = seed;
   let b = seed ^ C4;
 
   for (let i = 0; i < n; ++i) {
-    let d = list[i];
+    const d = list[i];
     let d1 = add(rot(d, 16), b);
     let d2 = add(d, a);
 
@@ -157,7 +168,7 @@ const integerArrayToMurmur53 = (list: number[] | TypedArray, seed: number = 0) =
   a ^= a >>> 13;
   a = mul(a, C5);
   a ^= a >>> 16;
-  
+
   b ^= b >>> 16;
   b = mul(b, C4);
   b ^= b >>> 13;
@@ -173,7 +184,7 @@ const stringToMurmur53 = (s: string, seed: number = 0) => {
   let b = seed ^ C4;
 
   for (let i = 0; i < n; ++i) {
-    let d = s.charCodeAt(i);
+    const d = s.charCodeAt(i);
     let d1 = add(rot(d, 16), b);
     let d2 = add(d, a);
 
@@ -202,7 +213,7 @@ const stringToMurmur53 = (s: string, seed: number = 0) => {
   a ^= a >>> 13;
   a = mul(a, C5);
   a ^= a >>> 16;
-  
+
   b ^= b >>> 16;
   b = mul(b, C4);
   b ^= b >>> 13;
@@ -231,7 +242,7 @@ export const mixBits = (x: number, d: number) => {
 /** Murmur3 32-bit hash whitening function */
 export const scrambleBits = (x: number, n: number = 0) => {
   x ^= n;
-  
+
   x ^= x >>> 16;
   x = mul(x, C4);
   x ^= x >>> 13;
@@ -281,7 +292,7 @@ export const scrambleBits53 = (x: number, n: number = 0) => {
   a ^= a >>> 13;
   a = mul(a, C5);
   a ^= a >>> 16;
-  
+
   b ^= b >>> 16;
   b = mul(b, C4);
   b ^= b >>> 13;

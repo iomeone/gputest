@@ -1,7 +1,7 @@
-import type { VectorLike } from '../traits';
-import type { ShaderSource } from '../shader';
+import type { VectorLike } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-export type ObjectTrait = {
+export type NodeTransform = {
   position: VectorLike,
   scale: VectorLike,
   quaternion: VectorLike,

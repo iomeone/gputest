@@ -23,7 +23,6 @@ export type {
   LambdaSource,
   TextureSource,
   UniformAttribute,
-  UniformAttributeValue,
   VirtualRender,
 } from '../types';
 
@@ -39,9 +38,12 @@ export type SymbolTable = {
   declarations?: DeclarationRef[],
   externals?: DeclarationRef[],
   exports?: DeclarationRef[],
+  bindings?: DeclarationRef[],
+  types?: string[],
   symbols?: string[],
   visibles?: string[],
   globals?: string[],
+  enables?: string[],
   linkable?: Record<string, true>,
 };
 
@@ -72,6 +74,11 @@ export type InferrableRef = {
 };
 
 export type InferRef = {
+  name: string,
+  at: number,
+};
+
+export type EnableRef = {
   name: string,
   at: number,
 };

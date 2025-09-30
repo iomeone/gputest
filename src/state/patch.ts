@@ -11,7 +11,7 @@ const isTypedArray = (() => {
 /** Set or replace a value without merging.
 
 ```tsx
-import { $set } from "../state";
+import { $set } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -33,7 +33,7 @@ export const $set = <T>($set: T): Update<T> => ({$set});
 /** Merge two values. This is the default behavior for objects, so exists mostly for clarity.
 
 ```tsx
-import { $merge } from "../state";
+import { $merge } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -54,7 +54,7 @@ export const $merge = <T>($merge: T): Update<T> => ({$merge});
 /** Delete a value.
 
 ```tsx
-import { $delete } from "../state";
+import { $delete } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -78,7 +78,7 @@ export const $nop = (): Update<any> => $NOP;
 /** Apply a function to a value.
 
 ```tsx
-import { $apply } from "../state";
+import { $apply } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -100,7 +100,7 @@ export const $apply = <T>($apply: (t: T) => T) => ({$apply});
 /** Apply a function that returns another patch to apply.
 
 ```tsx
-import { $patch, $apply, $delete } from "../state";
+import { $patch, $apply, $delete } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2, other: 1},
@@ -129,7 +129,14 @@ const $maybeSet = <T>(v: T): Update<T> => {
 
 /** Patch value A with update B.
 
-Supported operators: $set, $merge, $delete, $nop, $apply, $patch.
+Supported operators:
+- `@{$apply}`
+- `@{$delete}`
+- `@{$merge}`
+- `@{$nop}`
+- `@{$patch}`
+- `@{$set}`
+
 */
 export const patch = <T>(a: T, b: Update<T>): T => {
   if (b && typeof b === 'object') {
@@ -152,7 +159,7 @@ const merge = <T>(a: T, b: Merge<T>): T => {
   if (b === undefined) return a;
 
   if (typeof b === 'object') {
-    let update: Record<string, any> = b;
+    const update: Record<string, any> = b;
     if (typeof a !== 'object' || a == null) a = {} as any;
 
     if (Array.isArray(a)) {
@@ -160,7 +167,7 @@ const merge = <T>(a: T, b: Merge<T>): T => {
       const n = a.length;
 
       for (let i = 0; i < n; ++i) {
-        if (update.hasOwnProperty(i)) {
+        if (Object.hasOwn(update, i)) {
           const v = patch(a[i], update[i.toString()]);
           if (v !== undefined) out.push(v);
         }
@@ -175,11 +182,11 @@ const merge = <T>(a: T, b: Merge<T>): T => {
       throw new Error("Can't patch typed array with merge");
     }
     else {
-      let obj: Record<string, any> = a as any;
+      const obj: Record<string, any> = a as any;
 
       const out = {} as Record<string, any>;
-      for (let k in obj) {
-        if (update.hasOwnProperty(k)) {
+      for (const k in obj) {
+        if (Object.hasOwn(update, k)) {
           const v = patch(obj[k], update[k]);
           if (v !== undefined) out[k] = v;
         }
@@ -187,7 +194,7 @@ const merge = <T>(a: T, b: Merge<T>): T => {
           out[k] = obj[k];
         }
       }
-      for (let k in update) if (!obj.hasOwnProperty(k)) {
+      for (const k in update) if (!Object.hasOwn(obj, k)) {
         const v = patch(undefined, update[k]);
         if (v !== undefined) out[k] = v;
       }
@@ -200,7 +207,14 @@ const merge = <T>(a: T, b: Merge<T>): T => {
 
 /** Revise update B with values from A.
 
-Supported operators: $set, $merge, $delete, $nop, $apply, $patch.
+Supported operators:
+- `@{$apply}`
+- `@{$delete}`
+- `@{$merge}`
+- `@{$nop}`
+- `@{$patch}`
+- `@{$set}`
+
 */
 export const revise = <T>(a: T, b: Update<T>): Update<T> => {
   if (b && typeof b === 'object') {
@@ -224,16 +238,16 @@ const pick = <T>(a: T, b: Update<T>): Update<T> => {
   if (Array.isArray(b) || isTypedArray(b) || b === null) return $maybeSet(a) as any;
 
   if (typeof b === 'object') {
-    let update: Record<string, any> = b as any;
+    const update: Record<string, any> = b as any;
     if (typeof a !== 'object' || a == null) return $maybeSet(a as T);
 
     const out = {} as Record<string, any>;
 
     if (Array.isArray(a) || isTypedArray(a)) {
-      let aa: any[] = a as any;
-      for (let k in update) {
-        let i = +k;
-        if (aa.hasOwnProperty(i)) {
+      const aa: any[] = a as any;
+      for (const k in update) {
+        const i = +k;
+        if (Object.hasOwn(aa, i)) {
           out[i] = revise(aa[i], update[k]);
         }
         else {
@@ -242,15 +256,15 @@ const pick = <T>(a: T, b: Update<T>): Update<T> => {
       }
     }
     else {
-      let aa: Record<string, any> = a as any;
+      const aa: Record<string, any> = a as any;
 
-      for (let k in aa) {
-        if (update.hasOwnProperty(k)) {
+      for (const k in aa) {
+        if (Object.hasOwn(update, k)) {
           out[k] = revise(aa[k], update[k]);
         }
       }
 
-      for (let k in update) if (!aa.hasOwnProperty(k)) {
+      for (const k in update) if (!Object.hasOwn(aa, k)) {
         out[k] = $DELETE;
       }
     }
@@ -262,6 +276,9 @@ const pick = <T>(a: T, b: Update<T>): Update<T> => {
 }
 
 /** Diff values A and B
+
+Ensures `patch(A, diff(A, B))` equals `B`.
+
 */
 export const diff = <T>(a: T, b: T): Update<T> => {
   if (a === b) return undefined;
@@ -274,15 +291,15 @@ export const diff = <T>(a: T, b: T): Update<T> => {
   if (b === undefined) return $DELETE;
 
   if (typeof b === 'object') {
-    let bb: Record<string, any> = b;
+    const bb: Record<string, any> = b;
     if (typeof a !== 'object' || a == null) return $maybeSet(b as T);
     if (Array.isArray(a) || isTypedArray(a)) return $maybeSet(b as T);
 
-    let aa: Record<string, any> = a as any;
+    const aa: Record<string, any> = a as any;
 
     const out = {} as Record<string, any>;
-    for (let k in aa) {
-      if (bb.hasOwnProperty(k)) {
+    for (const k in aa) {
+      if (Object.hasOwn(bb, k)) {
         const v = diff(aa[k], bb[k]);
         if (v !== undefined) out[k] = v;
       }
@@ -290,7 +307,7 @@ export const diff = <T>(a: T, b: T): Update<T> => {
         out[k] = $DELETE;
       }
     }
-    for (let k in bb) if (!aa.hasOwnProperty(k)) {
+    for (const k in bb) if (!Object.hasOwn(aa, k)) {
       const v = bb[k];
       out[k] = v && typeof v === 'object' && !Array.isArray(v) ? $set(v) : v;
     }
@@ -319,11 +336,11 @@ export const getUpdateKeys = <T>(update: T): string[] => {
 
   const pick = (b: Update<T>, path: string | null) => {
     if (b && typeof b === 'object') {
-      let bb = b as any;
+      const bb = b as any;
       if (Array.isArray(b) || isTypedArray(b)) {
         return keys.push(path ?? '');
       }
-      for (let k in bb) {
+      for (const k in bb) {
         recurse(bb[k], path != null ? path + '.' + k : k);
       }
     }
@@ -331,7 +348,7 @@ export const getUpdateKeys = <T>(update: T): string[] => {
       keys.push(path ?? '');
     }
   }
-  
+
   recurse(update, null);
   return keys;
 }

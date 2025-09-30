@@ -1,8 +1,6 @@
 import type { Font, FontProps, FontGlyph, FontMetrics, SpanMetrics, GlyphMetrics, RustTextAPI } from './types';
-import { toMurmur53 } from '../state';
-// import { UseRustText } from '../pkg/use_gpu_text.js';
-
-import { getRustText } from '../vendor/rusttext';
+import { toMurmur53 } from '@use-gpu/state';
+import { UseRustText } from '../pkg/use_gpu_text.js';
 
 type ArrowFunction = (...args: any[]) => any;
 
@@ -18,13 +16,13 @@ const DEFAULT_FONTS = {
 
 export const RustText = (): RustTextAPI => {
 
-  // const useRustText = UseRustText.new();
-  const useRustText = getRustText();
+  const useRustText = UseRustText.new();
 
   const fontMap = new Map<number, Font>();
   const pendingGlyphs = new Map<number, ArrowFunction[]>;
+  const debugListeners: ArrowFunction[] = [];
 
-  for (let k in DEFAULT_FONTS) fontMap.set(+k, DEFAULT_FONTS[k]);
+  for (const k in DEFAULT_FONTS) fontMap.set(+k, DEFAULT_FONTS[k]);
 
   const setFonts = (fonts: Font[]) => {
     const keys = fonts.map(({props}) => toMurmur53(props));
@@ -45,12 +43,15 @@ export const RustText = (): RustTextAPI => {
     });
 
     for (const k of remove.keys()) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const font = fontMap.get(k)!;
       fontMap.delete(k);
 
       if (font.buffer) useRustText.unload_font(k);
       else if (font.lazy) useRustText.unload_image_font(k);
     }
+
+    for (const cb of debugListeners) cb();
   }
 
   const resolveFont = (font: Partial<FontProps>): number | null => {
@@ -65,6 +66,7 @@ export const RustText = (): RustTextAPI => {
     } = font;
 
     for (const k of fontMap.keys()) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const {props} = fontMap.get(k)!;
       const {family: f, style: s, weight: w} = props;
 
@@ -106,6 +108,7 @@ export const RustText = (): RustTextAPI => {
   }
 
   const loadMissingGlyph = (fontId: number, glyphId: number, callback: ArrowFunction) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const {props, lazy} = fontMap.get(fontId)!;
     if (!lazy) return;
 
@@ -125,9 +128,11 @@ export const RustText = (): RustTextAPI => {
       else if (type === 'png') useRustText.load_image_png(fontId, glyphId, new Uint8Array(buffer));
       else throw new Error(`Unknown glyph type '${type}' for '${JSON.stringify(props)}'`);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const list = pendingGlyphs.get(key)!;
       pendingGlyphs.delete(key);
       for (const cb of list) cb();
+      for (const cb of debugListeners) cb();
     };
 
     const {sync, async, fetch: f} = lazy;
@@ -149,7 +154,15 @@ export const RustText = (): RustTextAPI => {
     return useRustText.find_glyph(fontId, packString(char));
   };
 
-  return {findGlyph, measureFont, measureSpans, measureGlyph, loadMissingGlyph, resolveFont, resolveFontStack, setFonts};
+  const debugListener = (cb: ArrowFunction) => {
+    debugListeners.push(cb);
+    return () => {
+      const i = debugListeners.indexOf(cb);
+      if (i >= 0) debugListeners.splice(i, 1);
+    };
+  };
+
+  return {findGlyph, measureFont, measureSpans, measureGlyph, loadMissingGlyph, resolveFont, resolveFontStack, setFonts, debugListener};
 }
 
 export const packStrings = (strings: string[] | string): Uint16Array => {

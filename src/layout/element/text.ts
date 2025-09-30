@@ -1,27 +1,19 @@
-import type { LiveComponent } from '../../live';
-import type { Point4, Rectangle } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { ColorLike } from '../../traits';
-import type { Base, InlineLine } from '../types';
+import type { LiveComponent, LiveNode } from '@use-gpu/live';
+import type { ColorLike, XYZW, Rectangle } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { Baseline, InlineLine } from '../types';
 
-import { useProp, parseColor, parseNumber } from '../../traits';
-import { memo, keyed, yeet, useFiber } from '../../live';
+import { useProp, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { parseColor, parseNumber } from '@use-gpu/parse';
+import { memo, use, yeet } from '@use-gpu/live';
 
-import { useFontFamily, useFontText, useFontHeight } from '../../workbench';
+import { useFontFamily, useFontText, useFontHeight } from '@use-gpu/workbench';
 import { Glyphs } from '../shape/glyphs';
 import { memoInline } from '../lib/util';
 
-export type TextProps = {
-  /*
-  margin?: Margin | number,
-  padding?: Margin | number,
-  radius?: Margin | number,
+type TextElement = LiveNode;
 
-  border?: Margin | number,
-  stroke?: Point4,
-  fill?: Point4,
-  */
-  
+export type TextProps = {
   opacity?: number,
   color?: ColorLike,
   expand?: number,
@@ -29,22 +21,62 @@ export type TextProps = {
   family?: string,
   style?: string,
   weight?: string | number,
-  
+
   lineHeight?: number,
   size?: number,
   detail?: number,
   snap?: boolean,
 
-  inline?: Base,
+  inline?: Baseline,
   text?: string,
-  children?: string,
+
+  children?: TextElement | TextElement[],
 };
 
-const BLACK: Point4 = [0, 0, 0, 1];
-const NO_MARGIN: Point4 = [0, 0, 0, 0];
-const NO_STROKE: Point4 = [0.0, 0.0, 0.0, 0.0];
+type SpanProps = Omit<TextProps, 'children'> & { children?: any };
 
-export const Text: LiveComponent<TextProps> = memo((props) => {
+const BLACK: XYZW = [0, 0, 0, 1];
+
+const toSpan = (props: TextProps) => (child: TextElement) =>
+  child != null
+    ? typeof child !== 'object'
+      ? use(Span, {
+          ...props,
+          children: null,
+          text: typeof child !== 'string'
+            ? `${child}`
+            : child,
+        })
+      : child
+    : null;
+
+export const Text: LiveComponent<TextProps> = memo((props: TextProps) => {
+
+  // Handle JSX array children
+  const content = props.children ?? props.text;
+  if (content != null) {
+    if (Array.isArray(content)) {
+      // Escape loose strings to <Span>
+      const fragment = content.map(toSpan(props));
+      if (content.length > 1 || typeof fragment[0] === 'object') return fragment;
+    }
+    else if (typeof content === 'object' && ('f' in content || 'props' in content)) {
+      // Render nested <Element>
+      return content;
+    }
+    else {
+      // Inline single string
+      return InnerSpan(props as SpanProps);
+    }
+  }
+
+  return null;
+}, shouldEqual({
+  color: sameShallow(),
+}), 'Text');
+
+const InnerSpan: LiveComponent<SpanProps> = (props: SpanProps) => {
+
   const {
     family,
     style,
@@ -59,16 +91,15 @@ export const Text: LiveComponent<TextProps> = memo((props) => {
     children,
   } = props;
 
-  const strings = children ?? text;
+  const content = (children ?? text) as string | string[];
 
   const font = useFontFamily(family, weight, style);
-  const {spans, glyphs, breaks} = useFontText(font, strings, size);
+  const {spans, glyphs, breaks} = useFontText(font, content, size);
   const height = useFontHeight(font, size, lineHeight);
 
   const color = useProp(props.color, parseColor, BLACK);
   const opacity = useProp(props.opacity, parseNumber, 1);
 
-  const {id} = useFiber();
   return yeet({
     spans,
     height,
@@ -76,12 +107,12 @@ export const Text: LiveComponent<TextProps> = memo((props) => {
     render: memoInline((
       lines: InlineLine[],
       origin: Rectangle,
+      z: number,
       clip: ShaderModule | null,
       mask: ShaderModule | null,
       transform: ShaderModule | null,
     ) => (
-      keyed(Glyphs, id, {
-        id,
+      use(Glyphs, {
         font,
         color: color as any,
         opacity,
@@ -99,7 +130,12 @@ export const Text: LiveComponent<TextProps> = memo((props) => {
         clip,
         mask,
         transform,
+        zIndex: z,
       })
     )),
   });
-}, 'Text');
+};
+
+const Span = memo(InnerSpan, shouldEqual({
+  color: sameShallow(),
+}), 'Span');

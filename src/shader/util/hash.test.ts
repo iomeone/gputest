@@ -1,5 +1,5 @@
 import { toHash, toMurmur53 } from './hash';
-import uniq from 'lodash/uniq';
+import uniq from 'lodash/uniq.js';
 
 const add = (a: number, b: number) => ((a|0) + (b|0)) >>> 0;
 const rot = (a: number, b: number) => ((a << b) | (a >>> (32 - b))) >>> 0;
@@ -53,13 +53,13 @@ describe('hash', () => {
       {f:1},
       {g:1},
     ];
-    
+
     const hashes = values.map(toHash);
-    
+
     expect(hashes).toMatchSnapshot();
     expect(uniq(hashes).length).toBe(hashes.length);
   });
-  
+
   it("doesn't collide 16-bit ints", () => {
 
     const seen = new Map<number, number>();

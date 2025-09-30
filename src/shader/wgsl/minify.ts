@@ -1,12 +1,11 @@
 import { makeASTParser } from './ast';
-import { parser } from './grammar/wgsl';
+import { parser } from './grammar/wgsl.js';
 import { parser as commentParser } from './highlight/wgsl';
-import { WGSL_NATIVE_TYPES } from './constants';
 
 export const removeComments = (code: string) => {
   let out = '';
   let from = 0;
-  
+
   const tree = commentParser.parse(code);
   tree.iterate({
     enter: (node) => {
@@ -42,20 +41,21 @@ export const renameLocals = (code: string) => {
     map.set(name, to);
     return to;
   };
-  
+
   const shorten = (name: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (map.has(name)) return map.get(name)!;
 
     let letter = name.slice(0, 1);
     if (!taken.has(letter)) return assign(name, letter);
-    
+
     if (letter === 'i' || letter === 'u' || letter === 'f') letter = '_';
     let i = 1;
     do {
       const suffixed = letter + i;
       if (!taken.has(suffixed)) return assign(name, suffixed);
     } while (i++ < 1000);
-    
+
     throw new Error("wat");
   };
 
@@ -108,7 +108,7 @@ export const renameLocals = (code: string) => {
         if (scopes == 0) {
           map.clear();
           taken.clear();
-          if (symbols) for (let s of symbols) taken.add(s);
+          if (symbols) for (const s of symbols) taken.add(s);
         }
       }
     },

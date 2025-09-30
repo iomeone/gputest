@@ -1,14 +1,14 @@
-use '../../../wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
 
 @optional @link fn transformPosition(p: vec4<f32>) -> vec4<f32> { return p; };
 @optional @link fn transformDifferential(v: vec4<f32>, b: vec4<f32>, c: bool) -> vec4<f32> { return v; };
 
-@link fn getPosition(i: u32) -> vec4<f32>;
-@link fn getOffset(i: u32) -> vec4<f32>;
-@link fn getDepth(i: u32) -> f32;
-@link fn getSize(i: u32) -> f32;
+@optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
+@optional @link fn getOffset(i: u32) -> vec4<f32> { return vec4<f32>(0.0); };
+@optional @link fn getDepth(i: u32) -> f32 { return 0.0; };
+@optional @link fn getSize(i: u32) -> f32 { return 5.0; };
 
-@optional @link fn getTangent(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); };
+@optional @link fn getTangent(i: u32) -> vec4<f32> { return vec4<f32>(0.0); };
 @optional @link fn getBase(i: u32) -> f32 { return 2.0; }
 
 @export fn getTickPosition(index: u32) -> vec4<f32> {
@@ -43,6 +43,6 @@ use '../../../wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
 
   let adj = transformDifferential(offset, anchor, false).xyz;
   let normal = normalize(adj);
-  
+
   return center + vec4<f32>(normal * size * v * s, 0.0);
 }
