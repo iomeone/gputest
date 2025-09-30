@@ -2784,6 +2784,11 @@
   "resolved" "https://registry.npmjs.org/colorette/-/colorette-2.0.20.tgz"
   "version" "2.0.20"
 
+"comlink@^4.4.1":
+  "integrity" "sha512-OxGdvBmJuNKSCMO4NTl1L47VRp6xn2wG4F/2hYzB6tiCb709otOxtEYCSvK80PtjODfXXZu8ds+Nw5kVCjqd2g=="
+  "resolved" "https://registry.npmjs.org/comlink/-/comlink-4.4.2.tgz"
+  "version" "4.4.2"
+
 "commander@^2.20.0":
   "integrity" "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ=="
   "resolved" "https://registry.npmjs.org/commander/-/commander-2.20.3.tgz"

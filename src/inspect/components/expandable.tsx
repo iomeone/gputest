@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import type { Cursor } from '../../state';
 import type { ExpandState } from './types';
 
-import { useCursor, useUpdateState } from '../../state/react';
+import { useCursor, useUpdateState } from '../../state/index-react';
 
 
 type ExpandableProps = {

@@ -61,7 +61,8 @@
     "file-saver": "^2.0.5",
     "mapbox-vector-tile": "^0.3.0",
 
-    "magic-string": "^0.30.11"
+    "magic-string": "^0.30.11",
+    "comlink": "^4.4.1"
   },
   "scripts": {
     "start": "NODE_ENV=development webpack serve",

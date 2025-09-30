@@ -2,7 +2,7 @@ import type { LiveFiber } from '../../live';
 import type { ExpandState, SelectState, HoverState, OptionState, FocusState, PingState, InspectAppearance, InspectState, InspectAPI } from './types';
 
 import { formatNode, formatValue, YEET } from '../../live';
-import { useUpdateState, useCursor } from '../../state/react';
+import { useUpdateState, useCursor } from '../../state/index-react';
 import { Cursor, $apply } from '../../state';
 
 import React, { memo, useCallback, useLayoutEffect, useEffect, useMemo, useState, SetStateAction } from 'react';

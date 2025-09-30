@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCursor } from '../../state/react';
+import { useCursor } from '../../state/index-react';
 import { Cursor } from '../../state';
 import { SmallButton, OptionsContainer, Spacer } from './layout';
 import { OptionState } from './types';
