@@ -3,7 +3,8 @@ import type { GLTF, GLTFOptions, GLTFPrimitiveData } from './types';
 
 import { toUnweldedArray } from '../core';
 import { use, provide, useMemo, useNoMemo } from '../live';
-import { generateTangents } from 'mikktspace';
+// import { generateTangents } from 'mikktspace';
+import { generateTangents } from './../vendor/mikkt';
 import { mat4 } from 'gl-matrix';
 
 import {

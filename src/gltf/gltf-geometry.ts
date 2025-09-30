@@ -5,7 +5,8 @@ import { toUnweldedArray, formatToArchetype, UNIFORM_ARRAY_DIMS } from '../core'
 import { useMemo } from '../live';
 import { patch, $nop } from '../state';
 import { transformPositions, transformNormals } from '../workbench';
-import { generateTangents } from 'mikktspace';
+// import { generateTangents } from 'mikktspace';
+import { generateTangents } from './../vendor/mikkt';
 import { mat4 } from 'gl-matrix';
 
 export const useGLTFGeometry = (
