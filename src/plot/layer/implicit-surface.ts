@@ -3,7 +3,7 @@ import type { TensorArray, UniformType } from '../../core';
 import type { TraitProps } from '../../traits';
 
 import { memo, use } from '../../live';
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
 import { useRawTensorSource, useNoRawTensorSource, useInspectHoverable, DualContourLayer } from '../../workbench';
 
 import { useRangeContext, useNoRangeContext } from '../providers/range-provider';

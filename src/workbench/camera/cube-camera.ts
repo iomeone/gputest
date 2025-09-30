@@ -1,7 +1,7 @@
 import type { LiveComponent, PropsWithChildren } from '../../live';
 import type { VectorLike } from '../../core';
 
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { parsePosition } from '../../parse';
 import { provide, use, useContext, useOne, incrementVersion } from '../../live';
 import { makeProjectionMatrix, makeViewUniforms, updateViewProjection, updateViewSize } from '../../core';

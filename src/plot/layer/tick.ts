@@ -4,7 +4,7 @@ import type { TensorArray, VectorLike, UniformAttribute } from '../../core';
 import type { TraitProps } from '../../traits';
 import type { ShaderSource } from '../../shader';
 
-import { makeUseTrait, useProp } from '../../traits/live';
+import { makeUseTrait, useProp } from '../../traits/index-live';
 import { parseNumber, parseVec4, parseIntegerPositive } from '../../parse';
 import { use, useCallback, useOne, useMemo } from '../../live';
 import { adjustSchema } from '../../core';

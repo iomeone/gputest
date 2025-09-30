@@ -3,7 +3,7 @@ import type { ColorLike, VectorLike, Lazy, XYZW } from '../../core';
 import type { ShaderSource } from '../../shader';
 
 import { useMemo } from '../../live';
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { parseColor } from '../../parse';
 
 import { useShader, useNoShader } from '../hooks/useShader';

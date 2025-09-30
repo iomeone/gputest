@@ -1,7 +1,7 @@
 import type { LiveComponent, PropsWithChildren } from '../../live';
 import type { TraitProps } from '../../traits';
 
-import { combine, makeUseTrait } from '../../traits/live';
+import { combine, makeUseTrait } from '../../traits/index-live';
 import { provide, useDouble, useOne, useMemo } from '../../live';
 import { MatrixContext, TransformContext, QueueReconciler, useCombinedTransform, useShaderRef, getShader } from '../../workbench';
 import { getBundleKey } from '../../shader/wgsl';

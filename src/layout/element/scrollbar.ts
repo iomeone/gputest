@@ -3,7 +3,7 @@ import type { ColorLike, XY, XYZW, Rectangle, TypedArray } from '../../core';
 import type { ShaderModule } from '../../shader';
 import type { Direction, OverflowMode, FitInto, UIAggregate } from '../types';
 
-import { useProp } from '../../traits/live';
+import { useProp } from '../../traits/index-live';
 import { parseColor } from '../../parse';
 import { yeet, use, useMemo } from '../../live';
 import { schemaToArchetype } from '../../core';

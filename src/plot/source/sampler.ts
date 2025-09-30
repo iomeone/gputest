@@ -6,7 +6,7 @@ import {
   seq, makeTensorArray, emitMultiArray, makeNumberWriter, makeNumberInterleavedWriter, updateTensor,
 } from '../../core';
 import { parseAxis, parseVec4 } from '../../parse';
-import { optional, useProp, shouldEqual, sameShallow } from '../../traits/live';
+import { optional, useProp, shouldEqual, sameShallow } from '../../traits/index-live';
 import {
   useTimeContext, useNoTimeContext,
   useAnimationFrame, useNoAnimationFrame,

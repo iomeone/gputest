@@ -3,7 +3,7 @@ import type { ColorLike, XYZW, Rectangle } from '../../core';
 import type { ShaderModule } from '../../shader';
 import type { Baseline, InlineLine } from '../types';
 
-import { useProp, shouldEqual, sameShallow } from '../../traits/live';
+import { useProp, shouldEqual, sameShallow } from '../../traits/index-live';
 import { parseColor, parseNumber } from '../../parse';
 import { memo, use, yeet } from '../../live';
 

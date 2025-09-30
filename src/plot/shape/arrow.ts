@@ -2,7 +2,7 @@
 import type { LiveComponent } from '../../live';
 import type { TraitProps } from '../../traits';
 
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
 import { adjustSchema, schemaToArchetype, schemaToEmitters } from '../../core';
 import { yeet, memo, useOne } from '../../live';
 

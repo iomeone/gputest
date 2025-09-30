@@ -2,7 +2,7 @@ import type { LiveComponent, PropsWithChildren } from '../../live';
 import type { Swizzle } from '../../plot';
 import type { TraitProps } from '../../traits';
 
-import { combine, makeUseTrait } from '../../traits/live';
+import { combine, makeUseTrait } from '../../traits/index-live';
 import { use, provide, useDouble, useOne, useMemo } from '../../live';
 import { chainTo, swizzleTo } from '../../shader/wgsl';
 import {

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { LiveComponent } from '../../live';
-import type { TraitProps } from '../../traits/live';
+import type { TraitProps } from '../../traits/index-live';
 
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
 import { schemaToArchetype, schemaToEmitters, adjustSchema } from '../../core';
 import { yeet, memo, useOne } from '../../live';
 

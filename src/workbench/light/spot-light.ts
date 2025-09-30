@@ -2,7 +2,7 @@ import type { LC } from '../../live';
 import type { ColorLike, VectorLike } from '../../core';
 import type { ShadowMapLike } from './types';
 
-import { optional, useProp } from '../../traits/live';
+import { optional, useProp } from '../../traits/index-live';
 import { parseBoolean, parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '../../parse';
 import { memo, use, useMemo } from '../../live';
 

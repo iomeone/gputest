@@ -10,7 +10,7 @@ import {
   toCPUDims,
   updateTensor,
 } from '../../core';
-import { shouldEqual, sameShallow } from '../../traits/live';
+import { shouldEqual, sameShallow } from '../../traits/index-live';
 import {
   useTimeContext, useNoTimeContext,
   useAnimationFrame, useNoAnimationFrame,
