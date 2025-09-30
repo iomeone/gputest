@@ -1,0 +1,124 @@
+{
+  "metadata": {},
+  "fields": {
+    "X": {
+      "type": "DECIMAL",
+      "precision": 1000,
+      "range": {
+        "min": 570865.3962532567,
+        "max": 574926.9771320275
+      },
+      "quantiles": [
+        {
+          "position": 12.5,
+          "value": 571416.4722068505
+        },
+        {
+          "position": 25,
+          "value": 571826.8174504598
+        },
+        {
+          "position": 37.5,
+          "value": 572349.9674702033
+        },
+        {
+          "position": 50,
+          "value": 572743.2297246859
+        },
+        {
+          "position": 62.5,
+          "value": 573318.1163968506
+        },
+        {
+          "position": 75,
+          "value": 573851.6249401242
+        },
+        {
+          "position": 87.5,
+          "value": 574350.3565605124
+        }
+      ]
+    },
+    "Y": {
+      "type": "DECIMAL",
+      "precision": 1000,
+      "range": {
+        "min": 754.1338824000001,
+        "max": 1015.2231296
+      },
+      "quantiles": [
+        {
+          "position": 12.5,
+          "value": 809.6456952
+        },
+        {
+          "position": 25,
+          "value": 831.7913652
+        },
+        {
+          "position": 37.5,
+          "value": 856.2008148000001
+        },
+        {
+          "position": 50,
+          "value": 870.9317864
+        },
+        {
+          "position": 62.5,
+          "value": 882.0866424000001
+        },
+        {
+          "position": 75,
+          "value": 893.20869
+        },
+        {
+          "position": 87.5,
+          "value": 911.0564596
+        }
+      ]
+    },
+    "Z": {
+      "type": "DECIMAL",
+      "precision": 1000,
+      "range": {
+        "min": 156612.92503801192,
+        "max": 161268.527143474
+      },
+      "quantiles": [
+        {
+          "position": 12.5,
+          "value": 157155.12520456596
+        },
+        {
+          "position": 25,
+          "value": 157879.06082319963
+        },
+        {
+          "position": 37.5,
+          "value": 158609.91717608992
+        },
+        {
+          "position": 50,
+          "value": 159315.0109253285
+        },
+        {
+          "position": 62.5,
+          "value": 160054.60473595667
+        },
+        {
+          "position": 75,
+          "value": 160622.23961918076
+        },
+        {
+          "position": 87.5,
+          "value": 160991.5840089546
+        }
+      ]
+    }
+  },
+  "recordCount": 849239,
+  "imageSize": {
+    "width": 922,
+    "height": 922
+  }
+}
