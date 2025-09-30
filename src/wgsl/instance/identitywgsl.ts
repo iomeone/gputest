@@ -1,17 +1,18 @@
 /* __WGSL_LOADER_GENERATED */
 import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
-const {} = symbolDictionary;
-const _ = decompressString("getIndex symbols visibles symbol flags name u32 type export attr parameters func exports".split(' '));
-const t = {[_(1)]:_([0]),[_(2)]:_([0]),[_(12)]:[{"at":0,[_(3)]:_(0),[_(4)]:1,[_(11)]:{[_(5)]:_(0),[_(7)]:_(6),[_(9)]:_([8]),[_(10)]:[{[_(5)]:"i",[_(7)]:_(6)}]}}]};
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getIndex u32 export".split(' '));
+const table = {[S]:_([0]),[W]:_([0]),[E]:[{[A]:0,[R]:_(0),[G]:1,[F]:{[N]:_(0),[T]:_(1),[Z]:_([2]),[P]:[{[N]:"i",[T]:_(1)}]}}]};
 const data = {
-  "name": "instance/identity",
-  "code": _(["@",8," fn ",0,"(i: u32) -> u32 { return i; }"]).join(''),
-  "hash": 1344717481719576,
-  "table": t,
-  "shake": [[0,[0]]],
-  "tree": decompressAST([[0,0,48],[1,0,7],[2,11,19]], t[S]),
+  name: "instance/identity.wgsl",
+  code: _(["@",2," fn ",0,"(i: u32) -> u32 { return i; }\n"]).join(''),
+  hash: 0x153a705dd9f16f,
+  table,
+  shake: [[0,[0]]],
+  tree: decompressAST([[0,0,48],[1,0,7],[2,11,19]], table[S]),
 };
+
 const libs = {};
-const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
 export default getSymbol();
 export const getIndex = getSymbol("getIndex");

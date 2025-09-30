@@ -1,17 +1,18 @@
 /* __WGSL_LOADER_GENERATED */
 import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
-const {} = symbolDictionary;
-const _ = decompressString("getMask getMaskedColor symbols visibles symbol flags name f32 type optional link attr vec2<f32> parameters func externals vec4<f32> export color identifiers exports linkable".split(' '));
-const t = {[_(2)]:_([0,1]),[_(3)]:_([1]),[_(15)]:[{"at":0,[_(4)]:_(0),[_(5)]:6,[_(14)]:{[_(6)]:_(0),[_(8)]:_(7),[_(11)]:_([9,10]),[_(13)]:[{[_(6)]:"uv",[_(8)]:_(12)}]}}],[_(20)]:[{"at":69,[_(4)]:_(1),[_(5)]:1,[_(14)]:{[_(6)]:_(1),[_(8)]:_(16),[_(11)]:_([17]),[_(13)]:[{[_(6)]:_(18),[_(8)]:_(16)},{[_(6)]:"uv",[_(8)]:_(16)},{[_(6)]:"st",[_(8)]:_(16)}],[_(19)]:_([0])}}],[_(21)]:{[_(0)]:true}};
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getMask getMaskedColor f32 optional link vec2<f32> export color".split(' '));
+const table = {[S]:_([0,1]),[W]:_([1]),[X]:[{[A]:0,[R]:_(0),[G]:6,[F]:{[N]:_(0),[T]:_(2),[Z]:_([3,4]),[P]:[{[N]:"uv",[T]:_(5)}]}}],[E]:[{[A]:69,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:C,[Z]:_([6]),[P]:[{[N]:_(7),[T]:C},{[N]:"uv",[T]:C},{[N]:"st",[T]:C}],[I]:_([0])}}],[L]:{[_(0)]:true}};
 const data = {
-  "name": "mask/masked",
-  "code": _(["@",9," @",10," fn ",0,"(uv: ",12,") -> f32 { return 1.0; };\r\n\r\n@",17," fn ",0,"edColor(",18,": ",16,", uv: ",16,", st: ",16,") -> ",16," {\r\n  let m = ",0,"(uv.xy);\r\n  return ",16,"(",18,".xyz, ",18,".a * m);\r\n}"]).join(''),
-  "hash": 2639793696987861,
-  "table": t,
-  "shake": [[0,[0,1]],[69,[1]]],
-  "tree": decompressAST([[4,0,64,0],[1,0,9],[1,10,15],[2,9,16],[0,50,213],[1,0,7],[2,11,25],[2,89,96]], t[S]),
+  name: "mask/masked.wgsl",
+  code: _(["@",3," @",4," fn ",0,"(uv: ",5,") -> f32 { return 1.0; };\r\n\r\n@",6," fn ",0,"edColor(",7,": ",C,", uv: ",C,", st: ",C,") -> ",C," {\r\n  let m = ",0,"(uv.xy);\r\n  return ",C,"(",7,".xyz, ",7,".a * m);\r\n}\n"]).join(''),
+  hash: 0x3eef70d7bafdd,
+  table,
+  shake: [[0,[0,1]],[69,[1]]],
+  tree: decompressAST([[4,0,64,0],[1,0,9],[1,10,15],[2,9,16],[0,50,213],[1,0,7],[2,11,25],[2,89,96]], table[S]),
 };
+
 const libs = {};
-const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
 export default getSymbol();
 export const getMaskedColor = getSymbol("getMaskedColor");

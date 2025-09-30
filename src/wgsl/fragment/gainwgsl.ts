@@ -1,17 +1,18 @@
 /* __WGSL_LOADER_GENERATED */
 import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
-const {} = symbolDictionary;
-const _ = decompressString("getGain gainColor symbols visibles symbol flags name f32 type link attr func externals vec4<f32> export color parameters identifiers exports linkable getGain".split(' '));
-const t = {[_(2)]:_([0,1]),[_(3)]:_([1]),[_(12)]:[{"at":0,[_(4)]:_(0),[_(5)]:2,[_(11)]:{[_(6)]:_(0),[_(8)]:_(7),[_(10)]:_([9])}}],[_(18)]:[{"at":30,[_(4)]:_(1),[_(5)]:1,[_(11)]:{[_(6)]:_(1),[_(8)]:_(13),[_(10)]:_([14]),[_(16)]:[{[_(6)]:_(15),[_(8)]:_(13)}],[_(17)]:_([0])}}],[_(19)]:{[_(0)]:true}};
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("getGain gainColor f32 link export color getGain".split(' '));
+const table = {[S]:_([0,1]),[W]:_([1]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:_(2),[Z]:_([3])}}],[E]:[{[A]:30,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:C,[Z]:_([4]),[P]:[{[N]:_(5),[T]:C}],[I]:_([0])}}],[L]:{[_(0)]:true}};
 const data = {
-  "name": "fragment/gain",
-  "code": _(["@",9," fn ",0,"() -> f32;\r\n\r\n@",14," fn ",1,"(",15,": ",13,") -> ",13," {\r\n  var rgb = ",15,".rgb * ",0,"();\r\n  if (IS_OPAQUE) { return ",13,"(rgb, 1.0); }\r\n  else { return ",13,"(rgb * ",0,"(), ",15,".a); }\r\n};"]).join(''),
-  "hash": 7134930869767960,
-  "table": t,
-  "shake": [[0,[0,1]],[30,[1]]],
-  "tree": decompressAST([[1,0,25],[0,30,228],[1,0,7],[2,11,20],[2,68,75],[2,94,101]], t[S]),
+  name: "fragment/gain.wgsl",
+  code: _(["@",3," fn ",0,"() -> f32;\r\n\r\n@",4," fn ",1,"(",5,": ",C,") -> ",C," {\r\n  var rgb = ",5,".rgb * ",0,"();\r\n  if (IS_OPAQUE) { return ",C,"(rgb, 1.0); }\r\n  else { return ",C,"(rgb * ",0,"(), ",5,".a); }\r\n};\n"]).join(''),
+  hash: 0xab7e0eee31099,
+  table,
+  shake: [[0,[0,1]],[30,[1]]],
+  tree: decompressAST([[1,0,25],[0,30,228],[1,0,7],[2,11,20],[2,68,75],[2,94,101]], table[S]),
 };
+
 const libs = {};
-const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
 export default getSymbol();
 export const gainColor = getSymbol("gainColor");

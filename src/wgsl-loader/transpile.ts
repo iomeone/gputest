@@ -1,25 +1,183 @@
 // src/wgsl-loader/transpile.ts
-import { loadModule, compressAST } from '../shader/wgsl';
-import path from 'path';
+import type { Tree } from '@lezer/common';
+import MagicString from 'magic-string';
 
-const REWRITE_DEPS_TO_GEN = false; // ← 若需要像你早期那样把依赖重写到 gen-wgsl，改为 true
+import type {
+  ParsedModule,
+  CompressedNode,
+  SymbolTableT,
+  TranspileOptions,
+  TranspileOutput,
+} from '../shader/types';
 
-const stringify = (s: any) => JSON.stringify(s);
-const toPosix = (p: string) => p.replace(/\\/g, '/');
+// 这些工具/字典应当由你的“语言运行时”导出
+import {
+  loadModule,         // 语法/语义解析（编译时使用）
+  compressAST,        // AST 压缩（编译时使用）
+  symbolDictionary as runtimeSymbolDict, // 运行时用到的字段字典（S 等）
+} from '../shader/wgsl';
 
-// （可选）编译期“字典”，用于更好的压缩效果；项目里若有，可替换为实际的字典。
-// 例如：从 ../shader/wgsl 导出 symbolDictionary 并在这里 import 使用。
-const DICT: Record<string, string> = {};
+// ----------------------------------------------------------------------------
+// 与作者一致的 makeTranspile（且保持泛型签名）
+// ----------------------------------------------------------------------------
+export const makeTranspile = <T extends SymbolTableT = any>(
+  type: string,
+  extension: string,
+  symbolDictionary: Record<string, string>,
+  loadModuleFn: (code: string, name?: string, entry?: string, compressed?: boolean) => ParsedModule,
+  compressASTFn: (
+    code: string,
+    tree: Tree,
+    symbols?: T['symbols'],
+    modules?: T['modules']
+  ) => CompressedNode[],
+  minifyCode: (code: string) => string,
+) => (
+  source: string,
+  resourcePath: string,
+  options?: TranspileOptions,
+): TranspileOutput => {
+  const {
+    esModule = true,
+    minify = false,
+    types = false,
+    typeDef = false,
+    sourceMap = false,
+    importRoot = null,
+  } = options ?? ({} as TranspileOptions);
 
-// ------- helpers (compile-time only) -------
-const hexify = (x: number) => (x < 0 ? '-' : '') + '0x' + Math.abs(x).toString(16);
+  const maybeStringType = types ? '?: string' : '';
+  const tableType  = types ? ': SymbolTable'   : '';
+  const moduleType = types ? ': ParsedModule'  : '';
+  const bundleType = types ? ': ParsedBundle'  : '';
 
-/** 压缩对象中的字符串键值（运行时配合 symbolDictionary / decompressString 解压） */
-function compressValue(
+  const langImports = ['decompressAST', 'decompressString', 'symbolDictionary', 'bindEntryPoint'];
+  if (types) langImports.push('ParsedModule', 'ParsedBundle', 'SymbolTable');
+
+  // 允许可选把 @use-gpu/shader/** 重写为相对路径（与作者一致）
+  const rootRelative = (imported: string) => {
+    if (importRoot == null) return imported;
+    if (imported.indexOf(importRoot) !== 0) return imported;
+    const depth = resourcePath.split('/').length;
+    return '../'.repeat(Math.max(0, depth - 1)) + imported.slice(importRoot.length + 1);
+  };
+
+  const stringify = (s: any) => JSON.stringify(s);
+  const hexify = (x: number) => (x < 0 ? '-' : '') + '0x' + Math.abs(x).toString(16);
+  const trim = (s: string) => s.replace(/^\s+|\s+$/, '') + '\n';
+
+  const makeImport = (symbol: string, from: string) =>
+    esModule
+      ? `import ${symbol} from ${stringify(rootRelative(from))};`
+      : `const ${symbol} = require(${stringify(rootRelative(from))});`;
+
+  const preamble = [
+    makeImport(`{${langImports.join(', ')}}`, '@use-gpu/shader/' + type.toLowerCase()),
+  ].join('\n');
+
+  // 解析源码
+  const name  = resourcePath.split('/').slice(-2).join('/');       // e.g. "render/pick"
+  const input = trim(minify ? minifyCode(source) : source);
+  const mod   = loadModuleFn(input, name);
+
+  // 取出表格并压缩（删除重复的 declarations 字段）
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { code, hash, table: { declarations, ...table }, tree, shake } = mod;
+
+  const { value: t, symbols: s } = compressValue(table, symbolDictionary, '_');
+  const { value: c, symbols }    = compressString(code,  symbolDictionary, s,  '_');
+
+  const _dict    = `const {${Object.keys(symbolDictionary).join(',')}} = symbolDictionary;`;
+  const _symbols = `const _ = decompressString(${stringify(symbols.join(' '))}.split(' '));`;
+  const _table   = `const table${tableType} = ${t};`;
+
+  const _def = `const data${moduleType} = {
+  name: ${stringify(name)},
+  code: ${c},
+  hash: ${hexify(hash)},
+  table,
+  shake: ${stringify(shake)},
+  tree: decompressAST(${stringify(compressASTFn(code, tree!, table.symbols, table.modules))}, table[S]),
+};
+`;
+
+  // 依赖：仍保持 “模块名 + .扩展名”，由上层（loader 或离线脚本）决定如何映射
+  let i = 0;
+  const imports: string[] = [];
+  const markers: string[] = [];
+  if (table.modules) for (const { name } of table.modules) {
+    imports.push(makeImport(`m${i}`, name + '.' + extension));
+    markers.push(`${stringify(name)}: m${i}`);
+    ++i;
+  }
+  const _libs = `const libs = {${markers.join(', ')}};`;
+
+  // 默认导出
+  let exportDefault: string;
+  if (esModule) {
+    exportDefault = 'export default getSymbol();';
+  } else {
+    exportDefault = `
+const __default = getSymbol();
+Object.defineProperty(exports, '__esModule', { value: true });
+Object.assign(exports, __default);
+exports.default = __default;
+`;
+  }
+
+  // 拼接结果
+  const generated = [
+    `/* __${type.toUpperCase()}_LOADER_GENERATED */`,
+    preamble,
+    ...imports,
+    _dict,
+    _symbols,
+    _table,
+    _def,
+    _libs,
+    `const getSymbol = (entry${maybeStringType})${bundleType} => ({module: bindEntryPoint(data, entry), libs});`,
+    exportDefault,
+    '',
+  ].join('\n');
+
+  const emitSym = (sym: string) =>
+    `${esModule ? 'export const ' : 'exports.'}${sym} = getSymbol(${JSON.stringify(sym)});\n`;
+
+  const ret: TranspileOutput = {
+    output: '',
+    typeDef: null,
+    magicString: null,
+  };
+
+  const exportsBlock = (table.visibles ?? []).map(emitSym).join('');
+
+  if (sourceMap) {
+    const s = new MagicString(source);
+    s.prepend(generated);
+    s.update(0, source.length, exportsBlock);
+    ret.output = s.toString();
+    ret.magicString = s;
+  } else {
+    ret.output = generated + exportsBlock;
+  }
+
+  if (typeDef) {
+    ret.typeDef = makeTypeDef(table.visibles ?? []);
+  }
+
+  return ret;
+};
+
+// ----------------------------------------------------------------------------
+// 压缩/类型声明工具（保持与作者一致）
+// ----------------------------------------------------------------------------
+export const compressValue = (
   s: any,
   dictionary: Record<string, string>,
-  ns: string
-) {
+  ns: string,
+) => {
+  const stringify = (x: any) => JSON.stringify(x);
+
   const symbolMap = new Map<string, number>();
   const symbols: string[] = [];
 
@@ -28,7 +186,7 @@ function compressValue(
 
   const get = (symbol: string) => {
     if (dictionaryMap.has(symbol)) return dictionaryMap.get(symbol)!;
-    if (symbol.length < 3 || symbol.indexOf(' ') >= 0) return JSON.stringify(symbol);
+    if (symbol.length < 3 || symbol.indexOf(' ') >= 0) return stringify(symbol);
     if (symbolMap.has(symbol)) return symbolMap.get(symbol)!;
     const i = symbols.length;
     symbolMap.set(symbol, i);
@@ -38,7 +196,8 @@ function compressValue(
 
   const encode = (arg: string) => {
     const i = get(arg);
-    return typeof i === 'string' ? i : `${ns}(${i})`;
+    if (typeof i === 'string') return i;
+    return `${ns}(${i})`;
   };
 
   const traverse = (arg: any): string | null => {
@@ -59,20 +218,22 @@ function compressValue(
       return '{' + out.join(',') + '}';
     } else if (typeof arg === 'string') {
       return encode(arg);
-    } else if (s !== undefined) return JSON.stringify(arg);
-    else return null;
+    } else if (s !== undefined) {
+      return stringify(arg);
+    } else return null;
   };
 
   return { value: traverse(s)!, symbols };
-}
+};
 
-/** 压缩源码字符串（把高频标识替换为占位符，运行时再解压还原） */
-function compressString(
+export const compressString = (
   s: string,
   dictionary: Record<string, string>,
   symbols: string[],
-  ns: string
-) {
+  ns: string,
+) => {
+  const stringify = (x: any) => JSON.stringify(x);
+
   let dks = Object.keys(dictionary);
   let dvs = Object.values(dictionary);
 
@@ -88,206 +249,52 @@ function compressString(
 
   const replace = (a: string, b: number) => {
     ss = ss
-      .flatMap((x: string | number) => (
-        typeof x === 'number' ? x :
-        x.indexOf(a) >= 0 ? x.split(a).flatMap(y => [y, b]).slice(0, -1) :
-        x
-      ))
-      .filter(x => typeof x === 'number' || (x as string).length);
+      .flatMap((x: string | number) =>
+        typeof x === 'number'
+          ? x
+          : x.indexOf(a) >= 0
+          ? x.split(a).flatMap(s => [s, b]).slice(0, -1)
+          : x
+      )
+      .filter(x => typeof x === 'number' || x.length);
   };
 
-  for (const [i, k] of symbols.entries()) if (k.length > 3) replace(k, i);
-  for (const [i, v] of dvs.entries()) if (v.length > 3) replace(v, -i - 1);
+  for (const [i, v] of symbols.entries()) if (v.length > 3) replace(v, i);
+  for (const [i, v] of dvs.entries())      if (v.length > 3) replace(v, -i - 1);
 
-  const parts = ss.map(x => (
-    typeof x === 'string' ? JSON.stringify(x) :
-    x >= 0 ? x : dks[-x - 1]
-  ));
-
-  return { value: `${ns}([${parts.join(',')}]).join('')`, symbols };
-}
-
-// ------- main transpiler -------
-
-/**
- * 兼容旧签名 (esModule:boolean) 与新签名 (options:{ esModule?, minify? })
- */
-export const transpileWGSL = (
-  source: string,
-  resourcePath: string,
-  esModuleOrOptions: boolean | { esModule?: boolean; minify?: boolean } = true
-) => {
-  const esModule = typeof esModuleOrOptions === 'boolean'
-    ? esModuleOrOptions
-    : (esModuleOrOptions.esModule ?? true);
-  const minify = typeof esModuleOrOptions === 'boolean'
-    ? false
-    : !!esModuleOrOptions.minify;
-
-  const makeImport = (symbol: string, from: string) =>
-    esModule
-      ? `import ${symbol} from ${stringify(from)};`
-      : `const ${symbol} = require(${stringify(from)});`;
-
-  // ---------- 计算相对前言导入（与你原先一致，但导入清单升级为作者新版所需） ----------
-  let preamble = '';
-  {
-    const rp = toPosix(resourcePath);
-
-    // 识别“以 src 为根”的 wgsl 子目录
-    let dirRelToSrc: string | null = null;
-    let m = rp.match(/\/src\/wgsl\/(.+)\/[^/]+\.wgsl$/);
-    if (m) {
-      dirRelToSrc = `wgsl/${m[1]}`;
-    } else {
-      m = rp.match(/^wgsl\/(.+)\/[^/]+\.wgsl$/);
-      if (m) {
-        dirRelToSrc = `wgsl/${m[1]}`;
-      } else if (/\/src\/wgsl\/[^/]+\.wgsl$/.test(rp)) {
-        dirRelToSrc = 'wgsl';
-      } else if (/^wgsl\/[^/]+\.wgsl$/.test(rp)) {
-        dirRelToSrc = 'wgsl';
-      }
-    }
-
-    const TARGET_LANG = 'shader/wgsl'; // decompressAST/decompressString/symbolDictionary/bindEntryPoint 所在
-
-    const relFrom = (from: string, to: string) => {
-      let rel = path.posix.relative(from, to);
-      if (!rel.startsWith('.')) rel = './' + rel;
-      return rel;
-    };
-
-    let decompressFrom: string;
-    if (dirRelToSrc) {
-      decompressFrom = relFrom(dirRelToSrc, TARGET_LANG);
-    } else {
-      const dir = rp.includes('/') ? rp.slice(0, rp.lastIndexOf('/')) : '.';
-      decompressFrom = relFrom(dir, TARGET_LANG);
-    }
-
-    // 新版需要的四个导入
-    preamble = makeImport(
-      '{decompressAST, decompressString, symbolDictionary, bindEntryPoint}',
-      decompressFrom
-    );
-  }
-
-  // ---------- 解析 ----------
-  // 作者新版 name 取倒数两段，避免冲突
-  const name = resourcePath
-    .split('/')
-    .slice(-2)
-    .join('/')
-    .replace(/\.wgsl$/, '');
-
-  const input = (minify ? source : source).trim();
-  const module = loadModule(input, name);
-
-  // ---------- 生成 data（升级为“表与源码压缩 + 运行时解压”） ----------
-  const { code, hash, table: { declarations, ...table }, tree, shake } = module;
-
-  const { value: tableExpr, symbols: tableSyms } = compressValue(table, DICT, '_');
-  const { value: codeExpr,  symbols: codeSyms  } = compressString(code, DICT, tableSyms, '_');
-
-  const _dict    = `const {${Object.keys(DICT).join(',')}} = symbolDictionary;`;
-  const _symbols = `const _ = decompressString(${stringify(codeSyms.join(' '))}.split(' '));`;
-
-  const def = [
-    `const t = ${tableExpr};`,
-    `const data = {`,
-    `  "name": ${stringify(name)},`,
-    `  "code": ${codeExpr},`,
-    `  "hash": ${stringify(hash)},`,
-    `  "table": t,`,
-    `  "shake": ${stringify(shake)},`,
-    // compressAST 也按新版：多传 symbols 与 modules
-    `  "tree": decompressAST(${stringify(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      compressAST(code, tree!, (table as any).symbols, (table as any).modules)
-    )}, t[S]),`,
-    `};`
-  ].join('\n');
-
-  // ---------- 依赖导入 ----------
-  let i = 0;
-  const imports: string[] = [];
-  const markers: string[] = [];
-
-  // 按你早期的“重写到 gen-wgsl”逻辑保留一个开关（默认 false -> 不重写）
-  if ((table as any).modules && Array.isArray((table as any).modules)) {
-    const rp = toPosix(resourcePath);
-
-    // 当前 wgsl 所在（以 src 为根）
-    let relFromSrc = rp;
-    const mAbs = rp.match(/\/src\/(wgsl\/.*)$/);
-    if (mAbs) relFromSrc = mAbs[1];
-
-    const curDirRelSrc = relFromSrc.replace(/\/[^/]+\.wgsl$/, '');   // wgsl/instance/vertex
-    const curOutDir    = curDirRelSrc.replace(/^wgsl\//, 'gen-wgsl/'); // gen-wgsl/instance/vertex
-    const depthSegs    = curOutDir.split('/').filter(Boolean).length;
-    const rootPrefix   = depthSegs ? '../'.repeat(depthSegs) : './';
-
-    for (const { name: depName } of (table as any).modules as Array<{ name: string }>) {
-      let spec: string;
-
-      if (REWRITE_DEPS_TO_GEN) {
-        // 把依赖映射到 gen-wgsl（老流程）
-        let depNorm: string;
-        if (depName.startsWith('@use-gpu/wgsl/')) {
-          depNorm = 'wgsl/' + depName.slice('@use-gpu/wgsl/'.length);
-        } else if (depName.startsWith('wgsl/')) {
-          depNorm = depName;
-        } else {
-          // 相对路径 -> 归一为以当前 wgsl 所在目录为起点
-          depNorm = path.posix.normalize(path.posix.join(curDirRelSrc, depName));
-        }
-        const depUnder = depNorm.replace(/^wgsl\//, '');
-        spec = `${rootPrefix}gen-wgsl/${depUnder}`;
-      } else {
-        // 不重写：延续作者“依赖名 + .wgsl”的做法
-        spec = depName + '.wgsl';
-      }
-
-      imports.push(makeImport(`m${i}`, spec));
-      markers.push(`${stringify(depName)}: m${i}`);
-      ++i;
-    }
-  }
-
-  const libs = `const libs = {${markers.join(', ')}};`;
-
-  // ---------- 导出 ----------
-  const exportSymbols = ((table as any).visibles ?? []).map((s: string) =>
-    `${esModule ? 'export const ' : 'exports.'}${s} = getSymbol(${stringify(s)});`
+  const parts = ss.map(x =>
+    typeof x === 'string' ? stringify(x) : x >= 0 ? x : dks[-x - 1]
   );
 
-  let exportDefault: string;
-  if (esModule) {
-    exportDefault = 'export default getSymbol();';
-  } else {
-    exportDefault = `
-const __default = getSymbol();
-Object.defineProperty(exports, '__esModule', { value: true });
-Object.assign(exports, __default);
-exports.default = __default;
-    `;
-  }
+  return { value: `${ns}([${parts.join(',')}]).join('')`, symbols };
+};
 
-  // ---------- 拼接 ----------
-  const output = [
-    '/* __WGSL_LOADER_GENERATED */',
-    preamble,
-    ...imports,
-    _dict,
-    _symbols,
-    def,
-    libs,
-    `const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });`,
-    exportDefault,
-    ...exportSymbols,
-    ''
-  ].join('\n');
+export const makeTypeDef = (symbols: string[]) => (
+`import { ParsedBundle } from "../shader/wgsl";
+declare const _default: ParsedBundle;
+export default _default;
+${symbols.map(s => `export declare const ${s}: ParsedBundle;`).join("\n")}
+`);
+
+// ----------------------------------------------------------------------------
+// 向后兼容的便捷函数：保持你之前脚本/loader 的调用方式
+// ----------------------------------------------------------------------------
+const identityMinify = (code: string) => code;
+
+/** 旧签名：返回生成后的代码字符串 */
+export function transpileWGSL(
+  source: string,
+  resourcePath: string,
+  esModule: boolean = true,
+): string {
+  const { output } = makeTranspile(
+    'WGSL',
+    'wgsl',
+    runtimeSymbolDict || { S: 'symbols' }, // 兜底，避免 S 未定义
+    loadModule,
+    compressAST,
+    identityMinify,
+  )(source, resourcePath, { esModule });
 
   return output;
-};
+}

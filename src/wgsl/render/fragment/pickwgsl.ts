@@ -1,18 +1,19 @@
 /* __WGSL_LOADER_GENERATED */
 import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 import m0 from "../../../wgsl/mask/scissorwgsl";
-const {} = symbolDictionary;
-const _ = decompressString("main symbols visibles ../../../wgsl/mask/scissor name isScissored imported imports modules symbol flags vec4<u32> location(0) attr type fragment fragScissor vec4<f32> fragUV vec2<f32> location(1) fragId u32 location(2) interpolate(flat) fragIndex location(3) parameters func exports location fragId".split(' '));
-const t = {[_(1)]:_([0]),[_(2)]:_([0]),[_(8)]:[{"at":0,[_(4)]:_(3),[_(1)]:_([5]),[_(7)]:[{[_(4)]:_(5),[_(6)]:_(5)}]}],[_(29)]:[{"at":55,[_(9)]:_(0),[_(10)]:1,[_(28)]:{[_(4)]:_(0),[_(14)]:{[_(4)]:_(11),[_(13)]:_([12])},[_(13)]:_([15]),[_(27)]:[{[_(4)]:_(16),[_(14)]:_(17),[_(13)]:_([12])},{[_(4)]:_(18),[_(14)]:_(19),[_(13)]:_([20])},{[_(4)]:_(21),[_(14)]:_(22),[_(13)]:_([23,24])},{[_(4)]:_(25),[_(14)]:_(22),[_(13)]:_([26,24])}]}}]};
+const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
+const _ = decompressString("main ../../../wgsl/mask/scissor isScissored vec4<u32> location(0) fragment fragScissor fragUV vec2<f32> location(1) fragId u32 location(2) interpolate(flat) fragIndex location(3) location fragId".split(' '));
+const table = {[S]:_([0]),[W]:_([0]),[O]:[{[A]:0,[N]:_(1),[S]:_([2]),[K]:[{[N]:_(2),[J]:_(2)}]}],[E]:[{[A]:55,[R]:_(0),[G]:1,[F]:{[N]:_(0),[T]:{[N]:_(3),[Z]:_([4])},[Z]:_([5]),[P]:[{[N]:_(6),[T]:C,[Z]:_([4])},{[N]:_(7),[T]:_(8),[Z]:_([9])},{[N]:_(10),[T]:_(11),[Z]:_([12,13])},{[N]:_(14),[T]:_(11),[Z]:_([15,13])}]}}]};
 const data = {
-  "name": "fragment/pick",
-  "code": _(["use '",3,"':: { ",5," };\r\n\r\n@",15,"\r\nfn ",0,"(\r\n  @",12," ",16,": ",17,",\r\n  @",20," ",18,": ",19,",\r\n  @",23," @",24," ",21,": u32,\r\n  @",26," @",24," ",25,": u32,\r\n) -> @",12," ",11," {\r\n  if (",5,"(",16,")) { discard; }\r\n\r\n  if (UV_PICKING) {\r\n    let xy = vec2<u32>(clamp(",18," * 65535.0, ",19,"(0.0), ",19,"(65535.0)));\r\n    let index = xy.x | (xy.y << 16);\r\n    return ",11,"(",21,", index, 0u, 0u);\r\n  }\r\n  else {\r\n    return ",11,"(",21,", ",25,", 0u, 0u);\r\n  }\r\n}"]).join(''),
-  "hash": 2908228345444428,
-  "table": t,
-  "shake": [[55,[0]]],
-  "tree": decompressAST([[1,0,50],[0,55,591],[3,0,9],[2,14,18],[3,9,21],[3,40,52],[3,35,47],[3,13,31],[3,35,47],[3,13,31],[3,41,53],[2,32,43]], t[S]),
+  name: "fragment/pick.wgsl",
+  code: _(["use '",1,"':: { ",2," };\r\n\r\n@",5,"\r\nfn ",0,"(\r\n  @",4," ",6,": ",C,",\r\n  @",9," ",7,": ",8,",\r\n  @",12," @",13," ",10,": u32,\r\n  @",15," @",13," ",14,": u32,\r\n) -> @",4," ",3," {\r\n  if (",2,"(",6,")) { discard; }\r\n\r\n  if (UV_PICKING) {\r\n    let xy = vec2<u32>(clamp(",7," * 65535.0, ",8,"(0.0), ",8,"(65535.0)));\r\n    let index = xy.x | (xy.y << 16);\r\n    return ",3,"(",10,", index, 0u, 0u);\r\n  }\r\n  else {\r\n    return ",3,"(",10,", ",14,", 0u, 0u);\r\n  }\r\n}\n"]).join(''),
+  hash: 0x69173b1e5ca3,
+  table,
+  shake: [[55,[0]]],
+  tree: decompressAST([[1,0,50],[0,55,591],[3,0,9],[2,14,18],[3,9,21],[3,40,52],[3,35,47],[3,13,31],[3,35,47],[3,13,31],[3,41,53],[2,32,43]], table[S]),
 };
+
 const libs = {"../../../wgsl/mask/scissor": m0};
-const getSymbol = (entry) => ({ module: bindEntryPoint(data, entry), libs });
+const getSymbol = (entry) => ({module: bindEntryPoint(data, entry), libs});
 export default getSymbol();
 export const main = getSymbol("main");
