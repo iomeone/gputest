@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 import m0 from "../../wgsl/use/viewwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("PositionNormal getTubeJoin tubeJoinTangent tubeJoinBevel tubeJoinMiter tubeJoinRound slerp ../../wgsl/use/view getViewVector export beforePos centerPos afterPos arc f32 size segment i32 style viewDir tangent left right position normal locals PositionNormal export centerPos segment viewDir normalize tubeJoinTangent tubeJoinMiter offset return tangent billboard".split(' '));

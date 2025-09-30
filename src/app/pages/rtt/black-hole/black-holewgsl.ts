@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../../shader/wgsl";
 import m0 from "../../../../wgsl/mask/sdfwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("TAU DISTORT STEP MAX_STEPS getExposure getSeed getTime getRed getGreen getBlue getBackdrop traceVolumeBH raymarchVolume getAcceleration getAcceleration2 getDisc gradientNoiseDeriv randSignedWrapped4 pcg4d ../../../../wgsl/mask/sdf getUVScale getUVWScale f32 optional link i32 uvw export pos ray distMax optional return getTime getRed getGreen getBlue getBackdrop getDisc length mat2x3 getAcceleration2 smoothstep weight randSignedWrapped4".split(' '));

@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 import m0 from "../../wgsl/codec/octahedralwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("MAX_HEIGHT CONV_COS0 CONV_COS1 CONV_COS2 getSourceMapping getAtlasTexture shCoefficients SPECULAR_SH shScratch pmremDiffuseSH sqr ../../wgsl/codec/octahedral decodeOctahedral vec4<i32> link vec2<f32> level f32 array<vec4<f32>> void compute export globalId vec3<u32> builtin(global_invocation_id) decodeOctahedral CONV_COS1 CONV_COS2 shCoefficients SPECULAR_SH shScratch mapping sample weight".split(' '));

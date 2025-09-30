@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 import m0 from "../../../wgsl/use/typeswgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getVertex VertexOutput VertexOutputWithDepth main mainWithDepth ../../../wgsl/use/types SolidVertex link u32 vertex vertexIndex builtin(vertex_index) instanceIndex builtin(instance_index) export position builtin(position) fragAlpha f32 location(0) fragUV location(1) fragST location(2) fragScissor location(3) fragPosition location(4) locals getVertex VertexOutput builtin position location VertexOutputWithDepth vertexIndex instanceIndex".split(' '));

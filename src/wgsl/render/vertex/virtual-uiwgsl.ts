@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 import m0 from "../../../wgsl/use/typeswgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getVertex toColorSpace VertexOutput main ../../../wgsl/use/types UIVertex link u32 optional vertex vertexIndex builtin(vertex_index) instanceIndex builtin(instance_index) position builtin(position) fragUV vec2<f32> location(0) fragTextureUV location(1) fragTextureST location(2) fragClipUV location(3) fragSDFUV location(4) fragSDFConfig location(5) interpolate(flat) fragRepeat i32 location(6) fragMode location(7) fragShape location(8) fragRadius location(9) fragBorder location(10) fragStroke location(11) fragFill location(12) locals toColorSpace VertexOutput builtin position location interpolate".split(' '));

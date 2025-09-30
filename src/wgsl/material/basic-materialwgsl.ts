@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getColor getColorMap getBasicMaterial optional link vec2<f32> export inColor mapUV mapST return".split(' '));
 const table = {[S]:_([0,1,2]),[W]:_([2]),[X]:[{[A]:0,[R]:_(0),[G]:6,[F]:{[N]:_(0),[T]:C,[Z]:_([3,4])}},{[A]:86,[R]:_(1),[G]:6,[F]:{[N]:_(1),[T]:C,[Z]:_([3,4]),[P]:[{[N]:"uv",[T]:_(5)}]}}],[E]:[{[A]:175,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:C,[Z]:_([6]),[P]:[{[N]:_(7),[T]:C},{[N]:_(8),[T]:C},{[N]:_(9),[T]:C}],[I]:_([0,1])}}],[L]:{[_(0)]:true,[_(1)]:true}};

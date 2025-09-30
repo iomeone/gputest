@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 import m0 from "../../wgsl/use/viewwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getLineJoin lineJoinBevel lineJoinMiter lineJoinRound turn slerp ../../wgsl/use/view screenToClip3D clip3DToScreen export beforePoint centerPoint afterPoint arc f32 size segment i32 style vec2<f32> left right clip3DToScreen export centerPoint segment center normalize lineJoinMiter return".split(' '));

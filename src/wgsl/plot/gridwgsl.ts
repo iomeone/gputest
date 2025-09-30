@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getGridValue getGridDirection getGridMin getGridMax getGridShift STEP getGridAutoState getGridPosition f32 link u32 i32 bool optional base shift export index return".split(' '));
 const table = {[S]:_([0,1,2,3,4,5,6,7]),[W]:_([7]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:_(8),[Z]:_([9]),[P]:[{[N]:"i",[T]:_(10)}]}},{[A]:39,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:_(11),[Z]:_([9])}},{[A]:76,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:C,[Z]:_([9])}},{[A]:113,[R]:_(3),[G]:2,[F]:{[N]:_(3),[T]:C,[Z]:_([9])}},{[A]:150,[R]:_(4),[G]:2,[F]:{[N]:_(4),[T]:C,[Z]:_([9])}},{[A]:228,[R]:_(6),[G]:6,[F]:{[N]:_(6),[T]:_(12),[Z]:_([13,9]),[P]:[{[N]:_(14),[T]:C},{[N]:_(15),[T]:C}]}}],[E]:[{[A]:328,[R]:_(7),[G]:1,[F]:{[N]:_(7),[T]:C,[Z]:_([16]),[P]:[{[N]:_(17),[T]:_(10)}],[I]:_([2,3,1,5,4,6,0])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true,[_(4)]:true,[_(6)]:true}};

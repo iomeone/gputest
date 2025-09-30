@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 import m0 from "../../../wgsl/fragment/bayerwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getSurface getScissor main ../../../wgsl/fragment/bayer bayer4x4f infer(T) link color normal tangent position coord optional scissor f32 builtin(frag_depth) fragment export frontFacing bool builtin(front_facing) fragCoord builtin(position) fragColor location(0) fragUV location(1) fragST location(2) fragNormal location(3) fragTangent location(4) fragPosition location(5) fragScissor location(6) infers normal builtin location outColor surface".split(' '));

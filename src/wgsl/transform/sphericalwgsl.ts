@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getTransformMatrix getSphericalBend getSphericalFocus getSphericalAspectX getSphericalAspectY getSphericalScaleY getSphericalPosition mat4x4<f32> link f32 optional export position optional return position sphericalBend sphericalFocus sphericalAspectX sphericalAspectY matrix radius cosine".split(' '));
 const table = {[S]:_([0,1,2,3,4,5,6]),[W]:_([6]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:_(7),[Z]:_([8])}},{[A]:49,[R]:_(1),[G]:6,[F]:{[N]:_(1),[T]:_(9),[Z]:_([10,8])}},{[A]:112,[R]:_(2),[G]:6,[F]:{[N]:_(2),[T]:_(9),[Z]:_([10,8])}},{[A]:176,[R]:_(3),[G]:6,[F]:{[N]:_(3),[T]:_(9),[Z]:_([10,8])}},{[A]:242,[R]:_(4),[G]:6,[F]:{[N]:_(4),[T]:_(9),[Z]:_([10,8])}},{[A]:308,[R]:_(5),[G]:6,[F]:{[N]:_(5),[T]:_(9),[Z]:_([10,8])}}],[E]:[{[A]:375,[R]:_(6),[G]:1,[F]:{[N]:_(6),[T]:C,[Z]:_([11]),[P]:[{[N]:_(12),[T]:C}],[I]:_([1,2,3,4,5,0])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true,[_(4)]:true,[_(5)]:true}};

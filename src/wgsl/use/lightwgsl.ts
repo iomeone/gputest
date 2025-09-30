@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 import m0 from "../../wgsl/use/typeswgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("LightUniforms lightUniforms getLightCount getLight ../../wgsl/use/types Light export count u32 lights array<Light> index group(PASS) binding(1) <storage> export lightUniforms".split(' '));

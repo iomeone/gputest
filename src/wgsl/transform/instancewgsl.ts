@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getIndirectTransformMatrix getIndirectNormalMatrix getInstanceMap transformMatrix normalMatrix loadInstance getTransformMatrix getNormalMatrix mat4x4<f32> link u32 mat3x3<f32> optional void export mat4x4 mat3x3 return transformMatrix normalMatrix export".split(' '));
 const table = {[S]:_([0,1,2,3,4,5,6,7]),[W]:_([5,6,7]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:_(8),[Z]:_([9]),[P]:[{[N]:"i",[T]:_(10)}]}},{[A]:61,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:_(11),[Z]:_([9]),[P]:[{[N]:"i",[T]:_(10)}]}},{[A]:121,[R]:_(2),[G]:6,[F]:{[N]:_(2),[T]:_(10),[Z]:_([12,9]),[P]:[{[N]:"i",[T]:_(10)}]}}],[E]:[{[A]:274,[R]:_(5),[G]:1,[F]:{[N]:_(5),[T]:_(13),[Z]:_([14]),[P]:[{[N]:"i",[T]:_(10)}],[I]:_([2,3,0,4,1])}},{[A]:454,[R]:_(6),[G]:1,[F]:{[N]:_(6),[T]:_(8),[Z]:_([14]),[I]:_([3])}},{[A]:530,[R]:_(7),[G]:1,[F]:{[N]:_(7),[T]:_(11),[Z]:_([14]),[I]:_([4])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true}};

@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getDispatchSize getPosition getTrim arcLengthBuffer main u32 link vec2<u32> array<f32> void compute workgroup_size(64) export globalId vec3<u32> builtin(global_invocation_id) getPosition globalId".split(' '));
 const table = {[S]:_([0,1,2,3,4]),[W]:_([4]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:_(5),[Z]:_([6])}},{[A]:38,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:C,[Z]:_([6]),[P]:[{[N]:"i",[T]:_(5)}]}},{[A]:82,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:_(7),[Z]:_([6]),[P]:[{[N]:"i",[T]:_(5)}]}},{[A]:124,[R]:_(3),[G]:2,[V]:{[N]:_(3),[T]:_(8),[Z]:_([6]),[Q]:"<storage, read_write>"}}],[E]:[{[A]:187,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(9),[Z]:_([10,11,12]),[P]:[{[N]:_(13),[T]:_(14),[Z]:_([15])}],[I]:_([0,2,1,3])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true}};

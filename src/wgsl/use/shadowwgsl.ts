@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("shadowTexture shadowSampler sampleShadow f32 export vec2<f32> index u32 level texture_depth_2d_array group(PASS) binding(2) sampler_comparison binding(3)".split(' '));
 const table = {[S]:_([0,1,2]),[W]:_([2]),[E]:[{[A]:136,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:_(3),[Z]:_([4]),[P]:[{[N]:"uv",[T]:_(5)},{[N]:_(6),[T]:_(7)},{[N]:_(8),[T]:_(3)}],[I]:_([0,1])}}],[B]:[{[A]:0,[R]:_(0),[G]:32,[V]:{[N]:_(0),[T]:_(9),[Z]:_([10,11])}},{[A]:69,[R]:_(1),[G]:32,[V]:{[N]:_(1),[T]:_(12),[Z]:_([10,13])}}]};

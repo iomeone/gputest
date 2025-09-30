@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 import m0 from "../../wgsl/codec/normal16wgsl";
 import m1 from "../../wgsl/use/viewwgsl";
 import m2 from "./outline-weightwgsl";

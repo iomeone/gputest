@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getTexture getSize getOffset textureUVToXYOffset infer(T) link vec2<u32> vec2<f32> optional export infers".split(' '));
 const table = {[S]:_(["T",0,1,2,3]),[W]:_([3]),[X]:[{[A]:18,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:{[N]:"T",[Z]:_([4])},[Z]:_([5]),[P]:[{[N]:"uv",[T]:_(6)}],[I]:_(["T"]),[H]:[{[N]:"T",[A]:-1}]}},{[A]:70,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:_(7),[Z]:_([5])}},{[A]:104,[R]:_(2),[G]:6,[F]:{[N]:_(2),[T]:_(6),[Z]:_([8,5])}}],[E]:[{[A]:177,[R]:_(3),[G]:1,[F]:{[N]:_(3),[T]:"T",[Z]:_([9]),[P]:[{[N]:"uv",[T]:_(7)}],[I]:_(["T",1,2,0])}}],[_(10)]:_(["T"]),[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true}};

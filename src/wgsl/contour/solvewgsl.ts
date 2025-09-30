@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("approx3x3 eps orthogonalize3x3 export system mat3x4<f32> system maxAxis return orthogonalize3x3 matrix projected maxAbs".split(' '));
 const table = {[S]:_([0,1,2]),[W]:_([0]),[E]:[{[A]:0,[R]:_(0),[G]:1,[F]:{[N]:_(0),[T]:D,[Z]:_([3]),[P]:[{[N]:_(4),[T]:_(5)}],[I]:_([2])}}]};

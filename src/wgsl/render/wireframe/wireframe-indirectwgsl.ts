@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("sourceCommand destinationCommand main array<u32> link void compute workgroup_size(1) sourceCommand destinationCommand vertexCount instanceCount".split(' '));
 const table = {[S]:_([0,1,2]),[W]:_([2]),[X]:[{[A]:0,[R]:_(0),[G]:2,[V]:{[N]:_(0),[T]:_(3),[Z]:_([4]),[Q]:"<storage, read>"}},{[A]:59,[R]:_(1),[G]:2,[V]:{[N]:_(1),[T]:_(3),[Z]:_([4]),[Q]:"<storage, read_write>"}}],[E]:[{[A]:125,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:_(5),[Z]:_([6,7]),[I]:_([0,1])}}],[L]:{[_(0)]:true,[_(1)]:true}};

@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("depthWeight depthWeightPlus normalWeight facetWeight f32 export u32 export return select".split(' '));
 const table = {[S]:_([0,1,2,3]),[W]:_([0,1,2,3]),[E]:[{[A]:0,[R]:_(0),[G]:1,[F]:{[N]:_(0),[T]:_(4),[Z]:_([5]),[P]:[{[N]:"a",[T]:_(4)},{[N]:"b",[T]:_(4)}]}},{[A]:198,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:_(4),[Z]:_([5]),[P]:[{[N]:"c",[T]:_(4)},{[N]:"l",[T]:_(4)},{[N]:"r",[T]:_(4)},{[N]:"t",[T]:_(4)},{[N]:"b",[T]:_(4)}],[I]:_([0])}},{[A]:364,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:_(4),[Z]:_([5]),[P]:[{[N]:"a",[T]:D},{[N]:"b",[T]:D}]}},{[A]:505,[R]:_(3),[G]:1,[F]:{[N]:_(3),[T]:_(4),[Z]:_([5]),[P]:[{[N]:"a",[T]:_(6)},{[N]:"b",[T]:_(6)}]}}]};

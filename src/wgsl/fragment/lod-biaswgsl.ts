@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getTexture getLODBias getLODBiasedTexture link vec2<f32> bias f32 optional export".split(' '));
 const table = {[S]:_([0,1,2]),[W]:_([2]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([3]),[P]:[{[N]:"uv",[T]:_(4)},{[N]:_(5),[T]:_(6)}]}},{[A]:65,[R]:_(1),[G]:6,[F]:{[N]:_(1),[T]:_(6),[Z]:_([7,3])}}],[E]:[{[A]:123,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:C,[Z]:_([8]),[P]:[{[N]:"uv",[T]:_(4)}],[I]:_([0,1])}}],[L]:{[_(0)]:true,[_(1)]:true}};

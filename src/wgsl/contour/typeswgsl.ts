@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("IndirectDrawMetaAtomic IndirectDrawMeta export vertexCount u32 instanceCount atomic<u32> firstVertex firstInstance dispatchCount _unused1 _unused2 generationIndex nextVertexIndex atomic".split(' '));
 const table = {[Y]:_([0,1]),[S]:_([0,1]),[W]:_([0,1]),[E]:[{[A]:0,[R]:_(0),[G]:1,[U]:{[N]:_(0),[Z]:_([2]),[M]:[{[N]:_(3),[T]:_(4)},{[N]:_(5),[T]:_(6)},{[N]:_(7),[T]:_(4)},{[N]:_(8),[T]:_(4)},{[N]:_(9),[T]:_(6)},{[N]:_(10),[T]:_(4)},{[N]:_(11),[T]:_(4)},{[N]:_(12),[T]:_(4)},{[N]:_(13),[T]:_(6)}]}},{[A]:331,[R]:_(1),[G]:1,[U]:{[N]:_(1),[Z]:_([2]),[M]:[{[N]:_(3),[T]:_(4)},{[N]:_(5),[T]:_(4)},{[N]:_(7),[T]:_(4)},{[N]:_(8),[T]:_(4)},{[N]:_(9),[T]:_(4)},{[N]:_(10),[T]:_(4)},{[N]:_(11),[T]:_(4)},{[N]:_(12),[T]:_(4)},{[N]:_(13),[T]:_(4)}]}}]};

@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 import m0 from "../../wgsl/use/typeswgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("applyMaterial applyDirectionalShadow applyPointShadow applyHemiShadow applySpotShadow applyLight ../../wgsl/use/types Light SurfaceFragment link surface f32 optional light export SurfaceFragment surface optional return intensity radiance normalize normal shadowMap position select cutoff feather".split(' '));

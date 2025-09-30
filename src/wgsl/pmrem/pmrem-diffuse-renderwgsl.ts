@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 import m0 from "../../wgsl/codec/octahedralwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getTargetMapping shCoefficients atlasTexture pmremDiffuseRender sqr ../../wgsl/codec/octahedral decodeOctahedral vec4<u32> link array<vec4<f32>> <storage> void compute export globalId vec3<u32> builtin(global_invocation_id) shCoefficients globalId mapping".split(' '));

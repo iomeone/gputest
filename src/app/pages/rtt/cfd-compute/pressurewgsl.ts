@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../../shader/wgsl";
 import m0 from "../../../../wgsl/use/arraywgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getSize divergenceBuffer pressureBufferOut pressureBufferIn main ../../../../wgsl/use/array sizeToModulus2 packIndex2 wrapIndex2 vec2<u32> link array<f32> <storage> void compute globalId vec3<u32> builtin(global_invocation_id) packIndex2 wrapIndex2 storage pressureBufferIn globalId fragmentId modulus center".split(' '));

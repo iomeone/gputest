@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("COLORS pmremGridOverlay export vec2<f32> size1 scale f32 outline".split(' '));
 const table = {[S]:_([0,1]),[W]:_([1]),[E]:[{[A]:145,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:C,[Z]:_([2]),[P]:[{[N]:"xy",[T]:_(3)},{[N]:_(4),[T]:_(3)},{[N]:_(5),[T]:_(6)}],[I]:_([0])}}]};

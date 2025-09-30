@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("tonemapHable hable hable4 export color return".split(' '));
 const table = {[S]:_(["A","B","C","D","E","F","W",0,1,2]),[W]:_([0]),[E]:[{[A]:170,[R]:_(0),[G]:1,[F]:{[N]:_(0),[T]:C,[Z]:_([3]),[P]:[{[N]:_(4),[T]:C}],[I]:_([2])}}]};

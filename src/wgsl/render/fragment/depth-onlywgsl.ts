@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 import m0 from "../../../wgsl/fragment/bayerwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getDepth getScissor main ../../../wgsl/fragment/bayer bayer4x4f infer(T) link alpha f32 position optional color scissor builtin(frag_depth) fragment fragCoord builtin(position) fragAlpha location(0) fragUV location(1) fragST location(2) fragPosition location(3) fragScissor location(4) infers fragment location outColor".split(' '));

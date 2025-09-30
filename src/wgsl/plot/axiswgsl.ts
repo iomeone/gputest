@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getAxisStep getAxisOrigin getAxisPosition link export index u32".split(' '));
 const table = {[S]:_([0,1,2]),[W]:_([2]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([3])}},{[A]:38,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:C,[Z]:_([3])}}],[E]:[{[A]:80,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:C,[Z]:_([4]),[P]:[{[N]:_(5),[T]:_(6)}],[I]:_([0,1])}}],[L]:{[_(0)]:true,[_(1)]:true}};

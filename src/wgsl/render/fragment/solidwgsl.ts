@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getFragment getScissor main optional link color scissor location(0) fragment fragColor fragUV location(1) fragST location(2) fragScissor location(3) return location outColor".split(' '));
 const table = {[S]:_([0,1,2]),[W]:_([2]),[X]:[{[A]:0,[R]:_(0),[G]:6,[F]:{[N]:_(0),[T]:C,[Z]:_([3,4]),[P]:[{[N]:_(5),[T]:C},{[N]:"uv",[T]:C},{[N]:"st",[T]:C}]}},{[A]:111,[R]:_(1),[G]:6,[F]:{[N]:_(1),[T]:C,[Z]:_([3,4]),[P]:[{[N]:_(5),[T]:C},{[N]:_(6),[T]:C}]}}],[E]:[{[A]:213,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:{[N]:C,[Z]:_([7])},[Z]:_([8]),[P]:[{[N]:_(9),[T]:C,[Z]:_([7])},{[N]:_(10),[T]:C,[Z]:_([11])},{[N]:_(12),[T]:C,[Z]:_([13])},{[N]:_(14),[T]:C,[Z]:_([15])}],[I]:_([0,1])}}],[L]:{[_(0)]:true,[_(1)]:true}};

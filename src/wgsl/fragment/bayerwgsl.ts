@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("ONE_TWO bayer2x2 bayer4x4 bayer2x2f bayer4x4f u32 export vec2<u32> f32 ONE_TWO export return".split(' '));
 const table = {[S]:_([0,1,2,3,4]),[W]:_([1,2,3,4]),[E]:[{[A]:36,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:_(5),[Z]:_([6]),[P]:[{[N]:"ij",[T]:_(7)}]}},{[A]:199,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:_(5),[Z]:_([6]),[P]:[{[N]:"ij",[T]:_(7)}],[I]:_([0])}},{[A]:480,[R]:_(3),[G]:1,[F]:{[N]:_(3),[T]:_(8),[Z]:_([6]),[P]:[{[N]:"ij",[T]:_(7)}],[I]:_([1])}},{[A]:574,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(8),[Z]:_([6]),[P]:[{[N]:"ij",[T]:_(7)}],[I]:_([2])}}]};

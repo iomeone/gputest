@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("SH_DIFFUSE SH_SPECULAR getDefaultEnvironment sqr sampleDiffuse sampleSpecular array<vec3<f32>> link export uvw sigma f32 ddx ddy SH_DIFFUSE SH_SPECULAR return sample".split(' '));
 const table = {[S]:_([0,1,2,3,4,5]),[W]:_([2]),[X]:[{[A]:0,[R]:_(0),[G]:2,[V]:{[N]:_(0),[T]:_(6),[Z]:_([7])}},{[A]:41,[R]:_(1),[G]:2,[V]:{[N]:_(1),[T]:_(6),[Z]:_([7])}}],[E]:[{[A]:85,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:C,[Z]:_([8]),[P]:[{[N]:_(9),[T]:D},{[N]:_(10),[T]:_(11)},{[N]:_(12),[T]:D},{[N]:_(13),[T]:D}],[I]:_([4,5])}}],[L]:{[_(0)]:true,[_(1)]:true}};

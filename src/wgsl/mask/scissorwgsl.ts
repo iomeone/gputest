@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getScissorColor isScissored export color min4 bool return".split(' '));
 const table = {[S]:_([0,1]),[W]:_([0,1]),[E]:[{[A]:0,[R]:_(0),[G]:1,[F]:{[N]:_(0),[T]:C,[Z]:_([2]),[P]:[{[N]:_(3),[T]:C},{[N]:_(4),[T]:C}]}},{[A]:411,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:_(5),[Z]:_([2]),[P]:[{[N]:_(4),[T]:C}]}}]};

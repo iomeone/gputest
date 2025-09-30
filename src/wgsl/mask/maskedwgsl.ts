@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getMask getMaskedColor getMaskedSurface f32 optional link vec2<f32> export color normal tangent position coord getMask return".split(' '));
 const table = {[S]:_([0,1,2]),[W]:_([1,2]),[X]:[{[A]:0,[R]:_(0),[G]:6,[F]:{[N]:_(0),[T]:_(3),[Z]:_([4,5]),[P]:[{[N]:"uv",[T]:_(6)}]}}],[E]:[{[A]:69,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:C,[Z]:_([7]),[P]:[{[N]:_(8),[T]:C},{[N]:"uv",[T]:C},{[N]:"st",[T]:C}],[I]:_([0])}},{[A]:249,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:C,[Z]:_([7]),[P]:[{[N]:_(8),[T]:C},{[N]:"uv",[T]:C},{[N]:"st",[T]:C},{[N]:_(9),[T]:C},{[N]:_(10),[T]:C},{[N]:_(11),[T]:C},{[N]:_(12),[T]:C}],[I]:_([0])}}],[L]:{[_(0)]:true}};

@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 import m0 from "../../../wgsl/use/viewwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("SMOOTH_TANGENTS getPosition getAnchor getArcLength getNormal attachArcLabelTo ArcSample ArcPT sampleArc sampleArcPositionTangent ../../../wgsl/use/view getViewResolution worldToClip getWorldScale getViewPosition optional link u32 vec2<u32> f32 export shape vec2<f32> origin rectangle depth scale offset flip locals worldToClip optional getPosition return getArcLength origin rectangle offset anchor totalLength center1 center2 worldScale lengthScale sample finalXY ArcSample normalize".split(' '));

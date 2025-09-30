@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("transformPositionA getDifferentialA getDifferentialB getChainDifferential link origin vector contravariant bool export origin vector contravariant".split(' '));
 const table = {[S]:_([0,1,2,3]),[W]:_([3]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([4]),[P]:[{[N]:_(5),[T]:C}]}},{[A]:64,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:C,[Z]:_([4]),[P]:[{[N]:_(6),[T]:C},{[N]:_(5),[T]:C},{[N]:_(7),[T]:_(8)}]}},{[A]:164,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:C,[Z]:_([4]),[P]:[{[N]:_(6),[T]:C},{[N]:_(5),[T]:C},{[N]:_(7),[T]:_(8)}]}}],[E]:[{[A]:266,[R]:_(3),[G]:1,[F]:{[N]:_(3),[T]:C,[Z]:_([9]),[P]:[{[N]:_(6),[T]:C},{[N]:_(5),[T]:C},{[N]:_(7),[T]:_(8)}],[I]:_([1,2,0])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true}};

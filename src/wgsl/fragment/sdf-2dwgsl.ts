@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("SDF getUVScale getBoxSDF getBorderBoxSDF getRoundedBorderBoxSDF getBoxCorner getCircleCorner export outer f32 inner sdfUV vec2<f32> box scale border radius export return length approx border flipUV getBoxCorner radius getCircleCorner innerRadius".split(' '));
 const table = {[Y]:_([0]),[S]:_([0,1,2,3,4,5,6]),[W]:_([0,1,2,3,4]),[E]:[{[A]:0,[R]:_(0),[G]:1,[U]:{[N]:_(0),[Z]:_([7]),[M]:[{[N]:_(8),[T]:_(9)},{[N]:_(10),[T]:_(9)}]}},{[A]:151,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:_(9),[Z]:_([7]),[P]:[{[N]:_(11),[T]:_(12)}]}},{[A]:299,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:_(0),[Z]:_([7]),[P]:[{[N]:_(13),[T]:_(12)},{[N]:"uv",[T]:_(12)},{[N]:_(14),[T]:_(9)}],[I]:_([0,0])}},{[A]:618,[R]:_(3),[G]:1,[F]:{[N]:_(3),[T]:_(0),[Z]:_([7]),[P]:[{[N]:_(13),[T]:_(12)},{[N]:_(15),[T]:C},{[N]:"uv",[T]:_(12)},{[N]:_(14),[T]:_(9)}],[I]:_([0,5,0])}},{[A]:1455,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(0),[Z]:_([7]),[P]:[{[N]:_(13),[T]:_(12)},{[N]:_(15),[T]:C},{[N]:_(16),[T]:C},{[N]:"uv",[T]:_(12)},{[N]:_(14),[T]:_(9)}],[I]:_([0,6,0])}}]};

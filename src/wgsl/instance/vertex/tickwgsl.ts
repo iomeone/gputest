@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 import m0 from "../../../wgsl/use/viewwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("transformPosition transformDifferential getPosition getOffset getDepth getSize getTangent getBase getTickPosition ../../../wgsl/use/view worldToClip getWorldScale optional link bool u32 f32 export index optional return transformDifferential instanceIndex anchor tangent center modulus".split(' '));

@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 import m0 from "../../wgsl/codec/octahedralwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getTargetMapping getSourceMapping getSigma getSamples getScratchTexture scratchTexture atlasTexture pmremBlur sqr rotateAxisAngle ../../wgsl/codec/octahedral encodeOctahedral decodeOctahedral vec4<u32> link f32 i32 vec2<f32> level void compute export globalId vec3<u32> builtin(global_invocation_id) encodeOctahedral getSourceMapping getScratchTexture globalId mapping return sample BLUR_PASS samples weight crossS".split(' '));

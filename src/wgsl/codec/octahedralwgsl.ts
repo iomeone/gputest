@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("signNotZero encodeOctahedral decodeOctahedral wrapOctahedral encodeHemiOctahedral decodeHemiOctahedral vec2<f32> export signNotZero return select vector result octahedral square export l1norm".split(' '));
 const table = {[S]:_([0,1,2,3,4,5]),[W]:_([1,2,3,4,5]),[E]:[{[A]:235,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:_(6),[Z]:_([7]),[P]:[{[N]:"v",[T]:D}],[I]:_([0])}},{[A]:606,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:D,[Z]:_([7]),[P]:[{[N]:"o",[T]:_(6)}],[I]:_([0])}},{[A]:919,[R]:_(3),[G]:1,[F]:{[N]:_(3),[T]:_(6),[Z]:_([7]),[P]:[{[N]:"o",[T]:_(6)}]}},{[A]:1301,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(6),[Z]:_([7]),[P]:[{[N]:"v",[T]:D}]}},{[A]:1678,[R]:_(5),[G]:1,[F]:{[N]:_(5),[T]:D,[Z]:_([7]),[P]:[{[N]:"o",[T]:_(6)}]}}]};

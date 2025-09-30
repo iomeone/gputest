@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../shader/wgsl";
 import m0 from "../../../wgsl/codec/normal16wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getSurface getScissor main WithDepth mainWithDepth ../../../wgsl/codec/normal16 encodeNormal16 encodeNormal16Plus infer(T) link color normal tangent position coord optional scissor vec4<u32> location(0) fragment frontFacing bool builtin(front_facing) fragCoord builtin(position) fragAlpha f32 fragUV location(1) fragST location(2) fragNormal location(3) fragTangent location(4) fragPosition location(5) fragScissor location(6) fragFacetId u32 location(7) interpolate(flat) export depth builtin(frag_depth) locals infers encodeNormal16 encodeNormal16Plus getSurface normal position getScissor return builtin frontFacing fragCoord location fragAlpha fragUV fragST fragNormal fragTangent fragPosition fragScissor fragFacetId outColor surface WithDepth".split(' '));

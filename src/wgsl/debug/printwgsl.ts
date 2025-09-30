@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("PrintData export vertex atomic<u32> vector vectors array<vec4<f32>>".split(' '));
 const table = {[Y]:_([0]),[S]:_([0]),[W]:_([0]),[E]:[{[A]:0,[R]:_(0),[G]:1,[U]:{[N]:_(0),[Z]:_([1]),[M]:[{[N]:_(2),[T]:_(3)},{[N]:_(4),[T]:_(3)},{[N]:_(5),[T]:_(6)}]}}]};

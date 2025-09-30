@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 import m0 from "../../wgsl/codec/octahedralwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("MAX_LAYERS_LOG getLayerCount getGain getMapping getSigma getTexture shCoefficients getOverlay sampleEnvMap sampleDiffuse sampleCubeMapLevel sqr ../../wgsl/codec/octahedral encodeOctahedral u32 link f32 vec4<u32> vec2<f32> level array<vec4<f32>> <storage> optional size1 sigma export uvw ddx ddy getSigma getTexture shCoefficients return clamped sampleCubeMapLevel length mapping OCTAHEDRAL_OVERLAY".split(' '));

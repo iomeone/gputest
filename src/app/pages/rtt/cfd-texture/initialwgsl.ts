@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getSize getSeed velocityTexture main vec2<u32> link f32 u32 void compute globalId vec3<u32> builtin(global_invocation_id) globalId center uvRepeat velocity".split(' '));
 const table = {[S]:_([0,1,2,3]),[W]:_([3]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:_(4),[Z]:_([5])}},{[A]:37,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:_(6),[Z]:_([5]),[P]:[{[N]:"i",[T]:_(7)}]}},{[A]:76,[R]:_(2),[G]:2,[V]:{[N]:_(2),[T]:"texture_storage_2d<rgba32float, write>",[Z]:_([5])}}],[E]:[{[A]:146,[R]:_(3),[G]:1,[F]:{[N]:_(3),[T]:_(8),[Z]:_([9,"workgroup_size(8, 8)"]),[P]:[{[N]:_(10),[T]:_(11),[Z]:_([12])}],[I]:_([0,1,2])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true}};

@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getTargetMapping getSourceMapping getScratchTexture scratchTexture atlasTexture pmremCopy vec4<u32> link vec2<f32> level f32 void compute export globalId vec3<u32> builtin(global_invocation_id) globalId mapping sample".split(' '));
 const table = {[S]:_([0,1,2,3,4,5]),[W]:_([5]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:_(6),[Z]:_([7])}},{[A]:46,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:_(6),[Z]:_([7])}},{[A]:94,[R]:_(2),[G]:2,[F]:{[N]:_(2),[T]:C,[Z]:_([7]),[P]:[{[N]:"uv",[T]:_(8)},{[N]:_(9),[T]:_(10)}]}},{[A]:165,[R]:_(3),[G]:2,[V]:{[N]:_(3),[T]:"texture_storage_2d<rgba16float, write>",[Z]:_([7])}},{[A]:232,[R]:_(4),[G]:2,[V]:{[N]:_(4),[T]:"texture_storage_2d<rgba16float, write>",[Z]:_([7])}}],[E]:[{[A]:299,[R]:_(5),[G]:1,[F]:{[N]:_(5),[T]:_(11),[Z]:_([12,"workgroup_size(8, 8)",13]),[P]:[{[N]:_(14),[T]:_(15),[Z]:_([16])}],[I]:_([0,1,2,4,3])}}],[L]:{[_(0)]:true,[_(1)]:true,[_(2)]:true,[_(3)]:true,[_(4)]:true}};

@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../../shader/wgsl";
 import m0 from "../../../../wgsl/use/viewwgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("BOUNCES SAMPLING MAX_SPHERES MAX_QUAD_VERTS SAMPLING_UNIFORM SAMPLING_COSINE ZERO getFrameCount getQuadCount getQuadData getSphereCount getSphereData getMouse getIsPicking printPoint printLine RayHit Surface indic yFlip accumulateShader SUN SEA SKY GROUND skybox orthoVector bounceUniform bounceReflect bounceCosine randomSphere randomSphereCosine rand2 noise3 xxhash32_3d raytrace intersectQuad intersectSphere ../../../../wgsl/use/view getViewNearFar getViewPosition getViewResolution getViewSize clipToWorld3D clipUVToXY u32 link i32 vec2<u32> optional void export vec2<f32> position normal distance f32 gloss albedo locals SAMPLING getFrameCount getQuadData getSphereData optional RayHit position normal distance Surface albedo return select isDebugPickingThis noise3 eyePos globalAlbedo radiance normalize origin surface raytrace skybox reflected bounceReflect rayHit divisor center radius".split(' '));

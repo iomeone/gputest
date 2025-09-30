@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getStripIndex getStripUV getStripGridIndex getStripTubeUV getStripGridUV vec2<u32> export vertex u32 vec2<f32> detail export vertex return getStripGridIndex detail".split(' '));
 const table = {[S]:_([0,1,2,3,4]),[W]:_([0,1,2,3,4]),[E]:[{[A]:0,[R]:_(0),[G]:1,[F]:{[N]:_(0),[T]:_(5),[Z]:_([6]),[P]:[{[N]:_(7),[T]:_(8)}]}},{[A]:135,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:_(9),[Z]:_([6]),[P]:[{[N]:_(7),[T]:_(8)}],[I]:_([0])}},{[A]:235,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:_(5),[Z]:_([6]),[P]:[{[N]:_(7),[T]:_(8)},{[N]:_(10),[T]:_(8)}]}},{[A]:503,[R]:_(3),[G]:1,[F]:{[N]:_(3),[T]:_(9),[Z]:_([6]),[P]:[{[N]:_(7),[T]:_(8)},{[N]:_(10),[T]:_(8)}],[I]:_([2])}},{[A]:685,[R]:_(4),[G]:1,[F]:{[N]:_(4),[T]:_(9),[Z]:_([6]),[P]:[{[N]:_(7),[T]:_(8)},{[N]:_(10),[T]:_(8)}],[I]:_([2])}}]};

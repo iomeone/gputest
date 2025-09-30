@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("XYLayer encodeCubeMap export uvw vec2<f32> layer u32 locals XYLayer absUVW maxAUVW faceXY select".split(' '));
 const table = {[S]:_([0,1]),[W]:_([1]),[E]:[{[A]:89,[R]:_(1),[G]:1,[F]:{[N]:_(1),[T]:_(0),[Z]:_([2]),[P]:[{[N]:_(3),[T]:D}],[I]:_([0,0])}}],[_(7)]:[{[A]:0,[R]:_(0),[G]:0,[U]:{[N]:_(0),[M]:[{[N]:"xy",[T]:_(4)},{[N]:_(5),[T]:_(6)}]}}]};

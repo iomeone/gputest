@@ -1,5 +1,5 @@
 /* __WGSL_LOADER_GENERATED */
-import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "@use-gpu/shader/wgsl";
+import {decompressAST, decompressString, symbolDictionary, bindEntryPoint} from "../../../../shader/wgsl";
 const {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z} = symbolDictionary;
 const _ = decompressString("getAccumulateTexture getFrameCount compositeShader link vec2<f32> u32 export".split(' '));
 const table = {[S]:_([0,1,2]),[W]:_([2]),[X]:[{[A]:0,[R]:_(0),[G]:2,[F]:{[N]:_(0),[T]:C,[Z]:_([3]),[P]:[{[N]:"uv",[T]:_(4)}]}},{[A]:60,[R]:_(1),[G]:2,[F]:{[N]:_(1),[T]:_(5),[Z]:_([3])}}],[E]:[{[A]:99,[R]:_(2),[G]:1,[F]:{[N]:_(2),[T]:C,[Z]:_([6]),[P]:[{[N]:"uv",[T]:_(4)}],[I]:_([0,1])}}],[L]:{[_(0)]:true,[_(1)]:true}};
