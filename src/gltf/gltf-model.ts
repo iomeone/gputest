@@ -1,10 +1,10 @@
-import type { LC } from '@use-gpu/live';
-import type { TypedArray } from '@use-gpu/core';
+import type { LC } from '../live';
+import type { TypedArray } from '../core';
 import { GLTF, GLTFOptions, GLTFNodeData } from './types';
 
-import { use, memo, useMemo } from '@use-gpu/live';
+import { use, memo, useMemo } from '../live';
 import { GLTFNode } from './gltf-node';
-import { seq, toArray } from '@use-gpu/core';
+import { seq, toArray } from '../core';
 
 export type GLTFModelProps = GLTFOptions & {
   gltf: GLTF,

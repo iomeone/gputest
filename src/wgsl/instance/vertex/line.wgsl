@@ -1,9 +1,9 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex, ShadedVertex };
-use '@use-gpu/wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipToWorld, clipLineIntoView, getWorldScale, getScreenScale, applyZBias3, applyZBias };
-use '@use-gpu/wgsl/geometry/strip'::{ getStripUV, getStripTubeUV };
-use '@use-gpu/wgsl/geometry/tube'::{ getTubeJoin };
-use '@use-gpu/wgsl/geometry/line'::{ getLineJoin };
-use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
+use '../../../wgsl/use/types'::{ SolidVertex, ShadedVertex };
+use '../../../wgsl/use/view'::{ worldToClip, worldToView, viewToClip, to3D, clipToWorld, clipLineIntoView, getWorldScale, getScreenScale, applyZBias3, applyZBias };
+use '../../../wgsl/geometry/strip'::{ getStripUV, getStripTubeUV };
+use '../../../wgsl/geometry/tube'::{ getTubeJoin };
+use '../../../wgsl/geometry/line'::{ getLineJoin };
+use '../../../wgsl/geometry/arrow'::{ getArrowSize };
 
 @optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 @optional @link fn getScissor(i: u32) -> vec4<f32> { return vec4<f32>(1.0); };

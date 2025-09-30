@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { DataSchema, StructAggregateBuffer, StorageSource, UniformType } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
-import { capture, useCapture, useMemo, useOne, useRef, useResource, incrementVersion, makeCapture } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { DataSchema, StructAggregateBuffer, StorageSource, UniformType } from '../../core';
+import type { ShaderSource } from '../../shader';
+import { capture, useCapture, useMemo, useOne, useRef, useResource, incrementVersion, makeCapture } from '../../live';
 import {
   makeIdAllocator,
   copyNumberArray,
@@ -14,7 +14,7 @@ import {
 
   uploadBuffer, uploadBufferRange,
   toCPUDims, toGPUDims,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { QueueReconciler } from '../reconcilers/index';

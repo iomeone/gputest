@@ -1,18 +1,18 @@
-import type { LiveComponent, PropsWithChildren, Ref } from '@use-gpu/live';
-import type { XYZ, ViewCuller, ViewUniforms } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, PropsWithChildren, Ref } from '../../live';
+import type { XYZ, ViewCuller, ViewUniforms } from '../../core';
+import type { ShaderModule } from '../../shader';
 import type { PointerEvent } from '../interact/event';
 import type { PassBinding } from '../pass/types';
 
-import { provide, makeContext, useContext, useNoContext, useMemo, useOne, useNoOne } from '@use-gpu/live';
-import { makeViewUniforms } from '@use-gpu/core';
+import { provide, makeContext, useContext, useNoContext, useMemo, useOne, useNoOne } from '../../live';
+import { makeViewUniforms } from '../../core';
 
 import { useUniformBinding } from '../hooks/useUniformSource';
 import { useFrustumCuller } from '../hooks/useFrustumCuller';
 import { useFrustumPicker } from '../hooks/useFrustumPicker';
 import { QueueReconciler } from '../reconcilers/index';
 
-import viewBindingWGSL, { ViewUniforms as ViewUniformsWGSL } from '@use-gpu/wgsl/use/view.wgsl';
+import viewBindingWGSL, { ViewUniforms as ViewUniformsWGSL } from '../../wgsl/use/view.wgsl';
 import { useInspectable } from '../hooks/useInspectable'
 
 const {signal} = QueueReconciler;

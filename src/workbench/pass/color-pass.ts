@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../live';
 import type { LightEnv, Renderable } from './types';
 
-import { yeet, memo, useMemo } from '@use-gpu/live';
-import { updateMipTextureChain } from '@use-gpu/core';
+import { yeet, memo, useMemo } from '../../live';
+import { updateMipTextureChain } from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';

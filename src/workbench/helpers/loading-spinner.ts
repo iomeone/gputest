@@ -1,6 +1,6 @@
-import type { LC } from '@use-gpu/live';
-import type { Blending, VectorLike } from '@use-gpu/core';
-import { use } from '@use-gpu/live';
+import type { LC } from '../../live';
+import type { Blending, VectorLike } from '../../core';
+import { use } from '../../live';
 
 import { useShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
@@ -8,7 +8,7 @@ import { useAnimationFrame } from '../providers/loop-provider';
 import { useTimeContext } from '../providers/time-provider';
 import { RawQuads } from '../primitives/raw-quads';
 
-import { getLoadingSpinnerMask } from '@use-gpu/wgsl/mask/loading.wgsl';
+import { getLoadingSpinnerMask } from '../../wgsl/mask/loading.wgsl';
 
 export type LoadingSpinnerProps = {
   blend?: Blending,

@@ -1,7 +1,7 @@
-use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16 };
-use '@use-gpu/wgsl/fragment/bayer'::{ bayer4x4 };
-use '@use-gpu/wgsl/fragment/noise'::{ IGN };
-use '@use-gpu/wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getViewPixelRatio };
+use '../../wgsl/codec/normal16'::{ decodeNormal16 };
+use '../../wgsl/fragment/bayer'::{ bayer4x4 };
+use '../../wgsl/fragment/noise'::{ IGN };
+use '../../wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getViewPixelRatio };
 
 @link fn loadNormal16(xy: vec2<u32>) -> vec4<u32>;
 @link fn loadDepth(xy: vec2<u32>) -> f32;

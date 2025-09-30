@@ -1,15 +1,15 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { UseGPURenderContext } from '../../../core';
 import type { PassEnv } from '../../pass/types';
 
-import { yeet, memo } from '@use-gpu/live';
-import { makeDepthStencilState } from '@use-gpu/core';
+import { yeet, memo } from '../../../live';
+import { makeDepthStencilState } from '../../../core';
 
 import { useRenderContext } from '../../providers/render-provider';
 
 import { SHADOW_FORMAT } from '../light/light-data';
 
-import shadowBindingWGSL from '@use-gpu/wgsl/use/shadow.wgsl';
+import shadowBindingWGSL from '../../../wgsl/use/shadow.wgsl';
 
 export type ShadowBufferProps = PropsWithChildren<{
   format?: GPUTextureFormat,

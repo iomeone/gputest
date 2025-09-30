@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { ColorLike, XYZW, Rectangle } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { ColorLike, XYZW, Rectangle } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
 import type { MarginLike, AutoXY } from '../types';
-import type { TraitProps } from '@use-gpu/traits';
+import type { TraitProps } from '../../traits';
 
-import { use, yeet, useFiber, useMemo } from '@use-gpu/live';
+import { use, yeet, useFiber, useMemo } from '../../live';
 import { evaluateDimension } from '../parse';
-import { useInspectHoverable, LayerReconciler } from '@use-gpu/workbench';
+import { useInspectHoverable, LayerReconciler } from '../../workbench';
 
 import { BoxTrait, ElementTrait, ImageTrait, useBoxTrait, useElementTrait } from '../traits';
 import { INSPECT_STYLE } from '../lib/constants';

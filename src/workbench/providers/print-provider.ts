@@ -1,6 +1,6 @@
-import type { ShaderSource } from '@use-gpu/shader';
-import type { StorageSource } from '@use-gpu/core';
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import type { ShaderSource } from '../../shader';
+import type { StorageSource } from '../../core';
+import { makeContext, useContext, useNoContext } from '../../live';
 
 export type ShaderPrinter = {
   target: Record<string, StorageSource>,

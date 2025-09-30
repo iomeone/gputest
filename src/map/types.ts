@@ -1,4 +1,4 @@
-import type { ColorLike, DataBounds, ViewUniforms } from '@use-gpu/core';
+import type { ColorLike, DataBounds, ViewUniforms } from '../core';
 import { mat4 } from 'gl-matrix';
 
 export type MVTStyleSheet = Record<string, MVTStyleProperties>;

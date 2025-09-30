@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/view'::{ getViewPosition };
-use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
+use '../../../wgsl/use/view'::{ getViewPosition };
+use '../../../wgsl/use/types'::{ SurfaceFragment };
 
 @optional @link fn applyLights(
   N: vec3<f32>,

@@ -1,13 +1,13 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { Lazy, TextureSource } from '@use-gpu/core';
-import type { Update } from '@use-gpu/state';
+import type { LiveComponent } from '../../../live';
+import type { ShaderModule } from '../../../shader';
+import type { Lazy, TextureSource } from '../../../core';
+import type { Update } from '../../../state';
 import type { BoundLight } from '../../light/types';
 
-import { memo, yeet, keyed, useMemo, useOne } from '@use-gpu/live';
-import { BLEND_ADD } from '@use-gpu/core';
-import { bindBundle } from '@use-gpu/shader/wgsl';
-import { $delete } from '@use-gpu/state';
+import { memo, yeet, keyed, useMemo, useOne } from '../../../live';
+import { BLEND_ADD } from '../../../core';
+import { bindBundle } from '../../../shader/wgsl';
+import { $delete } from '../../../state';
 
 import { drawCall } from '../../queue/draw-call';
 
@@ -24,23 +24,23 @@ import { EmissiveLightRender } from './emissive-light-render';
 import { FullScreenLightRender } from './full-screen-light-render';
 import { PointLightRender } from './point-light-render';
 
-import { getLight } from '@use-gpu/wgsl/use/light.wgsl';
-import { sampleShadow } from '@use-gpu/wgsl/use/shadow.wgsl';
+import { getLight } from '../../../wgsl/use/light.wgsl';
+import { sampleShadow } from '../../../wgsl/use/shadow.wgsl';
 
-import renderVirtualLight from '@use-gpu/wgsl/render/vertex/virtual-light.wgsl';
-import renderFragmentLight from '@use-gpu/wgsl/render/fragment/deferred-light.wgsl';
+import renderVirtualLight from '../../../wgsl/render/vertex/virtual-light.wgsl';
+import renderFragmentLight from '../../../wgsl/render/fragment/deferred-light.wgsl';
 
-import { getGBufferSurface } from '@use-gpu/wgsl/instance/surface/g-buffer-surface.wgsl';
-import { getGBufferSSAOSurface } from '@use-gpu/wgsl/instance/surface/g-buffer-ssao-surface.wgsl';
-import { sampleSSAO } from '@use-gpu/wgsl/use/ssao.wgsl';
+import { getGBufferSurface } from '../../../wgsl/instance/surface/g-buffer-surface.wgsl';
+import { getGBufferSSAOSurface } from '../../../wgsl/instance/surface/g-buffer-ssao-surface.wgsl';
+import { sampleSSAO } from '../../../wgsl/use/ssao.wgsl';
 
-import { applyLight as applyLightWGSL } from '@use-gpu/wgsl/material/light.wgsl';
-import { applyPBRMaterial as applyMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
-import { applyPBREnvironment as applyEnvironment } from '@use-gpu/wgsl/material/pbr-environment.wgsl';
-import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '@use-gpu/wgsl/shadow/directional.wgsl';
-import { applyPointShadow as applyPointShadowWGSL } from '@use-gpu/wgsl/shadow/point.wgsl';
-import { applyHemiShadow as applyHemiShadowWGSL } from '@use-gpu/wgsl/shadow/hemi.wgsl';
-import { applySpotShadow as applySpotShadowWGSL } from '@use-gpu/wgsl/shadow/spot.wgsl';
+import { applyLight as applyLightWGSL } from '../../../wgsl/material/light.wgsl';
+import { applyPBRMaterial as applyMaterial } from '../../../wgsl/material/pbr-apply.wgsl';
+import { applyPBREnvironment as applyEnvironment } from '../../../wgsl/material/pbr-environment.wgsl';
+import { applyDirectionalShadow as applyDirectionalShadowWGSL } from '../../../wgsl/shadow/directional.wgsl';
+import { applyPointShadow as applyPointShadowWGSL } from '../../../wgsl/shadow/point.wgsl';
+import { applyHemiShadow as applyHemiShadowWGSL } from '../../../wgsl/shadow/hemi.wgsl';
+import { applySpotShadow as applySpotShadowWGSL } from '../../../wgsl/shadow/spot.wgsl';
 
 export type LightRenderProps = {
   lights: Map<number, BoundLight>,

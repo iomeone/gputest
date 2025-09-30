@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, OffscreenRenderContext } from '@use-gpu/core';
-import type { Keyframe } from '@use-gpu/workbench';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry, OffscreenRenderContext } from '../../../core';
+import type { Keyframe } from '../../../workbench';
 
-import React, { Gather, useMemo } from '@use-gpu/live';
-import { seq } from '@use-gpu/core';
+import React, { Gather, useMemo } from '../../../live';
+import { seq } from '../../../core';
 
 import {
   Pass,
@@ -15,13 +15,13 @@ import {
   RenderCubeTarget, RenderToTexture,
   makeSphereGeometry,
   makeBoxGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Scene, Node, Mesh, Instances, InstanceProps,
-} from '@use-gpu/scene';
+} from '../../../scene';
 import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';

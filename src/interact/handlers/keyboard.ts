@@ -1,7 +1,7 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { KeyboardState } from '@use-gpu/workbench';
+import type { LC, LiveElement } from '../../live';
+import type { KeyboardState } from '../../workbench';
 
-import { useRenderProp, useKeyboardState } from '@use-gpu/workbench';
+import { useRenderProp, useKeyboardState } from '../../workbench';
 
 export type KeyboardProps = {
   render?: (state: KeyboardState) => LiveElement,

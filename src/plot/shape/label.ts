@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/core';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { VectorLike } from '../../core';
+import type { TraitProps } from '../../traits';
 
-import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
-import { adjustSchema, schemaToArchetype, schemaToEmitters, toCPUDims, getUniformDims } from '@use-gpu/core';
-import { yeet, memo, useContext, useOne, useMemo } from '@use-gpu/live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { adjustSchema, schemaToArchetype, schemaToEmitters, toCPUDims, getUniformDims } from '../../core';
+import { yeet, memo, useContext, useOne, useMemo } from '../../live';
 import { formatNumber } from '../util/format';
 
-import { useShaderRef, useInspectHoverable, useTransformContext, LABEL_SCHEMA, LayoutContext, LayerReconciler } from '@use-gpu/workbench';
+import { useShaderRef, useInspectHoverable, useTransformContext, LABEL_SCHEMA, LayoutContext, LayerReconciler } from '../../workbench';
 
 import { LabelTraits } from '../traits';
 

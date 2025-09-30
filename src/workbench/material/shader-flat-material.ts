@@ -1,15 +1,15 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { LC, LiveElement } from '../../live';
+import type { ShaderModule, ShaderSource } from '../../shader';
 
-import { provide, yeet, useMemo } from '@use-gpu/live';
+import { provide, yeet, useMemo } from '../../live';
 
 import { MaterialContext } from '../providers/material-provider';
 import { QueueReconciler } from '../reconcilers/index';
 import { useShader } from '../hooks/useShader';
 import { getRenderFunc } from '../hooks/useRenderProp';
 
-import { getSolidSurface } from '@use-gpu/wgsl/instance/surface/solid-surface.wgsl';
-import { getSolidFragment } from '@use-gpu/wgsl/instance/fragment/solid.wgsl';
+import { getSolidSurface } from '../../wgsl/instance/surface/solid-surface.wgsl';
+import { getSolidFragment } from '../../wgsl/instance/fragment/solid.wgsl';
 
 const {signal} = QueueReconciler;
 

@@ -1,19 +1,19 @@
-import type { LC, PropsWithChildren, PropsWithMarkup } from '@use-gpu/live';
-import type { ColorLike } from '@use-gpu/core';
+import type { LC, PropsWithChildren, PropsWithMarkup } from '../../../live';
+import type { ColorLike } from '../../../core';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 
 import {
   Pass, FlatCamera,
   LinearRGB,
-} from '@use-gpu/workbench';
-import { PanControls } from '@use-gpu/interact';
+} from '../../../workbench';
+import { PanControls } from '../../../interact';
 import {
   Present, Slide, Overlay, Step, PresentInfo, KeyboardControls,
-} from '@use-gpu/present';
+} from '../../../present';
 import {
   UI, Layout, Absolute, Flex, Block, Inline, Text,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 import { InfoBox } from '../../ui/info-box';
 

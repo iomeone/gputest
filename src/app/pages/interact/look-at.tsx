@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry } from '../../../core';
 
-import React, { Gather } from '@use-gpu/live';
+import React, { Gather } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -11,14 +11,14 @@ import {
   AxisHelper, Environment, AmbientLight,
 
   makeBoxGeometry, makePlaneGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor,
   OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Scene, Node, Mesh,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 import { LookAtControls, LookAtOptions } from '../../ui/look-at-controls';
 

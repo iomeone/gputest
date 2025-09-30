@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
+use '../../../wgsl/use/types'::{ SurfaceFragment };
 
 @infer type T;
 @link fn getMaterial(

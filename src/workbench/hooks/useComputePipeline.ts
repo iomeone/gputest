@@ -1,7 +1,7 @@
-import type { ShaderModuleDescriptor } from '@use-gpu/core';
+import type { ShaderModuleDescriptor } from '../../core';
 
-import { makeComputePipeline, makeComputePipelineAsync } from '@use-gpu/core';
-import { useMemo, useOne, useState } from '@use-gpu/live';
+import { makeComputePipeline, makeComputePipelineAsync } from '../../core';
+import { useMemo, useOne, useState } from '../../live';
 import LRU from 'lru-cache';
 
 const DEBUG = false;

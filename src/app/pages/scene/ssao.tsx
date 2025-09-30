@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, TextureSource } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry, TextureSource } from '../../../core';
 
-import React, { Gather, useCallback, useMemo } from '@use-gpu/live';
+import React, { Gather, useCallback, useMemo } from '../../../live';
 import { vec3 } from 'gl-matrix';
-import { seq } from '@use-gpu/core';
+import { seq } from '../../../core';
 
 import {
   Loop, Pass, LinearRGB,
@@ -12,13 +12,13 @@ import {
   EaseToTarget,
   DebugProvider, PrintLayer, PrintHelper, useKeyboardState,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Scene, Node, Mesh, Instances,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 import { InfoBox } from '../../ui/info-box';
 import { SSAOControls } from '../../ui/ssao-controls';

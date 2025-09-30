@@ -1,8 +1,8 @@
-import type { LC } from '@use-gpu/live';
-import type { TypedArray } from '@use-gpu/core';
+import type { LC } from '../../live';
+import type { TypedArray } from '../../core';
 
-import { seq } from '@use-gpu/core';
-import { memo, use, provide, useMemo } from '@use-gpu/live';
+import { seq } from '../../core';
+import { memo, use, provide, useMemo } from '../../live';
 import { useRawSource } from '../hooks/useRawSource';
 import { LineLayer } from '../layers/line-layer';
 import { TransformContext } from '../providers/transform-provider';

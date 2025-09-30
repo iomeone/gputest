@@ -1,6 +1,6 @@
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../../../live';
 
-import { Hook } from '@use-gpu/live';
+import { Hook } from '../../../live';
 import React, { useState } from 'react';
 import { Spacer } from '../layout';
 import { InspectObject } from '../inspect-object';

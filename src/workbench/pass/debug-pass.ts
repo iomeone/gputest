@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { UseGPURenderContext } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../live';
+import type { UseGPURenderContext } from '../../core';
 
-import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
-import { proxy } from '@use-gpu/core';
+import { yeet, memo, useMemo, useOne } from '../../live';
+import { proxy } from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useRenderContext } from '../providers/render-provider';

@@ -1,7 +1,7 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import { TraitProps } from '@use-gpu/traits';
-import { provide, useDouble, useMemo } from '@use-gpu/live';
-import { useMatrixContext, MatrixContext } from '@use-gpu/workbench';
+import type { LiveComponent, PropsWithChildren } from '../live';
+import { TraitProps } from '../traits';
+import { provide, useDouble, useMemo } from '../live';
+import { useMatrixContext, MatrixContext } from '../workbench';
 import { mat4 } from 'gl-matrix';
 
 import { ObjectTrait, useObjectTrait } from './traits';

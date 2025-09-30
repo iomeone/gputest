@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/normal16'::{ encodeNormal16, encodeNormal16Plus };
+use '../../../wgsl/codec/normal16'::{ encodeNormal16, encodeNormal16Plus };
 
 @infer type T;
 

@@ -1,7 +1,7 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../live';
 import type { PassBindGroup, PassFlags, PassResources, VirtualDraw } from '../pass/types';
 
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import { makeContext, useContext, useNoContext } from '../../live';
 
 export type PassContextProps = PassResources &  {
   bindGroups: Record<string, PassBindGroup>,

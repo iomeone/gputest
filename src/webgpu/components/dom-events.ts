@@ -1,9 +1,9 @@
-import type { ArrowFunction, Ref, LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { XY } from '@use-gpu/core';
+import type { ArrowFunction, Ref, LiveComponent, PropsWithChildren } from '../../live';
+import type { XY } from '../../core';
 
-import { proxy } from '@use-gpu/core';
-import { use, memo, useMemo, useOne, useResource } from '@use-gpu/live';
-import { EventProvider } from '@use-gpu/workbench';
+import { proxy } from '../../core';
+import { use, memo, useMemo, useOne, useResource } from '../../live';
+import { EventProvider } from '../../workbench';
 
 import { DOM_EVENT_PROPS } from './dom-props';
 

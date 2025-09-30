@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../live';
 import { OutlineOptions } from '../pass/types';
 
-import { use, yeet, memo, gather, useOne } from '@use-gpu/live';
+import { use, yeet, memo, gather, useOne } from '../../live';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';

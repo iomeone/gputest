@@ -1,14 +1,14 @@
-import type { LC } from '@use-gpu/live';
-import type { GPUAttributes } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC } from '../../../../live';
+import type { GPUAttributes } from '../../../../core';
+import type { ShaderSource } from '../../../../shader';
 
-import React from '@use-gpu/live';
+import React from '../../../../live';
 import {
   Fetch,
   Data,
   ValueShader,
   PointLayer,
-} from '@use-gpu/workbench';
+} from '../../../../workbench';
 import { bv2rgb } from './bv2rgb.wgsl';
 
 

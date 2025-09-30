@@ -1,7 +1,7 @@
-import type { TypedArray, VectorLike } from '@use-gpu/core';
+import type { TypedArray, VectorLike } from '../../core';
 
-import { useMemo } from '@use-gpu/live';
-import { accumulateChunks, generateChunkSegments, generateChunkArcs, alignSizeTo } from '@use-gpu/core';
+import { useMemo } from '../../live';
+import { accumulateChunks, generateChunkSegments, generateChunkArcs, alignSizeTo } from '../../core';
 import { useRawSource } from '../hooks/useRawSource';
 import { ARC_SEGMENTS_SCHEMA, ARC_ANCHORS_SCHEMA } from './schemas';
 

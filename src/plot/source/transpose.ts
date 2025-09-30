@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { TensorArray } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { TensorArray } from '../../core';
 
-import { yeet, provide, useMemo, useNoMemo, useOne } from '@use-gpu/live';
-import { makeCopyPipe, toCPUDims } from '@use-gpu/core';
-import { getRenderFunc } from '@use-gpu/workbench';
-import { parseAxes } from '@use-gpu/parse';
+import { yeet, provide, useMemo, useNoMemo, useOne } from '../../live';
+import { makeCopyPipe, toCPUDims } from '../../core';
+import { getRenderFunc } from '../../workbench';
+import { parseAxes } from '../../parse';
 
 import { useDataContext, DataContext } from '../providers/data-provider';
 import { toOrder } from '../util/swizzle';

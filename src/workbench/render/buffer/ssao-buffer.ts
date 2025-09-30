@@ -1,12 +1,12 @@
-import type { LC } from '@use-gpu/live';
-import type { OffscreenRenderContext } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { OffscreenRenderContext } from '../../../core';
 import type { OverscanOptions, PassBinding, SSAOOptions } from '../../pass/types';
 
-import { use, gather, yeet, memo } from '@use-gpu/live';
+import { use, gather, yeet, memo } from '../../../live';
 
 import { RenderTarget } from '../render-target';
 
-import ssaoBindingWGSL from '@use-gpu/wgsl/use/ssao.wgsl';
+import ssaoBindingWGSL from '../../../wgsl/use/ssao.wgsl';
 
 export type SSAOBufferProps = {
   overscan?: OverscanOptions,

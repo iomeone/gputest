@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ DepthNormalFragment };
+use '../../../wgsl/use/types'::{ DepthNormalFragment };
 
 @infer type T;
 

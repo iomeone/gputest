@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { TypedArray, Lazy, UniformAttribute } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { TypedArray, Lazy, UniformAttribute } from '../../core';
+import type { ShaderSource } from '../../shader';
 import type { SDFGlyphData } from '../text/types';
 
-import { resolve, seq } from '@use-gpu/core';
-import { gather, use, memo, useOne } from '@use-gpu/live';
+import { resolve, seq } from '../../core';
+import { gather, use, memo, useOne } from '../../live';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useDataLength } from '../hooks/useDataBinding';
 import { useDerivedSource } from '../hooks/useDerivedSource';
@@ -24,9 +24,9 @@ import { GlyphSource } from '../text/glyph-source';
 
 import { RawLabels, RawLabelsFlags } from '../primitives/raw-labels';
 
-import { main as computeArcLength } from '@use-gpu/wgsl/instance/compute/arc-length.wgsl';
-import { main as computeArcPrefixSum } from '@use-gpu/wgsl/instance/compute/arc-prefix-sum.wgsl';
-import { attachArcLabelTo } from '@use-gpu/wgsl/instance/vertex/arc-label.wgsl';
+import { main as computeArcLength } from '../../wgsl/instance/compute/arc-length.wgsl';
+import { main as computeArcPrefixSum } from '../../wgsl/instance/compute/arc-prefix-sum.wgsl';
+import { attachArcLabelTo } from '../../wgsl/instance/vertex/arc-label.wgsl';
 
 const {quote} = PassReconciler;
 

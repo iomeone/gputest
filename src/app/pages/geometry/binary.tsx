@@ -1,22 +1,22 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { DataSchema, GPUAttributes, LambdaSource } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { DataSchema, GPUAttributes, LambdaSource } from '../../../core';
 
-import React, { Gather, useOne, useMemo } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React, { Gather, useOne, useMemo } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 
 import {
   Pass, Data, DataShader, LoadingSpinner,
   OrbitCamera,
   PointLayer,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor,
   OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Cartesian, Grid,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 import { BinaryControls } from '../../ui/binary-controls';
 import { InfoBox } from '../../ui/info-box';

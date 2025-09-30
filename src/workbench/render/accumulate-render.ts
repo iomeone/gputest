@@ -1,6 +1,6 @@
-import type { LC, LiveElement, ArrowFunction } from '@use-gpu/live';
-import type { UseGPURenderContext, Lazy } from '@use-gpu/core';
-import { gather, unquote, use, memo, yeet, useHooks, useMemo, useOne, useRef } from '@use-gpu/live';
+import type { LC, LiveElement, ArrowFunction } from '../../live';
+import type { UseGPURenderContext, Lazy } from '../../core';
+import { gather, unquote, use, memo, yeet, useHooks, useMemo, useOne, useRef } from '../../live';
 import { useRenderProp } from '../hooks/useRenderProp';
 import { useAnimationFrame } from '../providers/loop-provider';
 import { QueueReconciler } from '../reconcilers/index';

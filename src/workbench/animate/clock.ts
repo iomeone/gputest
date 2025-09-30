@@ -1,6 +1,6 @@
-import type { LC, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement } from '../../live';
 
-import { extend, mutate, fence, useCallback, useDouble, useOne } from '@use-gpu/live';
+import { extend, mutate, fence, useCallback, useDouble, useOne } from '../../live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';

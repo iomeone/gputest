@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { CPUGeometry, VectorLike } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { CPUGeometry, VectorLike } from '../../../core';
 
 import React from 'react';
-import { Gather, useMemo, useState } from '@use-gpu/live';
+import { Gather, useMemo, useState } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -11,15 +11,15 @@ import {
   PointLight, DirectionalLight, Environment,
   GeometryData, FaceLayer,
   useViewContext,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor,
   OrbitControls,
-} from '@use-gpu/interact';
-import { GLTF, GLTFData, GLTFGeometry, GLTFModel } from '@use-gpu/gltf';
-import { Plot, Point } from '@use-gpu/plot';
+} from '../../../interact';
+import { GLTF, GLTFData, GLTFGeometry, GLTFModel } from '../../../gltf';
+import { Plot, Point } from '../../../plot';
 
-import { HTML } from '@use-gpu/react';
+import { HTML } from '../../../react';
 import { InfoBox } from '../../ui/info-box';
 
 import { cullMesh, sampleMesh } from './projected-sampler/mesh-sampler';

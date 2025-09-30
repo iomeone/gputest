@@ -1,10 +1,10 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../live';
 import type { Renderable } from '../pass';
 import type { BoundLight } from '../light/types';
 import { mat4, vec4 } from 'gl-matrix';
 
-import { yeet, memo, useOne } from '@use-gpu/live';
-import { updateViewProjection, updateViewSize } from '@use-gpu/core';
+import { yeet, memo, useOne } from '../../live';
+import { updateViewProjection, updateViewSize } from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';

@@ -1,8 +1,8 @@
 import React, { CSSProperties } from 'react';
-import type { LC, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement } from '../../live';
 
-import { use, fragment, useCallback, useResource, useState } from '@use-gpu/live';
-import { HTML } from '@use-gpu/react';
+import { use, fragment, useCallback, useResource, useState } from '../../live';
+import { HTML } from '../../react';
 
 const STYLE: CSSProperties = {
   position: 'absolute',

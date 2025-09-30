@@ -1,6 +1,6 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import { useOne, useResource, useState } from '@use-gpu/live';
-import { getRenderFunc } from '@use-gpu/workbench';
+import type { LiveComponent, LiveElement } from '../../live';
+import { useOne, useResource, useState } from '../../live';
+import { getRenderFunc } from '../../workbench';
 
 export type AutoSizeProps = {
   canvas: HTMLCanvasElement,

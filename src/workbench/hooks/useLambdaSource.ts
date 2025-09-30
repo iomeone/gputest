@@ -1,9 +1,9 @@
-import type { ColorSpace, LambdaSource, Lazy, TypedArray, UniformFormat } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { ColorSpace, LambdaSource, Lazy, TypedArray, UniformFormat } from '../../core';
+import type { ShaderModule } from '../../shader';
 
-import { notEmptyString, resolve } from '@use-gpu/core';
-import { useMemo } from '@use-gpu/live';
-import { getObjectKey } from '@use-gpu/state';
+import { notEmptyString, resolve } from '../../core';
+import { useMemo } from '../../live';
+import { getObjectKey } from '../../state';
 
 export type SourceLike = Partial<{
   length: Lazy<number>,

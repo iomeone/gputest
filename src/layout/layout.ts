@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { XY, XYZW, Rectangle } from '@use-gpu/core';
-import type { Placement } from '@use-gpu/parse';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../live';
+import type { XY, XYZW, Rectangle } from '../core';
+import type { Placement } from '../parse';
 import type { LayoutElement } from './types';
 
-import { parsePlacement } from '@use-gpu/parse';
-import { useProp } from '@use-gpu/traits/live';
-import { memo, provide, gather, yeet, keyed, fragment, useContext, useMemo, useOne, incrementVersion } from '@use-gpu/live';
-import { schemaToArchetype } from '@use-gpu/core';
+import { parsePlacement } from '../parse';
+import { useProp } from '../traits/live';
+import { memo, provide, gather, yeet, keyed, fragment, useContext, useMemo, useOne, incrementVersion } from '../live';
+import { schemaToArchetype } from '../core';
 
 import {
   DebugContext, ViewContext,
@@ -15,10 +15,10 @@ import {
   useShader, useMouseState, useWheelState,
   QueueReconciler, LayerReconciler,
   UI_SCHEMA,
-} from '@use-gpu/workbench';
+} from '../workbench';
 
-import { chainTo } from '@use-gpu/shader/wgsl';
-import { getLayoutPosition } from '@use-gpu/wgsl/layout/layout.wgsl';
+import { chainTo } from '../shader/wgsl';
+import { getLayoutPosition } from '../wgsl/layout/layout.wgsl';
 
 import { INSPECT_STYLE } from './lib/constants';
 

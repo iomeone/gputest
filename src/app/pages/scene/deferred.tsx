@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { DataSchema, TextureSource, GPUGeometry } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { DataSchema, TextureSource, GPUGeometry } from '../../../core';
+import type { ShaderSource } from '../../../shader';
 
-import React, { Gather } from '@use-gpu/live';
+import React, { Gather } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -12,13 +12,13 @@ import {
   DirectionalLight, PointLight, AmbientLight, SpotLight,
   Data, PointLayer,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Scene, Node, Mesh, Instances,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 import { InfoBox } from '../../ui/info-box';
 

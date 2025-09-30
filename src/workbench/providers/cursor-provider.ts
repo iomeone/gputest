@@ -1,6 +1,6 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 
-import { capture, makeCapture, useOne } from '@use-gpu/live';
+import { capture, makeCapture, useOne } from '../../live';
 
 export const CursorState = makeCapture<string>('CursorState');
 

@@ -1,4 +1,4 @@
-import { makeReconciler } from '@use-gpu/live';
+import { makeReconciler } from '../../live';
 
 export const EventReconciler = makeReconciler('EventReconciler');
 export const QueueReconciler = makeReconciler('QueueReconciler');

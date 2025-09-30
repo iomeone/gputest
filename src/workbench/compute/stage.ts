@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { StorageTarget, TextureTarget } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveElement } from '../../live';
+import type { StorageTarget, TextureTarget } from '../../core';
 
-import { memo, provide, useMemo } from '@use-gpu/live';
+import { memo, provide, useMemo } from '../../live';
 import { ComputeContext } from '../providers/compute-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
 

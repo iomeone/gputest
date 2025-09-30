@@ -1,16 +1,16 @@
-import type { LC, Ref } from '@use-gpu/live';
-import type { DataBounds, StorageSource, RenderPassMode, Lazy, UniformAttribute, UseGPURenderContext, VolatileAllocation } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { Update } from '@use-gpu/state';
+import type { LC, Ref } from '../../live';
+import type { DataBounds, StorageSource, RenderPassMode, Lazy, UniformAttribute, UseGPURenderContext, VolatileAllocation } from '../../core';
+import type { ShaderModule } from '../../shader';
+import type { Update } from '../../state';
 
-import { yeet, useMemo, useNoMemo, useOne, useNoOne, SUSPEND } from '@use-gpu/live';
-import { patch, $apply } from '@use-gpu/state';
+import { yeet, useMemo, useNoMemo, useOne, useNoOne, SUSPEND } from '../../live';
+import { patch, $apply } from '../../state';
 import {
   makeMultiUniforms, makeBoundUniforms, makeVolatileUniforms,
   uploadBuffer,
   resolve,
-} from '@use-gpu/core';
-import { getBundleLabel } from '@use-gpu/shader';
+} from '../../core';
+import { getBundleLabel } from '../../shader';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';

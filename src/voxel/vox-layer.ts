@@ -1,23 +1,23 @@
-import type { LC, Ref } from '@use-gpu/live';
-import type { GPUGeometry, TextureSource, StorageSource, LambdaSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
-import type { PipelineOptions } from '@use-gpu/workbench';
+import type { LC, Ref } from '../live';
+import type { GPUGeometry, TextureSource, StorageSource, LambdaSource } from '../core';
+import type { ShaderSource } from '../shader';
+import type { PipelineOptions } from '../workbench';
 
-import { seq } from '@use-gpu/core';
-import { gather, use, memo, useCallback, useMemo, useOne } from '@use-gpu/live';
+import { seq } from '../core';
+import { gather, use, memo, useCallback, useMemo, useOne } from '../live';
 import {
   useMatrixContext,
   useShader, useNoShader, useLambdaSource, useDebugContext, useShaderRef,
   useEnvironmentContext,
   FaceLayer, GeometryData, ShaderLitMaterial,
   makeBoxGeometry,
-} from '@use-gpu/workbench';
-import { wgsl, bindBundle, bindEntryPoint } from '@use-gpu/shader/wgsl';
+} from '../workbench';
+import { wgsl, bindBundle, bindEntryPoint } from '../shader/wgsl';
 
-import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
-import { applyPBREnvironment } from '@use-gpu/wgsl/material/pbr-environment.wgsl';
-import { getViewPosition, worldToDepth } from '@use-gpu/wgsl/use/view.wgsl';
-import { SurfaceFragment, DepthFragment } from '@use-gpu/wgsl/use/types.wgsl';
+import { applyPBRMaterial } from '../wgsl/material/pbr-apply.wgsl';
+import { applyPBREnvironment } from '../wgsl/material/pbr-environment.wgsl';
+import { getViewPosition, worldToDepth } from '../wgsl/use/view.wgsl';
+import { SurfaceFragment, DepthFragment } from '../wgsl/use/types.wgsl';
 
 import { vec3, mat3, mat4 } from 'gl-matrix';
 

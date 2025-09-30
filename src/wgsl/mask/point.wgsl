@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/mask/sdf'::{ getUVScale, scaleSDF };
+use '../../wgsl/mask/sdf'::{ getUVScale, scaleSDF };
 
 @link fn getSDF(uv: vec2<f32>) -> f32;
 @optional @link fn getOutline() -> f32 { return 0.0; }

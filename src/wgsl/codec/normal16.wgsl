@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/octahedral'::{ encodeOctahedral, decodeOctahedral };
+use '../../wgsl/codec/octahedral'::{ encodeOctahedral, decodeOctahedral };
 
 @export fn encodeNormal16(normal: vec3<f32>) -> vec4<u32> {
   let xy = encodeOctahedral(normal) * .5 + .5;

@@ -1,5 +1,5 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { TypedArray, TextureSource, OffscreenRenderContext } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { TypedArray, TextureSource, OffscreenRenderContext } from '../../core';
 
 import {
   PICKING_FORMAT,
@@ -14,7 +14,7 @@ import {
   provide, yeet,
   useMemo, useOne,
   useContext, incrementVersion,
-} from '@use-gpu/live';
+} from '../../live';
 import {
   makeColorState,
   makeColorAttachment,
@@ -25,7 +25,7 @@ import {
   makeTextureReadbackBuffer,
   TEXTURE_ARRAY_TYPES,
   seq,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { QueueReconciler } from '../reconcilers/index';
 

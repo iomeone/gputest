@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/types'::{ Light };
+use '../../wgsl/use/types'::{ Light };
 
 @export struct LightUniforms {
   count: u32,

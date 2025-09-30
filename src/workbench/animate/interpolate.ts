@@ -1,4 +1,4 @@
-import type { TypedArray } from '@use-gpu/core';
+import type { TypedArray } from '../../core';
 import type { Lerpable, LerpableRecord } from './types';
 
 const sqr = (x: number) => x * x;

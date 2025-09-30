@@ -1,11 +1,11 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { UIAggregate } from '@use-gpu/layout';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LC, PropsWithChildren } from '../../live';
+import type { UIAggregate } from '../../layout';
+import type { TraitProps } from '../../traits';
 import type { ParsedEffect, SlideInfo } from '../types';
 
-import { unquote, gather, yeet, use, useFiber, useMemo, useOne } from '@use-gpu/live';
-import { useLayoutContext } from '@use-gpu/workbench';
-import { TransformUI } from '@use-gpu/layout';
+import { unquote, gather, yeet, use, useFiber, useMemo, useOne } from '../../live';
+import { useLayoutContext } from '../../workbench';
+import { TransformUI } from '../../layout';
 
 import { PresentReconciler } from '../reconcilers';
 import { merge, resolveSlides } from '../lib/slides';

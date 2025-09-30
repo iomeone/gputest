@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Emit, TextureSource, LambdaSource, TensorArray, Time } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Emit, TextureSource, LambdaSource, TensorArray, Time } from '../../../core';
+import type { ShaderSource } from '../../../shader';
 
-import React, { Gather } from '@use-gpu/live';
-import { lerp } from '@use-gpu/core';
+import React, { Gather } from '../../../live';
+import { lerp } from '../../../core';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -13,14 +13,14 @@ import {
   LinearRGB, DirectionalLight,
   DataShader,
   Environment, PBRMaterial, PrefilteredEnvMap,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Plot, Polar, Axis, Grid, Sampler, ImplicitSurface, Point,
-} from '@use-gpu/plot';
-import { wgsl } from '@use-gpu/shader/wgsl';
+} from '../../../plot';
+import { wgsl } from '../../../shader/wgsl';
 import { SurfaceControls } from '../../ui/surface-controls';
 
 import { InfoBox } from '../../ui/info-box';

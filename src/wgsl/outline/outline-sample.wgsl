@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16, decodeNormal16Plus };
-use '@use-gpu/wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getViewPixelRatio };
+use '../../wgsl/codec/normal16'::{ decodeNormal16, decodeNormal16Plus };
+use '../../wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getViewPixelRatio };
 use './outline-weight'::{ depthWeightPlus, normalWeight, facetWeight };
 
 @link fn loadNormal16(xy: vec2<u32>, sample: u32) -> vec4<u32>;

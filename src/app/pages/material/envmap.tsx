@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, TextureSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry, TextureSource } from '../../../core';
+import type { ShaderSource } from '../../../shader';
 
-import React, { Gather, useOne } from '@use-gpu/live';
-import { seq } from '@use-gpu/core';
+import React, { Gather, useOne } from '../../../live';
+import { seq } from '../../../core';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -13,16 +13,16 @@ import {
   Suspense,
   useKeyboardState,
   makeSphereGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls, PanControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Scene, Node, Mesh,
-} from '@use-gpu/scene';
+} from '../../../scene';
 import {
   UI, Layout, Absolute, Block,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 import { InfoBox } from '../../ui/info-box';
 

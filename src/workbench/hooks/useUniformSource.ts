@@ -1,10 +1,10 @@
-import type { Ref } from '@use-gpu/live';
-import type { StorageSource } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { Ref } from '../../live';
+import type { StorageSource } from '../../core';
+import type { ShaderModule } from '../../shader';
 
-import { makeUniformBuffer, makeUniformPipe, uploadBuffer } from '@use-gpu/core';
-import { useCallback, useMemo } from '@use-gpu/live';
-import { bundleToAttribute } from '@use-gpu/shader/wgsl';
+import { makeUniformBuffer, makeUniformPipe, uploadBuffer } from '../../core';
+import { useCallback, useMemo } from '../../live';
+import { bundleToAttribute } from '../../shader/wgsl';
 
 import { useDeviceContext } from '../providers/device-provider';
 

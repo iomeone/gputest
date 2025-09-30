@@ -1,9 +1,9 @@
-import type { Lazy, DataBounds } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { Lazy, DataBounds } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
 import type { TransformContextProps } from '../providers/transform-provider';
 
-import { useMemo, useNoMemo } from '@use-gpu/live';
-import { chainTo, getBundleKey } from '@use-gpu/shader/wgsl';
+import { useMemo, useNoMemo } from '../../live';
+import { chainTo, getBundleKey } from '../../shader/wgsl';
 import { useTransformContext, useNoTransformContext, TransformBounds } from '../providers/transform-provider';
 import { getShader } from '../hooks/useShader';
 import {
@@ -12,8 +12,8 @@ import {
   useMatrixTransform, useNoMatrixTransform,
 } from './useMatrixTransform';
 
-import { getChainDifferential } from '@use-gpu/wgsl/transform/diff-chain.wgsl';
-import { getEpsilonDifferential } from '@use-gpu/wgsl/transform/diff-epsilon.wgsl';
+import { getChainDifferential } from '../../wgsl/transform/diff-chain.wgsl';
+import { getEpsilonDifferential } from '../../wgsl/transform/diff-epsilon.wgsl';
 import { mat4 } from 'gl-matrix';
 
 export const useCombinedTransform = (

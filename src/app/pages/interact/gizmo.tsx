@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry } from '../../../core';
 
-import React, { Gather, useOne, useState } from '@use-gpu/live';
+import React, { Gather, useOne, useState } from '../../../live';
 import { mat4, vec3 } from 'gl-matrix';
 
 import {
@@ -12,15 +12,15 @@ import {
   PBRMaterial,
 
   makeBoxGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor,
   GizmoMatrix,
   OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Scene, Node, Mesh,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 import { InfoBox } from '../../ui/info-box';
 

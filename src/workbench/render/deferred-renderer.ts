@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { LC, PropsWithChildren, LiveElement } from '../../live';
 import type { LightEnv, PassFlags, PassResources, RenderComponents } from '../pass/types';
 
-import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { use, yeet, memo, useMemo, useOne } from '../../live';
 
 import { PassReconciler } from '../reconcilers/index';
 

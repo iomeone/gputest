@@ -1,7 +1,7 @@
-import type { StorageSource, UniformType } from '@use-gpu/core';
+import type { StorageSource, UniformType } from '../../core';
 
-import { useMemo, useNoMemo, incrementVersion } from '@use-gpu/live';
-import { makeDataBuffer, getUniformArraySize, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
+import { useMemo, useNoMemo, incrementVersion } from '../../live';
+import { makeDataBuffer, getUniformArraySize, UNIFORM_ARRAY_DIMS } from '../../core';
 
 import { adjustSize } from './useBufferedSize';
 import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';

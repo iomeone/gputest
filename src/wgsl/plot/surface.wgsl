@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/geometry/strip'::{ getStripIndex };
-use '@use-gpu/wgsl/use/array'::{ sizeToModulus3, packIndex3, unpackIndex3 }
-use '@use-gpu/wgsl/plot/loop'::{ loopSurface };
+use '../../wgsl/geometry/strip'::{ getStripIndex };
+use '../../wgsl/use/array'::{ sizeToModulus3, packIndex3, unpackIndex3 }
+use '../../wgsl/plot/loop'::{ loopSurface };
 
 @link fn getSize() -> vec3<u32> {};
 

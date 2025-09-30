@@ -1,11 +1,11 @@
-import type { LC } from '@use-gpu/live';
-import type { VectorLike, XYZ, XYZW } from '@use-gpu/core';
+import type { LC } from '../../live';
+import type { VectorLike, XYZ, XYZW } from '../../core';
 
-import { provide, use, useMemo, useState } from '@use-gpu/live';
-import { seq, lerp } from '@use-gpu/core';
+import { provide, use, useMemo, useState } from '../../live';
+import { seq, lerp } from '../../core';
 
-import { AxisHelper, TransformContext, useCombinedMatrixTransform } from '@use-gpu/workbench';
-import { Plot, Line, Arrow, Polygon, Point } from '@use-gpu/plot';
+import { AxisHelper, TransformContext, useCombinedMatrixTransform } from '../../workbench';
+import { Plot, Line, Arrow, Polygon, Point } from '../../plot';
 
 import { Cursor } from '../handlers/cursor';
 import { Pick, PickState } from '../handlers/pick';

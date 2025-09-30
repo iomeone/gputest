@@ -1,18 +1,18 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { XYZW } from '@use-gpu/core';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { ShaderModule } from '../../shader';
+import type { XYZW } from '../../core';
+import type { TraitProps } from '../../traits';
 
-import { makeUseTrait, optional, combine, trait, shouldEqual, sameShallow, useProp } from '@use-gpu/traits/live';
-import { parseBoolean, parseIntegerPositive, parseAxis, parsePosition } from '@use-gpu/parse';
-import { memo, use, fragment, useOne, useMemo } from '@use-gpu/live';
+import { makeUseTrait, optional, combine, trait, shouldEqual, sameShallow, useProp } from '../../traits/live';
+import { parseBoolean, parseIntegerPositive, parseAxis, parsePosition } from '../../parse';
+import { memo, use, fragment, useOne, useMemo } from '../../live';
 import {
   useShader, useNoShader,
   useRawSource,
   useShaderRef,
   useTransformContext, useNoTransformContext,
   LineLayer,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { useRangeContext } from '../providers/range-provider';
 
@@ -20,9 +20,9 @@ import { vec4 } from 'gl-matrix';
 
 import { logarithmic, linear } from '../util/domain';
 
-import { getGridPosition } from '@use-gpu/wgsl/plot/grid.wgsl';
-import { getGridAutoState } from '@use-gpu/wgsl/plot/grid-auto.wgsl';
-import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
+import { getGridPosition } from '../../wgsl/plot/grid.wgsl';
+import { getGridAutoState } from '../../wgsl/plot/grid-auto.wgsl';
+import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
 
 import {
   ColorTrait,

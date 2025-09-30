@@ -1,4 +1,4 @@
-import type { XY, XYZW, Rectangle } from '@use-gpu/core';
+import type { XY, XYZW, Rectangle } from '../../core';
 import type { FitInto, AutoXY, Direction, LayoutElement, LayoutRenderer, LayoutPicker, Margin } from '../types';
 
 import { isHorizontal, mergeMargin } from './util';

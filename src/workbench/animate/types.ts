@@ -1,4 +1,4 @@
-import { VectorLike, VectorLikes } from '@use-gpu/core';
+import { VectorLike, VectorLikes } from '../../core';
 
 export type Lerpable = number | VectorLike | VectorLikes;
 export type LerpableRecord = Record<string, Lerpable>;

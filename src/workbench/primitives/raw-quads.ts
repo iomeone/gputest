@@ -1,11 +1,11 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { memo, useCallback, useMemo, useNoCallback } from '../../live';
+import { chainTo } from '../../shader/wgsl';
 
 import { FacetSource, useFacetShader } from './hooks/facets';
 import { PickingSource, usePickingShader } from './hooks/picking';
@@ -21,10 +21,10 @@ import { useDataLength } from '../hooks/useDataBinding';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getQuadVertex, getQuadVertexShaded } from '@use-gpu/wgsl/instance/vertex/quad.wgsl';
-import { getMaskedColor, getMaskedSurface } from '@use-gpu/wgsl/mask/masked.wgsl';
-import { solidToShaded } from '@use-gpu/wgsl/instance/surface/solid-to-shaded.wgsl';
-import { getRaytraceSurface } from '@use-gpu/wgsl/instance/surface/raytrace-surface.wgsl';
+import { getQuadVertex, getQuadVertexShaded } from '../../wgsl/instance/vertex/quad.wgsl';
+import { getMaskedColor, getMaskedSurface } from '../../wgsl/mask/masked.wgsl';
+import { solidToShaded } from '../../wgsl/instance/surface/solid-to-shaded.wgsl';
+import { getRaytraceSurface } from '../../wgsl/instance/surface/raytrace-surface.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

@@ -1,4 +1,4 @@
-import type { XYZW } from '@use-gpu/core';
+import type { XYZW } from '../core';
 
 export type SlideEffect = 'none' | 'fade' | 'wipe' | 'move';
 export type SlideEase = 'cosine' | 'linear';

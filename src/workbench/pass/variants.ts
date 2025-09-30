@@ -1,6 +1,6 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../live';
 import type { ExtendedPassFlags, RenderComponents, VirtualDraw } from './types';
-import { useMemo } from '@use-gpu/live';
+import { useMemo } from '../../live';
 
 type Variants = LC | LC[] | null | undefined;
 

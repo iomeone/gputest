@@ -1,7 +1,7 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, PropsWithChildren } from '../live';
 
-import { provide } from '@use-gpu/live';
-import { useMatrixContext, useNoMatrixContext, MatrixContext } from '@use-gpu/workbench';
+import { provide } from '../live';
+import { useMatrixContext, useNoMatrixContext, MatrixContext } from '../workbench';
 
 export type SceneProps = PropsWithChildren<{
   inherit?: boolean,

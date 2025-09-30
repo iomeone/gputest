@@ -1,8 +1,8 @@
-import type { LC, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement } from '../../live';
 
-import { use, yeet, provide, useMemo, useOne, useRef } from '@use-gpu/live';
-import { clearBuffer, seq } from '@use-gpu/core';
-import { bindEntryPoint } from '@use-gpu/shader/wgsl';
+import { use, yeet, provide, useMemo, useOne, useRef } from '../../live';
+import { clearBuffer, seq } from '../../core';
+import { bindEntryPoint } from '../../shader/wgsl';
 import { useDeviceContext } from '../providers/device-provider';
 import { ShaderPrinter, PrintContext, usePrintContext, useNoPrintContext } from '../providers/print-provider';
 import { getDerivedSource } from '../hooks/useDerivedSource';
@@ -16,8 +16,8 @@ import { LineLayer } from '../layers/line-layer';
 import { PointLayer } from '../layers/point-layer';
 import { Readback } from '../primitives/readback';
 
-import { PrintData as PrintDataWGSL } from '@use-gpu/wgsl/debug/print.wgsl';
-import printWGSL from '@use-gpu/wgsl/debug/print-helper.wgsl';
+import { PrintData as PrintDataWGSL } from '../../wgsl/debug/print.wgsl';
+import printWGSL from '../../wgsl/debug/print-helper.wgsl';
 
 const {quote} = PassReconciler;
 

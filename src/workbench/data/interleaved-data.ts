@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { LambdaSource, UniformType, VectorLike, DataSchema } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { LambdaSource, UniformType, VectorLike, DataSchema } from '../../core';
 
-import { useOne, useMemo, useNoMemo } from '@use-gpu/live';
+import { useOne, useMemo, useNoMemo } from '../../live';
 import {
   makePackedLayout,
   normalizeSchema,
@@ -9,7 +9,7 @@ import {
   makeStructAggregateFields,
   uploadStorage,
   isUniformArrayType,
-} from '@use-gpu/core';
+} from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';

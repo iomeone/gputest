@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/use/color'::{ premultiply };
+use '../../../wgsl/use/types'::{ SolidVertex };
+use '../../../wgsl/use/color'::{ premultiply };
 
 @link fn getVertex(v: u32, i: u32) -> SolidVertex {};
 @optional @link fn toColorSpace(c: vec4<f32>) -> vec4<f32> { return c; }

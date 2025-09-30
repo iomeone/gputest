@@ -1,5 +1,5 @@
-import type { UniformAttribute } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { UniformAttribute } from '../../../core';
+import type { ShaderSource } from '../../../shader';
 import { useSource, useNoSource } from '../../hooks/useSource';
 
 const FACETS: UniformAttribute = { format: 'u32', name: 'getFacet' };

@@ -1,26 +1,26 @@
-import type { LambdaSource, TextureSource } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LambdaSource, TextureSource } from '../../core';
+import type { ShaderSource } from '../../shader';
 
-import { useMemo, useOne } from '@use-gpu/live';
+import { useMemo, useOne } from '../../live';
 
-import { getTextureSampleType, getTextureArrayType, getTypedArraysBitCount } from '@use-gpu/core';
-import { castTo, chainTo } from '@use-gpu/shader/wgsl';
+import { getTextureSampleType, getTextureArrayType, getTypedArraysBitCount } from '../../core';
+import { castTo, chainTo } from '../../shader/wgsl';
 import { getShader } from '../hooks/useShader';
 import { getTextureAccess, getTextureUVToXY } from '../hooks/useTextureAccess';
 import { getLambdaSource } from '../hooks/useLambdaSource';
 
-import { displayFloat } from '@use-gpu/wgsl/display/float.wgsl';
-import { displayInt } from '@use-gpu/wgsl/display/int.wgsl';
+import { displayFloat } from '../../wgsl/display/float.wgsl';
+import { displayInt } from '../../wgsl/display/int.wgsl';
 
-import { displayAlpha } from '@use-gpu/wgsl/display/alpha.wgsl';
-import { displayDepth } from '@use-gpu/wgsl/display/depth.wgsl';
-import { displayMotionXY } from '@use-gpu/wgsl/display/motion-xy.wgsl';
-import { displayMotionZ } from '@use-gpu/wgsl/display/motion-z.wgsl';
-import { displayPicking } from '@use-gpu/wgsl/display/picking.wgsl';
-import { displayRGB } from '@use-gpu/wgsl/display/rgb.wgsl';
-import { displayStencil } from '@use-gpu/wgsl/display/stencil.wgsl';
+import { displayAlpha } from '../../wgsl/display/alpha.wgsl';
+import { displayDepth } from '../../wgsl/display/depth.wgsl';
+import { displayMotionXY } from '../../wgsl/display/motion-xy.wgsl';
+import { displayMotionZ } from '../../wgsl/display/motion-z.wgsl';
+import { displayPicking } from '../../wgsl/display/picking.wgsl';
+import { displayRGB } from '../../wgsl/display/rgb.wgsl';
+import { displayStencil } from '../../wgsl/display/stencil.wgsl';
 
-import { getMultiViewSample } from '@use-gpu/wgsl/display/multiview.wgsl';
+import { getMultiViewSample } from '../../wgsl/display/multiview.wgsl';
 
 const HINT_SHADERS = {
   'alpha': displayAlpha,

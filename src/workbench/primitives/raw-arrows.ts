@@ -1,11 +1,11 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useOne, useMemo, useNoCallback } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { memo, useCallback, useOne, useMemo, useNoCallback } from '../../live';
+import { chainTo } from '../../shader/wgsl';
 
 import { FacetSource, useFacetShader } from './hooks/facets';
 import { PickingSource, usePickingShader } from './hooks/picking';
@@ -25,9 +25,9 @@ import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions
 import { makeArrowFlatGeometry } from './geometry/arrow-flat';
 import { makeArrowGeometry } from './geometry/arrow';
 
-import { getAnchorIndex } from '@use-gpu/wgsl/instance/index/anchor.wgsl';
-import { getArrowVertex, getArrowVertexShaded } from '@use-gpu/wgsl/instance/vertex/arrow.wgsl';
-import { solidToShaded } from '@use-gpu/wgsl/instance/surface/solid-to-shaded.wgsl';
+import { getAnchorIndex } from '../../wgsl/instance/index/anchor.wgsl';
+import { getArrowVertex, getArrowVertexShaded } from '../../wgsl/instance/vertex/arrow.wgsl';
+import { solidToShaded } from '../../wgsl/instance/surface/solid-to-shaded.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

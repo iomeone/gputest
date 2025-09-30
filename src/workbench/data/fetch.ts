@@ -1,6 +1,6 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import { yeet, suspend, useAwait, useNoAwait, useMemo, useOne } from '@use-gpu/live';
-import { toMurmur53 } from '@use-gpu/state';
+import type { LiveComponent, LiveElement } from '../../live';
+import { yeet, suspend, useAwait, useNoAwait, useMemo, useOne } from '../../live';
+import { toMurmur53 } from '../../state';
 import { useSuspenseContext } from '../providers/suspense-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
 

@@ -1,11 +1,11 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useMemo, useOne, useNoCallback } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { memo, useCallback, useMemo, useOne, useNoCallback } from '../../live';
+import { chainTo } from '../../shader/wgsl';
 
 import { FacetSource, useFacetShader } from './hooks/facets';
 import { PickingSource, usePickingShader } from './hooks/picking';
@@ -21,9 +21,9 @@ import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
-import { getLineVertex, getLineShadedVertex } from '@use-gpu/wgsl/instance/vertex/line.wgsl';
-import { solidToShaded } from '@use-gpu/wgsl/instance/surface/solid-to-shaded.wgsl';
+import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
+import { getLineVertex, getLineShadedVertex } from '../../wgsl/instance/vertex/line.wgsl';
+import { solidToShaded } from '../../wgsl/instance/surface/solid-to-shaded.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

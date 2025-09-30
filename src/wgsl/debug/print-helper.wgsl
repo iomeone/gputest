@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/debug/print'::{ PrintData };
+use '../../wgsl/debug/print'::{ PrintData };
 
 @link var<storage, read_write> data: PrintData;
 @link var<storage, read_write> positions: array<vec4<f32>>;

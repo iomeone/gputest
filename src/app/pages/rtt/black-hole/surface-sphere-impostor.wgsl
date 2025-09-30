@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/types'::{ SurfaceFragment, DepthFragment };
-use '@use-gpu/wgsl/use/view'::{ getViewPosition, worldToDepth };
+use '../../../../wgsl/use/types'::{ SurfaceFragment, DepthFragment };
+use '../../../../wgsl/use/view'::{ getViewPosition, worldToDepth };
 
 @link fn getMatrix() -> mat4x4<f32>;
 @link fn getRayMatrix() -> mat3x3<f32>;

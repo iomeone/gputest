@@ -1,11 +1,11 @@
-import type { UseGPURenderContext } from '@use-gpu/core';
-import type { Ref } from '@use-gpu/live';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { UseGPURenderContext } from '../../core';
+import type { Ref } from '../../live';
+import type { ShaderModule } from '../../shader';
 import type { Culler, Renderable } from './types';
 
-import { getBundleName } from '@use-gpu/shader/wgsl';
+import { getBundleName } from '../../shader/wgsl';
 
-import { resolve, proxy } from '@use-gpu/core';
+import { resolve, proxy } from '../../core';
 import { vec3 } from 'gl-matrix';
 
 export const getShaderLabel = (bundles: (ShaderModule | null | undefined)[], prefix: string | null | undefined) => {

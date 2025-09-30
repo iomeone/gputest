@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/octahedral'::{ decodeOctahedral };
+use '../../wgsl/codec/octahedral'::{ decodeOctahedral };
 use './cube-grid'::{ getCubeGridOverlay };
 use './depth'::{ displayDepth };
 

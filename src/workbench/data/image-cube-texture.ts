@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { XY, ColorSpace, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { XY, ColorSpace, TextureSource } from '../../core';
 
-import { yeet, gather, keyed, wrap, suspend, useMemo } from '@use-gpu/live';
-import { Suspense } from '@use-gpu/workbench';
-import { countMips, getTextureSampleType, makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipArrayTextureChain } from '@use-gpu/core';
+import { yeet, gather, keyed, wrap, suspend, useMemo } from '../../live';
+import { Suspense } from '../../workbench';
+import { countMips, getTextureSampleType, makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipArrayTextureChain } from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';

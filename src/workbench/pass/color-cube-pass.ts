@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../live';
 import type { LightEnv, Renderable } from './types';
 import { mat4 } from 'gl-matrix';
 
-import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
-import { getCubeFaceMatrix, reverseZ, seq, updateMipArrayTextureChain, updateViewProjection, updateViewSize } from '@use-gpu/core';
+import { yeet, memo, useMemo, useOne } from '../../live';
+import { getCubeFaceMatrix, reverseZ, seq, updateMipArrayTextureChain, updateViewProjection, updateViewSize } from '../../core';
 
 import { useRenderContext } from '../providers/render-provider';
 import { useDeviceContext } from '../providers/device-provider';

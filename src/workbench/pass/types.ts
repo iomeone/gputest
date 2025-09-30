@@ -1,7 +1,7 @@
-import type { DataBounds, Lazy, RenderPassMode, StorageSource, TextureSource, UniformAttribute, UseGPURenderContext, VectorLike } from '@use-gpu/core';
-import type { LiveComponent, ArrowFunction, Ref } from '@use-gpu/live';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
-import type { Update } from '@use-gpu/state';
+import type { DataBounds, Lazy, RenderPassMode, StorageSource, TextureSource, UniformAttribute, UseGPURenderContext, VectorLike } from '../../core';
+import type { LiveComponent, ArrowFunction, Ref } from '../../live';
+import type { ShaderModule, ShaderSource } from '../../shader';
+import type { Update } from '../../state';
 import type { BoundLight } from '../light/types';
 import { vec3 } from 'gl-matrix';
 

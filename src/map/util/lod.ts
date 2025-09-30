@@ -1,4 +1,4 @@
-import type { ViewUniforms } from '@use-gpu/core';
+import type { ViewUniforms } from '../../core';
 import type { DistanceLODNode, QuadTreeNode } from '../types';
 
 import { mat4, vec3 } from 'gl-matrix';

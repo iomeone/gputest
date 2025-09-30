@@ -1,5 +1,5 @@
-import type { OffscreenRenderContext } from '@use-gpu/core';
-import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import type { OffscreenRenderContext } from '../../core';
+import { makeContext, useContext, useNoContext } from '../../live';
 
 export type PickingContextProps = {
   renderContext: OffscreenRenderContext,

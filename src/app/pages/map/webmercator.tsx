@@ -1,24 +1,24 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 
 import {
   Pass,
   OrbitCamera,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor,
   OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Transform,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import {
   MVTiles, MVTStyles, MapboxProvider, MapTileProvider,
   distanceLODStrategy,
-} from '@use-gpu/map';
-import { parseColor } from '@use-gpu/parse';
+} from '../../../map';
+import { parseColor } from '../../../parse';
 
 import { InfoBox } from '../../ui/info-box';
 

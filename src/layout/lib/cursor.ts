@@ -1,6 +1,6 @@
 import type { Alignment } from '../types';
 
-import { makeTuples } from '@use-gpu/core';
+import { makeTuples } from '../../core';
 import { getAlignmentSpacing } from './util';
 
 /*

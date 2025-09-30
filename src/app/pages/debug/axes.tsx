@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, TextureSource } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry, TextureSource } from '../../../core';
 
-import React, { Gather, useOne } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React, { Gather, useOne } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -14,14 +14,14 @@ import {
 
   makeSphereGeometry,
   useShader,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 
 import {
   Scene, Mesh,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 import { InfoBox } from '../../ui/info-box';
 

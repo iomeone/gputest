@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/use/view'::{ worldToClip };
-use '@use-gpu/wgsl/use/types'::{ LightVertex, Light };
-use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
+use '../../../wgsl/use/view'::{ worldToClip };
+use '../../../wgsl/use/types'::{ LightVertex, Light };
+use '../../../wgsl/geometry/quad'::{ getQuadUV };
 
 @link fn getLight(i: u32) -> Light;
 

@@ -1,4 +1,4 @@
-import { useOne } from '@use-gpu/live';
+import { useOne } from '../live';
 import { getProp } from './useProp';
 import {
   ArrowFunction,

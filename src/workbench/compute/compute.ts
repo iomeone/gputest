@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../live';
 import type { AggregatedCalls } from '../pass/types';
 
-import { use, memo, multiGather, useOne } from '@use-gpu/live';
+import { use, memo, multiGather, useOne } from '../../live';
 
 import { ComputePass } from '../pass/compute-pass';
 import { ReadbackPass } from '../pass/readback-pass';

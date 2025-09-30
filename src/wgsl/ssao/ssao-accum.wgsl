@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16 };
+use '../../wgsl/codec/normal16'::{ decodeNormal16 };
 use './ssao-weight'::{ normalWeight, depthWeight };
 
 const PREFILTER_SAMPLES = true;

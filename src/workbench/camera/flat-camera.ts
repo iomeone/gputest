@@ -1,8 +1,8 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { Rectangle } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { Rectangle } from '../../core';
 
-import { use, provide, deprecated, useContext, useOne, useMemo, incrementVersion } from '@use-gpu/live';
-import { makeOrthogonalMatrix, makeViewUniforms, updateViewProjection, updateViewSize } from '@use-gpu/core';
+import { use, provide, deprecated, useContext, useOne, useMemo, incrementVersion } from '../../live';
+import { makeOrthogonalMatrix, makeViewUniforms, updateViewProjection, updateViewSize } from '../../core';
 import { LayoutContext } from '../providers/layout-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { RenderContext } from '../providers/render-provider';

@@ -1,6 +1,6 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { FetchAPIOptions } from '@use-gpu/workbench';
-import { provide, useMemo } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../live';
+import type { FetchAPIOptions } from '../../workbench';
+import { provide, useMemo } from '../../live';
 import { TileContext } from './tile-provider';
 
 export type MapTileProviderProps = PropsWithChildren<{

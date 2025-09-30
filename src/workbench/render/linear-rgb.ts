@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { UseGPURenderContext, TextureSource, ColorSpace } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { UseGPURenderContext, TextureSource, ColorSpace } from '../../core';
 
-import { proxy } from '@use-gpu/core';
-import { gather, use, useMemo, useOne } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { proxy } from '../../core';
+import { gather, use, useMemo, useOne } from '../../live';
+import { chainTo } from '../../shader/wgsl';
 
 import { Pass } from './pass';
 import { RenderTarget } from './render-target';
@@ -13,10 +13,10 @@ import { RawFullScreen } from '../primitives/index';
 import { getShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { gainColor } from '@use-gpu/wgsl/fragment/gain.wgsl';
-import { tonemapACES } from '@use-gpu/wgsl/tonemap/aces.wgsl';
-import { tonemapHable } from '@use-gpu/wgsl/tonemap/hable.wgsl';
-import { tonemapUnreal } from '@use-gpu/wgsl/tonemap/unreal.wgsl';
+import { gainColor } from '../../wgsl/fragment/gain.wgsl';
+import { tonemapACES } from '../../wgsl/tonemap/aces.wgsl';
+import { tonemapHable } from '../../wgsl/tonemap/hable.wgsl';
+import { tonemapUnreal } from '../../wgsl/tonemap/unreal.wgsl';
 
 export type LinearRGBProps = PropsWithChildren<{
   width?: number,

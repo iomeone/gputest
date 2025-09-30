@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { VectorLike } from '../../core';
 
-import { useProp } from '@use-gpu/traits/live';
-import { parseVec3 } from '@use-gpu/parse';
-import { useMemo } from '@use-gpu/live';
+import { useProp } from '../../traits/live';
+import { parseVec3 } from '../../parse';
+import { useMemo } from '../../live';
 
 import { useRenderProp } from '../hooks/useRenderProp';
 import { OrbitCameraProps } from './orbit-camera';

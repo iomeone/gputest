@@ -1,8 +1,8 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../../live';
 import type { OverscanOptions, PassBinding, PassView } from '../../pass/types';
 
-import { yeet, memo, useMemo, useOne } from '@use-gpu/live';
-import { makeViewUniforms, updateViewProjection } from '@use-gpu/core';
+import { yeet, memo, useMemo, useOne } from '../../../live';
+import { makeViewUniforms, updateViewProjection } from '../../../core';
 
 import { useShaderRef } from '../../hooks/useShaderRef';
 import { useRenderContext } from '../../providers/render-provider';

@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/codec/octahedral'::{ decodeOctahedral, decodeHemiOctahedral, wrapOctahedral };
-use '@use-gpu/wgsl/codec/cubemap'::{ encodeCubeMap };
+use '../../../wgsl/codec/octahedral'::{ decodeOctahedral, decodeHemiOctahedral, wrapOctahedral };
+use '../../../wgsl/codec/cubemap'::{ encodeCubeMap };
 
 @link fn getTexture(uv: vec2<f32>, layer: u32) -> vec4<f32>;
 

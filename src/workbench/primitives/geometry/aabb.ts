@@ -1,5 +1,5 @@
-import type { CPUGeometry } from '@use-gpu/core';
-import { lerp, makeNumberWriter } from '@use-gpu/core';
+import type { CPUGeometry } from '../../../core';
+import { lerp, makeNumberWriter } from '../../../core';
 
 type AABBGeometryProps = {
   min?: [number, number] | [number, number, number],

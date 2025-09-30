@@ -1,8 +1,8 @@
-import type { ArrowFunction, LC } from '@use-gpu/live';
-import type { StorageSource, Lazy, VectorLike } from '@use-gpu/core';
-import type { ParsedBundle } from '@use-gpu/shader';
+import type { ArrowFunction, LC } from '../../live';
+import type { StorageSource, Lazy, VectorLike } from '../../core';
+import type { ParsedBundle } from '../../shader';
 
-import { yeet, useMemo, useOne, SUSPEND } from '@use-gpu/live';
+import { yeet, useMemo, useOne, SUSPEND } from '../../live';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
@@ -11,7 +11,7 @@ import {
   makeBoundUniforms, makeVolatileUniforms,
   uploadBuffer,
   resolve,
-} from '@use-gpu/core';
+} from '../../core';
 import { useLinkedShader } from '../hooks/useLinkedShader';
 import { useComputePipelineAsync } from '../hooks/useComputePipeline';
 import { useInspectable } from '../hooks/useInspectable'

@@ -1,13 +1,13 @@
-import type { LC } from '@use-gpu/live';
-import React from '@use-gpu/live';
+import type { LC } from '../../../live';
+import React from '../../../live';
 
 import {
   LinearRGB, Pass, FlatCamera, DebugAtlas, DebugProvider,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   UI, Layout, Absolute, Inline, Text, Embed,
-} from '@use-gpu/layout';
-import { PanControls } from '@use-gpu/interact';
+} from '../../../layout';
+import { PanControls } from '../../../interact';
 
 import { GlyphControls } from '../../ui/glyph-controls';
 import { InfoBox } from '../../ui/info-box';

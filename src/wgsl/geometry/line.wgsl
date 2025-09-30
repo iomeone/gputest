@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ screenToClip3D, clip3DToScreen };
+use '../../wgsl/use/view'::{ screenToClip3D, clip3DToScreen };
 
 @export fn getLineJoin(
   beforePoint: vec3<f32>,

@@ -1,10 +1,10 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry, TextureSource } from '@use-gpu/core';
-import type { Keyframe } from '@use-gpu/workbench';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry, TextureSource } from '../../../core';
+import type { Keyframe } from '../../../workbench';
 
-import React, { Gather, useOne } from '@use-gpu/live';
+import React, { Gather, useOne } from '../../../live';
 import { vec3 } from 'gl-matrix';
-import { seq } from '@use-gpu/core';
+import { seq } from '../../../core';
 
 import {
   Pass, Animate, LinearRGB,
@@ -13,13 +13,13 @@ import {
   PointLight, AmbientLight,
 
   makeBoxGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Scene, Node, Instances,
-} from '@use-gpu/scene';
+} from '../../../scene';
 
 import { InfoBox } from '../../ui/info-box';
 

@@ -1,5 +1,5 @@
-import type { LiveComponent, LiveElement, LiveNode, LiveFiber, Task, PropsWithChildren, ArrowFunction } from '@use-gpu/live';
-import { use, detach, provide, unquote, yeet, gather, useCallback, useContext, useDouble, useFiberId, useOne, useResource, useState, tagFunction, incrementVersion } from '@use-gpu/live';
+import type { LiveComponent, LiveElement, LiveNode, LiveFiber, Task, PropsWithChildren, ArrowFunction } from '../../live';
+import { use, detach, provide, unquote, yeet, gather, useCallback, useContext, useDouble, useFiberId, useOne, useResource, useState, tagFunction, incrementVersion } from '../../live';
 
 import { useRenderContext } from '../providers/render-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';

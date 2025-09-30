@@ -1,15 +1,15 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 
 import {
   Pass, LinearRGB, Loop,
   OrbitCamera, EaseToTarget,
   PointLayer, PBRMaterial,
   AmbientLight, Environment,
-} from '@use-gpu/workbench';
-import { Cursor, OrbitControls } from '@use-gpu/interact';
-import { Transform } from '@use-gpu/plot';
+} from '../../../workbench';
+import { Cursor, OrbitControls } from '../../../interact';
+import { Transform } from '../../../plot';
 import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';

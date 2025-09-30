@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/codec/octahedral'::{ encodeOctahedral };
-use '@use-gpu/wgsl/fragment/bayer'::{ bayer4x4f };
+use '../../../wgsl/codec/octahedral'::{ encodeOctahedral };
+use '../../../wgsl/fragment/bayer'::{ bayer4x4f };
 
 struct GBufferSample {
   @location(0) albedo: vec4<f32>,

@@ -1,6 +1,6 @@
-import type { XYZ, XYZW } from '@use-gpu/core';
-import { useCallback, useState } from '@use-gpu/live';
-import { PointerEvent, useViewContext } from '@use-gpu/workbench';
+import type { XYZ, XYZW } from '../../core';
+import { useCallback, useState } from '../../live';
+import { PointerEvent, useViewContext } from '../../workbench';
 
 import { transformRay, lineToRay, intersectRays, intersectRayPlane } from '../util/intersect';
 import { mat4, vec3 } from 'gl-matrix';

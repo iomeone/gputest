@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { yeet, useMemo, useOne } from '@use-gpu/live';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo, useOne } from '../../../live';
+import { bindBundle } from '../../../shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
 import { getNativeColor } from '../../hooks/useNativeColor';
@@ -10,10 +10,10 @@ import { getNativeColor } from '../../hooks/useNativeColor';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
-import renderFragmentSolid from '@use-gpu/wgsl/render/fragment/deferred-solid.wgsl';
+import renderVirtualSolid from '../../../wgsl/render/vertex/virtual-solid.wgsl';
+import renderFragmentSolid from '../../../wgsl/render/fragment/deferred-solid.wgsl';
 
-import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
 
 export type DeferredSolidRenderProps = VirtualDraw;
 

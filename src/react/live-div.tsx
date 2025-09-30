@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef } from 'react';
 
-import type { LiveFiber, LiveElement } from '@use-gpu/live';
-import { render as renderLive, unmount as unmountLive, resolveRootNode } from '@use-gpu/live';
+import type { LiveFiber, LiveElement } from '../live';
+import { render as renderLive, unmount as unmountLive, resolveRootNode } from '../live';
 
 export type LiveDivProps = {
   /** CSS styles to apply to the `<div>` */

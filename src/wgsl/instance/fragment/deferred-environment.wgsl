@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/view'::{ getViewPosition };
-use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
+use '../../../wgsl/use/view'::{ getViewPosition };
+use '../../../wgsl/use/types'::{ Light, SurfaceFragment };
 
 @link fn getSurface(uv: vec2<f32>) -> SurfaceFragment;
 

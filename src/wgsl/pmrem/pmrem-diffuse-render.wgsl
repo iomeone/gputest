@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/octahedral'::{ decodeOctahedral };
+use '../../wgsl/codec/octahedral'::{ decodeOctahedral };
 
 @link fn getTargetMapping() -> vec4<u32> {};
 

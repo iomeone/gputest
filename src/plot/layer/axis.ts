@@ -1,13 +1,13 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { TraitProps } from '@use-gpu/traits/live';
+import type { LiveComponent } from '../../live';
+import type { TraitProps } from '../../traits/live';
 
-import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
-import { memo, use, useMemo } from '@use-gpu/live';
+import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '../../traits/live';
+import { memo, use, useMemo } from '../../live';
 import {
   useShader, useShaderRef,
   LineLayer, ArrowLayer, useArrowSegmentsSource,
-} from '@use-gpu/workbench';
-import { parsePosition, parseIntegerPositive } from '@use-gpu/parse';
+} from '../../workbench';
+import { parsePosition, parseIntegerPositive } from '../../parse';
 
 import { useRangeContext } from '../providers/range-provider';
 import { vec4 } from 'gl-matrix';
@@ -21,7 +21,7 @@ import {
   ColorTrait,
   ROPTrait,
 } from '../traits';
-import { getAxisPosition } from '@use-gpu/wgsl/plot/axis.wgsl';
+import { getAxisPosition } from '../../wgsl/plot/axis.wgsl';
 
 const Traits = combine(
   ArrowTrait,

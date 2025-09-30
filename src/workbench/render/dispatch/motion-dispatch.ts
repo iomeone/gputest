@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { ViewUniforms } from '@use-gpu/core';
+import type { LiveComponent } from '../../../live';
+import type { ViewUniforms } from '../../../core';
 
-import { yeet, useOne, useNoOne, useRef } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import { yeet, useOne, useNoOne, useRef } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 import { mat4 } from 'gl-matrix';
 
 import { useTextureUVToXY, useTextureAccess } from '../../hooks/useTextureAccess';
@@ -12,7 +12,7 @@ import { usePassContext } from '../../providers/pass-provider';
 
 import { useCopySelectDepthSample2 } from '../copy/select-copy';
 
-import { getMotionSample } from '@use-gpu/wgsl/motion/motion-sample.wgsl';
+import { getMotionSample } from '../../../wgsl/motion/motion-sample.wgsl';
 
 const selectXY = wgsl`@export fn selectXY(v: vec4<f32>) -> vec2<f32> { return v.xy; }`;
 const selectZ = wgsl`@export fn selectZ(v: vec4<f32>) -> f32 { return v.z; }`;

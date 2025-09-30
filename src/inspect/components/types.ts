@@ -1,5 +1,5 @@
-import type { LiveFiber } from '@use-gpu/live';
-import type { Cursor } from '@use-gpu/state';
+import type { LiveFiber } from '../../live';
+import type { Cursor } from '../../state';
 
 //import type { ReactNode } from 'react';
 // ReactNode makes getdocs-ts crash

@@ -8,7 +8,7 @@ import { defaultKeymap } from '@codemirror/commands';
 import { LRLanguage, LanguageSupport } from "@codemirror/language";
 import { createTheme } from '@uiw/codemirror-themes';
 
-import { parser } from '@use-gpu/shader/wgsl';
+import { parser } from '../shader/wgsl';
 import { styleTags, tags as t } from "@lezer/highlight";
 
 export type WGSLProps = {

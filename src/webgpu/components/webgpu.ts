@@ -1,8 +1,8 @@
-import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { LC, LiveElement, PropsWithChildren } from '../../live';
 
-import { provide, wrap, useAwait, useResource } from '@use-gpu/live';
-import { injectMethodLogger } from '@use-gpu/core';
-import { Queue, DeviceContext } from '@use-gpu/workbench';
+import { provide, wrap, useAwait, useResource } from '../../live';
+import { injectMethodLogger } from '../../core';
+import { Queue, DeviceContext } from '../../workbench';
 
 import { mountGPUDevice } from '../web';
 

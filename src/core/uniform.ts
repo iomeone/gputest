@@ -8,7 +8,7 @@ import type {
 import { UNIFORM_ATTRIBUTE_SIZES, UNIFORM_ATTRIBUTE_ALIGNS, UNIFORM_ARRAY_TYPES, UNIFORM_ARRAY_DIMS } from './constants';
 import { UNIFORM_BYTE_SETTERS, repeatSetter } from './bytes';
 
-import { getObjectKey, toMurmur53, mixBits53 } from '@use-gpu/state';
+import { getObjectKey, toMurmur53, mixBits53 } from '../state';
 import { makeBindGroupLayout } from './bindgroup';
 import { makeUniformBuffer } from './buffer';
 import { makeSampler } from './texture';

@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/use/types'::{ UIVertex };
-use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
-use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getScreenScale, applyZBias };
+use '../../../wgsl/use/types'::{ UIVertex };
+use '../../../wgsl/geometry/quad'::{ getQuadUV };
+use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getScreenScale, applyZBias };
 
 @optional @link fn getIndex(i: u32) -> u32 { return 0u; };
 @optional @link fn getRectangle(i: u32) -> vec4<f32> { return vec4<f32>(-1.0, -1.0, 1.0, 1.0); };

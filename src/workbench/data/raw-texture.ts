@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { DataTexture, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { DataTexture, TextureSource } from '../../core';
 
-import { yeet, useOne, useMemo, useNoMemo, useContext, useHooks, incrementVersion } from '@use-gpu/live';
-import { countMips, makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '@use-gpu/core';
+import { yeet, useOne, useMemo, useNoMemo, useContext, useHooks, incrementVersion } from '../../live';
+import { countMips, makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '../../core';
 
 import { useInspectable } from '../hooks/useInspectable';
 import { DeviceContext } from '../providers/device-provider';

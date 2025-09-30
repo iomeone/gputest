@@ -1,11 +1,11 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { ColorLike } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../live';
+import type { ColorLike } from '../../core';
 import type { SlideInfo, ResolvedSlide } from '../types';
 
-import { clamp } from '@use-gpu/core';
-import { gather, provide, use, useMemo, useOne, useRef, useState } from '@use-gpu/live';
-import { parseColor } from '@use-gpu/parse';
-import { useProp } from '@use-gpu/traits/live';
+import { clamp } from '../../core';
+import { gather, provide, use, useMemo, useOne, useRef, useState } from '../../live';
+import { parseColor } from '../../parse';
+import { useProp } from '../../traits/live';
 
 import { resolveSlides } from '../lib/slides';
 import { PresentContext, PresentAPI } from '../providers/present-provider';

@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ getViewNearFar, getViewPosition, getViewResolution, getViewSize, clipToWorld3D, clipUVToXY };
+use '../../../../wgsl/use/view'::{ getViewNearFar, getViewPosition, getViewResolution, getViewSize, clipToWorld3D, clipUVToXY };
 
 const BOUNCES = 2;
 const SAMPLING = 2;

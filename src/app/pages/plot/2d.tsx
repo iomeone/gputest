@@ -1,16 +1,16 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Keyframe } from '@use-gpu/workbench';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Keyframe } from '../../../workbench';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 
 import {
   Pass, FlatCamera,
   Animate, LinearRGB,
-} from '@use-gpu/workbench';
-import { Cursor, PanControls } from '@use-gpu/interact';
+} from '../../../workbench';
+import { Cursor, PanControls } from '../../../interact';
 import {
   Plot, Cartesian, Axis, Point, Line, Arrow, Face, Transform, Polygon, Label,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 import { InfoBox } from '../../ui/info-box';
 

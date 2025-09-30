@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/use/view'::{ getViewPosition, clipToWorld, to3D };
-use '@use-gpu/wgsl/use/types'::{ Light, SurfaceFragment };
-use '@use-gpu/wgsl/codec/octahedral'::{ decodeOctahedral };
+use '../../../wgsl/use/view'::{ getViewPosition, clipToWorld, to3D };
+use '../../../wgsl/use/types'::{ Light, SurfaceFragment };
+use '../../../wgsl/codec/octahedral'::{ decodeOctahedral };
 
 @link fn getSurface(uv: vec2<f32>) -> SurfaceFragment;
 

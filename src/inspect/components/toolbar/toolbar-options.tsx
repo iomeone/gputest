@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Cursor } from '@use-gpu/state';
+import { Cursor } from '../../../state';
 import { SmallButton, OptionsContainer, Spacer } from '../layout';
 import { OptionsState } from '../types';
 

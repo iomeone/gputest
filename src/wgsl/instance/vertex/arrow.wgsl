@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex, ShadedVertex };
-use '@use-gpu/wgsl/use/view'::{ getViewVector, worldToClip, worldToView, viewToClip, worldToClip3D, applyZBias, getViewPosition };
-use '@use-gpu/wgsl/geometry/arrow'::{ getArrowSize };
+use '../../../wgsl/use/types'::{ SolidVertex, ShadedVertex };
+use '../../../wgsl/use/view'::{ getViewVector, worldToClip, worldToView, viewToClip, worldToClip3D, applyZBias, getViewPosition };
+use '../../../wgsl/geometry/arrow'::{ getArrowSize };
 
 @optional @link fn getVertex(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 @optional @link fn getNormal(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };

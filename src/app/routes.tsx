@@ -1,4 +1,4 @@
-import React from '@use-gpu/live';
+import React from '../live';
 
 import { DataPointCloudPage } from './pages/data/point-cloud';
 import { DataSolarSystemPage } from './pages/data/solar';

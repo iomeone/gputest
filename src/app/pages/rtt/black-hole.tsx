@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { OffscreenRenderContext } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { OffscreenRenderContext } from '../../../core';
 
-import React, { Gather } from '@use-gpu/live';
+import React, { Gather } from '../../../live';
 
 import {
   Loop, Pass, Queue,
@@ -11,13 +11,13 @@ import {
   useShader,
   useShaderRef,
   useTimeContext,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Transform,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import { vec3 } from 'gl-matrix';
 
 import { traceVolumeBH } from './black-hole/black-hole.wgsl';

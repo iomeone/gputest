@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { OffscreenRenderContext, TextureTarget } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { OffscreenRenderContext, TextureTarget } from '../../core';
 
-import { provide, yeet, useMemo, incrementVersion } from '@use-gpu/live';
+import { provide, yeet, useMemo, incrementVersion } from '../../live';
 import { RenderContext, useRenderContext, useNoRenderContext } from '../providers/render-provider';
 import { QueueReconciler } from '../reconcilers/index';
 

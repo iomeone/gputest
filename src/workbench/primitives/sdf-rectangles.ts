@@ -1,11 +1,11 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike, Lazy, TextureSource, LambdaSource } from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
-import type { TransformContextProps } from '@use-gpu/workbench';
+import type { LiveComponent } from '../../live';
+import type { VectorLike, Lazy, TextureSource, LambdaSource } from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
+import type { TransformContextProps } from '../../workbench';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useMemo, useOne } from '@use-gpu/live';
+import { memo, useMemo, useOne } from '../../live';
 
 import { FacetSource, useFacetShader } from './hooks/facets';
 import { PickingSource, usePickingShader } from './hooks/picking';
@@ -18,8 +18,8 @@ import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getSDFRectangleVertex } from '@use-gpu/wgsl/instance/vertex/sdf-rectangle.wgsl';
-import { getSDFRectangleFragment } from '@use-gpu/wgsl/instance/fragment/sdf-rectangle.wgsl';
+import { getSDFRectangleVertex } from '../../wgsl/instance/vertex/sdf-rectangle.wgsl';
+import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectangle.wgsl';
 
 export type SDFRectanglesProps = {
   rectangle?: VectorLike,

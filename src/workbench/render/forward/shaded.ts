@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { yeet, useMemo } from '@use-gpu/live';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo } from '../../../live';
+import { bindBundle } from '../../../shader/wgsl';
 
 import { getNativeColor } from '../../hooks/useNativeColor';
 import { getShader } from '../../hooks/useShader';
@@ -12,15 +12,15 @@ import { getShaderLabel } from '../../pass/util';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualShaded from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
+import renderVirtualShaded from '../../../wgsl/render/vertex/virtual-shaded.wgsl';
 import {
   main as renderFragmentShaded,
   mainWithDepth as renderFragmentShadedDepth,
-} from '@use-gpu/wgsl/render/fragment/shaded.wgsl';
+} from '../../../wgsl/render/fragment/shaded.wgsl';
 
-import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
-import { getSSAOSurface } from '@use-gpu/wgsl/instance/surface/ssao-surface.wgsl';
-import { sampleSSAO } from '@use-gpu/wgsl/use/ssao.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
+import { getSSAOSurface } from '../../../wgsl/instance/surface/ssao-surface.wgsl';
+import { sampleSSAO } from '../../../wgsl/use/ssao.wgsl';
 
 export type ShadedRenderProps = VirtualDraw;
 

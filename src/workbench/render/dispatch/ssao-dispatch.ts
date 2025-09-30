@@ -1,8 +1,8 @@
-import type { LiveComponent, Ref } from '@use-gpu/live';
-import type { OffscreenTarget, UseGPURenderContext } from '@use-gpu/core';
+import type { LiveComponent, Ref } from '../../../live';
+import type { OffscreenTarget, UseGPURenderContext } from '../../../core';
 
-import { yeet, useMemo, useOne, useRef } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo, useOne, useRef } from '../../../live';
+import { chainTo } from '../../../shader/wgsl';
 
 import { usePassContext } from '../../providers/pass-provider';
 import { useKeyboardState, useMouseState } from '../../providers/event-provider';
@@ -16,12 +16,12 @@ import { usePrintContext, useNoPrintContext } from '../../providers/print-provid
 
 import { useCopySample, useCopyDepthSample } from '../copy/value-copy';
 
-import { downsampleExact2 } from '@use-gpu/wgsl/texture/downsample.wgsl';
+import { downsampleExact2 } from '../../../wgsl/texture/downsample.wgsl';
 
-import { getSSAOSample } from '@use-gpu/wgsl/ssao/ssao-sample.wgsl';
-import { getSSAOAccum } from '@use-gpu/wgsl/ssao/ssao-accum.wgsl';
-import { getSSAOResolve } from '@use-gpu/wgsl/ssao/ssao-resolve.wgsl';
-import { decodeNormal16, octaToNormal, octaToNormal16 } from '@use-gpu/wgsl/codec/normal16.wgsl';
+import { getSSAOSample } from '../../../wgsl/ssao/ssao-sample.wgsl';
+import { getSSAOAccum } from '../../../wgsl/ssao/ssao-accum.wgsl';
+import { getSSAOResolve } from '../../../wgsl/ssao/ssao-resolve.wgsl';
+import { decodeNormal16, octaToNormal, octaToNormal16 } from '../../../wgsl/codec/normal16.wgsl';
 
 export type SSAODispatchProps = {
   bindPass?: (r: GPURenderPassEncoder) => void,

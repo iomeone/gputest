@@ -1,7 +1,7 @@
-import type { LC, LiveElement, ArrowFunction } from '@use-gpu/live';
+import type { LC, LiveElement, ArrowFunction } from '../../live';
 import type { ComputeToPass, CommandToBuffer } from '../pass/types';
 
-import { yeet, useMemo } from '@use-gpu/live';
+import { yeet, useMemo } from '../../live';
 import { PassReconciler } from '../reconcilers/index';
 
 const {quote} = PassReconciler;

@@ -1,7 +1,7 @@
-import type { ArchetypeSchema, AggregateItem, ArrayAggregateBuffer } from '@use-gpu/core';
+import type { ArchetypeSchema, AggregateItem, ArrayAggregateBuffer } from '../../core';
 
 import { useDeviceContext } from '../providers/device-provider';
-import { useMemo, useOne } from '@use-gpu/live';
+import { useMemo, useOne } from '../../live';
 import {
   schemaToAggregate,
   toGPUAggregate,
@@ -9,7 +9,7 @@ import {
   uploadAggregateFromSchema,
   uploadAggregateFromSchemaRefs,
   getAggregateSummary,
-} from '@use-gpu/core';
+} from '../../core';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 import { getInstancedAggregate, combineInstances } from '../hooks/useInstancedSources';
 import { getStructAggregate } from '../hooks/useStructSources';

@@ -1,15 +1,15 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { StorageSource, UniformType } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC, LiveElement } from '../../live';
+import type { StorageSource, UniformType } from '../../core';
+import type { ShaderSource } from '../../shader';
 
-import { wgsl } from '@use-gpu/shader/wgsl';
-import { use, yeet, useMemo } from '@use-gpu/live';
+import { wgsl } from '../../shader/wgsl';
+import { use, yeet, useMemo } from '../../live';
 import { Dispatch } from '../queue/dispatch';
 
 import { getShader, useShader } from '../hooks/useShader';
 import { useScratchSource } from '../hooks/useScratchSource';
 
-import { memoSample } from '@use-gpu/wgsl/compute/memo2.wgsl';
+import { memoSample } from '../../wgsl/compute/memo2.wgsl';
 
 export type Memo2Props = {
   shader: ShaderSource,

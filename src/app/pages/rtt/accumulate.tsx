@@ -1,8 +1,8 @@
-import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { Lazy, OffscreenTarget } from '@use-gpu/core';
+import type { LC, LiveElement, PropsWithChildren } from '../../../live';
+import type { Lazy, OffscreenTarget } from '../../../core';
 
-import React, { Gather, useMemo, useOne, useRef, useVersion } from '@use-gpu/live';
-import { seq } from '@use-gpu/core';
+import React, { Gather, useMemo, useOne, useRef, useVersion } from '../../../live';
+import { seq } from '../../../core';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -12,10 +12,10 @@ import {
 
   useMouseState, useKeyboardState,
   usePerFrame, useShader, useShaderRef, useRawSource, useViewContext,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 
 import { InfoBox } from '../../ui/info-box';
 

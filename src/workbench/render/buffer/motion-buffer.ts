@@ -1,8 +1,8 @@
-import type { LC } from '@use-gpu/live';
-import type { OffscreenRenderContext } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { OffscreenRenderContext } from '../../../core';
 import type { OverscanOptions } from '../../pass/types';
 
-import { use, gather, yeet, memo } from '@use-gpu/live';
+import { use, gather, yeet, memo } from '../../../live';
 import { RenderTarget, useCombinedRenderTarget } from '../render-target';
 
 export type MotionBufferProps = {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { HTML } from '@use-gpu/react';
+import { HTML } from '../../react';
 
 const STYLE = {
   position: 'absolute',

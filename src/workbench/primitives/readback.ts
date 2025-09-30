@@ -1,7 +1,7 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { StorageSource, TypedArray } from '@use-gpu/core';
+import type { LC, LiveElement } from '../../live';
+import type { StorageSource, TypedArray } from '../../core';
 
-import { memo, yeet, useRef, useResource } from '@use-gpu/live';
+import { memo, yeet, useRef, useResource } from '../../live';
 
 import { useReadbackStorage } from '../hooks/useReadbackStorage';
 

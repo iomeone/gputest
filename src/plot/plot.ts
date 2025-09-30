@@ -1,6 +1,6 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import { use, wrap } from '@use-gpu/live';
-import { SDFFontProvider, VirtualLayers } from '@use-gpu/workbench';
+import type { LiveComponent, PropsWithChildren } from '../live';
+import { use, wrap } from '../live';
+import { SDFFontProvider, VirtualLayers } from '../workbench';
 
 export type PlotProps = PropsWithChildren<object>;
 

@@ -1,22 +1,22 @@
-import type { LC, Ref } from '@use-gpu/live';
-import type { CPUGeometry, GPUGeometry, VectorLike } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { PipelineOptions } from '@use-gpu/workbench';
+import type { LC, Ref } from '../../../../live';
+import type { CPUGeometry, GPUGeometry, VectorLike } from '../../../../core';
+import type { ShaderModule } from '../../../../shader';
+import type { PipelineOptions } from '../../../../workbench';
 
-import { seq } from '@use-gpu/core';
-import { gather, use, memo, useCallback, useMemo, useOne } from '@use-gpu/live';
+import { seq } from '../../../../core';
+import { gather, use, memo, useCallback, useMemo, useOne } from '../../../../live';
 import {
   useMatrixContext,
   useShader, useNoShader, useLambdaSource, useShaderRef,
   useEnvironmentContext, useNoEnvironmentContext,
   FaceLayer, GeometryData, ShaderFlatMaterial, ShaderLitMaterial,
   makeSphereGeometry,
-} from '@use-gpu/workbench';
-import { bindEntryPoint } from '@use-gpu/shader/wgsl';
-import { Primitive } from '@use-gpu/scene';
+} from '../../../../workbench';
+import { bindEntryPoint } from '../../../../shader/wgsl';
+import { Primitive } from '../../../../scene';
 
-import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
-import { applyPBREnvironment } from '@use-gpu/wgsl/material/pbr-environment.wgsl';
+import { applyPBRMaterial } from '../../../../wgsl/material/pbr-apply.wgsl';
+import { applyPBREnvironment } from '../../../../wgsl/material/pbr-environment.wgsl';
 
 import { getImpostorVertex } from './vertex-impostor.wgsl';
 import { getSphereImpostorSurface, getSphereImpostorEmissive } from './surface-sphere-impostor.wgsl';

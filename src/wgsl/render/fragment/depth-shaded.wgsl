@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/fragment/bayer'::{ bayer4x4f };
+use '../../../wgsl/fragment/bayer'::{ bayer4x4f };
 
 @infer type T;
 

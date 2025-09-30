@@ -1,7 +1,7 @@
-import type { LC } from '@use-gpu/live';
-import type { TypedArray } from '@use-gpu/core';
+import type { LC } from '../../live';
+import type { TypedArray } from '../../core';
 
-import { memo, use, useMemo } from '@use-gpu/live';
+import { memo, use, useMemo } from '../../live';
 import { useRawSource } from '../hooks/useRawSource';
 import { useArrowSegmentsSource } from '../layers/arrow-segments';
 import { ArrowLayer } from '../layers/arrow-layer';

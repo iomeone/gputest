@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/mask/sdf'::{ getUVScale, scaleSDF };
+use '../../wgsl/mask/sdf'::{ getUVScale, scaleSDF };
 
 const PI = 3.1415926536;
 

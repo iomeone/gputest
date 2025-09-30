@@ -1,5 +1,5 @@
 import { wrap } from 'comlink';
-import { seq } from '@use-gpu/core';
+import { seq } from '../../core';
 
 // Estimate available CPU concurrency
 export const getCPUConcurrency = () => (

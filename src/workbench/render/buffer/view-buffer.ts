@@ -1,7 +1,7 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../../live';
 import type { PassBinding } from '../../pass/types';
 
-import { yeet, memo } from '@use-gpu/live';
+import { yeet, memo } from '../../../live';
 
 import { useScratchSource, useNoScratchSource } from '../../hooks/useScratchSource';
 import { useViewContext, useNoViewContext } from '../../providers/view-provider';

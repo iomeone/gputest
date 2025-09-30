@@ -1,16 +1,16 @@
-import type { TypedArray, UseGPURenderContext } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { TypedArray, UseGPURenderContext } from '../../../core';
+import type { ShaderModule } from '../../../shader';
 
-import { useMemo } from '@use-gpu/live';
-import { bindBundle, getBundleName } from '@use-gpu/shader/wgsl';
+import { useMemo } from '../../../live';
+import { bindBundle, getBundleName } from '../../../shader/wgsl';
 
-import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen.wgsl';
+import { getFullScreenVertex } from '../../../wgsl/instance/vertex/full-screen.wgsl';
 
-import renderVirtualCopy from '@use-gpu/wgsl/render/vertex/virtual-copy.wgsl';
+import renderVirtualCopy from '../../../wgsl/render/vertex/virtual-copy.wgsl';
 
-import renderFragmentSampleCopy from '@use-gpu/wgsl/render/copy/copy-sample.wgsl';
-import renderFragmentDepthCopy from '@use-gpu/wgsl/render/copy/copy-depth.wgsl';
-import renderFragmentDepthSampleCopy from '@use-gpu/wgsl/render/copy/copy-depth-sample.wgsl';
+import renderFragmentSampleCopy from '../../../wgsl/render/copy/copy-sample.wgsl';
+import renderFragmentDepthCopy from '../../../wgsl/render/copy/copy-depth.wgsl';
+import renderFragmentDepthSampleCopy from '../../../wgsl/render/copy/copy-depth-sample.wgsl';
 
 import { useRenderCopy } from './render-copy';
 

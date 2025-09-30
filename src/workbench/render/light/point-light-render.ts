@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { LightKindProps } from './light-render';
 
-import { use, useCallback, useMemo, useOne, useRef } from '@use-gpu/live';
-import { alignSizeTo, uploadBuffer } from '@use-gpu/core';
+import { use, useCallback, useMemo, useOne, useRef } from '../../../live';
+import { alignSizeTo, uploadBuffer } from '../../../core';
 
 import { useBufferedSize } from '../../hooks/useBufferedSize';
 import { useShader } from '../../hooks/useShader';
@@ -14,8 +14,8 @@ import { useViewContext } from '../../providers/view-provider';
 import { makeSphereGeometry } from '../../primitives/geometry/sphere';
 import { forMeshTriangles } from '../../primitives/geometry/util';
 
-import { getDeferredLightVertex } from '@use-gpu/wgsl/instance/vertex/deferred-light.wgsl';
-import { getDeferredLightFragment } from '@use-gpu/wgsl/instance/fragment/deferred-light.wgsl';
+import { getDeferredLightVertex } from '../../../wgsl/instance/vertex/deferred-light.wgsl';
+import { getDeferredLightFragment } from '../../../wgsl/instance/fragment/deferred-light.wgsl';
 
 import { vec3 } from 'gl-matrix';
 

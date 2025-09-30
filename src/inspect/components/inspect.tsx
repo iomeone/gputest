@@ -1,9 +1,9 @@
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../../live';
 import type { ExpandState, SelectState, HoverState, OptionsState, FocusState, InspectAPI } from './types';
 
-import { YEET, incrementVersion } from '@use-gpu/live';
-import { useUpdateState, useCursor } from '@use-gpu/state/react';
-import { $apply } from '@use-gpu/state';
+import { YEET, incrementVersion } from '../../live';
+import { useUpdateState, useCursor } from '../../state/react';
+import { $apply } from '../../state';
 
 import React, { useCallback, useLayoutEffect, useEffect, useMemo, useState } from 'react';
 

@@ -1,6 +1,6 @@
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../../../live';
 
-import { formatNodeName } from '@use-gpu/live';
+import { formatNodeName } from '../../../live';
 
 import React, { forwardRef, useCallback } from 'react';
 import { usePingTracker } from '../../providers/ping-provider';

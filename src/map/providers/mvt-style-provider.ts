@@ -1,10 +1,10 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { DeepPartial } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { DeepPartial } from '../../core';
 import type { MVTStyleProperties } from '../types';
 
-import { patch } from '@use-gpu/state';
-import { parseColor } from '@use-gpu/parse';
-import { provide, makeContext, useContext, useNoContext, useOne } from '@use-gpu/live';
+import { patch } from '../../state';
+import { parseColor } from '../../parse';
+import { provide, makeContext, useContext, useNoContext, useOne } from '../../live';
 
 export type MVTStyleContextProps = Record<string, MVTStyleProperties>;
 

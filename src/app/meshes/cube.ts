@@ -1,4 +1,4 @@
-import type { DataTexture, DataSchema } from '@use-gpu/core';
+import type { DataTexture, DataSchema } from '../../core';
 
 export const makeTexture = (): DataTexture => {
   return rawTextureRGBA;

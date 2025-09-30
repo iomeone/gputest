@@ -1,20 +1,20 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { Lazy, UniformAttribute, VectorLike } from '@use-gpu/core';
-import type { PointShape } from '@use-gpu/parse';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { Lazy, UniformAttribute, VectorLike } from '../../core';
+import type { PointShape } from '../../parse';
+import type { ShaderSource } from '../../shader';
 import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { RawQuads } from '../primitives/raw-quads';
 
-import { use, memo, useMemo, useOne } from '@use-gpu/live';
-import { castTo } from '@use-gpu/shader/wgsl';
+import { use, memo, useMemo, useOne } from '../../live';
+import { castTo } from '../../shader/wgsl';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useShader } from '../hooks/useShader';
 import { useSource } from '../hooks/useSource';
 
-import { circleSDF, diamondSDF, squareSDF, upSDF, downSDF, leftSDF, rightSDF } from '@use-gpu/wgsl/mask/sdf.wgsl';
-import { getFilledMask, getOutlinedMask } from '@use-gpu/wgsl/mask/point.wgsl';
-import { traceSphereQuad } from '@use-gpu/wgsl/mask/sphere.wgsl';
+import { circleSDF, diamondSDF, squareSDF, upSDF, downSDF, leftSDF, rightSDF } from '../../wgsl/mask/sdf.wgsl';
+import { getFilledMask, getOutlinedMask } from '../../wgsl/mask/point.wgsl';
+import { traceSphereQuad } from '../../wgsl/mask/sphere.wgsl';
 
 const MASK_SHADER = {
   'circle': circleSDF,

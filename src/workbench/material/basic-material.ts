@@ -1,10 +1,10 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { ColorLike, XYZW } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC, LiveElement } from '../../live';
+import type { ColorLike, XYZW } from '../../core';
+import type { ShaderSource } from '../../shader';
 
-import { useOne } from '@use-gpu/live';
-import { useProp } from '@use-gpu/traits/live';
-import { parseColor } from '@use-gpu/parse';
+import { useOne } from '../../live';
+import { useProp } from '../../traits/live';
+import { parseColor } from '../../parse';
 
 import { useShader } from '../hooks/useShader';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
@@ -12,7 +12,7 @@ import { useShaderRef } from '../hooks/useShaderRef';
 
 import { ShaderFlatMaterial } from './shader-flat-material';
 
-import { getBasicMaterial } from '@use-gpu/wgsl/material/basic-material.wgsl';
+import { getBasicMaterial } from '../../wgsl/material/basic-material.wgsl';
 
 export type BasicMaterialProps = {
   color?: ColorLike,

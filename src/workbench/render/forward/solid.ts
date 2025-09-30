@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { yeet, useMemo } from '@use-gpu/live';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo } from '../../../live';
+import { bindBundle } from '../../../shader/wgsl';
 
 import { getNativeColor } from '../../hooks/useNativeColor';
 import { drawCall } from '../../queue/draw-call';
@@ -11,10 +11,10 @@ import { getShaderLabel } from '../../pass/util';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
-import renderFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
+import renderVirtualSolid from '../../../wgsl/render/vertex/virtual-solid.wgsl';
+import renderFragmentSolid from '../../../wgsl/render/fragment/solid.wgsl';
 
-import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
 
 export type SolidRenderProps = VirtualDraw;
 

@@ -1,7 +1,7 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex, ShadedVertex };
-use '@use-gpu/wgsl/use/view'::{ getViewResolution, viewToWorld, worldToClip, worldToW, getClipToWorldScale, getScreenScale, getViewNearFar, getViewVector, clipToWorld, to3D, applyZBias };
-use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
-use '@use-gpu/wgsl/geometry/strip'::{ getStripGridUV };
+use '../../../wgsl/use/types'::{ SolidVertex, ShadedVertex };
+use '../../../wgsl/use/view'::{ getViewResolution, viewToWorld, worldToClip, worldToW, getClipToWorldScale, getScreenScale, getViewNearFar, getViewVector, clipToWorld, to3D, applyZBias };
+use '../../../wgsl/geometry/quad'::{ getQuadUV };
+use '../../../wgsl/geometry/strip'::{ getStripGridUV };
 
 @optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 @optional @link fn getScissor(i: u32) -> vec4<f32> { return vec4<f32>(1.0); };

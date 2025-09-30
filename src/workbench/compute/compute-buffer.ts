@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { StorageSource, StorageTarget, UniformType } from '@use-gpu/core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { StorageSource, StorageTarget, UniformType } from '../../core';
 
-import { seq, getUniformArraySize, makeDataBuffer } from '@use-gpu/core';
-import { provide, fence, yeet, useContext, useMemo, incrementVersion } from '@use-gpu/live';
+import { seq, getUniformArraySize, makeDataBuffer } from '../../core';
+import { provide, fence, yeet, useContext, useMemo, incrementVersion } from '../../live';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { ComputeContext } from '../providers/compute-provider';

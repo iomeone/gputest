@@ -1,9 +1,9 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../../live';
 import type { PassBinding, PassEnv } from '../../pass/types';
 
-import { yeet, memo } from '@use-gpu/live';
+import { yeet, memo } from '../../../live';
 
-import lightBindingWGSL from '@use-gpu/wgsl/use/light.wgsl';
+import lightBindingWGSL from '../../../wgsl/use/light.wgsl';
 
 export const lightBinding: PassBinding = {
   module: lightBindingWGSL,

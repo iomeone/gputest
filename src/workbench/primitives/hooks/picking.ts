@@ -1,9 +1,9 @@
-import type { ShaderSource } from '@use-gpu/shader';
+import type { ShaderSource } from '../../../shader';
 
-import { useOne } from '@use-gpu/live';
+import { useOne } from '../../../live';
 import { useShader, useNoShader } from '../../hooks/useShader';
 
-import { getPickingID } from '@use-gpu/wgsl/render/lookup/pick.wgsl';
+import { getPickingID } from '../../../wgsl/render/lookup/pick.wgsl';
 
 export type PickingSource = {
   id?: number,

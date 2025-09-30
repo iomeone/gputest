@@ -1,15 +1,15 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { LiveComponent, PropsWithChildren } from '../../live';
 import type { Swizzle } from '../types';
-import type { TraitProps } from '@use-gpu/traits';
+import type { TraitProps } from '../../traits';
 
-import { combine, makeUseTrait, useProp } from '@use-gpu/traits/live';
-import { parseAxes } from '@use-gpu/parse';
-import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
-import { chainTo, swizzleTo } from '@use-gpu/shader/wgsl';
+import { combine, makeUseTrait, useProp } from '../../traits/live';
+import { parseAxes } from '../../parse';
+import { provide, useDouble, useOne, useMemo } from '../../live';
+import { chainTo, swizzleTo } from '../../shader/wgsl';
 import {
   MatrixContext, TransformContext, QueueReconciler,
   useShaderRef, useShader, useCombinedEpsilonTransform,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
@@ -19,7 +19,7 @@ import { mat4 } from 'gl-matrix';
 
 import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getSphericalPosition } from '@use-gpu/wgsl/transform/spherical.wgsl';
+import { getSphericalPosition } from '../../wgsl/transform/spherical.wgsl';
 
 const {signal} = QueueReconciler;
 const makeMat4 = () => mat4.create();

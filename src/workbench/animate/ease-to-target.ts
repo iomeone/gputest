@@ -1,8 +1,8 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { TypedArray, VectorLike, VectorLikes } from '@use-gpu/core';
+import type { LC, LiveElement } from '../../live';
+import type { TypedArray, VectorLike, VectorLikes } from '../../core';
 
-import { seq, lerp, clerp } from '@use-gpu/core';
-import { extend, mutate, fence, useCallback, useDouble, useMemo, useOne, useNoOne, useRef } from '@use-gpu/live';
+import { seq, lerp, clerp } from '../../core';
+import { extend, mutate, fence, useCallback, useDouble, useMemo, useOne, useNoOne, useRef } from '../../live';
 import { useTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';

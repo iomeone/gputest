@@ -1,5 +1,5 @@
 import { FC, ReactElement, useCallback } from 'react';
-import type { Cursor } from '@use-gpu/state';
+import type { Cursor } from '../../../state';
 import type { ExpandState } from '../types';
 
 export type ExpandableProps = {

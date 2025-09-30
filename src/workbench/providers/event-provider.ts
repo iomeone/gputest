@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement, ArrowFunction } from '@use-gpu/live';
+import type { LiveComponent, LiveElement, ArrowFunction } from '../../live';
 
-import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useResource, useNoResource, useState } from '@use-gpu/live';
-import { seq, proxy, makeIdAllocator } from '@use-gpu/core';
+import { use, yeet, memo, provide, unquote, multiGather, makeContext, useCallback, useContext, useNoContext, useMemo, useOne, useResource, useNoResource, useState } from '../../live';
+import { seq, proxy, makeIdAllocator } from '../../core';
 import { EventHandler, EventBinding, MouseState, WheelState, KeyboardState, PickRef, PointerCaptureAPI, PointerLockAPI } from '../interact/event';
 import { PickingContext } from '../providers/picking-provider';
 import { EventReconciler } from '../reconcilers/index';

@@ -1,6 +1,6 @@
 import React, { FC, useRef } from 'react';
 
-import { formatPrototype, formatValue } from '@use-gpu/live';
+import { formatPrototype, formatValue } from '../../live';
 import { TreeRow, TreeIndent } from './tree/tree-layout';
 import { SplitRow, Label, Selectable } from './layout';
 import { IconItem, SVGChevronDown, SVGChevronRight } from './svg';

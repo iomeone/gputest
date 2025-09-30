@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { ElementType, TensorArray, VectorLike, Emitter, UniformType } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { ElementType, TensorArray, VectorLike, Emitter, UniformType } from '../../core';
 
-import { provide, yeet, memo, useOne, useMemo, useNoMemo } from '@use-gpu/live';
+import { provide, yeet, memo, useOne, useMemo, useNoMemo } from '../../live';
 import {
   seq,
   makeTensorArray,
@@ -9,13 +9,13 @@ import {
   emitArray, emitMultiArray,
   toCPUDims,
   updateTensor,
-} from '@use-gpu/core';
-import { shouldEqual, sameShallow } from '@use-gpu/traits/live';
+} from '../../core';
+import { shouldEqual, sameShallow } from '../../traits/live';
 import {
   useTimeContext, useNoTimeContext,
   useAnimationFrame, useNoAnimationFrame,
   useBufferedSize, getRenderFunc,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { useDataContext, DataContext } from '../providers/data-provider';
 import zipObject from 'lodash/zipObject.js';

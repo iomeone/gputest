@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { TensorArray, UniformType } from '@use-gpu/core';
-import type { TraitProps } from '@use-gpu/traits';
+import type { LiveComponent } from '../../live';
+import type { TensorArray, UniformType } from '../../core';
+import type { TraitProps } from '../../traits';
 
-import { memo, use } from '@use-gpu/live';
-import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
-import { useRawTensorSource, useNoRawTensorSource, useInspectHoverable, DualContourLayer } from '@use-gpu/workbench';
+import { memo, use } from '../../live';
+import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/live';
+import { useRawTensorSource, useNoRawTensorSource, useInspectHoverable, DualContourLayer } from '../../workbench';
 
 import { useRangeContext, useNoRangeContext } from '../providers/range-provider';
 import { ImplicitSurfaceTraits } from '../traits';

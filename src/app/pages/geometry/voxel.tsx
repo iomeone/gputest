@@ -1,9 +1,9 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Vox } from '@use-gpu/voxel';
-import type { GPUGeometry } from '@use-gpu/core';
-import type { Keyframe } from '@use-gpu/workbench';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Vox } from '../../../voxel';
+import type { GPUGeometry } from '../../../core';
+import type { Keyframe } from '../../../workbench';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -13,14 +13,14 @@ import {
   PBRMaterial, GeometryData,
   Animate, DebugProvider, Environment,
   makePlaneGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 
-import { VoxData, VoxModel } from '@use-gpu/voxel';
-import { Scene, Node, Mesh, Primitive } from '@use-gpu/scene';
-import { Plot, Cartesian, Grid } from '@use-gpu/plot';
+import { VoxData, VoxModel } from '../../../voxel';
+import { Scene, Node, Mesh, Primitive } from '../../../scene';
+import { Plot, Cartesian, Grid } from '../../../plot';
 
 import { VoxControls } from '../../ui/vox-controls';
 import { InfoBox } from '../../ui/info-box';

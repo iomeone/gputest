@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { yeet, useMemo } from '@use-gpu/live';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo } from '../../../live';
+import { bindBundle } from '../../../shader/wgsl';
 
 import { getNativeColor } from '../../hooks/useNativeColor';
 import { drawCall } from '../../queue/draw-call';
@@ -11,8 +11,8 @@ import { getShaderLabel } from '../../pass/util';
 import { useRenderContext } from '../../providers/render-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualUI from '@use-gpu/wgsl/render/vertex/virtual-ui.wgsl';
-import renderFragmentUI from '@use-gpu/wgsl/render/fragment/ui.wgsl';
+import renderVirtualUI from '../../../wgsl/render/vertex/virtual-ui.wgsl';
+import renderFragmentUI from '../../../wgsl/render/fragment/ui.wgsl';
 
 export type UIRenderProps = VirtualDraw;
 

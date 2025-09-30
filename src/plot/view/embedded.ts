@@ -1,16 +1,16 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { Rectangle } from '@use-gpu/core';
+import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { Rectangle } from '../../core';
 
-import { provide, wrap, useContext, useNoContext, useMemo } from '@use-gpu/live';
+import { provide, wrap, useContext, useNoContext, useMemo } from '../../live';
 import {
   TransformContext, LayoutContext,
   useShaderRef, useShader, useCombinedTransform,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { Plot } from '../plot';
 
-import { getCartesianPosition } from '@use-gpu/wgsl/transform/cartesian.wgsl';
+import { getCartesianPosition } from '../../wgsl/transform/cartesian.wgsl';
 import { mat4, vec3 } from 'gl-matrix';
 
 export type EmbeddedProps = PropsWithChildren<{

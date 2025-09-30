@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { CPUGeometry } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { CPUGeometry } from '../../../core';
 
 import React from 'react';
-import { Gather, useMemo } from '@use-gpu/live';
+import { Gather, useMemo } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -11,12 +11,12 @@ import {
   PointLight, DirectionalLight,
   GeometryData, FaceLayer,
   computeMeshNormals,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor,
   OrbitControls,
-} from '@use-gpu/interact';
-import { GLTF, GLTFData, GLTFGeometry } from '@use-gpu/gltf';
+} from '../../../interact';
+import { GLTF, GLTFData, GLTFGeometry } from '../../../gltf';
 
 import { InfoBox } from '../../ui/info-box';
 

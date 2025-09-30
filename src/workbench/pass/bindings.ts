@@ -1,9 +1,9 @@
-import type { DataBinding } from '@use-gpu/core';
+import type { DataBinding } from '../../core';
 import type { PassApplyBindGroup, PassBindGroup, PassBinding, PassEnv, PassFlags, PassResources } from './types';
 
-import { makeBindGroup, makeDataBindingsEntries, makeShaderBinding, ViewUniforms } from '@use-gpu/core';
-import { useMemo, useNoMemo, useOne } from '@use-gpu/live';
-import { toMurmur53 } from '@use-gpu/state';
+import { makeBindGroup, makeDataBindingsEntries, makeShaderBinding, ViewUniforms } from '../../core';
+import { useMemo, useNoMemo, useOne } from '../../live';
+import { toMurmur53 } from '../../state';
 
 import { getBindGroupLayout } from '../hooks/useBindGroupLayout';
 import { useUniformSource } from '../hooks/useUniformSource';
@@ -11,7 +11,7 @@ import { useUniformSource } from '../hooks/useUniformSource';
 import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';
 import { useViewUniforms } from '../providers/view-provider';
 
-import { ViewUniforms as ViewUniformsWGSL } from '@use-gpu/wgsl/use/view.wgsl';
+import { ViewUniforms as ViewUniformsWGSL } from '../../wgsl/use/view.wgsl';
 
 export const useMinimalBindGroups = (
   resources: PassResources,

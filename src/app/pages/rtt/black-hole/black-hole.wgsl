@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/mask/sdf'::{ getUVScale, getUVWScale };
+use '../../../../wgsl/mask/sdf'::{ getUVScale, getUVWScale };
 
 const PI = 3.1415926536;
 const TAU = 6.2831853072;

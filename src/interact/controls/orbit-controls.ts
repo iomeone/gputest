@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { VectorLike } from '../../core';
 
-import { useProp } from '@use-gpu/traits/live';
-import { parseVec3 } from '@use-gpu/parse';
-import { useContext, useCallback, useMemo, useHooks, useState } from '@use-gpu/live';
-import { makeOrbitMatrix, clamp } from '@use-gpu/core';
+import { useProp } from '../../traits/live';
+import { parseVec3 } from '../../parse';
+import { useContext, useCallback, useMemo, useHooks, useState } from '../../live';
+import { makeOrbitMatrix, clamp } from '../../core';
 import {
   getRenderFunc,
   useCanvasEvents,
@@ -15,7 +15,7 @@ import {
   LayoutContext,
   PointerEvent,
   WheelEvent,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 import { matchActionBindings } from '../util/hdi';
 import { ActionMap } from '../types';

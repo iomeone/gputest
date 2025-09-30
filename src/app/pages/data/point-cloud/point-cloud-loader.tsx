@@ -1,11 +1,11 @@
-import React from '@use-gpu/live';
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { DataBoundingBox } from '@use-gpu/core';
-import type { ShaderModule, TextureSource } from '@use-gpu/shader';
+import React from '../../../../live';
+import type { LC, LiveElement } from '../../../../live';
+import type { DataBoundingBox } from '../../../../core';
+import type { ShaderModule, TextureSource } from '../../../../shader';
 
-import { Gather, useMemo } from '@use-gpu/live';
-import { chainTo, wgsl, f32 } from '@use-gpu/shader/wgsl';
-import { Fetch, ImageTexture, PointLayerProps, useRenderProp, getShader, useShader } from '@use-gpu/workbench';
+import { Gather, useMemo } from '../../../../live';
+import { chainTo, wgsl, f32 } from '../../../../shader/wgsl';
+import { Fetch, ImageTexture, PointLayerProps, useRenderProp, getShader, useShader } from '../../../../workbench';
 
 const makeValueMapper = (precision: number) => wgsl`
 @link fn getIntTexture(ij: vec2<u32>, level: u32) -> vec4<u32>;

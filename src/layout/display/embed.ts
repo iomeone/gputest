@@ -1,13 +1,13 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
-import type { Rectangle } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
+import type { Rectangle } from '../../core';
+import type { ShaderModule } from '../../shader';
 import type { FitInto, Dimension } from '../types';
-import type { TraitProps } from '@use-gpu/traits';
+import type { TraitProps } from '../../traits';
 
-import { useProp } from '@use-gpu/traits/live';
-import { memo, provide, yeet, useFiber } from '@use-gpu/live';
-import { getBundleKey } from '@use-gpu/shader/wgsl';
-import { LayoutContext, TransformContext, LayerReconciler } from '@use-gpu/workbench';
+import { useProp } from '../../traits/live';
+import { memo, provide, yeet, useFiber } from '../../live';
+import { getBundleKey } from '../../shader/wgsl';
+import { LayoutContext, TransformContext, LayerReconciler } from '../../workbench';
 import { memoFit, memoLayout } from '../lib/util';
 import { evaluateDimension } from '../parse';
 

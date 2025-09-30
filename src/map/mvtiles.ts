@@ -1,11 +1,11 @@
-import type { LC } from '@use-gpu/live';
-import type { CPUGeometry, StorageSource, LambdaSource } from '@use-gpu/core';
-import type { FetchAPIOptions } from '@use-gpu/workbench';
+import type { LC } from '../live';
+import type { CPUGeometry, StorageSource, LambdaSource } from '../core';
+import type { FetchAPIOptions } from '../workbench';
 import type { DistanceLODNode, MVTStyleSheet, QuadTreeKey, QuadTreeNode, QuadTreeLODStrategy } from './types';
 
-import { toDataBounds } from '@use-gpu/core';
-import { use, fragment, useResource } from '@use-gpu/live';
-import { AABBHelper, Data, PointLayer, LineLayer, FaceLayer, LabelLayer, ArcLabelLayer, SDFFontProvider } from '@use-gpu/workbench';
+import { toDataBounds } from '../core';
+import { use, fragment, useResource } from '../live';
+import { AABBHelper, Data, PointLayer, LineLayer, FaceLayer, LabelLayer, ArcLabelLayer, SDFFontProvider } from '../workbench';
 
 import { useTileContext } from './providers/tile-provider';
 import { useMVTStyleContext } from './providers/mvt-style-provider';

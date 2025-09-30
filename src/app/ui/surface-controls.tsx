@@ -1,8 +1,8 @@
 import React from 'react';
-import type { LC, LiveElement } from '@use-gpu/live';
+import type { LC, LiveElement } from '../../live';
 
-import { use, fragment, useState } from '@use-gpu/live';
-import { HTML } from '@use-gpu/react';
+import { use, fragment, useState } from '../../live';
+import { HTML } from '../../react';
 
 import { ENVIRONMENTS } from './envmap-controls';
 

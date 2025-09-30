@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex };
-use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
+use '../../../wgsl/use/types'::{ SolidVertex };
+use '../../../wgsl/geometry/quad'::{ getQuadUV };
 
 //  0        1      2
 //    +------.------/

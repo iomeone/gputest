@@ -1,10 +1,10 @@
-import type { LC, RefObject, PropsWithChildren } from '@use-gpu/live';
+import type { LC, RefObject, PropsWithChildren } from '../../../live';
 
-import React, { useRef } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React, { useRef } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 
-import { Pass, LinearRGB, FullScreen, QueueReconciler } from '@use-gpu/workbench';
-import { Cursor, PanControls } from '@use-gpu/interact';
+import { Pass, LinearRGB, FullScreen, QueueReconciler } from '../../../workbench';
+import { Cursor, PanControls } from '../../../interact';
 
 import { InfoBox } from '../../ui/info-box';
 import { DrosteControls } from '../../ui/droste-controls';

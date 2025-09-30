@@ -1,8 +1,8 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { OffscreenTarget, UseGPURenderContext, VectorLike } from '@use-gpu/core';
+import type { LiveComponent } from '../../../live';
+import type { OffscreenTarget, UseGPURenderContext, VectorLike } from '../../../core';
 
-import { yeet, useMemo, useRef } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo, useRef } from '../../../live';
+import { chainTo } from '../../../shader/wgsl';
 
 import { usePassContext } from '../../providers/pass-provider';
 
@@ -14,10 +14,10 @@ import { useRenderContext } from '../../providers/render-provider';
 
 import { useCopySample } from '../copy/value-copy';
 
-import { getOutlineSample } from '@use-gpu/wgsl/outline/outline-sample.wgsl';
-import { getOutlineResolve } from '@use-gpu/wgsl/outline/outline-resolve.wgsl';
+import { getOutlineSample } from '../../../wgsl/outline/outline-sample.wgsl';
+import { getOutlineResolve } from '../../../wgsl/outline/outline-resolve.wgsl';
 
-import { octaToNormal16 } from '@use-gpu/wgsl/codec/normal16.wgsl';
+import { octaToNormal16 } from '../../../wgsl/codec/normal16.wgsl';
 
 export type OutlineDispatchProps = {
   bindPass?: (r: GPURenderPassEncoder) => void,

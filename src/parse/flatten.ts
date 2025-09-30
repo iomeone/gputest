@@ -1,5 +1,5 @@
-import type { TypedArrayConstructor, TensorArray, VectorLike, VectorLikes } from '@use-gpu/core';
-import { seq, isTypedArray, copyNumberArray, copyNestedNumberArray } from '@use-gpu/core';
+import type { TypedArrayConstructor, TensorArray, VectorLike, VectorLikes } from '../core';
+import { seq, isTypedArray, copyNumberArray, copyNestedNumberArray } from '../core';
 
 const NO_CHUNKS: [VectorLike, null] = [new Uint32Array(0), null];
 

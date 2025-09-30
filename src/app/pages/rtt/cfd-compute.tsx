@@ -1,18 +1,18 @@
-import type { LC } from '@use-gpu/live';
-import type { StorageTarget } from '@use-gpu/core';
+import type { LC } from '../../../live';
+import type { StorageTarget } from '../../../core';
 
-import React, { Gather } from '@use-gpu/live';
-import { wgsl } from '@use-gpu/shader/wgsl';
+import React, { Gather } from '../../../live';
+import { wgsl } from '../../../shader/wgsl';
 
 import {
   Loop, FlatCamera, Pass,
   ComputeBuffer, Compute, Stage, Iterate, Kernel, Suspense, RawFullScreen,
   useShader, useLambdaSource,
-} from '@use-gpu/workbench';
-import { Mouse } from '@use-gpu/interact';
+} from '../../../workbench';
+import { Mouse } from '../../../interact';
 import {
   UI, Layout, Absolute, Block, Element, Inline, Text,
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 import { main as generateInitial }  from './cfd-compute/initial.wgsl';
 import { main as pushVelocity }     from './cfd-compute/push.wgsl';

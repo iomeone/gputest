@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16 };
+use '../../wgsl/codec/normal16'::{ decodeNormal16 };
 use './ssao-weight'::{ normalWeight, depthWeight };
 
 @link fn getTargetNormal(uv: vec2<f32>) -> vec3<f32>;

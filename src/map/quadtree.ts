@@ -1,9 +1,9 @@
-import type { LiveElement } from '@use-gpu/live';
+import type { LiveElement } from '../live';
 import type { QuadTreeKey, QuadTreeNode, QuadTreeLODStrategy, QuadTreeRoot } from './types';
 
-import { fence, gather, keyed, memo, yeet, useAwait, useMemo, useOne, useState } from '@use-gpu/live';
-import { toMurmur53, mixBits53 } from '@use-gpu/state';
-import { useMatrixContext, useViewContext, usePerFrame, getRenderFunc } from '@use-gpu/workbench';
+import { fence, gather, keyed, memo, yeet, useAwait, useMemo, useOne, useState } from '../live';
+import { toMurmur53, mixBits53 } from '../state';
+import { useMatrixContext, useViewContext, usePerFrame, getRenderFunc } from '../workbench';
 
 import { gatherQuadTree, makeQuadTreeNode, parseQuadTreeKey, addQuadTreeNode, collapseQuadTreeNode } from './util/quadtree';
 

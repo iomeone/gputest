@@ -1,7 +1,7 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LiveComponent, LiveElement } from '../../live';
 
-import { lerp } from '@use-gpu/core';
-import { useCallback, useContext, useHooks, useMemo, useOne, useRef, useState } from '@use-gpu/live';
+import { lerp } from '../../core';
+import { useCallback, useContext, useHooks, useMemo, useOne, useRef, useState } from '../../live';
 import { matchActionBindings } from '../util/hdi';
 import { ActionMap } from '../types';
 
@@ -15,7 +15,7 @@ import {
   usePerFrame, useNoPerFrame,
   LayoutContext,
   PointerEvent, WheelEvent,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 
 const SOFT_LERP = 0.35;
 const EASE_LERP = 0.05;

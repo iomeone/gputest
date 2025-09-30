@@ -1,6 +1,6 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import { extend, useMemo, useHooks, useState } from '@use-gpu/live';
-import { PointerEvent, usePickingId, useNoPickingId, usePointerCapture, useCanvasEvents, getRenderFunc } from '@use-gpu/workbench';
+import type { LiveComponent, LiveElement } from '../../live';
+import { extend, useMemo, useHooks, useState } from '../../live';
+import { PointerEvent, usePickingId, useNoPickingId, usePointerCapture, useCanvasEvents, getRenderFunc } from '../../workbench';
 
 export type PickState = {
   id: number,

@@ -1,9 +1,9 @@
-import type { UniformAttribute } from '@use-gpu/core';
+import type { UniformAttribute } from '../../core';
 import type { PassBindGroup, PassBinding, PassEnv } from '../pass/types';
 
-import { useMemo } from '@use-gpu/live';
-import { makeBindGroupLayout, makeBindGroupLayoutEntries, makeRawBindingForAttribute } from '@use-gpu/core';
-import { attributeToFields, bundleToBindings } from '@use-gpu/shader/wgsl';
+import { useMemo } from '../../live';
+import { makeBindGroupLayout, makeBindGroupLayoutEntries, makeRawBindingForAttribute } from '../../core';
+import { attributeToFields, bundleToBindings } from '../../shader/wgsl';
 
 import { useDeviceContext } from '../providers/device-provider';
 

@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Keyframe } from '@use-gpu/workbench';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Keyframe } from '../../../workbench';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -9,13 +9,13 @@ import {
   OrbitCamera,
   Animate,
   LinearRGB,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Plot, Spherical, Stereographic, Axis, Grid, Label, Line, Sampler, Scale, Tick,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 import { PlotControls } from '../../ui/plot-controls';
 import { InfoBox } from '../../ui/info-box';

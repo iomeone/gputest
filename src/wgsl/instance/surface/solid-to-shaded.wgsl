@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/use/types'::{ SolidVertex, ShadedVertex };
-use '@use-gpu/wgsl/use/view'::{ clipToWorld3D };
+use '../../../wgsl/use/types'::{ SolidVertex, ShadedVertex };
+use '../../../wgsl/use/view'::{ clipToWorld3D };
 
 @export fn solidToShaded(v: SolidVertex) -> ShadedVertex {
   let world = clipToWorld3D(v.position);

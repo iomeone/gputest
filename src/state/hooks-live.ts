@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from '@use-gpu/live';
+import { useCallback, useMemo, useRef, useState } from '../live';
 import { injectUseCursor, injectUseUpdateState } from './hooks';
 
 import { Pair, Cursor, Initial, UseState } from './types';

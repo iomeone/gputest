@@ -1,7 +1,7 @@
-import type { LiveFiber } from '@use-gpu/live';
-import type { Cursor } from '@use-gpu/state';
+import type { LiveFiber } from '../../../live';
+import type { Cursor } from '../../../state';
 import type { InspectState, InspectAPI } from '../types'
-import { isSubNode, DEBUG } from '@use-gpu/live';
+import { isSubNode, DEBUG } from '../../../live';
 
 import React, { memo, useMemo, useLayoutEffect, useRef } from 'react';
 

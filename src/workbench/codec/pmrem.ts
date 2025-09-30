@@ -1,9 +1,9 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { TextureSource, TextureTarget } from '@use-gpu/core';
-import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { LC, LiveElement } from '../../live';
+import type { TextureSource, TextureTarget } from '../../core';
+import type { ShaderSource, ShaderModule } from '../../shader';
 
-import { memo, gather, yeet, use, useMemo, useOne, useHooks, useNoHooks } from '@use-gpu/live';
-import { makeAtlas, clamp, lerp } from '@use-gpu/core';
+import { memo, gather, yeet, use, useMemo, useOne, useHooks, useNoHooks } from '../../live';
+import { makeAtlas, clamp, lerp } from '../../core';
 import { DebugAtlas } from '../text/debug-atlas';
 import { Queue } from '../queue/queue';
 import { Dispatch } from '../queue/dispatch';
@@ -17,14 +17,14 @@ import { useInspectable } from '../hooks/useInspectable';
 import { getRenderFunc } from '../hooks/useRenderProp';
 import { PassReconciler } from '../reconcilers/index';
 
-import { pmremInit } from '@use-gpu/wgsl/pmrem/pmrem-init.wgsl';
-import { pmremCopy } from '@use-gpu/wgsl/pmrem/pmrem-copy.wgsl';
-import { pmremBlur } from '@use-gpu/wgsl/pmrem/pmrem-blur.wgsl';
-import { pmremDiffuseSH } from '@use-gpu/wgsl/pmrem/pmrem-diffuse-sh.wgsl';
-import { pmremGridOverlay } from '@use-gpu/wgsl/pmrem/pmrem-debug.wgsl';
-//import { pmremDiffuseRender } from '@use-gpu/wgsl/pmrem/pmrem-diffuse-render.wgsl';
+import { pmremInit } from '../../wgsl/pmrem/pmrem-init.wgsl';
+import { pmremCopy } from '../../wgsl/pmrem/pmrem-copy.wgsl';
+import { pmremBlur } from '../../wgsl/pmrem/pmrem-blur.wgsl';
+import { pmremDiffuseSH } from '../../wgsl/pmrem/pmrem-diffuse-sh.wgsl';
+import { pmremGridOverlay } from '../../wgsl/pmrem/pmrem-debug.wgsl';
+//import { pmremDiffuseRender } from '../../wgsl/pmrem/pmrem-diffuse-render.wgsl';
 
-import { sampleEnvMap } from '@use-gpu/wgsl/pmrem/pmrem-read.wgsl';
+import { sampleEnvMap } from '../../wgsl/pmrem/pmrem-read.wgsl';
 
 const π = Math.PI;
 const τ = 2*π;

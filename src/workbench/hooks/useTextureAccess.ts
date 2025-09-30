@@ -1,18 +1,18 @@
-import type { Lazy, LambdaSource, TextureSource, UniformType, VectorLike } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
-import { getTextureSampleType } from '@use-gpu/core';
+import type { Lazy, LambdaSource, TextureSource, UniformType, VectorLike } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
+import { getTextureSampleType } from '../../core';
 
-import { useMemo } from '@use-gpu/live';
-import { proxy } from '@use-gpu/core';
+import { useMemo } from '../../live';
+import { proxy } from '../../core';
 
 import { getLambdaSource } from './useLambdaSource';
 import { getShader } from './useShader';
 import { getSource } from './useSource';
 
-import { loadTextureLevel } from '@use-gpu/wgsl/texture/level.wgsl';
-import { loadTextureIndexLevel } from '@use-gpu/wgsl/texture/level-index.wgsl';
-import { textureUVToXY } from '@use-gpu/wgsl/texture/raw.wgsl';
-import { textureUVToXYOffset } from '@use-gpu/wgsl/texture/raw-offset.wgsl';
+import { loadTextureLevel } from '../../wgsl/texture/level.wgsl';
+import { loadTextureIndexLevel } from '../../wgsl/texture/level-index.wgsl';
+import { textureUVToXY } from '../../wgsl/texture/raw.wgsl';
+import { textureUVToXYOffset } from '../../wgsl/texture/raw-offset.wgsl';
 
 export const useTextureAccess = (
   texture: TextureSource,

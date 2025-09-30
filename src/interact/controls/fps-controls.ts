@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { VectorLike } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { VectorLike } from '../../core';
 
-import { useProp } from '@use-gpu/traits/live';
-import { parseVec3 } from '@use-gpu/parse';
-import { useCallback, useContext, useHooks, useMemo, useOne, useRef, useState } from '@use-gpu/live';
-import { makeOrbitMatrix, clamp } from '@use-gpu/core';
+import { useProp } from '../../traits/live';
+import { parseVec3 } from '../../parse';
+import { useCallback, useContext, useHooks, useMemo, useOne, useRef, useState } from '../../live';
+import { makeOrbitMatrix, clamp } from '../../core';
 import {
   PointerEvent,
   useAnimationFrame, useNoAnimationFrame,
@@ -13,7 +13,7 @@ import {
   LayoutContext,
   useDerivedState,
   getRenderFunc,
-} from '@use-gpu/workbench';
+} from '../../workbench';
 import { mat4, vec3 } from 'gl-matrix';
 
 const π = Math.PI;

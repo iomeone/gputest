@@ -1,7 +1,7 @@
-import type { LC } from '@use-gpu/live';
+import type { LC } from '../../live';
 
-import { memo, useCapture } from '@use-gpu/live';
-import { CursorState } from '@use-gpu/workbench';
+import { memo, useCapture } from '../../live';
+import { CursorState } from '../../workbench';
 
 export type CursorProps = {
   cursor?: string,

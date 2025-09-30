@@ -1,13 +1,13 @@
-import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
-import type { Atlas, Tuples, Rectangle } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
-import type { FontMetrics, GlyphMetrics } from '@use-gpu/glyph';
+import type { LiveComponent, PropsWithChildren } from '../../../live';
+import type { Atlas, Tuples, Rectangle } from '../../../core';
+import type { ShaderSource } from '../../../shader';
+import type { FontMetrics, GlyphMetrics } from '../../../glyph';
 import type { Alignment } from '../types';
 
-import { provide, memo, yeet, useContext, useNoContext, useFiberId, useMemo, useOne, makeContext, incrementVersion } from '@use-gpu/live';
-import { glyphToSDF, rgbaToSDF, padRectangle } from '@use-gpu/glyph';
-import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '@use-gpu/core';
-import { scrambleBits53, mixBits53 } from '@use-gpu/state';
+import { provide, memo, yeet, useContext, useNoContext, useFiberId, useMemo, useOne, makeContext, incrementVersion } from '../../../live';
+import { glyphToSDF, rgbaToSDF, padRectangle } from '../../../glyph';
+import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '../../../core';
+import { scrambleBits53, mixBits53 } from '../../../state';
 
 import { getShader } from '../../hooks/useShader';
 import { useInspectable } from '../../hooks/useInspectable'
@@ -19,7 +19,7 @@ import { QueueReconciler } from '../../reconcilers/index';
 
 import { FontContext } from './font-provider';
 
-import { getLODBiasedTexture } from '@use-gpu/wgsl/fragment/lod-bias.wgsl';
+import { getLODBiasedTexture } from '../../../wgsl/fragment/lod-bias.wgsl';
 
 export const SDFFontContext = makeContext<SDFFontContextProps>(undefined, 'SDFFontContext');
 export const useSDFFontContext = () => useContext(SDFFontContext);

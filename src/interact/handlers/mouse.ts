@@ -1,8 +1,8 @@
-import type { LC, LiveElement } from '@use-gpu/live';
-import type { MouseState } from '@use-gpu/workbench';
+import type { LC, LiveElement } from '../../live';
+import type { MouseState } from '../../workbench';
 
-import { useVersion } from '@use-gpu/live';
-import { useRenderProp, useMouseState } from '@use-gpu/workbench';
+import { useVersion } from '../../live';
+import { useRenderProp, useMouseState } from '../../workbench';
 
 export type MouseProps = {
   move?: boolean,

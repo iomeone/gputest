@@ -1,19 +1,19 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 
 import {
   Pass,
   OrbitCamera,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, FPSControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Plot, Line,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import { vec3 } from 'gl-matrix';
-import { seq } from '@use-gpu/core';
+import { seq } from '../../../core';
 
 import { InfoBox } from '../../ui/info-box';
 

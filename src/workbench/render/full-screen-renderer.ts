@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../live';
 import type { PassFlags, PassResources, RenderComponents } from '../pass/types';
 
-import { use, useOne, memo } from '@use-gpu/live';
+import { use, useOne, memo } from '../../live';
 
 import { useMinimalBindGroups } from '../pass/bindings';
 import { useMakeUseVariants } from '../pass/variants';

@@ -1,5 +1,5 @@
-import { useMemo } from '@use-gpu/live';
-import { useMatrixContext, useViewContext, usePerFrame } from '@use-gpu/workbench';
+import { useMemo } from '../../live';
+import { useMatrixContext, useViewContext, usePerFrame } from '../../workbench';
 import { mat4, vec3, vec4 } from 'gl-matrix';
 
 type GizmoMatrixOptions = {

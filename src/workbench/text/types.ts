@@ -1,4 +1,4 @@
-import type { TypedArray } from '@use-gpu/core';
+import type { TypedArray } from '../../core';
 
 export type Alignment = 'start' | 'center' | 'end' | 'justify' | 'justify-start' | 'justify-center' | 'justify-end' | 'between' | 'evenly';
 

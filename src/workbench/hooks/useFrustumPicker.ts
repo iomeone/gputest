@@ -1,7 +1,7 @@
-import type { Ref } from '@use-gpu/live';
-import type { XYZ } from '@use-gpu/core';
+import type { Ref } from '../../live';
+import type { XYZ } from '../../core';
 
-import { useCallback } from '@use-gpu/live';
+import { useCallback } from '../../live';
 import { mat4, vec3 } from 'gl-matrix';
 
 import { PointerEvent } from '../interact/event';

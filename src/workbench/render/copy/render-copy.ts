@@ -1,10 +1,10 @@
-import type { TypedArray, UseGPURenderContext } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
-import type { Update } from '@use-gpu/state';
+import type { TypedArray, UseGPURenderContext } from '../../../core';
+import type { ShaderModule } from '../../../shader';
+import type { Update } from '../../../state';
 import type { Renderable } from '../../pass/types';
 
-import { useCallback } from '@use-gpu/live';
-import { $patch, $delete } from '@use-gpu/state';
+import { useCallback } from '../../../live';
+import { $patch, $delete } from '../../../state';
 
 import { drawCall } from '../../queue/draw-call';
 

@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getWorldScale, getViewPosition };
+use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getWorldScale, getViewPosition };
 
 const SMOOTH_TANGENTS = true;
 

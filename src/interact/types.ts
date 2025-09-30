@@ -1,4 +1,4 @@
-import type { MouseButton, KeyboardModifier } from '@use-gpu/workbench';
+import type { MouseButton, KeyboardModifier } from '../workbench';
 
 export type ActionBinding = {
   wheel?: boolean,

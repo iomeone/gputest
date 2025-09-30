@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren, ArrowFunction } from '@use-gpu/live';
+import type { LC, PropsWithChildren, ArrowFunction } from '../../live';
 import type { Renderable } from '../pass';
 
-import { use, yeet, memo, gather, useOne } from '@use-gpu/live';
+import { use, yeet, memo, gather, useOne } from '../../live';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { usePassContext } from '../providers/pass-provider';

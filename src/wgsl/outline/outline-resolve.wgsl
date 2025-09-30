@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/codec/normal16'::{ decodeNormal16 };
-use '@use-gpu/wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getViewPixelRatio };
+use '../../wgsl/codec/normal16'::{ decodeNormal16 };
+use '../../wgsl/use/view'::{ worldToView, clipToView, viewToClip, viewToWorld, clipXYToUV, clipUVToXY, to3D, getViewPixelRatio };
 
 @link fn loadEdge(xy: vec2<u32>) -> vec2<f32>;
 

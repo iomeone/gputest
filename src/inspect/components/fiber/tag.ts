@@ -1,5 +1,5 @@
-import type { LiveFiber } from '@use-gpu/live';
-import { RECONCILE, YEET, QUOTE, UNQUOTE, SIGNAL } from '@use-gpu/live';
+import type { LiveFiber } from '../../../live';
+import { RECONCILE, YEET, QUOTE, UNQUOTE, SIGNAL } from '../../../live';
 
 export enum FiberTag {
   Quote = 1,

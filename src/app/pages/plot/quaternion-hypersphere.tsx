@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Emit } from '@use-gpu/core';
-import type { Keyframe } from '@use-gpu/workbench';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Emit } from '../../../core';
+import type { Keyframe } from '../../../workbench';
 
-import React, { memo } from '@use-gpu/live';
+import React, { memo } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -11,13 +11,13 @@ import {
   Animate,
   LinearRGB, PBRMaterial,
   AmbientLight, DirectionalLight, PointLight,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Plot, Stereographic4D, Transform4D, Tensor, Line,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 import { HypersphereControls, HypersphereOptions } from '../../ui/hypersphere-controls';
 import { InfoBox } from '../../ui/info-box';

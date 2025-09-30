@@ -1,4 +1,4 @@
-import type { MouseButton, CanvasEvent } from '@use-gpu/workbench';
+import type { MouseButton, CanvasEvent } from '../../workbench';
 
 export const DOM_EVENT_PROPS = [
   // Event

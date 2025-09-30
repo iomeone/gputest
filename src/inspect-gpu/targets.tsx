@@ -1,27 +1,27 @@
-import type { LiveComponent, LiveElement, LiveFiber } from '@use-gpu/live';
-import type { LambdaSource, TextureSource, TextureTarget } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent, LiveElement, LiveFiber } from '../live';
+import type { LambdaSource, TextureSource, TextureTarget } from '../core';
+import type { ShaderSource } from '../shader';
 
 import React, { FC, CSSProperties } from 'react';
-import { memo, use, wrap, provide, useFiber, useOne } from '@use-gpu/live';
+import { memo, use, wrap, provide, useFiber, useOne } from '../live';
 
-import { proxy, splitCubeTexture, splitArrayTexture, splitHistoryTexture, notEmptyString } from '@use-gpu/core';
-import { LiveCanvas } from '@use-gpu/react';
-import { AutoCanvas } from '@use-gpu/webgpu';
+import { proxy, splitCubeTexture, splitArrayTexture, splitHistoryTexture, notEmptyString } from '../core';
+import { LiveCanvas } from '../react';
+import { AutoCanvas } from '../webgpu';
 import {
   LinearRGB, Pass, FlatCamera,
   FontLoader, Queue, QueueReconciler, DeviceContext,
   getShader, getLambdaSource, getDisplayShader,
-} from '@use-gpu/workbench';
-import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '@use-gpu/layout';
-import { getObjectKey } from '@use-gpu/state';
+} from '../workbench';
+import { UI, Layout, Flex, Block, Inline, Text, Overflow, Absolute } from '../layout';
+import { getObjectKey } from '../state';
 
-import { UseInspect } from '@use-gpu/inspect';
+import { UseInspect } from '../inspect';
 import { inspectGPU } from './index';
 
-import { displayCubeColor } from '@use-gpu/wgsl/display/cube-color.wgsl';
-import { displayCubeAlpha } from '@use-gpu/wgsl/display/cube-alpha.wgsl';
-import { displayCubeDepth } from '@use-gpu/wgsl/display/cube-depth.wgsl';
+import { displayCubeColor } from '../wgsl/display/cube-color.wgsl';
+import { displayCubeAlpha } from '../wgsl/display/cube-alpha.wgsl';
+import { displayCubeDepth } from '../wgsl/display/cube-depth.wgsl';
 
 const {signal} = QueueReconciler;
 

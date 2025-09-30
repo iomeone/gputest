@@ -1,8 +1,8 @@
-import type { Update } from '@use-gpu/state';
-import type { Blending, Side } from '@use-gpu/core';
-import { makeBlendState } from '@use-gpu/core';
-import { useMemo } from '@use-gpu/live';
-import { $set, $delete } from '@use-gpu/state';
+import type { Update } from '../../state';
+import type { Blending, Side } from '../../core';
+import { makeBlendState } from '../../core';
+import { useMemo } from '../../live';
+import { $set, $delete } from '../../state';
 import { useRenderContext } from '../providers/render-provider';
 
 export type PipelineOptions = {

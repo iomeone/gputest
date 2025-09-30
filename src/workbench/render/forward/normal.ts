@@ -1,21 +1,21 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { yeet, useMemo, useOne } from '@use-gpu/live';
-import { patch, $delete } from '@use-gpu/state';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo, useOne } from '../../../live';
+import { patch, $delete } from '../../../state';
+import { bindBundle } from '../../../shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
 
 import { usePassContext } from '../../providers/pass-provider';
 
-import renderVirtualNormal from '@use-gpu/wgsl/render/vertex/virtual-normal.wgsl';
+import renderVirtualNormal from '../../../wgsl/render/vertex/virtual-normal.wgsl';
 import {
   main as renderFragmentNormal,
   mainWithDepth as renderFragmentNormalDepth,
-} from '@use-gpu/wgsl/render/fragment/normal.wgsl';
+} from '../../../wgsl/render/fragment/normal.wgsl';
 
-import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
 
 export type NormalRenderProps = VirtualDraw;
 

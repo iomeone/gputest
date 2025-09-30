@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ getViewPosition };
+use '../../wgsl/use/view'::{ getViewPosition };
 
 @optional @link fn transformPosition(p: vec4<f32>) -> vec4<f32> { return p; };
 

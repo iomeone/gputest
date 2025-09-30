@@ -1,8 +1,8 @@
-import type { LC } from '@use-gpu/live';
-import type { TypedArray } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LC } from '../../live';
+import type { TypedArray } from '../../core';
+import type { ShaderSource } from '../../shader';
 
-import { memo, use, provide, useMemo } from '@use-gpu/live';
+import { memo, use, provide, useMemo } from '../../live';
 import { LineLayer } from '../layers/line-layer';
 import { GeometryData } from '../data/geometry-data';
 import { makeAABBGeometry } from '../primitives/geometry/aabb';

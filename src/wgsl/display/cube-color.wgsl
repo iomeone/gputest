@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/codec/octahedral'::{ decodeOctahedral };
+use '../../wgsl/codec/octahedral'::{ decodeOctahedral };
 use './cube-grid'::{ getCubeGridOverlay }
 
 @link fn getTexture(uv: vec3<f32>) -> vec4<f32>;

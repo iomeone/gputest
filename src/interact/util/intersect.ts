@@ -1,4 +1,4 @@
-import type { XYZ, XYZW } from '@use-gpu/core';
+import type { XYZ, XYZW } from '../../core';
 import { solveLinear } from './matrix';
 import { mat4, vec3 } from 'gl-matrix';
 

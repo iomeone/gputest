@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useNoCallback, useNoMemo, useNoRef } from '@use-gpu/live';
+import { useCallback, useMemo, useRef, useNoCallback, useNoMemo, useNoRef } from '../../live';
 import { useRenderContext, useNoRenderContext } from '../providers/render-provider';
 
 export const useInitialDispatch = (

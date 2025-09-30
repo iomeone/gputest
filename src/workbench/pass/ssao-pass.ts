@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { XY } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../live';
+import type { XY } from '../../core';
 import { SSAOOptions } from '../pass/types';
 
-import { use, yeet, memo, gather, useOne, useRef } from '@use-gpu/live';
+import { use, yeet, memo, gather, useOne, useRef } from '../../live';
 
 import { useDebugContext } from '../providers/debug-provider';
 import { useDeviceContext } from '../providers/device-provider';

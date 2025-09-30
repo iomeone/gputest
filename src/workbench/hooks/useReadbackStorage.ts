@@ -1,8 +1,8 @@
-import type { StorageSource, UniformType } from '@use-gpu/core';
+import type { StorageSource, UniformType } from '../../core';
 
-import { useMemo, useOne, useResource } from '@use-gpu/live';
+import { useMemo, useOne, useResource } from '../../live';
 
-import { seq, getUniformArraySize, getUniformArrayType } from '@use-gpu/core';
+import { seq, getUniformArraySize, getUniformArrayType } from '../../core';
 
 import { getScratchSource } from '../hooks/useScratchSource';
 import { useDeviceContext } from '../providers/device-provider';

@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
-import type { RenderViewType } from '@use-gpu/core';
+import type { LC, PropsWithChildren, LiveElement } from '../../live';
+import type { RenderViewType } from '../../core';
 import type { LightEnv, PassResources, PassFlags, RenderComponents } from '../pass/types';
 
-import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
+import { use, yeet, memo, useMemo, useOne } from '../../live';
 
 import { PassReconciler } from '../reconcilers/index';
 import { useRenderContext } from '../providers/render-provider';

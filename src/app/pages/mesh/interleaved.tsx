@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { LambdaSource, TextureSource } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { LambdaSource, TextureSource } from '../../../core';
 
-import React, { Gather, useState } from '@use-gpu/live';
+import React, { Gather, useState } from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -9,10 +9,10 @@ import {
   OrbitCamera,
   FaceLayer,
   PointLight,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls, Pick, PickState,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import { InfoBox } from '../../ui/info-box';
 
 import { meshVertexArray, meshSchema, makeTexture } from '../../meshes/cube';

@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Emit, Time } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Emit, Time } from '../../../core';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 
 import {
   LinearRGB, Loop, Pass,
@@ -9,18 +9,18 @@ import {
   DirectionalLight, PointLight, AmbientLight,
   PBRMaterial, EaseToTarget,
   GeometryData, makeSphereGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Plot, Arrow, Transform, Tensor,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import {
   Mesh,
-} from '@use-gpu/scene';
+} from '../../../scene';
 import { vec3 } from 'gl-matrix';
-import { seq } from '@use-gpu/core';
+import { seq } from '../../../core';
 
 import { InfoBox } from '../../ui/info-box';
 

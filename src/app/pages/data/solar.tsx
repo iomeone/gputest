@@ -1,22 +1,22 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { Emit } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { Emit } from '../../../core';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 
 import {
   Pass, LinearRGB,
   OrbitCamera, FlatCamera,
   Clock,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   Plot, Line, Point, Label, Tensor, Transform,
-} from '@use-gpu/plot';
+} from '../../../plot';
 import {
   UI, Layout, Absolute, Flex, Inline, Text,
-} from '@use-gpu/layout';
+} from '../../../layout';
 import { vec3 } from 'gl-matrix';
 
 import { getBodies, getPeriod, getDayNumber, emitOrbitPosition } from './solar-system/solar-model';

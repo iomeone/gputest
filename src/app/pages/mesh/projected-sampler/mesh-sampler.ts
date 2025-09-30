@@ -1,8 +1,8 @@
-import type { CPUGeometry, VectorLike } from '@use-gpu/core';
+import type { CPUGeometry, VectorLike } from '../../../../core';
 import { vec3 } from 'gl-matrix';
-import { lerp } from '@use-gpu/core';
-import { patch } from '@use-gpu/state';
-import { forMeshTriangles, getMeshTriangle } from '@use-gpu/workbench';
+import { lerp } from '../../../../core';
+import { patch } from '../../../../state';
+import { forMeshTriangles, getMeshTriangle } from '../../../../workbench';
 
 export const cullMesh = (
   mesh: CPUGeometry,

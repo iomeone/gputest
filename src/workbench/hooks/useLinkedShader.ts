@@ -1,10 +1,10 @@
-import type { ShaderModuleDescriptor } from '@use-gpu/core';
-import type { ShaderModule, ShaderDefine } from '@use-gpu/shader';
+import type { ShaderModuleDescriptor } from '../../core';
+import type { ShaderModule, ShaderDefine } from '../../shader';
 
-import { resolveBindings, linkBundle, getBundleHash, getBundleKey, getBundleLabel } from '@use-gpu/shader/wgsl';
-import { formatMurmur53, mixBits53, toMurmur53 } from '@use-gpu/state';
-import { makeShaderModuleDescriptor, makeBindGroupLayoutEntries, makeUniformLayoutEntry } from '@use-gpu/core';
-import { useMemo, useOne } from '@use-gpu/live';
+import { resolveBindings, linkBundle, getBundleHash, getBundleKey, getBundleLabel } from '../../shader/wgsl';
+import { formatMurmur53, mixBits53, toMurmur53 } from '../../state';
+import { makeShaderModuleDescriptor, makeBindGroupLayoutEntries, makeUniformLayoutEntry } from '../../core';
+import { useMemo, useOne } from '../../live';
 import { useForceUpdate } from './useForceUpdate';
 import { useInspectable } from './useInspectable';
 import LRU from 'lru-cache';

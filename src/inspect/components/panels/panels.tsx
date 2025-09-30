@@ -1,5 +1,5 @@
-import type { LiveFiber } from '@use-gpu/live';
-import type { Update } from '@use-gpu/state';
+import type { LiveFiber } from '../../../live';
+import type { Update } from '../../../state';
 import type { InspectAPI } from '../types';
 
 import React, { FC } from 'react';

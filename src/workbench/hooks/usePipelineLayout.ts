@@ -1,5 +1,5 @@
-import { makeBindGroupLayout, makePipelineLayout } from '@use-gpu/core';
-import { useMemo, useNoMemo } from '@use-gpu/live';
+import { makeBindGroupLayout, makePipelineLayout } from '../../core';
+import { useMemo, useNoMemo } from '../../live';
 
 export const usePipelineLayout = (
   device: GPUDevice,

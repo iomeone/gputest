@@ -1,5 +1,5 @@
-import type { ArchetypeSchema, AggregateItem, ColorLike, FieldArray, TypedArray, VectorEmitter, VectorLike, XY } from '@use-gpu/core';
-import type { SegmentDecorator } from '@use-gpu/workbench';
+import type { ArchetypeSchema, AggregateItem, ColorLike, FieldArray, TypedArray, VectorEmitter, VectorLike, XY } from '../../core';
+import type { SegmentDecorator } from '../../workbench';
 import type { MVTStyleSheet, MVTStyleProperties } from '../types';
 import type { VectorTile } from '@mapbox/vector-tile';
 
@@ -12,13 +12,13 @@ import {
   copyRecursiveNumberArray,
   toCPUDims,
   seq,
-} from '@use-gpu/core';
+} from '../../core';
 
-import { toChunkCounts } from '@use-gpu/parse';
+import { toChunkCounts } from '../../parse';
 
 import { cutPolygons, clipLines, clipPoints, clipPolygons, classifyRings } from './tesselate';
 
-import { getLineSegments, getArcSegments, getFaceSegmentsConcave, POINT_CLOUD_SCHEMA, LINE_SCHEMA, FACE_SCHEMA, LABEL_SCHEMA, ARC_GEOMETRY_SCHEMA, ARC_LABEL_SCHEMA } from '@use-gpu/workbench';
+import { getLineSegments, getArcSegments, getFaceSegmentsConcave, POINT_CLOUD_SCHEMA, LINE_SCHEMA, FACE_SCHEMA, LABEL_SCHEMA, ARC_GEOMETRY_SCHEMA, ARC_LABEL_SCHEMA } from '../../workbench';
 
 const DEBUG_LAYERS = false;
 const DEBUG_UNSTYLED = true;

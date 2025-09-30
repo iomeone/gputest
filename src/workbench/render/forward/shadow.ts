@@ -1,9 +1,9 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { yeet, useMemo, useOne } from '@use-gpu/live';
-import { patch } from '@use-gpu/state';
-import { bindBundle } from '@use-gpu/shader/wgsl';
+import { yeet, useMemo, useOne } from '../../../live';
+import { patch } from '../../../state';
+import { bindBundle } from '../../../shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
 import { getShaderLabel } from '../../pass/util';
@@ -13,15 +13,15 @@ import { usePassContext } from '../../providers/pass-provider';
 import {
   main as renderVirtualDepth,
   mainWithDepth as renderVirtualDepthDepth,
-} from '@use-gpu/wgsl/render/vertex/virtual-depth.wgsl';
+} from '../../../wgsl/render/vertex/virtual-depth.wgsl';
 import {
   main as renderVirtualShaded,
-} from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
-import renderFragmentDepth from '@use-gpu/wgsl/render/fragment/depth.wgsl';
-import renderFragmentDepthOnly from '@use-gpu/wgsl/render/fragment/depth-only.wgsl';
-import renderFragmentDepthShaded from '@use-gpu/wgsl/render/fragment/depth-shaded.wgsl';
+} from '../../../wgsl/render/vertex/virtual-shaded.wgsl';
+import renderFragmentDepth from '../../../wgsl/render/fragment/depth.wgsl';
+import renderFragmentDepthOnly from '../../../wgsl/render/fragment/depth-only.wgsl';
+import renderFragmentDepthShaded from '../../../wgsl/render/fragment/depth-shaded.wgsl';
 
-import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
 
 export type ShadowRenderProps = VirtualDraw;
 

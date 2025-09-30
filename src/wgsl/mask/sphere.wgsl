@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/mask/sdf'::{ getUVWScale };
-use '@use-gpu/wgsl/use/types'::{ DepthNormalFragment };
-use '@use-gpu/wgsl/use/view'::{ getViewVector, worldToDepth, worldToW };
+use '../../wgsl/mask/sdf'::{ getUVWScale };
+use '../../wgsl/use/types'::{ DepthNormalFragment };
+use '../../wgsl/use/view'::{ getViewVector, worldToDepth, worldToW };
 
 @export fn traceSphereQuad(
   uv: vec4<f32>,

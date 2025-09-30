@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/array'::{ sizeToModulus4, packIndex4, unpackIndex4 }
+use '../../wgsl/use/array'::{ sizeToModulus4, packIndex4, unpackIndex4 }
 
 @link fn getSize() -> vec4<u32> {};
 

@@ -1,11 +1,11 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { VectorLike, Lazy, UniformAttribute, DataBounds, GPUGeometry } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds, GPUGeometry } from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
-import { resolve } from '@use-gpu/core';
+import { memo, useCallback, useMemo, useNoCallback } from '../../live';
+import { resolve } from '../../core';
 
 import { FacetSource, useFacetShader } from './hooks/facets';
 import { PickingSource, usePickingShader } from './hooks/picking';
@@ -21,8 +21,8 @@ import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getFaceVertex } from '@use-gpu/wgsl/instance/vertex/face.wgsl';
-import { getInstancedFaceIndex } from '@use-gpu/wgsl/instance/index/face.wgsl';
+import { getFaceVertex } from '../../wgsl/instance/vertex/face.wgsl';
+import { getInstancedFaceIndex } from '../../wgsl/instance/index/face.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

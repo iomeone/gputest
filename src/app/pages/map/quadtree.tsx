@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import React from '@use-gpu/live';
-import { CPUGeometry, VectorLike } from '@use-gpu/core';
+import React from '../../../live';
+import { CPUGeometry, VectorLike } from '../../../core';
 
 import {
   Pass,
@@ -12,22 +12,22 @@ import {
   GeometryData,
   makePlaneGeometry,
   transformMesh,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   getBoundingBox,
   toDataBounds,
-} from '@use-gpu/core';
+} from '../../../core';
 import {
   Cursor,
   OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   QuadTree, QuadTreeKey, QuadTreeNode,
   DistanceLODNode, distanceLODStrategy,
-} from '@use-gpu/map';
+} from '../../../map';
 import {
   Transform,
-} from '@use-gpu/plot';
+} from '../../../plot';
 
 import { InfoBox } from '../../ui/info-box';
 

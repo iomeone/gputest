@@ -1,8 +1,8 @@
-import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { LC, PropsWithChildren, LiveElement } from '../../live';
 import type { PassOptions, RenderComponents } from '../pass/types';
 
-import { use, gather, memo, useOne } from '@use-gpu/live';
-import { toMurmur53 } from '@use-gpu/state';
+import { use, gather, memo, useOne } from '../../live';
+import { toMurmur53 } from '../../state';
 
 import { FullScreenRenderer } from './full-screen-renderer';
 import { ForwardRenderer } from './forward-renderer';

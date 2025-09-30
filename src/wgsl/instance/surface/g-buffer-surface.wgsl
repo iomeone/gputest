@@ -1,6 +1,6 @@
-use '@use-gpu/wgsl/use/view'::{ getViewPosition, clipToWorld, to3D };
-use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
-use '@use-gpu/wgsl/codec/octahedral'::{ decodeOctahedral };
+use '../../../wgsl/use/view'::{ getViewPosition, clipToWorld, to3D };
+use '../../../wgsl/use/types'::{ SurfaceFragment };
+use '../../../wgsl/codec/octahedral'::{ decodeOctahedral };
 
 @link fn getAlbedo(uv: vec2<f32>) -> vec4<f32>;
 @link fn getNormals(uv: vec2<f32>) -> vec4<f32>;

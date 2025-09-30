@@ -1,17 +1,17 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { TypedArray, Lazy } from '@use-gpu/core';
-import type { ShaderSource } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { TypedArray, Lazy } from '../../core';
+import type { ShaderSource } from '../../shader';
 
 import { RawLines, RawLinesFlags } from '../primitives/raw-lines';
 
-import { use, memo, provide, useCallback, useOne } from '@use-gpu/live';
-import { resolve } from '@use-gpu/core';
+import { use, memo, provide, useCallback, useOne } from '../../live';
+import { resolve } from '../../core';
 import { TransformContextProps, TransformContext, useTransformContext, DEFAULT_TRANSFORM } from '../providers/transform-provider';
 import { useShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getTickPosition } from '@use-gpu/wgsl/instance/vertex/tick.wgsl';
-import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
+import { getTickPosition } from '../../wgsl/instance/vertex/tick.wgsl';
+import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
 
 export type TickLayerProps = RawLinesFlags & {
   position?: number[] | TypedArray,

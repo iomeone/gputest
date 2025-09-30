@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '@use-gpu/live';
-import type { XY, ColorSpace, TextureSource } from '@use-gpu/core';
+import type { LiveComponent, LiveElement } from '../../live';
+import type { XY, ColorSpace, TextureSource } from '../../core';
 
-import { use, yeet, gather, suspend, useMemo } from '@use-gpu/live';
-import { countMips, getTextureSampleType, makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipTextureChain } from '@use-gpu/core';
+import { use, yeet, gather, suspend, useMemo } from '../../live';
+import { countMips, getTextureSampleType, makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipTextureChain } from '../../core';
 import { FetchAPIOptions } from './fetch';
 import { ImageLoader } from './image-loader';
 

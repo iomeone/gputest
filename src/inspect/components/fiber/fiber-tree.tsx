@@ -1,5 +1,5 @@
 import type { InspectState, InspectAPI } from '../types'
-import type { LiveFiber } from '@use-gpu/live';
+import type { LiveFiber } from '../../../live';
 
 import React, { FC } from 'react';
 

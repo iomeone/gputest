@@ -1,5 +1,5 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import React from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
+import React from '../../../live';
 
 import {
   Pass, FlatCamera,
@@ -8,13 +8,13 @@ import {
   InterleavedData, FaceLayer,
   AmbientLight, DirectionalLight,
   PBRMaterial,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Text
-} from '@use-gpu/layout';
+} from '../../../layout';
 
 import { meshVertexArray, meshSchema } from '../../meshes/cube';
 

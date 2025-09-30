@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUAttributes } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUAttributes } from '../../../core';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -10,13 +10,13 @@ import {
   Data, OrbitCamera,
   PointLayer, LabelLayer,
   SDFFontProvider,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 import {
   parsePlacement
-} from '@use-gpu/parse';
+} from '../../../parse';
 
 import { pointData, labelData } from './point-data';
 

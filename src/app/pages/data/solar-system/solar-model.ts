@@ -1,5 +1,5 @@
-import type { Emit } from '@use-gpu/core';
-import { parseColor } from '@use-gpu/parse';
+import type { Emit } from '../../../../core';
+import { parseColor } from '../../../../parse';
 
 type Orbit = {
   N: number,

@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ clipUVToXY, to3D };
+use '../../wgsl/use/view'::{ clipUVToXY, to3D };
 
 @link fn getDepth(uv: vec2<f32>) -> f32;
 

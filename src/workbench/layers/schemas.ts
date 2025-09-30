@@ -1,5 +1,5 @@
-import type { ArchetypeSchema } from '@use-gpu/core';
-import { isUniformArrayType } from '@use-gpu/core';
+import type { ArchetypeSchema } from '../../core';
+import { isUniformArrayType } from '../../core';
 
 type CompactSchema = {
   single?: string,     // singular prop

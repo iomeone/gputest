@@ -1,10 +1,10 @@
-import type { LiveComponent } from '@use-gpu/live';
-import type { DeepPartial, TextureSource, LambdaSource } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent } from '../../live';
+import type { DeepPartial, TextureSource, LambdaSource } from '../../core';
+import type { ShaderModule } from '../../shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useMemo } from '@use-gpu/live';
+import { memo, useMemo } from '../../live';
 
 import { usePickingShader } from './hooks/picking';
 
@@ -13,8 +13,8 @@ import { useInitialRender, useNoInitialRender } from '../hooks/useInitialDispatc
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen-view.wgsl';
-import { getTextureColor } from '@use-gpu/wgsl/mask/textured.wgsl';
+import { getFullScreenVertex } from '../../wgsl/instance/vertex/full-screen-view.wgsl';
+import { getTextureColor } from '../../wgsl/mask/textured.wgsl';
 
 export type RawFullScreenProps = {
   texture?: TextureSource | LambdaSource | ShaderModule,

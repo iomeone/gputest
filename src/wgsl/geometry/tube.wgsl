@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ getViewVector };
+use '../../wgsl/use/view'::{ getViewVector };
 
 struct PositionNormal {
   position: vec3<f32>,

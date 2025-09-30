@@ -1,5 +1,5 @@
-use '@use-gpu/wgsl/fragment/pbr'::{ IBL, IBLResult, environmentBRDF };
-use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
+use '../../wgsl/fragment/pbr'::{ IBL, IBLResult, environmentBRDF };
+use '../../wgsl/use/types'::{ SurfaceFragment };
 
 @link fn sampleEnvironment(uvw: vec3<f32>, sigma: f32, ddx: vec3<f32>, ddy: vec3<f32>) -> vec4<f32>;
 

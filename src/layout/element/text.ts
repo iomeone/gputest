@@ -1,13 +1,13 @@
-import type { LiveComponent, LiveNode } from '@use-gpu/live';
-import type { ColorLike, XYZW, Rectangle } from '@use-gpu/core';
-import type { ShaderModule } from '@use-gpu/shader';
+import type { LiveComponent, LiveNode } from '../../live';
+import type { ColorLike, XYZW, Rectangle } from '../../core';
+import type { ShaderModule } from '../../shader';
 import type { Baseline, InlineLine } from '../types';
 
-import { useProp, shouldEqual, sameShallow } from '@use-gpu/traits/live';
-import { parseColor, parseNumber } from '@use-gpu/parse';
-import { memo, use, yeet } from '@use-gpu/live';
+import { useProp, shouldEqual, sameShallow } from '../../traits/live';
+import { parseColor, parseNumber } from '../../parse';
+import { memo, use, yeet } from '../../live';
 
-import { useFontFamily, useFontText, useFontHeight } from '@use-gpu/workbench';
+import { useFontFamily, useFontText, useFontHeight } from '../../workbench';
 import { Glyphs } from '../shape/glyphs';
 import { memoInline } from '../lib/util';
 

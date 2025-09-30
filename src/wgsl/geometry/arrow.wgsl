@@ -1,4 +1,4 @@
-use '@use-gpu/wgsl/use/view'::{ getWorldScale };
+use '../../wgsl/use/view'::{ getWorldScale };
 
 const ARROW_ASPECT: f32 = 2.5;
 

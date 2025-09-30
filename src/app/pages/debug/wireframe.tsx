@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
-import type { GPUGeometry } from '@use-gpu/core';
+import type { LC, PropsWithChildren } from '../../../live';
+import type { GPUGeometry } from '../../../core';
 
-import React from '@use-gpu/live';
+import React from '../../../live';
 import { vec3 } from 'gl-matrix';
 
 import {
@@ -10,13 +10,13 @@ import {
   OrbitCamera,
   RawQuads,
   makeBoxGeometry,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor,
   OrbitControls,
-} from '@use-gpu/interact';
+} from '../../../interact';
 
-import { Scene, Node, Mesh, Primitive } from '@use-gpu/scene';
+import { Scene, Node, Mesh, Primitive } from '../../../scene';
 import { InfoBox } from '../../ui/info-box';
 
 // Prefab geometry

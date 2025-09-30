@@ -1,15 +1,15 @@
-import type { ColorSpace } from '@use-gpu/core';
-import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { ColorSpace } from '../../core';
+import type { ShaderModule, ShaderSource } from '../../shader';
 
-import { bundleToAttribute } from '@use-gpu/shader/wgsl';
-import { useContext, useMemo, useNoContext, useNoMemo } from '@use-gpu/live';
-import { chainTo } from '@use-gpu/shader/wgsl';
+import { bundleToAttribute } from '../../shader/wgsl';
+import { useContext, useMemo, useNoContext, useNoMemo } from '../../live';
+import { chainTo } from '../../shader/wgsl';
 
 import { RenderContext } from '../providers/render-provider';
 import { getSource } from '../hooks/useSource';
 
-import { getSDFRectangleFragment } from '@use-gpu/wgsl/instance/fragment/sdf-rectangle.wgsl';
-import { toLinear4, toGamma4 } from '@use-gpu/wgsl/use/gamma.wgsl';
+import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectangle.wgsl';
+import { toLinear4, toGamma4 } from '../../wgsl/use/gamma.wgsl';
 
 const TEXTURE_BINDING = bundleToAttribute(getSDFRectangleFragment, 'getTexture');
 

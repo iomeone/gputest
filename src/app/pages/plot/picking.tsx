@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { LC, PropsWithChildren } from '../../../live';
 
-import React from '@use-gpu/live';
-import { seq } from '@use-gpu/core';
+import React from '../../../live';
+import { seq } from '../../../core';
 import { vec3 } from 'gl-matrix';
 
 import { PickingOverlay } from '../../ui/picking-overlay';
@@ -9,11 +9,11 @@ import { PickingOverlay } from '../../ui/picking-overlay';
 import {
   Pass, FlatCamera,
   OrbitCamera,
-} from '@use-gpu/workbench';
+} from '../../../workbench';
 import {
   Cursor, OrbitControls, Pick, PickState,
-} from '@use-gpu/interact';
-import { Plot, Grid, Polygon } from '@use-gpu/plot';
+} from '../../../interact';
+import { Plot, Grid, Polygon } from '../../../plot';
 import { InfoBox } from '../../ui/info-box';
 
 // Generate some random polygons

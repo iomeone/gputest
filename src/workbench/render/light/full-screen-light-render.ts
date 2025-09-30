@@ -1,12 +1,12 @@
-import type { LiveComponent } from '@use-gpu/live';
+import type { LiveComponent } from '../../../live';
 import type { LightKindProps } from './light-render';
 
-import { yeet, useMemo } from '@use-gpu/live';
+import { yeet, useMemo } from '../../../live';
 
 import { useShader } from '../../hooks/useShader';
 
-import { getDeferredLightVertex } from '@use-gpu/wgsl/instance/vertex/deferred-light.wgsl';
-import { getDeferredLightFragment } from '@use-gpu/wgsl/instance/fragment/deferred-light.wgsl';
+import { getDeferredLightVertex } from '../../../wgsl/instance/vertex/deferred-light.wgsl';
+import { getDeferredLightFragment } from '../../../wgsl/instance/fragment/deferred-light.wgsl';
 
 import { FULLSCREEN_PIPELINE, FULLSCREEN_DEFS, useLightDraw } from './light-render';
 

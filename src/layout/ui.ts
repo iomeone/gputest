@@ -1,5 +1,5 @@
-import type { LC, LiveFunction, LiveElement } from '@use-gpu/live';
-import type { Rectangle } from '@use-gpu/core';
+import type { LC, LiveFunction, LiveElement } from '../live';
+import type { Rectangle } from '../core';
 import type { UIAggregate } from './types';
 
 import {
@@ -9,10 +9,10 @@ import {
   SDFRectangles,
   QueueReconciler, LayerReconciler,
   UI_SCHEMA,
-} from '@use-gpu/workbench';
-import { use, keyed, wrap, fragment, gather, unquote, useMemo } from '@use-gpu/live';
-import { mixBits53, hashBits53, getObjectKey } from '@use-gpu/state';
-import { getBundleKey } from '@use-gpu/shader';
+} from '../workbench';
+import { use, keyed, wrap, fragment, gather, unquote, useMemo } from '../live';
+import { mixBits53, hashBits53, getObjectKey } from '../state';
+import { getBundleKey } from '../shader';
 import { overlapBounds, joinBounds } from './lib/util';
 
 const DEBUG = false;
