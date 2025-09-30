@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",        // 强制脚本按 CJS 输出
+    "target": "ES2019",
+    "esModuleInterop": true,     // 方便 `import glob from 'glob'`
+    "moduleResolution": "Node"
+  },
+  "include": ["src/scripts/**/*"]
+}
