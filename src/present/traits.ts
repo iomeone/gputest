@@ -10,7 +10,7 @@ import {
   makeParseTrait,
   optional,
   trait,
-} from '../traits/live';
+} from '../traits/index-live';
 import {
   makeParseEnum,
   parseInteger,

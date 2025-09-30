@@ -4,7 +4,7 @@ import type { Placement } from '../parse';
 import type { LayoutElement } from './types';
 
 import { parsePlacement } from '../parse';
-import { useProp } from '../traits/live';
+import { useProp } from '../traits/index-live';
 import { memo, provide, gather, yeet, keyed, fragment, useContext, useMemo, useOne, incrementVersion } from '../live';
 import { schemaToArchetype } from '../core';
 

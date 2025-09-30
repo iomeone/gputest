@@ -2,7 +2,7 @@ import type { LiveComponent, LiveElement } from '../live';
 import type { DataSchema, GPUGeometry, StorageSource } from '../core';
 
 import { use, useCallback, useOne, useVersion, tagFunction } from '../live';
-import { makeUseTrait, combine, TraitProps } from '../traits/live';
+import { makeUseTrait, combine, TraitProps } from '../traits/index-live';
 
 import {
   FaceLayer,
