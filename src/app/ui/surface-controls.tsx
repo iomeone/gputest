@@ -1,10 +1,8 @@
 import React from 'react';
-import type { LC, LiveElement } from '../../live';
-import type { ShaderSource } from '../../shader';
+import type { LC, LiveElement } from '@use-gpu/live';
 
-import { use, fragment, useState } from '../../live';
-import { HTML } from '../../react';
-import { useRouterContext } from '../../workbench';
+import { use, fragment, useState } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
 
 import { ENVIRONMENTS } from './envmap-controls';
 
@@ -58,7 +56,7 @@ export const SurfaceControls: LC<SurfaceControlsProps> = (props: SurfaceControls
         {hasInspect ? (<>
           <div>
             <label><input type="checkbox" checked={inspect} onChange={(e) => setInspect(e.target.checked)} /> Show Field:</label>
-            <select style={{marginLeft: 20}} onChange={(e) => setMode(e.target.value)}>
+            <select style={{marginLeft: 20}} value={mode} onChange={(e) => setMode(e.target.value)}>
               <option value="value">Values</option>
               <option value="normal">Normals</option>
             </select>

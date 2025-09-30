@@ -2,10 +2,14 @@ import { Tree } from '@lezer/common';
 import { ShaderModule, ParsedBundle, ParsedModule, ParsedModuleCache, ShaderDefine, ImportRef, RefFlags as RF } from '../types';
 import { VIRTUAL_BINDINGS } from '../constants';
 
-import { bindBundle, bindModule } from './bind';
-import { toBundle, getBundleKey } from './bundle';
+import { bindBundle, bindModule, toNamespace } from './bind';
+import { toBundle, getBundleKey, getBundleName } from './bundle';
 import { resolveShakeOps } from './shake';
 import mapValues from 'lodash/mapValues.js';
+
+const DEBUG = false;
+
+const trim = (s: string) => s.replace(/^ +| +$/, '');
 
 export type Linker = (
   source: ParsedBundle,
@@ -40,6 +44,8 @@ export type RewriteUsingAST = (
   shake?: number[] | null,
   optionals?: Set<string> | null,
 ) => string;
+
+export type IsGlobalType = (s: string) => boolean;
 
 const NO_LIBS: Record<string, ShaderModule> = {};
 
@@ -106,12 +112,15 @@ export const makeLinker = (
   defineConstants: DefineConstants,
   defineEnables: DefineEnables,
   rewriteUsingAST: RewriteUsingAST,
+  isGlobalType?: IsGlobalType,
 ) => (
   source: ShaderModule,
   libraries: Record<string, ShaderModule> = NO_LIBS,
 ) => {
   const bundle = toBundle(source);
   const main = getBundleKey(source);
+
+  DEBUG && console.log('-- Link', getBundleName(bundle));
 
   const {bundles, exported, imported, aliased} = loadBundlesInOrder(bundle, libraries);
   const program = getPreambles();
@@ -131,9 +140,6 @@ export const makeLinker = (
   const def = defineConstants(defs);
   if (def.length) program.push(def, "");
 
-  // Namespace by module key
-  const namespaces = new Map<number, string>();
-
   // Track symbols in global namespace
   const exists = new Set<string>();
   const visible = new Set<string>();
@@ -143,8 +149,19 @@ export const makeLinker = (
   const signatures = new Map<string, any>();
   const infers = new Map<string, string>();
 
+  // Namespace by module key
+  const namespaces = new Map<number, string>();
+  const virtuals = bundles.filter(b => b.module.virtual);
+  const seen = new Set<string>();
+
+  // Prepare namespaces while skipping pre-assigned ones
+  for (const {module: {virtual}} of virtuals) if (virtual?.namespace) seen.add(virtual.namespace);
+  const names = Array.from({ length: bundles.length }).map((_, i) => toNamespace(i)).filter(n => !seen.has(n));
+
+  // Safety check for unresolved bindings
   let hasBoundBindings = false;
 
+  // Link bundles top-to-bottom
   for (const bundle of bundles) {
     const {module} = bundle;
     const {name, code, tree, table, shake, virtual} = module;
@@ -160,8 +177,10 @@ export const makeLinker = (
     let scope = '';
     const rename = new Map<string, string>();
     if (key !== main) {
-      const namespace = virtual?.namespace;
-      const ns = reserveNamespace(key, namespaces, namespace);
+      const ns = virtual?.namespace ?? names.shift();
+      if (!ns) throw new Error("No namespace");
+
+      namespaces.set(key, ns);
       scope = ns;
 
       if (symbols) for (const name of symbols) rename.set(name, ns + name);
@@ -182,7 +201,9 @@ export const makeLinker = (
       }
     }
 
-    program.push(`//// @link ${virtual?.render ? code : name} ${scope}\n`);
+    DEBUG && console.log('Module', scope, getBundleName(bundle));
+
+    program.push(`//// @link ${trim(`${virtual?.render ? code : name} ${scope}`)}\n`);
 
     // Replace imported symbol names with target
     if (modules) for (const {name: module, imports} of modules) {
@@ -223,25 +244,42 @@ export const makeLinker = (
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (fixed.has(imp)) imp = fixed.get(imp)!;
       if (!exists.has(imp)) {
-        console.warn(`Link ${name}:${resolved} does not exist`);
+        console.warn(`Link '${name}:${resolved}' does not exist`);
         // eslint-disable-next-line no-debugger
         debugger;
       }
-      else if (!visible.has(imp)) console.warn(`Link ${name}:${resolved} is private`);
+      else if (!visible.has(imp)) console.warn(`Link '${name}:${resolved}' is private`);
+
       rename.set(name, imp);
+      infers.set(scope + name, imp);
 
       if (inferred) {
         const sig = signatures.get(imp);
-        const {type, parameters} = sig;
-        for (const {name, at} of inferred) {
-          const resolved = at < 0 ? type : parameters[at];
+        if (!sig) {
+          console.warn(`Cannot infer types because link '${name}:${resolved}' does not exist`);
+          // eslint-disable-next-line no-debugger
+          debugger;
+        }
+        else {
+          const {type, parameters} = sig;
+          for (const {name, at} of inferred) {
+            const resolved = at < 0 ? type : parameters[at];
 
-          let imp = ns + (resolved.type ?? resolved.name ?? resolved);
-          let i = imp;
-          while ((i = infers.get(imp)) != null) { imp = i; }
+            const symbol = (resolved.type ?? resolved.name ?? resolved).replace(/auto<([^>]+)>/, '$1');
 
-          rename.set(name, imp);
-          infers.set(scope + name, imp);
+            let imp = !isGlobalType?.(symbol) ? ns + symbol : symbol;
+            let i = imp;
+            while ((i = infers.get(imp)) != null) { imp = i; }
+
+            rename.set(name, imp);
+            infers.set(scope + name, imp);
+
+            if (imp.match(/^auto(<|$)/)) {
+              console.warn(`Inferred 'auto' type instead of concrete type - ${module.name} '${name}'\n${code}`);
+              // eslint-disable-next-line no-debugger
+              debugger;
+            }
+          }
         }
       }
     }
@@ -253,10 +291,10 @@ export const makeLinker = (
     if (name === VIRTUAL_BINDINGS) hasBoundBindings = true;
 
     if (virtual) {
-      const {uniforms, storages, textures} = virtual;
-      if ((uniforms || storages || textures) && (!hasBoundBindings)) {
+      const {constants, storages, textures} = virtual;
+      if ((constants || storages || textures) && (!hasBoundBindings)) {
         const id = code.replace('@virtual ', '');
-        throw new Error(`Virtual module ${id} has unresolved data bindings`);
+        throw new Error(`Virtual module '${id}' has unresolved data bindings`);
       }
 
       // Emit virtual module in target namespace,
@@ -450,17 +488,6 @@ export const getGraphOrder = (
   keys.sort((a, b) => (depths.get(b)! - depths.get(a)!) || (a - b));
 
   return keys;
-}
-
-// Generate a new namespace
-export const reserveNamespace = (
-  key: string | number,
-  namespaces: Map<any, string>,
-  force?: string,
-): string => {
-  const namespace = force ?? '_' + ('00' + (namespaces.size + 1).toString(36)).slice(-2) + '_';
-  namespaces.set(key, namespace);
-  return namespace;
 }
 
 // Parse run-time specified keys `from:to` into a map of aliases

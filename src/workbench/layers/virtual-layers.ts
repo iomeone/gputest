@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveFunction, LiveElement, DeferredCall } from '../../live';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent, LiveFunction, LiveElement, DeferredCall } from '@use-gpu/live';
+import type { ShaderSource } from '@use-gpu/shader';
 import type { LayerAggregator, LayerAggregate, LayerAggregates } from './types';
 
-import { use, keyed, yeet, provide, multiGather, unquote, useMemo, useOne } from '../../live';
-import { mixBits53, getObjectKey } from '../../state';
-import { getBundleKey } from '../../shader';
+import { use, keyed, yeet, provide, multiGather, unquote, useMemo, useOne } from '@use-gpu/live';
+import { mixBits53, getObjectKey } from '@use-gpu/state';
+import { getBundleKey } from '@use-gpu/shader';
 
 import { TransformContext } from '../providers/transform-provider';
 import { MaterialContext } from '../providers/material-provider';
@@ -88,14 +88,15 @@ const Aggregate: LiveFunction<any> = (
   const [item] = items;
   const {flags, sources: extra} = item;
   const {schema, component} = layerAggregator;
-  const {quote} = QueueReconciler;
 
-  const {count, sources, uploadRefs} = useAggregator(item.schema ?? schema, items);
+  const {count, sources, values, uploadRefs} = useAggregator(item.schema ?? schema, items);
 
   return useMemo(() => {
+    const {quote} = QueueReconciler;
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {matrices, normalMatrices, ...rest} = sources as Record<string, any>;
-    const props = {count, ...rest, ...extra, ...flags};
+    const props = {count, ...rest, ...extra, ...flags, ...values};
 
     DEBUG && console.log(component.name, {props, items, sources});
 
@@ -105,7 +106,7 @@ const Aggregate: LiveFunction<any> = (
     const upload = useOne(() => uploadRefs ? quote(yeet(uploadRefs)) : null, uploadRefs);
     return upload ? [upload, layer] : layer;
     // Exclude flags and contexts because they are factored into the archetype
-  }, [count, sources, extra, uploadRefs]);
+  }, [count, sources, values, extra, uploadRefs, component, flags, items, item]);
 };
 
 const provideContext = (
@@ -117,10 +118,10 @@ const provideContext = (
   const {material, scissor, transform} = item;
 
   const hasRefTransform = !!refSources?.matrices;
-  const hasTransform = !!transform?.key;
+  const hasTransform = !!transform;
   const hasMaterial = !!material;
   const hasScissor = !!scissor;
-  
+
   const key = (element as DeferredCall<any>)?.key;
 
   let view = element;

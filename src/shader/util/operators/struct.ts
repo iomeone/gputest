@@ -36,10 +36,11 @@ export const makeStructType = (
   }
 
   const exports = [{
-    format: fields,
     struct: {
       name: entry,
       type: {name: entry},
+
+      format: fields,
     },
     flags: RF.Exported,
   }];

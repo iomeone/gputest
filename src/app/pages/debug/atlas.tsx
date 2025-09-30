@@ -1,12 +1,13 @@
-import type { LC } from '../../../live';
-import React, { Gather, Yeet } from '../../../live';
+import type { LC } from '@use-gpu/live';
+import React from '@use-gpu/live';
 
 import {
-  LinearRGB, Pass, PanControls, FlatCamera, DebugAtlas, DebugProvider,
-} from '../../../workbench';
+  LinearRGB, Pass, FlatCamera, DebugAtlas, DebugProvider,
+} from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Inline, Text, Embed,
-} from '../../../layout';
+} from '@use-gpu/layout';
+import { PanControls } from '@use-gpu/interact';
 
 import { GlyphControls } from '../../ui/glyph-controls';
 import { InfoBox } from '../../ui/info-box';
@@ -27,14 +28,12 @@ export const DebugAtlasPage: LC = () => {
               <Inline align='justify-start'>
                 <Text
                   size={60}
-                  snap={false}
                   text="A simple and efficient method"
                   weight="bold"
                   color={[0.5, 0.5, 0.5, 1]}
                 />
                 <Text
                   size={60}
-                  snap={false}
                   family="Lato, Noto Emoji"
                   text={" is ⭐️✨✌️🌿🌳🐲🐬🍅🍲🫕🏀🏈🏴‍☠️👨‍🚀❤️‍🔥 presented which allows improved rendering of glyphs composed of curved and linear elements. A distance field is generated from a glyph image, and then stored into a channel of an RGBA texture.\n\nIn the simplest case, this texture can then be rendered simply by using the alpha-testing and alpha-thresholding feature of modern GPUs, without a custom shader. This allows the technique to be used on even the lowest-end 3D graphics hardware."}
                   color={[0.5, 0.5, 0.5, 1]}

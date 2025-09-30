@@ -1,10 +1,10 @@
 import React from 'react';
-import type { LC, LiveElement } from '../../live';
-import type { TextureSource } from '../../core';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { TextureSource, VectorLike } from '@use-gpu/core';
 
-import { use, fragment, useState } from '../../live';
-import { HTML } from '../../react';
-import { ImageTexture, ImageCubeTexture, PanoramaMap, useRouterContext } from '../../workbench';
+import { use, fragment, useState } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { ImageTexture, ImageCubeTexture, PanoramaMap } from '@use-gpu/workbench';
 
 const STYLE = {
   position: 'absolute',
@@ -19,11 +19,45 @@ const STYLE = {
   background: 'rgba(0, 0, 0, .75)',
 };
 
+type Tonemap = 'aces' | 'hable' | 'unreal' | 'linear';
+
+type EnvMapRenderProps = {
+  tonemap: Tonemap,
+  preset: string,
+  map: any,
+  seamFix: boolean,
+  debugGrid: boolean,
+  model: string,
+  position: VectorLike,
+  scale: number,
+};
+
 type EnvMapControlsProps = {
   hasDebug?: boolean,
+  hasModel?: boolean,
+  hasTonemap?: boolean,
   container?: Element | null,
-  render?: (mode: string, map: any, seamFix: boolean, debugGrid: boolean) => LiveElement,
+  render?: (props: EnvMapRenderProps) => LiveElement,
 };
+
+// @ts-ignore
+const isDevelopment = process.env.NODE_ENV === 'development';
+const base = isDevelopment ? '/' : '/demo/';
+
+const TONEMAPS = [
+  {label: "ACES", value: 'aces'},
+  {label: "Hable/Uncharted2", value: 'hable'},
+  {label: "Unreal3", value: 'unreal'},
+  {label: "Linear (none)", value: 'linear'},
+] as {label: string, value: Tonemap}[];
+
+const MODELS = [
+  {label: "Damaged Helmet", value: base + "gltf/DamagedHelmet/DamagedHelmet.gltf", position: [0, 0, 0], scale: 1},
+  {label: "Antique Camera", value: base + "gltf/AntiqueCamera/AntiqueCamera.glb", position: [0, -3, 0], scale: 0.5},
+  {label: "Glam Velvet Sofa", value: base + "gltf/GlamVelvetSofa/GlamVelvetSofa.glb", position: [0, -0.7, 0], scale: 1.2},
+];
+
+const DEFAULT_MODEL = MODELS[0];
 
 export const ENVIRONMENTS = {
   park:
@@ -70,21 +104,59 @@ export const ENVIRONMENTS = {
 } as Record<string, any>;
 
 export const EnvMapControls: LC<EnvMapControlsProps> = (props: EnvMapControlsProps) => {
-  const {hasDebug, container, render} = props;
-  const [mode, setMode] = useState('park');
+  const {hasDebug, hasModel, hasTonemap, container, render} = props;
+
+  const [position, setPosition] = useState(DEFAULT_MODEL.position);
+  const [scale, setScale] = useState(DEFAULT_MODEL.scale);
+  const [model, setModel] = useState(DEFAULT_MODEL.value);
+
+  const [tonemap, setTonemap] = useState<Tonemap>('aces');
+  const [preset, setPreset] = useState('park');
   const [approximate, setApproximate] = useState(false);
   const [seamFix, setSeamFix] = useState(true);
   const [debugGrid, setDebugGrid] = useState(false);
 
   return fragment([
-    render ? render(mode, approximate ? null : ENVIRONMENTS[mode], seamFix, debugGrid) : null,
+    render ? render({
+      tonemap,
+      preset,
+      map: approximate ? null : ENVIRONMENTS[preset],
+      seamFix,
+      debugGrid,
+      model,
+      position,
+      scale,
+    }) : null,
     use(HTML, {
       container,
       style: STYLE,
       children: (<>
+        {hasModel ? (<div>
+          Model
+          <select value={model} onChange={(e) => {
+            const m = e.target.value;
+
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const model = MODELS.find(model => model.value === m)!;
+            setModel(m);
+            setPosition(model.position);
+            setScale(model.scale);
+          }}>
+            {MODELS.map(({label, value}) => <option key={value} value={value}>{label}</option>)}
+          </select>
+        </div>) : null}
+        {hasTonemap ? (<div>
+          Tonemap
+          <select value={tonemap} onChange={(e) => {
+            const m = e.target.value;
+            setTonemap(m as Tonemap);
+          }}>
+            {TONEMAPS.map(({label, value}) => <option key={value} value={value}>{label}</option>)}
+          </select>
+        </div>) : null}
         <div>
           Environment Map
-          <select onChange={(e) => setMode(e.target.value)}>
+          <select value={preset} onChange={(e) => setPreset(e.target.value)}>
             <option value="park">Park</option>
             <option value="pisa">Pisa</option>
             <option value="road">Road</option>

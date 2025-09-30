@@ -1,5 +1,5 @@
-import { resolve } from '../../core';
-import { useOne, useState, useVersion } from '../../live';
+import { resolve } from '@use-gpu/core';
+import { useOne, useState, useVersion } from '@use-gpu/live';
 
 type Initial<T> = T | (() => T);
 type Setter<T> = (t: T | ((t: T) => T)) => void;

@@ -1,7 +1,7 @@
-import type { LC } from '../live';
-import type { GLTF, GLTFPrimitiveData } from './types';
+import type { LC } from '@use-gpu/live';
+import type { GLTF, GLTFOptions, GLTFPrimitiveData } from './types';
 
-import { use, yeet, useMemo } from '../live';
+import { use, yeet, useMemo } from '@use-gpu/live';
 import { mat4 } from 'gl-matrix';
 
 import { GLTFPrimitive } from './gltf-primitive';
@@ -12,6 +12,7 @@ export type GLTFMeshProps = {
   mesh: number,
 
   transform?: mat4,
+  options?: GLTFOptions,
 };
 
 export const GLTFMesh: LC<GLTFMeshProps> = (props: GLTFMeshProps) => {
@@ -19,6 +20,7 @@ export const GLTFMesh: LC<GLTFMeshProps> = (props: GLTFMeshProps) => {
     gltf,
     mesh,
     transform,
+    options,
   } = props;
 
   const {meshes} = gltf;
@@ -29,7 +31,7 @@ export const GLTFMesh: LC<GLTFMeshProps> = (props: GLTFMeshProps) => {
 
   return useMemo(() =>
     gltf.bound
-    ? primitives.map((primitive: GLTFPrimitiveData) => use(GLTFPrimitive, {gltf, primitive, transform}))
-    : yeet(primitives.map((primitive: GLTFPrimitiveData) => useGLTFGeometry(gltf, primitive, transform))),
-    [gltf, primitives, transform]);
+    ? primitives.map((primitive: GLTFPrimitiveData) => use(GLTFPrimitive, {gltf, primitive, transform, options}))
+    : yeet(primitives.map((primitive: GLTFPrimitiveData) => useGLTFGeometry(gltf, primitive, transform, options))),
+    [gltf, primitives, transform, options]);
 };

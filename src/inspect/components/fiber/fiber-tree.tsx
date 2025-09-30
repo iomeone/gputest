@@ -1,0 +1,55 @@
+import type { InspectState, InspectAPI } from '../types'
+import type { LiveFiber } from '@use-gpu/live';
+
+import React, { FC } from 'react';
+
+import { TreeWrapper, TreeWrapperWithLegend } from '../tree/tree-layout';
+import { FiberLegend } from './fiber-legend';
+import { FiberNode } from './fiber-node';
+import { FiberTag } from './tag';
+
+export type FiberTreeProps = {
+  fiber: LiveFiber<any>,
+  fibers: Map<number, LiveFiber<any>>,
+  state: InspectState,
+  api: InspectAPI,
+
+  legend: boolean,
+  skipDepth: number,
+};
+
+// Fiber tree including legend
+export const FiberTree: FC<FiberTreeProps> = ({
+  state,
+  api,
+  fiber,
+  fibers,
+
+  legend,
+  skipDepth,
+}) => {
+  const focusedId = state.focusedState;
+  const [filterTags] = state.optionsCursor.filterTags();
+  const [depthLimit] = state.optionsCursor.depthLimit();
+
+  const Wrap = legend ? TreeWrapperWithLegend : TreeWrapper;
+
+  const allTags = filterTags & FiberTag.All;
+  const hasOther = (allTags & FiberTag.Other) || !allTags;
+
+  return (
+    <Wrap style={{paddingTop: (focusedId || !hasOther) ? 0 : undefined}}>
+      <FiberNode
+        state={state}
+        api={api}
+        fiber={fiber}
+        fibers={fibers}
+        renderDepth={0}
+        focusDepth={0}
+        skipDepth={skipDepth}
+        depthLimit={depthLimit}
+      />
+      {(legend ?? true) ? <FiberLegend /> : null}
+    </Wrap>
+  );
+}

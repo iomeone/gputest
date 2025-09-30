@@ -413,7 +413,7 @@ describe("tesselate", () => {
       }
       return false;
     }
-    
+
     polygons = cutPolygons(polygons, 1, 0, 0);
     expect(polygons && hasAnyDuplicates(polygons)).toBe(false);
     expect(polygons).toMatchSnapshot();

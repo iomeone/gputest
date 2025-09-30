@@ -1,7 +1,7 @@
-import type { StorageSource, UniformType, TensorArray, TypedArray } from '../../core';
+import type { StorageSource, UniformType, TensorArray, TypedArray } from '@use-gpu/core';
 
-import { useOne, useMemo, useVersion, useNoOne, useNoMemo, useNoVersion, incrementVersion } from '../../live';
-import { makeDataBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS } from '../../core';
+import { useOne, useMemo, useVersion, useNoOne, useNoMemo, useNoVersion, incrementVersion } from '@use-gpu/live';
+import { makeDataBuffer, uploadBuffer, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
 
 import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';
 import { useBufferedSize, useNoBufferedSize } from './useBufferedSize';
@@ -32,7 +32,7 @@ export const useRawSource = (
   const device = useDeviceContext();
 
   const alloc = useBufferedSize(array.byteLength);
-  const buffer = useOne(() => makeDataBuffer(device, alloc, flags), alloc);
+  const buffer = useMemo(() => makeDataBuffer(device, alloc, flags), [device, alloc, flags]);
 
   const memoKey = useVersion(buffer) + useVersion(readWrite);
   const source = useOne(() => ({
@@ -42,6 +42,8 @@ export const useRawSource = (
     size: [],
     version: 0,
     readWrite,
+
+    addressSpace: (flags & GPUBufferUsage.UNIFORM) ? 'uniform' : 'storage',
   } as StorageSource), memoKey);
 
   if (live) {
@@ -59,7 +61,8 @@ export const useRawSource = (
       source.length = array.length / Math.floor(UNIFORM_ARRAY_DIMS[format]);
       source.size = size ?? [source.length];
       source.version = incrementVersion(source.version);
-    }, [array, buffer, version, ...size ?? NO_SIZE]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [device, format, source, array, buffer, version, ...size ?? NO_SIZE]);
   }
 
   return source;
@@ -68,7 +71,7 @@ export const useRawSource = (
 export const useNoRawSource = () => {
   useNoDeviceContext();
   useNoBufferedSize();
-  useNoOne();
+  useNoMemo();
   useNoVersion();
   useNoVersion();
   useNoOne();

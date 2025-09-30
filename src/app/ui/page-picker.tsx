@@ -1,8 +1,8 @@
 import React from 'react';
 import { makePages } from '../routes';
-import { use } from '../../live';
-import { HTML } from '../../react';
-import { useRouterContext } from '../../workbench';
+import { use } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { useRouterContext } from '@use-gpu/workbench';
 
 const ICON = (s: string) => <span className="m-icon">{s}</span>
 
@@ -30,7 +30,7 @@ export const PagePicker = (container: Element) => {
   const icon = ICON("code");
   const handleCode = () => {
     const route = location.pathname;
-    const url = `https://gitlab.com/unconed/use.gpu/-/blob/master/packages/app/src/pages${location.pathname.replace(/^\/demo/, '')}.tsx`;
+    const url = `https://gitlab.com/unconed/use.gpu/-/blob/master/packages/app/src/pages${route.replace(/^\/demo/, '')}.tsx`;
     window.open(url);
   };
 
@@ -49,7 +49,7 @@ export const PagePicker = (container: Element) => {
     use(HTML, {
       container,
       style: STYLE,
-      children: (<div style={{display: 'flex', alignItems: 'center'}}>
+      children: (<div style={{display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '16px 8px'}}>
         <button className="round" onClick={handlePrev} title="Go back">◀︎ Previous</button>
         <button className="round" onClick={handleNext} title="Go forward">Next ▶︎</button>
         <button className="round" onClick={handleCode} title="Show Source Code">{icon} Code</button>

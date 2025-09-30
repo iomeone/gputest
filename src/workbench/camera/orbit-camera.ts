@@ -1,16 +1,13 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { VectorLike } from '../../core';
-import { ViewUniforms } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { VectorLike } from '@use-gpu/core';
 
-import { useProp } from '../../traits/index-live';
-import { parsePosition } from '../../parse';
-import { provide, use, useContext, useOne, incrementVersion } from '../../live';
-import { VIEW_UNIFORMS, makeProjectionMatrix, makeOrbitMatrix, makeOrbitPosition, makeFrustumPlanes } from '../../core';
+import { useProp } from '@use-gpu/traits/live';
+import { parsePosition } from '@use-gpu/parse';
+import { provide, use, useContext, useOne, incrementVersion } from '@use-gpu/live';
+import { makeProjectionMatrix, makeOrbitMatrix, makeViewUniforms, updateViewProjection, updateViewSize } from '@use-gpu/core';
 import { FrameContext } from '../providers/frame-provider';
-import { LayoutContext } from '../providers/layout-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
-import { vec2, mat4 } from 'gl-matrix';
 
 const DEFAULT_ORBIT_CAMERA = {
   phi: 0,
@@ -47,8 +44,6 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
     pixelRatio,
   } = useContext(RenderContext);
 
-  const layout = useContext(LayoutContext);
-
   const {
     phi    = DEFAULT_ORBIT_CAMERA.phi,
     theta  = DEFAULT_ORBIT_CAMERA.theta,
@@ -64,53 +59,28 @@ export const OrbitCamera: LiveComponent<OrbitCameraProps> = (props) => {
 
   const target = useProp(props.target, parsePosition);
 
-  const uniforms = useOne(() => ({
-    projectionMatrix: { current: null as any },
-    projectionViewMatrix: { current: null as any },
-    projectionViewFrustum: { current: null as any },
-    inverseViewMatrix: { current: mat4.create() },
-    inverseProjectionViewMatrix: { current: mat4.create() },
-    viewMatrix: { current: null as any },
-    viewPosition: { current: null as any },
-    viewNearFar: { current: null as any },
-    viewResolution: { current: null as any },
-    viewSize: { current: null as any },
-    viewWorldDepth: { current: null as any },
-    viewPixelRatio: { current: null as any },
-  })) as ViewUniforms;
+  const uniforms = useOne(makeViewUniforms);
 
   const unit = scale != null ? height / pixelRatio / scale : 1;
+  const ratio = pixelRatio * unit;
+  const tan = Math.tan(fov / 2);
 
-  uniforms.projectionMatrix.current = makeProjectionMatrix(width, height, fov, near, far, radius, dolly);
-  uniforms.viewMatrix.current = makeOrbitMatrix(radius, phi, theta, target, dolly);
-  uniforms.viewPosition.current = makeOrbitPosition(radius, phi, theta, target, dolly);
-  uniforms.viewNearFar.current = vec2.fromValues(near, far);
-  uniforms.viewResolution.current = vec2.fromValues(1 / width, 1 / height);
-  uniforms.viewSize.current = vec2.fromValues(width, height);
-  uniforms.viewWorldDepth.current = vec2.fromValues(focus * Math.tan(fov / 2), 1);
-  uniforms.viewPixelRatio.current = pixelRatio * unit;
-
-  const {
-    inverseProjectionViewMatrix,
-    inverseViewMatrix,
-    projectionMatrix,
-    projectionViewMatrix,
-    projectionViewFrustum,
-    viewMatrix,
-  } = uniforms;
-  projectionViewMatrix.current = mat4.multiply(mat4.create(), projectionMatrix.current, viewMatrix.current);
-  projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
-  mat4.invert(inverseProjectionViewMatrix.current, projectionViewMatrix.current);
-  mat4.invert(inverseViewMatrix.current, viewMatrix.current);
+  updateViewProjection(
+    uniforms,
+    makeProjectionMatrix(width, height, fov, near, far, radius, dolly),
+    makeOrbitMatrix(radius, phi, theta, target, dolly),
+    undefined,
+    near, far,
+  );
+  updateViewSize(uniforms, width, height, ratio, tan * 2 / height, focus, 1);
 
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);
 
   return provide(FrameContext, frame.current,
     use(ViewProvider, {
-      defs: VIEW_UNIFORMS,
       uniforms,
-      children: provide(LayoutContext, layout, children),
+      children,
     })
   );
 };

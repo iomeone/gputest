@@ -2,49 +2,49 @@
 
 exports[`link lifts recursive dependency 1`] = `
 "#version 450
-//// @link getLifted _01_
+//// @link getLifted _00_
 
 
     // Lifted Code
-    void _01_getLifted() {}
+    void _00_getLifted() {}
     
-//// @link getColor2 _02_
+//// @link getColor2 _01_
 
 
-    vec4 _02_getColor2() { return vec4(1.0, 0.0, 1.0, 1.0); }
+    vec4 _01_getColor2() { return vec4(1.0, 0.0, 1.0, 1.0); }
     
-//// @link getColor1 _03_
+//// @link getColor1 _02_
 
 
-    vec4 _03_getColor1() { return _02_getColor2(); }
+    vec4 _02_getColor1() { return _01_getColor2(); }
     
-//// @link main 
+//// @link main
 
 
     void main() {
-      gl_FragColor = _03_getColor1();
+      gl_FragColor = _02_getColor1();
     }
     "
 `;
 
 exports[`link links a global across a module 1`] = `
 "#version 450
-//// @link sub1 _01_
+//// @link sub1 _00_
 
 
     vec4 getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
     
-//// @link sub2 _02_
+//// @link sub2 _01_
 
 
-    void _02_getPosition() {};
+    void _01_getPosition() {};
 
-    vec4 _02_getColor(int index) {
-      _02_getPosition();
+    vec4 _01_getColor(int index) {
+      _01_getPosition();
       return vec4(1.0, 0.0, 1.0, 1.0);
     }
     
-//// @link main 
+//// @link main
 
 
     vec4 getPosition(int index);
@@ -56,123 +56,123 @@ exports[`link links a global across a module 1`] = `
 
 exports[`link links an external 1`] = `
 "#version 450
-//// @link getColor _01_
+//// @link getColor _00_
 
 
-    vec4 _01_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
+    vec4 _00_getColor() { return vec4(1.0, 0.0, 1.0, 1.0); }
     
-//// @link main 
+//// @link main
 
 
-    vec4 _01_getColor();
+    vec4 _00_getColor();
     void main() {
       vec4 v;
       v.xyz = vec3(1.0, 0.0, 0.0);
-      gl_FragColor = _01_getColor();
+      gl_FragColor = _00_getColor();
     }
     "
 `;
 
 exports[`link links quad vertex 1`] = `
 "#version 450
-//// @link main _01_
+//// @link <inline code> _00_
 
 
-    vec4 _01_getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
+    vec4 _00_getPosition(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
     
-//// @link main _02_
+//// @link <inline code> _01_
 
 
-    vec4 _02_getColor(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
+    vec4 _01_getColor(int index) { return vec4(1.0, 0.0, 1.0, 1.0); }
     
-//// @link main _03_
+//// @link <inline code> _02_
 
 
-    float _03_getSize(int index) { return 1.0; }
+    float _02_getSize(int index) { return 1.0; }
     
-//// @link main _04_
+//// @link <inline code> _03_
 
 
-    float _04_getDepth(int index) { return 0.5; }
+    float _03_getDepth(int index) { return 0.5; }
     
-//// @link use/types _05_
+//// @link use/types _04_
 
-struct _05_SolidVertex {
+struct _04_SolidVertex {
   vec4 position;
   vec4 color;
   vec2 uv;
 };
 
 
-//// @link use/view _06_
+//// @link use/view _05_
 
-layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING) uniform _06_ViewUniforms {
+layout(set = VIEW_BINDGROUP, binding = VIEW_BINDING) uniform _05_ViewUniforms {
   mat4 projectionMatrix;
   mat4 viewMatrix;
   vec4 viewPosition;
   vec2 viewResolution;
   vec2 viewSize;
-  float viewWorldDepth;
+  float viewWorldScale;
   float viewPixelRatio;
-} _06_viewUniforms;
+} _05_viewUniforms;
 
-vec4 _06_worldToView(vec4 position) {
-  return _06_viewUniforms.viewMatrix * position;
+vec4 _05_worldToView(vec4 position) {
+  return _05_viewUniforms.viewMatrix * position;
 }
 
-vec4 _06_viewToClip(vec4 position) {
-  return _06_viewUniforms.projectionMatrix * position;
+vec4 _05_viewToClip(vec4 position) {
+  return _05_viewUniforms.projectionMatrix * position;
 }
 
-vec4 _06_worldToClip(vec4 position) {
-  return _06_viewToClip(_06_worldToView(position));
+vec4 _05_worldToClip(vec4 position) {
+  return _05_viewToClip(_05_worldToView(position));
 }
 
-float _06_getPerspectiveScale(float w, float f) {
-  mat4 m = _06_viewUniforms.projectionMatrix;
-  float worldScale = m[1][1] * _06_viewUniforms.viewWorldDepth;
+float _05_getPerspectiveScale(float w, float f) {
+  mat4 m = _05_viewUniforms.projectionMatrix;
+  float worldScale = m[1][1] * _05_viewUniforms.viewWorldScale;
   float clipScale = mix(1.0, worldScale / w, f);
-  float pixelScale = clipScale * _06_viewUniforms.viewPixelRatio;
+  float pixelScale = clipScale * _05_viewUniforms.viewPixelRatio;
   return pixelScale;
 }
 
-//// @link geometry/quad _07_
+//// @link geometry/quad _06_
 
-const ivec2 _07_QUAD[] = {
+const ivec2 _06_QUAD[] = {
   ivec2(0, 0),
   ivec2(1, 0),
   ivec2(0, 1),
   ivec2(1, 1),
 };
 
-ivec2 _07_getQuadIndex(int vertex) {
-  return _07_QUAD[vertex];
+ivec2 _06_getQuadIndex(int vertex) {
+  return _06_QUAD[vertex];
 }
 
-vec2 _07_getQuadUV(int vertex) {
-  return vec2(_07_getQuadIndex(vertex));
+vec2 _06_getQuadUV(int vertex) {
+  return vec2(_06_getQuadIndex(vertex));
 }
 
-//// @link getQuadVertex 
+//// @link getQuadVertex
 
-vec4 _01_getPosition(int);
-vec4 _02_getColor(int);
-vec2 _03_getSize(int);
-float _04_getDepth(int);
+vec4 _00_getPosition(int);
+vec4 _01_getColor(int);
+vec2 _02_getSize(int);
+float _03_getDepth(int);
 
-_05_SolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {
-  vec4 position = _01_getPosition(instanceIndex);
-  vec4 color = _02_getColor(instanceIndex);
-  vec2 size = _03_getSize(instanceIndex);
-  float depth = _04_getDepth(instanceIndex);
+_04_SolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {
+  vec4 position = _00_getPosition(instanceIndex);
+  vec4 color = _01_getColor(instanceIndex);
+  vec2 size = _02_getSize(instanceIndex);
+  float depth = _03_getDepth(instanceIndex);
 
-  vec4 center = _06_worldToClip(position);
+  vec4 center = _05_worldToClip(position);
 
-  vec2 uv = _07_getQuadUV(vertexIndex);
+  vec2 uv = _06_getQuadUV(vertexIndex);
   vec2 xy = uv * 2.0 - 1.0;
   
   // Lerp between fixed size and full perspective.
-  float pixelScale = _06_getPerspectiveScale(center.w, depth);
+  float pixelScale = _05_getPerspectiveScale(center.w, depth);
   size *= pixelScale;
 
   #ifdef HAS_EDGE_BLEED
@@ -180,9 +180,9 @@ _05_SolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {
   uv = xy * .5 + .5;
   #endif
 
-  center.xy += xy * size * _06_viewUniforms.viewResolution * center.w;
+  center.xy += xy * size * _05_viewUniforms.viewResolution * center.w;
 
-  return _05_SolidVertex(
+  return _04_SolidVertex(
     center,
     color,
     uv
@@ -192,103 +192,103 @@ _05_SolidVertex getQuadVertex(int vertexIndex, int instanceIndex) {
 
 exports[`link links same module twice with different entry point 1`] = `
 "#version 450
-//// @link sub _01_
+//// @link sub _00_
 
 
-    float _01_used() { return 1.0; }
+    float _00_used() { return 1.0; }
 
-    vec4 _01_getPosition(int index) { return vec4(_01_used(), 0.0, 1.0, 1.0); }
+    vec4 _00_getPosition(int index) { return vec4(_00_used(), 0.0, 1.0, 1.0); }
 
-    vec4 _01_getColor(int index) { return vec4(_01_used(), 0.0, 1.0, 1.0); }
+    vec4 _00_getColor(int index) { return vec4(_00_used(), 0.0, 1.0, 1.0); }
     
-//// @link main 
+//// @link main
 
 
-    vec4 _01_getPosition(int index);
-    vec4 _01_getColor(int index);
+    vec4 _00_getPosition(int index);
+    vec4 _00_getColor(int index);
     void main() {
-      vec4 a = _01_getPosition(0);
-      vec4 b = _01_getColor(0);
+      vec4 a = _00_getPosition(0);
+      vec4 b = _00_getColor(0);
     }
     "
 `;
 
 exports[`link tree shakes around identifiers 1`] = `
 "#version 450
-//// @link sub _01_
+//// @link sub _00_
 
 
-    float _01_used() { return 1.0; }
+    float _00_used() { return 1.0; }
 
-    vec4 _01_getPosition(int index) { return vec4(_01_used(), 0.0, 1.0, 1.0); }
+    vec4 _00_getPosition(int index) { return vec4(_00_used(), 0.0, 1.0, 1.0); }
 
     
-//// @link main 
+//// @link main
 
 
-    vec4 _01_getPosition(int index);
+    vec4 _00_getPosition(int index);
     void main() {
-      vec4 a = _01_getPosition(0);
+      vec4 a = _00_getPosition(0);
     }
     "
 `;
 
 exports[`link tree shakes around identifiers 2`] = `
 "#version 450
-//// @link sub _01_
+//// @link sub _00_
 
 
-    float _01_used() { return 1.0; }
+    float _00_used() { return 1.0; }
 
-    vec4 _01_getPosition(int index) { return vec4(_01_used(), 0.0, 1.0, 1.0); }
+    vec4 _00_getPosition(int index) { return vec4(_00_used(), 0.0, 1.0, 1.0); }
 
     
-//// @link main 
+//// @link main
 
 
-    vec4 _01_getPosition(int index);
+    vec4 _00_getPosition(int index);
     void main() {
-      vec4 a = _01_getPosition(0);
+      vec4 a = _00_getPosition(0);
     }
     "
 `;
 
 exports[`link tree shakes constants 1`] = `
 "#version 450
-//// @link sub _01_
+//// @link sub _00_
 
 
-    const vec4 _01_colorUsed = vec4(0.0, 0.1, 0.2, 0.0);
-    vec4 _01_getColor() {
-      return _01_colorUsed;
+    const vec4 _00_colorUsed = vec4(0.0, 0.1, 0.2, 0.0);
+    vec4 _00_getColor() {
+      return _00_colorUsed;
     }
     
-//// @link main 
+//// @link main
 
 
-    vec4 _01_getColor();
+    vec4 _00_getColor();
     void main() {
-      vec4 a = _01_getColor();
+      vec4 a = _00_getColor();
     }
     "
 `;
 
 exports[`link tree shakes constants 2`] = `
 "#version 450
-//// @link sub _01_
+//// @link sub _00_
 
 
-    const vec4 _01_colorUsed = vec4(0.0, 0.1, 0.2, 0.0);
-    vec4 _01_getColor() {
-      return _01_colorUsed;
+    const vec4 _00_colorUsed = vec4(0.0, 0.1, 0.2, 0.0);
+    vec4 _00_getColor() {
+      return _00_colorUsed;
     }
     
-//// @link main 
+//// @link main
 
 
-    vec4 _01_getColor();
+    vec4 _00_getColor();
     void main() {
-      vec4 a = _01_getColor();
+      vec4 a = _00_getColor();
     }
     "
 `;

@@ -1,10 +1,10 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { DeepPartial } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { DeepPartial } from '@use-gpu/core';
 import type { MVTStyleProperties } from '../types';
 
-import { patch } from '../../state';
-import { parseColor } from '../../parse';
-import { provide, makeContext, useContext, useNoContext, useOne } from '../../live';
+import { patch } from '@use-gpu/state';
+import { parseColor } from '@use-gpu/parse';
+import { provide, makeContext, useContext, useNoContext, useOne } from '@use-gpu/live';
 
 export type MVTStyleContextProps = Record<string, MVTStyleProperties>;
 
@@ -25,16 +25,22 @@ const DEFAULT_STYLE: MVTStyleProperties = {
   point: {
     color: [1, 1, 1, 1],
     shape: 'circle',
-    size: 5,
+    size: 3,
     depth: 0.5,
     zBias: 5,
     hollow: false,
   },
   font: {
+    stroke: [0, 0, 0, 1],
+    fill: [1, 1, 1, 1],
+    outline: 4,
+    size: 16,
+    depth: 0.5,
+    zBias: 1,
+
     family: 'sans-serif',
     style: 'normal',
     weight: 'normal',
-    size: 16,
     lineHeight: 20,
   },
 };
@@ -60,6 +66,8 @@ export const MVTStyles: LiveComponent<MVTStylesProps> = (props: MVTStylesProps) 
       if (style.face?.stroke) out.face.stroke = parseColor(style.face.stroke);
       if (style.point?.color) out.point.color = parseColor(style.point.color);
       if (style.line?.color) out.line.color = parseColor(style.line.color);
+      if (style.font?.fill) out.font.fill = parseColor(style.font.fill);
+      if (style.font?.stroke) out.font.stroke = parseColor(style.font.stroke);
       return out;
     };
 

@@ -1,9 +1,9 @@
-import type { ArchetypeSchema, Ragged, TensorArray, TypedArray, UniformType, VectorLike, VectorLikes } from '../core';
-import type { ShaderSource } from '../shader';
-import type { Parser } from '../traits';
+import type { ArchetypeSchema, Ragged, TensorArray, TypedArray, UniformType, VectorLike, VectorLikes } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { Parser } from '@use-gpu/traits';
 
-import { useMemo, useOne } from '../live';
-import { trait, combine, optional, useProp } from '../traits/index-live';
+import { useMemo, useOne } from '@use-gpu/live';
+import { trait, combine, optional, useProp } from '@use-gpu/traits/live';
 import {
   parseNumber,
   parseInteger,
@@ -17,6 +17,7 @@ import {
   parseColorArray,
   parseColorArrayLike,
   parseColorMultiArray,
+  parseVec2,
   parseVec4,
   parseVec4Array,
   parseScalarArray,
@@ -42,9 +43,9 @@ import {
   parsePointShape,
   toChunkCounts,
   makeParseEnum,
-} from '../parse';
-import { seq, isShaderBinding, toCPUDims, getUniformDims, formatToArchetype } from '../core';
-import { getArrowSegments, getFaceSegments, getFaceSegmentsConcave, getLineSegments } from '../workbench';
+} from '@use-gpu/parse';
+import { seq, isShaderBinding, toCPUDims, getUniformDims, formatToArchetype } from '@use-gpu/core';
+import { getArrowSegments, getFaceSegments, getFaceSegmentsConcave, getLineSegments } from '@use-gpu/workbench';
 
 import { useDataContext } from './providers/data-provider';
 
@@ -53,11 +54,11 @@ const bindable = <A, B>(parse: (t: A) => B) => (t: A | ShaderSource) => isShader
 export const AnchorTrait = trait(
   {
     placement:  parsePlacement,
-    offset:     parseNumber,
+    offset:     parseVec2,
   },
   {
     placement: 'center',
-    offset: 5,
+    offset: [0, 0],
   },
 );
 
@@ -95,9 +96,7 @@ export const AxisTrait = trait(
 export const FaceTrait = trait(
   {
     flat: optional(parseBoolean),
-    shaded: optional(parseBoolean),
     side: optional(parseSide),
-    shadow: optional(parseBoolean),
   },
   {
     side: 'both',
@@ -128,9 +127,15 @@ export const LabelTrait = trait(
     size:   optional(parseNumber),
     depth:  optional(parseNumber),
     expand: parseNumber,
+    detail: optional(parseNumber),
+
+    family: optional(parseString),
+    weight: optional(parseWeight),
+    style: optional(parseString),
   },
   {
     size: 16,
+    expand: 0,
   },
 );
 
@@ -153,6 +158,7 @@ export const MarkerTrait = trait(
   {
     shape: optional(parsePointShape),
     hollow: optional(parseBoolean),
+    hard: optional(parseBoolean),
     outline: optional(parseNumber),
   },
 );
@@ -219,6 +225,13 @@ export const ScaleTrait = trait(
     zero: true,
     factor: 1,
     nice: true,
+  },
+);
+
+export const ShadedTrait = trait(
+  {
+    shaded: optional(parseBoolean),
+    shadow: optional(parseBoolean),
   },
 );
 
@@ -324,7 +337,7 @@ const applyOpacity = <T extends VectorLike>(colors?: T, opacity: number = 1): T 
 export const DataTrait = (keys: string[], canonical: string = 'positions') => {
   const match = new Set(keys);
   return (
-    props: {},
+    props: object,
     parsed: {
       formats?: Record<string, string>,
       sources?: Record<string, any>,
@@ -345,7 +358,7 @@ export const DataTrait = (keys: string[], canonical: string = 'positions') => {
 
       for (const k in dataContext) if (match.has(k)) {
         const {array, format, size, ragged} = dataContext[k];
-        if (!(props as any)[k]) {
+        if (!(k in props)) {
           data[k] = array;
           formats[k] = format;
           d++;
@@ -371,6 +384,8 @@ export const DataTrait = (keys: string[], canonical: string = 'positions') => {
       }
 
       return [d ? data : undefined, f ? formats : undefined, s ? sources : undefined];
+      // `parsed` is static
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataContext, props]);
 
     if (data) for (const k in data) (parsed as any)[k] = data[k];
@@ -522,7 +537,7 @@ export const LineSegmentsTrait = combine(
   SegmentsTrait,
   LoopsTrait,
   (
-    props: {},
+    props: object,
     parsed: {
       chunks?: VectorLike,
       groups?: VectorLike | null,
@@ -550,7 +565,7 @@ export const ArrowSegmentsTrait = combine(
   LoopsTrait,
   DirectedsTrait,
   (
-    props: {},
+    props: object,
     parsed: {
       chunks?: VectorLike,
       groups?: VectorLike | null,
@@ -627,6 +642,9 @@ export const VerticesTrait = trait({
   ids: bindable(optional(parseScalarArray)),
   lookup: optional(parseNumber),
   lookups: bindable(optional(parseScalarArray)),
+
+  facet: optional(parseNumber),
+  facets: bindable(optional(parseScalarArray)),
 });
 
 export const CompositeVerticesTrait = trait({
@@ -640,19 +658,9 @@ export const CompositeVerticesTrait = trait({
   ids: bindable(optional(parseMultiScalarArray)),
   lookup: optional(parseScalarArrayLike),
   lookups: bindable(optional(parseMultiScalarArray)),
-});
 
-export const FacetedVerticesTrait = trait({
-  positions: bindable(optional(parsePositionMultiMultiArray)),
-  depth: optional(parseScalarArrayLike),
-  depths: bindable(optional(parseMultiScalarArray)),
-  zBias: optional(parseScalarArrayLike),
-  zBiases: bindable(optional(parseMultiScalarArray)),
-
-  id: optional(parseScalarArrayLike),
-  ids: bindable(optional(parseMultiScalarArray)),
-  lookup: optional(parseScalarArrayLike),
-  lookups: bindable(optional(parseMultiScalarArray)),
+  facet: optional(parseScalarArrayLike),
+  facets: bindable(optional(parseMultiScalarArray)),
 });
 
 export const PointTraits = combine(
@@ -667,6 +675,7 @@ export const PointTraits = combine(
   MarkerTrait,
   PointTrait,
   ROPTrait,
+  ShadedTrait,
   ZIndexTrait,
 );
 
@@ -675,12 +684,14 @@ export const LineTraits = combine(
   trait({
     width: optional(parseScalarArrayLike),
     widths: bindable(optional(parseMultiScalarArray)),
+    sides: optional(parseNumber),
   }),
   CompositeVerticesTrait,
   DataTrait(['positions', 'colors', 'depths', 'zBiases', 'ids', 'lookups', 'widths']),
   LineSegmentsTrait,
 
   ROPTrait,
+  ShadedTrait,
   StrokeTrait,
   ZIndexTrait,
 );
@@ -692,6 +703,9 @@ export const ArrowTraits = combine(
     widths: bindable(optional(parseMultiScalarArray)),
     size: optional(parseScalarArrayLike),
     sizes: bindable(optional(parseMultiScalarArray)),
+
+    detail: optional(parseNumber),
+    sides: optional(parseNumber),
   }),
   CompositeVerticesTrait,
   DataTrait(['positions', 'colors', 'depths', 'zBiases', 'ids', 'lookups', 'widths', 'sizes']),
@@ -699,18 +713,20 @@ export const ArrowTraits = combine(
 
   ArrowTrait,
   ROPTrait,
+  ShadedTrait,
   StrokeTrait,
   ZIndexTrait,
 );
 
 export const FaceTraits = combine(
   CompositeColorsTrait(),
-  FacetedVerticesTrait,
+  CompositeVerticesTrait,
   DataTrait(['positions', 'colors', 'depths', 'zBiases', 'ids', 'lookups']),
   FaceSegmentsTrait,
 
   FaceTrait,
   ROPTrait,
+  ShadedTrait,
   ZIndexTrait,
 );
 
@@ -765,6 +781,7 @@ export const SurfaceTraits = combine(
   ColorTrait,
   FaceTrait,
   ROPTrait,
+  ShadedTrait,
   StrokeTrait,
   ZIndexTrait,
 );
@@ -775,6 +792,7 @@ export const ImplicitSurfaceTraits = combine(
   FaceTrait,
   Loop3DTrait,
   ROPTrait,
+  ShadedTrait,
   ZIndexTrait,
   trait({
     range: optional(parseRanges),

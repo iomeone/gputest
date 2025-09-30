@@ -1,5 +1,5 @@
-import type { LiveElement, RenderProp } from '../../live';
-import { yeet, useHooks, useNoHooks, useMemo, useNoMemo, formatValue } from '../../live';
+import type { LiveElement, RenderProp } from '@use-gpu/live';
+import { yeet, useHooks, useNoHooks, useMemo, useNoMemo, formatValue } from '@use-gpu/live';
 
 export type RenderProps<T extends any[]> = {
   render?: (...t: T) => LiveElement,
@@ -16,6 +16,7 @@ export const useRenderProp = <T extends any[]>(props: RenderProps<T>, ...args: T
   if (!call && props.children)  throw new Error(`Expected render function as children, got: ${formatValue(props.children)}`);
 
   const rendered = call ? useHooks(() => call(...args), [call, ...args]) : (useNoHooks(), null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const returned = !call ? useMemo(() => yeet(...args), args) : (useNoMemo(), null);
 
   return call ? rendered : returned;

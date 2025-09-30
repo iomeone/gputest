@@ -1,25 +1,31 @@
-import React from '../live';
+import React from '@use-gpu/live';
 
-import { GeometryGLTFPage } from './pages/geometry/gltf';
-import { GeometryLinesPage } from './pages/geometry/lines';
-import { GeometryBinaryPage } from './pages/geometry/binary';
-import { GeometryVoxelPage } from './pages/geometry/voxel';
+import { DataPointCloudPage } from './pages/data/point-cloud';
+import { DataSolarSystemPage } from './pages/data/solar';
 import { DebugAtlasPage } from './pages/debug/atlas';
 import { DebugAxesPage } from './pages/debug/axes';
 import { DebugWireframePage } from './pages/debug/wireframe';
+import { GeometryGLTFPage } from './pages/geometry/gltf';
+import { GeometryLinesPage } from './pages/geometry/lines';
+import { GeometryLabelsPage } from './pages/geometry/labels';
+import { GeometryBinaryPage } from './pages/geometry/binary';
+import { GeometryVoxelPage } from './pages/geometry/voxel';
+import { InteractEasePage } from './pages/interact/ease';
+import { InteractFPSControlsPage } from './pages/interact/fps';
+import { InteractLookAtPage } from './pages/interact/look-at';
+import { InteractGizmoPage } from './pages/interact/gizmo';
 import { LayoutDisplayPage } from './pages/layout/display';
 import { LayoutGlyphPage } from './pages/layout/glyph';
 import { LayoutAlignPage } from './pages/layout/align';
 import { MaterialEnvMapPage } from './pages/material/envmap';
 import { MapWebMercatorPage } from './pages/map/webmercator';
-import { MeshRawPage } from './pages/mesh/raw';
+import { MapQuadTreePage } from './pages/map/quadtree';
 import { MeshInterleavedPage } from './pages/mesh/interleaved';
-import { SceneBasicPage } from './pages/scene/basic';
-import { SceneInstancesPage } from './pages/scene/instances';
-import { SceneShadowPage } from './pages/scene/shadow';
-import { SceneDeferredPage } from './pages/scene/deferred';
+import { MeshProjectedSamplerPage } from './pages/mesh/projected-sampler';
+import { MeshVertexNormalsPage } from './pages/mesh/vertex-normals';
 import { Plot2DPage } from './pages/plot/2d';
 import { Plot3DPage } from './pages/plot/3d';
+import { PlotTubesPage } from './pages/plot/tubes';
 import { PlotPickingPage } from './pages/plot/picking';
 import { PlotCartesianPage } from './pages/plot/cartesian';
 import { PlotPolarPage } from './pages/plot/polar';
@@ -27,14 +33,23 @@ import { PlotSphericalPage } from './pages/plot/spherical';
 import { PlotStereographicPage } from './pages/plot/stereographic';
 import { PlotImplicitSurfacePage } from './pages/plot/implicit-surface';
 import { PlotQuaternionHyperspherePage } from './pages/plot/quaternion-hypersphere';
-import { ShaderDrostePage } from './pages/shader/droste';
+import { PlotBinetPage } from './pages/plot/binet';
 import { PresentSlidesPage } from './pages/present/slides';
+import { RTTBlackHolePage } from './pages/rtt/black-hole';
+import { RTTCubeTargetPage } from './pages/rtt/cube-target';
 import { RTTLinearRGBPage } from './pages/rtt/linear-rgb';
 import { RTTFeedbackPage } from './pages/rtt/feedback';
+import { RTTAccumulatePage } from './pages/rtt/accumulate';
 import { RTTMultiscalePage } from './pages/rtt/multiscale';
 import { RTTCFDComputePage } from './pages/rtt/cfd-compute';
 import { RTTCFDTexturePage } from './pages/rtt/cfd-texture';
-import { FPSControlsPage } from './pages/controls/fps';
+import { SceneBasicPage } from './pages/scene/basic';
+import { SceneDeferredPage } from './pages/scene/deferred';
+import { ShaderDrostePage } from './pages/shader/droste';
+import { SceneInstancesPage } from './pages/scene/instances';
+import { SceneShadowPage } from './pages/scene/shadow';
+import { SceneSSAOPage } from './pages/scene/ssao';
+import { SceneOutlinePage } from './pages/scene/outline';
 
 import { HomePage } from './pages/home';
 import { EmptyPage } from './pages/empty';
@@ -42,8 +57,16 @@ import { EmptyPage } from './pages/empty';
 export const makePages = () => [
   {path: "/plot/2d",                     title: "Plot - 2D",                         element: <Plot2DPage />},
   {path: "/plot/3d",                     title: "Plot - 3D",                         element: <Plot3DPage />},
+  {path: "/plot/tubes",                  title: "Plot - Shaded Lines",               element: <PlotTubesPage />},
   {path: "/plot/picking",                title: "Plot - GPU Picking",                element: <PlotPickingPage />},
+  {path: "/data/solar",                  title: "Data - Solar System",               element: <DataSolarSystemPage />},
+  {path: "/data/point-cloud",            title: "Data - Point Cloud",                element: <DataPointCloudPage />},
+  {path: "/interact/ease",               title: "Interact - Ease To Target",         element: <InteractEasePage />},
+  {path: "/interact/gizmo",              title: "Interact - Gizmo",                  element: <InteractGizmoPage />},
+  {path: "/interact/look-at",            title: "Interact - Look At",                element: <InteractLookAtPage />},
+  {path: "/interact/fps",                title: "Interact - FPS Controls",           element: <InteractFPSControlsPage />},
   {path: "/geometry/lines",              title: "Geometry - 3D Lines and Arrows",    element: <GeometryLinesPage />},
+  {path: "/geometry/labels",             title: "Geometry - 3D Points and Labels",   element: <GeometryLabelsPage />},
   {path: "/geometry/gltf",               title: "Geometry - GLTF",                   element: <GeometryGLTFPage />},
   {path: "/geometry/voxel",              title: "Geometry - Voxels",                 element: <GeometryVoxelPage />},
   {path: "/geometry/binary",             title: "Geometry - Byte Histogram",         element: <GeometryBinaryPage />},
@@ -52,26 +75,33 @@ export const makePages = () => [
   {path: "/layout/glyph",                title: "Layout - Glyph Subpixel SDF",       element: <LayoutGlyphPage />},
   {path: "/layout/align",                title: "Layout - Alignment Tests",          element: <LayoutAlignPage />},
   {path: "/map/webmercator",             title: "Map - WebMercator",                 element: <MapWebMercatorPage />},
+  {path: "/map/quadtree",                title: "Map - QuadTree",                    element: <MapQuadTreePage />},
   {path: "/scene/basic",                 title: "Scene - Basic",                     element: <SceneBasicPage />},
   {path: "/scene/instances",             title: "Scene - Instances",                 element: <SceneInstancesPage />},
   {path: "/scene/shadow",                title: "Scene - Shadow",                    element: <SceneShadowPage />},
   {path: "/scene/deferred",              title: "Scene - Deferred Renderer",         element: <SceneDeferredPage />},
-  {path: "/plot/cartesian",              title: "Plot - XYZ",                        element: <PlotCartesianPage />},
-  {path: "/plot/polar",                  title: "Plot - Polar",                      element: <PlotPolarPage />},
-  {path: "/plot/spherical",              title: "Plot - Spherical",                  element: <PlotSphericalPage />},
-  {path: "/plot/stereographic",          title: "Plot - Stereographic",              element: <PlotStereographicPage />},
-  {path: "/plot/implicit-surface",       title: "Plot - Implicit Surface",           element: <PlotImplicitSurfacePage />},
-  {path: "/plot/quaternion-hypersphere", title: "Plot - Quaternion Hypersphere",    element: <PlotQuaternionHyperspherePage />},
+  {path: "/scene/ssao",                  title: "Scene - SSAO",                      element: <SceneSSAOPage />},
+  {path: "/scene/outline",               title: "Scene - Outline",                   element: <SceneOutlinePage />},
   {path: "/shader/droste",               title: "Shader - Droste grids",             element: <ShaderDrostePage />},
+  {path: "/rtt/accumulate",              title: "RTT - Accumulate",                  element: <RTTAccumulatePage />},
+  {path: "/rtt/black-hole",              title: "RTT - Black Hole",                  element: <RTTBlackHolePage />},
+  {path: "/rtt/cube-target",             title: "RTT - Cube Target",                 element: <RTTCubeTargetPage />},
   {path: "/rtt/linear-rgb",              title: "RTT - Linear RGB",                  element: <RTTLinearRGBPage />},
   {path: "/rtt/feedback",                title: "RTT - Feedback",                    element: <RTTFeedbackPage />},
   {path: "/rtt/multiscale",              title: "RTT - Multiscale R-D",              element: <RTTMultiscalePage />},
   {path: "/rtt/cfd-compute",             title: "RTT - Fluid Dynamics (Compute I)",  element: <RTTCFDComputePage />},
   {path: "/rtt/cfd-texture",             title: "RTT - Fluid Dynamics (Compute II)", element: <RTTCFDTexturePage />},
+  {path: "/plot/cartesian",              title: "Plot - XYZ",                        element: <PlotCartesianPage />},
+  {path: "/plot/polar",                  title: "Plot - Polar",                      element: <PlotPolarPage />},
+  {path: "/plot/spherical",              title: "Plot - Spherical",                  element: <PlotSphericalPage />},
+  {path: "/plot/stereographic",          title: "Plot - Stereographic",              element: <PlotStereographicPage />},
+  {path: "/plot/implicit-surface",       title: "Plot - Implicit Surface",           element: <PlotImplicitSurfacePage />},
+  {path: "/plot/quaternion-hypersphere", title: "Plot - Quaternion Hypersphere",     element: <PlotQuaternionHyperspherePage />},
+  {path: "/plot/binet",                  title: "Plot - Binet",                      element: <PlotBinetPage />},
   {path: "/present/slides",              title: "Present - Slides",                  element: <PresentSlidesPage />},
-  {path: "/mesh/raw",                    title: "Raw Mesh - DIY Rendering",          element: <MeshRawPage />},
+  {path: "/mesh/projected-sampler",      title: "Raw Mesh - Projected Sampler",      element: <MeshProjectedSamplerPage />},
+  {path: "/mesh/vertex-normals",         title: "Raw Mesh - Vertex Normals",         element: <MeshVertexNormalsPage />},
   {path: "/mesh/interleaved",            title: "Raw Mesh - Native Components",      element: <MeshInterleavedPage />},
-  {path: "/controls/fps",                title: "Controls - FPS",                    element: <FPSControlsPage />},
   {path: "/debug/atlas",                 title: "Debug - Text Atlas",                element: <DebugAtlasPage />},
   {path: "/debug/axes",                  title: "Debug - Axes",                      element: <DebugAxesPage />},
   {path: "/debug/wireframe",             title: "Debug - Wireframe",                 element: <DebugWireframePage />},

@@ -1,11 +1,18 @@
-import type { LC, PropsWithChildren, LiveElement } from '../../live';
-import type { UseGPURenderContext } from '../../core';
-import type { LightEnv, RenderComponents } from '../pass/types';
+import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { LightEnv, PassFlags, PassResources, RenderComponents } from '../pass/types';
 
-import { use, yeet, memo, useMemo, useOne } from '../../live';
-import { extractBindings } from '../../shader/wgsl';
+import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 
 import { PassReconciler } from '../reconcilers/index';
+
+import { DebugPass } from '../pass/debug-pass';
+import { DeferredGPass } from '../pass/deferred-g-pass';
+import { DeferredResolvePass } from '../pass/deferred-resolve-pass';
+import { MotionPass } from '../pass/motion-pass';
+import { OutlinePass } from '../pass/outline-pass';
+import { PickingPass } from '../pass/picking-pass';
+import { ShadowPass } from '../pass/shadow-pass';
+import { SSAOPass } from '../pass/ssao-pass';
 
 import { DebugRender } from './forward/debug';
 import { PickingRender } from './forward/picking';
@@ -14,33 +21,33 @@ import { ShadowRender } from './forward/shadow';
 import { SolidRender } from './forward/solid';
 import { UIRender } from './forward/ui';
 
-import { DeferredPass } from '../pass/deferred-pass';
+import { useStandardBindGroups } from '../pass/bindings';
+import { useMakeUseVariants } from '../pass/variants';
 
-import { DeferredShadedRender } from './deferred/shaded';
-import { DeferredSolidRender } from './deferred/solid';
-import { DeferredUIRender } from './deferred/ui';
+import { DeferredShadedRender } from './deferred/deferred-shaded';
+import { DeferredSolidRender } from './deferred/deferred-solid';
+import { DeferredUIRender } from './deferred/deferred-ui';
 
 import { Renderer } from './renderer';
-import { LightRender } from './light/light';
+import { LightRender } from './light/light-render';
 import { LightMaterial } from './light/light-material';
-
-import lightBinding from '../../wgsl/use/lightwgsl';
-import shadowBinding from '../../wgsl/use/shadowwgsl';
 
 const {quote} = PassReconciler;
 
-const DEFAULT_PASSES = [
-  use(DeferredPass, {}),
-];
+const NO_RESOURCES: PassResources = {
+  buffers: {},
+  bindings: {},
+  dispatches: [],
+  views: {},
+};
 
-const NO_BUFFERS: Record<string, UseGPURenderContext[]> = {};
+const NO_OPTIONS: DeferredRendererOptions = {};
+
+export type DeferredRendererOptions = Pick<PassFlags, 'shadows' | 'color' | 'merge' | 'overlay'>;
 
 export type DeferredRendererProps = PropsWithChildren<{
-  overlay?: boolean,
-  merge?: boolean,
-
-  buffers?: Record<string, UseGPURenderContext[]>,
-  context?: Record<string, any>,
+  resources: PassResources,
+  options?: DeferredRendererOptions,
   passes?: LiveElement[],
   components?: RenderComponents,
 }>;
@@ -62,36 +69,101 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
   }
 };
 
+/** Deferred-mode rendering with a G-Buffer. Lights are painted in afterwards using stencil volumes. */
 export const DeferredRenderer: LC<DeferredRendererProps> = memo((props: DeferredRendererProps) => {
   const {
-    overlay = false,
-    merge = false,
-    passes = DEFAULT_PASSES,
-    buffers = NO_BUFFERS,
-    context,
+    resources = NO_RESOURCES,
+    options = NO_OPTIONS,
+    passes,
+
     children,
   } = props;
 
-  const shadows = !!buffers.shadow;
+  const {buffers} = resources;
+
+  const {
+    color = true,
+    overlay = false,
+    merge = false,
+    //overscan = 0,
+    debug = null,
+
+    facets = false,
+    lights = true,
+    motion = !!buffers.motion,
+    normals = !!buffers.normal,
+    outline = buffers.outline ? {} : undefined,
+    picking = !!buffers.picking,
+    shadows = !!buffers.shadow,
+    ssao = buffers.ssao ? {} : undefined,
+  } = options as Record<string, any>;
+
+  const extendedFlags = useMemo(() => ({
+    color,
+    overlay,
+    merge,
+    //overscan,
+
+    facets,
+    lights,
+    motion,
+    normals,
+    outline,
+    picking,
+    shadows,
+    ssao,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [options, buffers]);
+
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
+
+  // Prepare passes
+  const resolved = useOne(() => passes ?? [
+    motion ? use(MotionPass, options) : null,
+    shadows ? use(ShadowPass, options) : null,
+    use(DeferredGPass, options),
+    ssao ? use(SSAOPass, options) : null,
+    color ? use(DeferredResolvePass, options) : null,
+    outline ? use(OutlinePass, options) : null,
+    picking ? use(PickingPass, options) : null,
+    debug ? use(DebugPass, options) : null,
+  ], props);
+
+  // Add resource dispatches to render
+  const dispatches = yeet({ dispatch: resources.dispatches });
+  const combined = [
+    quote(dispatches),
+    children,
+  ];
 
   // Provide forward-lit material + emit deferred light draw calls
   const view = use(LightMaterial, {
     shadows,
-    children,
+    children: combined,
     then: (light: LightEnv) =>
       useMemo(() => quote([
         yeet({ env: { light }}),
         use(LightRender, {...light, shadows}),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       ]), [light, shadows]),
   });
 
-  // Prepare bind group layout for lighting/shadows
-  const entries = useMemo(() => {
-    const vertex   = [lightBinding];
-    const fragment = [lightBinding, shadows && shadowBinding];
-    return extractBindings([vertex, fragment], 'PASS');
-  }, [shadows]);
+  // Pass bindings
+  const bindGroups = useStandardBindGroups(resources, extendedFlags);
 
-  return Renderer({ buffers, context, children: view, components, passes, entries, overlay, merge });
+  // Render variants
+  const variants = useMakeUseVariants(components, extendedFlags);
+
+  return (
+    Renderer({
+      resources,
+      bindGroups,
+      options,
+
+      variants,
+      passes: resolved,
+
+      children: view,
+    })
+  );
 }, 'DeferredRenderer');

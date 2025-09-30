@@ -1,21 +1,28 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { XY, ColorSpace, TextureSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { XY, ColorSpace, TextureSource } from '@use-gpu/core';
 
-import { yeet, gather, keyed, wrap, suspend, useMemo } from '../../live';
-import { Suspense } from '../../workbench';
-import { makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipArrayTextureChain } from '../../core';
+import { yeet, gather, keyed, wrap, suspend, useMemo } from '@use-gpu/live';
+import { Suspense } from '@use-gpu/workbench';
+import { countMips, getTextureSampleType, makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipArrayTextureChain } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
+
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp, getRenderFunc } from '../hooks/useRenderProp';
 
+import { FetchAPIOptions } from './fetch';
 import { ImageLoader } from './image-loader';
 
 export type ImageCubeTextureProps = {
   /** URLs to 6 images (+x, -x, +y, -y, +z, -z) */
   urls: string[],
+  /** fetch() API options */
+  options?: FetchAPIOptions,
   /** Type hint */
   format?: string,
+  /** Pixel format override for texture */
+  pixelFormat?: GPUTextureFormat,
   /** Color space to tag texture as. Does not convert input data. */
   colorSpace?: ColorSpace,
   /** MIPs */
@@ -27,26 +34,26 @@ export type ImageCubeTextureProps = {
   children?: (source: TextureSource | null) => LiveElement,
 };
 
-const countMips = (width: number, height: number): number => {
-  const max = Math.max(width, height);
-  return Math.floor(Math.log2(max));
-}
-
 export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) => {
   const device = useDeviceContext();
 
   const {
     urls,
+    options,
     sampler,
     format,
+    pixelFormat,
     colorSpace = 'srgb',
     mip = true,
   } = props;
 
+  const inspect = useInspectable();
   const suspense = useSuspenseContext();
+
   const fetch = useMemo(
-    () => wrap(Suspense, urls.map((url: string) => keyed(ImageLoader, url, {url, format, colorSpace}))),
-    [...urls, format, colorSpace]
+    () => wrap(Suspense, urls.map((url: string) => keyed(ImageLoader, url, {url, options, format, pixelFormat, colorSpace}))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [...urls, options, format, colorSpace]
   );
 
   return gather(fetch, (resources: any[]) => {
@@ -72,6 +79,10 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
         if ('bitmap' in resource) uploadExternalTexture(device, texture, resource.bitmap, [width, height, 1], [0, 0, i]);
         if ('data' in resource) uploadDataTexture(device, texture, resource.data, [width, height, 1], [0, 0, i]);
       });
+      texture.label = urls.join(' ');
+
+      const type = getTextureSampleType(format);
+      const layout = `texture_cube<${type}>`;
 
       const source = {
         texture,
@@ -85,7 +96,7 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
           maxAnisotropy: 4,
           ...sampler,
         } as GPUSamplerDescriptor,
-        layout: 'texture_cube<f32>',
+        layout,
         mips,
         format,
         size: [width, height, 6],
@@ -96,7 +107,10 @@ export const ImageCubeTexture: LiveComponent<ImageCubeTextureProps> = (props) =>
       updateMipArrayTextureChain(device, source);
 
       return source;
-    }, [resources, sampler]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [resources, sampler, urls]);
+
+    inspect({ output: { source }});
 
     return useRenderProp(props, source);
   });

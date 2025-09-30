@@ -1,10 +1,10 @@
-import type { StorageSource, LambdaSource, TextureSource, TypedArray, UniformAttribute } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { StorageSource, LambdaSource, TextureSource, TypedArray, UniformAttribute } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 import type { TransformBounds } from '../providers/transform-provider';
-import type { Ref } from '../../live';
+import type { Ref } from '@use-gpu/live';
 
-import { useOne, useVersion, useNoOne, useNoVersion } from '../../live';
-import { chainTo } from '../../shader/wgsl';
+import { useOne, useVersion, useNoOne, useNoVersion } from '@use-gpu/live';
+import { chainTo } from '@use-gpu/shader/wgsl';
 import { getSource } from '../hooks/useSource';
 import { useTransformContext, useNoTransformContext, TransformContextProps } from '../providers/transform-provider';
 import { useScissorContext, useNoScissorContext } from '../providers/scissor-provider';

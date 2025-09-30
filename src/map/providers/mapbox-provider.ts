@@ -1,5 +1,5 @@
-import type { LC, PropsWithChildren } from '../../live';
-import { provide, useOne, useMemo } from '../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import { provide, useOne, useMemo } from '@use-gpu/live';
 import { TileContext } from './tile-provider';
 
 export type MapboxProviderProps = PropsWithChildren<{
@@ -16,7 +16,10 @@ const makeMVTSource = (
   x: number,
   y: number,
   zoom: number,
-) => `https://api.mapbox.com/v4/${username}.${style}/${zoom}/${x}/${y}.mvt?access_token=${accessToken}`;
+) => {
+  const url = `https://api.mapbox.com/v4/${username}.${style}/${zoom}/${x}/${y}.mvt?access_token=${accessToken}`;
+  return {url};
+};
 
 export const MapboxProvider: LC<MapboxProviderProps> = (props: MapboxProviderProps) => {
   const {

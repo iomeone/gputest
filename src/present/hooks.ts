@@ -1,15 +1,15 @@
-import type { Rectangle, XYZW } from '../core';
+import type { Rectangle, XYZW } from '@use-gpu/core';
 import type { ParsedEffect } from './types';
 import { SLIDE_EFFECTS } from './traits';
 
-import { clamp, lerp } from '../core';
-import { useContext, useMemo, useOne, useRef, useFiber } from '../live';
-import { bundleToAttributes } from '../shader/wgsl';
-import { useTimeContext, LoopContext, useSource, useShader, useShaderRef } from '../workbench';
+import { clamp, lerp } from '@use-gpu/core';
+import { useContext, useMemo, useOne, useRef, useFiber } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { useTimeContext, LoopContext, useSource, useShader, useShaderRef } from '@use-gpu/workbench';
 import { usePresentContext } from './providers/present-provider';
 
-import { getSlideMask } from '../wgsl/present/maskwgsl';
-import { getSlideMotion } from '../wgsl/present/motionwgsl';
+import { getSlideMask } from '@use-gpu/wgsl/present/mask.wgsl';
+import { getSlideMotion } from '@use-gpu/wgsl/present/motion.wgsl';
 
 const ATTRIBUTES = bundleToAttributes(getSlideMotion);
 const NO_VEC4: XYZW = [0, 0, 0, 0];
@@ -137,7 +137,7 @@ export const makeUseTransition = (
     if (ease === 'cosine') offset = cosineEase(offset);
 
     return offset;
-  }, [timer, target]);
+  }, [timer, target, enter, exit, request]);
 };
 
 // Linear sampler with non-linear interruption boost to continue the existing motion.

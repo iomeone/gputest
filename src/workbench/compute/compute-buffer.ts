@@ -1,11 +1,12 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { StorageSource, StorageTarget, UniformType } from '../../core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { StorageSource, StorageTarget, UniformType } from '@use-gpu/core';
 
-import { seq, getUniformArraySize, makeDataBuffer } from '../../core';
-import { provide, fence, yeet, useContext, useMemo, incrementVersion } from '../../live';
+import { seq, getUniformArraySize, makeDataBuffer } from '@use-gpu/core';
+import { provide, fence, yeet, useContext, useMemo, incrementVersion } from '@use-gpu/live';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { ComputeContext } from '../providers/compute-provider';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
 export type ComputeBufferProps = PropsWithChildren<{
   width?: number,
@@ -17,6 +18,7 @@ export type ComputeBufferProps = PropsWithChildren<{
   label?: string,
 
   render?: (source: StorageTarget) => LiveElement,
+  children?: (source: StorageTarget) => LiveElement,
   then?: (source: StorageTarget) => LiveElement,
 }>;
 
@@ -33,7 +35,6 @@ export const ComputeBuffer: LiveComponent<ComputeBufferProps> = (props: ComputeB
     format = 'f32',
     history = 0,
     label,
-    render,
     children,
     then,
   } = props;
@@ -52,13 +53,13 @@ export const ComputeBuffer: LiveComponent<ComputeBufferProps> = (props: ComputeB
       if (buffers) buffers.push(buffer);
 
       let i = 0;
-      if (buffers) for (const b of buffers) b.label = [label ?? 'computeBuffer', 'history', ++i].filter(s => s != null).join(' ');
-      buffer.label = label ?? 'computeBuffer';
+      if (buffers) for (const b of buffers) b.label = [label ?? 'ComputeBuffer', 'History', ++i].filter(s => s != null).join(' ');
+      buffer.label = label ?? 'ComputeBuffer';
 
       const counter = { current: 0 };
       return [buffer, buffers, counter];
     },
-    [device, width, height, depth, format, history]
+    [device, format, label, length, history]
   );
 
   const targetBuffer = buffer;
@@ -109,12 +110,13 @@ export const ComputeBuffer: LiveComponent<ComputeBufferProps> = (props: ComputeB
     swap();
 
     return source;
-  }, [targetBuffer, width, height, depth, format, history]);
+  }, [targetBuffer, width, height, depth, format, history, buffers, counter, length]);
 
+  const render = getRenderFunc(props);
   if (!(render ?? children)) return yeet(source);
 
   const content = render ? render(source) : children;
-  const view = provide(ComputeContext, source, content);
+  const view = provide(ComputeContext, [source], content);
 
   if (then) return fence(view, () => then(source));
   return view;

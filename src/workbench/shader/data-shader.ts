@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { StorageSource, LambdaSource, Lazy, TensorArray } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { StorageSource, LambdaSource, Lazy, TensorArray } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
-import { useMemo } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
+import { useMemo } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
 
 import { useShaderRefs } from '../hooks/useShaderRef';
 import { useLambdaSource } from '../hooks/useLambdaSource';
@@ -65,7 +65,8 @@ export const DataShader: LiveComponent<DataShaderProps> = (props) => {
     });
 
     return getShader(shader, values);
-  }, [shader, args.length, source, sources]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shader, args.length, source, sources, args.length]);
 
   const output = useLambdaSource(getData, source ?? NO_SOURCE);
 

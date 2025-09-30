@@ -1,17 +1,19 @@
-import type { LC, PropsWithChildren } from '../../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import React, { use } from '../../../live';
-import { seq, lerp } from '../../../core';
+import React from '@use-gpu/live';
+import { seq } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
 
 import { PickingOverlay } from '../../ui/picking-overlay';
 
 import {
-  Pass, Cursor, Pick, PickState, FlatCamera,
-  OrbitCamera, OrbitControls,
-} from '../../../workbench';
-
-import { Plot, Grid, Polygon } from '../../../plot';
+  Pass, FlatCamera,
+  OrbitCamera,
+} from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls, Pick, PickState,
+} from '@use-gpu/interact';
+import { Plot, Grid, Polygon } from '@use-gpu/plot';
 import { InfoBox } from '../../ui/info-box';
 
 // Generate some random polygons
@@ -22,10 +24,6 @@ const randomFloat = (min: number, max: number) => min + Math.random() * (max - m
 
 const circleX = (a: number, r: number) => Math.cos(a * Math.PI * 2) * r;
 const circleY = (a: number, r: number) => Math.sin(a * Math.PI * 2) * r;
-
-const N = 32;
-
-const GRID = { divide: 16, base: 2, end: true };
 
 const roundPolygons = seq(20).map(i => {
   const n = Math.max(3, randomInt(5, 16) - randomInt(0, 5));
@@ -76,9 +74,10 @@ export const PlotPickingPage: LC = () => {
 
         <Plot>
           <Grid axes="zx" width={3} color="#ffffff40" range={[[-5, 5], [-5, 5]]} origin={[0, -3, 0]} />
-          
+
           <Pick
-            onMouseOver={(mouse, index) => console.log('Round shape #' + index, mouse)}
+            onPointerEnter={(event) => console.log(event.type, 'Round shapes', event)}
+            onPointerOver={(event, index) => console.log(event.type, 'Round shape #' + index, event)}
           >{
             ({id, hovered, index}: PickState) => [
               hovered ? <Cursor cursor="default" /> : null,
@@ -98,7 +97,8 @@ export const PlotPickingPage: LC = () => {
           }</Pick>
 
           <Pick
-            onMouseOver={(mouse, index) => console.log('Spiky shape #' + index, mouse)}
+            onPointerEnter={(event) => console.log(event.type, 'Spiky shapes', event)}
+            onPointerOver={(event, index) => console.log(event.type, 'Spiky shape #' + index, event)}
           >{
             ({id, hovered, index}: PickState) => [
               hovered ? <Cursor cursor="default" /> : null,

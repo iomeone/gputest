@@ -1,17 +1,17 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { ElementType, TensorArray, VectorLike, Emit, Emitter, UniformType } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { ElementType, TensorArray, VectorLike, Emit, Emitter, UniformType } from '@use-gpu/core';
 
-import { provide, yeet, deprecated, memo, useOne, useMemo, useNoMemo } from '../../live';
+import { provide, yeet, deprecated, memo, useOne, useMemo, useNoMemo } from '@use-gpu/live';
 import {
-  seq, makeTensorArray, emitMultiArray, makeNumberWriter, makeNumberSplitter, updateTensor,
-} from '../../core';
-import { parseAxis, parseVec4 } from '../../parse';
-import { optional, useProp, shouldEqual, sameShallow } from '../../traits/index-live';
+  seq, makeTensorArray, emitMultiArray, makeNumberWriter, makeNumberInterleavedWriter, updateTensor,
+} from '@use-gpu/core';
+import { parseAxis, parseVec4 } from '@use-gpu/parse';
+import { optional, useProp, shouldEqual, sameShallow } from '@use-gpu/traits/live';
 import {
   useTimeContext, useNoTimeContext,
   useAnimationFrame, useNoAnimationFrame,
   useBufferedSize, getRenderFunc,
-} from '../../workbench';
+} from '@use-gpu/workbench';
 
 import { useRangeContext, useNoRangeContext } from '../providers/range-provider';
 import { useDataContext, DataContext } from '../providers/data-provider';
@@ -103,7 +103,7 @@ export const Sampler: LiveComponent<SamplerProps<unknown & (string | string[])>>
     () => split
       ? seq(items).map(() => makeTensorArray(f, alloc))
       : [makeTensorArray(f, items * alloc)],
-    [f, alloc, items]
+    [f, alloc, items, split]
   );
   const arrays = useOne(() => tensors.map(({array}) => array), tensors);
   const {dims} = tensors[0];
@@ -281,9 +281,9 @@ export const Sampler: LiveComponent<SamplerProps<unknown & (string | string[])>>
       throw new Error("Cannot sample across more than 4 dimensions");
     }
 
-    const emit = split ? makeNumberSplitter(arrays, dims) : makeNumberWriter(arrays[0], dims);
+    const emit = split ? makeNumberInterleavedWriter(arrays, dims) : makeNumberWriter(arrays[0], dims);
     return [sampled, emit];
-  }, [centered, range, size, border, arrays, dims]);
+  }, [centered, range, size, border, arrays, dims, expr, index, origin, split]);
 
   const refresh = () => {
     const [tensor] = tensors;
@@ -324,7 +324,7 @@ export const Sampler: LiveComponent<SamplerProps<unknown & (string | string[])>>
     () => split
       ? ({...dataContext, ...value})
       : ({...dataContext, [as as string]: value}),
-    [dataContext, value, as]) : useNoMemo();
+    [dataContext, value, as, split]) : useNoMemo();
 
   return render ? render(value as any) : children ? provide(DataContext, context, children) : yeet(value);
 }, shouldEqual({
@@ -333,4 +333,5 @@ export const Sampler: LiveComponent<SamplerProps<unknown & (string | string[])>>
   origin: sameShallow(),
 }), 'Sampler');
 
+/** @hidden */
 export const Sampled = deprecated(Sampler, 'Sampled');

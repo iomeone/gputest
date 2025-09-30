@@ -1,12 +1,12 @@
-import type { LC, PropsWithChildren } from '../../live';
-import type { Lazy } from '../../core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Lazy } from '@use-gpu/core';
 
-import { provide, useMemo, useOne } from '../../live';
-import { ScissorContext, useShader, useShaderRefs } from '../../workbench';
+import { provide, useMemo, useOne } from '@use-gpu/live';
+import { ScissorContext, useShader, useShaderRefs } from '@use-gpu/workbench';
 
 import { useRangeContext, useNoRangeContext } from '../providers/range-provider';
 
-import { getScissorLevel } from '../../wgsl/transform/scissorwgsl';
+import { getScissorLevel } from '@use-gpu/wgsl/transform/scissor.wgsl';
 
 const NO_LOOP = [0, 0, 0, 0];
 

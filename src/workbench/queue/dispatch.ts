@@ -1,8 +1,8 @@
-import type { ArrowFunction } from '../../live';
-import type { StorageSource, Lazy, VectorLike } from '../../core';
-import type { ParsedBundle } from '../../shader';
+import type { ArrowFunction, LC } from '@use-gpu/live';
+import type { StorageSource, Lazy, VectorLike } from '@use-gpu/core';
+import type { ParsedBundle } from '@use-gpu/shader';
 
-import { yeet, useMemo, useOne, SUSPEND } from '../../live';
+import { yeet, useMemo, useOne, SUSPEND } from '@use-gpu/live';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
@@ -11,10 +11,11 @@ import {
   makeBoundUniforms, makeVolatileUniforms,
   uploadBuffer,
   resolve,
-} from '../../core';
+} from '@use-gpu/core';
 import { useLinkedShader } from '../hooks/useLinkedShader';
 import { useComputePipelineAsync } from '../hooks/useComputePipeline';
 import { useInspectable } from '../hooks/useInspectable'
+import { usePipelineLayout } from '../hooks/usePipelineLayout';
 
 export type DispatchProps = {
   size?: Lazy<number[] | VectorLike>,
@@ -24,6 +25,7 @@ export type DispatchProps = {
   indirect?: StorageSource,
   shouldDispatch?: () => boolean | number | null | undefined,
   onDispatch?: () => void,
+  label?: string,
 };
 
 const NO_SIZE = [1];
@@ -34,7 +36,7 @@ const DEFAULT_DEFINES = {
   '@group(VOLATILE)': '@group(1)',
 };
 
-export const Dispatch = (props: DispatchProps) => {
+export const Dispatch: LC<DispatchProps> = (props: DispatchProps) => {
   // Return a lambda back to parent(s)
   return yeet(dispatch(props));
 };
@@ -49,6 +51,7 @@ export const dispatch = (props: DispatchProps) => {
     defines: propDefines,
     shouldDispatch,
     onDispatch,
+    label,
   } = props;
 
   const inspect = useInspectable();
@@ -68,13 +71,17 @@ export const dispatch = (props: DispatchProps) => {
     bindings,
     constants,
     volatiles,
+    entries,
   } = useLinkedShader(
     [computeShader],
     defines,
   );
 
-  // Rendering pipeline
-  const [pipeline, isStale] = useComputePipelineAsync(device, module);
+  // Pipeline layout with global bind group and optional pass-specific bind group
+  const layout = usePipelineLayout(device, entries, undefined, undefined, label);
+
+  // Compute pipeline
+  const [pipeline, isStale] = useComputePipelineAsync(device, module, layout, label);
   if (!pipeline) return suspense ? SUSPEND : NO_CALL;
   if (isStale) return SUSPEND;
 
@@ -82,17 +89,17 @@ export const dispatch = (props: DispatchProps) => {
   const force = !!volatiles.length;
   const storage = useMemo(() =>
     makeBoundUniforms(device, pipeline, uniforms, bindings, 0, force),
-    [device, pipeline, uniforms, bindings]);
+    [device, pipeline, uniforms, bindings, force]);
 
   // Volatile storage
   const volatile = useMemo(() =>
     makeVolatileUniforms(device, pipeline, volatiles, 1),
-    [device, pipeline, uniforms, volatiles]
+    [device, pipeline, volatiles]
   );
 
   const inspected = inspect({
     render: {
-      dispatches: 0,
+      workgroups: 0,
       version: null,
     },
     indirect,
@@ -100,7 +107,7 @@ export const dispatch = (props: DispatchProps) => {
 
   let dispatchVersion: number | null = null;
 
-  const compute = (passEncoder: GPUComputePassEncoder, countDispatch: (d: number, s: number) => void) => {
+  const compute = (passEncoder: GPUComputePassEncoder, countDispatch: (w: number, s: number) => void) => {
     onDispatch && onDispatch();
 
     const s = resolve(size ?? NO_SIZE);
@@ -116,12 +123,12 @@ export const dispatch = (props: DispatchProps) => {
       sy = Math.ceil(sy / (m[1] || 1));
       sz = Math.ceil(sz / (m[2] || 1));
     }
-    const d = sx * sy * sz;
+    const w = sx * sy * sz;
 
     inspected.render.samples = m ? n : 0;
-    inspected.render.dispatches = d;
+    inspected.render.workgroups = w;
     inspected.render.version = dispatchVersion;
-    countDispatch(d, m ? n : 0);
+    countDispatch(w, m ? n : 0);
 
     /*
     const bs = [];

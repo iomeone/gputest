@@ -1,7 +1,7 @@
-import type { LiveFiber, LiveComponent, LiveElement, LC, PropsWithChildren } from '../live';
-import type { InspectExtension, InspectAppearance, InspectAddIns, OptionState } from './components/types';
-import { fragment, use, useMemo, useOne, useState } from '../live';
-import { HTML } from '../react';
+import type { LiveFiber, LC, PropsWithChildren } from '@use-gpu/live';
+import type { InspectExtension, InspectAppearance, OptionsState } from './components/types';
+import { fragment, use, useFiber, useMemo, useOne, useState } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
 
 import React from 'react';
 import { Inspect } from './components/inspect';
@@ -9,16 +9,16 @@ import { AddInProvider, defaultPanels } from './providers/add-in-provider';
 import { AppearanceProvider } from './providers/appearance-provider';
 
 export type UseInspectProps = PropsWithChildren<{
-  fiber: LiveFiber<any>,
+  fiber?: LiveFiber<any>,
   active?: boolean,
   sub?: string,
-  provider?: LiveComponent<any>,
+  provider?: LC<any>,
   container?: Element,
   appearance?: Partial<InspectAppearance>,
   extensions?: InspectExtension[],
 
   findFiber?: number,
-  initialState?: Partial<OptionState>,
+  initialState?: Partial<OptionsState>,
   save?: boolean,
 }>;
 
@@ -31,7 +31,7 @@ const STYLE = {
 
 const NO_EXT: any[] = [];
 
-export const UseInspect: LiveComponent<UseInspectProps> = ({
+export const UseInspect: LC<UseInspectProps> = ({
   fiber,
   sub,
   container,
@@ -44,7 +44,7 @@ export const UseInspect: LiveComponent<UseInspectProps> = ({
   save,
   active = true,
 }) => {
-  if (!fiber) throw new Error("<UseInspect> Must supply fiber to inspect");
+  if (!fiber) fiber = useFiber();
 
   const [layout, setLayout] = useState<boolean>(false);
   const handleInspect = () => setLayout(l => !l);
@@ -68,8 +68,12 @@ export const UseInspect: LiveComponent<UseInspectProps> = ({
       }
     }
 
+    for (const k in out) if (Array.isArray(out[k])) {
+      out[k].sort((a: any, b: any) => (a?.order || 0) - (b?.order || 0));
+    }
+
     return out;
-  }, [extensions]);
+  }, [extensions, fiber]);
 
   return fragment([
     provider ? use(provider, {debug, children}) : children,

@@ -1,23 +1,24 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { GPUGeometry, StorageSource, TextureSource } from '../../../core';
-import type { Keyframe } from '../../../workbench';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { GPUGeometry, TextureSource } from '@use-gpu/core';
+import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { Gather, memo, useOne } from '../../../live';
+import React, { Gather, memo, useOne, useState } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Pass, FlatCamera, Animate, LinearRGB,
+  Pass, Animate, LinearRGB,
   GeometryData, PBRMaterial, ImageTexture,
-  OrbitCamera, OrbitControls,
-  Pick, Cursor,
+  OrbitCamera,
   PointLight, AmbientLight,
 
   makeBoxGeometry,
-} from '../../../workbench';
-
+} from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls, Pick,
+} from '@use-gpu/interact';
 import {
   Scene, Node, Mesh,
-} from '../../../scene';
+} from '@use-gpu/scene';
 
 import { InfoBox } from '../../ui/info-box';
 
@@ -30,7 +31,7 @@ const KEYFRAMES = [
   [20, [ 3,  0, 0]],
   [30, [ 0,  3, 0]],
   [40, [-3,  0, 0]],
-] as Keyframe[];
+] as Keyframe<[number, number, number]>[];
 
 type PickableMeshProps = {
   mesh: GPUGeometry,
@@ -38,10 +39,12 @@ type PickableMeshProps = {
 };
 
 const PickableMesh = memo(({mesh, texture}: PickableMeshProps) => {
+  const [state, setState] = useState(false);
   return (
     <Pick
-      render={({id, hovered, presses}) =>
-        <PBRMaterial albedoMap={texture} albedo={presses.left % 2 ? COLOR_ON : COLOR_OFF}>
+      onPointerDown={() => setState(s => !s)}
+      render={({id, hovered}) =>
+        <PBRMaterial albedoMap={texture} albedo={state ? COLOR_ON : COLOR_OFF}>
           <Mesh
             id={id}
             mesh={mesh}
@@ -55,7 +58,7 @@ const PickableMesh = memo(({mesh, texture}: PickableMeshProps) => {
 }, 'PickableMesh');
 
 // This uses a typical scene-graph arrangement with an image texture
-export const SceneBasicPage: LC = (props) => {
+export const SceneBasicPage: LC = () => {
   const geometry = useOne(() => makeBoxGeometry({ width: 2 }));
 
   return (<>

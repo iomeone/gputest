@@ -1,42 +1,58 @@
-import type { LC, PropsWithChildren, LiveElement } from '../../live';
-import type { UseGPURenderContext } from '../../core';
-import type { LightEnv, RenderComponents } from '../pass/types';
+import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { RenderViewType } from '@use-gpu/core';
+import type { LightEnv, PassResources, PassFlags, RenderComponents } from '../pass/types';
 
-import { use, yeet, memo, useMemo, useOne } from '../../live';
-import { extractBindings } from '../../shader/wgsl';
+import { use, yeet, memo, useMemo, useOne } from '@use-gpu/live';
 
 import { PassReconciler } from '../reconcilers/index';
+import { useRenderContext } from '../providers/render-provider';
+
+import { DebugPass } from '../pass/debug-pass';
+import { MotionPass } from '../pass/motion-pass';
+import { NormalPass } from '../pass/normal-pass';
+import { OutlinePass } from '../pass/outline-pass';
+import { PickingPass } from '../pass/picking-pass';
+import { ShadowPass } from '../pass/shadow-pass';
+import { SSAOPass } from '../pass/ssao-pass';
 
 import { DebugRender } from './forward/debug';
+import { NormalRender } from './forward/normal';
+import { PickingRender } from './forward/picking';
 import { ShadedRender } from './forward/shaded';
 import { ShadowRender } from './forward/shadow';
 import { SolidRender } from './forward/solid';
-import { PickingRender } from './forward/picking';
 import { UIRender } from './forward/ui';
 
+import { useStandardBindGroups } from '../pass/bindings';
+import { useMakeUseVariants } from '../pass/variants';
+
 import { ColorPass } from '../pass/color-pass';
+import { ColorCubePass } from '../pass/color-cube-pass';
 
 import { Renderer } from './renderer';
 import { LightMaterial } from './light/light-material';
 
-import lightBinding from '../../wgsl/use/lightwgsl';
-import shadowBinding from '../../wgsl/use/shadowwgsl';
-
 const {quote} = PassReconciler;
 
-const DEFAULT_PASSES = [
-  use(ColorPass, {}),
-];
+const DEFAULT_PASS: Record<RenderViewType, LC<any>> = {
+  '2d': ColorPass,
+  'cube': ColorCubePass,
+};
 
-const NO_BUFFERS: Record<string, UseGPURenderContext[]> = {};
+const NO_RESOURCES: PassResources = {
+  buffers: {},
+  bindings: {},
+  dispatches: [],
+  views: {},
+};
+
+const NO_OPTIONS: Record<string, any> = {};
+
+export type ForwardRendererFlags = Pick<PassFlags, 'lights' | 'shadows' | 'color' | 'merge' | 'overlay'>;
 
 export type ForwardRendererProps = PropsWithChildren<{
-  lights?: boolean,
-  overlay?: boolean,
-  merge?: boolean,
-
-  buffers?: Record<string, UseGPURenderContext[]>,
-  context?: Record<string, any>,
+  resources: PassResources,
+  options?: ForwardRendererFlags,
   passes?: LiveElement[],
   components?: RenderComponents,
 }>;
@@ -47,6 +63,7 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
       debug: DebugRender,
       picking: PickingRender,
       shadow: ShadowRender,
+      normal: NormalRender,
       ...modes,
     },
     renders: {
@@ -58,34 +75,101 @@ const getComponents = ({modes = {}, renders = {}}: Partial<RenderComponents>): R
   }
 };
 
+/** Forward-mode rendering with lights immediately evaluated in-shader */
 export const ForwardRenderer: LC<ForwardRendererProps> = memo((props: ForwardRendererProps) => {
   const {
-    lights = false,
-    overlay = false,
-    merge = false,
-    passes = DEFAULT_PASSES,
-    buffers = NO_BUFFERS,
-    context,
+    resources = NO_RESOURCES,
+    options = NO_OPTIONS,
+    passes,
+
     children,
   } = props;
 
-  const shadows = !!buffers.shadow;
+  const {buffers} = resources;
+
+  const {
+    color = true,
+    overlay = false,
+    merge = false,
+    overscan = 0,
+    debug = null,
+
+    facets = false,
+    lights = false,
+    motion = !!buffers.motion,
+    normals = !!buffers.normal,
+    outline = buffers.outline ? {} : undefined,
+    picking = !!buffers.picking,
+    shadows = !!buffers.shadow,
+    ssao = buffers.ssao ? {} : undefined,
+  } = options as Record<string, any>;
+
+  const extendedFlags = useMemo(() => ({
+    color,
+    overlay,
+    merge,
+    overscan,
+
+    facets,
+    lights,
+    motion,
+    normals,
+    outline,
+    picking,
+    shadows,
+    ssao,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [options, buffers]);
+
   const components = useOne(() => getComponents(props.components ?? {}), props.components);
+
+  // Adapt to view type (2d or cube)
+  const {viewType} = useRenderContext();
+
+  // Prepare passes
+  const resolved = useMemo(() => passes ?? [
+    normals ? use(NormalPass, options) : null,
+    motion ? use(MotionPass, options) : null,
+    ssao ? use(SSAOPass, options) : null,
+    shadows ? use(ShadowPass, options) : null,
+    color ? use(DEFAULT_PASS[viewType], options) : null,
+    outline ? use(OutlinePass, options) : null,
+    picking ? use(PickingPass, options) : null,
+    debug ? use(DebugPass, options) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [props, viewType]);
+
+  // Add resource dispatches to render
+  const dispatches = yeet({ dispatch: resources.dispatches });
+  const combined = [
+    quote(dispatches),
+    children,
+  ];
 
   // Provide forward-lit material
   const view = lights ? use(LightMaterial, {
     shadows,
-    children,
+    children: combined,
     then: (light: LightEnv) =>
-      useOne(() => quote(yeet({ env: { light }})), light),
-  }) : children;
+      useOne(() => quote(yeet({ env: { light }})), light)
+  }) : combined;
 
-  // Prepare bind group layout for lighting/shadows
-  const entries = useMemo(() => {
-    const vertex   = [lights && lightBinding];
-    const fragment = [lights && lightBinding, shadows && shadowBinding];
-    return extractBindings([vertex, fragment], 'PASS');
-  }, [lights, shadows]);
+  // Pass bindings
+  const bindGroups = useStandardBindGroups(resources, extendedFlags);
+  
+  // Render variants
+  const variants = useMakeUseVariants(components, extendedFlags);
 
-  return Renderer({ buffers, context, children: view, components, passes, entries, overlay, merge });
+  return (
+    Renderer({
+      resources,
+      bindGroups,
+      options,
+
+      variants,
+      passes: resolved,
+
+      children: view,
+    })
+  );
 }, 'ForwardRenderer');

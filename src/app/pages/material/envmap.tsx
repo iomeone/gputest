@@ -1,65 +1,51 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { GPUGeometry, TextureSource } from '../../../core';
-import type { ShaderSource } from '../../../shader';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { GPUGeometry, TextureSource } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import React, { Gather, memo, useContext, useOne } from '../../../live';
-import { seq } from '../../../core';
-import { bindBundle, wgsl } from '../../../shader/wgsl';
+import React, { Gather, useOne } from '@use-gpu/live';
+import { seq } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass, FlatCamera, LinearRGB, Environment,
+  Pass, FlatCamera, LinearRGB, Environment,
   GeometryData, PBRMaterial, PrefilteredEnvMap,
-  OrbitCamera, OrbitControls, PanControls,
-  Cursor, Suspense,
-  KeyboardContext,
+  OrbitCamera,
+  Suspense,
+  useKeyboardState,
   makeSphereGeometry,
-  useShader, useShaderRef,
-} from '../../../workbench';
-
+} from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls, PanControls,
+} from '@use-gpu/interact';
 import {
   Scene, Node, Mesh,
-} from '../../../scene';
+} from '@use-gpu/scene';
 import {
-  Cartesian, Grid, Embedded,
-} from '../../../plot';
-import {
-  UI, Layout, Absolute, Block, Embed,
-} from '../../../layout';
+  UI, Layout, Absolute, Block,
+} from '@use-gpu/layout';
 
 import { InfoBox } from '../../ui/info-box';
 
 import { EnvMapControls } from '../../ui/envmap-controls';
 
-const π = Math.PI;
-const τ = π * 2;
-
 const IMAGE_FIT = {fit: 'scale'};
 
-const keyframes = [
-  [0, 0],
-  [5, 1.0],
-  [10, 0],
-] as any[];
-
-export const MaterialEnvMapPage: LC = (props) => {
+export const MaterialEnvMapPage: LC = () => {
   const geometry = useOne(() => makeSphereGeometry({ width: 2, uvw: true, detail: [32, 64] }));
 
-  const { useKeyboard } = useContext(KeyboardContext);
-  const { keyboard } = useKeyboard();
-  const {keys} = keyboard;
-  const zooming = !!keys.alt;
-  const panning = !!keys.shift;
+  const keyboard = useKeyboardState();
+  const zooming = !!keyboard.alt;
+  const panning = !!keyboard.shift;
 
   const root = document.querySelector('#use-gpu .canvas');
 
   return (<>
     <InfoBox>PBR material spheres of varying roughness and metalness. Octahedral PMREM environment map is generated using compute shaders.</InfoBox>
-    <EnvMapControls container={root} hasDebug render={(envPreset, envMap, seamFix, debugGrid) => (
+    <EnvMapControls container={root} hasDebug render={({preset, map, seamFix, debugGrid}) => (
       <Gather
         children={[
           <GeometryData {...geometry} />,
-          <Suspense>{envMap}</Suspense>
+          <Suspense>{map}</Suspense>
         ]}
         then={([
           mesh,
@@ -76,11 +62,11 @@ export const MaterialEnvMapPage: LC = (props) => {
               debugGrid={debugGrid}
             >{
               (cubeMap: ShaderSource | null, textureMap: TextureSource | null) =>
-                <LinearRGB tonemap="aces" gain={3}>
+                <LinearRGB tonemap="aces">
                   <Cursor cursor='move' />
                   <Pass lights>
 
-                    <Environment map={cubeMap} preset={envPreset}>
+                    <Environment map={cubeMap} preset={preset} gain={3}>
                       <Scene>
                         {
                           seq(8).flatMap(i =>
@@ -104,7 +90,6 @@ export const MaterialEnvMapPage: LC = (props) => {
                   <PanControls
                     x={-window.innerWidth/2} y={-window.innerHeight/2} zoom={1/2}
                     active={panning || zooming}
-                    scroll={zooming}
                   >{
                     (x: number, y: number, zoom: number) =>
                       textureMap ? (

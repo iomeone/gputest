@@ -1,24 +1,22 @@
-import type { LiveComponent, LiveElement } from '../../../live';
-import type { StorageSource, TextureSource, UniformAttribute } from '../../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { Atlas, StorageSource, TextureSource, UniformAttribute } from '@use-gpu/core';
 import type { Light, BoundLight } from '../../light/types';
 import type { LightEnv } from '../../pass/types';
 
-import { capture, yeet, makeCapture, useCallback, useCapture, useFiber, useMemo, useOne, useRef, useResource, incrementVersion } from '../../../live';
+import { capture, yeet, makeCapture, useCallback, useCapture, useFiber, useMemo, useOne, useRef, useResource, incrementVersion } from '@use-gpu/live';
 import {
   makeUniformLayout, makeLayoutData, makeLayoutFiller,
   makeStorageBuffer, uploadBuffer, uploadBufferRange,
   makeAtlas, makeTexture, seq,
-} from '../../../core';
-import { mixBits53 } from '../../../state';
-import { bundleToAttribute } from '../../../shader/wgsl';
+} from '@use-gpu/core';
+import { mixBits53 } from '@use-gpu/state';
+import { bundleToAttribute } from '@use-gpu/shader/wgsl';
 
 import { useDeviceContext } from '../../providers/device-provider';
 import { QueueReconciler } from '../../reconcilers/index';
 import { useBufferedSize } from '../../hooks/useBufferedSize';
 
-import { Light as WGSLLight } from '../../../wgsl/use/typeswgsl';
-
-import { POINT_LIGHT } from '../../light/types';
+import { Light as WGSLLight } from '@use-gpu/wgsl/use/types.wgsl';
 
 import { vec2, vec4 } from 'gl-matrix';
 
@@ -31,6 +29,8 @@ export const SHADOW_FORMAT = "depth32float";
 
 const LIGHT_ATTRIBUTE = bundleToAttribute(WGSLLight);
 const LIGHT_LAYOUT = makeUniformLayout(LIGHT_ATTRIBUTE.format as UniformAttribute[]);
+
+// Reserve space for count
 const LIGHT_BYTE_OFFSET = 16;
 
 const makeAtlasPage = () => makeAtlas(
@@ -40,83 +40,111 @@ const makeAtlasPage = () => makeAtlas(
   SHADOW_PAGE,
 );
 
+const ATLAS_LABEL = 'ShadowMap Atlas';
+
 export const LightCapture = makeCapture<null>('LightCapture');
 
 export type UseLight = (l: Light) => void;
 
 export type LightDataProps = {
   reserve?: number,
-  deferred?: boolean,
   shadows?: boolean,
   render?: (
     useLight: (l: Light) => void,
   ) => LiveElement,
   then?: (
-    env: LightEnv,
+    lightEnv: LightEnv,
   ) => LiveElement,
+};
+
+export const makeLightQueue = () => {
+  const queue = [] as Queued[];
+  const changed = new Set<number>;
+
+  const lights = new Map<number, BoundLight>;
+  const maps = new Map<number, BoundLight>;
+
+  const enqueue = (id: number, light: Light) => {
+    queue.push({id, data: light});
+    changed.add(id);
+  };
+
+  const dispose = (id: number) => {
+    lights.delete(id);
+    maps.delete(id);
+    changed.delete(id);
+  };
+
+  const flush = () => {
+    // Update light data in-place
+    for (const {id, data} of queue) {
+      const {shadow} = data;
+
+      let d = lights.get(id);
+      if (d) {
+        Object.assign(d, data);
+      }
+      else {
+        d = {shadowMap: -1, ...data};
+        lights.set(id, d);
+      }
+
+      if (shadow) {
+        if (!maps.has(id)) maps.set(id, d);
+
+        // Precalculate depth range constants
+        const {depth: [near, far], bias, blur} = shadow;
+        const nf = 1 / (near - far);
+        const dx = far * nf + 1;
+        const dy = -far * near * nf;
+        if (!d.shadowDepth) d.shadowDepth = vec2.fromValues(dx, dy);
+
+        d.shadowDepth[0] = dx;
+        d.shadowDepth[1] = dy;
+        d.shadowBias = bias;
+        d.shadowBlur = blur;
+      }
+      else if (maps.has(id)) {
+        maps.delete(id);
+      }
+    }
+
+    return changed;
+  }
+
+  const clear = () => {
+    queue.length = 0;
+    changed.clear();
+  };
+
+  return {enqueue, dispose, flush, clear, lights, maps};
 };
 
 export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) => {
   const {
     reserve = 1,
-    deferred = false,
     shadows = false,
     render,
     then,
   } = props;
 
-  const [queue, changed, lights, maps, count] = useOne(() => [
-    [] as Queued[],
-    new Set<number>,
-    new Map<number, BoundLight>,
-    new Map<number, BoundLight>,
-    new Uint32Array(1),
-  ]);
+  const {enqueue, dispose, flush, clear, lights, maps} = useOne(makeLightQueue);
 
   const useLight = useCallback((light: Light) => {
     const {id} = useFiber();
-    useResource((dispose) => {
-      dispose(() => {
-        lights.delete(id);
-        maps.delete(id);
-      });
+    useResource((d) => {
+      d(() => dispose(id));
     });
     useCapture(LightCapture, null);
+    enqueue(id, light);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    queue.push({id, data: light});
-    changed.add(id);
-  });
+  const count = useOne(() => new Uint32Array(1));
 
   // Produce light/shadow sources
   const Resume = () => {
-
-    // Update light data in-place
-    for (const {id, data} of queue) {
-      const {shadow} = data;
-
-      if (lights.has(id)) {
-        if (shadow) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const d = lights.get(id)!;
-          Object.assign(d, data);
-          continue;
-        }
-        else {
-          if (maps.has(id)) {
-            maps.delete(id);
-          }
-        }
-      }
-
-      const d = {shadowMap: -1, ...data};
-      if (shadow) {
-        lights.set(id, d);
-        maps.set(id, d);
-      }
-      else {
-        lights.set(id, d);
-      }
-    }
+    const changed = flush();
 
     // Check if light / shadow configuration changed
     let lightKey = 0;
@@ -167,7 +195,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
     const texture = useMemo(() => {
       if (!shadows) return null;
 
-      const atlases = [makeAtlasPage()];
+      const atlases: Atlas[] = [makeAtlasPage()];
       let [atlas] = atlases;
 
       for (const key of maps.keys()) {
@@ -175,31 +203,26 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
         const light = maps.get(key)!;
         const {shadow} = light;
         if (shadow) {
-          const {size: [w, h], depth: [near, far], bias, blur} = shadow;
+          const {size: [w, h]} = shadow;
 
           let mapping;
           try {
             mapping = atlas.place(key, w, h);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (e) {
-            atlas = makeAtlasPage();
-            atlases.push(atlas);
-
+            atlases.push(atlas = makeAtlasPage());
             mapping = atlas.place(key, w, h);
           }
           const page = atlases.length - 1;
 
-          const nf = 1 / (near - far);
           light.shadowMap = page;
-          light.shadowUV = (vec4.fromValues as any)(...mapping.map(x => x / SHADOW_PAGE));
-          light.shadowDepth = vec2.fromValues(far * nf + 1, -far * near * nf);
-          light.shadowBias = bias;
-          light.shadowBlur = blur;
+          light.shadowUV = (vec4.fromValues as any)(...mapping.map((x: number) => x / SHADOW_PAGE));
         }
       }
 
-      const pages = atlases.length;
+      const pages = atlases.length || 1;
 
-      const texture = pages ? (
+      const texture = (
         makeTexture(
           device,
           SHADOW_PAGE,
@@ -210,18 +233,7 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
           1,
           1,
           '2d',
-        )
-      ) : (
-        makeTexture(
-          device,
-          1,
-          1,
-          1,
-          SHADOW_FORMAT,
-          GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
-          1,
-          1,
-          '2d',
+          ATLAS_LABEL,
         )
       );
 
@@ -232,11 +244,13 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
         format: SHADOW_FORMAT,
         length: SHADOW_PAGE * SHADOW_PAGE * pages,
         size: [SHADOW_PAGE, SHADOW_PAGE, pages],
-        comparison: true,
+        filter: 'comparison',
         version: 0,
+        hint: 'depth',
       } as TextureSource;
 
       return source;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [device, shadows, shadowKey]);
 
     let needsRefresh = prevDataRef.current !== data;
@@ -287,23 +301,15 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
       else if (range[1] === index) range[1]++;
       else ranges.push(range = [index, index + 1]);
 
-      filler.setData(index, lights.get(id));
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      filler.setData(index, lights.get(id)!);
     }
-    if (needsRefresh) ranges = [[0, size - 1]];
+    if (needsRefresh) ranges = [[0, size]];
 
     // Upload changed ranges
     if (ranges.length) {
       const {buffer} = storage;
-
-      // Don't count point lights if deferred rendering
-      if (deferred && subranges.has(POINT_LIGHT)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        count[0] = subranges.get(POINT_LIGHT)![0];
-      }
-      else {
-        count[0] = lightCount;
-      }
-
+      count[0] = lightCount;
       uploadBuffer(device, buffer, count.buffer);
 
       const stride = LIGHT_LAYOUT.length;
@@ -316,22 +322,24 @@ export const LightData: LiveComponent<LightDataProps> = (props: LightDataProps) 
     storage.version = incrementVersion(storage.version);
     if (texture) texture.version = incrementVersion(texture.version);
 
-    queue.length = 0;
-    changed.clear();
+    clear();
 
-    const env = useMemo(() => ({
+    const lightEnv = useMemo(() => ({
       lights,
       shadows: maps,
-      storage,
-      texture,
 
       order,
       subranges,
+
+      sources: {
+        lightData: storage,
+        shadowMap: texture,
+      },
     }), [storage, texture, order, subranges]);
 
     return [
       signal(),
-      then ? then(env) : yeet(env),
+      then ? then(lightEnv) : yeet(lightEnv),
     ];
   };
 

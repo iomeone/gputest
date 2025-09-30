@@ -1,15 +1,16 @@
-import type { LC } from '../../../live';
+import type { LC } from '@use-gpu/live';
 
-import React from '../../../live';
-import { TextureSource } from '../../../core';
+import React from '@use-gpu/live';
+import { TextureSource } from '@use-gpu/core';
 
 import {
-  LinearRGB, Pass, FlatCamera, PanControls, ImageTexture,
+  LinearRGB, Pass, FlatCamera, ImageTexture,
   DebugProvider,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
+import { PanControls } from '@use-gpu/interact';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Overflow, Text, Element,
-} from '../../../layout';
+} from '@use-gpu/layout';
 
 import { LayoutControls } from '../../ui/layout-controls';
 import { InfoBox } from '../../ui/info-box';
@@ -110,7 +111,7 @@ export const LayoutDisplayPage: LC = () => {
                       (texture: TextureSource | null) =>
                         <Flex align="center" width="100%" height={300}>
                           <Block
-                            fill="#3090ff" 
+                            fill="#3090ff"
                             width={300}
                             height={300}
                             margin={20}

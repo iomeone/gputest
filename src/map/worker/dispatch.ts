@@ -1,22 +1,27 @@
 import { wrap } from 'comlink';
-import { seq } from '../../core';
+import { seq } from '@use-gpu/core';
 
-export const getConcurrency = () => (
+// Estimate available CPU concurrency
+export const getCPUConcurrency = () => (
   Math.max(1, Math.min(navigator.hardwareConcurrency * 0.8, navigator.hardwareConcurrency - 2))
 );
 
-type Dispatcher = {
+export type Dispatcher = {
   terminate: () => void,
   call: <T>(method: string, args: any[]) => T,
 };
-type Call = { method: string, args: any[], resolve: (t: any) => void};
 
-export const makeDispatch = <T>(make: () => Worker, n: number = 4): T & Dispatcher => {
+type QueuedCall = { method: string, args: any[], resolve: (t: any) => void};
+
+export const makeDispatch = <T>(
+  make: () => Worker,
+  n: number = getCPUConcurrency(),
+): T & Dispatcher => {
   const workers = seq(n | 0).map(make);
   const comlinks = workers.map((worker) => wrap(worker));
 
   const order = comlinks;
-  const queue: Call[] = [];
+  const queue: QueuedCall[] = [];
   const enqueue = setTimeout;
 
   let terminated = false;

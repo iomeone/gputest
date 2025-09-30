@@ -4,12 +4,12 @@ import {
   optional,
   nullable,
   trait,
-} from '../traits/index-live';
+} from '@use-gpu/traits/live';
 import {
   parseNumber,
   parseInteger,
   parseColor,
-} from '../parse';
+} from '@use-gpu/parse';
 import {
   parseAnchor,
   parseAnchorXY,
@@ -50,7 +50,7 @@ export const ElementTrait = trait({
   stroke: optional(parseColor),
   fill: optional(parseColor),
 
-  texture: optional(nullable(parseTexture)), // deprecated
+  texture: optional(nullable(parseTexture)),
   image: optional(makeParseTrait(ImageTrait)),
   zIndex: parseInteger,
 });

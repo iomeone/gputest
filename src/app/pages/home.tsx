@@ -1,9 +1,9 @@
-import type { LiveComponent } from '../../live';
-import { FC, PropsWithChildren } from 'react';
+import type { LiveComponent } from '@use-gpu/live';
+import { FC } from 'react';
 
-import { use } from '../../live';
-import { HTML } from '../../react';
-import { useRouterContext } from '../../workbench';
+import { use } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { useRouterContext } from '@use-gpu/workbench';
 
 import React from 'react';
 import { styled } from '@stitches/react';

@@ -1,5 +1,5 @@
-import type { TypedArrayConstructor, TensorArray, VectorLike, VectorLikes } from '../core';
-import { seq, isTypedArray, copyNumberArray, copyNestedNumberArray } from '../core';
+import type { TypedArrayConstructor, TensorArray, VectorLike, VectorLikes } from '@use-gpu/core';
+import { seq, isTypedArray, copyNumberArray, copyNestedNumberArray } from '@use-gpu/core';
 
 const NO_CHUNKS: [VectorLike, null] = [new Uint32Array(0), null];
 
@@ -11,6 +11,12 @@ const maybeEmptyArray = <T extends TypedArrayConstructor>(
   xs: VectorLike | VectorLikes | VectorLikes[] | TensorArray,
   ctor: T,
 ) => Array.isArray(xs) && !xs.length ? new ctor(0) : null;
+
+// Array of booleans
+const maybeBooleanArray = <T extends TypedArrayConstructor>(
+  xs: VectorLike | VectorLikes | VectorLikes[] | TensorArray,
+  ctor: T,
+) => typeof (xs as VectorLike)[0] === 'boolean' ? new ctor(xs as VectorLike) : null
 
 // Array of scalars
 const maybeScalarArray = <T extends TypedArrayConstructor>(
@@ -135,6 +141,18 @@ const maybeMultiMultiVectorArray = <T extends TypedArrayConstructor>(
   return to;
 }
 
+export const toBooleanArray = <T extends TypedArrayConstructor>(
+  xs: VectorLike | TensorArray,
+  ctor: T = Float32Array as any
+): T | null => (
+  (
+    maybeTypedArray(xs) ??
+    maybeEmptyArray(xs, ctor) ??
+    maybeBooleanArray(xs, ctor) ??
+    maybeScalarArray(xs, ctor)
+  ) as T | null
+);
+
 export const toScalarArray = <T extends TypedArrayConstructor>(
   xs: VectorLike | TensorArray,
   ctor: T = Float32Array as any
@@ -189,7 +207,7 @@ export const toMultiMultiVectorArray = <T extends TypedArrayConstructor>(
   (
     toMultiVectorArray(xs as VectorLikes[], dims, w, ctor) ??
     maybeMultiMultiVectorArray(xs, dims, w, ctor)
-  ) as T | null 
+  ) as T | null
 );
 
 // Get 1 chunk length
@@ -209,6 +227,9 @@ export const toVertexCount = (
     return (n / dims) | 0;
   }
   if (typeof x?.[0] === 'number') {
+    return n;
+  }
+  if (x?.[0] != null) {
     return n;
   }
   return 0;

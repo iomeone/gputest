@@ -1,12 +1,8 @@
-import type { LiveComponent, LiveElement } from '../../live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
 
-import { memo, capture, makeCapture, useCapture, useOne } from '../../live';
+import { capture, makeCapture, useOne } from '@use-gpu/live';
 
 export const CursorState = makeCapture<string>('CursorState');
-
-export type CursorProps = {
-  cursor?: string,
-};
 
 export type CursorProviderProps = {
   element: HTMLElement,
@@ -20,13 +16,9 @@ export const CursorProvider: LiveComponent<CursorProviderProps> = (props) => {
     (cursors: string[]) => {
       const cursor = cursors[cursors.length - 1] ?? 'default';
       if (element.style.cursor !== cursor) element.style.cursor = cursor;
+      return null;
     },
     element);
 
   return capture(CursorState, children, Resume);
 };
-
-export const Cursor: LiveComponent<CursorProps> = memo((props: CursorProps) => {
-  useCapture(CursorState, props.cursor);
-  return null;
-}, 'Cursor');

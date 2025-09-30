@@ -41,46 +41,49 @@ export const createElement = <F extends RawLiveComponent<any>>(type: F | string,
 
   if (typeof type === 'string') throw new Error(`Can't use Live-flavored JSX to render HTML.'`);
 
+  const key = props?.key;
+  if (props && key !== undefined) props.key = undefined;
+
   if ((type as any)?.isLiveBuiltin) {
     switch (type as any) {
       case FRAGMENT:
-        return fragment(props?.children ?? children, props?.key);
+        return fragment(props?.children ?? children, key);
 
       case FENCE:
-        return fence(toChildren(props?.children ?? children), props?.then, props?.fallback, props?.key);
+        return fence(toChildren(props?.children ?? children), props?.then, props?.fallback, key);
 
       case GATHER:
-        return gather(toChildren(props?.children ?? children), props?.then, props?.fallback, props?.key);
+        return gather(toChildren(props?.children ?? children), props?.then, props?.fallback, key);
 
       case MULTI_GATHER:
-        return multiGather(toChildren(props?.children ?? children), props?.then, props?.fallback, props?.key);
+        return multiGather(toChildren(props?.children ?? children), props?.then, props?.fallback, key);
 
       case MAP_REDUCE:
-        return mapReduce(toChildren(props?.children ?? children), props?.map, props?.reduce, props?.then, props?.fallback, props?.key);
+        return mapReduce(toChildren(props?.children ?? children), props?.map, props?.reduce, props?.then, props?.fallback, key);
 
       case RECONCILE:
-        return reconcileTo(props?.to, toChildren(props?.children ?? children), props?.key);
+        return reconcileTo(props?.to, toChildren(props?.children ?? children), key);
 
       case PROVIDE:
-        return provide(props?.context, props?.value, toChildren(props?.children ?? children), props?.key);
+        return provide(props?.context, props?.value, toChildren(props?.children ?? children), key);
 
       case CAPTURE:
-        return capture(props?.context, toChildren(props?.children ?? children), props?.then, props?.key);
+        return capture(props?.context, toChildren(props?.children ?? children), props?.then, key);
 
       case YEET:
-        return yeet(toChildren(props?.children ?? children), props?.key);
+        return yeet(toChildren(props?.children ?? children), key);
 
       case SIGNAL:
-        return signalTo(props?.to, props?.key);
+        return signalTo(props?.to, key);
 
       case SUSPEND:
-        return suspend(props?.key);
+        return suspend(key);
 
       case QUOTE:
-        return quoteTo(props?.to, toChildren(props?.children ?? children), props?.key);
+        return quoteTo(props?.to, toChildren(props?.children ?? children), key);
 
       case UNQUOTE:
-        return unquote(toChildren(props?.children ?? children), props?.key);
+        return unquote(toChildren(props?.children ?? children), key);
 
       case MORPH: {
         const c = props?.children ?? children;
@@ -95,7 +98,7 @@ export const createElement = <F extends RawLiveComponent<any>>(type: F | string,
 
   if (props) {
     if (props.children == null && children.length) props = {...props, children: toChildren(children)};
-    return {f: type, args: [props], key: props.key, by};
+    return {f: type, args: [props], key, by};
   }
   else if (children.length) {
     return {f: type, args: [{children: toChildren(children)}], key: undefined, by};

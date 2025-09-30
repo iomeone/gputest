@@ -1,17 +1,17 @@
-import type { LC } from '../../../live';
-import type { DataTexture, TextureSource, OffscreenTarget } from '../../../core';
-import type { ShaderModule } from '../../../shader';
+import type { LC } from '@use-gpu/live';
+import type { DataTexture, TextureSource, OffscreenRenderContext } from '@use-gpu/core';
 
-import React, { Gather, useRef } from '../../../live';
-import { wgsl } from '../../../shader/wgsl';
+import React, { Gather, useRef } from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, Pass, FlatCamera, Pick, Cursor,
+  Loop, Pass, FlatCamera,
   RawTexture, RenderTarget, RenderToTexture, FullScreen,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
+import { Mouse, Cursor } from '@use-gpu/interact';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Text,
-} from '../../../layout';
+} from '@use-gpu/layout';
 
 import { InfoBox } from '../../ui/info-box';
 
@@ -29,6 +29,7 @@ import { InfoBox } from '../../ui/info-box';
 //
 
 const NOISE_SIZE = 1024;
+
 const LINEAR_SAMPLER: GPUSamplerDescriptor = {
   minFilter: 'linear',
   magFilter: 'linear',
@@ -39,7 +40,7 @@ const LINEAR_SAMPLER: GPUSamplerDescriptor = {
 const makeNoiseData = (size: number) => {
   const data = new Uint8Array(size * size * 4);
 
-  let n = size * size;
+  const n = size * size;
   for (let i = 0, j = 0; i < n; ++i) {
     data[j++] = Math.random() * 255;
     data[j++] = Math.random() * 255;
@@ -54,7 +55,7 @@ const makeNoiseData = (size: number) => {
   } as DataTexture;
 };
 
-const noiseData = makeNoiseData(1024);
+const noiseData = makeNoiseData(NOISE_SIZE);
 
 const initializeShader = wgsl`
   @link fn getTargetSize() -> vec2<f32>;
@@ -283,18 +284,18 @@ export const RTTMultiscalePage: LC = () => {
         blurTarget4,
       ]: [
         TextureSource,
-        OffscreenTarget,
-        OffscreenTarget,
-        OffscreenTarget,
-        OffscreenTarget,
-        OffscreenTarget,
+        OffscreenRenderContext,
+        OffscreenRenderContext,
+        OffscreenRenderContext,
+        OffscreenRenderContext,
+        OffscreenRenderContext,
       ]) => (
         <Loop live>
           <Cursor cursor="pointer" />
           <FlatCamera>
-            <Pick all move render={({x, y, pressed}) => {
+            <Mouse move render={({x, y, buttons}) => {
               mouseRef.current = [x * dpi, y * dpi];
-              paintRef.current = +!!pressed.left;
+              paintRef.current = +!!buttons.left;
               return null;
             }} />
             <RenderToTexture target={feedbackTarget}>

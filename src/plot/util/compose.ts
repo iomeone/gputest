@@ -1,4 +1,4 @@
-import type { VectorLike } from '../../core';
+import type { VectorLike } from '@use-gpu/core';
 import { vec3, mat4, quat } from 'gl-matrix';
 
 const makeComposeTransform = () => {
@@ -38,8 +38,6 @@ const makeComposeTransform = () => {
 
     mat4.fromRotationTranslationScale(transform, q, p, s);
     if (matrix != null) mat4.multiply(transform, matrix as mat4, transform);
-
-    return transform;
   }
 }
 

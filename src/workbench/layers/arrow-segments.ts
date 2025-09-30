@@ -1,8 +1,8 @@
-import type { TypedArray, VectorLike } from '../../core';
+import type { TypedArray, VectorLike } from '@use-gpu/core';
 
-import { useMemo } from '../../live';
-import { accumulateChunks, generateChunkSegments, generateChunkAnchors, alignSizeTo } from '../../core';
-import { useRawSource } from '../hooks/useRawSource';
+import { useMemo } from '@use-gpu/live';
+import { accumulateChunks, generateChunkSegments, generateChunkAnchors, alignSizeTo } from '@use-gpu/core';
+import { useRawSource, useNoRawSource } from '../hooks/useRawSource';
 import { ARROW_SEGMENTS_SCHEMA } from './schemas';
 
 export type ArrowSegmentsData = {
@@ -27,14 +27,16 @@ export const getArrowSegments = ({
 }) => {
   const count = accumulateChunks(chunks, loops);
 
+  const hasTrim = starts || ends;
+
   const segments = new Int8Array(alignSizeTo(count, 4));
   const slices = new Uint32Array(groups?.length ?? chunks.length);
   const unwelds = loops ? new Uint32Array(count, 2) : undefined;
-  const anchors = new Uint32Array(count * 4);
-  const trims = new Uint32Array(count * 4);
+  const anchors = hasTrim ? new Uint32Array(count * (starts && ends ? 4 : 2)) : undefined;
+  const trims = hasTrim ? new Uint32Array(count * 4) : undefined;
 
   generateChunkSegments(segments, slices, unwelds, chunks, groups, loops, starts, ends);
-  const sparse = generateChunkAnchors(anchors, trims, chunks, loops, starts, ends);
+  const sparse = anchors && trims ? generateChunkAnchors(anchors, trims, chunks, loops, starts, ends) : undefined;
 
   return {
     count,
@@ -62,11 +64,13 @@ export const useArrowSegmentsSource = (
 
   // Bind as shader storage
   const s = useRawSource(segments, 'i8');
-  const a = useRawSource(anchors, 'vec4<u32>');
-  const t = useRawSource(trims, 'vec4<u32>');
+  const a = anchors ? useRawSource(anchors, 'vec4<u32>') : (useNoRawSource(), undefined);
+  const t = trims ? useRawSource(trims, 'vec4<u32>') : (useNoRawSource(), undefined);
 
-  a.length = sparse;
-  a.size[0] = sparse;
+  if (a) {
+    a.length = sparse || 0;
+    a.size[0] = sparse || 0;
+  }
 
   return {
     count,

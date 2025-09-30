@@ -1,20 +1,22 @@
-import type { LiveComponent } from '../../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { yeet, useMemo } from '../../../live';
-import { bindBundle } from '../../../shader/wgsl';
+import { yeet, useMemo } from '@use-gpu/live';
+import { bindBundle } from '@use-gpu/shader/wgsl';
 
-import { drawCall } from '../../queue/draw-call';
 import { getNativeColor } from '../../hooks/useNativeColor';
+import { drawCall } from '../../queue/draw-call';
+import { getShaderLabel } from '../../pass/util';
 
 import { useRenderContext } from '../../providers/render-provider';
-import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualUI from '../../../wgsl/render/vertex/virtual-uiwgsl';
-import instanceFragmentUI from '../../../wgsl/render/fragment/uiwgsl';
+import renderVirtualUI from '@use-gpu/wgsl/render/vertex/virtual-ui.wgsl';
+import renderFragmentUI from '@use-gpu/wgsl/render/fragment/ui.wgsl';
 
 export type UIRenderProps = VirtualDraw;
+
+const LABEL = 'UIRender';
 
 export const UIRender: LiveComponent<UIRenderProps> = (props: UIRenderProps) => {
   const {
@@ -28,11 +30,10 @@ export const UIRender: LiveComponent<UIRenderProps> = (props: UIRenderProps) => 
   const renderContext = useRenderContext();
   const {colorInput, colorSpace} = renderContext;
 
-  const {layout: globalLayout} = useViewContext();
-  const {layout: passLayout} = usePassContext();
+  const {bindGroups: {color: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
-  const vertexShader = instanceDrawVirtualUI;
-  const fragmentShader = instanceFragmentUI;
+  const vertexShader = renderVirtualUI;
+  const fragmentShader = renderFragmentUI;
 
   // Binds links into shader
   const [v, f] = useMemo(() => {
@@ -41,8 +42,8 @@ export const UIRender: LiveComponent<UIRenderProps> = (props: UIRenderProps) => 
       getFragment,
       toColorSpace: getNativeColor(colorInput, colorSpace),
     };
-    const v = bindBundle(vertexShader, links, undefined);
-    const f = bindBundle(fragmentShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
+    const f = bindBundle(fragmentShader, links);
     return [v, f];
   }, [vertexShader, fragmentShader, getVertex, getFragment, colorInput, colorSpace]);
 
@@ -53,7 +54,8 @@ export const UIRender: LiveComponent<UIRenderProps> = (props: UIRenderProps) => 
     fragment: f,
     renderContext,
     globalLayout,
-    passLayout,
+    pipelineKey,
+    label: getShaderLabel([getVertex, getFragment], LABEL),
   };
 
   return yeet(drawCall(call));

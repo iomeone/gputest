@@ -1,7 +1,7 @@
-import type { ShaderModuleDescriptor } from '../../core';
+import type { ShaderModuleDescriptor } from '@use-gpu/core';
 
-import { makeComputePipeline, makeComputePipelineAsync } from '../../core';
-import { useMemo, useOne, useState } from '../../live';
+import { makeComputePipeline, makeComputePipelineAsync } from '@use-gpu/core';
+import { useMemo, useOne, useState } from '@use-gpu/live';
 import LRU from 'lru-cache';
 
 const DEBUG = false;
@@ -13,7 +13,7 @@ const makePipelineCache = (options: Record<string, any> = {}) => new LRU<string,
   ...options,
 });
 
-let SHADER_LOG: LRU<string, any> | null = null;
+//const SHADER_LOG: LRU<string, any> | null = null;
 
 const CACHE = new WeakMap<any, LRU<string, any>>();
 const PENDING = new WeakMap<any, Map<string, any>>();
@@ -22,6 +22,7 @@ export const useComputePipeline = (
   device: GPUDevice,
   shader: ComputeShader,
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const memoKey = device;
 
@@ -33,8 +34,8 @@ export const useComputePipeline = (
       CACHE.set(memoKey, cache = makePipelineCache());
     }
 
-    // Cache by shader structural hash
-    const key = shader.hash.toString();
+    // Cache by shader structural hash + layout state
+    const key = shader.hash.toString() +'/'+ +!!layout;
 
     const cached = cache.get(key);
     if (cached) {
@@ -42,26 +43,30 @@ export const useComputePipeline = (
       return cached;
     }
 
-    {
+    /*
+    if (SHADER_LOG != null) {
       const log = {
         compute: {
           hash: shader.hash,
           code: shader.code,
         },
       };
-      if (SHADER_LOG != null) SHADER_LOG.set(key, log);
+      SHADER_LOG.set(key, log);
     }
+    */
 
     // Make new pipeline
     const pipeline = makeComputePipeline(
       device,
       shader,
       layout,
+      label,
     );
     cache.set(key, pipeline);
     DEBUG && console.log('compute pipeline cache miss', key);
 
     return pipeline;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device, shader.hash]);
 };
 
@@ -69,6 +74,7 @@ export const useComputePipelineAsync = (
   device: GPUDevice,
   shader: ComputeShader,
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const [resolved, setResolved] = useState<GPUComputePipeline | null>(null);
   const staleRef = useOne(() => ({current: null as string | null}));
@@ -96,14 +102,14 @@ export const useComputePipelineAsync = (
       return cached;
     }
 
-    if (SHADER_LOG != null) {
-      SHADER_LOG.set(key, {
-        compute: {
-          hash: shader.hash,
-          code: shader.code,
-        },
-      });
-    }
+    //if (SHADER_LOG != null) {
+    //  SHADER_LOG.set(key, {
+    //    compute: {
+    //      hash: shader.hash,
+    //      code: shader.code,
+    //    },
+    //  });
+    //}
 
     // Mark current pipeline as stale (if any)
     const resolve = (pipeline: GPUComputePipeline) => {
@@ -129,6 +135,7 @@ export const useComputePipelineAsync = (
       device,
       shader,
       layout,
+      label,
     );
     promise.then((pipeline: GPUComputePipeline) => {
       DEBUG && console.log('async compute pipeline resolved', key);
@@ -144,7 +151,8 @@ export const useComputePipelineAsync = (
     pending!.set(key, promise);
 
     return null;
-  }, [device, shader]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [device, shader.hash]);
 
   DEBUG && console.log('async pipeline got', (immediate ?? resolved), 'stale =', staleRef.current, shader.hash, shader.hash);
   return [immediate ?? resolved, !!staleRef.current];

@@ -1,25 +1,31 @@
-import type { LiveComponent } from '../../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { yeet, useMemo, useOne } from '../../../live';
-import { patch } from '../../../state';
-import { bindBundle } from '../../../shader/wgsl';
+import { yeet, useMemo, useOne } from '@use-gpu/live';
+import { patch } from '@use-gpu/state';
+import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { drawCall } from '../../queue/draw-call';
+import { getShaderLabel } from '../../pass/util';
 
 import { usePassContext } from '../../providers/pass-provider';
-import { useViewContext } from '../../providers/view-provider';
 
 import {
-  main as instanceDrawVirtualDepth,
-  mainWithDepth as instanceDrawVirtualDepthDepth,
-} from '../../../wgsl/render/vertex/virtual-depthwgsl';
-import instanceFragmentDepth from '../../../wgsl/render/fragment/depthwgsl';
-import instanceFragmentDepthDepth from '../../../wgsl/render/fragment/depth-fragwgsl';
+  main as renderVirtualDepth,
+  mainWithDepth as renderVirtualDepthDepth,
+} from '@use-gpu/wgsl/render/vertex/virtual-depth.wgsl';
+import {
+  main as renderVirtualShaded,
+} from '@use-gpu/wgsl/render/vertex/virtual-shaded.wgsl';
+import renderFragmentDepth from '@use-gpu/wgsl/render/fragment/depth.wgsl';
+import renderFragmentDepthOnly from '@use-gpu/wgsl/render/fragment/depth-only.wgsl';
+import renderFragmentDepthShaded from '@use-gpu/wgsl/render/fragment/depth-shaded.wgsl';
 
-import { getScissorColor } from '../../../wgsl/mask/scissorwgsl';
+import { getScissorColor } from '@use-gpu/wgsl/mask/scissor.wgsl';
 
 export type ShadowRenderProps = VirtualDraw;
+
+const LABEL = 'ShadowRender';
 
 export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRenderProps) => {
   const {
@@ -27,18 +33,31 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
       getVertex,
       getFragment,
       getDepth,
+      getSurface,
     },
     defines,
     pipeline: propPipeline,
     ...rest
   } = props;
 
-  const {buffers: {shadow: [renderContext]}} = usePassContext();
+  const {
+    buffers: {shadow: [renderContext]},
+    bindGroups: {view: {layout: globalLayout, key: pipelineKey}},
+  } = usePassContext();
 
-  const {layout: globalLayout} = useViewContext();
+  const vertexShader = defines?.HAS_DEPTH ?
+    (
+      getDepth ? renderVirtualDepthDepth :
+      !getFragment && getSurface ? renderVirtualShaded :
+      renderVirtualDepth
+    ) : renderVirtualDepth;
 
-  const vertexShader = defines?.HAS_DEPTH ? instanceDrawVirtualDepthDepth : instanceDrawVirtualDepth;
-  const fragmentShader = defines?.HAS_DEPTH ? instanceFragmentDepthDepth : instanceFragmentDepth;
+  const fragmentShader = defines?.HAS_DEPTH ?
+    (
+      getDepth ? renderFragmentDepthOnly :
+      !getFragment && getSurface ? renderFragmentDepthShaded :
+      renderFragmentDepth
+    ) : renderFragmentDepth;
 
   const pipeline = useOne(() => patch(propPipeline, {
     multisample: { count: 1, alphaToCoverageEnabled: false },
@@ -51,12 +70,13 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
       getVertex,
       getFragment,
       getDepth,
+      getSurface,
       getScissor: defines?.HAS_SCISSOR ? getScissorColor : null,
     };
-    const v = bindBundle(vertexShader, links, undefined);
-    const f = bindBundle(fragmentShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
+    const f = bindBundle(fragmentShader, links);
     return [v, f];
-  }, [vertexShader, fragmentShader, getVertex, getFragment, getDepth]);
+  }, [vertexShader, fragmentShader, getVertex, getFragment, getDepth, getSurface, defines]);
 
   const defs = useOne(() => ({...defines, HAS_ALPHA_TO_COVERAGE: true}), defines);
 
@@ -69,7 +89,9 @@ export const ShadowRender: LiveComponent<ShadowRenderProps> = (props: ShadowRend
     pipeline,
     renderContext,
     globalLayout,
+    pipelineKey,
     mode: 'shadow',
+    label: getShaderLabel([getVertex, getFragment, getDepth], LABEL),
   };
 
   return yeet(drawCall(call));

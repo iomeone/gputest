@@ -1,5 +1,3 @@
-use '../../wgsl/codec/octahedral'::{ wrapOctahedral, decodeOctahedral };
-
 @link fn getTargetMapping() -> vec4<u32> {};
 @link fn getSourceMapping() -> vec4<u32> {};
 

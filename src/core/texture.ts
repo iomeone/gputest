@@ -1,5 +1,8 @@
-import type { DataTexture, ExternalTexture, VectorLike, XY, XYZ, TextureSource } from './types';
-import { TEXTURE_FORMAT_SIZES } from './constants';
+import type { DataTexture, ExternalTexture, VectorLike, XY, XYZ, TextureSource, TextureTarget, UniformAttribute } from './types';
+import { TEXTURE_FORMAT_SIZES, getTextureSampleType } from './constants';
+import { proxy } from './lazy';
+import { seq } from './tuple';
+import { toTypeString } from './uniform';
 
 const NO_OFFSET = [0, 0, 0] as XYZ;
 
@@ -18,6 +21,7 @@ export const makeTexture = (
   sampleCount: number = 1,
   mipLevelCount: number = 1,
   dimension: GPUTextureDimension = '2d',
+  label?: string,
 ): GPUTexture => {
   if (width * height * depth === 0) throw new Error("Can't create zero-sized texture");
 
@@ -30,6 +34,7 @@ export const makeTexture = (
     format,
     // @ts-ignore
     usage,
+    label,
   });
 
   return texture;
@@ -44,21 +49,24 @@ export const makeDynamicTexture = (
   sampleCount: number = 1,
   mipLevelCount: number = 1,
   dimension: GPUTextureDimension = '2d',
+  label?: string,
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST;
-  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, dimension);
+  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, dimension, label);
 }
 
 export const makeTargetTexture = (
   device: GPUDevice,
   width: number,
   height: number,
+  depth: number,
   format: GPUTextureFormat,
   sampleCount: number = 1,
   mipLevelCount: number = 1,
+  label?: string,
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC;
-  return makeTexture(device, width, height, 1, format, usage, sampleCount, mipLevelCount);
+  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, '2d', label);
 }
 
 export const makeStorageTexture = (
@@ -70,9 +78,10 @@ export const makeStorageTexture = (
   sampleCount: number = 1,
   mipLevelCount: number = 1,
   dimension: GPUTextureDimension = '2d',
+  label?: string,
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING;
-  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, dimension);
+  return makeTexture(device, width, height, depth, format, usage, sampleCount, mipLevelCount, dimension, label);
 }
 
 export const makeReadbackTexture = (
@@ -82,20 +91,23 @@ export const makeReadbackTexture = (
   format: GPUTextureFormat,
   sampleCount: number = 1,
   mipLevelCount: number = 1,
+  label?: string,
 ): GPUTexture => {
   const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC;
-  return makeTexture(device, width, height, 1, format, usage, sampleCount, mipLevelCount);
+  return makeTexture(device, width, height, 1, format, usage, sampleCount, mipLevelCount, '2d', label);
 }
 
 export const makeRawTexture = (
   device: GPUDevice,
   dataTexture: DataTexture | ExternalTexture,
   mipLevelCount: number = 1,
+  dimension: GPUTextureDimension = '2d',
+  label?: string,
 ) => {
   const {size, format} = dataTexture;
   const [w, h, d] = size as XYZ;
 
-  return makeDynamicTexture(device, w, h, d || 1, format ?? 'rgba8unorm', 1, mipLevelCount);
+  return makeDynamicTexture(device, w, h, d || 1, format ?? 'rgba8unorm', 1, mipLevelCount, dimension, label);
 }
 
 export const makeTextureDataLayout = (
@@ -268,4 +280,116 @@ export const makeTextureEntries = (
   }
 
   return entries;
+};
+
+export const checkTextureTypes = (
+  attributes: UniformAttribute[],
+  links: Record<string, TextureSource | null | undefined>,
+) => {
+  for (const u of attributes) {
+    const link = links[u.name];
+    checkTextureType(u, link)
+  }
+}
+
+export const checkTextureType = (
+  attribute: UniformAttribute,
+  link: TextureSource | null | undefined,
+) => {
+  if (!link) return;
+
+  const {name, format: from} = attribute;
+  if (Array.isArray(from)) throw new Error(`Invalid texture attribute '${name}'.`);
+
+  const {aspect, format} = link;
+
+  // e.g. `texture_2d<f32>`
+  // e.g. `texture_storage_2d<rgba16float, write>`
+  const [layout, type] = from.split(/[<>,]/);
+
+  // Storage texture has pixel format in type
+  if (type in TEXTURE_FORMAT_SIZES && type === format) return;
+
+  // Depth texture has implicit pixel type
+  if (layout.match(/^texture_depth/) && format.match(/^depth/)) return;
+
+  // texture_xxx<type> or vec#<type>
+  const fromName = toTypeString(from);
+  const toName = getTextureSampleType(format, aspect);
+
+  let f = fromName;
+  let t = toName as string;
+
+  if (f === 'auto') return;
+
+  // Remove texture layout
+  f = f.replace(/^texture[_0-9a-z]+<([^,]+)(?:,[^,]+)*>$/, '$1');
+
+  // Remove vec<..> to allow for automatic widening/narrowing
+  f = f.replace(/^vec[0-9]/, '').replace(/^<(.*)>$/g, '$1');
+  t = t.replace(/^vec[0-9]/, '').replace(/^<(.*)>$/g, '$1');
+
+  if (f === t) return;
+
+  console.warn(`Invalid format '${format}' bound for ${from} "${name}" (${f} != ${t})`);
+}
+
+const CUBE_FACES = ['+X', '-X', '+Y', '-Y', '+Z', '-Z'];
+
+export const splitCubeTexture = (texture: TextureSource): TextureSource[] => {
+  const {layout, size, texture: t} = texture;
+  const l = layout.replace(/(texture_(?:depth_)?)cube/, '$12d');
+
+  const label = t.label ?? texture.label;
+
+  return seq(6).map(i => {
+    const face = CUBE_FACES[i];
+    const faceLabel = label != null ? `${label} ${face}` : face;
+    const view = t.createView({ label: faceLabel, baseArrayLayer: i, arrayLayerCount: 1, dimension: '2d' });
+    return proxy(texture, {
+      layout: l,
+      view,
+      size: [size[0], size[1]],
+    });
+  });
+};
+
+export const splitArrayTexture = (texture: TextureSource): TextureSource[] => {
+  const {layout, size, texture: t} = texture;
+
+  const label = t.label ?? texture.label;
+
+  return seq(size[2]).map(i => {
+    const faceLabel = label != null ? `${label} #${i + 1}` : `#${i + 1}`;
+
+    const l = layout.replace(/_array$/, '');
+
+    const view = t.createView({ label: faceLabel, baseArrayLayer: i, arrayLayerCount: 1, dimension: '2d' });
+    return proxy(texture, {
+      layout: l,
+      view,
+      size: [size[0], size[1]],
+    });
+  });
+};
+
+export const splitHistoryTexture = (texture: TextureTarget): TextureSource[] => {
+  const {history} = texture;
+
+  const mainLabel = notEmptyString(texture?.label) ?? notEmptyString(texture?.view?.label) ?? notEmptyString(texture?.texture?.label);
+
+  const rest = history?.map((t, i) => {
+    const historyLabel = `History T-${i + 1}`;
+    const slotLabel = [mainLabel, historyLabel].filter(s => s != null).join(' – ');
+    return proxy(t, {label: slotLabel});
+  }) ?? [];
+
+  return [proxy(texture, {history: undefined}), ...rest];
+};
+
+export const notEmptyString = (s?: string | null) => s?.length ? s : null;
+
+export const countMips = (width: number, height: number = width): number => {
+  const max = Math.max(width, height);
+  return Math.floor(Math.log2(max));
 };

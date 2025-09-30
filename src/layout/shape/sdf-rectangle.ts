@@ -1,13 +1,13 @@
-import type { LiveComponent } from '../../live';
-import type { Rectangle, XYZW } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
-import type { TraitProps } from '../../traits';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Rectangle, XYZW } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import type { TraitProps } from '@use-gpu/traits';
 
 import { ImageTrait } from '../traits';
-import { proxy } from '../../core';
-import { yeet, useContext, useMemo, useNoContext } from '../../live';
-import { LayoutContext, getAlignmentAnchor, UI_SCHEMA } from '../../workbench';
-import { schemaToArchetype } from '../../core';
+import { proxy } from '@use-gpu/core';
+import { yeet, useContext, useMemo, useNoContext } from '@use-gpu/live';
+import { LayoutContext, getAlignmentAnchor, UI_SCHEMA } from '@use-gpu/workbench';
+import { schemaToArchetype } from '@use-gpu/core';
 
 import { evaluateDimension, parseAnchorXY } from '../parse';
 import { getOriginProjection } from '../lib/util';
@@ -225,6 +225,7 @@ export const SDFRectangle: LiveComponent<SDFRectangleProps> = (props) => {
     }
 
     return yeet(render);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     image,
     texture,
@@ -238,7 +239,9 @@ export const SDFRectangle: LiveComponent<SDFRectangleProps> = (props) => {
     clip,
     mask,
     transform,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     ...layout,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     ...origin,
   ]);
 };

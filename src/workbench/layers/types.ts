@@ -1,5 +1,5 @@
-import type { LiveComponent } from '../../live';
-import type { ArchetypeSchema, TypedArray } from '../../core';
+import type { LiveComponent } from '@use-gpu/live';
+import type { ArchetypeSchema, TypedArray } from '@use-gpu/core';
 import type { LineLayerFlags } from './line-layer';
 import type { FaceLayerFlags } from './face-layer';
 import type { PointLayerFlags } from './point-layer';

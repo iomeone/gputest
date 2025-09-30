@@ -30,6 +30,8 @@ export const injectUseCursor = (
   const [cursor, map] = useMemo(() => {
     const keep = updaterRef.current === updater ? keepRef.current : null;
     return makeCursor(pair, defaults, keep);
+    // Explode pair
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, updater, defaults]);
 
   keepRef.current = map;
@@ -61,8 +63,7 @@ export const injectUseUpdateState = (
 
   const updateState = useCallback((update: Update<T>) =>
     setState((s: T) => patch(s, update)),
-    []);
+    [setState]);
 
-  // eslint-disable-next-line
-  return useMemo(() => [state, updateState] as Pair<T>, [state]);
+  return useMemo(() => [state, updateState] as Pair<T>, [state, updateState]);
 };

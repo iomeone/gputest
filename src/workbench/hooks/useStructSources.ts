@@ -1,34 +1,34 @@
-import type { LambdaSource, StorageSource, StructAggregateBuffer, UniformAttribute } from '../../core';
+import type { LambdaSource, StorageSource, StructAggregateBuffer, UniformAttribute } from '@use-gpu/core';
 
-import { useMemo, useOne } from '../../live';
-import { explode, structType, bindEntryPoint } from '../../shader/wgsl';
+import { useMemo, useOne } from '@use-gpu/live';
+import { explode, structType, bindEntryPoint } from '@use-gpu/shader/wgsl';
 import { getSource } from './useSource';
 import { getLambdaSource } from './useLambdaSource';
 
 const toTitleCase = (s: string) => s.slice(0, 1).toUpperCase() + s.slice(1);
 
 export const useStructSources = (
-  uniforms: UniformAttribute[],
+  attributes: UniformAttribute[],
   source: StorageSource,
   name?: string,
 ) => (
-  useMemo(() => getStructSources(uniforms, source, name), [uniforms, source, name])
+  useMemo(() => getStructSources(attributes, source, name), [attributes, source, name])
 );
 
 export const getStructSources = (
-  uniforms: UniformAttribute[],
+  attributes: UniformAttribute[],
   source: StorageSource,
   name?: string,
 ): Record<string, LambdaSource> => {
 
-  name = name ?? 'get' + uniforms.map(u => toTitleCase(u.name)).join('');
+  name = name ?? 'get' + attributes.map(u => toTitleCase(u.name)).join('');
 
-  const type = structType(uniforms as any, name);
-  const bound = getSource({name: name ?? 'storage', format: 'array<T>', type, args: null}, source);
+  const type = structType(attributes as any, name);
+  const bound = getSource({name: name ?? source.addressSpace ?? 'storage', format: 'array<T>', type, args: null}, source);
   const exploded = explode(type, bound);
 
   const sources: Record<string, LambdaSource> = {};
-  for (const {name} of uniforms) {
+  for (const {name} of attributes) {
     sources[name] = getLambdaSource(bindEntryPoint(exploded, name), source);
   };
 

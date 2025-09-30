@@ -1,30 +1,22 @@
-import type { Update } from '../../state';
-import type { Blending, Side } from '../../core';
-import { BLEND_NONE, BLEND_ALPHA, BLEND_PREMULTIPLY, BLEND_ADD, BLEND_SUBTRACT, BLEND_MULTIPLY } from '../../core';
-import { useMemo } from '../../live';
-import { $set, $delete } from '../../state';
+import type { Update } from '@use-gpu/state';
+import type { Blending, Side } from '@use-gpu/core';
+import { makeBlendState } from '@use-gpu/core';
+import { useMemo } from '@use-gpu/live';
+import { $set, $delete } from '@use-gpu/state';
 import { useRenderContext } from '../providers/render-provider';
 
 export type PipelineOptions = {
   mode: string,
-  blend: Blending | GPUBlendState,
+  blend: Blending | GPUBlendState | null,
   side: Side,
   shadow: boolean,
   scissor: any,
   depthWrite: boolean,
   depthTest: boolean,
   alphaToCoverage: boolean,
+  alphaToDiscard: boolean,
   topology: GPUPrimitiveTopology,
   stripIndexFormat: any,
-};
-
-const BLENDS = {
-  none:        BLEND_NONE,
-  alpha:       BLEND_ALPHA,
-  premultiply: BLEND_PREMULTIPLY,
-  add:         BLEND_ADD,
-  subtract:    BLEND_SUBTRACT,
-  multiply:    BLEND_MULTIPLY,
 };
 
 const CULL_SIDE = {
@@ -51,6 +43,7 @@ export const usePipelineOptions = (
     depthTest = null,
     depthWrite = null,
     alphaToCoverage = false,
+    alphaToDiscard = true,
     blend = (
       (alphaToCoverage && samples === 1) ? 'premultiply' :
       (!alphaToCoverage && mode === 'transparent') ? 'premultiply' : 'none'
@@ -71,7 +64,7 @@ export const usePipelineOptions = (
 
     const fragment = {
       targets: {
-        0: {blend: typeof blend === 'object' ? $set(blend) : (BLENDS[blend] ?? $delete())},
+        0: {blend: $set(makeBlendState(blend)) ?? $delete()},
       } as any
     };
 
@@ -82,8 +75,8 @@ export const usePipelineOptions = (
 
     return {primitive, multisample, fragment, depthStencil};
   }, [
-    mode,
     topology,
+    stripIndexFormat,
     side,
     depthTest,
     depthWrite,
@@ -94,9 +87,11 @@ export const usePipelineOptions = (
 
   const defs = useMemo(() => ({
     HAS_ALPHA_TO_COVERAGE: alphaToCoverage && samples > 1,
+    HAS_ALPHA_TO_DISCARD: alphaToDiscard,
     HAS_SCISSOR: !!scissor,
     HAS_SHADOW: !!shadow,
-  }), [alphaToCoverage, samples, !!scissor, !!shadow]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [alphaToCoverage, alphaToDiscard, samples, !!scissor, !!shadow]);
 
   return [pipeline, defs];
 };

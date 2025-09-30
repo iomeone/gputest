@@ -1,12 +1,12 @@
-import type { Lazy } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
-import { resolve } from '../../core';
-import { useMemo, useNoMemo } from '../../live';
+import type { Lazy } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
+import { resolve } from '@use-gpu/core';
+import { useMemo, useNoMemo } from '@use-gpu/live';
 import { useShaderRef, useNoShaderRef } from '../hooks/useShaderRef';
 import { getShader } from '../hooks/useShader';
 
-import { getInstanceRepeatIndex } from '../../wgsl/instance/index/repeatwgsl';
-import { getInstancedVertex } from '../../wgsl/instance/vertex/instancedwgsl';
+import { getInstanceRepeatIndex } from '@use-gpu/wgsl/instance/index/repeat.wgsl';
+import { getInstancedVertex } from '@use-gpu/wgsl/instance/vertex/instanced.wgsl';
 
 const INSTANCES = {HAS_INSTANCES: true};
 const NO_INSTANCES = {HAS_INSTANCES: false};
@@ -42,7 +42,7 @@ export const useInstancedVertex = (
 
     return [boundInstance, totalCount, INSTANCES];
 
-  }, [instance, instances, elementCount, instanceSize]);
+  }, [getVertex, instance, instances, elementCount, instanceSize, mapIndex]);
 }
 
 export const useNoInstancedVertex = () => {

@@ -1,6 +1,6 @@
-import type { ShaderModule } from '../../shader';
+import type { ShaderModule } from '@use-gpu/shader';
 
-import { makeContext, useContext, useNoContext } from '../../live';
+import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 
 export type ScissorContextProps = ShaderModule;
 

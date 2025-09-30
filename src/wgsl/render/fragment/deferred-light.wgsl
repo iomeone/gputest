@@ -1,6 +1,6 @@
-use '../../../wgsl/use/view':: { getViewResolution };
+use '@use-gpu/wgsl/use/view':: { getViewResolution };
 
-@link fn getFragment(uv: vec2<f32>) -> vec4<f32>;
+@link fn getFragment(uv: vec2<f32>, coord: vec4<f32>, index: u32) -> vec4<f32>;
 
 @fragment
 fn main(
@@ -9,7 +9,7 @@ fn main(
 ) -> @location(0) vec4<f32> {
 
   var uv = vec2<f32>(fragCoord.xy) * getViewResolution();
-  var outColor = getFragment(uv, lightIndex);
+  var outColor = getFragment(uv, fragCoord, lightIndex);
 
   return vec4<f32>(outColor.rgb, 1.0);
 }

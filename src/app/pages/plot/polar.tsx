@@ -1,16 +1,15 @@
-import type { LC } from '../../../live';
+import type { LC } from '@use-gpu/live';
 
-import React, { use } from '../../../live';
+import React from '@use-gpu/live';
 
 import {
-  Loop, Pass, FlatCamera,
-  Cursor,
+  Pass, FlatCamera,
   Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
-  Plot, Polar, Axis, Grid, Label, Line, Sampler, Scale, Surface, Tick, Transpose,
-} from '../../../plot';
+  Plot, Polar, Axis, Grid, Label, Line, Sampler, Scale, Tick,
+} from '@use-gpu/plot';
 
 import { InfoBox } from '../../ui/info-box';
 
@@ -84,7 +83,7 @@ export const PlotPolarPage: LC = () => {
                     placement='bottom'
                     color='#80808080'
                     size={24}
-                    offset={16}
+                    offset={[0, 16]}
                     expand={5}
                     depth={0.5}
                     formatter={thetaFormatter}
@@ -94,7 +93,7 @@ export const PlotPolarPage: LC = () => {
                     placement='bottom'
                     color='#ffffff'
                     size={24}
-                    offset={16}
+                    offset={[0, 16]}
                     expand={0}
                     depth={0.5}
                     formatter={thetaFormatter}

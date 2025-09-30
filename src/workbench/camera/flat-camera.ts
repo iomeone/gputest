@@ -1,13 +1,13 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { ViewUniforms, Rectangle } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { Rectangle } from '@use-gpu/core';
 
-import { use, provide, deprecated, useContext, useOne, useMemo, incrementVersion } from '../../live';
-import { VIEW_UNIFORMS, makeOrthogonalMatrix, makeFrustumPlanes } from '../../core';
+import { use, provide, deprecated, useContext, useOne, useMemo, incrementVersion } from '@use-gpu/live';
+import { makeOrthogonalMatrix, makeViewUniforms, updateViewProjection, updateViewSize } from '@use-gpu/core';
 import { LayoutContext } from '../providers/layout-provider';
 import { FrameContext, usePerFrame } from '../providers/frame-provider';
 import { RenderContext } from '../providers/render-provider';
 import { ViewProvider } from '../providers/view-provider';
-import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
+import { mat4, vec3, vec4 } from 'gl-matrix';
 
 const DEFAULT_FLAT_CAMERA = {
   near: -100,
@@ -27,6 +27,8 @@ export type FlatCameraProps = PropsWithChildren<{
   near?: number,
   far?: number,
 }>;
+
+const INF_POSITION = vec4.fromValues(0, 0, 1, 0);
 
 export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
   const {
@@ -74,22 +76,9 @@ export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
     const layout = [left, top, right, bottom] as Rectangle;
     const matrix = makeOrthogonalMatrix(left, right, bottom, top, near, far);
     return [layout, matrix, ratio];
-  }, [scale, width, height, pixelRatio]);
+  }, [scale, width, height, far, near, relative, pixelRatio]);
 
-  const uniforms = useOne(() => ({
-    projectionMatrix: { current: null as any },
-    projectionViewMatrix: { current: null as any },
-    projectionViewFrustum: { current: null as any },
-    inverseViewMatrix: { current: mat4.create() },
-    inverseProjectionViewMatrix: { current: mat4.create() },
-    viewMatrix: { current: mat4.create() },
-    viewPosition: { current: null as any },
-    viewNearFar: { current: null as any },
-    viewResolution: { current: null as any },
-    viewSize: { current: null as any },
-    viewWorldDepth: { current: null as any },
-    viewPixelRatio: { current: null as any },
-  })) as ViewUniforms;
+  const uniforms = useOne(makeViewUniforms);
 
   const panned = useMemo(() => {
     if (!x && !y && (zoom == 1)) return matrix;
@@ -102,35 +91,16 @@ export const FlatCamera: LiveComponent<FlatCameraProps> = (props) => {
     return m;
   }, [matrix, x, y, zoom]);
 
-  const viewHeight = Math.abs(layout[3] - layout[1]);
+  const viewHeight = Math.abs(layout[3] - layout[1]) / 2.0;
 
-  uniforms.projectionMatrix.current = panned;
-  uniforms.viewPosition.current = vec4.fromValues(0, 0, 1, 0);
-  uniforms.viewNearFar.current = vec2.fromValues(near, far);
-  uniforms.viewResolution.current = vec2.fromValues(1 / width, 1 / height);
-  uniforms.viewSize.current = vec2.fromValues(width, height);
-  uniforms.viewWorldDepth.current = vec2.fromValues(focus * viewHeight / 2.0, viewHeight / (far - near) / 2.0);
-  uniforms.viewPixelRatio.current = ratio;
-
-  const {
-    inverseProjectionViewMatrix,
-    inverseViewMatrix,
-    projectionMatrix,
-    projectionViewMatrix,
-    projectionViewFrustum,
-    viewMatrix,
-  } = uniforms;
-  projectionViewMatrix.current = mat4.multiply(mat4.create(), projectionMatrix.current, viewMatrix.current);
-  projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
-  mat4.invert(inverseProjectionViewMatrix.current, projectionViewMatrix.current);
-  mat4.invert(inverseViewMatrix.current, viewMatrix.current);
+  updateViewProjection(uniforms, panned, undefined, INF_POSITION, near, far);
+  updateViewSize(uniforms, width, height, ratio, (relative ? 2 / height : 1) / zoom / pixelRatio, focus * zoom, viewHeight / (far - near));
 
   const frame = useOne(() => ({current: 0}));
   frame.current = incrementVersion(frame.current);
 
   return provide(FrameContext, frame.current,
     use(ViewProvider, {
-      defs: VIEW_UNIFORMS,
       uniforms,
       children: provide(LayoutContext, layout, children),
     })

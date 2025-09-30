@@ -1,7 +1,7 @@
-import type { Tuples, XY, XYZW, Rectangle } from '../core';
-import type { LiveElement } from '../live';
-import type { FontMetrics } from '../glyph';
-import type { ShaderSource, ShaderModule } from '../shader';
+import type { Tuples, XY, XYZW, Rectangle } from '@use-gpu/core';
+import type { LiveElement } from '@use-gpu/live';
+import type { FontMetrics } from '@use-gpu/glyph';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
 export type AutoXY = [number | null, number | null];
 export type AutoRectangle = [number | null, number | null, number | null, number | null];

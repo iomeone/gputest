@@ -1,10 +1,10 @@
 import type {
   ArrowFunction, TypedArray, TensorArray, TypedArrayConstructor,
   Blending, VectorLike, ArrayLike, ColorLike, ColorLikes, Side, VectorLikes,
-} from '../core';
+} from '@use-gpu/core';
 import type { Parser, Join, PointShape, Domain } from './types';
 import { mat4, vec4, vec3, vec2, quat } from 'gl-matrix';
-import { toScalarArray, toVectorArray, toMultiVectorArray, toMultiScalarArray, toMultiMultiVectorArray } from './flatten';
+import { toBooleanArray, toScalarArray, toVectorArray, toMultiVectorArray, toMultiScalarArray, toMultiMultiVectorArray } from './flatten';
 
 const NO_VEC2 = vec2.fromValues(0, 0);
 const NO_VEC3 = vec3.fromValues(0, 0, 0);
@@ -45,9 +45,9 @@ export const makeParseObject = <T extends object>() => (value?: T): T => {
 export const makeParseArray = <T>(
   defaults: T[],
   parse: (v: any) => T
-) => (vecs?: ArrayLike[]): T[] => {
+) => (vecs?: ArrayLike): T[] => {
   if (vecs != null) {
-    const vs = vecs.map(parse);
+    const vs: T[] = [...vecs].map(parse);
     const l = vs.length;
     const n = defaults.length;
     if (l < n) for (let i = l; i < n; ++i) vs.push(defaults[i]);
@@ -226,7 +226,7 @@ export const clampNumber = (
 ///////////////////////////
 
 export const parseObject = <T>(value?: T) => typeof value === 'object' && value != null ? value : {};
-export const parseString = (s?: string) => s ?? '';
+export const parseString = (s?: string) => s ? '' + s : '';
 export const parseNumberLike = (value?: number | TypedArray) => +(Array.isArray(value) ? value[0] : value) || 0;
 export const parseNumber = (value?: number) => parseNumberLike(value);
 export const parseInteger = (value?: number) => Math.round(parseNumberLike(value));
@@ -305,8 +305,9 @@ export const parseColor = (color?: ColorLike) => parseColorOpacity(color);
 
 export const parseStringArray = makeParseArray(NO_STRINGS, parseString);
 
-export const parseBooleanArray = (vec: VectorLike | boolean[]): Uint8Array =>
-  vec ? toScalarArray(vec as VectorLike, Uint8Array) as any as Uint8Array : new Uint8Array();
+export const parseBooleanArray = (vec: VectorLike | boolean[]): Uint8Array => {
+  return vec ? toBooleanArray(vec as VectorLike, Uint8Array) as any as Uint8Array : new Uint8Array();
+};
 
 export const parseBooleanArrayLike = (vec: VectorLike | boolean | boolean[]): Uint8Array | boolean =>
   typeof vec === 'boolean' ? vec : vec ? toScalarArray(vec as VectorLike, Uint8Array) as any as Uint8Array : new Uint8Array();
@@ -363,7 +364,7 @@ export const parsePositionMultiMultiArray = makeParseMultiMultiVectorArray(4, 1,
 
 export const parseSide       = makeParseEnum<Side>(['front', 'back', 'both']);
 
-export const parseJoin       = makeParseEnum<Join>(['bevel', 'miter', 'round']);
+export const parseJoin       = makeParseEnum<Join>(['tangent', 'bevel', 'miter', 'round']);
 export const parseBlending   = makeParseEnum<Blending>(['none', 'premultiply', 'alpha', 'add', 'subtract', 'multiply']);
 
 export const parsePlacement  = makeParseMap({

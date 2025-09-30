@@ -1,12 +1,10 @@
-import type { CPUGeometry } from '../../../core';
-import { makeNumberWriter } from '../../../core';
+import type { CPUGeometry } from '@use-gpu/core';
+import { lerp, makeNumberWriter } from '@use-gpu/core';
 
 type AABBGeometryProps = {
   min?: [number, number] | [number, number, number],
   max?: [number, number] | [number, number, number],
 };
-
-const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
 export const makeAABBGeometry = ({
   min = [-1, -1, -1],

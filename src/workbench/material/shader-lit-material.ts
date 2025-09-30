@@ -1,14 +1,15 @@
-import type { LC, LiveElement } from '../../live';
-import type { ShaderModule, ShaderSource } from '../../shader';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { provide, yeet, useMemo } from '../../live';
+import { provide, yeet, useMemo } from '@use-gpu/live';
 
 import { useLightContext } from '../providers/light-provider';
 import { MaterialContext } from '../providers/material-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
-import { getLitFragment } from '../../wgsl/instance/fragment/litwgsl';
-import { applyPBRMaterial } from '../../wgsl/material/pbr-applywgsl';
+import { getLitFragment } from '@use-gpu/wgsl/instance/fragment/lit.wgsl';
+import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
 const {signal} = QueueReconciler;
 
@@ -38,6 +39,7 @@ export type ShaderLitMaterialProps = {
     normal: vec4<f32>,
     tangent: vec4<f32>,
     position: vec4<f32>,
+    coord: vec4<f32>,
   ) -> SurfaceFragment
   */
   surface: ShaderModule,
@@ -54,8 +56,10 @@ export type ShaderLitMaterialProps = {
 
   /** Material lighting shader, for lighting model. e.g. `applyPBRMaterial`.
 
-  fn getLight(surface: SurfaceFragment) -> vec4<f32> */
+  fn getLight(surface: SurfaceFragment) -> vec4<f32>
+  */
   apply?: ShaderModule,
+
   render?: (material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement,
   children?: LiveElement | ((material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement),
 };
@@ -67,12 +71,11 @@ export const ShaderLitMaterial: LC<ShaderLitMaterialProps> = (props: ShaderLitMa
     surface,
     environment,
     apply = applyPBRMaterial,
-    render,
     children,
   } = props;
 
-  const {useMaterial} = useLightContext();
-  const applyLights = useMaterial(apply);
+  const {useApplyMaterial} = useLightContext();
+  const applyLights = useApplyMaterial(apply);
   const applyEnvironment = environment;
 
   const getLight = getLitFragment;
@@ -94,6 +97,7 @@ export const ShaderLitMaterial: LC<ShaderLitMaterialProps> = (props: ShaderLitMa
     },
   }), [getSurface, getLight, getDepth, getFragment, applyLights, applyEnvironment]);
 
+  const render = getRenderFunc(props);
   const view = render ? render(context) : children;
   return render ?? children ? provide(MaterialContext, context, [signal(), view]) : yeet(context);
 };

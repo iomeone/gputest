@@ -1,9 +1,9 @@
-import type { UniformAttribute } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { UniformAttribute } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
-import { useMemo, useNoMemo } from '../../live';
-import { makeShaderBinding } from '../../core';
-import { bindingToModule, bundleToAttribute } from '../../shader/wgsl';
+import { useMemo, useNoMemo } from '@use-gpu/live';
+import { makeShaderBinding } from '@use-gpu/core';
+import { bindingToModule, bundleToAttribute } from '@use-gpu/shader/wgsl';
 
 // Turn a shader source/constant/lambda into a virtual shader module
 export const useSource = <T = any>(

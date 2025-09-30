@@ -1,6 +1,6 @@
-import type { StorageTarget, TextureTarget } from '../../core';
+import type { StorageTarget, TextureTarget } from '@use-gpu/core';
 
-import { makeContext, useContext, useNoContext } from '../../live';
+import { makeContext, useContext, useNoContext } from '@use-gpu/live';
 
 export type ComputeContextProps = (StorageTarget | TextureTarget)[];
 

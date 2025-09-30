@@ -1,15 +1,15 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { ShaderModule } from '../../shader';
-import type { UniformType, Rectangle, XY, XYZW } from '../../core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { UniformType, Rectangle, XY, XYZW } from '@use-gpu/core';
 import type { FitInto, Direction, OverflowMode, LayoutElement, LayoutPicker, LayoutRenderer } from '../types';
 
-import { useProp } from '../../traits/index-live';
-import { memo, use, gather, yeet, extend, useFiber, useOne, useMemo } from '../../live';
-import { bindBundle, bundleToAttribute, chainTo } from '../../shader/wgsl';
-import { useForceUpdate, useInspectable, getSource } from '../../workbench';
+import { useProp } from '@use-gpu/traits/live';
+import { memo, use, gather, yeet, extend, useFiber, useOne, useMemo } from '@use-gpu/live';
+import { bindBundle, bundleToAttribute, chainTo } from '@use-gpu/shader/wgsl';
+import { useForceUpdate, useInspectable, getSource } from '@use-gpu/workbench';
 
-import { getScrolledPosition } from '../../wgsl/layout/scrollwgsl';
-import { getShiftedRectangle } from '../../wgsl/layout/shiftwgsl';
+import { getScrolledPosition } from '@use-gpu/wgsl/layout/scroll.wgsl';
+import { getShiftedRectangle } from '@use-gpu/wgsl/layout/shift.wgsl';
 
 import { getBlockMinMax } from '../lib/block';
 import { makeBoxPicker, memoFit, memoLayout, isHorizontal } from '../lib/util';
@@ -266,6 +266,7 @@ export const Overflow: LiveComponent<OverflowProps> = memo((props: OverflowProps
         fit: memoFit(fitInto),
         prefit: memoFit(fitInto),
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props, els, version]);
   };
 

@@ -98,6 +98,14 @@ export const setFloat64Nx3 = (n: number) => (view: DataView, offset: number, dat
   }
 };
 
+type Setter<T> = (view: DataView, offset: number, data: T) => void;
+
+export const repeatSetter = <T>(setter: Setter<T>, n: number, stride: number) => (view: DataView, offset: number, data: T): void => {
+  for (let i = 0; i < n; ++i) {
+    setter(view, offset + i * stride, (data as any)[i]);
+  }
+};
+
 export const UNIFORM_BYTE_SETTERS = arrayify(arrayify(arrayify(shorthands({
   "bool":             setUint8,
   "vec2<bool>":       setUint8N(2),

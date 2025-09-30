@@ -1,13 +1,13 @@
-import type { LiveComponent } from '../../live';
-import type { Rectangle, Tuples, XYZW } from '../../core';
-import type { ShaderModule } from '../../shader';
-import type { FontMetrics } from '../../glyph';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Rectangle, Tuples, XYZW } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { FontMetrics } from '@use-gpu/glyph';
 import type { InlineLine } from '../types';
 
-import { yeet, useMemo } from '../../live';
-import { useSDFFontContext, UI_SCHEMA } from '../../workbench';
+import { yeet, useMemo } from '@use-gpu/live';
+import { useSDFFontContext, UI_SCHEMA } from '@use-gpu/workbench';
 import { getOriginProjectionX, getOriginProjectionY } from '../lib/util';
-import { schemaToArchetype } from '../../core';
+import { schemaToArchetype } from '@use-gpu/core';
 
 const BLACK = [0, 0, 0, 1];
 
@@ -17,7 +17,8 @@ export type GlyphsProps = {
   size?: number,
   detail?: number,
   expand?: number,
-  snap?: boolean,
+  hint?: 'x' | 'y' | 'xy' | false,
+  monochrome?: boolean,
 
   font: number[],
   spans: Tuples<3>,
@@ -40,7 +41,8 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     expand = 0,
     size = 16,
     detail = size,
-    snap = false,
+    hint = 'xy',
+    monochrome = false,
 
     font,
     spans,
@@ -66,6 +68,9 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     const scale = getScale(detail) * adjust;
     const texture = getTexture();
 
+    const snapX = hint === 'x' || hint === 'xy';
+    const snapY = hint === 'y' || hint === 'xy';
+
     const fill = color.slice();
     fill[3] *= opacity;
 
@@ -79,18 +84,20 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
     for (const {layout, start, end, gap} of lines) {
       const [l, t] = layout;
 
-      const {ascent} = height;
-      let x = snap ? Math.round(l) : l;
-      const y = snap ? Math.round(t + ascent) : t + ascent;
-
+      let x = snapX ? Math.round(l) : l;
       let sx = x;
+
+      const {ascent} = height;
+      const y = t + ascent;
+      const sy = snapY ? Math.round(y) : y;
+
       spans.iterate((_a, trim, _h, index) => {
         glyphs.iterate((fontIndex: number, glyphId: number, isWhiteSpace: number, kerning: number) => {
           const {glyph, mapping} = getGlyph(font[fontIndex], glyphId, detail);
           const {image, layoutBounds, outlineBounds, rgba, scale: glyphScale} = glyph;
           const [,,lr,] = layoutBounds;
 
-          const r = rgba ? -1 : 1;
+          const r = rgba && !monochrome ? -1 : 1;
           const s = scale * glyphScale;
           const k = kerning / 65536.0 * scale;
           x += k;
@@ -100,8 +107,8 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
             if (image && outlineBounds) {
               const [gl, gt, gr, gb] = outlineBounds;
 
-              const cx = snap ? Math.round(sx) : sx;
-              const cy = snap ? Math.round(y) : y;
+              const cx = sx;
+              const cy = sy;
 
               const left   = (s * gl) + cx;
               const top    = (s * gt) + cy;
@@ -131,7 +138,7 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
 
         if (trim) {
           x += gap;
-          sx = snap ? Math.round(x) : x;
+          sx = snapX ? Math.round(x) : x;
         }
       }, start, end);
     }
@@ -160,5 +167,6 @@ export const Glyphs: LiveComponent<GlyphsProps> = (props) => {
       transform,
       zIndex,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props, sdfFont, zIndex]);
 };

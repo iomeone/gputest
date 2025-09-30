@@ -50,8 +50,9 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     let end = n.to;
     while (start > 0 && code.charAt(start - 1) !== "\n") start--;
     while (end < code.length - 1 && code.charAt(end + 1) !== "\n") end++;
+    const line = code.slice(0, start).split('\n').length + 1;
 
-    const loc = name != null ? `in '${name}'` : '';
+    const loc = (name != null ? `in '${name}' ` : '') + `on line ${line}`;
     throw new Error(
       `${loc}\n${t} in '${code.slice(n.from, n.to)}'\n\n`+
       `${code.slice(start, end)}\n`+
@@ -384,7 +385,7 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const declarations = getDeclarations();
 
     const externals = declarations
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion    
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       .filter(d => d.func && !functions.find(f => f.func.name === d.func!.name));
 
     const refs = [...functions, ...declarations];

@@ -5,7 +5,7 @@ import { renderFibers } from './tree';
 
 const MARKER = 'Live/HMR-v1';
 
-/** Hot-reload an App root with a webpack-compatible module interface.
+/** Hot-reload an App root with a webpack/vite-compatible module interface.
 
 Will discard all prior state and do a full re-render.
 ```
@@ -17,7 +17,11 @@ export const hot = (fn: LiveFunction<any>, mod: any) => {
 
   const fibers: Set<LiveFiber<any>> = new Set();
 
-  const {hot} = mod;
+  // Resolve HMR API from either a webpack-like `module` (`module` or `module.hot`)
+  // or an HMR object passed in by Vite (e.g. `import.meta` or `import.meta.hot`).
+  // We avoid referencing `import.meta` here so that TypeScript won't error
+  // for webpack-style builds on older module systems.
+  const hot = mod ? (((mod as any).hot ?? (mod as any)) as any) : undefined;
   if (!hot) return fn;
 
   const wrapped = new Proxy((...args: any[]) => {
@@ -34,16 +38,17 @@ export const hot = (fn: LiveFunction<any>, mod: any) => {
     },
   });
 
-  const {accept, dispose, data, invalidate} = hot;
+  const data = (hot as any).data;
   if (data && data.marker !== MARKER) {
-    invalidate();
+    // Vite's HMR runtime's methods (`accept`, `dispose`, `invalidate`, etc.) require `this` to be the hot object
+    (hot as any).invalidate?.();
   }
   else {
-    dispose((data: any) => {
+    (hot as any).dispose?.((data: any) => {
       data.marker = MARKER;
       data.fibers = Array.from(fibers);
     });
-    accept();
+    (hot as any).accept?.();
 
     if (data && data.fibers) {
       for (const f of data.fibers) {

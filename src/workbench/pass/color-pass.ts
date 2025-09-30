@@ -1,16 +1,17 @@
-import type { LC, PropsWithChildren } from '../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { LightEnv, Renderable } from './types';
 
-import { yeet, memo, useMemo, useOne } from '../../live';
+import { yeet, memo, useMemo } from '@use-gpu/live';
+import { updateMipTextureChain } from '@use-gpu/core';
 
-import { useRenderContext } from '../providers/render-provider';
 import { useDeviceContext } from '../providers/device-provider';
-import { useViewContext } from '../providers/view-provider';
 import { usePassContext } from '../providers/pass-provider';
+import { useRenderContext } from '../providers/render-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
 
+import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
@@ -43,34 +44,39 @@ export const ColorPass: LC<ColorPassProps> = memo((props: ColorPassProps) => {
     overlay = false,
     merge = false,
     calls,
-    env: {light},
+    env,
   } = props;
 
   const inspect = useInspectable();
 
   const device = useDeviceContext();
   const renderContext = useRenderContext();
-  const {bind: bindGlobal, cull, uniforms} = useViewContext();
-  const {bind: makeBindPass} = usePassContext();
+
+  const {
+    bindGroups: {color: bindGroup},
+    views: {view: {cull, uniforms}},
+  } = usePassContext();
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
 
   const opaques      = toArray(calls['opaque']      as Renderable[]);
   const transparents = toArray(calls['transparent'] as Renderable[]);
   const debugs       = toArray(calls['debug']       as Renderable[]);
 
-  const bindPass = useOne(() => {
-    if (!makeBindPass) return () => {};
-    const args = [];
-    if (light) {
-      const {storage, texture} = light;
-      if (storage) args.push({storage});
-      if (texture) args.push({texture});
-    }
-    return makeBindPass(args);
-  }, light);
-
   const renderPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(renderContext, {overlay, merge, label}),
     [renderContext, overlay, merge]);
+
+  const inspected = inspect({
+    output: {
+      sources: [renderContext.source, renderContext.depth],
+    },
+    pass: uniforms,
+    bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
+  });
 
   return quote(yeet(() => {
     let vs = 0;
@@ -82,8 +88,7 @@ export const ColorPass: LC<ColorPassProps> = memo((props: ColorPassProps) => {
     if (!overlay && !merge) renderContext.swap?.();
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-    bindGlobal(passEncoder);
-    bindPass(passEncoder);
+    bindPass?.(passEncoder);
 
     drawToPass(cull, opaques, passEncoder, countGeometry, uniforms);
     drawToPass(cull, transparents, passEncoder, countGeometry, uniforms, -1);
@@ -94,16 +99,11 @@ export const ColorPass: LC<ColorPassProps> = memo((props: ColorPassProps) => {
     const command = commandEncoder.finish();
     device.queue.submit([command]);
 
-    inspect({
-      output: renderContext.source ? {
-        color: renderContext.source,
-        depth: renderContext.depth,
-      } : undefined,
-      render: {
-        vertices: vs,
-        triangles: ts,
-      },
-    });
+    // eslint-disable-next-line
+    if (renderContext.source && renderContext.source.mips! > 1) updateMipTextureChain(device, renderContext.source);
+
+    inspected.render.vertices = vs;
+    inspected.render.triangles = ts;
 
     return null;
   }));

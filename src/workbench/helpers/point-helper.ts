@@ -1,7 +1,7 @@
-import type { LC } from '../../live';
-import type { TypedArray } from '../../core';
+import type { LC } from '@use-gpu/live';
+import type { TypedArray } from '@use-gpu/core';
 
-import { memo, use } from '../../live';
+import { memo, use } from '@use-gpu/live';
 import { PointLayer } from '../layers/point-layer';
 
 type PointHelperProps = {

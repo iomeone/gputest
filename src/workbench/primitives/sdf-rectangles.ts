@@ -1,22 +1,25 @@
-import type { LiveComponent } from '../../live';
-import type { VectorLike, Lazy, TextureSource, LambdaSource } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
-import type { TransformContextProps } from '../../workbench';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike, Lazy, TextureSource, LambdaSource } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { TransformContextProps } from '@use-gpu/workbench';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useMemo, useOne } from '../../live';
+import { memo, useMemo, useOne } from '@use-gpu/live';
+
+import { FacetSource, useFacetShader } from './hooks/facets';
+import { PickingSource, usePickingShader } from './hooks/picking';
+
 import { useCombinedTransform } from '../hooks/useCombinedTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useShader } from '../hooks/useShader';
 import { useDataLength } from '../hooks/useDataBinding';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
-import { usePickingShader } from '../providers/picking-provider';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getSDFRectangleVertex } from '../../wgsl/instance/vertex/sdf-rectanglewgsl';
-import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectanglewgsl';
+import { getSDFRectangleVertex } from '@use-gpu/wgsl/instance/vertex/sdf-rectangle.wgsl';
+import { getSDFRectangleFragment } from '@use-gpu/wgsl/instance/fragment/sdf-rectangle.wgsl';
 
 export type SDFRectanglesProps = {
   rectangle?: VectorLike,
@@ -51,13 +54,14 @@ export type SDFRectanglesProps = {
 
   count?: Lazy<number>,
   id?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
+} & FacetSource & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export const SDFRectangles: LiveComponent<SDFRectanglesProps> = memo((props: SDFRectanglesProps) => {
   const {
     count = 1,
     mode = 'transparent',
     alphaToCoverage = false,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -90,10 +94,12 @@ export const SDFRectangles: LiveComponent<SDFRectanglesProps> = memo((props: SDF
 
   const boundVertex = useShader(getSDFRectangleVertex, [r, a, b, s, f, u, v, p, d, xf, c]);
   const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, props.instance, props.instances, instanceCount);
-  const getPicking = usePickingShader(props);
   const getFragment = useShader(getSDFRectangleFragment, [t, m]);
 
-  const links = useOne(() => ({getVertex, getFragment, getPicking}), [getVertex, getFragment, getPicking]);
+  const getPicking = usePickingShader(props);
+  const getFacet = useFacetShader(props);
+
+  const links = useOne(() => ({getVertex, getFragment, getPicking, getFacet}), [getVertex, getFragment, getPicking, getFacet]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,
@@ -101,6 +107,7 @@ export const SDFRectangles: LiveComponent<SDFRectanglesProps> = memo((props: SDF
     stripIndexFormat: 'uint16',
     side: 'both',
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,

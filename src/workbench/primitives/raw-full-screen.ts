@@ -1,37 +1,42 @@
-import type { LiveComponent } from '../../live';
-import type { DeepPartial, TextureSource, LambdaSource } from '../../core';
-import type { ShaderModule } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { DeepPartial, TextureSource, LambdaSource } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useOne, useNoOne, useRef } from '../../live';
-import { getBundleKey } from '../../shader/wgsl';
+import { memo, useMemo } from '@use-gpu/live';
+
+import { usePickingShader } from './hooks/picking';
 
 import { useShader } from '../hooks/useShader';
-import { usePickingShader } from '../providers/picking-provider';
-import { useRenderContext, useNoRenderContext } from '../providers/render-provider';
+import { useInitialRender, useNoInitialRender } from '../hooks/useInitialDispatch';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getFullScreenVertex } from '../../wgsl/instance/vertex/full-screenwgsl';
-import { getTextureColor } from '../../wgsl/mask/texturedwgsl';
+import { getFullScreenVertex } from '@use-gpu/wgsl/instance/vertex/full-screen-view.wgsl';
+import { getTextureColor } from '@use-gpu/wgsl/mask/textured.wgsl';
 
 export type RawFullScreenProps = {
   texture?: TextureSource | LambdaSource | ShaderModule,
   filter?: ShaderModule,
+
   initial?: boolean,
+  version?: number,
 
   pipeline?: DeepPartial<GPURenderPipelineDescriptor>,
   id?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export const RawFullScreen: LiveComponent<RawFullScreenProps> = memo((props: RawFullScreenProps) => {
   const {
     mode = 'opaque',
     alphaToCoverage,
+    alphaToDiscard,
     blend,
     id = 0,
+
     initial = false,
+    version = 0,
   } = props;
 
   const vertexCount = 3;
@@ -42,23 +47,16 @@ export const RawFullScreen: LiveComponent<RawFullScreenProps> = memo((props: Raw
   const getVertex = getFullScreenVertex;
   const getPicking = usePickingShader({id});
   const getFragment = useShader(getTextureColor, [t]);
-  const links = useOne(() => ({getVertex, getFragment, getPicking}),
-    getBundleKey(getVertex) + getBundleKey(getFragment) + (getPicking ? getBundleKey(getPicking) : 0));
+  const links = useMemo(() => ({getVertex, getFragment, getPicking}), [getVertex, getFragment, getPicking]);
 
-  const renderContext = initial ? useRenderContext() : useNoRenderContext();
-  const firstRef = useRef(true);
-  initial ? useOne(() => { firstRef.current = true; }, renderContext) : useNoOne();
-
-  const shouldDispatch = initial ? () => {
-    if (!firstRef.current) return false;
-    firstRef.current = false;
-  } : undefined;
+  const shouldDispatch = initial ? useInitialRender([version]) : (useNoInitialRender(), undefined);
 
   const [pipeline, defines] = usePipelineOptions({
     mode,
     topology: 'triangle-list',
     side: 'both',
     alphaToCoverage,
+    alphaToDiscard,
     depthTest: false,
     depthWrite: false,
     blend,

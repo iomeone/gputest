@@ -1,7 +1,7 @@
-import type { XY, XYZW } from '../../core';
+import type { XY, XYZW } from '@use-gpu/core';
 import type { InlineElement, LayoutElement, InlineRenderer, LayoutPicker, Direction, FitInto, Alignment, Anchor, Baseline } from '../types';
 
-import { makeTuples } from '../../core';
+import { makeTuples } from '@use-gpu/core';
 import { makeInlineCursor } from './cursor';
 import { getAlignmentSpacing, isHorizontal, makeMiniHash } from './util';
 

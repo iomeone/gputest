@@ -1,4 +1,4 @@
-import type { StorageSource, TextureSource } from '../core';
+import type { StorageSource, TextureSource } from '@use-gpu/core';
 
 export type VoxFile = {
   shapes: VoxShape[],

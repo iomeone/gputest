@@ -1,5 +1,5 @@
-use '../../wgsl/use/types'::{ Light };
-use '../../wgsl/fragment/pbr'::{ PBR };
+use '@use-gpu/wgsl/use/types'::{ Light };
+use '@use-gpu/wgsl/fragment/pbr'::{ PBR };
 
 @infer type T;
 @link fn applyLight(

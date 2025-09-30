@@ -1,7 +1,7 @@
-import type { VectorLike, TypedArray } from '../../core';
+import type { VectorLike, TypedArray } from '@use-gpu/core';
 
-import { useMemo, useNoMemo, useOne, useNoOne } from '../../live';
-import { accumulateChunks, generateChunkFaces, generateConcaveIndices, alignSizeTo } from '../../core';
+import { useMemo, useNoMemo, useOne, useNoOne } from '@use-gpu/live';
+import { accumulateChunks, generateChunkFaces, generateConcaveIndices, alignSizeTo } from '@use-gpu/core';
 import { useRawSource, useNoRawSource } from '../hooks/useRawSource';
 import { FACE_SEGMENTS_SCHEMA } from './schemas';
 
@@ -62,7 +62,7 @@ export const useFaceSegmentsConcaveSource = (
   positions: TypedArray,
   dims: number,
 ) => {
-  const {count, indexed, indices} = useMemo(() => getFaceSegmentsConcave({chunks, groups, positions, dims}));
+  const {count, indexed, indices} = useMemo(() => getFaceSegmentsConcave({chunks, groups, positions, dims}), [chunks, groups, positions, dims]);
 
   // Bind as shader storage
   const i = useRawSource(indices, 'u32');

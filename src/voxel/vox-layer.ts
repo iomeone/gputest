@@ -1,23 +1,23 @@
-import type { LC, Ref } from '../live';
-import type { GPUGeometry, TextureSource, StorageSource, LambdaSource } from '../core';
-import type { ShaderSource } from '../shader';
-import type { PipelineOptions } from '../workbench';
+import type { LC, Ref } from '@use-gpu/live';
+import type { GPUGeometry, TextureSource, StorageSource, LambdaSource } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { PipelineOptions } from '@use-gpu/workbench';
 
-import { seq } from '../core';
-import { gather, use, memo, useCallback, useMemo, useOne } from '../live';
+import { seq } from '@use-gpu/core';
+import { gather, use, memo, useCallback, useMemo, useOne } from '@use-gpu/live';
 import {
   useMatrixContext,
   useShader, useNoShader, useLambdaSource, useDebugContext, useShaderRef,
   useEnvironmentContext,
   FaceLayer, GeometryData, ShaderLitMaterial,
   makeBoxGeometry,
-} from '../workbench';
-import { wgsl, bindBundle, bindEntryPoint } from '../shader/wgsl';
+} from '@use-gpu/workbench';
+import { wgsl, bindBundle, bindEntryPoint } from '@use-gpu/shader/wgsl';
 
-import { applyPBRMaterial } from '../wgsl/material/pbr-applywgsl';
-import { applyPBREnvironment } from '../wgsl/material/pbr-environmentwgsl';
-import { getViewPosition, worldToDepth } from '../wgsl/use/viewwgsl';
-import { SurfaceFragment, DepthFragment } from '../wgsl/use/typeswgsl';
+import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { applyPBREnvironment } from '@use-gpu/wgsl/material/pbr-environment.wgsl';
+import { getViewPosition, worldToDepth } from '@use-gpu/wgsl/use/view.wgsl';
+import { SurfaceFragment, DepthFragment } from '@use-gpu/wgsl/use/types.wgsl';
 
 import { vec3, mat3, mat4 } from 'gl-matrix';
 
@@ -265,6 +265,7 @@ fn traceVolumeSteps(
   normal: vec4<f32>,
   tangent: vec4<f32>,
   position: vec4<f32>,
+  coord: vec4<f32>,
 ) -> SurfaceFragment {
   let viewPosition = getViewPosition();
   let surfacePosition = position.xyz;
@@ -310,16 +311,17 @@ fn traceVolumeSteps(
   let n = getNormalMatrix();
   let worldPosition = m * vec4<f32>(hit.position - vec3<f32>(s) / 2.0, 1.0);
 
-  let occlusion = 1.0;
+  let worldNormal = vec4<f32>(n * hit.normal, 0.0);
+  let occlusion = vec4<f32>(worldNormal.xyz, 1.0);
   let depth = worldToDepth(worldPosition);
 
   return SurfaceFragment(
     worldPosition,
-    vec4<f32>(n * hit.normal, 0.0),
+    worldNormal,
+    occlusion,
     albedo,
     emissive,
     material,
-    occlusion,
     depth,
   );
 }
@@ -385,6 +387,8 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
         DEBUG_STEPS,
         MIP_LEVELS: mips,
         SDF_LEVEL: sdf ? mips - 1 : -1,
+        // `sdf` is not static
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }), [DEBUG_STEPS, mips, sdf]);
 
       // Get bounding box / ray transform
@@ -403,11 +407,14 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
         return [m, i, r, n];
       }, parent);
 
-      const local3 = vec3.create();
-      const origin3 = vec3.create();
+      const local3 = useOne(vec3.create);
+      const origin3 = useOne(vec3.create);
+
+      // `shape` is not static
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const size = useCallback(() => shape[0].size, [shape]);
 
       // Determine if camera near plane is inside (lazy)
-      const size = useCallback(() => shape[0].size, [shape]);
       const inside = useCallback((uniforms: Record<string, Ref<any>>) => {
         const {size} = shape[0];
         const sx = size[0] / 2;
@@ -428,7 +435,7 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
 
         const inside = Math.abs(local3[0]) < sx && Math.abs(local3[1]) < sy && Math.abs(local3[2]) < sz;
         return inside;
-      }, [matrix, inverse])
+      }, [inverse, local3])
 
       // Transform view position into voxel space to use as starting point inside (lazy)
       const origin = useCallback((uniforms: Record<string, Ref<any>>) => {
@@ -446,7 +453,7 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
         origin3[2] += sz;
 
         return origin3;
-      }, [inverse]);
+      }, [inverse, origin3]);
 
       const boundPosition = useShader(vertexShader, [positions, size]);
       const getPosition = useLambdaSource(boundPosition, positions);
@@ -492,7 +499,6 @@ export const VoxLayer: LC<VoxLayerProps> = memo((props: VoxLayerProps) => {
               fragDepth: true,
               shaded: true,
               side: 'back',
-              depthTest: false,
               blend,
               mode,
               shouldDispatch: (uniforms: Record<string, Ref<any>>) => {

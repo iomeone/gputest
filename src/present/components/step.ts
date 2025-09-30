@@ -1,10 +1,10 @@
-import type { LC, PropsWithChildren } from '../../live';
-import type { TraitProps } from '../../traits';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits';
 import type { ParsedEffect, } from '../types';
 
-import { unquote, fence, yeet, use, useMemo, useOne, useFiber } from '../../live';
-import { useLayoutContext } from '../../workbench';
-import { Transform } from '../../layout';
+import { unquote, fence, yeet, use, useMemo, useOne, useFiber } from '@use-gpu/live';
+import { useLayoutContext } from '@use-gpu/workbench';
+import { TransformUI } from '@use-gpu/layout';
 
 import { merge } from '../lib/slides';
 import { usePresentTransition } from '../hooks';
@@ -36,7 +36,8 @@ export const Step: LC<StepProps> = (props: StepProps) => {
     })),
     () => {
       useUpdateTransition();
-      return useMemo(() => use(Transform, {mask, transform, children}), [mask, transform, children]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      return useMemo(() => use(TransformUI, {mask, transform, children}), [mask, transform, children]);
     },
   );
 };

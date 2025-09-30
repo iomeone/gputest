@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { LiveComponent } from '../../live';
-import type { TraitProps } from '../../traits/index-live';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits/live';
 
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
-import { adjustSchema, schemaToArchetype, schemaToAttributes, toCPUDims, getTensorLength, getUniformDims } from '../../core';
-import { yeet, memo, useOne } from '../../live';
+import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { adjustSchema, schemaToArchetype, schemaToAttributes, toCPUDims, getTensorLength, getUniformDims } from '@use-gpu/core';
+import { yeet, memo, useOne } from '@use-gpu/live';
 
-import { useInspectHoverable, useTransformContext, POINT_SCHEMA, LayerReconciler } from '../../workbench';
+import { useInspectHoverable, useMaterialContext, useNoMaterialContext, useTransformContext, POINT_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
 
 import { PointTraits } from '../traits';
 
@@ -49,6 +49,8 @@ export const Point: LiveComponent<PointProps> = memo((props) => {
   if (hovered) flags.mode = "debug";
 
   const context = useTransformContext();
+
+  const material = flags.shaded ? useMaterialContext() : (useNoMaterialContext(), undefined);
   const {transform, nonlinear, matrix: refs} = context;
 
   const schema = useOne(() => adjustSchema(POINT_SCHEMA, formats), formats);
@@ -68,10 +70,11 @@ export const Point: LiveComponent<PointProps> = memo((props) => {
       archetype,
       attributes,
       flags,
+      material,
       refs,
       schema,
       sources,
-      transform: nonlinear ?? context,
+      transform: nonlinear ?? (context.key ? context : undefined),
       zIndex,
     },
   };

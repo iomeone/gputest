@@ -1,73 +1,158 @@
-import type { LC, PropsWithChildren } from '../../live';
-import type { UseGPURenderContext } from '../../core';
+import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { PassOptions, RenderComponents } from '../pass/types';
 
-import { use, multiGather, memo, useMemo } from '../../live';
+import { use, gather, memo, useOne } from '@use-gpu/live';
+import { toMurmur53 } from '@use-gpu/state';
 
 import { FullScreenRenderer } from './full-screen-renderer';
 import { ForwardRenderer } from './forward-renderer';
 import { DeferredRenderer } from './deferred-renderer';
 
-import { GBuffer } from './buffer/gbuffer';
+import { GBuffer } from './buffer/g-buffer';
+import { LightBuffer } from './buffer/light-buffer';
+import { MotionBuffer } from './buffer/motion-buffer';
+import { NormalBuffer } from './buffer/normal-buffer';
+import { OverscanBuffer, parseOverscanOptions } from './buffer/overscan-buffer';
+import { OutlineBuffer, parseOutlineOptions } from './buffer/outline-buffer';
 import { PickingBuffer } from './buffer/picking-buffer';
 import { ShadowBuffer } from './buffer/shadow-buffer';
+import { SSAOBuffer, parseSSAOOptions } from './buffer/ssao-buffer';
+import { ViewBuffer, useViewBuffer, useNoViewBuffer } from './buffer/view-buffer';
+
+import { PassResources } from '../pass/types';
 
 export type PassProps = PropsWithChildren<{
   mode?: 'forward' | 'deferred' | 'fullscreen',
+  components?: RenderComponents,
 
-  shadows?: boolean,
-  lights?: boolean,
-  picking?: boolean,
-  overlay?: boolean,
-  merge?: boolean,
-}>;
-
-const NO_BUFFERS: any = {};
+  debug?: string,
+  debugIndex?: number,
+} & PassOptions>;
 
 export const Pass: LC<PassProps> = memo((props: PassProps) => {
   const {
     mode = 'forward',
+
+    color = true,
     lights = false,
     shadows = false,
     picking = false,
+    ssao = false,
+    outline = false,
+    facets = false,
+
+    overscan = 0,
 
     overlay = false,
     merge = false,
 
+    debug,
+    debugIndex,
+
+    components,
     children,
   } = props;
 
+  const liveOptions = {
+    facets,
+    lights,
+    shadows,
+    picking,
+    ssao: ssao ? parseSSAOOptions(ssao) : undefined,
+    overscan: overscan ? parseOverscanOptions(overscan) : undefined,
+    outline: outline ? parseOutlineOptions(outline) : undefined,
+
+    motion: !!ssao,
+    normal: !!ssao || !!outline,
+
+    color,
+    overlay,
+    merge,
+
+    debug,
+    debugIndex,
+  };
+
+  const optionsKey = toMurmur53(liveOptions);
+  const options = useOne(() => liveOptions, optionsKey);
+
   if (mode === 'fullscreen') {
+    const resources = useViewBuffer();
     return use(FullScreenRenderer, {
-      overlay,
-      merge,
+      resources,
+      options,
       children,
     });
   }
   if (mode === 'forward') {
-    if (!shadows && !picking) return use(ForwardRenderer, {buffers: NO_BUFFERS, lights, overlay, merge, children});
+    useNoViewBuffer();
 
-    const buffers = useMemo(() => [
-      shadows ? use(ShadowBuffer, {}) : null,
-      picking ? use(PickingBuffer, {}) : null,
-    ], [shadows, picking]);
+    const resources = useOne(() => [
+      !(overscan as any)?.all ? use(ViewBuffer, options) : null,
+      lights ? use(LightBuffer, options) : null,
+      shadows ? use(ShadowBuffer, options) : null,
+      picking ? use(PickingBuffer, options) : null,
+      overscan ? use(OverscanBuffer, options) : null,
+      options.normal ? use(NormalBuffer, options) : null,
+      options.motion ? use(MotionBuffer, options) : null,
+      outline ? use(OutlineBuffer, options) : null,
+      ssao ? use(SSAOBuffer, options) : null,
+    ], optionsKey);
 
-    return multiGather(buffers, (buffers: Record<string, UseGPURenderContext[]>) =>
-      use(ForwardRenderer, {buffers, lights, overlay, merge, children})
+    return gatherPassResources(resources, (resources: PassResources) =>
+      use(ForwardRenderer, {resources, components, options, children})
     );
   }
   if (mode === 'deferred') {
-    if (!shadows && !picking) return use(DeferredRenderer, {buffers: NO_BUFFERS, overlay, merge, children})
+    useNoViewBuffer();
 
-    const buffers = useMemo(() => [
-      use(GBuffer),
-      shadows ? use(ShadowBuffer, {}) : null,
-      picking ? use(PickingBuffer, {}) : null,
-    ], [shadows, picking]);
+    const resources = useOne(() => [
+      use(GBuffer, options),
+      /*!(overscan as any)?.all ?*/ use(ViewBuffer, options), // : null,
+      lights ? use(LightBuffer, options) : null,
+      ssao ? use(SSAOBuffer, options) : null,
+      shadows ? use(ShadowBuffer, options) : null,
+      picking ? use(PickingBuffer, options) : null,
+      //overscan ? use(OverscanBuffer, options) : null,
+      options.motion ? use(MotionBuffer, options) : null,
+      outline ? use(OutlineBuffer, options) : null,
+    ], optionsKey);
 
-    return multiGather(buffers, (buffers: Record<string, UseGPURenderContext[]>) =>
-      use(DeferredRenderer, {buffers, overlay, merge, children})
+    return gatherPassResources(resources, (resources: PassResources) =>
+      use(DeferredRenderer, {resources, components, options, children})
     );
   }
 
   return null;
 }, 'Pass');
+
+export const gatherPassResources = (
+  children: LiveElement,
+  then: (res: PassResources) => LiveElement,
+) => {
+  const reduceInPlace = (dst: PassResources, src: PassResources) => {
+
+    for (const type in src) {
+      const s = (src as any)[type];
+      const d = (dst as any)[type];
+
+      if (Array.isArray(d)) {
+        if (Array.isArray(s)) for (const v of s) d.push(v);
+        else d.push(s);
+      }
+      else for (const k in s) d[k] = s[k];
+    }
+  };
+
+  return gather(children, (els: PassResources[]) => {
+    const out: PassResources = {
+      buffers: {},
+      bindings: {},
+      dispatches: [],
+      views: {},
+    };
+
+    for (const el of els) reduceInPlace(out, el);
+    return then(out);
+  });
+};

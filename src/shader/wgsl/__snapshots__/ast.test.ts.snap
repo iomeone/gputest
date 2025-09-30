@@ -207,7 +207,9 @@ exports[`ast gets geometry quad symbol table 1`] = `
   ],
   "externals": undefined,
   "globals": undefined,
+  "infers": undefined,
   "linkable": undefined,
+  "locals": undefined,
   "modules": undefined,
   "symbols": [
     "QUAD",
@@ -745,12 +747,14 @@ exports[`ast gets quad vertex symbol table 1`] = `
     },
   ],
   "globals": undefined,
+  "infers": undefined,
   "linkable": {
     "getColor": true,
     "getDepth": true,
     "getPosition": true,
     "getSize": true,
   },
+  "locals": undefined,
   "modules": [
     {
       "at": 0,
@@ -1225,9 +1229,22 @@ exports[`ast gets symbol table 1`] = `
     },
   ],
   "globals": undefined,
+  "infers": undefined,
   "linkable": {
     "getInt": true,
   },
+  "locals": [
+    {
+      "alias": {
+        "attr": undefined,
+        "name": "integer",
+        "type": "i32",
+      },
+      "at": 68,
+      "flags": 0,
+      "symbol": "integer",
+    },
+  ],
   "modules": undefined,
   "symbols": [
     "x",
@@ -1621,7 +1638,9 @@ exports[`ast gets use types symbol table 1`] = `
   ],
   "externals": undefined,
   "globals": undefined,
+  "infers": undefined,
   "linkable": undefined,
+  "locals": undefined,
   "modules": undefined,
   "symbols": [
     "SolidVertex",
@@ -1673,7 +1692,7 @@ exports[`ast gets use view declarations 1`] = `
         },
         {
           "attr": undefined,
-          "name": "viewWorldDepth",
+          "name": "viewWorldScale",
           "type": "f32",
         },
         {
@@ -1939,7 +1958,7 @@ exports[`ast gets use view symbol table 1`] = `
           },
           {
             "attr": undefined,
-            "name": "viewWorldDepth",
+            "name": "viewWorldScale",
             "type": "f32",
           },
           {
@@ -2332,7 +2351,56 @@ exports[`ast gets use view symbol table 1`] = `
   ],
   "externals": undefined,
   "globals": undefined,
+  "infers": undefined,
   "linkable": undefined,
+  "locals": [
+    {
+      "at": 0,
+      "flags": 0,
+      "struct": {
+        "attr": undefined,
+        "members": [
+          {
+            "attr": undefined,
+            "name": "projectionMatrix",
+            "type": "mat4x4<f32>",
+          },
+          {
+            "attr": undefined,
+            "name": "viewMatrix",
+            "type": "mat4x4<f32>",
+          },
+          {
+            "attr": undefined,
+            "name": "viewPosition",
+            "type": "vec4<f32>",
+          },
+          {
+            "attr": undefined,
+            "name": "viewResolution",
+            "type": "vec2<f32>",
+          },
+          {
+            "attr": undefined,
+            "name": "viewSize",
+            "type": "vec2<f32>",
+          },
+          {
+            "attr": undefined,
+            "name": "viewWorldScale",
+            "type": "f32",
+          },
+          {
+            "attr": undefined,
+            "name": "viewPixelRatio",
+            "type": "f32",
+          },
+        ],
+        "name": "ViewUniforms",
+      },
+      "symbol": "ViewUniforms",
+    },
+  ],
   "modules": undefined,
   "symbols": [
     "ViewUniforms",
@@ -2865,7 +2933,7 @@ struct ViewUniforms {
   viewPosition: vec4<f32>,
   viewResolution: vec2<f32>,
   viewSize: vec2<f32>,
-  viewWorldDepth: f32,
+  viewWorldScale: f32,
   viewPixelRatio: f32,
 };
 

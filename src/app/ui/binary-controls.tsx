@@ -1,9 +1,8 @@
 import React, { CSSProperties } from 'react';
-import type { LC, LiveElement } from '../../live';
+import type { LC, LiveElement } from '@use-gpu/live';
 
-import { use, fragment, useCallback, useResource, useState } from '../../live';
-import { HTML } from '../../react';
-import { useRouterContext } from '../../workbench';
+import { use, fragment, useCallback, useResource, useState } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
 
 const STYLE: CSSProperties = {
   position: 'absolute',
@@ -73,6 +72,7 @@ type State = {
   buffer: ArrayBuffer,
   gamma: number,
   transparent: boolean,
+  loading: boolean,
 };
 
 type BinaryControlsProps = {
@@ -97,6 +97,7 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
 
   const [dragging, setDragging] = useState(false);
   const [note, setNote] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const [fileId, setFileId] = useState('doom');
   const [customFile, setCustomFile] = useState<string | null>(null);
@@ -149,15 +150,17 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
     });
   }, []);
 
-  useResource(async (dispose) => {
+  useResource(async () => {
     if (customFile) return;
 
     const file = FILES.find(({id}) => fileId == id);
     if (!file) return;
 
     const {url} = file;
+    setLoading(true);
     const buffer = await fetch(url).then(r => r.arrayBuffer());
     setBuffer(buffer);
+    setLoading(false);
   }, [fileId, customFile]);
 
   useResource((dispose) => {
@@ -166,7 +169,7 @@ export const BinaryControls: LC<BinaryControlsProps> = (props: BinaryControlsPro
   });
 
   return fragment([
-    render ? render({mode, buffer, gamma, transparent}) : null,
+    render ? render({mode, buffer, gamma, transparent, loading}) : null,
     use(HTML, {
       container,
       style: DROP_ZONE,

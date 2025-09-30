@@ -141,7 +141,7 @@ export const cutRingWith = (
       }
     }
   }
-  
+
   if (last) out[0] = [last, ...ring.slice(pos), ...(out[0] ?? [])];
   if (out[0] && !getRingArea(out[0])) out.shift();
   else if (out.length === 0 && ring.length) {
@@ -215,7 +215,7 @@ export const assembleCutRingWith = (
   return paths.map(({path}) => path);
 };
 
-export const clipTileEdges = (polygons: XY[][][], minX: number, minY: number, maxX: number, maxY: number) => {
+export const clipPolygons = (polygons: XY[][][], minX: number, minY: number, maxX: number, maxY: number) => {
   const lines = [];
   const rings = [];
 
@@ -229,7 +229,7 @@ export const clipTileEdges = (polygons: XY[][][], minX: number, minY: number, ma
         if (x <= minX || y <= minY || x >= maxX || y >= maxY) cuts.push(i);
         ++i;
       }
-      
+
       if (!cuts.length) rings.push(ring);
       else {
         if (cuts[0] > 1) lines.push(ring.slice(0, cuts[0] + 1));
@@ -242,6 +242,52 @@ export const clipTileEdges = (polygons: XY[][][], minX: number, minY: number, ma
   }
 
   return {lines, rings};
+};
+
+export const clipLines = (lines: XY[][], minX: number, minY: number, maxX: number, maxY: number) => {
+  const clipped: XY[][] = [];
+
+  for (const points of lines) {
+    const clip: XY[] = [];
+    for (const p of points) {
+      const [x, y] = p;
+      if (!(x <= minX || y <= minY || x >= maxX || y >= maxY)) clip.push(p);
+    }
+    if (clip.length) clipped.push(clip);
+  }
+
+  return clipped;
+};
+
+export const clipPoints = (points: XY[], minX: number, minY: number, maxX: number, maxY: number) => {
+  const clipped: XY[] = [];
+
+  for (const p of points) {
+    const [x, y] = p;
+    if (!(x <= minX || y <= minY || x >= maxX || y >= maxY)) clipped.push(p);
+  }
+
+  return clipped;
+};
+
+export const classifyRings = (rings: XY[][]): XY[][][] => {
+  const polys: XY[][][] = [];
+  let poly: XY[][] | null = null;
+  
+  for (const ring of rings) {
+    const area = getRingArea(ring);
+    if (area === 0) continue;
+    if (area > 0) {
+      polys.push(poly = []);
+      if (poly) poly.push(ring);
+    }
+    else {
+      if (poly) poly.push(ring);
+      else console.warn("Invalid interior ring without outer ring");
+    }
+  }
+
+  return polys;
 };
 
 export const getRingArea = (ring: XY[]): number => {

@@ -1,11 +1,11 @@
-import type { LiveComponent } from '../../live';
-import type { Lazy, StorageSource, DataBounds } from '../../core';
-import type { ShaderSource } from '../../shader';
-import type { VectorLike } from '../../core';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Lazy, StorageSource, DataBounds } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { VectorLike } from '@use-gpu/core';
 
-import { use, memo, useCallback, useMemo, useOne, useRef, useVersion, useNoCallback, incrementVersion } from '../../live';
-import { resolve, uploadBuffer, toDataBounds } from '../../core';
-import { shouldEqual, sameShallow } from '../../traits/index-live';
+import { use, memo, useCallback, useMemo, useOne, useRef, useVersion, useNoCallback, incrementVersion } from '@use-gpu/live';
+import { resolve, uploadBuffer, toDataBounds } from '@use-gpu/core';
+import { shouldEqual, sameShallow } from '@use-gpu/traits/live';
 
 import { useShader } from '../hooks/useShader';
 import { useCombinedTransform, useNoCombinedTransform } from '../hooks/useCombinedTransform';
@@ -21,26 +21,24 @@ import { useMaterialContext } from '../providers/material-provider';
 import { TransformContextProps } from '../providers/transform-provider';
 import { PassReconciler } from '../reconcilers/index';
 
-import { main as scanVolume } from '../../wgsl/contour/scanwgsl';
-import { main as fitContourLinear } from '../../wgsl/contour/fit-linearwgsl';
-import { main as fitContourQuadratic } from '../../wgsl/contour/fit-quadraticwgsl';
-import { getDualContourVertex } from '../../wgsl/instance/vertex/dual-contourwgsl';
-import { getPassThruColor } from '../../wgsl/mask/passthruwgsl';
+import { main as scanVolume } from '@use-gpu/wgsl/contour/scan.wgsl';
+import { main as fitContourLinear } from '@use-gpu/wgsl/contour/fit-linear.wgsl';
+import { main as fitContourQuadratic } from '@use-gpu/wgsl/contour/fit-quadratic.wgsl';
+import { getDualContourVertex } from '@use-gpu/wgsl/instance/vertex/dual-contour.wgsl';
+import { getPassThruColor } from '@use-gpu/wgsl/mask/passthru.wgsl';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { Dispatch } from '../queue/dispatch';
 
 const {quote} = PassReconciler;
 
-const hasWebGPU = typeof GPUBufferUsage !== 'undefined';
-
-const READ_WRITE_SOURCE_VOLATILE = hasWebGPU ? { readWrite: true, flags: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC, volatile: true } : {};
-const INDIRECT_SOURCE   = hasWebGPU ? { readWrite: true, flags: GPUBufferUsage.STORAGE | GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_SRC } : {};
+const READ_WRITE_SOURCE_VOLATILE = { readWrite: true, flags: GPUBufferUsage?.STORAGE | GPUBufferUsage?.COPY_SRC, volatile: true };
+const INDIRECT_SOURCE = { readWrite: true, flags: GPUBufferUsage?.STORAGE | GPUBufferUsage?.INDIRECT | GPUBufferUsage?.COPY_SRC };
 
 const INDIRECT_OFFSET_1 = { byteOffset: 16 };
 const READ_ONLY_SOURCE = { readWrite: false };
 
-export type DualContourLayerFlags = Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'alphaToCoverage' | 'blend'>
+export type DualContourLayerFlags = Pick<Partial<PipelineOptions>, 'mode' | 'side' | 'shadow' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>
 
 export type DualContourLayerProps = {
   values: ShaderSource,
@@ -91,6 +89,7 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
     live = false,
 
     alphaToCoverage = true,
+    alphaToDiscard,
     side = 'both',
     mode = 'opaque',
     blend,
@@ -200,7 +199,7 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
     else allocateNormals(d);
 
     return [sx - 1, sy - 1, sz - 1];
-  }, [size]);
+  }, [size, allocateEdges, allocateCells, allocateMarks, allocateIndices, allocateVertices, allocateNormals, method]);
 
   const device = useDeviceContext();
   const generationRef = useOne(() => ({current: 1}));
@@ -229,18 +228,19 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
     generationRef.current = incrementVersion(generationRef.current);
 
     uploadBuffer(device, indirectStorage.buffer, indirectDraw.buffer);
-  }, [device, indirectDraw, indirectStorage]);
+  }, [device, indirectDraw, indirectStorage, generationRef]);
 
   const links = useMemo(() => {
     return shaded
-    ? {
-      getVertex,
-      ...material,
-    } : {
-      getVertex,
-      getFragment: getPassThruColor,
-    }
-  }, [getVertex, material]);
+      ? {
+        getVertex,
+        ...material,
+      }
+      : {
+        getVertex,
+        getFragment: getPassThruColor,
+      }
+  }, [getVertex, material, shaded]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,
@@ -249,6 +249,7 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
     shadow,
     scissor,
     alphaToCoverage,
+    alphaToDiscard,
     depthTest: true,
     depthWrite: true,
     blend,
@@ -267,12 +268,14 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
         group: [4, 4, 4],
         shouldDispatch,
         onDispatch: dispatchEdgePass,
+        label: 'dispatchEdgePass',
       }),
       use(Dispatch, {
         group: [1],
         shader: boundFit,
         indirect: indirectReadout2,
         shouldDispatch,
+        label: 'indirectReadout',
       }),
     ])
   ), [boundScan, edgePassSize, shouldDispatch, dispatchEdgePass, boundFit, indirectReadout2]);
@@ -289,6 +292,8 @@ export const DualContourLayer: LiveComponent<DualContourLayerProps> = memo((prop
       pipeline,
       renderer: shaded ? 'shaded' : 'solid',
       mode,
+
+      label: 'DualContourLayer',
     }),
     /*
     use(Readback, { source: edgeStorage, then: (data) => {

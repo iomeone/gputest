@@ -1,11 +1,13 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { DataTexture, TextureSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { DataTexture, TextureSource } from '@use-gpu/core';
 
+import { yeet, useOne, useMemo, useNoMemo, useContext, useHooks, incrementVersion } from '@use-gpu/live';
+import { countMips, makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '@use-gpu/core';
+
+import { useInspectable } from '../hooks/useInspectable';
 import { DeviceContext } from '../providers/device-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { QueueReconciler } from '../reconcilers/index';
-import { yeet, useOne, useMemo, useNoMemo, useContext, useHooks, incrementVersion } from '../../live';
-import { makeRawTexture, uploadDataTexture, updateMipTextureChain, updateMipArrayTextureChain } from '../../core';
 
 const {signal} = QueueReconciler;
 
@@ -28,14 +30,10 @@ export type RawTextureProps = {
   render?: (source: TextureSource) => LiveElement,
 };
 
-const countMips = (width: number, height: number): number => {
-  const max = Math.max(width, height);
-  return Math.floor(Math.log2(max));
-}
-
 /** Use numeric texture data as a 2D texture. */
 export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
   const device = useContext(DeviceContext);
+  const inspect = useInspectable();
 
   const {
     data,
@@ -69,6 +67,7 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
       sampler: {
         minFilter: 'nearest',
         magFilter: 'nearest',
+        mipmapFilter: 'nearest',
         ...sampler,
       } as GPUSamplerDescriptor,
       mips,
@@ -80,6 +79,7 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
       version: 0,
     };
     return source;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [device, memoKey, sampler, absolute, mip]);
 
   // Refresh and upload data
@@ -117,6 +117,8 @@ export const RawTexture: LiveComponent<RawTextureProps> = (props) => {
     useNoMemo();
     refresh();
   }
+
+  inspect({ output: { source }});
 
   const trigger = useOne(() => signal(), source.version);
   const view = useHooks(() => render ? render(source) : yeet(source), [render, source]);

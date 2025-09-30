@@ -1,16 +1,19 @@
-import type { LiveComponent } from '../../live';
-import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useOne, useMemo, useNoCallback } from '../../live';
-import { getBundleKey } from '../../shader/wgsl';
+import { memo, useCallback, useOne, useMemo, useNoCallback } from '@use-gpu/live';
+import { chainTo } from '@use-gpu/shader/wgsl';
 
-import { PickingSource, usePickingShader } from '../providers/picking-provider';
+import { FacetSource, useFacetShader } from './hooks/facets';
+import { PickingSource, usePickingShader } from './hooks/picking';
+
+import { useMaterialContext } from '../providers/material-provider';
 import { TransformContextProps } from '../providers/transform-provider';
 
-import { useRawSource } from '../hooks/useRawSource';
+import { useRawSource, useNoRawSource } from '../hooks/useRawSource';
 import { useApplyTransform } from '../hooks/useApplyTransform';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useShader } from '../hooks/useShader';
@@ -22,16 +25,17 @@ import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions
 import { makeArrowFlatGeometry } from './geometry/arrow-flat';
 import { makeArrowGeometry } from './geometry/arrow';
 
-import { getAnchorIndex } from '../../wgsl/instance/index/anchorwgsl';
-import { getArrowVertex } from '../../wgsl/instance/vertex/arrowwgsl';
-import { getPassThruColor } from '../../wgsl/mask/passthruwgsl';
+import { getAnchorIndex } from '@use-gpu/wgsl/instance/index/anchor.wgsl';
+import { getArrowVertex, getArrowVertexShaded } from '@use-gpu/wgsl/instance/vertex/arrow.wgsl';
+import { solidToShaded } from '@use-gpu/wgsl/instance/surface/solid-to-shaded.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 
 export type RawArrowsFlags = {
   flat?: boolean,
+  shaded?: boolean,
   detail?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'depthTest' | 'depthWrite' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'alphaToCoverage' | 'alphaToDiscard' | 'depthTest' | 'depthWrite' | 'blend'>;
 
 export type RawArrowsProps = {
   anchor?: VectorLike,
@@ -59,11 +63,12 @@ export type RawArrowsProps = {
   transform?: TransformContextProps | ShaderModule,
 
   count?: number,
-} & PickingSource & RawArrowsFlags;
+} & FacetSource & PickingSource & RawArrowsFlags;
 
 export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsProps) => {
   const {
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -73,10 +78,15 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
     instances,
     transform,
 
+    shaded = false,
+    shadow = false,
     flat = false,
     detail = 12,
     count = null,
   } = props;
+
+  const a = useShaderRef(props.anchor, props.anchors);
+  if (!a) return null;
 
   const det = Math.max(4, detail);
   const geometry = useMemo(() => flat ? makeArrowFlatGeometry() : makeArrowGeometry(det), [flat, det]);
@@ -87,7 +97,6 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
   const positionCount = useDataLength(count, props.positions);
 
   const p = useSource(POSITIONS, useShaderRef(props.position, props.positions));
-  const a = useShaderRef(props.anchor, props.anchors);
   const u = useShaderRef(props.uv, props.uvs);
   const s = useShaderRef(props.st, props.sts ?? p);
   const c = useShaderRef(props.color, props.colors);
@@ -96,7 +105,8 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
   const d = useShaderRef(props.depth, props.depths);
   const z = useShaderRef(props.zBias, props.zBiases);
 
-  const g = useRawSource(geometry.attributes.positions, 'vec4<f32>');
+  const gp = useRawSource(geometry.attributes.positions, 'vec4<f32>');
+  const gn = geometry.attributes.normals ? useRawSource(geometry.attributes.normals, 'vec4<f32>') : useNoRawSource();
 
   const {positions, scissor, bounds: getBounds} = useApplyTransform(p, transform);
 
@@ -109,8 +119,13 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
     useNoCallback();
   }
 
-  const boundVertex = useShader(getArrowVertex, [
-    g, a, positions, scissor,
+  // Solid or shaded material
+  const renderer = shadow || shaded ? 'shaded' : 'solid';
+  const material = useMaterialContext()[renderer];
+
+  const boundVertex = useShader(shaded ? getArrowVertexShaded : getArrowVertex, [
+    gp, shaded ? gn : null,
+    a, positions, scissor,
     u, s,
     c, e, w, d, z,
     positionCount
@@ -118,17 +133,23 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
   const anchorIndex = useShader(getAnchorIndex, [a]);
   const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, anchorCount, anchorIndex);
   const getPicking = usePickingShader(props);
-  const getFragment = getPassThruColor;
+  const getFacet = useFacetShader(props);
 
-  const links = useOne(() => ({getVertex, getFragment, getPicking}),
-    getBundleKey(getVertex) + getBundleKey(getFragment) + (getPicking ? getBundleKey(getPicking) : 0));
+  const links = useOne(() => ({
+    getVertex: shadow && !shaded ? chainTo(getVertex, solidToShaded) : getVertex,
+    getPicking,
+    getFacet,
+    ...material,
+  }), [getVertex, getPicking, getFacet, shadow, shaded, material]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,
     topology: 'triangle-list',
-    side: 'both',
+    side: 'front',
+    shadow,
     scissor,
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -149,7 +170,7 @@ export const RawArrows: LiveComponent<RawArrowsProps> = memo((props: RawArrowsPr
       links,
       defines,
 
-      renderer: 'solid',
+      renderer,
       pipeline,
       mode,
     })

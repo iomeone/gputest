@@ -203,6 +203,20 @@ export const formatArrayLike = (x: any, seen: WeakMap<object, boolean> = new Wea
   return '[' + out.join(', ') + ']';
 };
 
+export const formatPrototype = (x: any): string => {
+  if (!x) return '' + x;
+  if (typeof x === 'object') {
+    const signature = Object.keys(x).join('/');
+    if (signature === 'f/args/key/by' || signature === 'f/arg/key/by') return `<${formatNodeName(x)} … />`;
+
+    const proto = x.__proto__ !== Object.prototype ? x.__proto__.constructor.name : null;
+    const label = x.label;
+    const short = signature.length === 0 ? '{}' : null;
+    return [proto, label, short].filter(s => s?.length).join(' ');
+  }
+  return '';
+}
+
 export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap()): string => {
   if (!x) return '' + x;
   if (Array.isArray(x) || x?.constructor?.name?.match(ARRAY_OR_BUFFER)) {
@@ -225,7 +239,7 @@ export const formatValue = (x: any, seen: WeakMap<object, boolean> = new WeakMap
 
     const proto = x.__proto__ !== Object.prototype ? x.__proto__.constructor.name : '';
     const label = x.label;
-    return proto + (label?.length ? ':' + label : '') + '{' + out.join(', ') + '}';
+    return proto + (label?.length ? ' ' + label : '') + (out.length ? ' {' + out.join(', ') + '}' : ' {}');
   }
   return formatShortValue(x, seen);
 }

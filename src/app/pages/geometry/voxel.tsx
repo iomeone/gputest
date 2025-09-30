@@ -1,25 +1,26 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { Vox } from '../../../voxel';
-import type { GPUGeometry } from '../../../core';
-import type { ShaderSource } from '../../../shader';
-import type { Keyframe } from '../../../workbench';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Vox } from '@use-gpu/voxel';
+import type { GPUGeometry } from '@use-gpu/core';
+import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { use } from '../../../live';
+import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  LinearRGB, Pass,
-  OrbitCamera, OrbitControls,
-  Cursor,
-  AmbientLight, DirectionalLight, PointLight, DomeLight,
+  LinearRGB, Loop, Pass, LoadingSpinner,
+  OrbitCamera,
+  AmbientLight, PointLight,
   PBRMaterial, GeometryData,
   Animate, DebugProvider, Environment,
   makePlaneGeometry,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 
-import { VoxData, VoxModel } from '../../../voxel';
-import { Scene, Node, Mesh, Primitive } from '../../../scene';
-import { Plot, Cartesian, Grid } from '../../../plot';
+import { VoxData, VoxModel } from '@use-gpu/voxel';
+import { Scene, Node, Mesh, Primitive } from '@use-gpu/scene';
+import { Plot, Cartesian, Grid } from '@use-gpu/plot';
 
 import { VoxControls } from '../../ui/vox-controls';
 import { InfoBox } from '../../ui/info-box';
@@ -46,11 +47,11 @@ const ANIMATED_LIGHT = Array(N+1).fill(0).map((_, i) => [
     20 + R * Math.sin(i / N * τ),
     1
   ],
-]) as Keyframe[];
+]) as Keyframe<number[]>[];
 
 const STATIC_LIGHTS = [
-  [[-15, 12, -28, 1], [1, .5, .5, 1], 40*40*.5],
-  [[-20, 15, 10, 1], [.5, .75, 1, 1], 40*40*.25],
+  [[-15, 12, -28, 1], [1, .5, .5, 1], 40*40*.125],
+  [[-20, 15, 10, 1], [.5, .75, 1, 1], 40*40*.125],
 ] as [number[], number[], number][];
 
 const WHITE = [1, 1, 1, 1];
@@ -71,70 +72,72 @@ export const GeometryVoxelPage: LC = () => {
       <LinearRGB tonemap="aces" gain={2} samples={1}>
         <Cursor cursor='move' />
         <Camera>
-          <Pass lights shadows>
-            <AmbientLight color={[1, 1, 1, 1]} intensity={0.01} />
+          <Loop converge={64}>
+            <Pass lights shadows ssao={2}>
+              <AmbientLight color={[1, 1, 1, 1]} intensity={0.01} />
 
-            <Environment preset="none">
-              <Scene>
-                <Node rotation={[90, 180, 0]}>
-                  <Primitive>
-                    <Plot>
-                      <Cartesian
-                        range={[[-9, 9], [-25, 25], [-10, 10]]}
-                        scale={[9, 25, 10]}
-                      >
-                        <Grid
-                          origin={[0, 0, -11]}
-                          axes='xy'
-                          width={2}
-                          first={{ detail: 3, divide: 18, end: true }}
-                          second={{ detail: 3, divide: 48, end: true }}
-                          depth={0.5}
-                          zBias={1}
-                          color={'#404040'}
-                        />
-                        <Grid
-                          origin={[0, 0, 0]}
-                          axes='xy'
-                          width={2}
-                          first={{ detail: 3, divide: 18, end: true }}
-                          second={{ detail: 3, divide: 48, end: true }}
-                          depth={0.5}
-                          zBias={1}
-                          color={'#404040'}
-                        />
-                      </Cartesian>
-                    </Plot>
-                  </Primitive>
-
-                  <VoxData url={url}>{
-                    (vox: Vox) => <VoxModel vox={vox} flat />
-                  }</VoxData>
-
-                  <Node position={[0, 0, -11]} rotation={[0, 180, 0]}>
-                    <GeometryData {...planeGeometry}>{
-                      (planeMesh: GPUGeometry) =>
-                        <PBRMaterial albedo={'#808080'} roughness={0.7}>
-                          <Mesh
-                            mesh={planeMesh}
-                            side="both"
-                            shaded
+              <Environment preset="park">
+                <Scene>
+                  <Node rotation={[90, 180, 0]}>
+                    <Primitive>
+                      <Plot>
+                        <Cartesian
+                          range={[[-9, 9], [-25, 25], [-10, 10]]}
+                          scale={[9, 25, 10]}
+                        >
+                          <Grid
+                            origin={[0, 0, -11]}
+                            axes='xy'
+                            width={2}
+                            first={{ detail: 3, divide: 18, end: true }}
+                            second={{ detail: 3, divide: 48, end: true }}
+                            depth={0.5}
+                            zBias={1}
+                            color={'#404040'}
                           />
-                        </PBRMaterial>
-                    }</GeometryData>
+                          <Grid
+                            origin={[0, 0, 0]}
+                            axes='xy'
+                            width={2}
+                            first={{ detail: 3, divide: 18, end: true }}
+                            second={{ detail: 3, divide: 48, end: true }}
+                            depth={0.5}
+                            zBias={1}
+                            color={'#404040'}
+                          />
+                        </Cartesian>
+                      </Plot>
+                    </Primitive>
+
+                    <VoxData url={url} fallback={<LoadingSpinner />}>{
+                      (vox: Vox) => <VoxModel vox={vox} flat />
+                    }</VoxData>
+
+                    <Node position={[0, 0, -11]} rotation={[0, 180, 0]}>
+                      <GeometryData {...planeGeometry}>{
+                        (planeMesh: GPUGeometry) =>
+                          <PBRMaterial albedo={'#808080'} roughness={0.7}>
+                            <Mesh
+                              mesh={planeMesh}
+                              side="both"
+                              shaded
+                            />
+                          </PBRMaterial>
+                      }</GeometryData>
+                    </Node>
                   </Node>
-                </Node>
-              </Scene>
-            </Environment>
+                </Scene>
+              </Environment>
 
-            <Animate ease="linear" keyframes={ANIMATED_LIGHT} prop="position" render={(position) =>
-              <PointLight position={position} color={WHITE} intensity={40*40} shadowMap={SHADOW_MAP_POINT} debug />
-            } />
-            {STATIC_LIGHTS.map(([position, color, intensity]) =>
-              <PointLight position={position} color={color} intensity={intensity} shadowMap={SHADOW_MAP_POINT} debug />
-            )}
+              <Animate loop ease="linear" keyframes={ANIMATED_LIGHT} prop="position" render={(position) =>
+                <PointLight position={position} color={WHITE} intensity={30*30} shadowMap={SHADOW_MAP_POINT} debug />
+              } />
+              {STATIC_LIGHTS.map(([position, color, intensity]) =>
+                <PointLight position={position} color={color} intensity={intensity} shadowMap={SHADOW_MAP_POINT} debug />
+              )}
 
-          </Pass>
+            </Pass>
+          </Loop>
         </Camera>
       </LinearRGB>
     </DebugProvider>

@@ -1,5 +1,5 @@
-import type { VectorLike } from '../../core';
-import { vec4, mat4, quat } from 'gl-matrix';
+import type { VectorLike } from '@use-gpu/core';
+import { vec4, mat4 } from 'gl-matrix';
 
 const makeComposeTransform4D = () => {
 
@@ -51,7 +51,7 @@ const makeComposeTransform4D = () => {
         }
       }
     }
-    
+
 
     if (rightQuaternion != null) {
       quatToMatrixR(m, rightQuaternion);

@@ -188,6 +188,46 @@ export const generateChunkAnchors = (
   return o / 4;
 }
 
+/** Generate anchor data for arcs */
+export const generateChunkArcs = (
+  anchors: VectorLike,
+  trims: VectorLike,
+  chunks: VectorLike,
+  loops: boolean[] | boolean | null = false,
+) => {
+
+  const n = chunks.length;
+  for (let i = 0; i < trims.length; ++i) trims[i] = 0;
+
+  const hasLoop = !!loops;
+
+  let maxArc = 0;
+
+  let o = 0;
+  let pos = 0;
+  for (let i = 0; i < n; ++i) {
+    const c = chunks[i];
+    const l = hasLoop && (loops === true || loops[i]);
+
+    const start = pos + (l ? 1 : 0);
+    const end = pos + c - 1 + (l ? 2 : 0);
+    pos += c + (l ? 3 : 0);
+    
+    maxArc = Math.max(maxArc, end - start + 1);
+
+    // Store chunk start and end per vertex for trimming
+    for (let j = start; j <= end; ++j) {
+      trims[j * 2] = start;
+      trims[j * 2 + 1] = end;
+    }
+
+    anchors[o++] = start;
+    anchors[o++] = end;
+  }
+
+  return maxArc;
+}
+
 /** Triangulate concave polygons with holes */
 export const generateConcaveIndices = (
   to: TypedArray,
@@ -206,17 +246,36 @@ export const generateConcaveIndices = (
   let axis = 0;
   if (dims >= 3) {
     const d = dims;
-    const p1 = vec3.fromValues(positions[0],   positions[1],     positions[2]);
-    const p2 = vec3.fromValues(positions[d],   positions[d+1],   positions[d+2]);
-    const p3 = vec3.fromValues(positions[d*2], positions[d*2+1], positions[d*2+2]);
 
-    vec3.sub(p2, p2, p1);
-    vec3.sub(p3, p3, p1);
-    vec3.cross(p3, p2, p3);
+    const p1 = vec3.create();
+    const p2 = vec3.create();
+    const p3 = vec3.create();
+    const normal = vec3.create();
 
-    const nx = Math.abs(p3[0]);
-    const ny = Math.abs(p3[1]);
-    const nz = Math.abs(p3[2]);
+    const n = positions.length / d - 2;
+    for (let i = 0; i < n; ++i) {
+      const b = i * dims;
+
+      p1[0] = positions[b];
+      p1[1] = positions[b+1];
+      p1[2] = positions[b+2];
+      p2[0] = positions[b+d];
+      p2[1] = positions[b+d+1];
+      p2[2] = positions[b+d+2];
+      p3[0] = positions[b+d*2];
+      p3[1] = positions[b+d*2+1];
+      p3[2] = positions[b+d*2+2];
+
+      vec3.sub(p2, p2, p1);
+      vec3.sub(p3, p3, p1);
+      vec3.cross(normal, p2, p3);
+
+      if (vec3.length(normal) > 1e-3) break;
+    }
+
+    const nx = Math.abs(normal[0]);
+    const ny = Math.abs(normal[1]);
+    const nz = Math.abs(normal[2]);
 
     const max = Math.max(nx, ny, nz);
     if (max === ny) axis = 1;

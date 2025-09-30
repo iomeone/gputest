@@ -1,30 +1,40 @@
-import type { ReactNode } from 'react';
-import type { LiveFiber } from '../../live';
-import type { Cursor } from '../../state';
+import type { LiveFiber } from '@use-gpu/live';
+import type { Cursor } from '@use-gpu/state';
+
+//import type { ReactNode } from 'react';
+// ReactNode makes getdocs-ts crash
+type ReactNode = any & {};
 
 export type ExpandState = Record<string | number, boolean>;
 export type PingState = Record<number, number>;
-export type SelectState = LiveFiber<any> | null;
 export type FocusState = number | null;
+export type SelectState = LiveFiber<any> | null;
 export type HoverState = {
+  fiber: LiveFiber<any> | null,
+  depth: number,
+};
+
+export type HighlightState = {
   fiber: LiveFiber<any> | null,
   by: LiveFiber<any> | null,
   root: LiveFiber<any> | null,
   deps: number[],
   precs: number[],
-  depth: number,
 };
-export type OptionState = {
+
+export type OptionsState = {
   open: boolean,
-  depth: number,
-  counts: boolean,
+  depthLimit: number,
+  runCounts: boolean,
   builtins: boolean,
   fullSize: boolean,
   highlight: boolean,
   inspect: boolean,
-  tab: string,
+  tab: string | null,
+  preferredTab: string,
   splitLeft: number,
   splitBottom: number,
+  filterTags: number,
 };
 
 export type InspectAppearance = {
@@ -44,35 +54,49 @@ export type InspectExtension = (root: LiveFiber<any>) => InspectAddIns;
 export type InspectAddIns = {
   props: InspectProps[],
   prop: InspectProp[],
+  filters: InspectFilter[],
 };
 
 export type InspectProps = {
-  id: string,
+  key: string,
   label: string,
+  icon?: ReactNode,
   enabled: (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>) => boolean,
   render: (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>, api: InspectAPI) => ReactNode,
 };
 
 export type InspectProp = {
-  id: string,
+  key: string,
   enabled: (prop: any) => boolean,
   render: (prop: any) => ReactNode,
+};
+
+export type InspectFilter = {
+  key: number,
+  label: ReactNode,
+  icon: ReactNode,
+  group?: number,
+  order?: number,
 };
 
 type Handler<E extends Event> = (event: E) => void;
 
 export type InspectState = {
   expandedCursor: Cursor<ExpandState>,
-  selectedCursor: Cursor<SelectState>,
-  focusedCursor: Cursor<FocusState>,
-  hoveredCursor: Cursor<HoverState>,
+  optionsCursor: Cursor<OptionsState>,
+
+  selectedState: SelectState,
+  focusedState: FocusState,
+  hoveredState: HoverState,
+  highlightState: HighlightState,
 };
 
 export type InspectAPI = {
+  forceUpdate: () => void,
   selectFiber: (fiber: LiveFiber<any> | null | undefined) => void,
   focusFiber: (fiber: LiveFiber<any> | null | undefined) => void,
-  hoverFiber: (fiber: LiveFiber<any> | null | undefined, fibers: Map<number, LiveFiber<any>>, renderDepth?: number) => void,
-  makeHandlers: (fiber: LiveFiber<any>, fibers: Map<number, LiveFiber<any>>, renderDepth?: number) => {
+  hoverFiber: (fiber: LiveFiber<any> | null | undefined, renderDepth?: number) => void,
+  makeHandlers: (fiber: LiveFiber<any>, renderDepth?: number) => {
     select: Handler<MouseEvent>,
     hover: Handler<MouseEvent>,
     unhover: Handler<MouseEvent>,

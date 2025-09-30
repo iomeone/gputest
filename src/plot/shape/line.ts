@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { LiveComponent } from '../../live';
-import type { TraitProps } from '../../traits/index-live';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits/live';
 
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
-import { schemaToArchetype, schemaToEmitters, adjustSchema } from '../../core';
-import { yeet, memo, useOne } from '../../live';
+import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { schemaToArchetype, schemaToEmitters, adjustSchema } from '@use-gpu/core';
+import { yeet, memo, useOne } from '@use-gpu/live';
 
-import { useInspectHoverable, useTransformContext, useScissorContext, LINE_SCHEMA, LayerReconciler } from '../../workbench';
+import { useInspectHoverable, useMaterialContext, useNoMaterialContext, useTransformContext, useScissorContext, LINE_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
 
 import { LineTraits } from '../traits';
 
@@ -60,6 +60,8 @@ export const InnerLine: LiveComponent<LineProps> = (props) => {
 
   const scissor = useScissorContext();
   const context = useTransformContext();
+
+  const material = flags.shaded ? useMaterialContext() : (useNoMaterialContext(), undefined);
   const {transform, nonlinear, matrix: refs} = context;
 
   const schema = useOne(() => adjustSchema(LINE_SCHEMA, formats), formats);
@@ -76,11 +78,12 @@ export const InnerLine: LiveComponent<LineProps> = (props) => {
       archetype,
       attributes,
       flags,
+      material,
       refs,
       schema: formats ? schema : undefined,
       scissor,
       sources,
-      transform: nonlinear ?? context,
+      transform: nonlinear ?? (context.key ? context : undefined),
       zIndex,
     },
   };
@@ -88,6 +91,5 @@ export const InnerLine: LiveComponent<LineProps> = (props) => {
 };
 
 export const Line = memo(InnerLine, shouldEqual({
-  position: sameShallow(sameShallow()),
   color: sameShallow(),
 }), 'Line');

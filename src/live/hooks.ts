@@ -477,7 +477,7 @@ export const useContext = <C>(
   }
 
   const value = values.get(context).current;
-  return value !== undefined ? value : context.initialValue;
+  return value !== undefined ? value : context.initialValue as C;
 }
 
 /**
@@ -657,6 +657,7 @@ export const useLog = (values: Record<string, any>) => {
 export const useDouble = <T>(
   make: () => T,
   dependencies: any[] = NO_DEPS
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 ): DoubleState<T> => useMemo(() => makeDouble(make), dependencies);
 
 const makeDouble = <T>(make: () => T): DoubleState<T> => {
@@ -665,7 +666,7 @@ const makeDouble = <T>(make: () => T): DoubleState<T> => {
     back: make(),
     flip: false,
   };
-  
+
   const front: [T, T] = [ref.front, ref.back];
   const back: [T, T] = [ref.back, ref.front];
 

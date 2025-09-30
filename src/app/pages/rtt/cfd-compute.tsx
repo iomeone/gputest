@@ -1,25 +1,26 @@
-import type { LC } from '../../../live';
-import type { Emit, StorageTarget } from '../../../core';
+import type { LC } from '@use-gpu/live';
+import type { StorageTarget } from '@use-gpu/core';
 
-import React, { Gather, use, useMemo } from '../../../live';
-import { wgsl } from '../../../shader/wgsl';
+import React, { Gather } from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, FlatCamera, Pass, OrbitCamera, RawData, PointLayer, Pick,
+  Loop, FlatCamera, Pass,
   ComputeBuffer, Compute, Stage, Iterate, Kernel, Suspense, RawFullScreen,
-  useShader, useLambdaSource, useShaderRefs,
-} from '../../../workbench';
+  useShader, useLambdaSource,
+} from '@use-gpu/workbench';
+import { Mouse } from '@use-gpu/interact';
 import {
   UI, Layout, Absolute, Block, Element, Inline, Text,
-} from '../../../layout';
+} from '@use-gpu/layout';
 
-import { main as generateInitial }  from './cfd-compute/initialwgsl';
-import { main as pushVelocity }     from './cfd-compute/pushwgsl';
-import { main as updateDivCurl }    from './cfd-compute/divergence-curlwgsl';
-import { main as updatePressure }   from './cfd-compute/pressurewgsl';
-import { main as projectVelocity }  from './cfd-compute/projectwgsl';
-import { main as advectVelocity }   from './cfd-compute/advectwgsl';
-import { main as advectMcCormack }  from './cfd-compute/mccormackwgsl';
+import { main as generateInitial }  from './cfd-compute/initial.wgsl';
+import { main as pushVelocity }     from './cfd-compute/push.wgsl';
+import { main as updateDivCurl }    from './cfd-compute/divergence-curl.wgsl';
+import { main as updatePressure }   from './cfd-compute/pressure.wgsl';
+import { main as projectVelocity }  from './cfd-compute/project.wgsl';
+import { main as advectVelocity }   from './cfd-compute/advect.wgsl';
+import { main as advectMcCormack }  from './cfd-compute/mccormack.wgsl';
 
 import { CFDControls } from '../../ui/cfd-controls';
 import { InfoBox } from '../../ui/info-box';
@@ -128,7 +129,7 @@ export const RTTCFDComputePage: LC = () => {
             pressure,
           ]: StorageTarget[]) => (<>
 
-            <Pick all move render={({x, y, moveX, moveY}) => (
+            <Mouse move render={({x, y, moveX, moveY}) => (
               <Compute immediate>
                 <Stage target={velocity}>
                   <Kernel shader={pushVelocity} args={[[x / 2 * dpi, y / 2 * dpi], [moveX, moveY]]} swap={false} />

@@ -1,5 +1,6 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import { yeet, suspend, useAwait, useNoAwait, useMemo, useOne } from '../../live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import { yeet, suspend, useAwait, useNoAwait, useMemo, useOne } from '@use-gpu/live';
+import { toMurmur53 } from '@use-gpu/state';
 import { useSuspenseContext } from '../providers/suspense-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
 
@@ -18,7 +19,7 @@ export type FetchProps<T> = {
   fallback?: T,
   slow?: number,
 
-  then?: (t: any) => T,
+  then?: (t: any) => T | Promise<T>,
 
   render?: (t: T) => LiveElement,
   children?: (t: T) => LiveElement,
@@ -49,11 +50,12 @@ export const Fetch: LiveComponent<FetchProps<any>> = (props: FetchProps<any>) =>
 
     const go = (url ?? request) ? (slow ? () => delay(f(), slow) : f) : async () => null;
     return go;
-  }, [url, request, JSON.stringify(options), type, then, version]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, request, toMurmur53(options), type, then, version]);
 
   const [resolved, fetchError, isLoading] = useAwait(run, [run]);
   const [mapped, mapError] = resolved !== undefined && then
-    ? useAwait(() => then(resolved), [resolved])
+    ? useAwait(async () => then(resolved), [resolved])
     : (useNoAwait(), [resolved]);
   const error = fetchError || mapError;
   useOne(() => error && console.warn(error), error);

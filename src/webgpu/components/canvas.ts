@@ -1,19 +1,18 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { UseGPURenderContext, ColorSpace, TextureSource } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { UseGPURenderContext, ColorSpace, TextureSource } from '@use-gpu/core';
 
-import { RenderContext, LayoutContext, DeviceContext } from '../../workbench';
-import { provide, use, useCallback, useContext, useMemo, useOne, useRef, incrementVersion } from '../../live';
+import { RenderContext, LayoutContext, DeviceContext } from '@use-gpu/workbench';
+import { provide, use, useCallback, useContext, useMemo, useOne, useRef, incrementVersion } from '@use-gpu/live';
 import {
   makeColorState,
   makeColorAttachment,
   makeTargetTexture,
-  makeDepthTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
   BLEND_PREMULTIPLY,
-} from '../../core';
+} from '@use-gpu/core';
 
-import { Loop, useInspectable } from '../../workbench';
+import { Loop, useInspectable } from '@use-gpu/workbench';
 
 import { DEPTH_STENCIL_FORMAT, COLOR_SPACE, BACKGROUND_COLOR } from '../constants';
 import { makePresentationContext } from '../web';
@@ -73,6 +72,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
           device,
           width,
           height,
+          1,
           format,
           samples,
         )
@@ -95,7 +95,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
   ] = useMemo(() => {
     const {current: count} = countRef;
 
-    const texture = makeDepthTexture(device, width, height, depthStencil, samples);
+    const texture = makeTargetTexture(device, width, height, 1, depthStencil, samples);
     texture.label = `<Canvas> DepthTarget ${count.texture}`;
 
     const attachment = makeDepthStencilAttachment(texture, depthStencil);
@@ -104,6 +104,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
 
   const gpuContext = useMemo(
     () => makePresentationContext(device, canvas, format),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [device, canvas, format, width, height],
   );
 
@@ -114,21 +115,22 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
     format: depthStencil,
     size: [width, height],
     version: 0,
+    hint: 'depth',
   } as TextureSource), [depthTexture, depthStencil, samples, width, height]);
 
-  const swap = useCallback((view?: GPUTextureView) => {
+  const swap = useCallback(() => {
     const {current: count} = countRef;
     count.swap = incrementVersion(count.swap);
     depth.version = incrementVersion(depth.version);
 
-    const v = view ?? gpuContext
+    const v = gpuContext
       .getCurrentTexture()
       .createView();
-    if (!view) v.label = `<Canvas> Swap View ${count.texture} / ${count.swap}`;
+    v.label = `<Canvas> Swap View ${count.texture} / ${count.swap}`;
 
     if (samples > 1) colorAttachments[0].resolveTarget = v;
     else colorAttachments[0].view = v;
-  }, [gpuContext, samples, colorAttachments])
+  }, [gpuContext, depth, samples, colorAttachments])
 
   const renderContext = useOne(() => ({
     width,
@@ -140,11 +142,15 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
     gpuContext,
     colorSpace,
     colorInput,
+
     colorStates,
-    colorAttachments,
-    depthTexture,
     depthStencilState,
-    depthStencilAttachment,
+
+    viewType: '2d',
+    viewAttachments: [{
+      colorAttachments,
+      depthStencilAttachment,
+    }],
 
     swap,
     depth,
@@ -160,7 +166,7 @@ export const Canvas: LiveComponent<CanvasProps> = (props: CanvasProps) => {
     colorInput,
     colorStates,
     colorAttachments,
-    depthTexture,
+
     depthStencilState,
     depthStencilAttachment,
 

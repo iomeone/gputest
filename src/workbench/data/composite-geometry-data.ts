@@ -1,8 +1,8 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { GPUGeometry, DataSchema, StorageSource, LambdaSource, CPUGeometry, TypedArray } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { GPUGeometry, DataSchema, StorageSource, LambdaSource, CPUGeometry, TypedArray } from '@use-gpu/core';
 
-import { keyed, yeet, gather, useMemo, useOne } from '../../live';
-import { formatToArchetype } from '../../core';
+import { keyed, yeet, gather, useMemo, useOne } from '@use-gpu/live';
+import { formatToArchetype } from '@use-gpu/core';
 import mapValues from 'lodash/mapValues.js';
 import groupBy from 'lodash/groupBy.js';
 import { useRenderProp } from '../hooks/useRenderProp';
@@ -38,6 +38,7 @@ export const CompositeGeometryData: LiveComponent<CompositeGeometryDataProps> = 
       }))
     ) as any,
     // Diff archetypes by value
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     archetypes
   );
 
@@ -47,7 +48,7 @@ export const CompositeGeometryData: LiveComponent<CompositeGeometryDataProps> = 
       (items: CPUGeometry[]): Record<string, TypedArray>[] =>
         items.map(i => i.attributes)
     ) as any,
-    [data, schemas]
+    [partitions]
   );
 
   return gather(archetypes.map((archetype: string) => {

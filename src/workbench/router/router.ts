@@ -1,5 +1,5 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import { makeContext, memo, provide, use, useContext, useMemo, useResource, useState } from '../../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import { makeContext, memo, provide, use, useContext, useMemo, useResource, useState } from '@use-gpu/live';
 import { Routes } from './routes';
 import { QueryParams, Route, RouterState, RouterAPI } from './types';
 
@@ -20,7 +20,7 @@ export const Router: LiveComponent<RouterProps> = memo(({
   children,
 }: RouterProps) => {
 
-  const src = useMemo(() => source ?? makeBrowserHistory(base, hash), [source ?? base, hash]);
+  const src = useMemo(() => source ?? makeBrowserHistory(base, hash), [source, base, hash]);
 
   const [state, setState] = useState<RouterState>({
     path: src.path(),

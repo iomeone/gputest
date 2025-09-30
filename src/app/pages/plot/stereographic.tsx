@@ -1,19 +1,21 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { Keyframe } from '../../../workbench';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Keyframe } from '@use-gpu/workbench';
 
-import React, { use } from '../../../live';
+import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass,
-  OrbitCamera, OrbitControls,
-  Cursor,
+  Pass,
+  OrbitCamera,
   Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
-  Plot, Spherical, Stereographic, Axis, Grid, Label, Line, Sampler, Scale, Surface, Tick, Transpose,
-} from '../../../plot';
+  OrbitControls,
+} from '@use-gpu/interact';
+import {
+  Plot, Spherical, Stereographic, Axis, Grid, Label, Line, Sampler, Scale, Tick,
+} from '@use-gpu/plot';
 
 import { PlotControls } from '../../ui/plot-controls';
 import { InfoBox } from '../../ui/info-box';
@@ -38,7 +40,7 @@ export const PlotStereographicPage: LC = () => {
     [1, 0],
     [10, 1],
     [11, 1],
-  ] as Keyframe[];
+  ] as Keyframe<number>[];
 
   const view = (normalize: number) => (<>
     <InfoBox>Plot curves and grids in an animated &lt;Stereographic&gt; viewport.</InfoBox>
@@ -100,7 +102,7 @@ export const PlotStereographicPage: LC = () => {
                     placement='bottom'
                     color='#80808080'
                     size={24}
-                    offset={16}
+                    offset={[0, 16]}
                     expand={5}
                     depth={0.5}
                     formatter={thetaFormatter}
@@ -109,7 +111,7 @@ export const PlotStereographicPage: LC = () => {
                     placement='bottom'
                     color='#ffffff'
                     size={24}
-                    offset={16}
+                    offset={[0, 16]}
                     expand={0}
                     depth={0.5}
                     formatter={thetaFormatter}

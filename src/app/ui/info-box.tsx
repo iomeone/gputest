@@ -1,13 +1,8 @@
 import React from 'react';
-import { use } from '../../live';
-import { HTML } from '../../react';
-
-const ICON = (s: string) => <span className="m-icon">{s}</span>
+import { HTML } from '@use-gpu/react';
 
 const STYLE = {
   position: 'absolute',
-  left: 0,
-  top: 0,
   padding: '10px',
   background: 'rgba(0, 0, 0, .75)',
 
@@ -15,15 +10,27 @@ const STYLE = {
 };
 
 type InfoBoxProps = {
+  left?: number | null,
+  right?: number | null,
+  top?: number | null,
+  bottom?: number | null,
+
   children: any,
 };
 
-export const InfoBox = ({children}: InfoBoxProps) => {
+export const InfoBox = ({left, top, right, bottom, children}: InfoBoxProps) => {
+
+  const style: Record<string, any> = {...STYLE};
+  if (right != null) { style.right = right } else { style.left = left || 0 };
+  if (bottom != null) { style.bottom = bottom } else { style.top = top || 0 };
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const root = document.querySelector('#use-gpu .canvas')!;
+
   return (
-    <HTML 
+    <HTML
       container={root}
-      style={STYLE}
+      style={style}
     >
       {children}
     </HTML>

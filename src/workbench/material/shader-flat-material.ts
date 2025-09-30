@@ -1,15 +1,15 @@
-import type { LC, LiveElement } from '../../live';
-import type { ShaderModule, ShaderSource } from '../../shader';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { provide, yeet, useMemo } from '../../live';
+import { provide, yeet, useMemo } from '@use-gpu/live';
 
 import { MaterialContext } from '../providers/material-provider';
 import { QueueReconciler } from '../reconcilers/index';
 import { useShader } from '../hooks/useShader';
 import { getRenderFunc } from '../hooks/useRenderProp';
 
-import { getSolidSurface } from '../../wgsl/instance/surface/solidwgsl';
-import { getSolidFragment } from '../../wgsl/instance/fragment/solidwgsl';
+import { getSolidSurface } from '@use-gpu/wgsl/instance/surface/solid-surface.wgsl';
+import { getSolidFragment } from '@use-gpu/wgsl/instance/fragment/solid.wgsl';
 
 const {signal} = QueueReconciler;
 
@@ -19,6 +19,7 @@ export type ShaderFlatMaterialProps = {
   fn getFragment(color: vec4<f32>, uv: vec4<f32>, st: vec4<f32>) -> vec4<f32>
    */
   fragment: ShaderModule,
+
   render?: (material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement,
   children?: LiveElement | ((material: Record<string, Record<string, ShaderSource | null | undefined | void>>) => LiveElement),
 };
@@ -42,7 +43,7 @@ export const ShaderFlatMaterial: LC<ShaderFlatMaterialProps> = (props: ShaderFla
       getSurface,
       getLight,
     },
-  }), [getSurface, getLight]);
+  }), [getFragment, getSurface, getLight]);
 
   const render = getRenderFunc(props);
   const view = render ? render(context) : children;

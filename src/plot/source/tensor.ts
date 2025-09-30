@@ -1,21 +1,21 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { ElementType, TensorArray, VectorLike, Emitter, UniformType } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { ElementType, TensorArray, VectorLike, Emitter, UniformType } from '@use-gpu/core';
 
-import { provide, yeet, memo, useOne, useMemo, useNoMemo } from '../../live';
+import { provide, yeet, memo, useOne, useMemo, useNoMemo } from '@use-gpu/live';
 import {
   seq,
   makeTensorArray,
-  makeNumberReader, makeNumberWriter, makeNumberSplitter,
+  makeNumberReader, makeNumberWriter, makeNumberInterleavedWriter,
   emitArray, emitMultiArray,
   toCPUDims,
   updateTensor,
-} from '../../core';
-import { shouldEqual, sameShallow } from '../../traits/index-live';
+} from '@use-gpu/core';
+import { shouldEqual, sameShallow } from '@use-gpu/traits/live';
 import {
   useTimeContext, useNoTimeContext,
   useAnimationFrame, useNoAnimationFrame,
   useBufferedSize, getRenderFunc,
-} from '../../workbench';
+} from '@use-gpu/workbench';
 
 import { useDataContext, DataContext } from '../providers/data-provider';
 import zipObject from 'lodash/zipObject.js';
@@ -78,7 +78,7 @@ export const Tensor: LiveComponent<TensorProps<unknown & (string | string[])>> =
     () => split
       ? seq(items).map(() => makeTensorArray(f, alloc))
       : [makeTensorArray(f, items * alloc)],
-    [f, alloc, items]
+    [f, alloc, items, split]
   );
   const arrays = useOne(() => tensors.map(({array}) => array), tensors);
 
@@ -92,7 +92,7 @@ export const Tensor: LiveComponent<TensorProps<unknown & (string | string[])>> =
     const d = toCPUDims(dims);
 
     let emitted = 0;
-    const emit = split ? makeNumberSplitter(arrays, d) : makeNumberWriter(array, d);
+    const emit = split ? makeNumberInterleavedWriter(arrays, d) : makeNumberWriter(array, d);
     if (data) {
       const expr = makeNumberReader(data, d);
       emitted = emitArray(expr, emit, count);
@@ -135,7 +135,7 @@ export const Tensor: LiveComponent<TensorProps<unknown & (string | string[])>> =
     () => split
       ? ({...dataContext, ...value})
       : ({...dataContext, [as as string]: value}),
-    [dataContext, value, as]) : useNoMemo();
+    [dataContext, value, as, split]) : useNoMemo();
 
   return render ? render(value as any) : children ? provide(DataContext, context, children) : yeet(value);
 }, shouldEqual({

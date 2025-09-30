@@ -1,24 +1,24 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../live';
-import type { XY, XYZW, Rectangle } from '../core';
-import type { Placement } from '../parse';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { XY, XYZW, Rectangle } from '@use-gpu/core';
+import type { Placement } from '@use-gpu/parse';
 import type { LayoutElement } from './types';
 
-import { parsePlacement } from '../parse';
-import { useProp } from '../traits/index-live';
-import { memo, provide, gather, yeet, keyed, fragment, useContext, useMemo, useOne, incrementVersion } from '../live';
-import { schemaToArchetype } from '../core';
+import { parsePlacement } from '@use-gpu/parse';
+import { useProp } from '@use-gpu/traits/live';
+import { memo, provide, gather, yeet, keyed, fragment, useContext, useMemo, useOne, incrementVersion } from '@use-gpu/live';
+import { schemaToArchetype } from '@use-gpu/core';
 
 import {
-  DebugContext, MouseContext, WheelContext, ViewContext,
+  DebugContext, ViewContext,
   LayoutContext, useTransformContext,
   useInspectable, useInspectHoverable, useInspectorSelect, Inspector,
-  useShader,
+  useShader, useMouseState, useWheelState,
   QueueReconciler, LayerReconciler,
   UI_SCHEMA,
-} from '../workbench';
+} from '@use-gpu/workbench';
 
-import { chainTo } from '../shader/wgsl';
-import { getLayoutPosition } from '../wgsl/layout/layoutwgsl';
+import { chainTo } from '@use-gpu/shader/wgsl';
+import { getLayoutPosition } from '@use-gpu/wgsl/layout/layout.wgsl';
 
 import { INSPECT_STYLE } from './lib/constants';
 
@@ -161,7 +161,6 @@ const screenToView = (projectionMatrix: mat4, x: number, y: number) => {
 };
 
 export const Scroller = (pickers: any[], flip: [number, number], shift: [number, number]) => {
-  const { useWheel } = useContext(WheelContext);
   const { uniforms: viewUniforms } = useContext(ViewContext);
   const {
     viewPixelRatio: { current: dpi },
@@ -169,15 +168,14 @@ export const Scroller = (pickers: any[], flip: [number, number], shift: [number,
     projectionMatrix: { current: matrix },
   } = viewUniforms;
 
-  const { wheel } = useWheel();
+  const wheel = useWheelState();
   const [px, py] = screenToView(matrix, wheel.x / width * dpi * 2.0 - 1.0, 1.0 - wheel.y / height * dpi * 2.0);
 
   const versionRef = useOne(() => ({current: 0}));
   let version = versionRef.current;
 
   useOne(() => {
-    const { moveX, moveY, stopped } = wheel;
-    if (stopped) return;
+    const { moveX, moveY } = wheel;
 
     let x = px - shift[0];
     let y = py - shift[1];
@@ -200,7 +198,6 @@ export const Scroller = (pickers: any[], flip: [number, number], shift: [number,
 }
 
 export const Inspect = (pickers: any[], flip: [number, number], shift: [number, number]) => {
-  const { useMouse } = useContext(MouseContext);
   const { uniforms: viewUniforms } = useContext(ViewContext);
   const {
     viewPixelRatio: { current: dpi },
@@ -210,7 +207,7 @@ export const Inspect = (pickers: any[], flip: [number, number], shift: [number, 
 
   const setHighlight = useInspectorSelect();
 
-  const { mouse, pressed } = useMouse();
+  const mouse = useMouseState();
   const [px, py] = screenToView(matrix, mouse.x / width * dpi * 2.0 - 1.0, 1.0 - mouse.y / height * dpi * 2.0);
 
   const picked = useOne(() => {
@@ -228,7 +225,7 @@ export const Inspect = (pickers: any[], flip: [number, number], shift: [number, 
 
   const [pickedId] = picked;
   useOne(() => setHighlight(pickedId ?? null), pickedId);
-  useOne(() => pressed.left && setHighlight(pickedId ?? null, true), pressed.left);
+  useOne(() => mouse.buttons.left && setHighlight(pickedId ?? null, true), mouse.buttons.left);
 
   return null;
 }

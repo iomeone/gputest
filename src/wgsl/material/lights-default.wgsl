@@ -1,4 +1,4 @@
-use '../../wgsl/use/types'::{ Light };
+use '@use-gpu/wgsl/use/types'::{ Light };
 
 @infer type T;
 @link fn applyLight(

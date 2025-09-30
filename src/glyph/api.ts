@@ -1,8 +1,6 @@
 import type { Font, FontProps, FontGlyph, FontMetrics, SpanMetrics, GlyphMetrics, RustTextAPI } from './types';
-import { toMurmur53 } from '../state';
-
-import { getRustText } from '../vendor/rusttext';
-// import { UseRustText } from '../pkg/use_gpu_text.js';
+import { toMurmur53 } from '@use-gpu/state';
+import { UseRustText } from '../pkg/use_gpu_text.js';
 
 type ArrowFunction = (...args: any[]) => any;
 
@@ -18,8 +16,7 @@ const DEFAULT_FONTS = {
 
 export const RustText = (): RustTextAPI => {
 
-  // const useRustText = UseRustText.new();
-   const useRustText = getRustText();
+  const useRustText = UseRustText.new();
 
   const fontMap = new Map<number, Font>();
   const pendingGlyphs = new Map<number, ArrowFunction[]>;

@@ -1,26 +1,21 @@
-import type { LC, LiveElement, PropsWithChildren, PropsWithMarkup } from '../../../live';
-import type { ColorLike } from '../../../core';
+import type { LC, PropsWithChildren, PropsWithMarkup } from '@use-gpu/live';
+import type { ColorLike } from '@use-gpu/core';
 
-import React, { use } from '../../../live';
+import React from '@use-gpu/live';
 
 import {
   Pass, FlatCamera,
-  PanControls,
-  Cursor,
-  Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
+import { PanControls } from '@use-gpu/interact';
 import {
   Present, Slide, Overlay, Step, PresentInfo, KeyboardControls,
-} from '../../../present';
+} from '@use-gpu/present';
 import {
   UI, Layout, Absolute, Flex, Block, Inline, Text,
-} from '../../../layout';
-import { vec3 } from 'gl-matrix';
+} from '@use-gpu/layout';
 
 import { InfoBox } from '../../ui/info-box';
-
-let t = 0;
 
 type TextProps = {
   fill?: ColorLike,

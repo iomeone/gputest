@@ -1,8 +1,8 @@
-import type { ColorLike, VectorLike } from '../../core';
-import { useProp } from '../../traits/index-live';
-import { parseColor, parseNumber, parsePosition } from '../../parse';
+import type { ColorLike, VectorLike } from '@use-gpu/core';
+import { useProp } from '@use-gpu/traits/live';
+import { parseColor, parseNumber, parsePosition } from '@use-gpu/parse';
 
-import { memo, useMemo } from '../../live';
+import { memo, useMemo } from '@use-gpu/live';
 
 import { useLightContext } from '../providers/light-provider';
 import { useMatrixContext } from '../providers/matrix-provider';
@@ -47,7 +47,7 @@ export const DomeLight = memo((props: DomeLightProps) => {
       opts: horizon,
       intensity,
     };
-  }, [direction, zenith, horizon, intensity, parent]);
+  }, [direction, zenith, horizon, intensity, bleed, parent]);
 
   const {useLight} = useLightContext();
   useLight(light);

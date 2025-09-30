@@ -1,42 +1,46 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { TextureSource } from '../../../core';
-import type { GLTF } from '../../../gltf';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { TextureSource } from '@use-gpu/core';
+import type { GLTF } from '@use-gpu/gltf';
 
-import React, { use, Gather } from '../../../live';
+import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  LinearRGB, Pass, Fetch,
-  OrbitCamera, OrbitControls,
-  Cursor, PointLayer, LineLayer,
-  ImageCubeTexture, PrefilteredEnvMap, Environment,
-  DirectionalLight, PointLight, DomeLight,
+  LinearRGB, Pass, LoadingSpinner,
+  OrbitCamera,
+  PrefilteredEnvMap, Environment,
+  PointLight,
   Animate, Suspense,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
+import {
+  Cursor,
+  OrbitControls,
+} from '@use-gpu/interact';
 
-import { GLTFData, GLTFModel } from '../../../gltf';
-import { Scene, Node } from '../../../scene';
+import { GLTFData, GLTFModel } from '@use-gpu/gltf';
+import { Scene, Node } from '@use-gpu/scene';
 
 import { EnvMapControls } from '../../ui/envmap-controls';
 import { InfoBox } from '../../ui/info-box';
 
-// @ts-ignore
-const isDevelopment = process.env.NODE_ENV === 'development';
+const SHADOW_MAP_POINT = {
+  size: [2048, 2048],
+  depth: [0.1, 50],
+  bias: [1/128, 1/64, 1/16],
+  blur: 4,
+};
 
 export const GeometryGLTFPage: LC = () => {
-
-  const base = isDevelopment ? '/' : '/demo/';
-  const url = base + "gltf/DamagedHelmet/DamagedHelmet.gltf";
 
   const root = document.querySelector('#use-gpu .canvas');
 
   return (<>
     <InfoBox>Load a .glb model using the GLTF package. Supports PBR materials.</InfoBox>
-    <EnvMapControls container={root} render={(envPreset, envMap) => (
+    <EnvMapControls hasModel hasTonemap container={root} render={({tonemap, preset, map, model, position, scale}) => (
       <Gather
         children={[
           <Gather
-            children={<Suspense>{envMap}</Suspense>}
+            children={<Suspense>{map}</Suspense>}
             then={([texture]: TextureSource[]) => (
               <PrefilteredEnvMap
                 texture={texture}
@@ -45,45 +49,42 @@ export const GeometryGLTFPage: LC = () => {
           />
         ]}
         then={([cubeMap]: TextureSource[]) => (
-          <LinearRGB>
+          <LinearRGB tonemap={tonemap} gain={3}>
             <Cursor cursor='move' />
             <Camera>
-              <Pass lights>
+              <Pass lights shadows ssao={1}>
                 <Animate
                   loop
                   delay={0}
                   keyframes={[
-                    [0, [30, 20, 10]],
-                    [4, [20, 10, 40]],
-                    [8, [-5, 20, 20]],
-                    [12, [30, 20, 10]],
+                    [0, [6, 4, 2]],
+                    [4, [4, 2, 10]],
+                    [8, [-1, 4, 4]],
+                    [12, [6, 4, 2]],
                   ]}
                   prop='position'
                 >
-                  <PointLight position={[10, 20, 30]} color={[0.5, 0.0, 0.25]} intensity={40*40} />
+                  <PointLight position={[10, 20, 30]} color={[0.5, 0.1, 0.25]} intensity={100} shadowMap={SHADOW_MAP_POINT} debug />
                 </Animate>
 
                 <Animate
                   loop
                   delay={0}
                   keyframes={[
-                    [0, [10, 20, 30]],
-                    [3, [20, 30, 10]],
-                    [6, [40, 10, 20]],
-                    [9, [10, 20, 40]],
+                    [0, [-2, 4, -6]],
+                    [3, [-4, 3, -4]],
+                    [6, [-8, 3, -2]],
+                    [9, [-2, 4, -6]],
                   ]}
                   prop='position'
                 >
-                  <PointLight position={[10, 20, 30]} color={[1, 0.5, 0.25]} />
+                  <PointLight position={[10, 20, 30]} color={[0.15, 0.5, 1.0]} intensity={100} shadowMap={SHADOW_MAP_POINT} debug />
                 </Animate>
 
-                <DirectionalLight position={[-30, -10, 10]} color={[0, 0.5, 1.0]} />
-                <DomeLight intensity={0.15} />
-
-                <Environment map={cubeMap} preset={envPreset}>
+                <Environment map={cubeMap} preset={preset} gain={0.65}>
                   <Scene>
-                    <Node position={[0, -0.1, 0]}>
-                      <GLTFData url={url}>{
+                    <Node position={position} scale={scale}>
+                      <GLTFData url={model} fallback={<LoadingSpinner />}>{
                         (gltf: GLTF) => <GLTFModel gltf={gltf} />
                       }</GLTFData>
                     </Node>

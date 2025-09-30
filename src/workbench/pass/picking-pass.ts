@@ -1,20 +1,21 @@
-import type { LC, PropsWithChildren } from '../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 import type { Renderable } from '../pass';
 
-import { yeet, memo, useMemo } from '../../live';
+import { yeet, memo, useMemo } from '@use-gpu/live';
 
-import { usePickingContext } from '../providers/picking-provider';
 import { useDeviceContext } from '../providers/device-provider';
-import { useViewContext } from '../providers/view-provider';
+import { usePassContext } from '../providers/pass-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
 import { useInspectable } from '../hooks/useInspectable'
 
+import { useApplyPassBindGroup } from './bindings';
 import { getRenderPassDescriptor, drawToPass } from './util';
 
 const {quote} = QueueReconciler;
 
 export type PickingPassProps = PropsWithChildren<{
+  env: Record<string, any>,
   calls: {
     picking?: Renderable[],
   },
@@ -37,21 +38,37 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PickingPassProps) 
     overlay = false,
     merge = false,
     calls,
+    env,
   } = props;
 
   const inspect = useInspectable();
 
   const device = useDeviceContext();
-  const pickingContext = usePickingContext();
-  const {cull, bind, uniforms} = useViewContext();
+  const {
+    bindGroups: {view: bindGroup},
+    buffers: {picking: [renderContext]},
+    views: {view: {cull, uniforms}}
+  } = usePassContext();
 
-  const {renderContext} = pickingContext;
+  const {bindPass, dataBindings} = useApplyPassBindGroup(env, bindGroup, label);
 
   const pickings  = toArray(calls['picking'] as Renderable[]);
 
   const renderPassDescriptor = useMemo(() =>
     getRenderPassDescriptor(renderContext, {overlay, merge, label}),
     [renderContext, overlay, merge]);
+
+  const inspected = inspect({
+    output: {
+      sources: [renderContext.source, renderContext.depth],
+    },
+    pass: uniforms,
+    bindings: dataBindings,
+    render: {
+      vertices: 0,
+      triangles: 0,
+    },
+  });
 
   return quote(yeet(() => {
     let vs = 0;
@@ -63,7 +80,7 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PickingPassProps) 
     if (!overlay && !merge) renderContext.swap?.();
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-    bind(passEncoder);
+    bindPass?.(passEncoder);
 
     drawToPass(cull, pickings, passEncoder, countGeometry, uniforms);
 
@@ -72,16 +89,8 @@ export const PickingPass: LC<PickingPassProps> = memo((props: PickingPassProps) 
     const command = commandEncoder.finish();
     device.queue.submit([command]);
 
-    inspect({
-      output: {
-        picking: renderContext.source,
-        depth: renderContext.depth,
-      },
-      render: {
-        vertices: vs,
-        triangles: ts,
-      },
-    });
+    inspected.render.vertices = vs;
+    inspected.render.triangles = ts;
 
     return null;
   }));

@@ -1,23 +1,24 @@
-import type { LC, PropsWithChildren } from '../../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import React, { use } from '../../../live';
-import { TensorArray } from '../../../core';
+import React from '@use-gpu/live';
+import { TensorArray } from '@use-gpu/core';
 
 import {
-  Loop, Pass,
-  OrbitCamera, OrbitControls,
-  Cursor, Environment,
+  Pass,
+  OrbitCamera,
+  Environment,
   Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Plot, Cartesian, Axis, Grid, Label, Line, Sampler, Scale, Scissor, Surface, Tick, Transpose,
-} from '../../../plot';
+} from '@use-gpu/plot';
 import { vec3 } from 'gl-matrix';
 
 import { InfoBox } from '../../ui/info-box';
-
-let t = 0;
 
 const BACKGROUND = [0, 0, 0.09, 1];
 
@@ -94,7 +95,7 @@ export const PlotCartesianPage: LC = () => {
                       placement='bottom'
                       color='#40406080'
                       size={24}
-                      offset={16}
+                      offset={[0, 16]}
                       expand={5}
                       depth={0.5}
                     />
@@ -102,7 +103,7 @@ export const PlotCartesianPage: LC = () => {
                       placement='bottom'
                       color='#ffffff'
                       size={24}
-                      offset={16}
+                      offset={[0, 16]}
                       expand={0}
                       depth={0.5}
                     />

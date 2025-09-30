@@ -1,12 +1,12 @@
-import type { LiveComponent, LiveNode } from '../../live';
-import { memo, morph, use, provide, makeContext, useContext, useMemo } from '../../live';
+import type { LiveComponent, LiveNode } from '@use-gpu/live';
+import { memo, morph, use, provide, makeContext, useContext, useMemo } from '@use-gpu/live';
 import { RouterContext } from './router';
 import { Route } from './types';
 
 export type RouteState = {
   base: string,
   params: Record<string, string>,
-  routes?: Record<string, Route>,
+  routes?: Record<string, Route> | null,
 };
 
 export const RouteContext = makeContext<RouteState>({
@@ -94,7 +94,7 @@ export const Routes: LiveComponent<RoutesProps> = memo((props: RoutesProps) => {
     }
 
     return [{routes, base, params}, element];
-  }, [base, matchers, currentPath]);
+  }, [b, matchers, currentPath]);
 
   if (element) return provide(RouteContext, context, shouldMorph ? morph(element) : element);
   if (context.routes) return use(Routes, context);

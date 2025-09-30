@@ -1,53 +1,98 @@
-import type { UniformAttribute } from './types';
+import type { ViewUniforms } from './types';
 
-import { mat4, vec3, vec4 } from 'gl-matrix';
+import { mat4, vec2, vec3, vec4 } from 'gl-matrix';
 
-export const VIEW_UNIFORMS: UniformAttribute[] = [
-  {
-    name: 'projectionViewMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'projectionMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'viewMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'inverseProjectionViewMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'inverseViewMatrix',
-    format: 'mat4x4<f32>',
-  },
-  {
-    name: 'viewPosition',
-    format: 'vec4<f32>'
-  },
-  {
-    name: 'viewNearFar',
-    format: 'vec2<f32>'
-  },
-  {
-    name: 'viewResolution',
-    format: 'vec2<f32>',
-  },
-  {
-    name: 'viewSize',
-    format: 'vec2<f32>',
-  },
-  {
-    name: 'viewWorldDepth',
-    format: 'vec2<f32>',
-  },
-  {
-    name: 'viewPixelRatio',
-    format: 'f32',
-  },
-];
+export const makeViewUniforms = (): ViewUniforms => ({
+  projectionViewFrustum: { current: [vec4.create(), vec4.create(), vec4.create(), vec4.create(), vec4.create(), vec4.create()] },
+
+  projectionViewMatrix: { current: mat4.create() },
+  projectionMatrix: { current: mat4.create() },
+  viewMatrix: { current: mat4.create() },
+
+  inverseProjectionViewMatrix: { current: mat4.create() },
+  inverseProjectionMatrix: { current: mat4.create() },
+  inverseViewMatrix: { current: mat4.create() },
+
+  viewPosition: { current: vec4.create() },
+  viewNearFar: { current: vec2.create() },
+  viewResolution: { current: vec2.create() },
+  viewSize: { current: vec2.create() },
+  viewWorldScale: { current: vec3.fromValues(1, 1, 1) },
+  viewPixelRatio: { current: 1 },
+});
+
+export const updateViewSize = (
+  uniforms: ViewUniforms,
+  width: number,
+  height: number,
+  dpi?: number,
+  viewScale?: number,
+  worldScale?: number,
+  zbiasScale?: number,
+) => {
+  const {
+    viewSize,
+    viewResolution,
+    viewPixelRatio,
+    viewWorldScale,
+  } = uniforms;
+
+  if (width != null && height != null) {
+    viewSize.current = vec2.fromValues(width, height);
+    viewResolution.current = vec2.fromValues(1 / width, 1 / height);
+  }
+
+  viewPixelRatio.current = dpi ?? 1;
+  viewWorldScale.current = vec3.fromValues(viewScale ?? 1, worldScale ?? 1, zbiasScale ?? 1);
+};
+
+export const updateViewProjection = (uniforms: ViewUniforms, projection?: mat4, view?: mat4, position?: vec4, near?: number, far?: number) => {
+  const {
+    viewMatrix,
+    viewNearFar,
+    viewPosition,
+    projectionMatrix,
+    projectionViewMatrix,
+    projectionViewFrustum,
+    inverseViewMatrix,
+    inverseProjectionMatrix,
+    inverseProjectionViewMatrix,
+  } = uniforms;
+
+  if (projection) {
+    projectionMatrix.current = projection;
+    mat4.invert(inverseProjectionMatrix.current, projectionMatrix.current);
+  }
+  if (view) {
+    viewMatrix.current = view;
+    mat4.invert(inverseViewMatrix.current, viewMatrix.current);
+  }
+
+  if (projection || view) {
+    mat4.multiply(projectionViewMatrix.current, projectionMatrix.current, viewMatrix.current);
+    mat4.invert(inverseProjectionViewMatrix.current, projectionViewMatrix.current);
+    projectionViewFrustum.current = makeFrustumPlanes(projectionViewMatrix.current);
+  }
+
+  if (position) viewPosition.current = position;
+  else if (view) {
+    viewPosition.current[0] = 0;
+    viewPosition.current[1] = 0;
+    viewPosition.current[2] = 0;
+    viewPosition.current[3] = 1;
+    vec3.transformMat4(viewPosition.current as vec3, viewPosition.current as vec3, inverseViewMatrix.current);
+  }
+
+  if (near != null && far != null) {
+    viewNearFar.current = vec2.fromValues(near, far);
+  }
+};
+
+const REVERSE_Z = mat4.create();
+mat4.translate(REVERSE_Z, REVERSE_Z, vec3.fromValues(0, 0, 1));
+mat4.scale(REVERSE_Z, REVERSE_Z, vec3.fromValues(1, 1, -1));
+
+export const reverseZ = (a: mat4, b: mat4) => mat4.multiply(a, REVERSE_Z, b);
 
 export const makeOrthogonalMatrix = (
   left: number,
@@ -89,15 +134,12 @@ export const makeProjectionMatrix = (
   let matrix;
 
   if (dolly === 1) {
-    // Normal GL perspective matrix
+    // Normal WebGPU perspective matrix
     matrix = mat4.create();
-    mat4.perspective(matrix, fov, aspect, near, far);
+    mat4.perspectiveZO(matrix, fov, aspect, near, far);
 
     // Move Z from 0..1 to 1..0 in clip space (reversed Z)
-    const z = mat4.create();
-    mat4.translate(z, z, vec3.fromValues(0, 0, 1));
-    mat4.scale(z, z, vec3.fromValues(1, 1, -1));
-    mat4.multiply(matrix, z, matrix);
+    reverseZ(matrix, matrix);
   }
   else if (dolly > 0) {
     const shift = (1 / dolly - 1) * radius;
@@ -105,15 +147,12 @@ export const makeProjectionMatrix = (
     const dNear = near + shift;
     const dFar = far + shift;
 
-    // GL perspective matrix with reduced FOV and shifted near/far plane
+    // WebGPU perspective matrix with reduced FOV and shifted near/far plane
     matrix = mat4.create();
     mat4.perspectiveZO(matrix, dFov, aspect, dNear, dFar);
 
     // Move Z from 0..1 to 1..0 in clip space (reversed Z)
-    const z = mat4.create();
-    mat4.translate(z, z, vec3.fromValues(0, 0, 1));
-    mat4.scale(z, z, vec3.fromValues(1, 1, -1));
-    mat4.multiply(matrix, z, matrix);
+    reverseZ(matrix, matrix);
   }
   else {
     // Orthogonal matrix
@@ -186,7 +225,7 @@ export const makeFrustumPlanes = (m: mat4): vec4[] => {
   out.push(vec4.fromValues(m[3] - m[2], m[7] - m[6], m[11] - m[10], m[15] - m[14]));
   out.push(vec4.fromValues(       m[2],        m[6],         m[10],         m[14]));
 
-  for (const v of out) vec4.scale(v, v, 1/Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]));
+  for (const v of out) vec4.scale(v, v, 1/Math.hypot(v[0], v[1], v[2]));
 
   return out;
 };

@@ -1,8 +1,8 @@
-import type { ShaderSource } from '../../shader';
-import type { Ref } from '../../live';
-import type { Lazy } from '../../core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { Ref } from '@use-gpu/live';
+import type { Lazy } from '@use-gpu/core';
 
-import { useOne, useNoOne } from '../../live';
+import { useOne, useNoOne } from '@use-gpu/live';
 
 interface UseShaderRef {
   <T>(value: T): Ref<NonNullable<T>>;

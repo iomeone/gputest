@@ -1,9 +1,10 @@
-import type { LiveComponent } from '../../live';
-import type { TextureSource, Lazy } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TextureSource, TextureTarget, Lazy } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
+import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { use, useMemo } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
+import { use, useMemo } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
 import { useRenderContext } from '../providers/render-provider';
 import { useShaderRefs } from '../hooks/useShaderRef';
 import { getDerivedSource } from '../hooks/useDerivedSource';
@@ -11,7 +12,7 @@ import { getShader } from '../hooks/useShader';
 import { RawFullScreen } from '../primitives/index';
 
 export type FullScreenProps = {
-  texture?: TextureSource,
+  texture?: TextureSource | TextureTarget,
   shader?: ShaderModule,
 
   source?: ShaderSource,
@@ -19,14 +20,17 @@ export type FullScreenProps = {
   args?: Lazy<any>[],
 
   initial?: boolean,
+  version?: number,
+
   history?: boolean | number,
-};
+} & Pick<Partial<PipelineOptions>, 'mode' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 const NO_SOURCES: ShaderSource[] = [];
 
 /** Render texture to the current render target, with an optional shader applied.
 
 Provides:
+
 - `@optional @link getTargetSize() -> vec2<f32>`
 - `@optional @link getTextureSize() -> vec2<f32>`
 - `@optional @link getTexture(uv: vec2<f32>) -> vec4<f32>`
@@ -41,7 +45,13 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
     sources = NO_SOURCES,
     args = NO_SOURCES,
     initial,
+    version = 0,
     history,
+
+    mode,
+    alphaToCoverage,
+    alphaToDiscard,
+    blend,
   } = props;
 
   const target = useRenderContext();
@@ -51,16 +61,18 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
     let t = texture as any;
 
     if (shader) {
+      const ts = target.source as TextureTarget;
+
       const f = history ? (typeof history === 'number'
-        ? target.source?.history?.slice(0, history)
-        : target.source?.history
+        ? ts?.history?.slice(0, history)
+        : ts?.history
       ) ?? NO_SOURCES : NO_SOURCES;
       const s = (source ? [source] : NO_SOURCES).map(s => ((s as any)?.buffer)
         ? getDerivedSource(s as any, {readWrite: false}) : s);
 
       const bindings = bundleToAttributes(shader);
       const links = {
-        getTexture: texture ?? target.source?.history?.[0],
+        getTexture: texture ?? ts?.history?.[0],
         getTextureSize: () => texture?.size ?? [target.width, target.height],
         getTargetSize: () => [target.width, target.height],
       } as Record<string, any>;
@@ -78,6 +90,13 @@ export const FullScreen: LiveComponent<FullScreenProps> = (props: FullScreenProp
     return use(RawFullScreen, {
       texture: t,
       initial,
+      version,
+
+      mode,
+      alphaToCoverage,
+      alphaToDiscard,
+      blend,
     });
-  }, [shader, texture, target, initial, history, args, source, sources]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shader, texture, target, initial, history, source, sources, mode, alphaToCoverage, blend, args.length]);
 }

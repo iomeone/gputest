@@ -1,19 +1,20 @@
-import type { LiveComponent } from '../../live';
-import type { Lazy, UniformAttribute, VectorLike } from '../../core';
-import type { PointShape } from '../../parse';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { Lazy, UniformAttribute, VectorLike } from '@use-gpu/core';
+import type { PointShape } from '@use-gpu/parse';
+import type { ShaderSource } from '@use-gpu/shader';
 import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { RawQuads } from '../primitives/raw-quads';
 
-import { use, memo, useMemo } from '../../live';
-import { castTo } from '../../shader/wgsl';
+import { use, memo, useMemo, useOne } from '@use-gpu/live';
+import { castTo } from '@use-gpu/shader/wgsl';
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useShader } from '../hooks/useShader';
 import { useSource } from '../hooks/useSource';
 
-import { circleSDF, diamondSDF, squareSDF, upSDF, downSDF, leftSDF, rightSDF } from '../../wgsl/mask/sdfwgsl';
-import { getFilledMask, getOutlinedMask } from '../../wgsl/mask/pointwgsl';
+import { circleSDF, diamondSDF, squareSDF, upSDF, downSDF, leftSDF, rightSDF } from '@use-gpu/wgsl/mask/sdf.wgsl';
+import { getFilledMask, getOutlinedMask } from '@use-gpu/wgsl/mask/point.wgsl';
+import { traceSphereQuad } from '@use-gpu/wgsl/mask/sphere.wgsl';
 
 const MASK_SHADER = {
   'circle': circleSDF,
@@ -27,9 +28,11 @@ const MASK_SHADER = {
 
 export type PointLayerFlags = {
   shape?: PointShape,
+  hard?: boolean,
   hollow?: boolean,
   outline?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
+  shaded?: boolean,
+} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export type PointLayerProps = {
   position?: VectorLike,
@@ -73,8 +76,11 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
     zBiases,
 
     count,
+    hard = false,
     hollow = false,
     outline = 0,
+    shaded = false,
+    shadow = false,
     shape = 'circle',
     mode = 'opaque',
     id,
@@ -93,11 +99,15 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
       signs: '--++',
       gain: 0.5,
     });
-  }, [s, getSize]);
+  }, [getSize]);
 
   const sdf = (MASK_SHADER as any)[shape] ?? MASK_SHADER.circle;
   const mask = hollow ? getOutlinedMask : getFilledMask;
-  const boundMask = useShader(mask, [sdf, o]);
+
+  const defs = useOne(() => ({POINT_SMOOTH: !hard}), hard);
+
+  const boundMask = useShader(mask, [sdf, o], defs);
+  const raytrace = shaded ? useShader(traceSphereQuad, [], defs) : null;
 
   return use(RawQuads, {
     position,
@@ -114,11 +124,14 @@ export const PointLayer: LiveComponent<PointLayerProps> = memo((props: PointLaye
     zBiases,
 
     rectangles,
-    masks: boundMask,
+    mask: boundMask,
+    raytrace,
 
     ...rest,
-    alphaToCoverage: rest.alphaToCoverage ?? true,
+    alphaToCoverage: rest.alphaToCoverage ?? !hard,
 
+    shaded,
+    shadow,
     count,
     mode,
     id,

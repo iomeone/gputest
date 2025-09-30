@@ -1,11 +1,11 @@
-import type { LC } from '../../live';
-import type { ColorLike, VectorLike } from '../../core';
+import type { LC } from '@use-gpu/live';
+import type { ColorLike, VectorLike } from '@use-gpu/core';
 import type { ShadowMapLike } from './types';
 
-import { optional, useProp } from '../../traits/index-live';
-import { parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '../../parse';
+import { optional, useProp } from '@use-gpu/traits/live';
+import { parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '@use-gpu/parse';
 
-import { memo, use, useMemo, useOne } from '../../live';
+import { memo, use, useMemo, useOne } from '@use-gpu/live';
 
 import { useLightContext } from '../providers/light-provider';
 import { useMatrixContext } from '../providers/matrix-provider';
@@ -71,6 +71,11 @@ export const DirectionalLight: LC<DirectionalLightProps> = memo((props: Directio
 
     vec3.normalize(normal as vec3, normal as vec3);
     vec3.cross(tangent, normal as vec3, up);
+
+    if (vec3.length(tangent) < 1e-5) {
+      vec3.cross(tangent, normal as vec3, [up[1], up[2], up[0]]);
+    }
+
     vec3.normalize(tangent, tangent);
     vec3.cross(bitangent, normal as vec3, tangent);
     mat4.set(matrix,
@@ -89,7 +94,7 @@ export const DirectionalLight: LC<DirectionalLightProps> = memo((props: Directio
     mat4.invert(matrix, matrix);
     matrix[14] += far / (far - near);
 
-    const shadow = {type: 'ortho', size, depth, bias, blur};
+    const shadow = {type: 'ortho', size, depth, bias, blur, resolution: 0, fov: 0};
     return [matrix, shadow, near, far];
   }, [position, normal, shadowMap, parent]);
 
@@ -113,7 +118,7 @@ export const DirectionalLight: LC<DirectionalLightProps> = memo((props: Directio
       intensity,
       shadow,
     };
-  }, [position, normal, color, intensity, shadow, parent]);
+  }, [into, position, normal, color, intensity, shadow, parent]);
 
   const {useLight} = useLightContext();
   useLight(light);
@@ -122,7 +127,7 @@ export const DirectionalLight: LC<DirectionalLightProps> = memo((props: Directio
 
   return [
     use(PointHelper, { position, color }),
-    use(VectorHelper, { position, tangent: normal, color, length: far || 100 }),
+    use(VectorHelper, { position, direction: normal, color, length: far || 100 }),
     shadow ? use(AABBHelper, {
       into,
       min: [-1, -1, 0],

@@ -1,4 +1,4 @@
-import { seq } from '../../../core';
+import { seq } from '@use-gpu/core';
 
 const randomColor = () => [Math.random(), Math.random(), Math.random(), 1];
 

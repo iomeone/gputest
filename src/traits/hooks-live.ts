@@ -1,4 +1,4 @@
-import { useMemo, useOne } from '../live';
+import { useMemo, useOne } from '@use-gpu/live';
 import { injectUseProp } from './useProp';
 import { injectUseTrait, injectMakeUseTrait } from './useTrait';
 

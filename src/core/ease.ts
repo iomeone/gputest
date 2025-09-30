@@ -1,12 +1,10 @@
-import { clamp, lerp } from './tuple';
+import { clamp } from './tuple';
 
 const { min, max, pow, ceil, log2, sqrt, cbrt, acos, cos, abs } = Math;
 
 const sqr = (x: number) => x * x;
-const cub = (x: number) => x * x * x;
 
 const π = Math.PI;
-const SQRT3 = sqrt(3);
 
 // Cubic bezier 1D
 export const cubicBezier = (t: number, a: number, b: number, c: number, d: number) =>
@@ -337,7 +335,8 @@ export const makeArcLengthMap = (
 
 // Query value in arc length map
 export const queryArcLengthMap = (am: ArcLengthMap, value: number) => {
-  let {map, count, limit} = am;
+  const {map, count} = am;
+  let {limit} = am;
 
   let a = 1;
   let b = count;

@@ -1,14 +1,16 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { ColorSpace, TextureSource, TextureTarget } from '../../core';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
-import { seq } from '../../core';
-import { provide, yeet, fence, useContext, useMemo } from '../../live';
+import { provide, yeet, fence, useContext, useMemo } from '@use-gpu/live';
+import { seq, getTextureSampleType } from '@use-gpu/core';
 import { PRESENTATION_FORMAT, COLOR_SPACE } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
 import { ComputeContext } from '../providers/compute-provider';
+import { getRenderFunc } from '../hooks/useRenderProp';
+import { useInspectable } from '../hooks/useInspectable';
 
-import { makeStorageTexture } from '../../core';
+import { makeStorageTexture } from '@use-gpu/core';
 
 const DEFAULT_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 
@@ -25,6 +27,7 @@ export type TextureBufferProps = PropsWithChildren<{
   label?: string,
 
   render?: (texture: TextureTarget) => LiveElement,
+  children?: (texture: TextureTarget) => LiveElement,
   then?: (texture: TextureTarget) => LiveElement,
 }>;
 
@@ -32,6 +35,8 @@ export type TextureBufferProps = PropsWithChildren<{
 export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureBufferProps) => {
   const device = useContext(DeviceContext);
   const renderContext = useContext(RenderContext);
+
+  const inspect = useInspectable();
 
   const {
     resolution = 1,
@@ -45,7 +50,6 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureB
     colorSpace = COLOR_SPACE,
     label,
     children,
-    render,
     then,
   } = props;
 
@@ -71,18 +75,20 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureB
         )
       ) : null;
 
-      let i = 0;
-      if (buffers) for (const b of buffers) b.label = [label ?? 'textureBuffer', 'history', ++i].filter(s => s != null).join(' ');
-      buffer.label = label ?? 'textureBuffer';
-
       if (buffers) buffers.push(buffer);
       const views = buffers ? buffers.map(b => b.createView()) : undefined;
+
+      if (label != null) {
+        buffer.label = label;
+        if (buffers) for (const b of buffers) b.label = label;
+        if (views) for (const v of views) v.label = label;
+      }
 
       const counter = { current: 0 };
 
       return [buffer, buffers, views, counter];
     },
-    [device, width, height, format, samples, history]
+    [device, width, height, format, samples, label, history]
   );
 
   const targetTexture = bufferTexture;
@@ -91,7 +97,9 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureB
     const view = targetTexture.createView();
     const size = [width, height] as [number, number];
     const volatile = history ? history + 1 : 0;
-    const layout = 'texture_2d<f32>';
+
+    const type = getTextureSampleType(format);
+    const layout = `texture_2d<${type}>`;
 
     const variant = filterable
       ? (format.match(/32float$/) ? 'UNSUPPORTED' : 'textureSample')
@@ -145,12 +153,19 @@ export const TextureBuffer: LiveComponent<TextureBufferProps> = (props: TextureB
     swap();
 
     return source;
-  }, [targetTexture, width, height, format, history, sampler]);
+  }, [targetTexture, width, height, format, history, sampler, bufferTextures, bufferViews, colorSpace, counter, filterable]);
 
+  inspect({
+    output: {
+      color: source,
+    },
+  });
+
+  const render = getRenderFunc(props);
   if (!(render ?? children)) return yeet(source);
 
   const content = render ? render(source) : children;
-  const view = provide(ComputeContext, source, content);
+  const view = provide(ComputeContext, [source], content);
 
   if (then) return fence(view, () => then(source));
   return view;

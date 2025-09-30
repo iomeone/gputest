@@ -1,13 +1,7 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { LambdaSource, UniformType, VectorLike, DataSchema } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { LambdaSource, UniformType, VectorLike, DataSchema } from '@use-gpu/core';
 
-import { useDeviceContext } from '../providers/device-provider';
-import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { QueueReconciler } from '../reconcilers/index';
-import { useBufferedSize } from '../hooks/useBufferedSize';
-import { useRenderProp } from '../hooks/useRenderProp';
-import { useStructSources } from '../hooks/useStructSources';
-import { useOne, useMemo, useNoMemo } from '../../live';
+import { useOne, useMemo, useNoMemo } from '@use-gpu/live';
 import {
   makePackedLayout,
   normalizeSchema,
@@ -15,7 +9,16 @@ import {
   makeStructAggregateFields,
   uploadStorage,
   isUniformArrayType,
-} from '../../core';
+} from '@use-gpu/core';
+
+import { useDeviceContext } from '../providers/device-provider';
+import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
+import { QueueReconciler } from '../reconcilers/index';
+
+import { useBufferedSize } from '../hooks/useBufferedSize';
+import { useInspectable } from '../hooks/useInspectable';
+import { useRenderProp } from '../hooks/useRenderProp';
+import { useStructSources } from '../hooks/useStructSources';
 
 const {signal} = QueueReconciler;
 
@@ -42,10 +45,12 @@ export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
     live = false,
   } = props;
 
+  const inspect = useInspectable();
+
   const schema = useOne(() => normalizeSchema(propSchema), propSchema);
   const typedArray = useOne(() => Array.isArray(data) ? new Float32Array(data) : data ?? new Float32Array(256), data);
 
-  const uniforms = useMemo(
+  const attributes = useMemo(
     () => {
       const out = [];
       for (const k in schema) {
@@ -64,24 +69,24 @@ export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
   const [packedLayout, dataCount, dataStride, bytesPerElement] = useMemo(() => {
 
     const {byteLength, BYTES_PER_ELEMENT} = typedArray;
-    const layout = makePackedLayout(uniforms);
+    const layout = makePackedLayout(attributes);
 
     const dataCount = byteLength / layout.length;
     const dataStride = layout.length / BYTES_PER_ELEMENT;
     const bytesPerElement = BYTES_PER_ELEMENT;
 
     return [layout, dataCount, dataStride, bytesPerElement];
-  }, [typedArray, uniforms]);
+  }, [typedArray, attributes]);
 
   const bufferLength = useBufferedSize(dataCount);
 
   // Make aggregate buffer
   const [aggregateBuffer, fields] = useMemo(() => {
-    const aggregateBuffer = makeStructAggregateBuffer(device, uniforms, bufferLength);
+    const aggregateBuffer = makeStructAggregateBuffer(device, attributes, bufferLength);
     const fields = makeStructAggregateFields(aggregateBuffer);
 
     return [aggregateBuffer, fields];
-  }, [device, uniforms, bufferLength]);
+  }, [device, attributes, bufferLength]);
 
   // Refresh and upload data
   const refresh = () => {
@@ -118,7 +123,9 @@ export const InterleavedData: LiveComponent<InterleavedDataProps> = (props) => {
   }
 
   const {source} = aggregateBuffer;
-  const sources = useStructSources(uniforms, source, 'interleavedData');
+  const sources = useStructSources(attributes, source, 'interleavedData');
+
+  inspect({ data: { schema, data, sources }});
 
   const trigger = useOne(() => signal(), source.version);
 

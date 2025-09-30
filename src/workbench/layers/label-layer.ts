@@ -1,22 +1,23 @@
-import type { LiveComponent } from '../../live';
-import type { TypedArray, TextureSource, Atlas, Lazy } from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TypedArray, Lazy } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 import type { SDFGlyphData } from '../text/types';
 
-import { gather, use, memo, useOne } from '../../live';
+import { gather, use, memo, useOne } from '@use-gpu/live';
 import { useRawSource } from '../hooks/useRawSource';
 
 import { TransformContextProps } from '../providers/transform-provider';
-import { SDFFontProvider } from '../text/providers/sdf-font-provider';
+import { useSDFFontContext } from '../text/providers/sdf-font-provider';
 import { GlyphSource } from '../text/glyph-source';
 import { RawLabels, RawLabelsFlags } from '../primitives/raw-labels';
 
 export type LabelLayerProps = RawLabelsFlags & {
   position?: number[] | TypedArray,
   placement?: number[] | TypedArray,
-  offset?: number,
+  offset?: number[] | TypedArray,
   size?: number,
   depth?: number,
+  zBias?: number,
   color?: number[] | TypedArray,
   expand?: number,
 
@@ -25,11 +26,12 @@ export type LabelLayerProps = RawLabelsFlags & {
   offsets?: ShaderSource,
   sizes?: ShaderSource,
   depths?: ShaderSource,
+  zBiases?: ShaderSource,
   colors?: ShaderSource,
   expands?: ShaderSource,
 
   label?: string,
-  labels?: string[],
+  labels?: string[] | Uint16Array,
 
   family?: string,
   weight?: string | number,
@@ -39,8 +41,8 @@ export type LabelLayerProps = RawLabelsFlags & {
   instances?: ShaderSource,
   transform?: TransformContextProps,
 
-  flip?: [number, number],
-  sdfRadius?: number,
+  flip?: boolean,
+  monochrome?: boolean,
 
   detail?: number,
   count?: Lazy<number>,
@@ -75,11 +77,10 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
     instances,
     transform,
 
-    flip,
-    sdfRadius,
-
+    monochrome,
     detail,
-    // eslint-disable-next-line  @typescript-eslint/no-unused-vars    
+
+    // eslint-disable-next-line  @typescript-eslint/no-unused-vars
     count,
     mode = 'opaque',
 
@@ -89,63 +90,62 @@ export const LabelLayer: LiveComponent<LabelLayerProps> = memo((props: LabelLaye
   const strings = useOne(() => labels ?? (label != null ? [label] : []), labels ?? label);
 
   return (
-    use(SDFFontProvider, {
-      fence: gather,
-      radius: sdfRadius,
-      children:
-        use(GlyphSource, {
-          family,
-          weight,
-          style,
-          strings,
-          size: detail,
-        }),
-      then:
-        (
-          atlas: Atlas,
-          source: TextureSource,
-          [data] : [SDFGlyphData],
-        ) => {
-          const {sdf} = data;
-          const indices = useRawSource(data.indices, 'u32');
-          const rectangles = useRawSource(data.rectangles, 'vec4<f32>');
-          const layouts = useRawSource(data.layouts, 'vec2<f32>');
-          const uvs = useRawSource(data.uvs, 'vec4<f32>');
+    gather(
+      use(GlyphSource, {
+        family,
+        weight,
+        style,
+        strings,
+        size: detail,
+        monochrome,
+      }),
+      ([data] : SDFGlyphData[]) => {
+        if (!data) return null;
 
-          return use(RawLabels, {
-            indices,
-            rectangles,
-            layouts,
-            uvs,
-            sdf,
-            texture: source,
+        const {count, sdf} = data;
+        if (count === 0) return null;
 
-            instance,
-            instances,
-            transform,
+        const {getTexture} = useSDFFontContext();
+        const texture = getTexture();
 
-            position,
-            positions,
-            placement,
-            placements,
-            offset,
-            offsets,
-            size,
-            sizes,
-            depth,
-            depths,
-            color,
-            colors,
-            expand,
-            expands,
+        const indices = useRawSource(data.indices, 'u32');
+        const rectangles = useRawSource(data.rectangles, 'vec4<f32>');
+        const layouts = useRawSource(data.layouts, 'vec2<f32>');
+        const uvs = useRawSource(data.uvs, 'vec4<f32>');
 
-            flip,
-            mode,
+        return use(RawLabels, {
+          indices,
+          rectangles,
+          layouts,
+          uvs,
+          sdf,
+          texture,
 
-            ...rest,
-          });
-        },
-    })
-  );
+          instance,
+          instances,
+          transform,
+
+          position,
+          positions,
+          placement,
+          placements,
+          offset,
+          offsets,
+          size,
+          sizes,
+          depth,
+          depths,
+          color,
+          colors,
+          expand,
+          expands,
+
+          mode,
+
+          ...rest,
+        });
+      },
+    )
+  )
 }, 'LabelLayer');
 

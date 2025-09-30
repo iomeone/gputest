@@ -1,6 +1,6 @@
-import type { LC, LiveElement, PropsWithChildren, ArrowFunction } from '../../live';
+import type { LC, LiveElement, PropsWithChildren, ArrowFunction } from '@use-gpu/live';
 
-import { use, memo, gather, unquote, useMemo, useRef, useResource, useState } from '../../live';
+import { use, memo, gather, unquote, useMemo, useRef, useResource, useState } from '@use-gpu/live';
 import { useDeviceContext } from '../providers/device-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
@@ -48,6 +48,7 @@ export const ComputeLoop: LC<ComputeLoopProps> = memo((props: ComputeLoopProps) 
 
             useMemo(() => {
               if (!continued) countRef.current = 0;
+              // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [continued, ...fs]);
 
             useResource((dispose) => {

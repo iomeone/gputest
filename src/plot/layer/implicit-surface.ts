@@ -1,12 +1,10 @@
-import type { LiveComponent } from '../../live';
-import type { ShaderSource } from '../../shader';
-import type { TensorArray } from '../../core';
-import type { TraitProps } from '../../traits';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TensorArray, UniformType } from '@use-gpu/core';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { memo, use, useOne } from '../../live';
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
-import { adjustSchema } from '../../core';
-import { useInspectHoverable, Data, DualContourLayer, DUAL_CONTOUR_SCHEMA } from '../../workbench';
+import { memo, use } from '@use-gpu/live';
+import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { useRawTensorSource, useNoRawTensorSource, useInspectHoverable, DualContourLayer } from '@use-gpu/workbench';
 
 import { useRangeContext, useNoRangeContext } from '../providers/range-provider';
 import { ImplicitSurfaceTraits } from '../traits';
@@ -40,22 +38,54 @@ export const ImplicitSurface: LiveComponent<ImplicitSurfaceProps> = memo((props:
   const hovered = useInspectHoverable();
   if (hovered) flags.mode = "debug";
 
-  const schema = useOne(() => adjustSchema(DUAL_CONTOUR_SCHEMA, formats), formats);
-
   const r = range ? (useNoRangeContext(), range) : useRangeContext();
+  const s = size ?? tensor ?? (props.values as TensorArray)?.size;
 
-  return use(Data, {
-    schema,
-    data: {values, normals},
-    tensor: size ?? tensor ?? (props.values as TensorArray)?.size,
-    render: (sources: Record<string, ShaderSource>) => use(DualContourLayer, {
-      range: r,
-      zBias: z,
-      ...sources,
-      ...extra,
-      ...flags,
-    }),
+  // Avoid copy here because volume data is big and we never aggregate it
+  const vs = values && formats?.values ? useRawTensorSource({
+    array: values,
+    format: formats.values as UniformType,
+    size: s,
+
+    dims: -1, // unused
+    length: -1, // unused
+    version: 0,
+  }, { live: true }) : useNoRawTensorSource();
+
+  const ns = normals && formats?.normals ? useRawTensorSource({
+    array: normals,
+    format: formats.normals as UniformType,
+    size: s,
+
+    dims: -1, // unused
+    length: -1, // unused
+    version: 0,
+  }, { live: true }) : useNoRawTensorSource();
+
+  return use(DualContourLayer, {
+    range: r,
+    zBias: z,
+    values: vs,
+    normals: ns,
+    ...extra,
+    ...flags,
   });
+
+  /*
+    return use(Data, {
+      schema,
+      data: {values, normals},
+      tensor: size ?? tensor ?? (props.values as TensorArray)?.size,
+      render: (sources: Record<string, ShaderSource>) => use(DualContourLayer, {
+        range: r,
+        zBias: z,
+        ...sources,
+        ...extra,
+        ...flags,
+      }),
+    });
+  }
+  */
 }, shouldEqual({
   color: sameShallow(),
 }), 'ImplicitSurface');

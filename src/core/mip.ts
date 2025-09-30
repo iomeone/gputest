@@ -114,6 +114,8 @@ export const updateMipTextureChain = (
     mips = 1,
   } = source;
 
+  if (mips === 1) return;
+
   const [width, height] = size;
   const bs = bounds != null ? bounds : [[0, 0, width, height] as Rectangle];
 

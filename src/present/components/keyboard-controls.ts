@@ -1,7 +1,7 @@
-import type { LC } from '../../live';
+import type { LC } from '@use-gpu/live';
 
-import { useContext, useOne } from '../../live';
-import { KeyboardContext } from '../../workbench';
+import { useOne } from '@use-gpu/live';
+import { useKeyboardState } from '@use-gpu/workbench';
 import { usePresentContext } from '../providers/present-provider';
 
 export type KeyboardControlsProps = {
@@ -9,11 +9,11 @@ export type KeyboardControlsProps = {
 };
 
 export const KeyboardControls: LC<KeyboardControlsProps> = () => {
-  const {keyboard} = useContext(KeyboardContext);
+  const keyboard = useKeyboardState();
   const api = usePresentContext();
 
   useOne(() => {
-    const {keys: {arrowLeft, arrowRight, arrowUp, arrowDown}} = keyboard;
+    const {arrowLeft, arrowRight, arrowUp, arrowDown} = keyboard;
     if (arrowRight || arrowDown) {
       api.goForward();
     }

@@ -1,15 +1,17 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { ArrowFunction, FromSchema, TypedArray, StorageSource, LambdaSource, DataSchema, DataField, DataBounds, VectorLike, UniformType } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { ArrowFunction, FromSchema, TypedArray, StorageSource, LambdaSource, DataSchema, DataField, DataBounds, VectorLike, UniformType } from '@use-gpu/core';
 
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
 import { QueueReconciler } from '../reconcilers/index';
 import { useAggregator } from '../hooks/useAggregator';
 import { useBufferedSize } from '../hooks/useBufferedSize';
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp } from '../hooks/useRenderProp';
-import { useOne, useMemo } from '../../live';
+import { useOne, useMemo } from '@use-gpu/live';
 import {
   toCPUDims,
   isUniformArrayType,
+  isTypedArray,
   getUniformDims,
 
   copyRecursiveNumberArray,
@@ -20,8 +22,8 @@ import {
   normalizeSchema,
   allocateSchema,
   schemaToEmitters,
-} from '../../core';
-import { sizeToChunkCounts, toChunkCounts, toVertexCount } from '../../parse';
+} from '@use-gpu/core';
+import { sizeToChunkCounts, toChunkCounts, toVertexCount } from '@use-gpu/parse';
 
 const {signal} = QueueReconciler;
 const NO_TENSOR: number[] = [];
@@ -94,15 +96,18 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     live = false,
     immutable = false,
   } = props;
-  
+
   const schema = useOne(() => normalizeSchema(propSchema), propSchema);
   const data: Record<string, any>[] | null = propData ? Array.isArray(propData) ? propData : [propData] : null;
   const itemCount = Math.max(0, count ?? ((data?.length || 0) - skip));
+
+  const inspect = useInspectable();
 
   if (itemCount === 0) return null;
 
   const keys = useMemo(
     () => Object.keys(schema).filter(k => virtual?.[k] ?? data?.[0][schema[k].prop ?? k] != null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [schema, propData, virtual]
   );
 
@@ -117,6 +122,7 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     const isIndexed = !!indexedKey;
 
     return [countKey ?? keys[0], indexedKey, isArray, isIndexed];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema, ...keys]);
 
   // Resolve segment flags
@@ -151,33 +157,52 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     }
 
     return [chunks, groups, vertexCount, indexedKey ? indexCount : vertexCount];
-  }, [isArray, segments, itemCount, countKey, indexedKey, data, virtual, skip, ...(tensor ?? NO_TENSOR)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isArray, segments, itemCount, countKey, indexedKey, schema, data, virtual, skip, ...(tensor ?? NO_TENSOR)]);
 
   const allocItems = useBufferedSize(itemCount);
   const allocVertices = useBufferedSize(vertexCount);
   const allocIndices = useBufferedSize(indexCount);
 
+  // Check for fast path of single item TypedArrays
+  const isSingleTypedData = itemCount === 1 && !virtual && data && keys.every(k => isTypedArray(data[0][schema[k].prop ?? k]));
+
   // Make arrays for merged attributes
-  const hasSegments = !!segments || !!tensor || keys.includes('segments');
   const {fields, attributes, archetype} = useMemo(
     () => allocateSchema(
       schema,
       allocItems,
       allocVertices,
       allocIndices,
-      hasSegments,
+      isSingleTypedData ? data[0] : undefined,
       (key: string) => keys.includes(key),
     ),
-    [schema, keys, allocItems, allocVertices, allocIndices, hasSegments]
+    // Skip `data` as it's assigned in-place below
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [schema, keys, allocItems, allocVertices, allocIndices, isSingleTypedData],
   );
 
   // Blit all data into merged arrays if stale
   const slices = useMemo(() => {
-    const offsets: number[] = [0];
     const slices = [];
     const sliceKey = indexedKey ?? countKey;
 
+    // Fast path for single item TypedArrays
+    if (isSingleTypedData) {
+      for (const k in fields) {
+        const {dims, prop = k} = fields[k];
+        const array = attributes[k] = fields[k].array = data[0][prop];
+
+        if (k === sliceKey) {
+          slices.push(array.length / dims);
+        }
+      }
+
+      return slices;
+    }
+
     // Get index offsets for chunks
+    const offsets: number[] = [0];
     if (isIndexed) {
       const {dims, prop = countKey} = fields[countKey];
       const dimsIn = toCPUDims(dims);
@@ -200,8 +225,20 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
       const accessor = virtual?.[k];
       if (!accessor && !data) continue;
 
+      const {js} = schema[k];
       const {array, dims, depth, prop = k} = fields[k];
       const slice = k === sliceKey;
+
+      if (js) {
+        (array as any).length = 0;
+        for (let i = 0; i < itemCount; ++i) {
+          const from = accessor ? accessor(i + skip) : data ? data[i + skip][prop] : 0;
+          (array as any).push(...from);
+          if (slice) slices.push(from.length);
+        }
+        continue;
+      }
+
       const indexed = schema[k].index;
 
       // Keep CPU-only layout, as useAggregator will widen for us
@@ -209,7 +246,7 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
 
       let base = 0;
       let offset = 0;
- 
+
       for (let i = 0; i < itemCount; ++i) {
         const from = accessor ? accessor(i + skip) : data ? data[i + skip][prop] : 0;
         offset += copyRecursiveNumberArray(from, array, dimsIn, dimsIn, depth, offset, 1);
@@ -221,11 +258,15 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     }
 
     return slices;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    schema,
     fields,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     live ? NaN : virtual ? (version ?? NaN) : null, propData,
     itemCount, skip,
     countKey, indexedKey,
+    isSingleTypedData,
   ]);
 
   // Get emitters for data + segment data
@@ -252,7 +293,7 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     const emitters = schemaToEmitters(mergedSchema, {...attributes, ...rest});
 
     return [mergedSchema, emitters, total, indexed];
-  }, [schema, fields, countKey, attributes, segments, chunks, groups, loops, starts, ends]);
+  }, [schema, fields, countKey, attributes, segments, chunks, groups, loops, starts, ends, isArray, vertexCount, indexCount]);
 
   // Make aggregate chunk
   const items = useMemo(() => [{
@@ -278,10 +319,13 @@ export const Data: LiveComponent<DataProps<DataSchema>> = <S extends DataSchema>
     const bounds = toDataBounds(getBoundingBox(array, toCPUDims(dims)));
 
     if ('positions' in sources && bounds != null) (sources.positions as any).bounds = bounds;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, items, sources, ...(tensor ?? NO_TENSOR)]);
 
   if (live) useAnimationFrame();
   else useNoAnimationFrame();
+
+  inspect({ data: { schema, virtual, data: propData, items, sources }});
 
   const trigger = useOne(() => signal(), immutable ? null : items);
 

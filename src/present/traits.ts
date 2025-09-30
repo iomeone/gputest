@@ -1,4 +1,4 @@
-import type { XYZW } from '../core';
+import type { XYZW } from '@use-gpu/core';
 import type {
   SlideDirection,
   SlideEase,
@@ -10,12 +10,12 @@ import {
   makeParseTrait,
   optional,
   trait,
-} from '../traits/index-live';
+} from '@use-gpu/traits/live';
 import {
   makeParseEnum,
   parseInteger,
   parseNumber,
-} from '../parse';
+} from '@use-gpu/parse';
 
 import mapValues from 'lodash/mapValues.js';
 

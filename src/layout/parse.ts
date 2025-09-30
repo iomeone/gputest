@@ -1,6 +1,6 @@
-import type { ShaderSource } from '../shader';
+import type { ShaderSource } from '@use-gpu/shader';
 import type { Alignment, AlignmentLike, Anchor, AnchorLike, Baseline, Dimension, Direction, Fit, Gap, GapLike, Margin, MarginLike, OverflowMode, Repeat } from './types';
-import { makeParseEnum, makeParseObject } from '../parse';
+import { makeParseEnum, makeParseObject } from '@use-gpu/parse';
 
 export const makeParseDimension = (def: Dimension | null = null) => (x?: string | number): Dimension | null => {
   if (typeof x === 'string' || typeof x === 'number') return x;

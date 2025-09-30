@@ -1,4 +1,4 @@
-use '../../wgsl/codec/octahedral'::{ decodeOctahedral };
+use '@use-gpu/wgsl/codec/octahedral'::{ decodeOctahedral };
 
 const MAX_HEIGHT = 64;
 

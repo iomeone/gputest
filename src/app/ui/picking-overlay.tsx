@@ -1,15 +1,15 @@
-import type { LC } from '../../live';
-import React, { useOne } from '../../live';
+import type { LC } from '@use-gpu/live';
+import React, { useOne } from '@use-gpu/live';
 
 import {
-  FlatCamera, PickingContext,
+  PickingContext,
   useShader, useLambdaSource,
-} from '../../workbench';
+} from '@use-gpu/workbench';
 import {
   UI, Layout, Absolute, Block, Inline, Text,
-} from '../../layout';
-import { useContext } from '../../live';
-import { wgsl, bindModule } from '../../shader/wgsl';
+} from '@use-gpu/layout';
+import { useContext } from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 export const PickingOverlay: LC = () => {
 

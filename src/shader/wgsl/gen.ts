@@ -1,4 +1,4 @@
-import { ShaderModule, LambdaSource, UniformAttribute, DataBinding, ModuleRef, RefFlags as RF } from './types';
+import { ShaderModule, StorageSource, LambdaSource, UniformAttribute, DataBinding, ModuleRef, RefFlags as RF } from './types';
 
 import { formatMurmur53, toMurmur53, getObjectKey, mixBits, scrambleBits } from '../util/hash';
 import { getBundleHash, getBundleEntry, getBundleName, toBundle, toModule } from '../util/bundle';
@@ -16,7 +16,7 @@ const arg = (x: number) => String.fromCharCode(97 + x);
 
 const is3to4 = (type: string) => type.match(/vec3to4</);
 const to3 = (type: string) => type.replace(/vec3to4</, 'vec3<');
-const to4 = (type: string) => type.replace(/vec3to4</, 'vec4<');
+const to1 = (type: string) => type.replace(/vec[^<]+<([^>]+)>/, '$1');
 
 const is8to32 = (type: string) => type.match(/^(u|i)8$/);
 const is16to32 = (type: string) => type.match(/^(u|i)16$/);
@@ -35,7 +35,8 @@ const getTypeKey = (b: DataBinding) =>
   (+!!b.storage) * 2 +
   (+!!b.lambda) * 4 +
   (+!!b.texture) * 8 +
-  (+!!(b.storage?.volatile || b.texture?.volatile)) * 16;
+  (+!!b.uniform) * 16 +
+  (+!!(b.uniform?.volatile || b.storage?.volatile || b.texture?.volatile)) * 32;
 
 const getFormatKey = (b: DataBinding) =>
   b.texture ? toMurmur53(b.texture?.format) ^
@@ -43,40 +44,44 @@ const getFormatKey = (b: DataBinding) =>
               toMurmur53(b.texture?.variant) ^
               toMurmur53(b.texture?.absolute) :
   b.storage ? toMurmur53(b.storage?.format) :
+  b.uniform ? toMurmur53(b.uniform?.format) :
   0;
 
 const getBindingsKey = (bs: DataBinding[]) => scrambleBits(bs.reduce((a, b) => mixBits(a, getTypeKey(b) ^ getFormatKey(b)), 0)) >>> 0;
-const getValueKey = (b: DataBinding) => getObjectKey(b.constant ?? b.storage ?? b.texture);
+const getValueKey = (b: DataBinding) => getObjectKey(b.constant ?? b.uniform ?? b.storage ?? b.texture);
 
 export const makeBindingAccessors = (
   bindings: DataBinding[],
 ): Record<string, ShaderModule> => {
 
-  // Extract uniforms by type
+  // Extract attributes by type
   const lambdas = bindings.filter(({lambda}) => lambda != null);
+  const uniforms = bindings.filter(({uniform}) => uniform != null);
   const storages = bindings.filter(({storage}) => storage != null);
   const textures = bindings.filter(({texture}) => texture != null);
   const constants = bindings.filter(({constant}) => constant != null);
 
+  const buffers = [...uniforms, ...storages];
+
   // Virtual module symbols
-  const virtuals = [...constants, ...storages, ...textures];
-  const symbols = virtuals.map(({uniform}) => uniform.name);
-  const types = virtuals.map(({uniform}) => uniform.format);
-  const exports = virtuals.map(({uniform}) => ({
+  const virtuals = [...constants, ...uniforms, ...storages, ...textures];
+  const symbols = virtuals.map(({attribute}) => attribute.name);
+  const types = virtuals.map(({attribute}) => attribute.format);
+  const exports = virtuals.map((binding) => ({
     func: {
-      name: uniform.name,
-      type: {name: uniform.format},
-      parameters: uniform.args ?? INT_PARAMS,
+      name: binding.attribute.name,
+      type: {name: resolveBindingValueType(binding)},
+      parameters: binding.attribute.args ?? INT_PARAMS,
     },
     flags: RF.Exported,
   })) as any[];
 
   // Inject import for storage struct types
   const libs: Record<string, ShaderModule> = {};
-  const modules = storages.map(({uniform, storage}) => {
-    const {type: typeOut} = uniform;
+  const modules = buffers.map(({attribute, storage, uniform}) => {
+    const {type: typeOut} = attribute;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const {type: typeIn} = storage!;
+    const {type: typeIn} = (storage ?? uniform)!;
 
     const type = typeOut ?? typeIn;
     if (type) {
@@ -120,14 +125,20 @@ export const makeBindingAccessors = (
     const bindingSet = getBindingArgument(rename.get(VIRTUAL_BINDGROUP));
     const volatileSet = getBindingArgument(rename.get(VOLATILE_BINDGROUP));
 
-    for (const {uniform: {name, format: type, args}} of constants) {
+    const maybeRename = (s?: string | null) => s != null ? rename.get(s) ?? s : s;
+
+    for (const binding of constants) {
+      const {attribute: {name, format: type, args}} = binding;
+
       if (typeof type !== 'string') throw new Error(`Cannot make uniform for struct type`);
       program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, type, name, args as any));
     }
 
-    for (const {uniform: {name, format: formatOut, type: typeOut, args}, storage} of storages) {
+    for (const binding of buffers) {
+      const {attribute: {name, format: formatOut, type: typeOut, args}, storage, uniform} = binding;
+
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const {volatile, format: formatIn, type: typeIn, readWrite} = storage!;
+      const {volatile, format: formatIn, type: typeIn, readWrite} = (storage ?? uniform)! as StorageSource;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
 
@@ -135,11 +146,11 @@ export const makeBindingAccessors = (
       if (type) {
         const format = type === typeOut ? formatOut : formatIn;
         const entry = getBundleEntry(type);
-        let t = (entry ? rename.get(entry) : null) ?? entry ?? 'unknown';
+        let t = maybeRename(entry) ?? 'unknown';
         if (t === 'unknown') throw new Error(`Invalid type '${getBundleName(type)}'. Module has no entry point.`);
 
         if (format === 'array<T>') t = `array<${t}>`;
-        program.push(makeStorageAccessor(namespace, set, base, t, t, name, readWrite, args));
+        program.push(makeStorageAccessor(namespace, set, base, t, t, name, readWrite, !!uniform, args));
         continue;
       }
 
@@ -152,54 +163,59 @@ export const makeBindingAccessors = (
 
       if (is3to4(formatIn)) {
         const accessor = name + '3to4';
-        program.push(makeStorageAccessor(namespace, set, base, to4(formatIn), to4(formatIn), accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, to1(formatIn), to1(formatIn), accessor, readWrite, !!uniform));
         program.push(makeVec3to4Accessor(namespace, formatOut, to3(formatIn), name, accessor));
         continue;
       }
       else if (is8to32(formatIn)) {
         const accessor = name + '8to32';
-        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite, !!uniform));
         program.push(make8to32Accessor(namespace, formatOut, to32(formatIn), name, accessor));
         continue;
       }
       else if (is16to32(formatIn)) {
         const accessor = name + '16to32';
-        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite, !!uniform));
         program.push(make16to32Accessor(namespace, formatOut, to32(formatIn), name, accessor));
         continue;
       }
       else if (isVec8to32(formatIn)) {
         const accessor = name + 'Vec8to32';
         const wide = to32(formatIn).replace('i32', 'u32');
-        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite, !!uniform));
         program.push(makeVec8to32Accessor(namespace, formatOut, wide, name, accessor));
         continue;
       }
       else if (isVec16to32(formatIn)) {
         const accessor = name + 'Vec16to32';
         const wide = to32(formatIn).replace('i32', 'u32');
-        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite));
+        program.push(makeStorageAccessor(namespace, set, base, 'u32', 'u32', accessor, readWrite, !!uniform));
         program.push(makeVec16to32Accessor(namespace, formatOut, wide, name, accessor));
         continue;
       }
 
-      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name, readWrite, args));
+      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name, readWrite, !!uniform, args));
     }
 
-    for (const {uniform: {name, format: formatOut, args}, texture} of textures) {
+    for (const binding of textures) {
+      const {attribute: {name, format: formatOut, args}, texture} = binding;
+
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const {volatile, layout, variant, absolute, sampler, comparison, format: formatIn, aspect} = texture!;
+      const {volatile, layout, variant, absolute, sampler, filter, format: formatIn, aspect} = texture!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
       if (sampler && args !== null) volatile ? volatileBase++ : bindingBase++;
-      program.push(makeTextureAccessor(namespace, set, base, formatOut as string, formatIn, name, layout, variant, aspect, absolute, !!sampler, !!comparison, args));
+
+      const type = formatOut.match(/auto(<|$)/) ? resolveBindingValueType(binding) : formatOut as string;
+      program.push(makeTextureAccessor(namespace, set, base, type, formatIn, name, layout, variant, aspect, absolute, !!sampler, filter, args));
     }
 
     return program.join('\n');
   }
 
   const virtual = loadVirtualModule({
-    uniforms: constants,
+    constants,
+    uniforms,
     storages,
     textures,
     render,
@@ -215,15 +231,16 @@ export const makeBindingAccessors = (
   } : virtual;
 
   const links: Record<string, ShaderModule> = {};
-  for (const {uniform} of constants) links[uniform.name] = bundle;
-  for (const {uniform} of storages)  links[uniform.name] = bundle;
-  for (const {uniform} of textures)  links[uniform.name] = bundle;
-  for (const {uniform, lambda} of lambdas)   {
+  for (const {attribute} of constants) links[attribute.name] = bundle;
+  for (const {attribute} of uniforms)  links[attribute.name] = bundle;
+  for (const {attribute} of storages)  links[attribute.name] = bundle;
+  for (const {attribute} of textures)  links[attribute.name] = bundle;
+  for (const {attribute, lambda} of lambdas)   {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const needsCast = !checkLambdaType(uniform, lambda!);
-    links[uniform.name] = needsCast
+    const needsCast = needsCastLambdaType(attribute, lambda!);
+    links[attribute.name] = needsCast
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ? castTo(lambda!.shader, uniform.format as string)
+      ? castTo(lambda!.shader, attribute.format as string)
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       : lambda!.shader;
   }
@@ -231,25 +248,43 @@ export const makeBindingAccessors = (
   return links;
 };
 
-export const checkLambdaType = (
-  uniform: UniformAttribute,
+export const resolveBindingValueType = (binding: DataBinding) => {
+  const {attribute: {name, format}} = binding;
+  if (!format.match(/auto(<|$)/)) return format;
+
+  const {uniform, storage, texture} = binding;
+  if (uniform) return uniform.format;
+  if (storage) return storage.format;
+  if (texture) {
+    if (texture.format.match(/depth/)) return 'f32';
+    if (texture.layout.match(/<u32>/)) return 'vec4<u32>';
+    if (texture.layout.match(/<i32>/)) return 'vec4<i32>';
+    return 'vec4<f32>';
+  }
+
+  throw new Error(`Binding '${name}' with 'auto' format could not be inferred`);
+};
+
+export const needsCastLambdaType = (
+  attribute: UniformAttribute,
   lambda: LambdaSource,
 ) => {
-  const {name, format: from} = uniform;
+  const {name, format: from} = attribute;
 
   const bundle = toBundle(lambda.shader);
-  const {format: to} = bundleToAttribute(bundle);
+  const lambdaAttribute = bundleToAttribute(bundle);
+  const {format: to} = lambdaAttribute;
 
-  if (Array.isArray(from) || Array.isArray(to)) return true;
+  if (Array.isArray(from) || Array.isArray(to)) return false;
 
   let f = from;
   let t = to;
 
-  if (f === t) return true;
-  if (t === 'auto') return true;
+  if (f === t) return false;
+  if (f.match(/auto(<|$)/) || t.match(/auto(<|$)/)) return false;
   if (t == null) {
-    console.warn(`Unable to determine lambda format for uniform ${uniform.name} -> bundle ${getBundleEntry(bundle)}`)
-    return true;
+    console.warn(`Unable to determine lambda format for attribute ${attribute.name} -> bundle ${getBundleEntry(bundle)}`)
+    return false;
   }
 
   // Remove vec<..> to allow for automatic widening/narrowing
@@ -269,13 +304,15 @@ export const checkLambdaType = (
 
     if (fromScalar !== toScalar) {
       // uppercase = struct type, allow any
-      if (from.match(/[A-Z]/) && to) return true;
+      if (from.match(/[A-Z]/) && to) return false;
 
       throw new Error(`Invalid format ${to} bound for ${from} "${name}" (${fromScalar} != ${toScalar})`);
     }
+
+    return true;
   }
 
-  return false;
+  return true;
 };
 
 export const makeUniformBlock = (
@@ -284,7 +321,7 @@ export const makeUniformBlock = (
   binding: number | string = 0,
 ): string => {
   // Uniform Buffer Object struct members
-  const members = constants.map(({uniform: {name, format}}) => `${name}: ${format}`);
+  const members = constants.map(({attribute: {name, format}}) => `${name}: ${format}`);
   return members.length ? makeUniformBlockLayout(PREFIX_VIRTUAL, set, binding, members) : '';
 }
 
@@ -323,9 +360,10 @@ export const makeStorageAccessor = (
   format: string,
   name: string,
   readWrite?: boolean,
+  uniform?: boolean,
   args: string[] | null = INT_ARG,
 ) => {
-  const access = readWrite ? 'storage, read_write' : 'storage';
+  const access = uniform ? 'uniform' : readWrite ? 'storage, read_write' : 'storage';
 
   if (args === null) {
     return `@group(${set}) @binding(${binding}) var<${access}> ${ns}${name}: ${type};\n`;
@@ -355,18 +393,19 @@ export const makeTextureAccessor = (
   aspect: string = 'all',
   absolute: boolean = false,
   sampler: boolean = true,
-  comparison: boolean = false,
+  filter: 'filtering' | 'non-filtering' | 'comparison' = 'filtering',
   args: string[] | null = UV_ARG,
 ) => {
   if (args === null) {
     return `@group(${set}) @binding(${binding}) var ${ns}${name}: ${type};\n`;
   }
 
-  const m = layout.match(/[0-9]/) ?? [2];
-  const dims = +m[0];
-  const dimsCast = dims === 1 ? 'f32' : `vec${dims}<f32>`;
-
   const t = layout.match(/<([^>]+)>/)?.[1] ?? 'f32';
+  const m = layout.match(/[0-9]/) ?? [2];
+
+  const dims = +m[0];
+  const dimsCast = dims === 1 ? t : `vec${dims}<${t}>`;
+
   const shaderType = (
     layout.match(/depth/) ? 'f32' :
     `vec4<${t}>`
@@ -376,7 +415,7 @@ export const makeTextureAccessor = (
 
   return (
 `@group(${set}) @binding(${binding}) var ${ns}${name}Texture: ${layout};
-${sampler ? `@group(${set}) @binding(${binding + 1}) var ${ns}${name}Sampler: ${comparison ? 'sampler_comparison' : 'sampler'};\n` : ''}
+${sampler ? `@group(${set}) @binding(${binding + 1}) var ${ns}${name}Sampler: ${filter === 'comparison' ? 'sampler_comparison' : 'sampler'};\n` : ''}
 fn ${ns}${name}(${args.map((t, i) => `${arg(i)}: ${t}`).join(', ')}) -> ${type} {
   ${absolute ?
     `let relUV = ${arg(0)} / ${dimsCast}(textureDimensions(${ns}${name}Texture));\n  ` : ``
@@ -395,20 +434,12 @@ export const makeVec3to4Accessor = (
 ) => (
 `fn ${ns}${name}(i: u32) -> ${type} {
   let i3 = i * 3u;
-  let b = i3 / 4u;
 
-  let b4 = b * 4u;
-  let f3 = i3 - b4;
+  let vx = ${ns}${accessor}(i3);
+  let vy = ${ns}${accessor}(i3 + 1u);
+  let vz = ${ns}${accessor}(i3 + 2u);
 
-  let v1 = ${ns}${accessor}(b);
-  let v2 = ${ns}${accessor}(b + 1u);
-
-  var v: ${format};
-  if (f3 == 0u) { v = v1.xyz; }
-  else if (f3 == 1u) { v = v1.yzw; }
-  else if (f3 == 2u) { v = ${format}(v1.zw, v2.x); }
-  else { v = ${format}(v1.w, v2.xy); }
-
+  let v = ${format}(vx, vy, vz);
   return ${needsCast(format, type) ? makeSwizzle(format, type, 'v') : 'v'};
 }
 `);

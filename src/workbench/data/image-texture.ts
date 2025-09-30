@@ -1,19 +1,26 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { XY, ColorSpace, TextureSource } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { XY, ColorSpace, TextureSource } from '@use-gpu/core';
 
-import { use, yeet, gather, suspend, useMemo } from '../../live';
-import { makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipTextureChain } from '../../core';
+import { use, yeet, gather, suspend, useMemo } from '@use-gpu/live';
+import { countMips, getTextureSampleType, makeDynamicTexture, uploadDataTexture, uploadExternalTexture, updateMipTextureChain } from '@use-gpu/core';
+import { FetchAPIOptions } from './fetch';
 import { ImageLoader } from './image-loader';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { useSuspenseContext } from '../providers/suspense-provider';
+
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp, getRenderFunc } from '../hooks/useRenderProp';
 
 export type ImageTextureProps = {
   /** URL to image */
   url: string,
+  /** fetch() API options */
+  options?: FetchAPIOptions,
   /** Type hint */
   format?: string,
+  /** Pixel format override for texture */
+  pixelFormat?: GPUTextureFormat,
   /** Color space to tag texture as. Does not convert input data. */
   colorSpace?: ColorSpace,
   /** MIPs */
@@ -25,24 +32,23 @@ export type ImageTextureProps = {
   children?: (source: TextureSource | null) => LiveElement,
 };
 
-const countMips = (width: number, height: number): number => {
-  const max = Math.max(width, height);
-  return Math.floor(Math.log2(max));
-}
-
 export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
   const device = useDeviceContext();
 
   const {
     url,
+    options,
     sampler,
     format,
+    pixelFormat,
     colorSpace = 'srgb',
     mip = true,
   } = props;
 
+  const inspect = useInspectable();
   const suspense = useSuspenseContext();
-  const fetch = use(ImageLoader, {url, format, colorSpace});
+
+  const fetch = use(ImageLoader, {url, options, format, pixelFormat, colorSpace});
 
   return gather(fetch, ([resource]: any[]) => {
     const render = getRenderFunc(props);
@@ -64,6 +70,10 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
       const texture = makeDynamicTexture(device, width, height, 1, format, 1, mips);
       if ('bitmap' in resource) uploadExternalTexture(device, texture, resource.bitmap, [width, height], [0, 0]);
       if ('data' in resource) uploadDataTexture(device, texture, resource.data, [width, height], [0, 0]);
+      texture.label = url;
+
+      const type = getTextureSampleType(format);
+      const layout = `texture_2d<${type}>`;
 
       const source = {
         texture,
@@ -75,7 +85,7 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
           maxAnisotropy: 4,
           ...sampler,
         } as GPUSamplerDescriptor,
-        layout: 'texture_2d<f32>',
+        layout,
         mips,
         format,
         size,
@@ -83,10 +93,13 @@ export const ImageTexture: LiveComponent<ImageTextureProps> = (props) => {
         version: 1,
       };
 
-      updateMipTextureChain(device, source);
+      if (mip) updateMipTextureChain(device, source);
 
       return source;
-    }, [resource, sampler]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [resource, sampler, url]);
+
+    inspect({ output: { source }});
 
     return useRenderProp(props, source);
   });

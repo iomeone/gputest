@@ -1,4 +1,4 @@
-import type { XYZ } from '../../core';
+import type { XYZ } from '@use-gpu/core';
 import type {
   RawVox,
   RawChunk,

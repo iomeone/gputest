@@ -1,14 +1,14 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { ShaderModule } from '../../shader';
-import type { Rectangle } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { Rectangle } from '@use-gpu/core';
 import type { LayoutElement, FitInto, Dimension, Direction } from '../types';
-import type { TraitProps } from '../../traits';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { shouldEqual, sameShallow } from '../../traits/index-live';
-import { memo, gather, keyed, yeet, useFiber, useMemo } from '../../live';
+import { shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { memo, gather, keyed, yeet, useFiber, useMemo } from '@use-gpu/live';
 import { fitAbsoluteBox } from '../lib/absolute';
 import { makeBoxPicker, memoFit } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '../../workbench';
+import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
 
 import { ElementTrait, useElementTrait } from '../traits';
 import { useImplicitElement } from '../element/element';
@@ -89,6 +89,7 @@ export const Absolute: LiveComponent<AbsoluteProps> = memo((props: AbsoluteProps
         fit: memoFit(fit),
         prefit: memoFit(fit),
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props, els, hovered, zIndex]);
   };
 

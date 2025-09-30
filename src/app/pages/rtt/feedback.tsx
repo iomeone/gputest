@@ -1,14 +1,14 @@
-import type { LC } from '../../../live';
-import type { Emit, Time } from '../../../core';
-import type { ShaderSource } from '../../../shader';
+import type { LC } from '@use-gpu/live';
+import type { Emit, Time } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import React from '../../../live';
-import { wgsl } from '../../../shader/wgsl';
+import React from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, Pass, OrbitCamera, RawData, PointLayer,
+  Pass, OrbitCamera, RawData, PointLayer,
   LinearRGB, FullScreen,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 
 import { InfoBox } from '../../ui/info-box';
 

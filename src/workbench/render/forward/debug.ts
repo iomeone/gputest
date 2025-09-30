@@ -1,23 +1,25 @@
-import type { LiveComponent } from '../../../live';
+import type { LiveComponent } from '@use-gpu/live';
 import type { VirtualDraw } from '../../pass/types';
 
-import { use, yeet, useMemo, useOne } from '../../../live';
-import { patch } from '../../../state';
-import { bindBundle } from '../../../shader/wgsl';
+import { use, yeet, useMemo, useOne } from '@use-gpu/live';
+import { patch } from '@use-gpu/state';
+import { bindBundle } from '@use-gpu/shader/wgsl';
 
 import { DrawCall, drawCall } from '../../queue/draw-call';
 import { Dispatch } from '../../queue/dispatch';
+import { getShaderLabel } from '../../pass/util';
 import { getWireframe, getWireframeIndirect } from '../wireframe';
 
 import { useDeviceContext } from '../../providers/device-provider';
 import { useRenderContext } from '../../providers/render-provider';
-import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualSolid from '../../../wgsl/render/vertex/virtual-solidwgsl';
-import instanceFragmentSolid from '../../../wgsl/render/fragment/solidwgsl';
+import renderVirtualSolid from '@use-gpu/wgsl/render/vertex/virtual-solid.wgsl';
+import renderFragmentSolid from '@use-gpu/wgsl/render/fragment/solid.wgsl';
 
 export type DebugRenderProps = VirtualDraw;
+
+const LABEL = 'DebugRender';
 
 export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderProps) => {
   const {
@@ -41,11 +43,10 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
   const device = useDeviceContext();
   const renderContext = useRenderContext();
 
-  const {layout: globalLayout} = useViewContext();
-  const {layout: passLayout} = usePassContext();
+  const {bindGroups: {color: {layout: globalLayout, key: pipelineKey}}} = usePassContext();
 
-  const vertexShader = instanceDrawVirtualSolid;
-  const fragmentShader = instanceFragmentSolid;
+  const vertexShader = renderVirtualSolid;
+  const fragmentShader = renderFragmentSolid;
 
   const pipeline = useOne(() => patch(propPipeline, {primitive: {topology: 'triangle-strip'}}), propPipeline);
 
@@ -75,10 +76,10 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
     }
 
     const links = {getVertex};
-    const v = bindBundle(vertexShader, links, undefined);
+    const v = bindBundle(vertexShader, links);
     const f = fragmentShader;
     return [v, f, vertexCount, instanceCount, wireframeCommand, wireframeIndirect];
-  }, [device, vertexShader, fragmentShader, gV]);
+  }, [device, vertexShader, fragmentShader, gV, vC, iC, indirect, topology]);
 
   const defs = useOne(() => ({...defines, HAS_SCISSOR: !!defines.HAS_SCISSOR}), defines);
 
@@ -94,8 +95,9 @@ export const DebugRender: LiveComponent<DebugRenderProps> = (props: DebugRenderP
     pipeline,
     renderContext,
     globalLayout,
-    passLayout,
+    pipelineKey,
     mode: 'debug',
+    label: getShaderLabel([gV], LABEL),
   };
 
   // Count indirect vertices/instances for wireframe

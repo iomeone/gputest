@@ -1,15 +1,15 @@
-import type { LC } from '../../live';
-import type { ColorLike, TextureSource } from '../../core';
+import type { LC } from '@use-gpu/live';
+import type { ColorLike, TextureSource } from '@use-gpu/core';
 import type { ParsedEffect } from '../types';
 
-import { memo, useOne, useMemo } from '../../live';
-import { useDraw, useShader, useCombinedTransform, useLayoutContext, usePipelineOptions, useShaderRef } from '../../workbench';
-import { getBundleKey } from '../../shader/wgsl';
+import { memo, useOne, useMemo } from '@use-gpu/live';
+import { useDraw, useShader, useCombinedTransform, useLayoutContext, usePipelineOptions, useShaderRef } from '@use-gpu/workbench';
+import { getBundleKey } from '@use-gpu/shader/wgsl';
 
 import { usePresentTransition } from '../hooks';
 
-import { getScreenVertex } from '../../wgsl/present/screenwgsl';
-import { getScreenFragment } from '../../wgsl/present/fragmentwgsl';
+import { getScreenVertex } from '@use-gpu/wgsl/present/screen.wgsl';
+import { getScreenFragment } from '@use-gpu/wgsl/present/fragment.wgsl';
 
 export type ScreenProps = {
   id: number,

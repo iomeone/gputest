@@ -1,24 +1,23 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import type { Axis4 } from '../types';
-import type { TraitProps } from '../../traits';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { combine, makeUseTrait } from '../../traits/index-live';
-import { provide, useDouble, useOne, useMemo } from '../../live';
-import { chainTo, swizzleTo } from '../../shader/wgsl';
+import { combine, makeUseTrait } from '@use-gpu/traits/live';
+import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
+import { chainTo, swizzleTo } from '@use-gpu/shader/wgsl';
 import {
   MatrixContext, TransformContext, QueueReconciler,
   useShaderRef, useShader, useCombinedEpsilonTransform,
-} from '../../workbench';
+} from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
-import { recenterAxis } from '../util/axis';
 import { composeTransform } from '../util/compose';
 import { swizzleMatrix, toBasis, rotateBasis, invertBasis } from '../util/swizzle';
 import { mat4 } from 'gl-matrix';
 
 import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getStereographic4DPosition } from '../../wgsl/transform/stereographic-4dwgsl';
+import { getStereographic4DPosition } from '@use-gpu/wgsl/transform/stereographic-4d.wgsl';
 
 const {signal} = QueueReconciler;
 const makeMat4 = () => mat4.create();
@@ -94,7 +93,7 @@ export const Stereographic4D: LiveComponent<Stereographic4DProps> = (props: Ster
     }
 
     return [matrix, swizzle, epsilon];
-  }, [g, a, p, r, q, s, bend]);
+  }, [g, a, p, r, q, s, composed, m, on, swapMatrix]);
 
   const t = useShaderRef(matrix);
 

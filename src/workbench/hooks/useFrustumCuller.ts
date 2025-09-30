@@ -1,7 +1,7 @@
-import type { Ref } from '../../live';
+import type { Ref } from '@use-gpu/live';
 
-import { useCallback, useNoCallback } from '../../live';
-import { distanceToFrustum } from '../../core';
+import { useCallback, useNoCallback } from '@use-gpu/live';
+import { distanceToFrustum } from '@use-gpu/core';
 import { vec3, vec4 } from 'gl-matrix';
 
 const sqr = (x: number) => x * x;
@@ -9,7 +9,7 @@ const sqr = (x: number) => x * x;
 export const useFrustumCuller = (
   positionRef: Ref<vec3 | vec4 | number[]>,
   frustumRef: Ref<vec4[]>,
-) => useCallback((center: vec3, radius: number) => {
+) => useCallback((center: vec3 | number[], radius: number) => {
   const {current: frustum} = frustumRef;
 
   const [x, y, z = 0] = center;

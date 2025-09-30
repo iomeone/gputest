@@ -1,6 +1,5 @@
-use '../../../wgsl/use/types'::{ SolidVertex };
-use '../../../wgsl/geometry/quad'::{ getQuadUV };
-use '../../../wgsl/use/view'::{ getViewSize };
+use '@use-gpu/wgsl/use/types'::{ SolidVertex };
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
 
 //  0        1      2
 //    +------.------/
@@ -13,8 +12,6 @@ use '../../../wgsl/use/view'::{ getViewSize };
 //  2 /
 
 @export fn getFullScreenVertex(vertexIndex: u32, instanceIndex: u32) -> SolidVertex {
-  var c = getViewSize(); // Ensure view uniforms are used
-
   var uv = getQuadUV(vertexIndex);
   var xy = uv * 2.0 - 1.0;
 

@@ -1,18 +1,20 @@
-import type { LiveElement, LC, PropsWithChildren } from '../../live';
-import type { TypedArray, StorageSource, Emit } from '../../core';
-import type { ShaderModule } from '../../shader';
+import type { LiveElement, LC, PropsWithChildren } from '@use-gpu/live';
+import type { TypedArray, StorageSource, Emit } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
-import { useMemo, useNoMemo, useOne } from '../../live';
-import { bundleToAttribute } from '../../shader/wgsl';
-import { incrementVersion } from '../../live';
-import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '../../core';
+import { useMemo, useNoMemo, useOne } from '@use-gpu/live';
+import { bundleToAttribute } from '@use-gpu/shader/wgsl';
+import { incrementVersion } from '@use-gpu/live';
+import { makeUniformLayout, makeLayoutFiller, makeLayoutData, makeStorageBuffer, uploadBuffer } from '@use-gpu/core';
+
 import { useTimeContext, useNoTimeContext } from '../providers/time-provider';
 import { useAnimationFrame, useNoAnimationFrame } from '../providers/loop-provider';
-import { useBufferedSize } from '../hooks/useBufferedSize';
 
+import { useBufferedSize } from '../hooks/useBufferedSize';
+import { useInspectable } from '../hooks/useInspectable';
 import { useRenderProp } from '../hooks/useRenderProp';
 
 const {signal} = QueueReconciler;
@@ -57,6 +59,8 @@ export const StructData: LC<StructDataProps> = (props: StructDataProps) => {
 
   if (!type || typeof type === 'string') throw new Error("<StructData> type must be a WGSL shader type");
 
+  const inspect = useInspectable();
+
   // Make struct uniform layout
   const layout = useOne(() => {
     const bindings = bundleToAttribute(type);
@@ -84,10 +88,12 @@ export const StructData: LC<StructDataProps> = (props: StructDataProps) => {
       length: 0,
       size: [0],
       version: 1,
-    } as any as StorageSource;
+
+      minBindingSize: layout.length,
+    } as StorageSource;
 
     return [source, array];
-  }, [device, layout, l]);
+  }, [device, layout, l, format, type]);
 
   // Prepare to fill layout
   const filler = useMemo(() => makeLayoutFiller(layout, array), [layout, array]);
@@ -133,6 +139,8 @@ export const StructData: LC<StructDataProps> = (props: StructDataProps) => {
     useNoMemo();
     refresh();
   }
+
+  inspect({ data: { type, data, expr, array, source }});
 
   const trigger = useOne(() => signal(), source.version);
   const view = useRenderProp(props, source);

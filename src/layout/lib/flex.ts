@@ -1,4 +1,4 @@
-import type { XY, XYZW } from '../../core';
+import type { XY, XYZW } from '@use-gpu/core';
 import type { LayoutElement, LayoutRenderer, LayoutPicker, Direction, FitInto, AutoXY, Alignment, Anchor } from '../types';
 
 import { makeFlexCursor } from './cursor';
@@ -251,48 +251,3 @@ export const fitFlex = (
   };
 }
 
-// Grow all applicable blocks in a row to add extra slack.
-export const growRow = (slack: number, row: LayoutElement[], sizes: number[]) => {
-  const n = row.length;
-
-  let weight = 0;
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  for (let i = 0; i < n; ++i) if (row[i].grow! > 0) weight += row[i].grow!;
-
-  if (weight > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    for (let i = 0; i < n; ++i) if (row[i].grow! > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      sizes[i] += slack * row[i].grow! / weight;
-    }
-    return true;
-  }
-  return false;
-}
-
-// Shrink all applicable blocks in a row to remove excess slack.
-export const shrinkRow = (slack: number, row: LayoutElement[], sizes: number[]): boolean => {
-  const n = row.length;
-
-  let weight = 0;
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  for (let i = 0; i < n; ++i) if (row[i].shrink!) weight += row[i].shrink! * sizes[i];
-
-  if (weight > 0) {
-    let negative = 0;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    for (let i = 0; i < n; ++i) if (row[i].shrink! > 0 && sizes[i]) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      sizes[i] += slack * row[i].shrink! * sizes[i] / weight;
-      if (sizes[i] < 0) {
-        negative += sizes[i];
-        sizes[i] = 0;
-      }
-    }
-    if (negative) {
-      shrinkRow(negative, row, sizes);
-    }
-    return true;
-  }
-  return false;
-}

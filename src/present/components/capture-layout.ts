@@ -1,9 +1,9 @@
-import type { LC, LiveElement, PropsWithChildren } from '../../live';
-import type { UIAggregate } from '../../layout';
+import type { LC, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { UIAggregate } from '@use-gpu/layout';
 
-import { LayerReconciler } from '../../workbench';
-import { Layout } from '../../layout';
-import { wrap, gather, unquote } from '../../live';
+import { LayerReconciler } from '@use-gpu/workbench';
+import { Layout } from '@use-gpu/layout';
+import { wrap, gather, unquote } from '@use-gpu/live';
 
 const {reconcile, quote} = LayerReconciler;
 

@@ -1,8 +1,9 @@
-import type { LiveComponent, LiveElement } from '../../live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { ColorSpace } from '@use-gpu/core';
 
-import { use, useResource, useNoResource } from '../../live';
-import { PickingTarget } from '../../workbench';
-import { CursorProvider } from '../../workbench';
+import { use, useResource, useNoResource } from '@use-gpu/live';
+import { PickingTarget } from '@use-gpu/workbench';
+import { CursorProvider } from '@use-gpu/workbench';
 
 import { makeOrAdoptCanvas } from '../web';
 import { AutoSize } from './auto-size';
@@ -21,6 +22,10 @@ export type AutoCanvasProps = {
   depthStencil?: GPUTextureFormat,
   /** Canvas background */
   backgroundColor?: GPUColor,
+  /** Canvas rendering color space */
+  colorSpace?: ColorSpace,
+  /** Color space for inputs */
+  colorInput?: ColorSpace,
   /** Multisampling / Anti-aliasing */
   samples?: number,
 
@@ -30,8 +35,6 @@ export type AutoCanvasProps = {
   events?: boolean,
   /** Enable GPU picking */
   picking?: boolean,
-  /** If running in an iframe, avoid preventing default on scroll. */
-  iframe?: boolean,
 
   children?: LiveElement,
 };
@@ -43,7 +46,6 @@ export const AutoCanvas: LiveComponent<AutoCanvasProps> = (props) => {
     events = true,
     autofocus = false,
     picking = true,
-    iframe = false,
     ...rest
   } = props;
 
@@ -64,7 +66,6 @@ export const AutoCanvas: LiveComponent<AutoCanvasProps> = (props) => {
   if (events) view = (
     use(DOMEvents, {
       autofocus,
-      iframe,
       element: canvas,
       children:
         use(CursorProvider, {

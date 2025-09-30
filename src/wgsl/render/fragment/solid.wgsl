@@ -12,7 +12,7 @@ fn main(
   outColor = getFragment(outColor, fragUV, fragST);
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
-  if (outColor.a <= 0.0) { discard; }
+  if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
 
   return outColor;
 }

@@ -1,9 +1,11 @@
 import { mat4, vec4, vec3, vec2 } from 'gl-matrix';
 
 export const AMBIENT_LIGHT = 0;
-export const DIRECTIONAL_LIGHT = 1;
-export const DOME_LIGHT = 2;
+export const DOME_LIGHT = 1;
+export const DIRECTIONAL_LIGHT = 2;
 export const POINT_LIGHT = 3;
+export const HEMI_LIGHT = 4;
+export const SPOT_LIGHT = 5;
 
 export type Light = {
   into?: mat4 | null,
@@ -34,6 +36,8 @@ export type ShadowMapProps = {
   depth: vec2,
   bias: vec3,
   blur: number,
+  resolution: number,
+  fov: number,
 };
 
 export type ShadowMapLike = {
@@ -42,5 +46,8 @@ export type ShadowMapLike = {
   bias?: vec2 | [number, number] | number[],
   span?: vec2 | [number, number] | number[],
   up?: vec3 | [number, number, number] | number[],
+
   blur?: number,
+  resolution?: number,
+  fov?: number,
 };

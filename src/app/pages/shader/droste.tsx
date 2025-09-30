@@ -1,9 +1,10 @@
-import type { LC, RefObject, PropsWithChildren } from '../../../live';
+import type { LC, RefObject, PropsWithChildren } from '@use-gpu/live';
 
-import React, { useRef } from '../../../live';
-import { wgsl } from '../../../shader/wgsl';
+import React, { useRef } from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
-import { PanControls, Pass, LinearRGB, FullScreen, QueueReconciler } from '../../../workbench';
+import { Pass, LinearRGB, FullScreen, QueueReconciler } from '@use-gpu/workbench';
+import { Cursor, PanControls } from '@use-gpu/interact';
 
 import { InfoBox } from '../../ui/info-box';
 import { DrosteControls } from '../../ui/droste-controls';
@@ -38,12 +39,12 @@ fn main(uv: vec2<f32>) -> vec4<f32> {
 
   let xy = ((uv * sz / xyz.z - xyz.xy) * 2.0 - sz) / sz.y;
   let dd = duv(xy);
-  
+
   let xyd = to_cd(xy);
   var pos = xyd;
 
   if (funcType == 0) {
-    pos = escher_mod_cd(xyd, turn);    
+    pos = escher_mod_cd(xyd, turn);
   }
   else if (funcType == 1) {
     let xy0 = xyd;
@@ -57,22 +58,22 @@ fn main(uv: vec2<f32>) -> vec4<f32> {
   }
   else if (funcType == 3) {
     pos = rcp_cd(xyd);
-    
+
     for (var i = 0; i < symmetry; i++) {
       let th = f32(i) / f32(symmetry) * 2.0 * PI;
       let c = cos(th);
       let s = sin(th);
-      
+
       pos = mul_cd(pos, xyd + vec4<f32>(s, c, 0.0, 0.0) * (1.0 + separation));
       pos = div_cd(pos, xyd + vec4<f32>(s, c, 0.0, 0.0) * (1.0 - separation));
     }
     pos = escher_mod_cd(pos, turn);
   }
-  
+
   if (invert > 0) {
     pos = rcp_cd(pos);
   }
-  
+
   var rgba = vec4<f32>(0.0);
   if (gridType == 0) {
     rgba = logGrid_cd(pos, dd);
@@ -96,7 +97,7 @@ fn escher_mod_cd(xy: vec4<f32>, turn: i32) -> vec4<f32> {
   let xy2 = log_cd(xy);
   let xy3 = rottan_mod_cd(xy2, shift, turn);
   let xy4 = exp_cd(xy3);
-  
+
   return xy4;
 }
 
@@ -106,7 +107,7 @@ fn escher_cd(xy: vec4<f32>, turn: i32) -> vec4<f32> {
   let xy2 = log_cd(xy);
   let xy3 = rottan_cd(xy2, shift, turn);
   let xy4 = exp_cd(xy3);
-  
+
   return xy4;
 }
 
@@ -115,7 +116,7 @@ fn escher_cd(xy: vec4<f32>, turn: i32) -> vec4<f32> {
 
 fn logGrid_cd(uv: vec4<f32>, ds: f32) -> vec4<f32> {
   let dd = ds * length(uv.zw);
-  
+
   let auv = abs(uv.xy);
   let diag = max(auv.x, auv.y);
   let ld = 3.0 - log(diag) / log(2.0);
@@ -126,7 +127,7 @@ fn logGrid_cd(uv: vec4<f32>, ds: f32) -> vec4<f32> {
   let v1 = grid(uv.xy, dd, s1, 4.0, 1.0);
   let v2 = grid(uv.xy, dd, s2, 6.0, 1.0);
   let grey = max(v1 * .35, v2);
-  
+
   return vec4<f32>(grey, grey, grey, 1.0);
 }
 
@@ -148,7 +149,7 @@ fn zoomGrid_cd(uv: vec4<f32>, ds: f32) -> vec4<f32> {
   let grey2 = max(v3 * .35, v4);
 
   let grey = mix(grey1, grey2, dld);
-  
+
   return vec4<f32>(grey, grey, grey, 1.0);
 }
 
@@ -333,12 +334,14 @@ fn rottan_c(v: vec2<f32>, shift: f32, turn: i32) -> vec2<f32> {
 
 export const ShaderDrostePage: LC = () => {
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const inner = document.querySelector('#use-gpu .canvas')!;
   const viewRef = useRef<[number, number, number]>([0, 0, 1]);
 
   return (<>
     <InfoBox>Render Escher-like conformal grids using a custom, fully zoomable &lt;FullScreen&gt; shader</InfoBox>
     <LinearRGB tonemap="aces">
+      <Cursor cursor="move" />
       <DrosteControls container={inner}>{
         ({func, grid, turn, invert, separation, symmetry, shiftX, shiftY}) =>
           <PanShaderView ref={viewRef} key={`f${func}`}>
@@ -362,7 +365,7 @@ const PanShaderView = ({ref, children}: PanShaderViewProps) => (
   <PanControls centered>{
     (x, y, zoom) => {
       const {current: view} = ref;
-      
+
       // Pass view parameters directly to shader
       if (view) {
         view[0] = x * window.devicePixelRatio;

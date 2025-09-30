@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useMemo, useRef } from 'react';
 
-import type { LiveFiber, LiveElement } from '../live';
-import { render as renderLive, unmount as unmountLive, resolveRootNode } from '../live';
+import type { LiveFiber, LiveElement } from '@use-gpu/live';
+import { render as renderLive, unmount as unmountLive, resolveRootNode } from '@use-gpu/live';
 
 export type LiveProps = {
   /** Live child to render (must be 1) */

@@ -2,88 +2,88 @@
 
 exports[`example linking links two GLSL shaders as modules using a prototype 1`] = `
 "#version 450
-//// @link getColor _01_
+//// @link getColor _00_
 
 uniform vec4 color;
 
-vec4 _01_getColor() {
+vec4 _00_getColor() {
   return color;
 }
-//// @link main 
+//// @link main
 
-vec4 _01_getColor();
+vec4 _00_getColor();
 
 void main() {
-  gl_FragColor = _01_getColor();
+  gl_FragColor = _00_getColor();
 }"
 `;
 
 exports[`example linking links two GLSL shaders from bundle using an import 1`] = `
 "#version 450
-//// @link getColor _01_
+//// @link getColor _00_
 
 uniform vec4 color;
 
-vec4 _01_getColor() {
+vec4 _00_getColor() {
   return color;
 }
-//// @link main 
+//// @link main
 
 void main() {
-  gl_FragColor = _01_getColor();
+  gl_FragColor = _00_getColor();
 }"
 `;
 
 exports[`example linking links two GLSL shaders from source code using a prototype 1`] = `
 "#version 450
-//// @link color _01_
+//// @link color _00_
 
 uniform vec4 color;
 
-vec4 _01_getColor() {
+vec4 _00_getColor() {
   return color;
 }
-//// @link main 
+//// @link main
 
-vec4 _01_getColor();
+vec4 _00_getColor();
 
 void main() {
-  gl_FragColor = _01_getColor();
+  gl_FragColor = _00_getColor();
 }"
 `;
 
 exports[`example linking links two GLSL shaders from source code using an import 1`] = `
 "#version 450
-//// @link color _01_
+//// @link color _00_
 
 uniform vec4 color;
 
-vec4 _01_getColor() {
+vec4 _00_getColor() {
   return color;
 }
-//// @link main 
+//// @link main
 
 void main() {
-  gl_FragColor = _01_getColor();
+  gl_FragColor = _00_getColor();
 }"
 `;
 
 exports[`example linking readme example 1`] = `
 "#version 450
-//// @link color _01_
+//// @link color _00_
 
-vec4 _01_getColor() {
-  return vec4(_01_used(), 0.5, 0.0, 1.0);
+vec4 _00_getColor() {
+  return vec4(_00_used(), 0.5, 0.0, 1.0);
 }
 
-float _01_used() {
+float _00_used() {
   return 1.0;
 }
 
 
-//// @link main 
+//// @link main
 
 void main() {
-  gl_FragColor = _01_getColor();
+  gl_FragColor = _00_getColor();
 }"
 `;

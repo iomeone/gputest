@@ -1,9 +1,9 @@
-import type { LiveComponent, PropsWithChildren, DeferredCall } from '../../live';
-import type { TraitProps } from '../../traits';
+import type { LiveComponent, PropsWithChildren, DeferredCall } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { combine, makeUseTrait } from '../../traits/index-live';
-import { provide, useDouble, useOne, useMemo } from '../../live';
-import { MatrixContext, TransformContext, useCombinedMatrixTransform, useCombinedMatrix, useNoCombinedMatrix, QueueReconciler } from '../../workbench';
+import { combine, makeUseTrait } from '@use-gpu/traits/live';
+import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
+import { MatrixContext, TransformContext, useCombinedMatrixTransform, useCombinedMatrix, useNoCombinedMatrix, QueueReconciler } from '@use-gpu/workbench';
 
 import { composeTransform } from '../util/compose';
 import { swizzleMatrix } from '../util/swizzle';
@@ -52,10 +52,10 @@ export const Transform: LiveComponent<TransformProps> = (props: TransformProps) 
     }
 
     return matrix;
-  }, [a, p, r, q, s, m]);
+  }, [a, p, r, q, s, m, composed, swapMatrix]);
 
-  const isArray = Array.isArray(children)
-  const nested = isArray ? !children.find(c => (c as DeferredCall<any>).f !== Transform) : (children as DeferredCall<any>).f === Transform;
+  const isArray = Array.isArray(children);
+  const nested = children ? (isArray ? !children.find(c => (c as DeferredCall<any>).f !== Transform) : (children as DeferredCall<any>).f === Transform) : false;
 
   if (nested) {
     const combined = useCombinedMatrix(matrix);

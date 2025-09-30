@@ -10,9 +10,10 @@ export const makeChainAccessor = (
   from: string,
   to: string,
   rest: number = 0,
+  length: number = 0,
 ) => {
   const symbols = args.map((t, i) => `${arg(i)}`);
-  const tail = rest != null ? symbols.slice(rest) : null;
+  const tail = rest != null ? symbols.slice(rest, rest + length) : null;
 
   if (type === 'void') {
     return `fn ${name}(${symbols.map((s, i) => `${s}: ${args[i]}`).join(', ')}) {

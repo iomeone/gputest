@@ -1,4 +1,4 @@
-use '../../../wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
+use '@use-gpu/wgsl/use/view'::{ worldToClip, getWorldScale };
 
 @optional @link fn transformPosition(p: vec4<f32>) -> vec4<f32> { return p; };
 @optional @link fn transformDifferential(v: vec4<f32>, b: vec4<f32>, c: bool) -> vec4<f32> { return v; };
@@ -12,8 +12,8 @@ use '../../../wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
 @optional @link fn getBase(i: u32) -> f32 { return 2.0; }
 
 @export fn getTickPosition(index: u32) -> vec4<f32> {
-  let n = u32(LINE_DETAIL + 1);
-  let v = f32(index % n) / f32(LINE_DETAIL) - 0.5;
+  let n = u32(TICK_LINE_DETAIL + 1);
+  let v = f32(index % n) / f32(TICK_LINE_DETAIL) - 0.5;
 
   let instanceIndex = index / n;
 
@@ -26,7 +26,7 @@ use '../../../wgsl/use/view'::{ worldToClip, getWorldScale, getViewScale };
 
   let center = transformPosition(anchor);
   let c = worldToClip(center);
-  let s = getWorldScale(c.w, depth) * getViewScale();
+  let s = getWorldScale(c.w, depth);
 
   if (length(tangent) > 0.0) {
     let diff = transformDifferential(tangent, anchor, false).xyz;

@@ -24,37 +24,7 @@ type SVGProps = {
   size?: string | number,
 };
 
-export const SVGNextDown = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
-  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
-    <svg version="1.1" id="Layer_1" x="0px" y="0px"
-      style={{fill: 'currentColor'}}
-      viewBox="0 0 16 16"
-    >
-    <g>
-      <circle cx="8" cy="8" r="1.56"/>
-    </g>
-    <g>
-      <path d="M8,15.14C5.85,15.14,4.16,12,4.16,8c0-4,1.69-7.14,3.84-7.14S11.84,4,11.84,8C11.84,12,10.15,15.14,8,15.14z M8,1.96
-        C6.7,1.96,5.26,4.44,5.26,8S6.7,14.04,8,14.04s2.74-2.48,2.74-6.04S9.3,1.96,8,1.96z"/>
-    </g>
-    <g>
-      <path d="M4.78,12.9c-1.37,0-2.45-0.44-2.96-1.33c-0.55-0.95-0.36-2.21,0.52-3.56c0.81-1.23,2.14-2.42,3.73-3.34
-        c1.6-0.92,3.29-1.48,4.76-1.57c1.6-0.09,2.79,0.37,3.34,1.33c1.08,1.87-0.79,4.89-4.26,6.9l0,0C8.11,12.37,6.28,12.9,4.78,12.9z
-         M11.24,4.19c-0.11,0-0.22,0-0.33,0.01C9.6,4.28,8.08,4.79,6.63,5.62c-1.45,0.84-2.65,1.9-3.37,2.99c-0.64,0.96-0.81,1.84-0.49,2.4
-        c0.65,1.13,3.52,1.14,6.6-0.64l0,0c3.08-1.78,4.51-4.27,3.86-5.4C12.94,4.47,12.22,4.19,11.24,4.19z"/>
-    </g>
-    <g>
-      <path d="M11.24,12.91c-0.13,0-0.27,0-0.4-0.01c-1.47-0.09-3.16-0.64-4.76-1.56c-1.6-0.92-2.92-2.11-3.73-3.34
-        C1.46,6.65,1.27,5.38,1.82,4.43c0.55-0.95,1.74-1.42,3.34-1.33C6.64,3.2,8.33,3.75,9.92,4.67c1.6,0.92,2.92,2.11,3.73,3.34
-        c0.89,1.34,1.07,2.61,0.52,3.56C13.68,12.44,12.64,12.91,11.24,12.91z M4.76,4.19c-0.98,0-1.7,0.28-1.99,0.79
-        c-0.33,0.56-0.15,1.44,0.49,2.4c0.72,1.09,1.92,2.15,3.37,2.99c1.45,0.84,2.97,1.34,4.27,1.42c1.15,0.07,2-0.21,2.33-0.78
-        c0.33-0.56,0.15-1.44-0.49-2.4c-0.72-1.09-1.92-2.15-3.37-2.99l0,0C7.92,4.79,6.4,4.28,5.1,4.2C4.98,4.2,4.87,4.19,4.76,4.19z"/>
-    </g>
-    </svg>
-  </div>
-);
-
-export const SVGChevronDown = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGChevronDown = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -65,7 +35,7 @@ export const SVGChevronDown = ({color = '#fff', title = undefined, size = 16}: S
   </div>
 );
 
-export const SVGChevronLeft = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGChevronLeft = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -76,7 +46,7 @@ export const SVGChevronLeft = ({color = '#fff', title = undefined, size = 16}: S
   </div>
 );
 
-export const SVGChevronRight = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGChevronRight = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -87,7 +57,7 @@ export const SVGChevronRight = ({color = '#fff', title = undefined, size = 16}: 
   </div>
 );
 
-export const SVGNextOpen = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGNextOpen = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -99,7 +69,21 @@ export const SVGNextOpen = ({color = '#fff', title = undefined, size = 16}: SVGP
   </div>
 );
 
-export const SVGNextClosed = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGNextClosed = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+    >
+    <g transform="rotate(-90 8 8)">
+    <polygon points="12.6,6.7 8,11.4 3.4,6.7 2.1,8 7.8,13.7 8,13.9 13.9,8 "/>
+    <rect x="7" y="2" width="2" height="9.5"/>
+    </g>
+    </svg>
+  </div>
+);
+
+export const SVGNextFence = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -115,7 +99,7 @@ export const SVGNextClosed = ({color = '#fff', title = undefined, size = 16}: SV
   </div>
 );
 
-export const SVGAtom = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGAtom = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -145,7 +129,7 @@ export const SVGAtom = ({color = '#fff', title = undefined, size = 16}: SVGProps
   </div>
 );
 
-export const SVGInspect = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGInspect = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -161,7 +145,7 @@ export const SVGInspect = ({color = '#fff', title = undefined, size = 16}: SVGPr
   </div>
 );
 
-export const SVGClose = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGClose = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -175,7 +159,7 @@ export const SVGClose = ({color = '#fff', title = undefined, size = 16}: SVGProp
   </div>
 );
 
-export const SVGYeet = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGYeet = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -192,7 +176,7 @@ export const SVGYeet = ({color = '#fff', title = undefined, size = 16}: SVGProps
   </div>
 );
 
-export const SVGQuote = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGQuote = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -211,7 +195,7 @@ export const SVGQuote = ({color = '#fff', title = undefined, size = 16}: SVGProp
   </div>
 );
 
-export const SVGDashboard = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGDashboard = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -225,7 +209,7 @@ export const SVGDashboard = ({color = '#fff', title = undefined, size = 16}: SVG
   </div>
 );
 
-export const SVGBuiltinElement = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGBuiltinElement = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -243,7 +227,7 @@ export const SVGBuiltinElement = ({color = '#fff', title = undefined, size = 16}
   </div>
 );
 
-export const SVGHighlightElement = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGHighlightElement = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -276,7 +260,7 @@ export const SVGHighlightElement = ({color = '#fff', title = undefined, size = 1
   </div>
 );
 
-export const SVGPickElement = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGPickElement = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -296,7 +280,7 @@ export const SVGPickElement = ({color = '#fff', title = undefined, size = 16}: S
   </div>
 );
 
-export const SVGRunCount = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGRunCount = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -314,7 +298,7 @@ export const SVGRunCount = ({color = '#fff', title = undefined, size = 16}: SVGP
   </div>
 );
 
-export const SVGLayoutSide = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGLayoutSide = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -333,7 +317,7 @@ export const SVGLayoutSide = ({color = '#fff', title = undefined, size = 16}: SV
   </div>
 );
 
-export const SVGLayoutFull = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGLayoutFull = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -349,7 +333,7 @@ export const SVGLayoutFull = ({color = '#fff', title = undefined, size = 16}: SV
   </div>
 );
 
-export const SVGViewOutput = ({color = '#fff', title = undefined, size = 16}: SVGProps) => (
+export const SVGViewOutput = ({title = undefined, size = 16}: SVGProps) => (
   <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
     <svg version="1.1" id="Layer_1" x="0px" y="0px"
       style={{fill: 'currentColor'}}
@@ -360,6 +344,75 @@ export const SVGViewOutput = ({color = '#fff', title = undefined, size = 16}: SV
       <path d="M8,12.2c-3.7,0-6.9-2.3-6.9-4.2c0-1.9,3.1-4.2,6.9-4.2c3.7,0,6.9,2.3,6.9,4.2C14.9,9.9,11.7,12.2,8,12.2z M8,5.2
       	C4.9,5.2,2.5,7.1,2.5,8c0,0.8,2.4,2.8,5.5,2.8c3.2,0,5.5-2,5.5-2.8C13.5,7.2,11.2,5.2,8,5.2z"/>
       <circle cx="8" cy="8" r="2.7"/>
+    </g>
+    </svg>
+  </div>
+);
+
+export const SVGRaster = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+      height={size}
+    >
+    <g>
+      <path d="M5.085 5.26c-2.491 6.137-3.661 9.046-3.642 9.055.016.007 13.3-1.958 13.364-1.976.018-.005-8.103-10.602-8.204-10.706-.025-.027-.339.722-1.518 3.627m4.062 2.962c1.102 1.435 1.996 2.617 1.986 2.627-.017.017-6.526.992-6.54.98-.006-.006.967-2.423 2.022-5.023.27-.663.499-1.203.509-1.2.01.004.921 1.181 2.023 2.616" fillRule="evenodd"/>
+    </g>
+    </svg>
+  </div>
+);
+
+export const SVGCompute = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+      height={size}
+    >
+    <g>
+      <path d="M2.987 4.507v.506H2v6h.987V12H4v-.987h2V12h1.013v-.987h1.974V12H10v-.987h2V12h1.013v-.987H14v-6h-.987V4H12v1.013h-2V4H8.987v1.013H7.013V4H6v1.013H4V4H2.987v.507" fillRule="evenodd"/>
+    </g>
+    </svg>
+  </div>
+);
+
+export const SVGCamera = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+    >
+      <path d="M12.497 4.683c-1.347.902-2.455 1.635-2.461 1.628-.007-.006-.02-.529-.028-1.161L9.992 4H.987v8H10l.003-.913c.002-.503.011-1.031.02-1.175l.017-.261 1.533 1.035 2.47 1.666.936.631.017-.178c.022-.228.022-9.625.001-9.705-.009-.033-.024-.059-.033-.059-.01.001-1.12.74-2.467 1.642" fillRule="evenodd"/>
+    </svg>
+  </div>
+);
+
+export const SVGData = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+    >
+      <path d="M7 .761C3.087 1.177.691 3.713 1.748 6.319l.092.225-.11.281a3.12 3.12 0 0 0 .02 2.398l.093.224-.096.236c-.523 1.292-.207 2.635.876 3.714 1.002 1 2.627 1.674 4.484 1.858.378.038 1.408.038 1.786 0 1.883-.186 3.514-.871 4.52-1.896 1.055-1.074 1.357-2.399.84-3.676l-.096-.236.093-.224a3.124 3.124 0 0 0 .02-2.398l-.11-.281.092-.228c.365-.905.328-1.805-.108-2.673-.777-1.545-2.72-2.628-5.171-2.883A13.534 13.534 0 0 0 7 .761m2.173 2.035c1.096.179 1.975.538 2.628 1.072.584.477.818 1.097.616 1.633-.34.897-1.673 1.66-3.32 1.899a8.672 8.672 0 0 1-2.27-.012C4.818 7.08 3.352 5.99 3.523 4.93c.098-.613.612-1.149 1.532-1.599.628-.307 1.308-.486 2.252-.595.051-.006.417-.007.813-.003.569.007.79.02 1.053.063M4.187 8.671c.853.406 1.777.656 2.853.772.395.043 1.525.043 1.92 0 .661-.071 1.424-.23 1.947-.404a8.37 8.37 0 0 0 1.326-.585c.107-.06.194-.098.194-.085 0 .135-.246.486-.531.759-.599.572-1.598.994-2.803 1.183-.244.039-.465.048-1.093.048-.857 0-1.093-.023-1.72-.172-.65-.154-1.301-.421-1.752-.716a3.453 3.453 0 0 1-.755-.711c-.105-.148-.2-.333-.2-.391 0-.013.087.025.194.085.106.06.295.158.42.217m-.018 2.895c.634.313 1.433.562 2.244.698.53.088.928.118 1.587.118.345 0 .771-.015.947-.033 1.236-.125 2.327-.456 3.304-1.002.099-.055.176-.084.176-.067 0 .062-.14.309-.281.497-.405.539-1.331 1.054-2.335 1.299-1.614.394-3.486.231-4.784-.416-.693-.345-1.135-.73-1.38-1.2-.109-.211-.097-.224.102-.113.096.054.285.152.42.219" fillRule="evenodd"/>
+    </svg>
+  </div>
+);
+
+export const SVGOther = ({title = undefined, size = 16}: SVGProps) => (
+  <div title={title} style={{display: 'inline-block', width: size, height: 0}}>
+    <svg version="1.1" id="Layer_1" x="0px" y="0px"
+      style={{fill: 'currentColor'}}
+      viewBox="0 0 16 16"
+    >
+    <g transform="rotate(0 8 8)">
+    <rect x="7" y="2" width="2" height="11.5"/>
+    </g>
+    <g transform="rotate(120 8 8)">
+    <rect x="7" y="2" width="2" height="11.5"/>
+    </g>
+    <g transform="rotate(240 8 8)">
+    <rect x="7" y="2" width="2" height="11.5"/>
     </g>
     </svg>
   </div>

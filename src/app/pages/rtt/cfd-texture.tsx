@@ -1,25 +1,26 @@
-import type { LC } from '../../../live';
-import type { Emit, TextureTarget } from '../../../core';
+import type { LC } from '@use-gpu/live';
+import type { TextureTarget } from '@use-gpu/core';
 
-import React, { Gather, use, useMemo } from '../../../live';
-import { wgsl } from '../../../shader/wgsl';
+import React, { Gather } from '@use-gpu/live';
+import { wgsl } from '@use-gpu/shader/wgsl';
 
 import {
-  Loop, FlatCamera, Pass, OrbitCamera, RawData, PointLayer, Pick,
+  Loop, FlatCamera, Pass,
   TextureBuffer, Compute, Stage, Iterate, Kernel, Suspense, RawFullScreen,
-  useShader, useLambdaSource, useShaderRefs,
-} from '../../../workbench';
+  useShader, useLambdaSource,
+} from '@use-gpu/workbench';
+import { Mouse } from '@use-gpu/interact';
 import {
   UI, Layout, Absolute, Block, Element, Inline, Text,
-} from '../../../layout';
+} from '@use-gpu/layout';
 
-import { main as generateInitial }  from './cfd-texture/initialwgsl';
-import { main as pushVelocity }     from './cfd-texture/pushwgsl';
-import { main as updateDivCurl }    from './cfd-texture/divergence-curlwgsl';
-import { main as updatePressure }   from './cfd-texture/pressurewgsl';
-import { main as projectVelocity }  from './cfd-texture/projectwgsl';
-import { main as advectVelocity }   from './cfd-texture/advectwgsl';
-import { main as advectMcCormack }  from './cfd-texture/mccormackwgsl';
+import { main as generateInitial }  from './cfd-texture/initial.wgsl';
+import { main as pushVelocity }     from './cfd-texture/push.wgsl';
+import { main as updateDivCurl }    from './cfd-texture/divergence-curl.wgsl';
+import { main as updatePressure }   from './cfd-texture/pressure.wgsl';
+import { main as projectVelocity }  from './cfd-texture/project.wgsl';
+import { main as advectVelocity }   from './cfd-texture/advect.wgsl';
+import { main as advectMcCormack }  from './cfd-texture/mccormack.wgsl';
 
 import { CFDControls } from '../../ui/cfd-controls';
 import { InfoBox } from '../../ui/info-box';
@@ -124,7 +125,7 @@ export const RTTCFDTexturePage: LC = () => {
             pressure,
           ]: TextureTarget[]) => (<>
 
-            <Pick all move render={({x, y, moveX, moveY}) => (
+            <Mouse move render={({x, y, moveX, moveY}) => (
               <Compute immediate>
                 <Stage target={velocity}>
                   <Kernel shader={pushVelocity} args={[[x / 2 * dpi, y / 2 * dpi], [moveX, moveY]]} history />

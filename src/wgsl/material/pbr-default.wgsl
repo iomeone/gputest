@@ -1,4 +1,4 @@
-use '../../wgsl/fragment/pbr'::{ PBRParams };
+use '@use-gpu/wgsl/fragment/pbr'::{ PBRParams };
 
 const roughness: f32 = 0.35;
 const metalness: f32 = 0.0;

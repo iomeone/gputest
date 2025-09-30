@@ -11,7 +11,7 @@ const isTypedArray = (() => {
 /** Set or replace a value without merging.
 
 ```tsx
-import { $set } from "../state";
+import { $set } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -33,7 +33,7 @@ export const $set = <T>($set: T): Update<T> => ({$set});
 /** Merge two values. This is the default behavior for objects, so exists mostly for clarity.
 
 ```tsx
-import { $merge } from "../state";
+import { $merge } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -54,7 +54,7 @@ export const $merge = <T>($merge: T): Update<T> => ({$merge});
 /** Delete a value.
 
 ```tsx
-import { $delete } from "../state";
+import { $delete } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -78,7 +78,7 @@ export const $nop = (): Update<any> => $NOP;
 /** Apply a function to a value.
 
 ```tsx
-import { $apply } from "../state";
+import { $apply } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2},
@@ -100,7 +100,7 @@ export const $apply = <T>($apply: (t: T) => T) => ({$apply});
 /** Apply a function that returns another patch to apply.
 
 ```tsx
-import { $patch, $apply, $delete } from "../state";
+import { $patch, $apply, $delete } from "@use-gpu/state";
 
 const value = {
   hello: {text: 'world', bar: 2, other: 1},

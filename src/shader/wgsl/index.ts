@@ -9,6 +9,8 @@ import {
 
   bundleToAttribute,
   bundleToAttributes,
+  bundleToBindings,
+  attributeToFields,
 
   wgsl, f32, i32, u32,
   symbolDictionary,
@@ -17,11 +19,10 @@ import {
 import {
   bindBundle,
   bindModule,
-  bindingsToLinks,
+  bindingsToModules,
   bindingToModule,
   sourceToModule,
   resolveBindings,
-  extractBindings,
 } from './bind';
 
 import {
@@ -67,6 +68,7 @@ import {
   getBundleHash,
   getBundleKey,
   getBundleLabel,
+  getBundleName,
 } from '../util/bundle';
 
 import {
@@ -88,6 +90,8 @@ export {
 
   bundleToAttribute,
   bundleToAttributes,
+  bundleToBindings,
+  attributeToFields,
 
   wgsl, f32, i32, u32,
   symbolDictionary,
@@ -96,11 +100,10 @@ export {
 export {
   bindBundle,
   bindModule,
-  bindingsToLinks,
+  bindingsToModules,
   bindingToModule,
   sourceToModule,
   resolveBindings,
-  extractBindings,
 } from './bind';
 
 export {
@@ -146,6 +149,7 @@ export {
   getBundleHash,
   getBundleKey,
   getBundleLabel,
+  getBundleName,
 } from '../util/bundle';
 
 export {
@@ -160,6 +164,9 @@ export const WGSLLinker = {
   bindEntryPoint,
   bundleToAttribute,
   bundleToAttributes,
+  bundleToBindings,
+  attributeToFields,
+
   wgsl, f32, i32, u32,
 
   defineConstants,
@@ -170,11 +177,10 @@ export const WGSLLinker = {
 
   bindBundle,
   bindModule,
-  bindingsToLinks,
+  bindingsToModules,
   bindingToModule,
   sourceToModule,
   resolveBindings,
-  extractBindings,
 
   castTo,
   chainTo,
@@ -195,6 +201,7 @@ export const WGSLLinker = {
   getBundleHash,
   getBundleKey,
   getBundleLabel,
+  getBundleName,
 
   decompressString,
   symbolDictionary,

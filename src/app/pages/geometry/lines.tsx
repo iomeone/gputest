@@ -1,16 +1,18 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { DataField, GPUAttributes } from '../../../core';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { GPUAttributes } from '@use-gpu/core';
 
-import React, { use } from '../../../live';
+import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
   Pass,
-  Cursor,
   Data, getLineSegments, getArrowSegments,
-  OrbitCamera, OrbitControls,
+  OrbitCamera,
   LineLayer, ArrowLayer,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 
 import { lineData, zigzagData, arrowData } from './line-data';
 
@@ -54,7 +56,7 @@ export const GeometryLinesPage: LC = () => {
           data={zigzagData}
           segments={getLineSegments}
         >{
-          (props: GPUAttributes) => <LineLayer {...props} depth={0.5} join='round' />
+          (props: GPUAttributes) => <LineLayer {...props} depth={0.5} />
         }</Data>
 
         <Data
@@ -69,6 +71,8 @@ export const GeometryLinesPage: LC = () => {
             <ArrowLayer
               {...props}
               depth={0.5}
+              sides={4}
+              join='tangent'
             />
         }</Data>
 

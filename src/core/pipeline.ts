@@ -1,9 +1,9 @@
 import type {
   TypedArray, ShaderModuleDescriptor, ShaderStageDescriptor,
 } from './types';
-import type { Update } from '../state';
+import type { Update } from '@use-gpu/state';
 
-import { patch } from '../state';
+import { patch } from '@use-gpu/state';
 import { LOGGING } from './debug';
 
 export const makeShaderModuleDescriptor = (
@@ -16,7 +16,7 @@ export const makeShaderModuleDescriptor = (
 export const makeShaderStage = (device: GPUDevice, descriptor: ShaderModuleDescriptor, extra: any = {}): ShaderStageDescriptor => {
   const {code, entryPoint, label} = descriptor;
 
-  const gpuDescriptor = {code} as GPUShaderModuleDescriptor;
+  const gpuDescriptor = {code, label} as GPUShaderModuleDescriptor;
   const module = device.createShaderModule(gpuDescriptor);
   if (label) module.label = label;
 
@@ -32,9 +32,10 @@ export const makeRenderPipeline = (
   samples: number,
   descriptor: Update<GPURenderPipelineDescriptor> = {},
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const pipelineDescriptor: GPURenderPipelineDescriptor = patch({
-    label: [vertexShader.entryPoint, fragmentShader?.entryPoint].filter(s => s != null).join('/'),
+    label: [label, vertexShader.entryPoint, fragmentShader?.entryPoint].filter(s => s != null).join('/'),
     layout: layout ?? 'auto',
     depthStencil: depthStencilState,
     multisample: { count: samples },
@@ -59,9 +60,10 @@ export const makeRenderPipelineAsync = (
   samples: number,
   descriptor: Update<GPURenderPipelineDescriptor> = {},
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const pipelineDescriptor: GPURenderPipelineDescriptor = patch({
-    label: [vertexShader.entryPoint, fragmentShader?.entryPoint].filter(s => s != null).join('/'),
+    label: [label, vertexShader.entryPoint, fragmentShader?.entryPoint].filter(s => s != null).join('/'),
     layout: layout ?? 'auto',
     depthStencil: depthStencilState,
     multisample: { count: samples },
@@ -81,9 +83,10 @@ export const makeComputePipeline = (
   device: GPUDevice,
   shader: ShaderModuleDescriptor,
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const pipelineDescriptor: GPUComputePipelineDescriptor = {
-    label: shader.entryPoint,
+    label: [label, shader.entryPoint].filter(s => s != null).join('/'),
     layout: layout ?? 'auto',
     compute: makeShaderStage(device, shader),
   };
@@ -95,9 +98,10 @@ export const makeComputePipelineAsync = (
   device: GPUDevice,
   shader: ShaderModuleDescriptor,
   layout?: GPUPipelineLayout,
+  label?: string,
 ) => {
   const pipelineDescriptor: GPUComputePipelineDescriptor = {
-    label: shader.entryPoint,
+    label: [label, shader.entryPoint].filter(s => s != null).join('/'),
     layout: layout ?? 'auto',
     compute: makeShaderStage(device, shader),
   };
@@ -108,9 +112,11 @@ export const makeComputePipelineAsync = (
 export const makePipelineLayout = (
   device: GPUDevice,
   bindGroupLayouts: GPUBindGroupLayout[],
+  label?: string,
 ) => {
   return device.createPipelineLayout({
     bindGroupLayouts,
+    label,
   });
 }
 

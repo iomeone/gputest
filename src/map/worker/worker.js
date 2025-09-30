@@ -1,9 +1,12 @@
 import { expose } from 'comlink';
-import { VectorTile } from 'mapbox-vector-tile';
+import Protobuf from 'pbf';
+import { VectorTile } from '@mapbox/vector-tile';
 import { getMVTShapes, aggregateMVTShapes } from '../util/mvtile';
 
-const loadMVT = async (x, y, zoom, url, styles, flipY, tesselate) => {
-  const res = await fetch(url);
+const loadMVT = async (x, y, zoom, url, options, styles, locale, tesselate, flipY) => {
+  const res = await fetch(url, options);
+  if (res.status !== 200) return {};
+
   let ab = await res.arrayBuffer();
 
   // MVT may be gzipped
@@ -15,11 +18,16 @@ const loadMVT = async (x, y, zoom, url, styles, flipY, tesselate) => {
   }
 
   // Load raw MVT
-  const mvt = new VectorTile(new Uint8Array(ab));
-  const shapes = getMVTShapes(x, y, zoom, mvt, styles, flipY, tesselate);
-  const aggregate = aggregateMVTShapes(shapes);
+  try {
+    const mvt = new VectorTile(new Protobuf(ab));
+    const shapes = getMVTShapes(x, y, zoom, mvt, styles, locale, tesselate, flipY);
+    const aggregate = aggregateMVTShapes(shapes);
+    return aggregate;
+  } catch (e) {
+    console.warn(e);
+    return {};
+  }
 
-  return aggregate;
 }
 
 expose({ loadMVT });

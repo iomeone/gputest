@@ -1,7 +1,17 @@
 import type { Alignment } from '../types';
 
-import { makeTuples } from '../../core';
+import { makeTuples } from '@use-gpu/core';
 import { getAlignmentSpacing } from './util';
+
+/*
+ Alignment
+
+    Word   word-word   word   word
+    [  ]   [   |   ]   [  ]   [  ]
+<-->    <->         <->    <-> x count
+lead    gap         gap    gap
+
+*/
 
 type InlineReduce = (
   start: number,
@@ -15,6 +25,25 @@ type InlineReduce = (
   xHeight: number,
   index: number,
 ) => void;
+
+/*
+  Line metrics
+                                                              ^
+                                         __                   |
+  \    /                                          ^           |
+   \  /                                  __       |           |
+    \/  \  / \  /        \  / \  / \  /     ^     |base       |
+    /\   \/   \/          \/   \/   \/      |     |           |cross
+   /  \  /\   /\          /\   /\   /\      |xH   |           |
+  /    \/  \ /  \        /  \ /  \ /  \  __ v     v           |
+                                                  ^           |
+ |              |      |                          |descent    |
+ <----advance---------->                 __       v           |
+                <-trim->                                      |
+                                                              v
+
+ <-----------------main--------------->
+*/
 
 type InlineCursor = {
   push: (
@@ -225,7 +254,7 @@ export const makeFlexCursor = (
     if (n) {
       const spanSize = spanMain - spanTrim;
       chunkMain = Math.max(chunkMain, spanSize);
-      
+
       // eslint-disable-next-line no-debugger
       if (Number.isNaN(chunkMain)) debugger;
 

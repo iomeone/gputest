@@ -1,21 +1,25 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../../live';
-import type { Atlas, Tuples, Rectangle } from '../../../core';
-import type { ShaderSource } from '../../../shader';
-import type { FontMetrics, GlyphMetrics } from '../../../glyph';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { Atlas, Tuples, Rectangle } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import type { FontMetrics, GlyphMetrics } from '@use-gpu/glyph';
 import type { Alignment } from '../types';
 
-import { fence, provide, memo, yeet, useContext, useNoContext, useFiber, useMemo, makeContext, incrementVersion } from '../../../live';
-import { glyphToSDF, rgbaToSDF, padRectangle } from '../../../glyph';
-import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '../../../core';
-import { scrambleBits53, mixBits53 } from '../../../state';
+import { provide, memo, yeet, useContext, useNoContext, useFiberId, useMemo, useOne, makeContext, incrementVersion } from '@use-gpu/live';
+import { glyphToSDF, rgbaToSDF, padRectangle } from '@use-gpu/glyph';
+import { makeAtlas, makeAtlasSource, resizeTextureSource, uploadAtlasMapping, updateMipTextureChain } from '@use-gpu/core';
+import { scrambleBits53, mixBits53 } from '@use-gpu/state';
 
 import { getShader } from '../../hooks/useShader';
+import { useInspectable } from '../../hooks/useInspectable'
+
 import { makeInlineCursor } from '../cursor';
 import { DebugContext } from '../../providers/debug-provider';
 import { DeviceContext } from '../../providers/device-provider';
+import { QueueReconciler } from '../../reconcilers/index';
+
 import { FontContext } from './font-provider';
 
-import { getLODBiasedTexture } from '../../../wgsl/fragment/lod-biaswgsl';
+import { getLODBiasedTexture } from '@use-gpu/wgsl/fragment/lod-bias.wgsl';
 
 export const SDFFontContext = makeContext<SDFFontContextProps>(undefined, 'SDFFontContext');
 export const useSDFFontContext = () => useContext(SDFFontContext);
@@ -37,8 +41,6 @@ export type SDFFontProviderProps = PropsWithChildren<{
   height?: number,
   radius?: number,
   pad?: number,
-  fence?: (c: LiveElement, then: (t: any) => LiveElement) => LiveElement,
-  then?: (atlas: Atlas, source: ShaderSource, gathered: any) => LiveElement
 }>;
 
 const NO_MAPPING = [0, 0, 0, 0] as Rectangle;
@@ -68,14 +70,13 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
   height = 256,
   radius = 16,
   pad = 0,
-  fence: op = fence,
   children,
-  then,
 }: SDFFontProviderProps) => {
   pad += Math.ceil(radius * 0.75);
 
   const device = useContext(DeviceContext);
   const rustText = useContext(FontContext);
+  const inspect = useInspectable();
 
   const {sdf2d: {subpixel, solidify, preprocess, postprocess}} = useContext(DebugContext);
 
@@ -84,7 +85,7 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
   const [glyphs, atlas, source, biasable, biasedSource] = useMemo(() => {
     const glyphs   = new Map<number, CachedGlyph>();
     const atlas    = makeAtlas(width, height);
-    const source   = makeAtlasSource(device, atlas, format, 1);
+    const source   = makeAtlasSource(device, atlas, format, 'linear', 1);
     const biasable = {
       ...source,
       variant: 'textureSampleBias',
@@ -100,9 +101,10 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
     source.texture.label = 'Font Atlas';
 
     return [glyphs, atlas, source, biasable, biasedSource];
-  }, [width, height, radius, pad, subpixel, solidify, preprocess, postprocess]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [device, width, height, radius, pad, subpixel, solidify, preprocess, postprocess]);
 
-  const bounds = useMemo(() => makeBoundsTracker());
+  const bounds = useOne(makeBoundsTracker);
 
   // Provide context to map glyphs on-demand
   const context = useMemo(() => {
@@ -186,19 +188,24 @@ export const SDFFontProvider: LiveComponent<SDFFontProviderProps> = memo(({
       getGlyph,
       getTexture,
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rustText, atlas, source]);
 
-  return rustText ? (
-    op(
-      provide(SDFFontContext, context, children),
-      (gathered: any) => {
-        const rects = bounds.flush();
-        if (rects.length) updateMipTextureChain(device, source, rects);
+  inspect({
+    output: {
+      sources: [source],
+    },
+  });
 
-        return then ? then(atlas, biasedSource, gathered) : yeet(gathered);
-      },
-    )
-  ) : null;
+  const {quote} = QueueReconciler;
+
+  return rustText ? [
+    quote(yeet(() => {
+      const rects = bounds.flush();
+      if (rects.length) updateMipTextureChain(device, source, rects);
+    })),
+    provide(SDFFontContext, context, children),
+  ] : null;
 }, 'SDFFontProvider');
 
 // Lay out glyphs from one or more spans into the given layout box.
@@ -214,10 +221,11 @@ export const useSDFGlyphData = (
   align: Alignment,
   size: number = 48,
   wrap: number = 0,
-  snap: boolean = false,
+  hint: 'x' | 'y' | 'xy' | false = 'xy',
+  monochrome: boolean = false,
 ) => {
   const context = useSDFFontContext();
-  const {id} = useFiber();
+  const id = useFiberId();
 
   return useMemo(() => {
     // Final buffers
@@ -274,7 +282,7 @@ export const useSDFGlyphData = (
         lastIndex = index;
       }
 
-      emitGlyphSpans(context, currentLayout, index, font, spans, glyphs, breaks, start, end, size, gap, lead, snap, emit);
+      emitGlyphSpans(context, currentLayout, index, font, spans, glyphs, breaks, start, end, size, gap, lead, hint, monochrome, emit);
       currentLayout[1] += lineHeight;
     });
 
@@ -283,13 +291,14 @@ export const useSDFGlyphData = (
 
     return {
       id,
+      count: i,
       indices,
       layouts,
       rectangles,
       uvs,
       sdf: [radius, scale, size, 0] as [number, number, number, number],
     };
-  }, [context, layout, spans, glyphs, breaks, height, align, size, wrap, snap]);
+  }, [context, layout, font, spans, glyphs, breaks, height, align, size, wrap, hint, id, monochrome]);
 }
 
 export const emitGlyphSpans = (
@@ -308,7 +317,8 @@ export const emitGlyphSpans = (
   size: number,
   gap: number,
   lead: number,
-  snap: boolean,
+  hint: 'x' | 'y' | 'xy' | false,
+  monochrome: boolean,
 
   emit: (
     l1: number,
@@ -329,9 +339,14 @@ export const emitGlyphSpans = (
 
   const scale = getScale(size);
 
+  const snapX = hint === 'x' || hint === 'xy';
+  const snapY = hint === 'y' || hint === 'xy';
+
   let x = left + lead;
+  let sx = snapX ? Math.round(x) : x;
+
   const y = top;
-  let sx = snap ? Math.round(x) : x;
+  const sy = snapY ? Math.round(y) : y;
 
   spans.iterate((_a, trim, hard, index) => {
     glyphs.iterate((fontIndex: number, id: number, isWhiteSpace: number, kerning: number) => {
@@ -339,7 +354,7 @@ export const emitGlyphSpans = (
       const {image, layoutBounds, outlineBounds, rgba, scale: glyphScale} = glyph;
       const [,, lr] = layoutBounds;
 
-      const r = rgba ? -1 : 1;
+      const r = rgba && !monochrome ? -1 : 1;
       const s = scale * glyphScale;
       const k = kerning / 65536.0 * scale;
       x += k;
@@ -349,8 +364,8 @@ export const emitGlyphSpans = (
         if (image && outlineBounds) {
           const [gl, gt, gr, gb] = outlineBounds;
 
-          const cx = snap ? Math.round(sx) : sx;
-          const cy = snap ? Math.round(y) : y;
+          const cx = sx;
+          const cy = sy;
 
           emit(
             (s * gl) + cx,
@@ -378,7 +393,7 @@ export const emitGlyphSpans = (
 
     if (trim) {
       x += gap;
-      sx = snap ? Math.round(x) : x;
+      sx = snapX ? Math.round(x) : x;
     }
   }, start, end);
 };

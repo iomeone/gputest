@@ -1,7 +1,7 @@
-import type { LC } from '../live';
+import type { LC } from '@use-gpu/live';
 import type { Vox, VoxNodeTransform } from './types';
 
-import { use, memo } from '../live';
+import { use, memo } from '@use-gpu/live';
 
 import { VoxNode } from './vox-node';
 

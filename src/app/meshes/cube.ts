@@ -1,12 +1,4 @@
-import type { VertexData, DataTexture, DataSchema } from '../../core';
-import { makeVertexAttributeLayout } from '../../core';
-
-export const makeMesh = (): VertexData => {
-  const vertices   = [meshVertexArray]
-  const attributes = [meshAttributes];
-
-  return {vertices, attributes, count: 36};
-}
+import type { DataTexture, DataSchema } from '@use-gpu/core';
 
 export const makeTexture = (): DataTexture => {
   return rawTextureRGBA;
@@ -36,18 +28,6 @@ export const meshSchema = {
   colors: {format: 'vec4<f32>'},
   uvs: {format: 'vec2<f32>'},
 } as DataSchema;
-
-// Vertex attribute layout
-// (only for anti-illustration purposes, the types are different from WGSL and therefor awkward)
-//
-// Use.GPU avoids vertex buffers entirely.
-// Can only be used if you hand-roll the entire draw call, like in the `<RawMesh>` example.
-export const meshAttributes = makeVertexAttributeLayout([
-  { name: 'positions', format: 'float32x4' },
-  { name: 'normals', format: 'float32x4' },
-  { name: 'colors', format: 'float32x4' },
-  { name: 'uvs', format: 'float32x2' },
-]);
 
 export const meshVertexArray = new Float32Array([
   // float4 position, float4 normal, float4 color, float2 uv,

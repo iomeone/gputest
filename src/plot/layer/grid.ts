@@ -1,18 +1,18 @@
-import type { LiveComponent } from '../../live';
-import type { ShaderModule } from '../../shader';
-import type { XYZW } from '../../core';
-import type { TraitProps } from '../../traits';
+import type { LiveComponent } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { XYZW } from '@use-gpu/core';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { makeUseTrait, optional, combine, trait, shouldEqual, sameShallow, useProp } from '../../traits/index-live';
-import { parseBoolean, parseIntegerPositive, parseAxis, parsePosition } from '../../parse';
-import { memo, use, fragment, useOne, useMemo } from '../../live';
+import { makeUseTrait, optional, combine, trait, shouldEqual, sameShallow, useProp } from '@use-gpu/traits/live';
+import { parseBoolean, parseIntegerPositive, parseAxis, parsePosition } from '@use-gpu/parse';
+import { memo, use, fragment, useOne, useMemo } from '@use-gpu/live';
 import {
   useShader, useNoShader,
   useRawSource,
   useShaderRef,
   useTransformContext, useNoTransformContext,
   LineLayer,
-} from '../../workbench';
+} from '@use-gpu/workbench';
 
 import { useRangeContext } from '../providers/range-provider';
 
@@ -20,9 +20,9 @@ import { vec4 } from 'gl-matrix';
 
 import { logarithmic, linear } from '../util/domain';
 
-import { getGridPosition } from '../../wgsl/plot/gridwgsl';
-import { getGridAutoState } from '../../wgsl/plot/grid-autowgsl';
-import { getLineSegment } from '../../wgsl/geometry/segmentwgsl';
+import { getGridPosition } from '@use-gpu/wgsl/plot/grid.wgsl';
+import { getGridAutoState } from '@use-gpu/wgsl/plot/grid-auto.wgsl';
+import { getLineSegment } from '@use-gpu/wgsl/geometry/segment.wgsl';
 
 import {
   ColorTrait,
@@ -67,7 +67,7 @@ export const Grid: LiveComponent<GridProps> = memo((props) => {
     origin, auto,
     ...flags
   } = useTraits(props);
-  
+
   const first = useScaleTrait(props.first ?? NO_SCALE_PROPS);
   const second = useScaleTrait(props.second ?? NO_SCALE_PROPS);
 
@@ -87,9 +87,12 @@ export const Grid: LiveComponent<GridProps> = memo((props) => {
     const newValues = useMemo(() => {
       const f = (options.mode === 'log') ? logarithmic : linear;
       return new Float32Array(f(r[0], r[1], options));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [r[0], r[1], options]);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const values = useMemo(() => newValues, newValues as any);
+
     const data = useRawSource(values, 'f32');
     const n = values.length * (detail + 1);
 
@@ -129,7 +132,7 @@ export const Grid: LiveComponent<GridProps> = memo((props) => {
     const m2 = useShaderRef(max);
     const s = useShaderRef(shift);
 
-    const defines = useOne(() => ({ LINE_DETAIL: detail, GRID_AUTO: !!auto }), detail);
+    const defines = useOne(() => ({ GRID_LINE_DETAIL: detail, GRID_AUTO: !!auto, SEGMENT_LINE_DETAIL: detail }), detail);
     const bound = useShader(getGridPosition, [data, m, m1, m2, s, autoBound], defines);
 
     // Expose position source
@@ -137,6 +140,8 @@ export const Grid: LiveComponent<GridProps> = memo((props) => {
       shader: bound,
       length: n,
       size: [n],
+      // n set below
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [bound]);
 
     const l = n * (auto ? 2 : 1);
@@ -165,7 +170,8 @@ export const Grid: LiveComponent<GridProps> = memo((props) => {
         ...flags,
       }) : null,
     ])
-  ), [firstPositions, secondPositions, auto, props]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [firstPositions, secondPositions, auto, props, ...Object.values(flags)]);
 }, shouldEqual({
   first: sameShallow(),
   second: sameShallow(),

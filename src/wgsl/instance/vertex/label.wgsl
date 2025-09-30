@@ -1,6 +1,6 @@
-use '../../../wgsl/use/types'::{ UIVertex };
-use '../../../wgsl/geometry/quad'::{ getQuadUV };
-use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveScale };
+use '@use-gpu/wgsl/use/types'::{ UIVertex };
+use '@use-gpu/wgsl/geometry/quad'::{ getQuadUV };
+use '@use-gpu/wgsl/use/view'::{ getViewResolution, worldToClip, getScreenScale, applyZBias };
 
 @optional @link fn getIndex(i: u32) -> u32 { return 0u; };
 @optional @link fn getRectangle(i: u32) -> vec4<f32> { return vec4<f32>(-1.0, -1.0, 1.0, 1.0); };
@@ -12,75 +12,82 @@ use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveSc
 
 @optional @link fn getPosition(i: u32) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 1.0); };
 @optional @link fn getPlacement(i: u32) -> vec2<f32> { return vec2<f32>(0.0, 0.0); };
-@optional @link fn getOffset(i: u32) -> f32 { return 0.0; };
+@optional @link fn getOffset(i: u32) -> vec2<f32> { return vec2<f32>(0.0); };
 @optional @link fn getSize(i: u32) -> f32 { return 16.0; };
 @optional @link fn getDepth(i: u32) -> f32 { return 0.0; };
+@optional @link fn getZBias(i: u32) -> f32 { return 0.0; };
 @optional @link fn getColor(i: u32) -> vec4<f32> { return vec4<f32>(0.5, 0.5, 0.5, 1.0); };
 @optional @link fn getExpand(i: u32) -> f32 { return 0.0; };
 @optional @link fn getFlip(i: u32) -> vec2<f32> { return vec2<f32>(1.0, 1.0); };
 
+@optional @link fn attachLabelTo(
+  i: u32,
+  shape: vec2<f32>,
+  origin: vec2<f32>,
+  rectangle: vec4<f32>,
+  xy: vec2<f32>,
+  depth: f32,
+  scale: f32,
+  offset: vec2<f32>,
+  flip: vec2<f32>,
+) -> vec4<f32> { return vec4<f32>(0.0); };
+
 @export fn getLabelVertex(vertexIndex: u32, instanceIndex: u32) -> UIVertex {
 
-  var sdfConfig = getSDFConfig(instanceIndex);
-  var fontSize = sdfConfig.z;
+  let sdfConfig = getSDFConfig(instanceIndex);
+  let fontSize = sdfConfig.z;
 
-  var index = getIndex(instanceIndex);
-  var rectangle = getRectangle(instanceIndex);
-  var uv4 = getUV(instanceIndex);
-  var st4 = getUV(instanceIndex);
+  let index = getIndex(instanceIndex);
+  let rectangle = getRectangle(instanceIndex);
+  let uv4 = getUV(instanceIndex);
+  let st4 = getUV(instanceIndex);
 
-  var flip = getFlip(index);
+  // Clip/view space Y is up in WebGPU, so always flip Y by default.
+  let flip = getFlip(index) * vec2<f32>(1, -1);
 
-  var position = getPosition(index);
-  var placement = getPlacement(index) * flip;
-  var shape = getShape(index);
-  var offset = getOffset(index);
-  var size = getSize(index);
-  var depth = getDepth(index);
-  var color = getColor(index);
-  var expand = getExpand(index);
+  let shape = getShape(index);
+  let placement = getPlacement(index) * flip;
+  let offset = getOffset(index);
 
-  var center = worldToClip(position);
-
-  // Lay out quad
-  var uv1 = getQuadUV(vertexIndex);
-  var xy1 = uv1 * 2.0 - 1.0;
-  var origin = ((placement - 1.0) * 0.5 * shape) + (offset * placement);
-
-  // Lerp between fixed size and full perspective.
-  var pixelScale = getPerspectiveScale(center.w, depth);
+  let size = getSize(index);
+  let depth = getDepth(index);
+  let zBias = getZBias(index);
+  let color = getColor(index);
+  let expand = getExpand(index);
 
   // Factor in relative font and atlas scale
-  var glyphScale = size / fontSize;
-  var finalScale = pixelScale * glyphScale;
+  let glyphScale = size / fontSize;
 
-  // Apply half pixel edge bleed on XY and UV
-  var xy: vec2<f32>;
-  var uv: vec2<f32>;
-  var st: vec2<f32>;
-  /*
-  if (HAS_EDGE_BLEED) {
-    let bleed = 0.5;
-    let ul = (rectangle.xy + origin) * finalScale - bleed;
-    let br = (rectangle.zw + origin) * finalScale + bleed;
-    let wh = (rectangle.zw - rectangle.xy) * finalScale;
+  // Lay out quad
+  let uv1 = getQuadUV(vertexIndex);
+  let xy1 = uv1 * 2.0 - 1.0;
+  let origin = ((placement - 1.0) * 0.5 * shape);
 
-    let uvb = uv1 + xy1 * bleed / wh;
-    xy = mix(ul, br, uv1);
-    uv = mix(uv4.xy, uv4.zw, uvb);
-    st = mix(st4.xy, st4.zw, uvb);
+  let xy = mix(rectangle.xy, rectangle.zw, uv1);
+  let uv = mix(uv4.xy, uv4.zw, uv1);
+  let st = mix(st4.xy, st4.zw, uv1);
+
+  var clipPosition: vec4<f32>;
+  if (HAS_ATTACH_LABEL) {
+    clipPosition = attachLabelTo(index, shape, origin, rectangle, xy, depth, glyphScale, offset, flip);
   }
   else {
-  */
-    xy = mix(rectangle.xy + origin, rectangle.zw + origin, uv1) * finalScale;
-    uv = mix(uv4.xy, uv4.zw, uv1);
-    st = mix(st4.xy, st4.zw, uv1);
-  // }
+    let position = getPosition(index);
+    let center = worldToClip(position);
 
-  xy = xy * flip;
+    // Lerp between fixed size and full perspective.
+    let pixelScale = getScreenScale(center.w, depth);
+    let finalScale = pixelScale * glyphScale;
 
-  // Attach to position
-  center = vec4<f32>(center.xy + 2.0 * xy * getViewResolution() * center.w, center.zw);
+    let finalXY = 2.0 * ((xy + origin) * finalScale + offset) * flip;
+
+    // Attach to position
+    clipPosition = vec4<f32>(center.xy + finalXY * getViewResolution() * center.w, center.zw);
+  }
+
+  if (zBias != 0.0) {
+    clipPosition = applyZBias(clipPosition, size * zBias);
+  }
 
   let sdfUV = uv;
   let textureUV = uv;
@@ -88,9 +95,9 @@ use '../../../wgsl/use/view'::{ getViewResolution, worldToClip, getPerspectiveSc
   let clipUV = vec4<f32>(0.0, 0.0, 1.0, 1.0);
 
   return UIVertex(
-    center,
+    clipPosition,
     uv1,
-    sdfConfig,
+    vec4<f32>(sdfConfig.x, sdfConfig.y * glyphScale, 0.0, 0.0),
     sdfUV,
     clipUV,
     textureUV,

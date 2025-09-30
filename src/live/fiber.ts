@@ -107,7 +107,7 @@ export const makeFiber = <F extends ArrowFunction>(
     yeeted, quotes, quote: null, unquote, context,
     state: null, pointer: 0, version: null, memo: null, runs: 0,
     mount: null, mounts: null, next: null, order: null, lookup: null,
-    type: null, id, by,
+    type: null, id, by, key,
   } as LiveFiber<F>;
 
   self.bound = bind(f, self) as any as F;
@@ -140,6 +140,7 @@ export const makeSubFiber = <F extends ArrowFunction>(
 export const makeNextFiber = <F extends ArrowFunction>(
   fiber: LiveFiber<F>,
   Next: LiveFunction<any>,
+  key?: Key,
   prefix: string = 'Next',
   reyeet?: boolean,
   name?: string,
@@ -150,7 +151,9 @@ export const makeNextFiber = <F extends ArrowFunction>(
   if (name === prefix) name = '…';
   Next.displayName = `${prefix}(${name})`;
 
-  const nextFiber = makeSubFiber(fiber, use(Next), fiber.id, 1);
+  const nextFiber = makeSubFiber(fiber, use(Next), fiber.id, 1); // path hardcoded to 1 to go second
+  (nextFiber.f as any).isLiveContinuation = (fiber.f as any).isLiveBuiltin;
+  nextFiber.key = key; // key set to allow remounting
 
   // Adopt existing yeet context
   // which will be overwritten on the original fiber.
@@ -338,14 +341,16 @@ export const updateFiber = <F extends ArrowFunction>(
     else morphFiberCall(fiber, c);
 
     pingFiber(fiber);
-    return fiber;
+    return;
   }
 
-  // If fiber type changed, remount everything
-  if (fiber.type && fiber.type !== fiberType) disposeFiberState(fiber);
-  fiber.type = fiberType as any;
-
   const callArgs = call?.args ?? EMPTY_ARRAY;
+  const callKey = call?.key;
+
+  // If fiber type changed, remount everything
+  if (fiber.next && callKey != null && fiber.next.key !== callKey) disposeFiberState(fiber);
+  else if (fiber.type && fiber.type !== fiberType) disposeFiberState(fiber);
+  fiber.type = fiberType as any;
 
   // Reconcile literal array
   if (isArray) {
@@ -355,27 +360,28 @@ export const updateFiber = <F extends ArrowFunction>(
   // Reconcile wrapped array fragment
   else if (fiberType === FRAGMENT || ((f as any) === DEBUG_BUILTIN)) {
     const calls = callArgs;
-    reconcileFiberCalls(fiber, calls);
+    if (Array.isArray(calls)) reconcileFiberCalls(fiber, calls);
+    else mountFiberCall(fiber, calls as DeferredCall<any>);
   }
   // Map reduce
   else if (fiberType === MAP_REDUCE) {
     const [calls, map, reduce, then, fallback] = callArgs;
-    mapReduceFiberCalls(fiber, calls, map, reduce, then, fallback);
+    mapReduceFiberCalls(fiber, calls, map, reduce, then, fallback, callKey);
   }
   // Gather reduce
   else if (fiberType === GATHER) {
     const [calls, then, fallback] = callArgs;
-    gatherFiberCalls(fiber, calls, then, fallback);
+    gatherFiberCalls(fiber, calls, then, fallback, callKey);
   }
   // Multi-gather reduce
   else if (fiberType === MULTI_GATHER) {
     const [calls, then, fallback] = callArgs;
-    multiGatherFiberCalls(fiber, calls, then, fallback);
+    multiGatherFiberCalls(fiber, calls, then, fallback, callKey);
   }
   // Fence gathered reduction
   else if (fiberType === FENCE) {
     const [calls, then, fallback] = callArgs;
-    fenceFiberCalls(fiber, calls, then, fallback);
+    fenceFiberCalls(fiber, calls, then, fallback, callKey);
   }
   // Signal quoted reduction directly
   else if (fiberType === SIGNAL) {
@@ -409,7 +415,10 @@ export const updateFiber = <F extends ArrowFunction>(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       else fiber.yeeted!.value = undefined;
     }
-    else return;
+    else if (fiber.f === YEET) {
+      // Built-in ran but no new value, so don't ping
+      return;
+    }
   }
   // Mount normal node (may still be built-in)
   else {
@@ -417,8 +426,7 @@ export const updateFiber = <F extends ArrowFunction>(
   }
 
   pingFiber(fiber);
-
-  return fiber;
+  return;
 }
 
 // Mount one call on a fiber
@@ -643,6 +651,7 @@ export const reconcileFiberOrder = <F extends ArrowFunction>(
 // Make a reconciling tail for a fiber. Used to fix order in case of rekeying.
 export const makeResolveFiber = <F extends ArrowFunction>(
   fiber: LiveFiber<F>,
+  key?: Key,
   name: string = 'Resolve',
 ) => {
   // Incrementally reconciled. Pre-initialize these.
@@ -654,9 +663,8 @@ export const makeResolveFiber = <F extends ArrowFunction>(
   const Resume = () => {
     reconcileFiberOrder(fiber);
   };
-  Resume.isLiveReconcile = true;
 
-  return makeNextFiber(fiber, Resume, name);
+  return makeNextFiber(fiber, Resume, 1, name);
 }
 
 const toArray = <T>(x: T | T[] | undefined): T[] => Array.isArray(x) ? x : x != null ? [x] : [];
@@ -671,9 +679,10 @@ export const mapReduceFiberCalls = <F extends ArrowFunction, R, T>(
   reducer: (a: R, b: R) => R,
   next?: LiveFunction<any>,
   fallback?: R | typeof SUSPEND,
+  key?: Key,
 ) => {
   const gather = reduceFiberValues(reducer);
-  return mountFiberReduction(fiber, calls, mapper, gather, next, fallback);
+  return mountFiberReduction(fiber, calls, mapper, gather, next, fallback, key);
 }
 
 // Gather-reduce a fiber
@@ -682,8 +691,9 @@ export const gatherFiberCalls = <F extends ArrowFunction, T>(
   calls: LiveElement,
   next?: LiveFunction<any>,
   fallback: (T[] | typeof SUSPEND) = NO_ARRAY,
+  key?: Key,
 ) => {
-  return mountFiberReduction(fiber, calls, undefined, gatherFiberValues, next, fallback);
+  return mountFiberReduction(fiber, calls, undefined, gatherFiberValues, next, fallback, key);
 }
 
 // Multi-gather-reduce a fiber
@@ -692,8 +702,9 @@ export const multiGatherFiberCalls = <F extends ArrowFunction, T>(
   calls: LiveElement,
   next?: LiveFunction<any>,
   fallback: (Record<string, T[]> | typeof SUSPEND) = NO_RECORD,
+  key?: Key,
 ) => {
-  return mountFiberReduction(fiber, calls, undefined, multiGatherFiberValues, next, fallback);
+  return mountFiberReduction(fiber, calls, undefined, multiGatherFiberValues, next, fallback, key);
 }
 
 // Fence a fiber reduction
@@ -702,10 +713,11 @@ export const fenceFiberCalls = <F extends ArrowFunction, T>(
   calls: LiveElement,
   next?: LiveFunction<any>,
   fallback?: T | typeof SUSPEND,
+  key?: Key,
 ) => {
   const {yeeted} = fiber;
   const gather = yeeted?.gather ?? NOP;
-  return mountFiberReduction(fiber, calls, undefined, gather, next, fallback);
+  return mountFiberReduction(fiber, calls, undefined, gather, next, fallback, key);
 }
 
 // Reduce yeeted values on a tree of fibers (values have already been mapped on emit)
@@ -918,7 +930,7 @@ const multiGatherMergeInto = <T>(a: Record<string, T[]>, b: Record<string, T | T
       const n = v.length;
       for (let i = 0; i < n; ++i) list.push(v[i] as T);
     }
-    else list.push(v as T);
+    else if (v !== undefined) list.push(v as T);
   }
 }
 // Generalized mounting of reduction-like continuations
@@ -929,10 +941,11 @@ export const mountFiberReduction = <F extends ArrowFunction, R, T>(
   gather: FiberGather<R>,
   Next?: LiveFunction<any>,
   fallback?: R,
+  key?: Key,
 ) => {
   if (!fiber.next) {
     const Resume = makeFiberReduction(fiber, gather, fallback);
-    fiber.next = makeNextFiber(fiber, Resume, 'Resume', true);
+    fiber.next = makeNextFiber(fiber, Resume, key, 'Resume', true);
     fiber.yeeted = makeYeetState(fiber, fiber.next, gather, mapper);
     fiber.path = [...fiber.path, 0];
   }
@@ -987,6 +1000,9 @@ export const mountFiberQuote = <F extends ArrowFunction, T>(
     next = to.next = makeResolveFiber(to);
     next.unquote = null;
     to.fork = true;
+
+    if (quote.root === quote.from) next.f.isLiveReconcile = true;
+    else next.f.isLiveQuote = true;
   }
 
   pingFiber(to, false);
@@ -1019,6 +1035,8 @@ export const mountFiberUnquote = <F extends ArrowFunction>(
     next = to.next = makeResolveFiber(to);
     next.unquote = null;
     to.fork = true;
+
+    next.f.isLiveQuote = true;
   }
 
   pingFiber(to, false);
@@ -1094,6 +1112,7 @@ export const provideFiber = <F extends ArrowFunction>(
   fiber: LiveFiber<F>,
 ) => {
   if (!fiber.args) return;
+
   const {context: {roots, values}, args: [context, value, calls]} = fiber;
 
   if (roots.get(context) !== fiber.id) {
@@ -1153,7 +1172,7 @@ export const captureFiber = <F extends ArrowFunction>(
     };
 
     const Resume = makeFiberReduction(fiber, reduction);
-    fiber.next = makeNextFiber(fiber, Resume, 'Resume');
+    fiber.next = makeNextFiber(fiber, Resume, 1, 'Resume');
 
     fiber.context = makeContextState(fiber, fiber.context, fiber.next, capture, registry);
     fiber.path = [...fiber.path, 0];
@@ -1164,7 +1183,7 @@ export const captureFiber = <F extends ArrowFunction>(
   mountFiberContinuation(fiber, use(fiber.next.f, then));
 }
 
-// Provide a value for a context on a fiber
+// Mount a reconciler on a fiber
 export const reconcileFiber = <F extends ArrowFunction>(
   fiber: LiveFiber<F>,
 ) => {
@@ -1179,13 +1198,14 @@ export const reconcileFiber = <F extends ArrowFunction>(
     if (!reconciler.reconciler) throw new Error(`'${reconciler.displayName}' is not a reconciler`);
 
     // Dummy fiber to act as new tree root, never called directly
-    const next = fiber.next = makeNextFiber(fiber, () => { throw new Error(); }, 'Root', false, reconciler.displayName);
+    const next = fiber.next = makeNextFiber(fiber, () => { throw new Error(); }, 1, 'Root', false, reconciler.displayName);
     next.quotes = quotes;
 
     quotes = fiber.quotes = new Map(quotes);
     quotes.set(reconciler, makeQuoteState(id, fiber, next));
 
     fiber.fork = true;
+    next.f.isLiveReconcile = true;
   }
 
   inlineFiberCall(fiber, calls);
@@ -1301,6 +1321,11 @@ export const updateMount = <P extends ArrowFunction>(
 
   let from = mount?.f;
   let to = newMount?.f;
+
+  if (!to && newMount) {
+    const node = formatNode(newMount);
+    throw new Error("Undefined JSX element type: " + node);
+  }
 
   if ((from === to) && (from === PROVIDE || from === CAPTURE)) {
     from = mount?.args?.[0] as any;

@@ -1,27 +1,29 @@
-import type { LC, PropsWithChildren } from '../../live';
-import type { RenderComponents, VirtualDraw, AggregatedCalls } from '../pass/types';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { PassFlags, PassResources, RenderComponents } from '../pass/types';
 
-import { use, provide, unquote, multiGather, memo, useCallback, useMemo } from '../../live';
+import { use, useOne, memo } from '@use-gpu/live';
 
-import { PassContext, VariantContext } from '../providers/pass-provider';
-import { PassReconciler } from '../reconcilers/index';
+import { useMinimalBindGroups } from '../pass/bindings';
+import { useMakeUseVariants } from '../pass/variants';
 
 import { DebugRender } from './forward/debug';
 import { SolidRender } from './forward/solid';
 
 import { ColorPass } from '../pass/color-pass';
-import { ComputePass } from '../pass/compute-pass';
-import { DispatchPass } from '../pass/dispatch-pass';
-import { ReadbackPass } from '../pass/readback-pass';
 
-const {reconcile, quote} = PassReconciler;
+import { Renderer } from './renderer';
+
+export type FullScreenRendererOptions = Pick<PassFlags, 'merge' | 'overlay'>;
 
 export type FullScreenRendererProps = PropsWithChildren<{
-  overlay?: boolean,
-  merge?: boolean,
+  resources: PassResources,
+  options: FullScreenRendererOptions,
 }>;
 
-const NO_ENV: Record<string, any> = {};
+const NO_OPTIONS: FullScreenRendererOptions = {
+  merge: false,
+  overlay: false,
+};
 
 const COMPONENTS = {
   modes: {
@@ -32,47 +34,30 @@ const COMPONENTS = {
   renders: {},
 } as RenderComponents;
 
-export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: FullScreenRendererProps) => {
+/** Simplified full-screen-only renderer that has no rendering variants or sub-passes. */
+export const FullScreenRenderer: LC<FullScreenRendererProps> = memo((props: PropsWithChildren<FullScreenRendererProps>) => {
   const {
-    overlay = false,
-    merge = false,
+    resources,
+    options = NO_OPTIONS,
     children,
   } = props;
 
-  const useVariants = useCallback((virtual: VirtualDraw, hovered: boolean) =>
-    useMemo(() => hovered ? [DebugRender] : COMPONENTS.modes[virtual.mode], [virtual, hovered])
-  );
+  const bindGroups = useMinimalBindGroups(resources);
 
-  // Pass aggregrated calls to pass runners
-  const Resume = (
-    calls: AggregatedCalls,
-  ) =>
-    useMemo(() => {
-      const props: Record<string, any> = {calls, env: NO_ENV};
+  const variants = useMakeUseVariants(COMPONENTS, options);
 
-      if (overlay) props.overlay = true;
-      if (merge) props.merge = true;
-
-      return [
-        calls.dispatch ? use(DispatchPass, props) : null,
-        calls.compute ? use(ComputePass, props) : null,
-        use(ColorPass, props),
-        calls.post || calls.readback ? use(ReadbackPass, props) : null,
-      ];
-    }, [calls, overlay, merge]);
+  const passes = useOne(() => [use(ColorPass, options)], options);
 
   return (
-    reconcile(
-      quote(
-        provide(PassContext, NO_ENV,
-          multiGather(
-            unquote(
-              provide(VariantContext, useVariants, children)
-            ),
-            Resume
-          )
-        )
-      )
-    )
+    Renderer({
+      resources,
+      bindGroups,
+      options,
+
+      variants,
+      passes,
+
+      children,
+    })
   );
 }, 'FullScreenRenderer');

@@ -1,23 +1,23 @@
-import type { LC, LiveElement } from '../../live';
-import type { ColorLike, VectorLike, Lazy, XYZW } from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { ColorLike, VectorLike, Lazy, XYZW } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import { useMemo } from '../../live';
-import { useProp } from '../../traits/index-live';
-import { parseColor } from '../../parse';
+import { useMemo } from '@use-gpu/live';
+import { useProp } from '@use-gpu/traits/live';
+import { parseColor } from '@use-gpu/parse';
 
 import { useShader, useNoShader } from '../hooks/useShader';
 import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { useEnvironmentContext } from '../providers/environment-provider';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getPBRMaterial } from '../../wgsl/material/pbr-materialwgsl';
-import { applyPBRMaterial } from '../../wgsl/material/pbr-applywgsl';
-import { applyPBREnvironment } from '../../wgsl/material/pbr-environmentwgsl';
+import { getPBRMaterial } from '@use-gpu/wgsl/material/pbr-material.wgsl';
+import { applyPBRMaterial } from '@use-gpu/wgsl/material/pbr-apply.wgsl';
+import { applyPBREnvironment } from '@use-gpu/wgsl/material/pbr-environment.wgsl';
 
-import { getMaterialSurface } from '../../wgsl/instance/surface/materialwgsl';
-import { getNormalMapSurface } from '../../wgsl/instance/surface/normal-mapwgsl';
-import { getBasicMaterial } from '../../wgsl/material/basic-materialwgsl';
+import { getMaterialSurface } from '@use-gpu/wgsl/instance/surface/material-surface.wgsl';
+import { getNormalMapSurface } from '@use-gpu/wgsl/instance/surface/normal-map-surface.wgsl';
+import { getBasicMaterial } from '@use-gpu/wgsl/material/basic-material.wgsl';
 
 import { ShaderLitMaterial } from './shader-lit-material';
 

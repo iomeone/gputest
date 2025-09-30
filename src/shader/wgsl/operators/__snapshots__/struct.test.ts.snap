@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`struct makes a struct 1`] = `
-"//// @link @struct  _01_
+"//// @link @struct  _00_
 
-struct _01_struct {
+struct _00_struct {
   foo: vec2<f32>,
   bar: u32,
 };
 
-//// @link main 
+//// @link main
 
-fn main() -> _01_struct { };
+fn main() -> _00_struct { };
 "
 `;

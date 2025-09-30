@@ -22,21 +22,24 @@ export const makeBindingAccessors = (
 
   // Extract uniforms
   const lambdas = bindings.filter(({lambda}) => lambda != null);
+  const uniforms = bindings.filter(({uniform}) => uniform != null);
   const storages = bindings.filter(({storage}) => storage != null);
   const textures = bindings.filter(({texture}) => texture != null);
   const constants = bindings.filter(({constant}) => constant != null);
 
+  const buffers = [...uniforms, ...storages];
+
   // Virtual module symbols
-  const virtuals = [...constants, ...storages, ...textures];
-  const symbols = virtuals.map(({uniform}) => uniform.name);
-  const types = virtuals.map(({uniform}) => uniform.format);
-  const declarations = virtuals.map(({uniform}) => ({
+  const virtuals = [...constants, ...uniforms, ...storages, ...textures];
+  const symbols = virtuals.map(({attribute}) => attribute.name);
+  const types = virtuals.map(({attribute}) => attribute.format);
+  const declarations = virtuals.map(({attribute}) => ({
     at: 0,
     symbols: NO_SYMBOLS,
     func: {
-      name: uniform.name,
-      type: {name: uniform.format},
-      parameters: uniform.args ?? INT_ARG,
+      name: attribute.name,
+      type: {name: attribute.format},
+      parameters: attribute.args ?? INT_ARG,
     },
     flags: 0,
   }));
@@ -63,14 +66,14 @@ export const makeBindingAccessors = (
   ) => {
     const program: string[] = [];
 
-    for (const {uniform: {name, format: formatOut, args}} of constants) {
+    for (const {attribute: {name, format: formatOut, args}} of constants) {
       if (typeof formatOut !== 'string') throw new Error("GLSL struct types not implemented");
       program.push(makeUniformFieldAccessor(PREFIX_VIRTUAL, namespace, formatOut, name, args));
     }
 
-    for (const {uniform: {name, format: formatOut}, storage} of storages) {
+    for (const {attribute: {name, format: formatOut}, storage, uniform} of buffers) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const {volatile, format: formatIn} = storage!;
+      const {volatile, format: formatIn} = (storage ?? uniform)!;
       const set = volatile ? volatileSet : bindingSet;
       const base = volatile ? volatileBase++ : bindingBase++;
 
@@ -80,10 +83,10 @@ export const makeBindingAccessors = (
       }
 
       if (typeof formatOut !== 'string') throw new Error("GLSL struct types not implemented");
-      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name));
+      program.push(makeStorageAccessor(namespace, set, base, formatOut, formatIn, name, !!uniform));
     }
 
-    for (const {uniform: {name, format: formatOut}, texture} of textures) {
+    for (const {attribute: {name, format: formatOut}, texture} of textures) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const {volatile, layout, variant, absolute, format: formatIn} = texture!;
       const set = volatile ? volatileSet : bindingSet;
@@ -98,7 +101,8 @@ export const makeBindingAccessors = (
   }
 
   const virtual = loadVirtualModule({
-    uniforms: constants,
+    constants,
+    uniforms,
     storages,
     textures,
     render,
@@ -108,11 +112,12 @@ export const makeBindingAccessors = (
   }, undefined, hash, code, key) as ShaderModule;
 
   const links: Record<string, ShaderModule> = {};
-  for (const binding of constants) links[binding.uniform.name] = virtual;
-  for (const binding of storages)  links[binding.uniform.name] = virtual;
-  for (const binding of textures)  links[binding.uniform.name] = virtual;
+  for (const binding of constants) links[binding.attribute.name] = virtual;
+  for (const binding of uniforms)  links[binding.attribute.name] = virtual;
+  for (const binding of storages)  links[binding.attribute.name] = virtual;
+  for (const binding of textures)  links[binding.attribute.name] = virtual;
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  for (const lambda  of lambdas)   links[lambda.uniform.name]  = lambda.lambda!.shader;
+  for (const lambda  of lambdas)   links[lambda.attribute.name]  = lambda.lambda!.shader;
 
   return links;
 };
@@ -123,7 +128,7 @@ export const makeUniformBlock = (
   binding: number | string = 0,
 ): string => {
   // Uniform Buffer Object struct members
-  const members = constants.map(({uniform: {name, format}}) => `${format} ${name}`);
+  const members = constants.map(({attribute: {name, format}}) => `${format} ${name}`);
   return members.length ? makeUniformBlockLayout(PREFIX_VIRTUAL, set, binding, members) : '';
 }
 
@@ -157,10 +162,11 @@ export const makeStorageAccessor = (
   type: string,
   format: string,
   name: string,
+  uniform: boolean,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   args: string[] = INT_ARG,
 ) => (
-`layout (std430, set = ${set}, binding = ${binding}) readonly buffer ${ns}${name}Type {
+`layout (std430, set = ${set}, binding = ${binding}) readonly ${uniform ? 'uniform' : 'buffer'} ${ns}${name}Type {
   ${format} data[];
 } ${ns}${name}Storage;
 

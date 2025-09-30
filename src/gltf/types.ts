@@ -1,4 +1,4 @@
-import type { StorageSource, TextureSource, TypedArray, UniformType } from '../core';
+import type { StorageSource, TextureSource, TypedArray, UniformType } from '@use-gpu/core';
 import { mat4, vec3, quat } from 'gl-matrix';
 
 export type GLTFRaw<T = any> = {
@@ -30,6 +30,10 @@ export type GLTFObject<T = any> = {
   name?: string,
   extensions?: Record<string, any>,
   extras?: T,
+};
+
+export type GLTFOptions = {
+  tangents?: boolean,
 };
 
 //////////////////////////////////////////////////

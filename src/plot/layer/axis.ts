@@ -1,13 +1,13 @@
-import type { LiveComponent } from '../../live';
-import type { TraitProps } from '../../traits/index-live';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits/live';
 
-import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '../../traits/index-live';
-import { memo, use, useMemo } from '../../live';
+import { makeUseTrait, combine, trait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { memo, use, useMemo } from '@use-gpu/live';
 import {
   useShader, useShaderRef,
   LineLayer, ArrowLayer, useArrowSegmentsSource,
-} from '../../workbench';
-import { parsePosition, parseIntegerPositive } from '../../parse';
+} from '@use-gpu/workbench';
+import { parsePosition, parseIntegerPositive } from '@use-gpu/parse';
 
 import { useRangeContext } from '../providers/range-provider';
 import { vec4 } from 'gl-matrix';
@@ -21,7 +21,7 @@ import {
   ColorTrait,
   ROPTrait,
 } from '../traits';
-import { getAxisPosition } from '../../wgsl/plot/axiswgsl';
+import { getAxisPosition } from '@use-gpu/wgsl/plot/axis.wgsl';
 
 const Traits = combine(
   ArrowTrait,
@@ -82,7 +82,8 @@ export const Axis: LiveComponent<AxisProps> = memo((props) => {
 
       ...flags,
     })
-  ), [start, end, positions, segments, anchors, trims, n, props]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [start, end, positions, segments, anchors, trims, n, props, ...Object.values(flags)]);
 }, shouldEqual({
   origin: sameShallow(),
   range: sameShallow(sameShallow()),

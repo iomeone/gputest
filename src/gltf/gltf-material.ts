@@ -1,6 +1,6 @@
 import type { GLTF } from './types';
 
-import { PBRMaterialProps, useNativeColorTexture } from '../workbench';
+import { PBRMaterialProps, useNativeColorTexture } from '@use-gpu/workbench';
 
 type Props = PBRMaterialProps & {
   doubleSided: boolean,

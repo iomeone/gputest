@@ -1,5 +1,5 @@
-use '../../../wgsl/use/view'::{ getViewPosition };
-use '../../../wgsl/use/types'::{ SurfaceFragment };
+use '@use-gpu/wgsl/use/view'::{ getViewPosition };
+use '@use-gpu/wgsl/use/types'::{ SurfaceFragment };
 
 @export fn getSolidFragment(
   surface: SurfaceFragment,

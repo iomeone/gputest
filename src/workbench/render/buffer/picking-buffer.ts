@@ -1,6 +1,6 @@
-import type { LC } from '../../../live';
+import type { LC } from '@use-gpu/live';
 
-import { yeet, memo } from '../../../live';
+import { yeet, memo } from '@use-gpu/live';
 
 import { usePickingContext } from '../../providers/picking-provider';
 import { useInspectable } from '../../hooks/useInspectable';
@@ -17,5 +17,7 @@ export const PickingBuffer: LC = memo(() => {
     },
   });
 
-  return yeet({ picking: renderContext });
+  return yeet({
+    buffers: { picking: [renderContext] },
+  });
 }, 'PickingBuffer');

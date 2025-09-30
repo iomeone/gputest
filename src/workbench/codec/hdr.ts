@@ -1,4 +1,4 @@
-import { toFloat16 } from '../../core';
+import { toFloat16 } from '@use-gpu/core';
 
 // Based on:
 // http://www.graphics.cornell.edu/~bjw/rgbe/rgbe.c

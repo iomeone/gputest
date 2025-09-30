@@ -1,25 +1,27 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { Rectangle, Emit, DataTexture } from '../../../core';
-import type { Image } from '../../../glyph';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Emit, DataTexture } from '@use-gpu/core';
+import type { Image } from '@use-gpu/glyph';
 
-import React, { Morph } from '../../../live';
-import { memo, fragment } from '../../../live';
-import { makeRawTexture } from '../../../core';
-import { padRGBA, glyphToRGBA, glyphToSDF, rgbaToSDF, rgbaToGlyph, sdfToGradient, makeSDFStage, paintSubpixelOffsets } from '../../../glyph';
+import React, { Morph } from '@use-gpu/live';
+import { memo } from '@use-gpu/live';
+import { glyphToRGBA, glyphToSDF, sdfToGradient, makeSDFStage, paintSubpixelOffsets } from '@use-gpu/glyph';
 import { GlyphControls } from '../../ui/glyph-controls';
 import { vec3 } from 'gl-matrix';
 
 import {
   LinearRGB, Pass, FlatCamera, RawTexture,
-  OrbitCamera, OrbitControls, PanControls,
-  useDeviceContext, useFontContext, LayoutContext, DebugProvider,
-} from '../../../workbench';
+  OrbitCamera,
+  useFontContext, DebugProvider,
+} from '@use-gpu/workbench';
+import {
+  OrbitControls, PanControls,
+} from '@use-gpu/interact';
 import {
   UI, Layout, Block, Inline, Text, Flex, Embed, Element,
-} from '../../../layout';
+} from '@use-gpu/layout';
 import {
   Embedded, Axis, Grid, Scale, Tick, Point, Arrow, Sampler,
-} from '../../../plot';
+} from '@use-gpu/plot';
 
 import { InfoBox } from '../../ui/info-box';
 
@@ -51,7 +53,6 @@ export const LayoutGlyphPage: LC = () => {
           <Morph>
             <OrbitControls
               radius={500}
-              moveSpeed={1/1000}
               bearing={0.3}
               pitch={0.5}
               render={(radius: number, phi: number, theta: number, target: vec3) =>
@@ -109,23 +110,11 @@ type DebugImage = {
   height: number,
 };
 
-const roundUp2 = (v: number) => {
-  v--;
-  v |= v >> 1;
-  v |= v >> 2;
-  v |= v >> 4;
-  v |= v >> 8;
-  v |= v >> 16;
-  v++;
-  return v;
-};
-
 const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: GlyphViewProps) => {
-  const device = useDeviceContext();
   const rustText = useFontContext();
 
   glyph = glyph ?? '@';
-  const [glyphId, loaded] = rustText.findGlyph(0, glyph);
+  const [glyphId] = rustText.findGlyph(0, glyph);
   const glyphMetrics = rustText.measureGlyph(0, glyphId ?? 5, DETAIL * 1.5);
 
   const {width, height, image} = glyphMetrics;
@@ -205,7 +194,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
     height: paddedHeight,
   };
 
-  const gridEmitter = ({xs, ys, width, height}: DebugImage) =>
+  const gridEmitter = ({xs, ys}: DebugImage) =>
     (emit: Emit, x: number, y: number, i: number, j: number) => {
       const index = i + j * paddedWidth;
       const dx = xs[index];
@@ -213,7 +202,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
       if (dx || dy) emit(x, y, 0, 1);
     };
 
-  const pointEmitter = ({xs, ys, width, height}: DebugImage) =>
+  const pointEmitter = ({xs, ys}: DebugImage) =>
     (emit: Emit, x: number, y: number, i: number, j: number) => {
       const index = i + j * paddedWidth;
       const dx = xs[index];
@@ -221,7 +210,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
       emit(x + dx, y + dy, 0, 1);
     };
 
-  const shiftedPointEmitter = ({xs, ys, width, height}: DebugImage) =>
+  const shiftedPointEmitter = ({xs, ys}: DebugImage) =>
     (emit: Emit, x: number, y: number, i: number, j: number) => {
       const index = i + j * paddedWidth;
       const dx = xs[index];
@@ -231,7 +220,7 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
       }
     };
 
-  const arrowEmitter = ({xs, ys, width, height}: DebugImage) =>
+  const arrowEmitter = ({xs, ys}: DebugImage) =>
     (emit: Emit, x: number, y: number, i: number, j: number) => {
       const index = i + j * paddedWidth;
       const dx = xs[index];
@@ -302,7 +291,6 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
                       <Text
                         size={32}
                         detail={64}
-                        snap={false}
                         text={subpixel ? "The Subpixel Distance Transform" : "The Euclidean Distance Transform"}
                         color={WHITE}
                       />
@@ -468,7 +456,6 @@ const GlyphView = memo(({subpixel, preprocess, postprocess, contours, glyph}: Gl
                           size={SIZE}
                           detail={DETAIL}
                           lineHeight={height}
-                          snap={false}
                           text={glyph}
                           color={[1, 1, 1, 1]}
                         />
@@ -529,7 +516,6 @@ const Label: LC<LabelProps> = (props: LabelProps) => (
     <Inline align="center">
       <Text
         size={10}
-        snap={false}
         text={Array.isArray(props.children) ? props.children.join('') : props.children}
         color={WHITE_TRANSPARENT}
       />

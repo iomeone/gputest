@@ -1,18 +1,20 @@
-import type { LC, PropsWithChildren } from '../../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
 
-import React, { use } from '../../../live';
+import React from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass,
-  OrbitCamera, OrbitControls,
-  Cursor,
+  Pass,
+  OrbitCamera,
   Animate,
   LinearRGB,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
-  Plot, Spherical, Axis, Grid, Label, Line, Sampler, Scale, Surface, Tick, Transpose,
-} from '../../../plot';
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
+import {
+  Plot, Spherical, Axis, Grid, Label, Line, Sampler, Scale, Tick,
+} from '@use-gpu/plot';
 
 import { InfoBox } from '../../ui/info-box';
 
@@ -91,7 +93,7 @@ export const PlotSphericalPage: LC = () => {
                     placement='bottom'
                     color='#80808080'
                     size={24}
-                    offset={16}
+                    offset={[0, 16]}
                     expand={5}
                     depth={0.5}
                     formatter={thetaFormatter}
@@ -100,7 +102,7 @@ export const PlotSphericalPage: LC = () => {
                     placement='bottom'
                     color='#ffffff'
                     size={24}
-                    offset={16}
+                    offset={[0, 16]}
                     expand={0}
                     depth={0.5}
                     formatter={thetaFormatter}

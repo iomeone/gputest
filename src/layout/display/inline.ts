@@ -1,14 +1,14 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { XY, Rectangle } from '../../core';
-import type { ShaderModule } from '../../shader';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { XY, Rectangle } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 import type { InlineElement, LayoutPicker, LayoutRenderer, FitInto, Direction, Alignment, Baseline } from '../types';
-import type { TraitProps } from '../../traits';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { useProp } from '../../traits/index-live';
-import { keyed, fragment, use, memo, gather, yeet, useFiber, useMemo } from '../../live';
+import { useProp } from '@use-gpu/traits/live';
+import { keyed, fragment, use, memo, gather, yeet, useFiber, useMemo } from '@use-gpu/live';
 import { getInlineMinMax, fitInline, resolveInlineBlockElements } from '../lib/inline';
 import { makeBoxPicker, memoFit, memoLayout } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '../../workbench';
+import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
 
 import { BoxLayout, InlineLayout } from '../render';
 
@@ -131,6 +131,7 @@ export const Inline: LiveComponent<InlineProps> = memo((props: InlineProps) => {
         fit: memoFit(fit),
         prefit: memoFit(fit),
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props, els, hovered]);
   };
 

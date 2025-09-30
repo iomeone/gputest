@@ -1,4 +1,4 @@
-import { vec2, vec4, mat4 } from 'gl-matrix';
+import { vec2, vec3, vec4, mat4 } from 'gl-matrix';
 
 // Common vector types
 
@@ -17,7 +17,11 @@ export type VectorLikes = TypedArray | VectorLike[];
 
 export type Side = 'front' | 'back' | 'both';
 export type Blending = 'none' | 'alpha' | 'premultiply' | 'add' | 'subtract' | 'multiply';
-export type ColorSpace = 'linear' | 'srgb' | 'p3' | 'native' | 'picking' | 'auto';
+export type ColorSpace = 'linear' | 'srgb' | 'p3' | 'native' | 'auto';
+
+export type RenderViewType = '2d' | 'cube';
+
+export type FilteringType = 'filtering' | 'non-filtering' | 'comparison';
 
 // JS utility types
 
@@ -65,21 +69,33 @@ export type UseGPURenderContext = {
   gpuContext: GPUCanvasContext,
   colorSpace: ColorSpace,
   colorInput: ColorSpace,
-  colorStates: GPUColorTargetState[],
-  colorAttachments: GPURenderPassColorAttachment[],
-  depthTexture?: GPUTexture,
-  depthStencilState?: GPUDepthStencilState,
-  depthStencilAttachment?: GPURenderPassDepthStencilAttachment,
 
-  swap?: (view?: GPUTextureView) => void,
+  colorStates: GPUColorTargetState[],
+  depthStencilState?: GPUDepthStencilState,
+
+  viewType: RenderViewType,
+  viewAttachments: RenderViewAttachment[],
+
+  swap?: () => void,
   depth?: TextureSource,
-  source?: TextureTarget,
+  source?: TextureSource,
+  sources?: TextureSource[],
+};
+
+export type RenderViewAttachment = {
+  colorAttachments: GPURenderPassColorAttachment[],
+  depthStencilAttachment?: GPURenderPassDepthStencilAttachment,
+};
+
+export type OffscreenRenderContext = UseGPURenderContext & {
+  swap?: () => void,
+  depth?: TextureTarget,
+  source: TextureTarget,
   sources?: TextureTarget[],
 };
 
-export type OffscreenTarget = UseGPURenderContext & {
-  source: TextureTarget,
-};
+/* @hidden */
+export type OffscreenTarget = OffscreenRenderContext; // deprecated
 
 // Simple backing-agnostic mesh geometry
 export type CPUAttributes = Record<string, TypedArray>;
@@ -126,9 +142,10 @@ export type UniformFormat = UniformType | UniformAttribute[] | UniformNamedType;
 export type UniformAttribute = {
   name: string,
   format: UniformFormat,
-  type?: ShaderStructType,
+  type?: ShaderType,
   args?: UniformFormat[] | null,
   attr?: UniformShaderAttribute[],
+  qual?: string,
 };
 
 export type UniformShaderAttribute = string;
@@ -143,16 +160,9 @@ export type UniformAttributeDescriptor = UniformAttribute & {
 
 export type UniformLayout = {
   length: number,
+  align: number,
   attributes: UniformAttributeDescriptor[],
   offsets: number[],
-};
-
-export type InterleavedLayout = {
-  length: number,
-
-  uniforms: UniformAttribute[],
-  offsets: number[],
-  groups: number[],
 };
 
 // Uniform bindings
@@ -175,11 +185,6 @@ export type GlobalAllocation = {
   bindGroup: GPUBindGroup,
 };
 
-export type SharedAllocation = {
-  layout: GPUBindGroupLayout,
-  bindGroup: GPUBindGroup,
-};
-
 export type ResourceAllocation = {
   bindGroup: GPUBindGroup,
 };
@@ -190,17 +195,30 @@ export type VolatileAllocation = {
 
 export type VirtualAllocation = Partial<UniformAllocation>;
 
-export type UniformFiller = (items: any) => void;
-export type UniformDataSetter = (index: number, item: any) => void;
+export type UniformValues = Record<string, any>;
+export type UniformFiller = (items: UniformValues | UniformValues[]) => void;
+export type UniformDataSetter = (index: number, item: UniformValues) => void;
 export type UniformValueSetter = (index: number, field: number, value: any) => void;
 export type UniformByteSetter = (view: DataView, offset: number, data: any) => void;
 
-// Shaders
-export type ShaderStructType = ShaderModule & {entry?: string};
+// Shaders (placeholder types to avoid dependency on use-gpu/shader)
+export type ShaderType = ShaderModule | ShaderBundle;
 
-export type ShaderModule = {
-  module?: Record<string, any>, // ParsedBundle
-  table?: Record<string, any>,  // ParsedModule
+type ShaderBundle = {
+  module: any, // ParsedBundle
+
+  hash?: number,
+  key?: number,
+  entry?: string,
+}
+
+type ShaderModule = {
+  table: any,  // ParsedModule
+
+  name: string,
+  code: string,
+  hash: number,
+  key?: number,
   entry?: string,
 };
 
@@ -216,12 +234,17 @@ export type ShaderStageDescriptor = {
   entryPoint: string,
 };
 
-// Shader bindings
+// Shader data bindings
 export type DataBinding<T = any, S extends ShaderModule = any> = {
-  uniform: UniformAttribute,
+  attribute: UniformAttribute,
+
+  uniform?: StorageSource,
   storage?: StorageSource,
   texture?: TextureSource,
+  sampler?: SamplerSource,
+
   lambda?: LambdaSource<S>,
+
   constant?: Lazy<T>,
 };
 
@@ -233,10 +256,44 @@ export type DataBounds = {
   max: VectorLike,
 };
 
-export type StorageSource<T extends ShaderModule = any> = {
+export type LambdaSource<T extends ShaderType = any> = {
+  shader: T,
+  length: number,
+  size: VectorLike,
+  version: number,
+
+  bounds?: DataBounds,
+  colorSpace?: ColorSpace,
+
+  label?: string,
+};
+
+export type TextureSource = {
+  texture: GPUTexture,
+  view?: GPUTextureView,
+  sampler: GPUSampler | GPUSamplerDescriptor | null,
+  layout: string,
+  format: GPUTextureFormat,
+  size: VectorLike,
+  version: number,
+
+  mips?: number,
+  variant?: string,
+  absolute?: boolean,
+  volatile?: number,
+  filter?: FilteringType,
+  colorSpace?: ColorSpace,
+  aspect?: GPUTextureAspect,
+
+  hint?: string,
+  label?: string,
+};
+
+export type StorageSource<T extends ShaderType = any> = {
   buffer: GPUBuffer,
   format: UniformFormat,
   type?: T,
+  addressSpace?: 'storage' | 'uniform',
 
   length: number,
   size: VectorLike,
@@ -247,35 +304,17 @@ export type StorageSource<T extends ShaderModule = any> = {
   readWrite?: boolean,
   byteOffset?: number,
   byteLength?: number,
+  minBindingSize?: number,
   colorSpace?: ColorSpace,
+
+  label?: string,
 };
 
-export type LambdaSource<T extends ShaderModule = any> = {
-  shader: T,
-  length: number,
-  size: VectorLike,
-  version: number,
-
-  bounds?: DataBounds,
-  colorSpace?: ColorSpace,
-};
-
-export type TextureSource = {
-  texture: GPUTexture,
-  view?: GPUTextureView,
+export type SamplerSource = {
   sampler: GPUSampler | GPUSamplerDescriptor | null,
-  layout: string,
-  format: string,
-  size: VectorLike,
-  version: number,
+  filter?: FilteringType,
 
-  mips?: number,
-  variant?: string,
-  absolute?: boolean,
-  comparison?: boolean,
-  volatile?: number,
-  colorSpace?: ColorSpace,
-  aspect?: GPUTextureAspect,
+  label?: string,
 };
 
 export type StorageTarget = StorageSource & {
@@ -303,25 +342,52 @@ export type ExternalTexture = {
   layout?: string,
 };
 
+// Shader binding placeholders
+export type RawBinding<T extends ShaderType = any> = {
+  attribute: UniformAttribute,
+
+  uniform?: StoragePlaceholder<T>,
+  storage?: StoragePlaceholder<T>,
+  texture?: TexturePlaceholder,
+  sampler?: SamplerSource,
+};
+
+export type StoragePlaceholder<T extends ShaderType = any> = {
+  format: UniformFormat,
+  type?: T,
+  readWrite?: boolean,
+};
+
+export type TexturePlaceholder = {
+  sampler: GPUSampler | GPUSamplerDescriptor | null,
+  layout: string,
+  variant?: string,
+  aspect?: GPUTextureAspect,
+  filter?: FilteringType,
+};
+
 // Projection pipeline
 export type ViewUniforms = {
-  projectionMatrix: { current: mat4 },
-  projectionViewMatrix: { current: mat4 },
   projectionViewFrustum: { current: vec4[] },
-  inverseViewMatrix: { current: mat4 },
-  inverseProjectionViewMatrix: { current: mat4 },
+  projectionViewMatrix: { current: mat4 },
+  projectionMatrix: { current: mat4 },
   viewMatrix: { current: mat4 },
+  inverseProjectionViewMatrix: { current: mat4 },
+  inverseProjectionMatrix: { current: mat4 },
+  inverseViewMatrix: { current: mat4 },
   viewPosition: { current: vec4 },
   viewNearFar: { current: vec2 },
   viewResolution: { current: vec2 },
   viewSize: { current: vec2 },
-  viewWorldDepth: { current: vec2 },
+  viewWorldScale: { current: vec3 },
   viewPixelRatio: { current: number },
 };
 
 export type PickingUniforms = {
   pickingId: { value: number },
 };
+
+export type ViewCuller = (center: vec3 | number[], radius: number) => number | boolean;
 
 // Data ingestion
 
@@ -331,6 +397,14 @@ export type Tuples<N extends number, T = number> = {
   length: number,
   get: (i: number, j: number) => T,
   iterate: (f: (...args: T[]) => void, start?: number, end?: number) => void;
+};
+
+export type JSArray<T = any> = {
+  array: T[],
+  format: UniformType,
+  dims: number,
+  depth: number,
+  length: number,
 };
 
 export type FieldArray = {
@@ -357,7 +431,6 @@ export type TensorArray = {
 export type Ragged = (number[] | TypedArray)[];
 
 export type VectorEmitter = (to: TypedArray, count: number, toIndex?: number, stride?: number) => void;
-export type VectorRefEmitter = (from: Lazy<number | number[] | TypedArray>, to: TypedArray, count: number, toIndex?: number, stride?: number) => void;
 
 export type Writer = {
   emit: Emit,
@@ -400,13 +473,15 @@ export type DataField = {
   /** Prop name in input data */
   prop?: string,
   /** Is an index attribute */
-  index?: boolean,
+  index?: boolean | (boolean | number)[],
   /** Is an unwelded vertex attribute */
   unwelded?: boolean,
   /** Spread a singular to a plural attribute */
   spread?: string,
   /** Don't aggregate */
   separate?: boolean,
+  /** Don't upload to GPU */
+  js?: boolean,
 };
 
 export type ArchetypeSchema = Record<string, ArchetypeField>;
@@ -416,7 +491,7 @@ export type ArchetypeField = {
   /** Output attribute name */
   name?: string,
   /** Is an index attribute */
-  index?: boolean,
+  index?: boolean | (boolean | number)[],
   /** Is an unwelded vertex attribute */
   unwelded?: boolean,
   /** Spread a singular to a plural attribute */
@@ -425,9 +500,11 @@ export type ArchetypeField = {
   ref?: boolean,
   /** Don't aggregate */
   separate?: boolean,
+  /** Don't upload to GPU */
+  js?: boolean,
 };
 
-export type AggregateValue = number | number[] | TypedArray | VectorEmitter | VectorRefEmitter;
+export type AggregateValue = number | number[] | TypedArray | VectorEmitter;
 
 export type AggregateItem = {
   archetype: number,
@@ -457,6 +534,7 @@ export type CPUAggregate = {
   aggregateBuffers: Record<string, ArrayAggregate>,
   refBuffers: Record<string, Lazy<any>[]>,
 
+  byJss?: { keys: [string, string][] },
   bySelfs?: { keys: [string, string][] },
   byInstances?: StructAggregate,
   byVertices?: StructAggregate,
@@ -468,6 +546,7 @@ export type GPUAggregate = {
   aggregateBuffers: Record<string, ArrayAggregateBuffer | ArrayAggregate>,
   refBuffers: Record<string, Lazy<any>[]>,
 
+  byJss?: { keys: [string, string][], values: Record<string, any[]> },
   bySelfs?: { keys: [string, string][], sources: Record<string, StorageSource> },
   byInstances?: StructAggregateBuffer,
   byVertices?: StructAggregateBuffer,
@@ -612,4 +691,4 @@ type RawUniformType =
   | "vec3to4<f32>"
 ;
 
-export type UniformType = RawUniformType | `array<${RawUniformType}>` | `array<array<${RawUniformType}>>` | `array<array<array<${RawUniformType}>>>`;
+export type UniformType = RawUniformType | `array<${RawUniformType}>` | `array<array<${RawUniformType}>>` | `array<array<array<${RawUniformType}>>>` | `string<u16>` | `array<string<u16>>`;

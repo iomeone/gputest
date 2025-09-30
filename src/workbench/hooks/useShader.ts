@@ -1,8 +1,8 @@
-import type { ShaderModule } from '../../shader';
+import type { ShaderModule } from '@use-gpu/shader';
 
-import { useMemo, useNoMemo } from '../../live';
-import { makeShaderBindings } from '../../core';
-import { bindingsToLinks, bindBundle, bundleToAttributes } from '../../shader/wgsl';
+import { useMemo, useNoMemo } from '@use-gpu/live';
+import { makeShaderBindings } from '@use-gpu/core';
+import { bindingsToModules, bindBundle, bundleToAttributes } from '@use-gpu/shader/wgsl';
 
 // Bind shader sources/constants/lambdas to a loaded shader module
 export const useShader = (
@@ -10,6 +10,7 @@ export const useShader = (
   values: any[],
   defines?: Record<string, any>,
 ) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => getShader(shader, values, defines), [shader, ...values, defines]);
 }
 
@@ -22,7 +23,8 @@ export const getShader = (
   if (!attributes) attributes = (shader as any).attributes = bundleToAttributes(shader);
 
   const bindings = makeShaderBindings<ShaderModule>(attributes, values) as any;
-  const links = bindingsToLinks(bindings);
+  const links = bindingsToModules(bindings);
+
   return bindBundle(shader, links, defines);
 }
 

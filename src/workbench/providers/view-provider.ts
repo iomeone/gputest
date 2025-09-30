@@ -1,74 +1,69 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { ViewUniforms, UniformAttribute } from '../../core';
+import type { LiveComponent, PropsWithChildren, Ref } from '@use-gpu/live';
+import type { XYZ, ViewCuller, ViewUniforms } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { PointerEvent } from '../interact/event';
+import type { PassBinding } from '../pass/types';
 
-import { provide, makeContext, useCallback, useContext, useNoContext, useMemo } from '../../live';
-import { makeGlobalUniforms, uploadBuffer } from '../../core';
-import { useDeviceContext } from '../providers/device-provider';
-import { useFrustumCuller, useNoFrustumCuller } from '../hooks/useFrustumCuller';
+import { provide, makeContext, useContext, useNoContext, useMemo, useOne, useNoOne } from '@use-gpu/live';
+import { makeViewUniforms } from '@use-gpu/core';
+
+import { useUniformBinding } from '../hooks/useUniformSource';
+import { useFrustumCuller } from '../hooks/useFrustumCuller';
+import { useFrustumPicker } from '../hooks/useFrustumPicker';
 import { QueueReconciler } from '../reconcilers/index';
 
-import { vec3 } from 'gl-matrix';
+import viewBindingWGSL, { ViewUniforms as ViewUniformsWGSL } from '@use-gpu/wgsl/use/view.wgsl';
+import { useInspectable } from '../hooks/useInspectable'
 
 const {signal} = QueueReconciler;
 
 const DEFAULT_VIEW_CONTEXT = {
-  defs: [] as any,
-  uniforms: {} as any,
-  layout: null as any,
+  uniforms: makeViewUniforms(),
+  binding: {module: viewBindingWGSL},
+  pick: () => [[0, 0, 0], [0, 0, -1]] as [XYZ, XYZ],
   cull: () => true,
-  bind: (() => {}) as any,
 } as ViewContextProps;
 
 export const ViewContext = makeContext<ViewContextProps>(DEFAULT_VIEW_CONTEXT, 'ViewContext');
 
 export type ViewContextProps = {
-  defs: UniformAttribute[],
   uniforms: ViewUniforms,
-  layout?: GPUBindGroupLayout,
-  bind: (passEncoder: GPURenderPassEncoder) => void,
-  cull: (center: vec3 | number[], radius: number) => number | boolean,
+  binding: PassBinding,
+  cull: ViewCuller,
+  pick: (event: PointerEvent) => [XYZ, XYZ],
 };
 
 export type ViewProviderProps = PropsWithChildren<{
-  defs: UniformAttribute[],
-  uniforms: ViewUniforms,
-  cull?: boolean,
+  uniforms?: Record<string, Ref<any>>,
+  module?: ShaderModule,
+  type?: ShaderModule,
 }>;
 
 export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProviderProps) => {
   const {
-    defs,
-    uniforms,
-    cull: cullProp,
+    uniforms: maybeUniforms,
+    module,
+    type,
+
     children,
   } = props;
 
-  const device = useDeviceContext();
+  const inspect = useInspectable();
 
-  const binding = useMemo(() =>
-    makeGlobalUniforms(device, [defs]),
-    [device, defs]);
-
-  const {bindGroup, layout, buffer, pipe} = binding;
-  pipe.fill(uniforms);
-  uploadBuffer(device, buffer, pipe.data);
-
-  const bind = useCallback((passEncoder: GPURenderPassEncoder) => {
-    passEncoder.setBindGroup(0, bindGroup);
-  }, [bindGroup]);
-
-  const {projectionViewFrustum, viewPosition} = uniforms;
-  const cull = !cullProp
-    ? useFrustumCuller(viewPosition, projectionViewFrustum)
-    : (useNoFrustumCuller(), cullProp);
+  const {pick, cull, uniforms} = useViewUniforms(maybeUniforms);
+  const {binding, upload} = useViewBinding(uniforms, module, type);
+  upload();
 
   const context = useMemo(() => ({
-    bind,
+    binding,
     cull,
-    layout,
-    defs,
+    pick,
     uniforms,
-  }), [bindGroup, cull, layout, defs, uniforms]);
+  }), [binding, cull, pick, uniforms]);
+
+  inspect({
+    view: uniforms,
+  });
 
   return [
     signal(),
@@ -78,3 +73,21 @@ export const ViewProvider: LiveComponent<ViewProviderProps> = (props: ViewProvid
 
 export const useViewContext = () => useContext(ViewContext);
 export const useNoViewContext = () => useNoContext(ViewContext);
+
+export const useViewBinding = (
+  uniforms: Record<string, Ref<any>>,
+  module: ShaderModule = viewBindingWGSL,
+  type: ShaderModule = ViewUniformsWGSL,
+) => useUniformBinding(uniforms, module, type);
+
+export const useViewUniforms = (
+  maybeUniforms?: Record<string, any>,
+) => {
+  const uniforms = (maybeUniforms ? (useNoOne(), maybeUniforms) : useOne(makeViewUniforms)) as ViewUniforms;
+  const {viewPosition, projectionViewFrustum, inverseProjectionViewMatrix} = uniforms;
+
+  const cull = useFrustumCuller(viewPosition, projectionViewFrustum);
+  const pick = useFrustumPicker(inverseProjectionViewMatrix);
+
+  return {pick, cull, uniforms};
+};

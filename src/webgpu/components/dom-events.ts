@@ -1,68 +1,36 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { ArrowFunction, Ref, LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { XY } from '@use-gpu/core';
 
-import { use, memo, useMemo, useOne, useResource, useState } from '../../live';
-import { EventProvider, MouseState, WheelState, KeyboardState } from '../../workbench';//'/providers/event-provider';
+import { proxy } from '@use-gpu/core';
+import { use, memo, useMemo, useOne, useResource } from '@use-gpu/live';
+import { EventProvider } from '@use-gpu/workbench';
+
+import { DOM_EVENT_PROPS } from './dom-props';
 
 const WHEEL_STEP = 120;
 const PIXEL_STEP = 10;
 const DELTA_MULTIPLIER = [1, 4, 80];
 
-const formatKey = (key: string) => key[0].toLowerCase() + key.slice(1);
-
 export type DOMEventsProps = PropsWithChildren<{
   element: HTMLElement,
   autofocus?: boolean,
   capture?: boolean,
-  iframe?: boolean,
 }>;
 
-const toButton = (button: number) => {
-  if (button === 0) return 'left';
-  if (button === 1) return 'middle';
-  if (button === 2) return 'right';
-  return null;
+const handlePointerCapture = (e: PointerEvent) => {
+  try {
+    (e.target as any)?.setPointerCapture?.(e.pointerId);
+    // eslint-disable-next-line
+  } catch (e) {};
 };
 
-const toButtons = (buttons: number) => ({
-  left:   !!(buttons & 1),
-  middle: !!(buttons & 4),
-  right:  !!(buttons & 2),
-});
-
-const makeMouseState = () => ({
-  buttons: toButtons(0),
-  button: toButton(-1),
-  x: 0,
-  y: 0,
-  moveX: 0,
-  moveY: 0,
-} as MouseState);
-
-const makeWheelState = () => ({
-  x: 0,
-  y: 0,
-  moveX: 0,
-  moveY: 0,
-  spinX: 0,
-  spinY: 0,
-} as WheelState);
-
-const makeKeyboardState = () => ({
-  modifiers: {
-    ctrl: false,
-    alt: false,
-    shift: false,
-    meta: false,
-  },
-  keys: {},
-  key: null,
-} as KeyboardState);
+const makeLastPosRef = () => ({current: null as XY | null});
+const makeMoveRef = () => ({current: [0, 0] as XY});
 
 export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: DOMEventsProps) => {
-  const {element, autofocus, capture, iframe, children} = props;
+  const {element, autofocus, capture, children} = props;
 
-  const captureOptions = useOne(() => ({capture: !!capture}), capture);
-
+  // Make canvas DOM-focusable
   useResource((dispose) => {
     if (element.tabIndex !== -1) return;
 
@@ -77,281 +45,247 @@ export const DOMEvents: LiveComponent<DOMEventsProps> = memo((props: DOMEventsPr
     });
   }, [autofocus]);
 
-  const [mouse, setMouse] = useState<MouseState>(makeMouseState);
-  const [wheel, setWheel] = useState<WheelState>(makeWheelState);
-  const [keyboard, setKeyboard] = useState<KeyboardState>(makeKeyboardState);
-
+  // Pointer lock API
   const pointerLock = useMemo(() => ({
-    hasLock: document.pointerLockElement === element,
-    beginLock: () => element.requestPointerLock(),
-    endLock: () => document.exitPointerLock(),
+    hasLock: () => document.pointerLockElement === element,
+    beginLock: async () => {
+      if (document.pointerLockElement === element) return;
+      // eslint-disable-next-line
+      try { await element.requestPointerLock(); } catch (e) {};
+    },
+    endLock: async () => {
+      // eslint-disable-next-line
+      try { document.exitPointerLock() } catch (e) {};
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [element, document.pointerLockElement]);
 
-  useResource((dispose) => {
+  // Track mouse motion to harmonize across browsers
+  const lastPosRef = useOne(makeLastPosRef);
+  const moveRef = useOne(makeMoveRef);
 
-    const onModifiers = (event: Event) => {
-      const e = event as any;
-      setKeyboard((state) => {
-        if (
-          state.modifiers.ctrl === e.ctrlKey &&
-          state.modifiers.alt === e.altKey &&
-          state.modifiers.shift === e.shiftKey &&
-          state.modifiers.meta === e.metaKey
-        ) {
-          return state;
-        }
+  // Event capturing mode
+  const domCaptureOptions = useOne(() => ({capture: !!capture}), capture);
+  const subscribeEvent = useMemo(() => (
+    makeDOMSubscriber(element, domCaptureOptions, moveRef)
+  ), [element, domCaptureOptions, moveRef]);
 
-        return {
-          ...state,
-          modifiers: {
-            ctrl:  e.ctrlKey,
-            alt:   e.altKey,
-            shift: e.shiftKey,
-            meta:  e.metaKey,
-          },
-        };
-      });
-    };
+  useHandler(subscribeEvent, 'pointerDown', handlePointerCapture);
+  useHandler(subscribeEvent, 'pointerMove', (e: any) => {
+    const {current: last} = lastPosRef;
+    const {current: move} = moveRef;
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      onModifiers(event);
-      setKeyboard((state) => {
-        const k = formatKey(event.key);
-        return {
-          ...state,
-          keys: {
-            ...state.keys,
-            [k]: true,
-          },
-          key: k,
-        };
-      });
-    };
-
-    const onKeyUp = (event: KeyboardEvent) => {
-      onModifiers(event);
-      setKeyboard((state) => {
-        const k = formatKey(event.key);
-        return {
-          ...state,
-          keys: {
-            ...state.keys,
-            [k]: false,
-          },
-          key: k,
-        };
-      });
-    };
-
-    // Special Firefox-only event. Prefer if available.
-    const onDOMWheel = (e: any) => {
-      element.removeEventListener('wheel', onWheel, captureOptions);
-      onWheel(e);
-    };
-
-    const onWheel = (e: any) => {
-      const {
-        clientX, clientY,
-        deltaMode, deltaX, deltaY,
-        detail, axis,
-        wheelDelta, wheelDeltaX, wheelDeltaY,
-      } = (e as any);
-
-      let moveX = 0;
-      let moveY = 0;
-      let spinX = 0;
-      let spinY = 0;
-
-      // Wheel -> Spin
-      if ('detail'      in e) { spinY =  detail; }
-      if ('wheelDelta'  in e) { spinY = -wheelDelta  / WHEEL_STEP; }
-      if ('wheelDeltaX' in e) { spinX = -wheelDeltaX / WHEEL_STEP; }
-      if ('wheelDeltaY' in e) { spinY = -wheelDeltaY / WHEEL_STEP; }
-
-      if (axis != null && axis === e) {
-        spinX = spinY;
-        spinY = 0;
-      }
-
-      // Spin -> Move
-      moveX = spinX * PIXEL_STEP;
-      moveY = spinY * PIXEL_STEP;
-
-      // Wheel -> Move
-      const multiplier = DELTA_MULTIPLIER[deltaMode || 0];
-      if ('deltaX' in e) { moveX = deltaX * multiplier; }
-      if ('deltaY' in e) { moveY = deltaY * multiplier; }
-
-      // Move -> Spin
-      spinX ||= Math.sign(moveX);
-      spinY ||= Math.sign(moveY);
-
-      const {left, top} = element.getBoundingClientRect();
-      const x = clientX - left;
-      const y = clientY - top;
-
-      setWheel(() => ({
-        x,
-        y,
-        moveX,
-        moveY,
-        spinX,
-        spinY,
-      }));
-
-      onMove(clientX, clientY);
-      onModifiers(e);
-
-      e.preventDefault();
-      e.stopPropagation();
-    };
-
-    const onMove = (clientX: number, clientY: number, moveX?: number, moveY?: number) => {
-      const {left, top} = element.getBoundingClientRect();
-      const x = clientX - left;
-      const y = clientY - top;
-      setMouse((state) => ({
-        ...state,
-        x,
-        y,
-        moveX: moveX ?? x - state.x,
-        moveY: moveY ?? y - state.y,
-      }));
-    };
-
-    const onButtons = (buttons: number, button: number) => {
-      setMouse((state) => ({
-        ...state,
-        buttons: toButtons(buttons),
-        button: toButton(button),
-      }));
-    };
-
-    const onTouchStart = (e: TouchEvent) => {
-      const {targetTouches: [touch]} = e as any;
-      const {clientX, clientY} = touch;
-      onButtons(1, 0);
-      onMove(clientX, clientY, 0, 0);
-      e.preventDefault();
-      e.stopPropagation();
+    if (pointerLock.hasLock()) {
+      // During pointer-lock, use native movement X/Y
+      move[0] = e.nativeEvent.movementX || 0;
+      move[1] = e.nativeEvent.movementY || 0;
+      return;
     }
 
-    const onTouchMove = (e: TouchEvent) => {
-      const {targetTouches: [touch]} = e as any;
-      const {clientX, clientY} = touch;
-      onMove(clientX, clientY);
-      e.preventDefault();
-      e.stopPropagation();
+    if (last) {
+      // Otherwise measure it ourselves to deal with browser inconsistencies
+      const [x, y] = last;
+      move[0] = e.clientX - x;
+      move[1] = e.clientY - y;
+      last[0] = e.clientX;
+      last[1] = e.clientY;
     }
-
-    const onTouchEnd = (e: TouchEvent) => {
-      const {targetTouches: [touch]} = e as any;
-      if (!touch?.length) onButtons(0, 0);
-      e.preventDefault();
-      e.stopPropagation();
+    else {
+      move[0] = 0;
+      move[1] = 0;
+      lastPosRef.current = [e.clientX, e.clientY];
     }
+  });
+  useHandler(subscribeEvent, 'touchMove', (e: any) => {
+    e.preventDefault();
+  });
+  useHandler(subscribeEvent, 'pointerOut', () => {
+    lastPosRef.current = null;
+  });
+  useHandler(subscribeEvent, 'contextMenu', (e: Event) => {
+    e.preventDefault();
+  });
 
-    const onMouseDown = (e: PointerEvent) => {
-      const {button, buttons, clientX, clientY} = e;
-      if (e.target) try {
-        (e.target as HTMLElement).setPointerCapture(e.pointerId);
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
-
-      onButtons(buttons, button);
-      onMove(clientX, clientY, 0, 0);
-      onModifiers(e);
-
-      // Iframe + pointercapture bug
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=1300622
-      if (!iframe) e.preventDefault();
-      e.stopPropagation();
-
-      element.focus();
-
-      element.removeEventListener('pointermove', onMouseMove, captureOptions);
-      document.addEventListener('pointerenter', onMouseMove, captureOptions);
-      document.addEventListener('pointermove', onMouseMove, captureOptions);
-      document.addEventListener('pointerup', onMouseUp, captureOptions);
-    };
-
-    const onMouseMove = (e: PointerEvent) => {
-      const {clientX, clientY, movementX, movementY} = e;
-      onMove(clientX, clientY, movementX, movementY);
-      onModifiers(e);
-      e.preventDefault();
-      e.stopPropagation();
-    };
-
-    const onMouseUp = (e: PointerEvent) => {
-      const {button, buttons, clientX, clientY} = e;
-      onButtons(buttons, button);
-      onMove(clientX, clientY, 0, 0);
-      onModifiers(e);
-      e.preventDefault();
-      e.stopPropagation();
-
-      element.addEventListener('pointermove', onMouseMove, captureOptions);
-      document.removeEventListener('pointerenter', onMouseMove, captureOptions);
-      document.removeEventListener('pointermove', onMouseMove, captureOptions);
-      document.removeEventListener('pointerup', onMouseUp, captureOptions);
-    };
-
-    const onContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
-
-    const onWindowBlur = () => {
-      setKeyboard((state) => {
-        return {
-          ...state,
-          keys: {},
-          key: null,
-        };
-      });
-    };
-
-    //const onGlobalWheel = (e: WheelEvent) => e.preventDefault();
-
-    element.addEventListener('pointerdown', onMouseDown, captureOptions);
-    element.addEventListener('pointermove', onMouseMove, captureOptions);
-    element.addEventListener('contextmenu', onContextMenu, captureOptions);
-
-    element.addEventListener('touchstart', onTouchStart, captureOptions);
-    element.addEventListener('touchmove', onTouchMove, captureOptions);
-    element.addEventListener('touchend', onTouchEnd, captureOptions);
-
-    element.addEventListener('keydown', onKeyDown, captureOptions);
-    element.addEventListener('keyup', onKeyUp, captureOptions);
-
-    element.addEventListener('DOMMouseScroll', onDOMWheel, captureOptions);
-    element.addEventListener('wheel', onWheel, captureOptions);
-
-    window.addEventListener('blur', onWindowBlur, captureOptions);
-
-    dispose(() => {
-      document.removeEventListener('pointerenter', onMouseMove, captureOptions);
-      document.removeEventListener('pointermove', onMouseMove, captureOptions);
-      document.removeEventListener('pointerup', onMouseUp, captureOptions);
-
-      element.removeEventListener('pointerdown', onMouseDown, captureOptions);
-      element.removeEventListener('pointermove', onMouseMove, captureOptions);
-      element.removeEventListener('contextmenu', onContextMenu, captureOptions);
-
-      element.removeEventListener('touchstart', onTouchStart, captureOptions);
-      element.removeEventListener('touchmove', onTouchMove, captureOptions);
-      element.removeEventListener('touchend', onTouchEnd, captureOptions);
-
-      element.removeEventListener('keydown', onKeyDown, captureOptions);
-      element.removeEventListener('keyup', onKeyUp, captureOptions);
-
-      element.removeEventListener('DOMMouseScroll', onDOMWheel, captureOptions);
-      element.removeEventListener('wheel', onWheel, captureOptions);
-
-      window.removeEventListener('blur', onWindowBlur, captureOptions);
-    });
-  }, [element]);
-
-  return use(EventProvider, { mouse, wheel, keyboard, pointerLock, children });
+  return use(EventProvider, {subscribeEvent, pointerLock, children});
 }, 'DOMEvents');
+
+const useHandler = (subscribe: ArrowFunction, type: string, handler: ArrowFunction) => {
+  useResource((dispose) => dispose(subscribe(type, handler)), [type, handler]);
+};
+
+const makeDOMSubscriber = (
+  el: HTMLElement,
+  domCaptureOptions: any,
+  moveRef: Ref<XY>,
+) => (
+  type: string,
+  handler: ArrowFunction,
+) => {
+  const t = type.toLowerCase();
+  const f = (e: Event) => {
+    const {current: move} = moveRef;
+
+    const decorate = type === 'wheel' ? harmonizeWheelProps : undefined;
+    const extra = decorate?.(e);
+
+    const ev = makeSyntheticEvent(el, e, extra, move);
+    handler(ev);
+  };
+
+  if (t === 'wheel') return subscribeDOMWheelEvent(el, f, domCaptureOptions);
+
+  el.addEventListener(t, f, domCaptureOptions);
+  return () => {
+    el.removeEventListener(t, f, domCaptureOptions);
+  };
+}
+
+const subscribeDOMWheelEvent = (
+  el: HTMLElement,
+  handler: ArrowFunction,
+  domCaptureOptions: any,
+) => {
+  const onDOMMouseScroll = (e: any) => {
+    el.removeEventListener('wheel', handler, domCaptureOptions);
+    handler(e);
+  };
+
+  el.addEventListener('DOMMouseScroll', onDOMMouseScroll, domCaptureOptions);
+  el.addEventListener('wheel', handler, domCaptureOptions);
+
+  return () => {
+    el.removeEventListener('DOMMouseScroll', onDOMMouseScroll, domCaptureOptions);
+    el.removeEventListener('wheel', handler, domCaptureOptions);
+  };
+}
+
+const makeSyntheticEvent = (
+  element: HTMLElement,
+  nativeEvent: any,
+  extra?: Record<string, any>,
+  move?: XY,
+) => {
+  const {key, type, clientX, clientY} = nativeEvent;
+
+  const button = toButton(nativeEvent.button);
+  const buttons = toButtons(nativeEvent.buttons);
+
+  const preventDefault = () => {
+    nativeEvent.preventDefault();
+    event.defaultPrevented = true;
+  };
+
+  const stopPropagation = () => {
+    nativeEvent.stopPropagation();
+    event.propagationStopped = true;
+  };
+
+  const mapped: Record<string, any> = {};
+  const event: Record<string, any> = {
+    nativeEvent,
+    button,
+    buttons,
+    preventDefault,
+    stopPropagation,
+    defaultPrevented: false,
+    propagationStopped: false,
+  };
+
+  for (const k of DOM_EVENT_PROPS) if (k in nativeEvent) {
+    let v = nativeEvent[k];
+    if (typeof v === 'function') v = v.bind(nativeEvent);
+    mapped[k] = () => v;
+  }
+  for (const k in extra) {
+    event[k] = extra[k];
+  }
+
+  if (key != null) {
+    event.key = key.slice(0, 1).toLowerCase() + key.slice(1);
+  }
+
+  if (type != null) {
+    const t = type.split(/(?<=(key|pointer))/);
+    event.type = t.length > 2 ? t[1] + t[2].slice(0, 1).toUpperCase() + t[2].slice(1) : type;
+  }
+
+  if (clientX != null && clientY != null) {
+    const {left, top, width, height} = element.getBoundingClientRect();
+    event.x = clientX - left;
+    event.y = clientY - top;
+
+    event.u = event.x / width;
+    event.v = event.y / height;
+
+    if (!('moveX' in event)) {
+      if (move && type === 'pointermove') {
+        event.moveX = move[0];
+        event.moveY = move[1];
+      }
+      else {
+        event.moveX = 0;
+        event.moveY = 0;
+      }
+    }
+  }
+
+  return proxy(event, mapped);
+};
+
+const toButton = (button: number) => {
+  if (button === 0) return 'left';
+  if (button === 1) return 'middle';
+  if (button === 2) return 'right';
+  return null;
+};
+
+const toButtons = (buttons: number) => ({
+  left:   !!(buttons & 1),
+  middle: !!(buttons & 4),
+  right:  !!(buttons & 2),
+});
+
+const harmonizeWheelProps = (e: any) => {
+  const {
+    deltaMode, deltaX, deltaY,
+    detail, axis,
+    wheelDelta, wheelDeltaX, wheelDeltaY,
+  } = e;
+
+  let moveX = 0;
+  let moveY = 0;
+  let spinX = 0;
+  let spinY = 0;
+
+  // Wheel -> Spin
+  if ('detail'      in e) { spinY =  detail; }
+  if ('wheelDelta'  in e) { spinY = -wheelDelta  / WHEEL_STEP; }
+  if ('wheelDeltaX' in e) { spinX = -wheelDeltaX / WHEEL_STEP; }
+  if ('wheelDeltaY' in e) { spinY = -wheelDeltaY / WHEEL_STEP; }
+
+  if (axis != null && axis === 1) {
+    spinX = spinY;
+    spinY = 0;
+  }
+
+  // Spin -> Move
+  moveX = spinX * PIXEL_STEP;
+  moveY = spinY * PIXEL_STEP;
+
+  // Wheel -> Move
+  const multiplier = DELTA_MULTIPLIER[deltaMode || 0];
+  if ('deltaX' in e) { moveX = deltaX * multiplier; }
+  if ('deltaY' in e) { moveY = deltaY * multiplier; }
+
+  // Move -> Spin
+  spinX ||= Math.sign(moveX);
+  spinY ||= Math.sign(moveY);
+
+  return {
+    type: 'wheel',
+    moveX,
+    moveY,
+    spinX,
+    spinY,
+  };
+};

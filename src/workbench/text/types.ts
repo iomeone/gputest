@@ -1,9 +1,10 @@
-import type { TypedArray } from '../../core';
+import type { TypedArray } from '@use-gpu/core';
 
 export type Alignment = 'start' | 'center' | 'end' | 'justify' | 'justify-start' | 'justify-center' | 'justify-end' | 'between' | 'evenly';
 
 export type SDFGlyphData = {
   id: number,
+  count: number,
   indices: TypedArray,
   layouts: TypedArray,
   rectangles: TypedArray,

@@ -1,15 +1,9 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { StorageSource, TypedArray, UniformType } from '../../core';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { StorageSource, TypedArray } from '@use-gpu/core';
 
-import { memo, yeet, useOne, useResource } from '../../live';
-import { getUniformArraySize, getUniformArrayType } from '../../core';
+import { memo, yeet, useRef, useResource } from '@use-gpu/live';
 
-import { useDeviceContext } from '../providers/device-provider';
-import { useScratchSource } from '../hooks/useScratchSource';
-
-const hasWebGPU = typeof GPUBufferUsage !== 'undefined';
-
-const READBACK_SOURCE = hasWebGPU ? { flags: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ, volatile: true } : {};
+import { useReadbackStorage } from '../hooks/useReadbackStorage';
 
 export type ReadbackProps = {
   source: StorageSource,
@@ -19,7 +13,7 @@ export type ReadbackProps = {
   onDispatch?: () => void,
 };
 
-export const Readback: LiveComponent<ReadbackProps> = memo((props: ReadbackProps) => {
+export const Readback: LC<ReadbackProps> = memo((props: ReadbackProps) => {
   const {
     source,
     then,
@@ -27,23 +21,14 @@ export const Readback: LiveComponent<ReadbackProps> = memo((props: ReadbackProps
     onDispatch,
   } = props;
 
-  const device = useDeviceContext();
-  const format = source.format as UniformType;
-
-  const storages = [
-    useScratchSource(format, READBACK_SOURCE),
-    useScratchSource(format, READBACK_SOURCE),
-    useScratchSource(format, READBACK_SOURCE),
-  ];
-
-  const mapped = useOne(() => [false, false, false]);
-  let requested = -1;
-
   let dispatchVersion: number | null = null;
   let dispatched = false;
 
   let cancelled = false;
   useResource((dispose) => dispose(() => cancelled = true));
+
+  const lastRender = useRef<LiveElement>(null);
+  const {dispatchCopy, asyncRead} = useReadbackStorage(source);
 
   return yeet({
     post: () => {
@@ -61,40 +46,14 @@ export const Readback: LiveComponent<ReadbackProps> = memo((props: ReadbackProps
       onDispatch?.();
       dispatched = true;
 
-      const i = requested = mapped.indexOf(false);
-      if (i >= 0) {
-        const [storage, allocate] = storages[i];
-        const byteLength = getUniformArraySize(format, source.length);
-        allocate(source.length);
-
-        const commandEncoder = device.createCommandEncoder();
-        commandEncoder.copyBufferToBuffer(source.buffer, 0, storage.buffer, 0, byteLength);
-        return commandEncoder.finish();
-      }
+      return dispatchCopy();
     },
     readback: async () => {
       if (cancelled) return null;
-      if (!dispatched) return;
+      if (!dispatched) return lastRender.current;
 
-      const i = requested;
-      if (i >= 0) {
-        const [storage] = storages[i];
-        const {buffer} = storage;
-
-        mapped[i] = true;
-        await buffer.mapAsync(GPUMapMode.READ);
-
-        if (cancelled) return null;
-
-        const ctor = getUniformArrayType(format);
-        const array = new ctor(buffer.getMappedRange());
-        const data = array.slice();
-
-        buffer.unmap();
-        mapped[i] = false;
-
-        return then ? then(data) : null;
-      }
-    }
+      const data = await asyncRead();
+      return data ? (then ? (lastRender.current = then(data)) : null) : lastRender.current;
+    },
   });
 }, 'Readback');

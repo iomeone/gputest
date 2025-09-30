@@ -226,7 +226,7 @@ export const toDataBounds = (box: DataBoundingBox): DataBounds => {
     const dx = (max[0] - min[0]) / 2;
     const dy = (max[1] - min[1]) / 2;
     const dz = (max[2] - min[2]) / 2;
-    const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+    const d = Math.hypot(dx, dy, dz);
 
     return {center: [cx, cy, cz], radius: d, min, max};
   }
@@ -241,7 +241,7 @@ export const toDataBounds = (box: DataBoundingBox): DataBounds => {
     const dy = (max[1] - min[1]) / 2;
     const dz = (max[2] - min[2]) / 2;
     const dw = (max[3] - min[3]) / 2;
-    const d = Math.sqrt(dx*dx + dy*dy + dz*dz + dw*dw);
+    const d = Math.hypot(dx, dy, dz, dw);
 
     return {center: [cx, cy, cz, cw], radius: d, min, max};
   }

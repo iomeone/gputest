@@ -1,4 +1,4 @@
-import type { DataBinding, ShaderStructType, UniformFormat, UniformAttribute } from './types';
+import type { DataBinding, RawBinding, ShaderType, UniformFormat, UniformAttribute } from './types';
 import { UNIFORM_ATTRIBUTE_SIZES, UNIFORM_ATTRIBUTE_ALIGNS } from './constants';
 import { makeUniformLayout, toTypeString } from './uniform';
 
@@ -35,11 +35,17 @@ const BINDING_SAMPLE_TYPES = {
   i: 'sint',
 } as Record<string, GPUTextureSampleType>;
 
-const parseTextureType = (format: string, variant: string | null) => {
+/**
+ * Parse texture format and sampler variant into binding properties
+ */
+const parseTextureType = (format: string, variant: string | null, aspect: string) => {
   const [layout, type] = format.split(/[<>,]/);
   if (layout in BINDING_TEXTURE_TYPES) {
     const props = BINDING_TEXTURE_TYPES[layout];
-    if ('sampleType' in props) return {texture: props};
+    if ('sampleType' in props) {
+      if (aspect === 'stencil-only') return {texture: {...props, sampleType: 'uint' as GPUTextureSampleType}};
+      return {texture: props};
+    }
 
     if (type && (type[0] in BINDING_SAMPLE_TYPES)) {
       let sampleType = BINDING_SAMPLE_TYPES[type[0]];
@@ -57,66 +63,100 @@ const parseTextureType = (format: string, variant: string | null) => {
   throw new Error(`Unknown texture layout "${layout}"`);
 };
 
+/**
+ * Make bind group layout entries for the given data bindings and visibilities.
+ */
 export const makeBindGroupLayoutEntries = (
-  bindings: DataBinding[],
-  visibilities: GPUShaderStageFlags | Map<DataBinding, GPUShaderStageFlags>,
+  bindings: (DataBinding | RawBinding | null | undefined)[],
+  visibilities: GPUShaderStageFlags | Map<DataBinding | RawBinding, GPUShaderStageFlags> | GPUShaderStageFlags[],
   binding: number = 0,
 ): GPUBindGroupLayoutEntry[] => {
   const out = [];
+  let i = 0;
   for (const b of bindings) {
-    const v = typeof visibilities === 'number' ? visibilities : (visibilities.get(b) || 7);
-    const l = makeBindingLayoutEntry(b, v, out.length + binding);
-    if (Array.isArray(l)) out.push(...l);
-    else out.push(l);
+    const v = (
+      typeof visibilities === 'number' ? visibilities :
+      Array.isArray(visibilities) ? visibilities[i] :
+      (b && visibilities.get(b)) ?? 7
+    );
+
+    type Entry = GPUBindGroupLayoutEntry | GPUBindGroupLayoutEntry[] | null;
+    const list: Entry = b ? makeBindGroupLayoutEntry(b, v, out.length + binding) : null;
+    if (Array.isArray(list)) out.push(...list);
+    else if (list) out.push(list);
+    else binding++;
+    ++i;
   }
   return out;
 };
 
-export const makeBindingLayoutEntry = (
-  b: DataBinding,
+/**
+ * Make a bind group layout entry for a given data binding and visibility.
+ */
+export const makeBindGroupLayoutEntry = (
+  b: DataBinding | RawBinding | null | undefined,
   visibility: GPUShaderStageFlags,
   binding: number,
 ): GPUBindGroupLayoutEntry | GPUBindGroupLayoutEntry[] => {
+  if (!b) return [];
+
+  if (b.uniform != null) {
+    const minBindingSize = getMinBindingSize(b.uniform.format, b.uniform.type ?? b.attribute.type);
+    return {binding, visibility, buffer: {type: 'uniform', minBindingSize}};
+  }
   if (b.storage != null) {
-    const minBindingSize = getMinBindingSize(b.storage.format, b.storage.type);
+    const minBindingSize = getMinBindingSize(b.storage.format, b.storage.type ?? b.attribute.type);
     if (b.storage.readWrite) return {binding, visibility, buffer: {type: 'storage', minBindingSize}};
     return {binding, visibility, buffer: {type: 'read-only-storage', minBindingSize}};
   }
   if (b.texture != null) {
-    const hasSampler = !!(b.texture.sampler && (b.uniform.args !== null));
+    const hasSampler = !!(b.texture.sampler && (b.attribute.args !== null));
 
-    const textureType = b.uniform.args ? b.texture.layout : (b.uniform.format as string);
-    const textureVariant = b.texture.variant ?? (b.uniform.args ? null : 'textureLoad');
+    const textureType = b.attribute.args ? b.texture.layout : (b.attribute.format as string);
+    const textureVariant = b.texture.variant ?? (b.attribute.args ? null : 'textureLoad');
+    const textureAspect = b.texture.aspect ?? 'depth-only';
 
-    const props = parseTextureType(textureType, textureVariant);
+    const props = parseTextureType(textureType, textureVariant, textureAspect);
 
     const texture = {binding, visibility, ...props};
 
     if (hasSampler) {
-      const type = (b.texture.comparison ? 'comparison' : 'filtering') as GPUSamplerBindingType;
+      const isDepth = textureType.match(/_depth(_|$)/);
+
+      const filter = (isDepth ? 'non-filtering' : 'filtering') as GPUSamplerBindingType;
+      const type = (b.texture.filter ?? filter) as GPUSamplerBindingType;
       const sampler = {binding: binding + 1, visibility, sampler: {type}};
+
       return [texture, sampler];
     }
     return texture;
   }
-  throw new Error(`Cannot generate bind group layout entry for binding '${b.uniform.name}'`);
+  if (b.sampler != null) {
+    const filter = 'filtering' as GPUSamplerBindingType;
+    const type = (b.sampler.filter ?? filter) as GPUSamplerBindingType;
+    const sampler = {binding: binding, visibility, sampler: {type}};
+    return sampler;
+  }
+  throw new Error(`Cannot generate bind group layout entry for binding '${b.attribute.name}'`);
 };
 
 export const makeUniformLayoutEntry = (
-  uniforms: any[],
+  attributes: any[],
   visibility: GPUShaderStageFlags,
   binding: number = 0,
 ) => {
-  if (!uniforms.length) return null;
+  if (!attributes.length) return null;
   return {binding, visibility, buffer: {}};
 };
 
 export const makeBindGroupLayout = (
   device: GPUDevice,
   entries: GPUBindGroupLayoutEntry[],
+  label?: string,
 ) => {
   return device.createBindGroupLayout({
     entries,
+    label,
   });
 }
 
@@ -124,27 +164,49 @@ export const makeBindGroup = (
   device: GPUDevice,
   layout: GPUBindGroupLayout,
   entries: GPUBindGroupEntry[],
+  label?: string,
 ) => {
   return device.createBindGroup({
     layout,
     entries,
+    label,
   });
 }
 
+/**
+ * Compute minimum binding size in bytes for a given attribute.
+ */
 export const getMinBindingSize = (
   format: UniformFormat | UniformAttribute[],
-  type?: ShaderStructType,
+  type?: ShaderType,
 ) => {
   if (type) {
-    const {module} = type;
-    const {entry, table: {declarations}} = module as any;
-    const {struct} = declarations.find((d: any) => d.struct?.name === entry);
-    if (!struct) return 0;
+    const t = type as any;
+    const module = (t.module ?? t) as any;
+    const entry = t.entry ?? module.entry;
+    const {table: {exports, locals}} = module;
 
-    const members = struct.members.map((m: any) => ({name: m.name, format: toTypeString(m.type)}));
-    const layout = makeUniformLayout(members);
+    const decl = (
+      exports.find((d: any) => d.struct?.name === entry) ??
+      locals.find((d: any) => d.struct?.name === entry)
+    );
+    if (!decl) {
+      console.warn('getMinBindingSize = 0. Struct declaration not found.', {format, type})
+      return 0;
+    }
 
-    return layout.length;
+    const {struct} = decl;
+    const members = struct.format ?? struct.members.map((m: any) => ({name: m.name, format: toTypeString(m.type)}));
+
+    try {
+      const layout = makeUniformLayout(members);
+      return layout.length;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      // TODO: resolve arrays of structs inside structs
+      console.warn('getMinBindingSize = 0. Struct declaration failed to parse.', {format, type});
+      return 0;
+    }
   }
 
   if (Array.isArray(format)) {
@@ -156,10 +218,50 @@ export const getMinBindingSize = (
     f = f.replace(/^array<([^>]+)>$/, '$1');
     f = f.replace(/^vec3to4</, 'vec4<');
     f = f.replace(/^(u|i)(8|16)$/, 'u32');
+
+    if (f === 'T') {
+      console.warn('Unresolved structure type', {format, type});
+      return 0;
+    }
+
     const size = (UNIFORM_ATTRIBUTE_SIZES as any)[f] ?? 0;
     const align = (UNIFORM_ATTRIBUTE_ALIGNS as any)[f] ?? 0;
     return align ? Math.ceil(size / align) * align : size;
   }
 
+  console.warn('getMinBindingSize = 0', {format, type})
   return 0;
 };
+
+/**
+ * Create a raw placeholder binding for an attribute
+ */
+export const makeRawBindingForAttribute = (
+  attribute?: UniformAttribute | null,
+): RawBinding | null => {
+  if (!attribute) return null;
+
+  const {type, format, qual} = attribute;
+
+  const [layout] = Array.isArray(format) ? [''] : (format as string).split(/[<>,]/);
+  const parts = layout.split('_');
+
+  if (qual?.match(/\bstorage\b/)) {
+    const readWrite = !!qual.match(/\bread_write\b/);
+    return {attribute, storage: {format, readWrite}};
+  }
+
+  else if (qual?.match(/\buniform\b/)) {
+    return {attribute, uniform: {type, format}};
+  }
+
+  else if (parts.includes('texture')) {
+    return {attribute, texture: {layout: format as any, sampler: null}};
+  }
+  else if (parts.includes('sampler')) {
+    const filter = (parts.includes('comparison') ? 'comparison' : 'filtering') as GPUSamplerBindingType;
+    return {attribute, sampler: {sampler: {}, filter}};
+  }
+
+  throw new Error(`Cannot make raw binding for 'var${qual ?? ''} ${name}: ${format}'`);
+}

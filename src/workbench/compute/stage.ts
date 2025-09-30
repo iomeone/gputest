@@ -1,7 +1,7 @@
-import type { LC, PropsWithChildren, LiveElement } from '../../live';
-import type { StorageTarget, TextureTarget } from '../../core';
+import type { LC, PropsWithChildren, LiveElement } from '@use-gpu/live';
+import type { StorageTarget, TextureTarget } from '@use-gpu/core';
 
-import { memo, provide, useMemo } from '../../live';
+import { memo, provide, useMemo } from '@use-gpu/live';
 import { ComputeContext } from '../providers/compute-provider';
 import { getRenderFunc } from '../hooks/useRenderProp';
 
@@ -26,6 +26,7 @@ export const Stage: LC<StageProps> = memo((props: StageProps) => {
   const content = render ? render() : children;
   if (!content) return null;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const context = useMemo(() => targets ?? (target ? [target] : NO_TARGETS), [target, ...(targets ?? NO_TARGETS)]);
 
   return provide(ComputeContext, context, content);

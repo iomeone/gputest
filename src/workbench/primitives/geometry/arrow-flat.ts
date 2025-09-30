@@ -1,4 +1,4 @@
-import type { CPUGeometry } from '../../../core';
+import type { CPUGeometry } from '@use-gpu/core';
 
 export const makeArrowFlatGeometry = (
   width: number = 2.5

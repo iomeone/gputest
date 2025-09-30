@@ -1,9 +1,9 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TextureSource, LambdaSource, Lazy } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { TextureSource, LambdaSource, Lazy } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
-import { useMemo } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
+import { useMemo } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
 
 import { useShaderRefs } from '../hooks/useShaderRef';
 import { useLambdaSource } from '../hooks/useLambdaSource';
@@ -29,6 +29,7 @@ const NO_SOURCE = { length: 0, size: [0] };
 /** Texture shader for custom UV sampling of a 2D input texture.
 
 Provides:
+
 - `@optional @link fn getTextureSize() -> vec2<f32>`
 - `@optional @link fn getTexture(uv: vec2<f32>) -> vec4<f32>`
 
@@ -63,7 +64,8 @@ export const TextureShader: LiveComponent<TextureShaderProps> = (props) => {
     });
 
     return getShader(shader, values);
-  }, [shader, texture, args.length, source, sources]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shader, texture, source, sources, args.length]);
 
   const output = useLambdaSource(getTexture, texture ?? source ?? NO_SOURCE);
 

@@ -23,6 +23,7 @@ import {
 } from './data';
 import { makeUniformLayout, toCPUDims, toGPUDims } from './uniform';
 
+/** Get a summary of a list of items to aggregate */
 export const getAggregateSummary = (items: AggregateItem[]) => {
   const n = items.length;
   const archetype = items[0]?.archetype ?? 0;
@@ -35,7 +36,7 @@ export const getAggregateSummary = (items: AggregateItem[]) => {
 
   for (let i = 0; i < n; ++i) {
     const {count, indexed, instanced} = items[i];
-    if (indexed != null) indexOffsets.push(allCount);
+    indexOffsets.push(allCount);
     allCount += count;
     allIndexed += indexed ?? count;
     allInstanced += instanced ?? 1;
@@ -44,17 +45,19 @@ export const getAggregateSummary = (items: AggregateItem[]) => {
   return {archetype, count: allCount, indexed: allIndexed, instanced: allInstanced, offsets: indexOffsets};
 };
 
+/** CPU-only storage for GPU array attribute */
 export const makeArrayAggregate = (
   format: UniformType,
   length: number,
 ): ArrayAggregate => makeGPUArray(format, length);
 
+/** CPU-only array-of-struct GPU aggregate */
 export const makeStructAggregate = (
-  uniforms: UniformAttribute[],
+  attributes: UniformAttribute[],
   length: number,
   keys?: string[],
 ): StructAggregate => {
-  const layout = makeUniformLayout(uniforms);
+  const layout = makeUniformLayout(attributes);
 
   const {length: bytes} = layout;
   const raw = makeRawArray(bytes * length);
@@ -64,6 +67,7 @@ export const makeStructAggregate = (
   return {raw, layout, length, keys};
 };
 
+/** CPU+GPU storage for GPU array attribute */
 export const makeArrayAggregateBuffer = (
   device: GPUDevice,
   format: UniformType,
@@ -83,14 +87,16 @@ export const makeArrayAggregateBuffer = (
   return {buffer, source, array, length, dims, format: 'array<T>'};
 }
 
+/** CPU+GPU storage for array-of-struct GPU aggregate */
 export const makeStructAggregateBuffer = (
   device: GPUDevice,
-  uniforms: UniformAttribute[],
+  attributes: UniformAttribute[],
   length: number,
   keys?: string[],
 ): StructAggregateBuffer => {
 
-  const aggregate = makeStructAggregate(uniforms, length, keys);
+  const aggregate = makeStructAggregate(attributes, length, keys);
+  const {layout} = aggregate;
 
   const buffer = makeStorageBuffer(device, aggregate.raw.byteLength);
   const source: StorageSource = {
@@ -99,11 +105,14 @@ export const makeStructAggregateBuffer = (
     length,
     size: [length],
     version: 0,
+
+    minBindingSize: layout.length,
   };
 
   return {buffer, source, ...aggregate};
 }
 
+/** Extract array-of-struct fields as virtual arrays with >1 stride */
 export const makeStructAggregateFields = (structAggregate: StructAggregate) => {
   const {layout: {length: layoutLength, attributes}, raw, length} = structAggregate;
 
@@ -119,16 +128,17 @@ export const makeStructAggregateFields = (structAggregate: StructAggregate) => {
 
     out[name] = {
       array,
+      dims,
+      length,
       base,
       stride,
-      length,
-      dims,
       format: format as any,
     };
   }
   return out;
 };
 
+/** Update an array aggregate with new data from a list of items */
 export const updateAggregateArray = (
   aggregate: ArrayAggregateBuffer | ArrayAggregate,
   items: AggregateItem[],
@@ -136,6 +146,7 @@ export const updateAggregateArray = (
   unwelded?: boolean,
   single?: boolean,
   offsets?: number[],
+  mask?: (boolean | number)[],
 ) => {
   const {array, dims, base, stride} = aggregate;
 
@@ -147,6 +158,8 @@ export const updateAggregateArray = (
 
   let i = 0;
   let b = base || 0;
+
+  let l = 0;
   for (const item of items) {
     const {
       count,
@@ -160,19 +173,23 @@ export const updateAggregateArray = (
     const c = single ? instanced : unwelded ? indexed : count;
 
     if (typeof values === 'function') (values as VectorEmitter)(array, b, c, stride);
-    else if (offsets) offsetNumberArray(values, array, offsets[i], dimsIn, dimsOut, 0, b, c, stride);
+    else if (offsets) {
+      offsetNumberArray(values, array, offsets[i], dimsIn, dimsOut, 0, b, c, stride, mask);
+    }
     else copyNumberArray(values, array, dimsIn, dimsOut, 0, b, c, stride);
 
+    l += c;
     b += c * step;
     i++;
   }
 
-  aggregate.length = b / dimsOut;
+  aggregate.length = l;
 }
 
+/** Update the instance index map of an aggregate */
 export const updateAggregateInstances = (() => {
   const slices: number[] = [];
-  
+
   return (
     aggregate: ArrayAggregate,
     items: AggregateItem[],
@@ -192,6 +209,7 @@ export const updateAggregateInstances = (() => {
   }
 })();
 
+/** Update an array aggregate with new data from a list of just-in-time refs */
 export const updateAggregateRefs = (
   aggregate: ArrayAggregateBuffer | ArrayAggregate,
   refs: Lazy<any>[],
@@ -209,6 +227,7 @@ export const updateAggregateRefs = (
   aggregate.length = count;
 }
 
+/** Upload an aggregate's data to the GPU */
 export const uploadAggregateBuffer = (
   device: GPUDevice,
   aggregate: ArrayAggregateBuffer | StructAggregateBuffer,

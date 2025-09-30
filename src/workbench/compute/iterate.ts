@@ -1,8 +1,8 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { Lazy } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { Lazy } from '@use-gpu/core';
 
-import { multiGather, yeet, useMemo } from '../../live';
-import { resolve } from '../../core';
+import { multiGather, yeet, useMemo } from '@use-gpu/live';
+import { resolve } from '@use-gpu/core';
 
 export type IterateProps = PropsWithChildren<{
   count: Lazy<number>,

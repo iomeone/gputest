@@ -1,4 +1,4 @@
-import { useOne } from '../live';
+import { useOne } from '@use-gpu/live';
 import { getProp } from './useProp';
 import {
   ArrowFunction,
@@ -55,7 +55,7 @@ export const combine: TraitCombinator = (
       parse(input, output, hooks);
     }
   };
-  parse[TRAIT] = ts;
+  (parse as any)[TRAIT] = ts;
   return parse;
 }
 

@@ -1,13 +1,14 @@
-import type { LiveComponent } from '../../live';
-import type { StorageSource, Lazy, VectorLike } from '../../core';
-import type { ShaderModule, ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { StorageSource, Lazy, VectorLike } from '@use-gpu/core';
+import type { ShaderModule, ShaderSource } from '@use-gpu/shader';
 
-import { yeet, useMemo, useNoMemo, useRef } from '../../live';
-import { resolve } from '../../core';
-import { bundleToAttribute, getBundleEntry } from '../../shader/wgsl';
+import { yeet, useMemo } from '@use-gpu/live';
+import { resolve } from '@use-gpu/core';
+import { bundleToAttribute, getBundleEntry } from '@use-gpu/shader/wgsl';
 import { getShader } from '../hooks/useShader';
 import { getDerivedSource } from '../hooks/useDerivedSource';
 import { useShaderRefs } from '../hooks/useShaderRef';
+import { useInitialDispatch, useNoInitialDispatch } from '../hooks/useInitialDispatch';
 
 import { useComputeContext } from '../providers/compute-provider';
 
@@ -19,6 +20,7 @@ export type KernelProps = {
   sources?: ShaderSource[],
   args?: Lazy<any>[],
   initial?: boolean,
+  version?: number,
   history?: boolean | number,
   size?: Lazy<number[] | VectorLike>,
   swap?: boolean,
@@ -29,6 +31,7 @@ const NO_SOURCES: StorageSource[] = [];
 /** Runs a compute kernel on the current compute context.
 
 Provides:
+
 - `@link fn getSize() -> vec2<u32> {};`
 
 Unnamed arguments linked in the order of: args, sources, source, targets, history.
@@ -41,6 +44,7 @@ export const Kernel: LiveComponent<KernelProps> = (props) => {
     args = NO_SOURCES,
     size,
     initial,
+    version = 0,
     history,
     swap = true,
   } = props;
@@ -72,15 +76,10 @@ export const Kernel: LiveComponent<KernelProps> = (props) => {
 
     const kernel = getShader(shader, values);
     return [kernel, dataSize, workgroupSize];
-  }, [shader, targets, source, sources, argRefs, history]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shader, targets, source, sources, size, history, args.length]);
 
-  const firstRef = useRef(true);
-  initial ? useMemo(() => { firstRef.current = true; }, targets) : useNoMemo();
-
-  const shouldDispatch = initial ? () => {
-    if (!firstRef.current) return false;
-    firstRef.current = false;
-  } : undefined;
+  const shouldDispatch = initial ? useInitialDispatch([version]) : (useNoInitialDispatch(), undefined);
 
   const onDispatch = () => {
     if (swap) for (const t of targets) if (t.swap) t.swap();

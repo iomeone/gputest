@@ -60,8 +60,9 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     let end = n.to;
     while (start > 0 && code.charAt(start - 1) !== "\n") start--;
     while (end < code.length - 1 && code.charAt(end + 1) !== "\n") end++;
+    const line = code.slice(0, start).split('\n').length + 1;
 
-    const loc = name != null ? `in '${name}'` : '';
+    const loc = (name != null ? `in '${name}' ` : '') + `on line ${line}`;
     throw new Error(
       `${loc}\n${t} in '${code.slice(n.from, n.to)}'\n\n`+
       `${code.slice(start, end)}\n`+
@@ -492,12 +493,15 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
     const exported  = declarations.filter(d => d.flags & RF.Exported);
     const globalled = declarations.filter(d => d.flags & RF.Global);
     const bound     = declarations.filter(d => d.flags & RF.Binding);
+    const inferred  = declarations.filter(d => d.flags & RF.Infer);
 
     const symbols  = uniq(declarations.map(r => r.symbol));
     const visibles = uniq(exported.map(r => r.symbol));
     const globals  = uniq(globalled.map(r => r.symbol));
+    const infers   = uniq(inferred.map(r => r.symbol));
 
     const types = exported.filter(d => d.alias || d.struct).map(t => t.symbol);
+    const locals = declarations.filter(d => !d.flags && (d.struct || d.alias));
 
     const scope = new Set(symbols ?? []);
     for (const ref of declarations) {
@@ -522,8 +526,10 @@ export const makeASTParser = (code: string, tree: Tree, name?: string) => {
       modules: orNone(modules),
       externals: orNone(externals),
       exports: orNone(exported),
+      locals: orNone(locals),
       bindings: orNone(bound),
       enables: orNone(enables),
+      infers: orNone(infers),
 
       declarations: orNone(declarations),
       linkable: externals.length ? linkable : undefined,

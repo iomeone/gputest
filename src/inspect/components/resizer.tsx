@@ -70,7 +70,7 @@ export const Resizer: FC<ResizerProps> = (props: ResizerProps) => {
   const innerRef = useRef<HTMLDivElement>(null);
 
   const [dragging, setDragging] = useState<boolean>(false);
-  const [toValue, setToValue] = useState<any>(() => (e: any) => 0);
+  const [toValue, setToValue] = useState<any>(() => () => 0);
 
   const onPointerDown = useCallback((e: any) => {
     const {current: outer} = outerRef;
@@ -103,9 +103,9 @@ export const Resizer: FC<ResizerProps> = (props: ResizerProps) => {
     }
 
     setDragging(true);
-  }, [value, min, max]);
+  }, [value, min, max, side]);
 
-  const onPointerUp = useCallback((e: any) => {
+  const onPointerUp = useCallback(() => {
     setDragging(false);
   }, []);
 

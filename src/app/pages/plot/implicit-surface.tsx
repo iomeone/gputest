@@ -1,31 +1,31 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { Emit, StorageSource, TextureSource, LambdaSource, TensorArray, Time } from '../../../core';
-import type { ShaderSource } from '../../../shader';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { Emit, TextureSource, LambdaSource, TensorArray, Time } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import React, { Gather, Provide } from '../../../live';
+import React, { Gather } from '@use-gpu/live';
+import { lerp } from '@use-gpu/core';
 import { vec3 } from 'gl-matrix';
 
 import {
-  Loop, Pass, Cursor,
-  OrbitCamera, OrbitControls,
+  Pass,
+  OrbitCamera,
   Animate, Keyframe,
   LinearRGB, DirectionalLight,
   DataShader,
   Environment, PBRMaterial, PrefilteredEnvMap,
-  useShaderRef,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
 import {
-  Plot, Cartesian, Polar, Axis, Grid, Sampler, ImplicitSurface, Point,
-} from '../../../plot';
-import { wgsl } from '../../../shader/wgsl';
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
+import {
+  Plot, Polar, Axis, Grid, Sampler, ImplicitSurface, Point,
+} from '@use-gpu/plot';
+import { wgsl } from '@use-gpu/shader/wgsl';
 import { SurfaceControls } from '../../ui/surface-controls';
 
 import { InfoBox } from '../../ui/info-box';
 
 const π = Math.PI;
-const τ = π * 2;
-
-const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
 const f = (x: number, y: number, z: number, t: number) => {
   //return Math.sqrt(x*x + (y-6)*(y-6) + z*z) - 3.5;
@@ -59,7 +59,6 @@ const EXPR_VALUE = (emit: Emit, x: number, y: number, z: number, time: Time) => 
 
 const EXPR_NORMAL = (emit: Emit, x: number, y: number, z: number, time: Time) => {
   const t = time.elapsed / 1000;
-  const e = 1e-3;
 
   const f = Math.cos(t * .5) * .5 + .5;
 
@@ -114,9 +113,15 @@ const SHADOW_MAP_DIRECTIONAL = {
 
 const prefilteredEnvMap = ([texture]: TextureSource[]) => <PrefilteredEnvMap texture={texture} />;
 
+const ssaoOptions = {
+  opacity: 1.0,
+  indirect: 0.5,
+  radius: 0.5,
+};
+
 export const PlotImplicitSurfacePage: LC = () => {
 
-  const colorizeShader = wgsl`
+  const colorizeValuesShader = wgsl`
     @link fn getData(i: u32) -> f32 {};
 
     fn main(i: u32) -> vec4<f32> {
@@ -125,8 +130,17 @@ export const PlotImplicitSurfacePage: LC = () => {
     }
   `;
 
+  const colorizeNormalsShader = wgsl`
+    @link fn getData(i: u32) -> vec4<f32> {};
+
+    fn main(i: u32) -> vec4<f32> {
+      let sample = getData(i);
+      return vec4<f32>(max(sample.xyz * .5 + .5, vec3<f32>(0.0)), 1.0);
+    }
+  `;
+
   const root = document.querySelector('#use-gpu .canvas');
-  const keyframes = [[0, 0], [23, 1.0]] as Keyframe[];
+  const keyframes = [[0, 0], [23, 1.0]] as Keyframe<number>[];
 
   return (<>
     <InfoBox>Plot an implicit function with &lt;ImplicitSurface&gt; in an animated &lt;Polar&gt; viewport. Control lighting and environment.</InfoBox>
@@ -140,9 +154,9 @@ export const PlotImplicitSurfacePage: LC = () => {
             <LinearRGB backgroundColor={BACKGROUND} tonemap="aces" gain={2}>
               <Cursor cursor="move" />
               <Camera>
-                <Pass lights shadows>
-                  <Environment map={envMap} preset={env} gain={0.5}>
-                    <DirectionalLight position={[1, 3, 2]} color={[1, 1, 1]} intensity={1} shadowMap={SHADOW_MAP_DIRECTIONAL} />
+                <Pass lights shadows ssao={ssaoOptions}>
+                  <Environment map={envMap} preset={env} gain={1.5}>
+                    <DirectionalLight position={[1, 3, 2]} color={[1, 1, 1]} intensity={0.5} shadowMap={SHADOW_MAP_DIRECTIONAL} />
                     <Plot>
                       <Animate prop='bend' keyframes={keyframes} delay={1} mirror>
                         <Polar
@@ -157,6 +171,7 @@ export const PlotImplicitSurfacePage: LC = () => {
                             second={{ detail: 64, divide: 5, end: true }}
                             depth={0.5}
                             zBias={-1}
+                            color={[0.35, 0.35, 0.35, 1]}
                           />
                           <Grid
                             axes='xz'
@@ -165,26 +180,27 @@ export const PlotImplicitSurfacePage: LC = () => {
                             second={{ unit: π, base: 2, detail: 64, divide: 5, end: true }}
                             depth={0.5}
                             zBias={-1}
+                            color={[0.35, 0.35, 0.35, 1]}
                           />
 
                           <Axis
                             axis='x'
                             detail={64}
                             width={5}
-                            color={[0.75, 0.75, 0.75, 1]}
+                            color={[0.65, 0.65, 0.65, 1]}
                             depth={0.5}
                           />
                           <Axis
                             axis='y'
                             width={5}
-                            color={[0.75, 0.75, 0.75, 1]}
+                            color={[0.65, 0.65, 0.65, 1]}
                             detail={8}
                             depth={0.5}
                           />
                           <Axis
                             axis='z'
                             width={5}
-                            color={[0.75, 0.75, 0.75, 1]}
+                            color={[0.65, 0.65, 0.65, 1]}
                             detail={8}
                             depth={0.5}
                           />
@@ -192,14 +208,14 @@ export const PlotImplicitSurfacePage: LC = () => {
                             children={<>
                               <Sampler
                                 axes='xyz'
-                                format='vec3<f32>'
+                                format='vec4<f32>'
                                 size={VOLUME_SIZE}
                                 padding={1}
                                 expr={EXPR_POSITION}
                               />
                               <Sampler
                                 axes='xyz'
-                                format='vec3<f32>'
+                                format='vec4<f32>'
                                 size={VOLUME_SIZE}
                                 padding={1}
                                 expr={EXPR_NORMAL}
@@ -231,13 +247,13 @@ export const PlotImplicitSurfacePage: LC = () => {
                                 </PBRMaterial>
                                 {inspect ? (
                                   <DataShader
-                                    shader={colorizeShader}
-                                    data={values}
+                                    shader={mode === 'normal' ? colorizeNormalsShader : colorizeValuesShader}
+                                    data={mode === 'normal' ? normals : values}
                                   >{
                                     (colorizedValues: LambdaSource) => (
                                       <Point
                                         positions={positions}
-                                        colors={mode === 'normal' ? normals : colorizedValues}
+                                        colors={colorizedValues}
                                         size={3}
                                         depth={1}
                                       />

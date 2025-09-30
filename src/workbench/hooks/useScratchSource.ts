@@ -1,10 +1,10 @@
-import type { StorageSource, UniformType } from '../../core';
+import type { StorageSource, UniformType } from '@use-gpu/core';
 
-import { useMemo, incrementVersion } from '../../live';
-import { makeDataBuffer, getUniformArraySize, UNIFORM_ARRAY_DIMS } from '../../core';
+import { useMemo, useNoMemo, incrementVersion } from '@use-gpu/live';
+import { makeDataBuffer, getUniformArraySize, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
 
 import { adjustSize } from './useBufferedSize';
-import { useDeviceContext } from '../providers/device-provider';
+import { useDeviceContext, useNoDeviceContext } from '../providers/device-provider';
 
 const NO_OPTIONS: ScratchSourceOptions = {};
 
@@ -15,6 +15,8 @@ type ScratchSourceOptions = {
   readWrite?: boolean,
   /** Initial allocation size */
   reserve?: number,
+  /** Declarative allocation size */
+  length?: number,
   /** Resizable binding */
   volatile?: boolean,
 };
@@ -28,42 +30,74 @@ export const useScratchSource = (
     reserve = 16,
     flags = GPUBufferUsage.STORAGE,
     volatile = false,
+    length,
   } = options;
 
   const device = useDeviceContext();
 
-  return useMemo(() => {
-    const f = (format && (format in UNIFORM_ARRAY_DIMS)) ? format as UniformType : 'f32';
-    let alloc = 0;
+  const scratchSource = useMemo(() =>
+    getScratchSource(device, format, options),
+    // Unpack options
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [device, format, readWrite, reserve, flags, volatile]
+  );
 
-    const allocate = (
-      length: number,
-    ) => {
-      const newAlloc = adjustSize(length, alloc);
+  const [, allocate] = scratchSource;
+  if (length != null) allocate(length);
 
-      if (alloc !== newAlloc) {
-        alloc = newAlloc;
-        const byteLength = getUniformArraySize(f, alloc || 1);
-        source.buffer = makeDataBuffer(device, byteLength, flags);
-      }
-
-      source.length = length;
-      source.size = [length];
-      source.version = incrementVersion(source.version);
-    };
-
-    const source = {
-      buffer: null as any,
-      format: f,
-      length: 0,
-      size: [0],
-      version: 0,
-      readWrite,
-      volatile: +volatile,
-    } as StorageSource;
-
-    allocate(reserve);
-
-    return [source, allocate] as [StorageSource, (x: number) => void];
-  }, [device, format, readWrite, flags, volatile]);
+  return scratchSource;
 };
+
+export const useNoScratchSource = () => {
+  useNoDeviceContext();
+  useNoMemo();
+};
+
+export const getScratchSource = (
+  device: GPUDevice,
+  format: UniformType,
+  options: ScratchSourceOptions = NO_OPTIONS,
+) => {
+  const {
+    readWrite = false,
+    reserve = 16,
+    flags = GPUBufferUsage.STORAGE,
+    volatile = false,
+    length,
+  } = options;
+
+  const f = (format && (format in UNIFORM_ARRAY_DIMS)) ? format as UniformType : 'f32';
+  let alloc = 0;
+
+  const allocate = (
+    length: number,
+  ) => {
+    const newAlloc = adjustSize(length, alloc);
+
+    if (alloc !== newAlloc) {
+      alloc = newAlloc;
+      const byteLength = getUniformArraySize(f, alloc || 1);
+      source.buffer = makeDataBuffer(device, byteLength, flags);
+    }
+
+    source.length = length;
+    source.size = [length];
+    source.version = incrementVersion(source.version);
+  };
+
+  const source = {
+    buffer: null as any,
+    format: f,
+    length: 0,
+    size: [0],
+    version: 0,
+    readWrite,
+    volatile: +volatile,
+
+    addressSpace: (flags & GPUBufferUsage.UNIFORM) ? 'uniform' : 'storage',
+  } as StorageSource;
+
+  allocate(length ?? reserve);
+
+  return [source, allocate] as [StorageSource, (x: number) => void];
+}

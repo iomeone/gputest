@@ -73,7 +73,10 @@ interface Use<F extends ArrowFunction> {
 export const use: Use<any> = <F extends ArrowFunction>(
   f: LiveFunction<F>,
   ...args: UseArgs<F>
-): DeferredCall<F> => ({f, args, key: undefined, by: getCurrentFiberID()} as any);
+): DeferredCall<F> => {
+  if (!f) throw new Error("Invalid JSX component type");
+  return ({f, args, key: undefined, by: getCurrentFiberID()} as any);
+};
 
 /** Use a keyed call to a Live function, reconciled by key. */
 export const keyed = <F extends ArrowFunction>(
@@ -96,7 +99,8 @@ export const extend = (
   if (typeof calls === 'string') throw new Error(`Cannot extend props of string child '${calls}'`);
   if (typeof calls === 'number') throw new Error(`Cannot extend props of number child '${calls}'`);
   if (typeof calls === 'function') throw new Error(`Cannot extend props of function child '${calls}'`);
-  if (!calls) return calls;
+  // Only treat `null`, `undefined` or boolean `false` as empty LiveElement here.
+  if (calls == null || calls === false) return calls as LiveElement;
 
   if (Array.isArray(calls)) return calls.map(call => extend(call, props)) as any;
   if ('props' in calls) {
@@ -146,7 +150,7 @@ The parent that is being morphed still loses all its own state.
 export const morph = (
   calls: LiveNode<any>,
   key?: Key,
-): DeferredCall<() => void> => ({f: MORPH, args: calls as any, key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: MORPH, args: calls as any, key, by: getCurrentFiberID()} as any);
 
 /** Detach the rendering of a Live subtree.
 
@@ -155,7 +159,7 @@ export const detach = <F extends ArrowFunction>(
   call: DeferredCall<F> | DeferredCall<F>[],
   callback: (render: () => void, fiber: LiveFiber<F>) => void,
   key?: Key,
-): DeferredCall<() => void> => ({f: DETACH, args: [call, callback], key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: DETACH, args: [call, callback], key, by: getCurrentFiberID()} as any);
 
 /** Holds an array of Live calls to reconcile. */
 export const fragment = (
@@ -174,7 +178,7 @@ export const fragment = (
 export const debug = (
   calls: LiveNode<any>,
   key?: Key,
-): DeferredCall<() => void> => {
+): DeferredCall<ArrowFunction> => {
   if (Array.isArray(calls)) return ({f: DEBUG, args: calls, key, by: getCurrentFiberID()} as any);
   return ({f: DEBUG, args: [calls], key} as any);
 }
@@ -187,7 +191,7 @@ export const mapReduce = <R, T>(
   then?: LiveFunction<(r: R) => LiveElement>,
   fallback?: R,
   key?: Key,
-): DeferredCall<() => void> => ({f: MAP_REDUCE, args: [calls, map, reduce, then, fallback], key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: MAP_REDUCE, args: [calls, map, reduce, then, fallback], key, by: getCurrentFiberID()} as any);
 
 /** Gather items from a subtree, into a flat array. */
 export const gather = <T>(
@@ -195,7 +199,7 @@ export const gather = <T>(
   then?: LiveFunction<(r: T[]) => LiveElement>,
   fallback?: T[],
   key?: Key,
-): DeferredCall<() => void> => ({f: GATHER, args: [calls, then, fallback], key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: GATHER, args: [calls, then, fallback], key, by: getCurrentFiberID()} as any);
 
 /** Multi-gather items from a subtree, by object key. */
 export const multiGather = <T>(
@@ -203,7 +207,7 @@ export const multiGather = <T>(
   then?: LiveFunction<(r: Record<string, T[]>) => LiveElement>,
   fallback?: Record<string, T[]>,
   key?: Key,
-): DeferredCall<() => void> => ({f: MULTI_GATHER, args: [calls, then, fallback], key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: MULTI_GATHER, args: [calls, then, fallback], key, by: getCurrentFiberID()} as any);
 
 /** Fence gathered items from a subtree. */
 export const fence = <T>(
@@ -211,43 +215,43 @@ export const fence = <T>(
   then?: LiveFunction<(r: T) => LiveElement>,
   fallback?: T,
   key?: Key,
-): DeferredCall<() => void> => ({f: FENCE, args: [calls, then, fallback], key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: FENCE, args: [calls, then, fallback], key, by: getCurrentFiberID()} as any);
 
 /** Yeet value(s) upstream. */
 export const yeet = <T>(
   value?: T,
   key?: Key,
-): DeferredCall<() => void> => ({f: YEET, arg: value, key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: YEET, arg: value, key, by: getCurrentFiberID()} as any);
 
 /** Provide a value for a Live context. */
-export const provide = <T, C>(
+export const provide = <C>(
   context: LiveContext<C>,
-  value: T,
+  value: C,
   calls?: LiveNode<any>,
   key?: Key,
-): DeferredCall<() => void> => ({f: PROVIDE, args: [context, value, calls], key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: PROVIDE, args: [context, value, calls], key, by: getCurrentFiberID()} as any);
 
 /** Capture values from a Live context. */
 export const capture = <T, C>(
   context: LiveCapture<C>,
   calls?: LiveNode<any>,
-  then?: LiveFunction<(r: T) => void>,
+  then?: LiveFunction<(r: T) => LiveElement>,
   key?: Key,
-): DeferredCall<() => void> => ({f: CAPTURE, args: [context, calls, then], key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: CAPTURE, args: [context, calls, then], key, by: getCurrentFiberID()} as any);
 
 /** Reconcile quoted calls to a separate tree. */
 export const reconcileTo = <T>(
   reconciler: LiveReconciler<T>,
   calls?: LiveNode<any>,
   key?: Key,
-): DeferredCall<() => void> => ({f: RECONCILE, args: [reconciler, calls], key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: RECONCILE, args: [reconciler, calls], key, by: getCurrentFiberID()} as any);
 
 /** Quote a subtree and reconcile it into the given reconciler context. */
 export const quoteTo = <T>(
   reconciler: LiveReconciler<T>,
   calls?: LiveNode<any>,
   key?: Key,
-): DeferredCall<() => void> => {
+): DeferredCall<ArrowFunction> => {
   if (!reconciler?.reconciler) throw new Error("Missing reconciler for quote");
   return ({f: QUOTE, args: [reconciler, calls], key, by: getCurrentFiberID()} as any);
 };
@@ -256,7 +260,7 @@ export const quoteTo = <T>(
 export const unquote = (
   calls?: LiveNode<any>,
   key?: Key,
-): DeferredCall<() => void> => ({f: UNQUOTE, args: calls, key, by: getCurrentFiberID()} as any);
+): DeferredCall<ArrowFunction> => ({f: UNQUOTE, args: calls, key, by: getCurrentFiberID()} as any);
 
 /** Signal = quote yeet an empty value */
 export const signalTo = <T>(reconciler: LiveReconciler<T>, key?: Key) => {
@@ -280,7 +284,7 @@ export const deprecated = <F extends ArrowFunction>(
 
   const wrapped = (props: any) => {
     if (!warning) {
-      const unmemo = (s?: string) => s ? s.replace(/Memo\(([^\)]+)\)/g, '$1') : null;
+      const unmemo = (s?: string) => s ? s.replace(/Memo\(([^)]+)\)/g, '$1') : null;
 
       console.warn(`<${oldName}> is deprecated. Use <${unmemo(newName) ?? (f as any).displayName ?? f.name}> instead.`);
       warning = true;
@@ -306,7 +310,8 @@ export interface MakeContext {
 export const makeContext: MakeContext = <T>(initialValue?: T | null, displayName?: string) => ({
   initialValue,
   displayName,
-  context: true,
+  // Ensure this is the literal `true` type so it matches LiveContext.context?: true
+  context: true as const,
 });
 
 /** Make Live capture for holding shared value for child nodes */

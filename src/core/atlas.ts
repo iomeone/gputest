@@ -1,4 +1,4 @@
-import type { Atlas, TextureSource } from './types';
+import type { Atlas, ColorSpace, TextureSource } from './types';
 
 import { clamp, lerp } from './tuple';
 import { makeTextureDataLayout, makeDynamicTexture, uploadTexture } from './texture';
@@ -17,6 +17,7 @@ export const makeAtlasSource = (
   device: GPUDevice,
   atlas: Atlas,
   format: GPUTextureFormat,
+  colorSpace: ColorSpace,
   volatile?: number,
 ): TextureSource => {
   const mips = Math.floor(Math.log2(Math.min(atlas.width, atlas.height))) + 1;
@@ -35,7 +36,7 @@ export const makeAtlasSource = (
     absolute: true,
     volatile,
     format,
-    colorSpace: 'srgb',
+    colorSpace,
     size: [atlas.width, atlas.height],
     version: 1,
   } as TextureSource;

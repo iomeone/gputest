@@ -20,7 +20,7 @@ export const makeTranspile = <T extends SymbolTableT = any>(
     types = false,
     typeDef = false,
     sourceMap = false,
-    importRoot = null,    
+    importRoot = null,
   } = options ?? ({} as TranspileOptions);
 
   const maybeStringType = types ? '?: string' : '';
@@ -124,13 +124,14 @@ exports.default = __default;
     magicString: null,
   };
 
-  const getSymbols = table.visibles.map(getSymbol).join("");
+  const getSymbols = table.visibles?.map(getSymbol).join("") ?? '';
 
   if (sourceMap) {
     // Generate combined source + map
     const s = new MagicString(source);
     s.prepend(generated);
-    s.update(0, source.length, getSymbols);
+    if (source.length) s.update(0, source.length, getSymbols);
+    else console.warn("Empty source file: " + resourcePath);
 
     ret.output = s.toString();
     ret.magicString = s;
@@ -163,8 +164,10 @@ export const compressValue = (
   for (const k in dictionary) dictionaryMap.set(dictionary[k], k);
 
   const get = (symbol: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (dictionaryMap.has(symbol)) return dictionaryMap.get(symbol)!;
     if (symbol.length < 3 || symbol.indexOf(' ') >= 0) return stringify(symbol);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (symbolMap.has(symbol)) return symbolMap.get(symbol)!;
 
     const i = symbols.length;
@@ -173,7 +176,7 @@ export const compressValue = (
     return i;
   };
 
-  const encode = (arg: string, raw: boolean = false) => {
+  const encode = (arg: string) => {
     const i = get(arg);
     if (typeof i === 'string') return i;
     return `${ns}(${i})`;
@@ -216,8 +219,8 @@ export const compressString = (
   symbols: string[],
   ns: string,
 ) => {
-  let dks = Object.keys(dictionary);
-  let dvs = Object.values(dictionary);
+  const dks = Object.keys(dictionary);
+  const dvs = Object.values(dictionary);
 
   let ss: (string | number)[] = [s];
   symbols = symbols.slice();
@@ -226,6 +229,7 @@ export const compressString = (
   const exprs = s.matchAll(/\b[A-Za-z_][A-Za-z0-9_]+(<[^>]+>)?\b/g);
   for (const [e] of exprs) histo.set(e, (histo.get(e) || 0) + 1);
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const keys = [...histo.keys()].filter(k => k.length > 5 && histo.get(k)! > 2);
   symbols.push(...keys);
 
@@ -238,10 +242,10 @@ export const compressString = (
       ))
       .filter(s => typeof s === 'number' || s.length);
   };
-  
+
   for (const [i, s] of symbols.entries()) if (s.length > 3) replace(s, i);
   for (const [i, s] of dvs.entries()) if (s.length > 3) replace(s, -i-1);
-  
+
   const parts = ss.map(s => (
     typeof s === 'string' ? stringify(s) :
     s >= 0 ? s : dks[-s-1]
@@ -254,7 +258,7 @@ export const compressString = (
 };
 
 export const makeTypeDef = (symbols: string[]) => (
-`import { ParsedBundle } from "../../shader/wgsl";
+`import { ParsedBundle } from "@use-gpu/shader/wgsl";
 declare const _default: ParsedBundle;
 export default _default;
 ${symbols.map(s => `export declare const ${s}: ParsedBundle;`).join("\n")}

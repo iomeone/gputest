@@ -1,4 +1,4 @@
-use '../../wgsl/codec/octahedral'::{ encodeOctahedral };
+use '@use-gpu/wgsl/codec/octahedral'::{ encodeOctahedral };
 
 const MAX_LAYERS_LOG = 8;
 

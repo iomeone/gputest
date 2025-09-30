@@ -1,24 +1,24 @@
-import type { LC, PropsWithChildren } from '../../../live';
-import type { DataSchema, TextureSource, GPUGeometry, UniformType } from '../../../core';
-import type { ShaderSource } from '../../../shader';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { DataSchema, TextureSource, GPUGeometry } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
-import React, { Gather, memo, useOne } from '../../../live';
+import React, { Gather } from '@use-gpu/live';
 import { vec3 } from 'gl-matrix';
-import { seq } from '../../../core';
 
 import {
-  Loop, Pass, FlatCamera, Animate, LinearRGB,
+  Pass, LinearRGB, Loop,
   GeometryData, PBRMaterial, ImageTexture,
-  OrbitCamera, OrbitControls, Environment,
-  Cursor,
-  DirectionalLight, PointLight, AmbientLight,
+  OrbitCamera, Environment,
+  DirectionalLight, PointLight, AmbientLight, SpotLight,
   Data, PointLayer,
   makeBoxGeometry, makePlaneGeometry, makeSphereGeometry,
-} from '../../../workbench';
-
+} from '@use-gpu/workbench';
+import {
+  Cursor, OrbitControls,
+} from '@use-gpu/interact';
 import {
   Scene, Node, Mesh, Instances,
-} from '../../../scene';
+} from '@use-gpu/scene';
 
 import { InfoBox } from '../../ui/info-box';
 
@@ -34,6 +34,13 @@ const SHADOW_MAP_POINT = {
   size: [2048, 2048],
   depth: [0.1, 50],
   bias: [1/128, 1/64, 1/16],
+  blur: 4,
+};
+
+const SHADOW_MAP_SPOT = {
+  size: [2048, 2048],
+  depth: [0.1, 50],
+  bias: [1/64, 1/64, 1/16],
   blur: 4,
 };
 
@@ -64,12 +71,28 @@ const lightData = [
     position: [2, 4.5, 2.5, 1],
     color: [0.3, 0.8, 1.0, 1],
   },
+  {
+    position: [5, 20, -3, 1],
+    direction: [-0.307, -1, 0.307, 1],
+    color: [0.85, 0.65, 0.2, 1],
+    fov: 120,
+    feather: 5,
+    cutoff: 0.001,
+  },
+  {
+    position: [-5, 30, 3, 1],
+    direction: [0.307, -1, -0.307, 1],
+    color: [0.2, 0.85, 0.65, 1],
+    fov: 30,
+    feather: 5,
+    cutoff: 0.001,
+  },
 ];
 
-export const SceneDeferredPage: LC = (props) => {
+export const SceneDeferredPage: LC = () => {
 
   return (<>
-    <InfoBox>&lt;DirectionalLight&gt; and &lt;PointLight&gt; with shadow map (deferred renderer)</InfoBox>
+    <InfoBox>&lt;DirectionalLight&gt;, &lt;PointLight&gt; and &lt;SpotLight&gt; with shadow map (deferred renderer)</InfoBox>
     <Gather
       children={[
         <GeometryData {...boxGeometry} />,
@@ -88,73 +111,78 @@ export const SceneDeferredPage: LC = (props) => {
         GPUGeometry,
         TextureSource,
       ]) => (
-        <LinearRGB tonemap="aces" gain={1} samples={1}>
+        <LinearRGB tonemap="aces" gain={1} samples={1} depthStencil="depth32float-stencil8">
           <Cursor cursor='move' />
           <Camera>
-            <Pass lights shadows mode="deferred">
-              <AmbientLight intensity={0.2} />
-              <DirectionalLight position={lightData[0].position} intensity={1}   color={lightData[0].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />
-              <DirectionalLight position={lightData[1].position} intensity={0.5} color={lightData[1].color} shadowMap={SHADOW_MAP_DIRECTIONAL} />
-              <PointLight       position={lightData[2].position} intensity={100} color={lightData[2].color} shadowMap={SHADOW_MAP_POINT} />
+            <Loop converge={64}>
+              <Pass lights shadows mode="deferred" ssao={2}>
+                <AmbientLight intensity={0.2} />
 
-              <Environment preset="none">
-                <Scene>
+                <DirectionalLight {...lightData[0]} intensity={1}   shadowMap={SHADOW_MAP_DIRECTIONAL} />
+                <DirectionalLight {...lightData[1]} intensity={0.5} shadowMap={SHADOW_MAP_DIRECTIONAL} />
+                <PointLight       {...lightData[2]} intensity={100} shadowMap={SHADOW_MAP_POINT} />
+                <SpotLight        {...lightData[3]} intensity={600} shadowMap={SHADOW_MAP_SPOT} />
+                <SpotLight        {...lightData[4]} intensity={600} shadowMap={SHADOW_MAP_SPOT} />
 
-                  <Node position={[0, -4, 0]}>
-                    <PBRMaterial albedo={'#808080'} roughness={0.7}>
-                      <Mesh
-                        mesh={planeMesh}
-                        side="both"
+                <Environment preset="none">
+                  <Scene>
+
+                    <Node position={[0, -4, 0]}>
+                      <PBRMaterial albedo={'#808080'} roughness={0.7}>
+                        <Mesh
+                          mesh={planeMesh}
+                          side="both"
+                          shaded
+                        />
+                      </PBRMaterial>
+                    </Node>
+
+                    <PBRMaterial albedoMap={texture} roughness={0.5}>
+                      <Instances
+                        mesh={boxMesh}
                         shaded
+                        render={(Instance) => (<>
+                          <Instance position={[0, -3, 0]} />
+                          <Instance position={[-3, -2, -2]} scale={[2, 2, 2]} />
+                          <Instance position={[2, -3, 4]} rotation={[0, 30, 0]} />
+                          <Instance position={[-2, -3.333, 5]} scale={[2/3, 2/3, 2/3]} rotation={[0, -50, 0]} />
+                        </>)}
+                      />
+                      <Instances
+                        mesh={sphereMesh}
+                        shaded
+                        render={(Instance) => (<>
+                          <Instance position={[8.5, -1.5, 1.2]} scale={[0.31, 0.31, 0.31]} />
+                          <Instance position={[8.5, -1, 2.2]} scale={[0.31, 0.31, 0.31]} />
+                          <Instance position={[7.5, 1.5, .2]} scale={[0.31, 0.31, 0.31]} />
+
+                          <Instance position={[8, 0, 2.8]} scale={[0.5, 0.5, 0.5]} />
+                          <Instance position={[7, 0, 3.1]} scale={[0.5, 0.5, 0.5]} />
+                          <Instance position={[6, 0, 2.9]} scale={[0.5, 0.5, 0.5]} />
+                          <Instance position={[5, 0, 1.2]} scale={[1, 1, 1]} />
+
+                          <Instance position={[-3, 0, 2.1]} scale={[0.5, 0.5, 0.5]} />
+                          <Instance position={[-4, 0, 1.9]} scale={[0.5, 0.5, 0.5]} />
+                          <Instance position={[-5, 0, 2.2]} scale={[0.5, 0.5, 0.5]} />
+                          <Instance position={[-6, 0, 1.8]} scale={[0.5, 0.5, 0.5]} />
+                          <Instance position={[-7, 0, 2]} scale={[0.5, 0.5, 0.5]} />
+                        </>)}
                       />
                     </PBRMaterial>
-                  </Node>
 
-                  <PBRMaterial albedoMap={texture} roughness={0.5}>
-                    <Instances
-                      mesh={boxMesh}
-                      shaded
-                      render={(Instance) => (<>
-                        <Instance position={[0, -3, 0]} />
-                        <Instance position={[-3, -2, -2]} scale={[2, 2, 2]} />
-                        <Instance position={[2, -3, 4]} rotation={[0, 30, 0]} />
-                        <Instance position={[-2, -3.333, 5]} scale={[2/3, 2/3, 2/3]} rotation={[0, -50, 0]} />
-                      </>)}
-                    />
-                    <Instances
-                      mesh={sphereMesh}
-                      shaded
-                      render={(Instance) => (<>
-                        <Instance position={[8.5, -1.5, 1.2]} scale={[0.31, 0.31, 0.31]} />
-                        <Instance position={[8.5, -1, 2.2]} scale={[0.31, 0.31, 0.31]} />
-                        <Instance position={[7.5, 1.5, .2]} scale={[0.31, 0.31, 0.31]} />
+                  </Scene>
+                </Environment>
 
-                        <Instance position={[8, 0, 2.8]} scale={[0.5, 0.5, 0.5]} />
-                        <Instance position={[7, 0, 3.1]} scale={[0.5, 0.5, 0.5]} />
-                        <Instance position={[6, 0, 2.9]} scale={[0.5, 0.5, 0.5]} />
-                        <Instance position={[5, 0, 1.2]} scale={[1, 1, 1]} />
+                <Data
+                  schema={lightSchema}
+                  data={lightData}
+                  render={({positions, colors}: Record<string, ShaderSource>) => (
+                    <PointLayer positions={positions} colors={colors} size={50} depth={0.5} mode="transparent" />
+                  )}
+                />
 
-                        <Instance position={[-3, 0, 2.1]} scale={[0.5, 0.5, 0.5]} />
-                        <Instance position={[-4, 0, 1.9]} scale={[0.5, 0.5, 0.5]} />
-                        <Instance position={[-5, 0, 2.2]} scale={[0.5, 0.5, 0.5]} />
-                        <Instance position={[-6, 0, 1.8]} scale={[0.5, 0.5, 0.5]} />
-                        <Instance position={[-7, 0, 2]} scale={[0.5, 0.5, 0.5]} />
-                      </>)}
-                    />
-                  </PBRMaterial>
-
-                </Scene>
-              </Environment>
-
-              <Data
-                schema={lightSchema}
-                data={lightData}
-                render={({positions, colors}: Record<string, ShaderSource>) => (
-                  <PointLayer positions={positions} colors={colors} size={50} depth={0.5} mode="transparent" />
-                )}
-              />
-
-            </Pass>
+              </Pass>
+            </Loop>
           </Camera>
         </LinearRGB>
       )}

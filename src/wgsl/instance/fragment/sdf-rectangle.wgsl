@@ -1,5 +1,5 @@
-use '../../../wgsl/fragment/sdf-2d'::{ SDF, getUVScale, getBoxSDF, getBorderBoxSDF, getRoundedBorderBoxSDF };
-use '../../../wgsl/use/color'::{ premultiply };
+use '@use-gpu/wgsl/fragment/sdf-2d'::{ SDF, getUVScale, getBoxSDF, getBorderBoxSDF, getRoundedBorderBoxSDF };
+use '@use-gpu/wgsl/use/color'::{ premultiply };
 
 @optional @link fn getTexture(uv: vec2<f32>) -> vec4<f32> { return vec4<f32>(0.0, 0.0, 0.0, 0.0); };
 @optional @link fn getMask(color: vec4<f32>, uv: vec4<f32>, st: vec4<f32>) -> vec4<f32> { return color; }
@@ -66,7 +66,7 @@ use '../../../wgsl/use/color'::{ premultiply };
 
     // Get appropriate SDF
     if (mode == 0) {
-      if (fillColor.a <= 0.0) { discard; }
+      if (HAS_ALPHA_TO_DISCARD) { if (fillColor.a <= 0.0) { discard; } }
       sdf = getBoxSDF(shape.xy, uv, scale);
     }
     else if (mode == 1) { sdf = getBorderBoxSDF(shape.xy, border, uv, scale); }
@@ -116,7 +116,9 @@ use '../../../wgsl/use/color'::{ premultiply };
       reduce = sdf.outer - sdf.inner;
       sdf.inner = sdf.outer - 1.0;
     }
-    color = mix(fillColor, strokeColor, reduce * clamp(1.0 - sdf.inner, 0.0, 1.0));
+
+    let fill = reduce * clamp(1.0 - sdf.inner, 0.0, 1.0);
+    color = mix(fillColor, strokeColor, fill);
   }
 
   if (HAS_MASK) {

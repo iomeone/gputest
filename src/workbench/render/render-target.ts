@@ -1,7 +1,8 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { OffscreenTarget, ColorSpace, TextureSource, TextureTarget } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { Blending, OffscreenRenderContext, ColorSpace, TextureSource, TextureTarget } from '@use-gpu/core';
 
-import { provide, fence, yeet, useContext, useMemo, useOne } from '../../live';
+import { provide, fence, yeet, useContext, useMemo, useOne } from '@use-gpu/live';
+import { countMips, getTextureSampleType } from '@use-gpu/core';
 import { PRESENTATION_FORMAT, DEPTH_STENCIL_FORMAT, COLOR_SPACE, EMPTY_COLOR } from '../constants';
 import { RenderContext } from '../providers/render-provider';
 import { DeviceContext } from '../providers/device-provider';
@@ -10,35 +11,45 @@ import { useInspectable } from '../hooks/useInspectable';
 import { getRenderFunc } from '../hooks/useRenderProp';
 
 import {
+  makeBlendState,
   makeColorState,
   makeColorAttachment,
   makeTargetTexture,
-  makeDepthTexture,
   makeDepthStencilState,
   makeDepthStencilAttachment,
-  BLEND_PREMULTIPLY,
+  getDefaultBlendMode,
   seq,
-} from '../../core';
+} from '@use-gpu/core';
 
 const NO_SAMPLER: Partial<GPUSamplerDescriptor> = {};
 
 export type RenderTargetProps = {
   width?: number,
   height?: number,
-  history?: number,
-  sampler?: Partial<GPUSamplerDescriptor>,
-  format?: GPUTextureFormat,
-  depthStencil?: GPUTextureFormat | null,
-  backgroundColor?: GPUColor,
-  colorSpace?: ColorSpace,
-  colorInput?: ColorSpace,
   samples?: number,
   resolution?: number,
-  absolute?: boolean,
-  variant?: string,
+  overscan?: number,
+  history?: number,
+  mip?: number | boolean,
 
-  render?: (rttContext: OffscreenTarget) => LiveElement,
-  children?: LiveElement | ((rttContext: OffscreenTarget) => LiveElement),
+  format?: GPUTextureFormat | null,
+  depthStencil?: GPUTextureFormat | null,
+  depthHistory?: boolean,
+  sampler?: Partial<GPUSamplerDescriptor>,
+  variant?: string,
+  absolute?: boolean,
+  unresolved?: boolean,
+
+  backgroundColor?: GPUColor,
+  blend?: Blending | GPUBlendState | null,
+  colorSpace?: ColorSpace,
+  colorInput?: ColorSpace,
+
+  label?: string,
+  hint?: string,
+
+  render?: (rttContext: OffscreenRenderContext) => LiveElement,
+  children?: LiveElement | ((rttContext: OffscreenRenderContext) => LiveElement),
   then?: (target: TextureTarget) => LiveElement,
 };
 
@@ -52,41 +63,64 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
 
   const inspect = useInspectable();
 
+  const {width: rw, height: rh} = renderContext;
+
   const {
     resolution = 1,
-    width = Math.floor(renderContext.width * resolution),
-    height = Math.floor(renderContext.height * resolution),
+    overscan = 0,
+    width  = Math.ceil(rw * resolution) + 2 * Math.ceil(rw * overscan * resolution),
+    height = Math.ceil(rh * resolution) + 2 * Math.ceil(rh * overscan * resolution),
     samples = renderContext.samples,
     format = PRESENTATION_FORMAT,
     history = 0,
+    mip = false,
     sampler = NO_SAMPLER,
     depthStencil = DEPTH_STENCIL_FORMAT,
+    depthHistory = false,
     backgroundColor = EMPTY_COLOR,
+    blend,
     colorSpace = COLOR_SPACE,
     colorInput = COLOR_SPACE,
     variant = 'textureSample',
     absolute = false,
+    unresolved = false,
+    label,
+    hint,
     children,
     then,
   } = props;
 
+  const mips = (
+    typeof mip === 'number' ? mip :
+    mip ? countMips(width, height) : 1
+  );
+
+  // Color target + history
   const [renderTexture, resolveTexture, bufferTextures, bufferViews, counter] = useMemo(
     () => {
+      const counter = { current: 0 };
+      if (!format) return [null, null, null, null, counter];
+
       const render =
         makeTargetTexture(
           device,
           width,
           height,
+          1,
           format,
           samples,
+          samples > 1 ? 1 : mips,
         );
 
-      const resolve = samples > 1 ?
+      const resolve = samples > 1 && !unresolved ?
         makeTargetTexture(
           device,
           width,
           height,
+          1,
           format,
+          1,
+          mips,
         ) : null;
 
       const buffers = history > 0 ? seq(history).map(() =>
@@ -94,25 +128,85 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
           device,
           width,
           height,
+          1,
           format,
+          1,
+          mips,
         )
       ) : null;
       if (buffers) buffers.push(resolve ?? render);
 
       const views = buffers ? buffers.map(b => b.createView()) : undefined;
 
-      const counter = { current: 0 };
+      if (label != null) {
+        render.label = label;
+        if (resolve) resolve.label = label;
+        if (buffers) for (const b of buffers) b.label = label;
+        if (views) for (const v of views) v.label = label;
+      }
 
       return [render, resolve, buffers, views, counter];
     },
-    [device, width, height, format, samples, history]
+    [device, width, height, format, samples, unresolved, history, mips, label]
   );
 
   const targetTexture = resolveTexture ?? renderTexture;
 
-  const colorStates      = useOne(() => [makeColorState(format, BLEND_PREMULTIPLY)], format);
+  // Depth texture + history
+  const [
+    depthTexture,
+    depthTextures,
+    depthViews,
+    depthStencilAttachment,
+  ] = useMemo(() => {
+      if (!depthStencil) return [];
+
+      const texture = makeTargetTexture(
+        device,
+        width,
+        height,
+        1,
+        depthStencil,
+        samples,
+      );
+
+      const buffers = depthHistory && (history > 0) ? seq(history).map(() =>
+        makeTargetTexture(
+          device,
+          width,
+          height,
+          1,
+          depthStencil,
+          samples,
+        )
+      ) : null;
+      if (buffers) buffers.push(texture);
+
+      const views = buffers ? buffers.map(b => b.createView({ aspect: 'depth-only' })) : undefined;
+
+      if (label != null) {
+        const l = `${label} Depth`;
+        texture.label = l;
+        if (buffers) for (const b of buffers) b.label = l;
+        if (views) for (const v of views) v.label = l;
+      }
+
+      const attachment = makeDepthStencilAttachment(texture, depthStencil);
+
+      return [texture, buffers, views, attachment];
+    },
+    [device, width, height, depthStencil, depthHistory, samples, history, label]
+  );
+
+  // Color/depth state and attachments
+  const colorStates = useOne(() => (
+    format ? [makeColorState(format, makeBlendState(blend ?? getDefaultBlendMode(format)))] : []
+  ), format);
+
   const colorAttachments = useMemo(() =>
-    [makeColorAttachment(renderTexture, resolveTexture, backgroundColor)],
+    renderTexture || resolveTexture
+      ? [makeColorAttachment(renderTexture, resolveTexture, backgroundColor)]
+      : [],
     [renderTexture, resolveTexture, backgroundColor]
   );
   const depthStencilState = useOne(() => depthStencil
@@ -120,88 +214,114 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     : undefined,
     depthStencil);
 
-  const [
-    depthTexture,
-    depthStencilAttachment,
-  ] = useMemo(() => {
-      if (!depthStencil) return [];
+  // Wrapped TextureTargets + history swapper
+  const [source, depth] = useMemo(() => {
 
-      const texture = makeDepthTexture(device, width, height, depthStencil, samples);
-      const attachment = makeDepthStencilAttachment(texture, depthStencil);
-      return [texture, attachment];
-    },
-    [device, width, height, depthStencil, samples]
-  );
-
-  const [source, sources, depth] = useMemo(() => {
-    const view = targetTexture.createView();
     const size = [width, height] as [number, number];
-    const volatile = history ? history + 1 : 0;
-    const layout = 'texture_2d<f32>';
+    let source: TextureTarget | undefined;
+    let sources: TextureTarget[] | undefined;
+    let depth: TextureTarget | undefined;
+    let depths: TextureTarget[] | undefined;
 
-    const swap = () => {
-      if (!history) return;
+    const swap = (history > 0) ? () => {
       const {current: index} = counter;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const n = bufferViews!.length;
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const texture = bufferTextures![index];
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const view = bufferViews![index];
-
-      if (resolveTexture) colorAttachments[0].resolveTarget = view;
-      else colorAttachments[0].view = view;
-
-      source.texture = texture;
-      source.view = view;
-
-      for (let i = 0; i < history; i++) {
-        const j = (index + n - i - 1) % n;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        sources![i].texture = bufferTextures![j];
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        sources![i].view = bufferViews![j];
+      if (source && sources && bufferTextures && bufferViews) {
+        cycleHistorySources(
+          source,
+          sources,
+          index,
+          bufferTextures,
+          bufferViews,
+          colorAttachments[0],
+          !!resolveTexture,
+        );
+      }
+      if (depth && depths && depthTextures && depthViews) {
+        cycleHistorySources(
+          depth,
+          depths,
+          index,
+          depthTextures,
+          depthViews,
+          depthStencilAttachment,
+        );
       }
 
-      counter.current = (index + 1) % n;
-    };
+      counter.current = (index + 1) % (history + 1);
+    } : null;
 
-    const makeSource = () => ({
-      texture: targetTexture,
-      view,
-      sampler,
-      layout,
-      format,
-      variant,
-      absolute,
-      colorSpace,
-      size,
-      volatile,
-      version: 0,
-      swap: null as any,
-    }) as TextureTarget;
+    if (format && targetTexture) {
+      const view = targetTexture.createView();
+      const volatile = (history > 0) ? history + 1 : 0;
 
-    const sources = history ? seq(history).map(makeSource) : undefined;
+      const type = getTextureSampleType(format);
+      const layout = samples > 1 && unresolved ? `texture_multisampled_2d<${type}>` : `texture_2d<${type}>`;
 
-    const source = makeSource();
-    source.history = sources;
-    source.swap = swap;
+      const makeSource = () => ({
+        texture: targetTexture,
+        view,
+        sampler,
+        layout,
+        format,
+        mips,
+        variant,
+        absolute,
+        colorSpace,
+        size,
+        volatile,
+        version: 0,
+        hint,
+        swap: undefined as any,
+      }) as TextureTarget;
 
-    swap();
+      sources = (history > 0) ? seq(history).map(makeSource) : undefined;
 
-    const depth = depthStencil ? {
-      texture: depthTexture,
-      sampler: {},
-      layout: samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d',
-      format: depthStencil,
-      size,
-      version: 0,
-    } as TextureSource : undefined;
+      source = makeSource();
+      source.history = sources;
+      if (swap) source.swap = swap;
+    }
 
-    return [source, sources, depth];
-  }, [targetTexture, depthTexture, width, height, format, variant, absolute, samples, history, sampler, depthStencil]);
+    if (depthStencil && depthTexture) {
+      const view = depthTexture.createView({ aspect: 'depth-only' });
+      const volatile = history ? history + 1 : 0;
 
+      const layout = samples > 1 ? 'texture_depth_multisampled_2d' : 'texture_depth_2d';
+
+      const makeSource = () => ({
+        texture: depthTexture,
+        view,
+        sampler,
+        layout,
+        format: depthStencil,
+        variant,
+        absolute,
+        size,
+        volatile,
+        version: 0,
+        aspect: 'depth-only',
+        hint: 'depth',
+        swap: undefined as any,
+      }) as TextureTarget;
+
+      depths = depthHistory && (history > 0) ? seq(history).map(makeSource) : undefined;
+
+      depth = makeSource();
+      depth.history = depths;
+      if (swap) depth.swap = swap;
+    }
+
+    swap?.();
+
+    return [source, depth];
+  }, [
+    targetTexture, depthTexture,
+    width, height, format, variant, absolute, unresolved, samples, history, mips, sampler, hint,
+    bufferTextures, bufferViews, colorAttachments, colorSpace, counter, resolveTexture,
+    depthHistory, depthStencil, depthStencilAttachment, depthTextures, depthViews,
+  ]);
+
+  // Offscreen render context
   const rttContext = useMemo(() => ({
     ...renderContext,
     width,
@@ -209,27 +329,29 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
     samples,
     colorSpace,
     colorInput,
+
     colorStates,
-    colorAttachments,
-    depthTexture,
     depthStencilState,
-    depthStencilAttachment,
-    swap: source.swap,
+
+    viewType: '2d',
+    viewAttachments: [{
+      colorAttachments,
+      depthStencilAttachment,
+    }],
+
+    swap: source?.swap ?? depth?.swap,
     source,
     depth,
-  }), [renderContext, width, height, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source, sources]);
+  } as OffscreenRenderContext), [renderContext, width, height, depth, samples, colorInput, colorSpace, colorStates, colorAttachments, depthStencilState, depthStencilAttachment, source]);
 
-  const inspectable = useMemo(() => [
-    source,
-    ...(sources ?? []),
-    ...(depth ? [depth] : []),
-  ], [source, sources, depth]);
-
-  inspect({
-    output: {
-      color: inspectable,
-    },
-  });
+  useMemo(() => {
+    const inspectable = [source, depth].filter(s => !!s);
+    inspect({
+      output: {
+        color: inspectable,
+      },
+    });
+  }, [source, depth, inspect]);
 
   const render = getRenderFunc(props);
   if (!(render ?? children)) return yeet(rttContext);
@@ -237,6 +359,53 @@ export const RenderTarget: LiveComponent<RenderTargetProps> = (props: RenderTarg
   const content = render ? render(rttContext) : children;
   const view = provide(RenderContext, rttContext, content);
 
-  if (then) return fence(view, () => then(source));
+  if (then && source) return fence(view, () => then(source));
   return view;
 }
+
+const cycleHistorySources = (
+  source: TextureSource,
+  sources: TextureSource[],
+  index: number,
+
+  textures: GPUTexture[],
+  views: GPUTextureView[],
+  attachment: any,
+  resolve?: boolean,
+) => {
+  const n = textures.length;
+  const history = n - 1;
+
+  const texture = textures[index];
+  const view = views[index];
+
+  source.texture = texture;
+  source.view = view;
+
+  for (let i = 0; i < history; i++) {
+    const j = (index + n - i - 1) % n;
+    sources[i].texture = textures[j];
+    sources[i].view = views[j];
+  }
+
+  if (attachment) {
+    attachment[resolve ? 'resolveTarget' : 'view'] = view;
+  }
+}
+
+// eslint-disable-next-line react-hooks/exhaustive-deps
+export const useCombinedRenderTarget = (targets: OffscreenRenderContext[]) => useMemo(() => getCombinedRenderTarget(targets), targets);
+
+export const getCombinedRenderTarget = (targets: OffscreenRenderContext[]) => {
+  const [first] = targets;
+
+  return {
+    ...first,
+    colorStates: targets.flatMap(t => t.colorStates),
+    viewAttachments: first.viewAttachments.map((va, i) => ({
+      ...va,
+      colorAttachments: targets.flatMap(t => t.viewAttachments[i].colorAttachments),
+    })),
+    sources: targets.map(t => t.source),
+  };
+};

@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { LiveComponent } from '../../live';
-import type { TraitProps } from '../../traits';
+import type { LiveComponent } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { makeUseTrait, shouldEqual, sameShallow } from '../../traits/index-live';
-import { adjustSchema, schemaToArchetype, schemaToEmitters } from '../../core';
-import { yeet, memo, useOne } from '../../live';
+import { makeUseTrait, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { adjustSchema, schemaToArchetype, schemaToEmitters } from '@use-gpu/core';
+import { yeet, memo, useOne } from '@use-gpu/live';
 
-import { useInspectHoverable, useTransformContext, useScissorContext, ARROW_SCHEMA, LayerReconciler } from '../../workbench';
+import { useInspectHoverable, useMaterialContext, useNoMaterialContext, useTransformContext, useScissorContext, ARROW_SCHEMA, LayerReconciler } from '@use-gpu/workbench';
 
 import { ArrowTraits } from '../traits';
 
@@ -70,6 +70,8 @@ export const Arrow: LiveComponent<ArrowProps> = memo((props) => {
 
   const scissor = useScissorContext();
   const context = useTransformContext();
+
+  const material = flags.shaded ? useMaterialContext() : (useNoMaterialContext(), undefined);
   const {transform, nonlinear, matrix: refs} = context;
 
   const schema = useOne(() => adjustSchema(ARROW_SCHEMA, formats), formats);
@@ -86,18 +88,18 @@ export const Arrow: LiveComponent<ArrowProps> = memo((props) => {
       archetype,
       attributes,
       flags,
+      material,
       refs,
       schema,
       scissor,
       sources,
-      transform: nonlinear ?? context,
+      transform: nonlinear ?? (context.key ? context : undefined),
       zIndex,
     },
   };
 
   return quote(yeet(shapes));
 }, shouldEqual({
-  position: sameShallow(sameShallow()),
   color: sameShallow(),
 }), 'Arrow');
 

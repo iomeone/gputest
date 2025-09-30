@@ -1,14 +1,16 @@
-import type { LiveComponent } from '../../live';
-import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike, Lazy, UniformAttribute, DataBounds } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 
 import { useDraw } from '../hooks/useDraw';
 
-import { memo, useCallback, useMemo, useNoCallback } from '../../live';
-import { chainTo } from '../../shader/wgsl';
+import { memo, useCallback, useMemo, useNoCallback } from '@use-gpu/live';
+import { chainTo } from '@use-gpu/shader/wgsl';
+
+import { FacetSource, useFacetShader } from './hooks/facets';
+import { PickingSource, usePickingShader } from './hooks/picking';
 
 import { useMaterialContext } from '../providers/material-provider';
-import { PickingSource, usePickingShader } from '../providers/picking-provider';
 import { TransformContextProps } from '../providers/transform-provider';
 
 import { useApplyTransform } from '../hooks/useApplyTransform';
@@ -19,10 +21,17 @@ import { useDataLength } from '../hooks/useDataBinding';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getQuadVertex } from '../../wgsl/instance/vertex/quadwgsl';
-import { getMaskedColor } from '../../wgsl/mask/maskedwgsl';
+import { getQuadVertex, getQuadVertexShaded } from '@use-gpu/wgsl/instance/vertex/quad.wgsl';
+import { getMaskedColor, getMaskedSurface } from '@use-gpu/wgsl/mask/masked.wgsl';
+import { solidToShaded } from '@use-gpu/wgsl/instance/surface/solid-to-shaded.wgsl';
+import { getRaytraceSurface } from '@use-gpu/wgsl/instance/surface/raytrace-surface.wgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
+
+export type RawQuadsFlags = {
+  shaded?: boolean,
+  join?: 'tangent' | 'miter' | 'round' | 'bevel',
+} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 export type RawQuadsProps = {
   position?: VectorLike,
@@ -30,7 +39,6 @@ export type RawQuadsProps = {
   color?: VectorLike,
   depth?: number,
   zBias?: number,
-  mask?: number,
   uv?: VectorLike,
   st?: VectorLike,
 
@@ -39,20 +47,23 @@ export type RawQuadsProps = {
   colors?: ShaderSource,
   depths?: ShaderSource,
   zBiases?: ShaderSource,
-  masks?: ShaderSource,
   uvs?: ShaderSource,
   sts?: ShaderSource,
+
+  mask?: ShaderSource,
+  raytrace?: ShaderSource,
 
   instance?: number,
   instances?: ShaderSource,
   transform?: TransformContextProps,
 
   count?: Lazy<number>,
-} & PickingSource & Pick<Partial<PipelineOptions>, 'mode' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
+} & FacetSource & PickingSource & RawQuadsFlags;
 
 export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps) => {
   const {
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -63,6 +74,8 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
     transform,
 
     count = null,
+    shaded = false,
+    shadow = false,
   } = props;
 
   const vertexCount = 4;
@@ -76,7 +89,8 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
   const u = useShaderRef(props.uv, props.uvs);
   const s = useShaderRef(props.st, props.sts ?? p);
 
-  const m = (mode !== 'debug') ? (props.masks ?? props.mask) : null;
+  const m = (mode !== 'debug') ? props.mask : null;
+  const rt = (mode !== 'debug') ? props.raytrace : null;
 
   const {positions, scissor, bounds: getBounds} = useApplyTransform(p, transform);
 
@@ -89,9 +103,11 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
     useNoCallback();
   }
 
-  const material = useMaterialContext().solid;
+  // Solid or shaded material
+  const renderer = shadow || shaded ? 'shaded' : 'solid';
+  const material = useMaterialContext()[renderer];
 
-  const boundVertex = useShader(getQuadVertex, [
+  const boundVertex = useShader(shaded ? getQuadVertexShaded : getQuadVertex, [
     positions, scissor,
     r,
     c, d, z, u, s,
@@ -99,21 +115,34 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
   ]);
   const [getVertex, totalCount, instanceDefs] = useInstancedVertex(boundVertex, instance, instances, instanceCount);
   const getPicking = usePickingShader(props);
-  const applyMask = m ? useShader(getMaskedColor, [m]) : useNoShader();
+  const getFacet = useFacetShader(props);
+
+  // Shape mask (2D)
+  const applyFragmentMask = m && material.getFragment ? useShader(getMaskedColor, [m]) : useNoShader();
+  const applySurfaceMask = m && material.getSurface ? useShader(getMaskedSurface, [m]) : useNoShader();
+
+  // Depth/normal mask via raytrace (3D)
+  const getSurfaceRT = (
+    rt && material.getSurface ? useShader(getRaytraceSurface, [material.getSurface, rt]) : useNoShader()
+  );
 
   const links = useMemo(() => ({
-    getVertex,
+    getVertex: shadow && !shaded ? chainTo(getVertex, solidToShaded) : getVertex,
     getPicking,
+    getFacet,
     ...material,
-    getFragment: material.getFragment && applyMask ? chainTo(applyMask, material.getFragment) : material.getFragment,
-  }), [getVertex, getPicking, applyMask, material]);
+    getSurface: getSurfaceRT ?? (material.getSurface && applySurfaceMask ? chainTo(applySurfaceMask, material.getSurface) : material.getSurface),
+    getFragment: material.getFragment && applyFragmentMask ? chainTo(applyFragmentMask, material.getFragment) : material.getFragment,
+  }), [getVertex, getPicking, getFacet, getSurfaceRT, applyFragmentMask, applySurfaceMask, shadow, shaded, material]);
 
   const [pipeline, defs] = usePipelineOptions({
     mode,
     topology: 'triangle-strip',
     stripIndexFormat: 'uint16',
     side: 'both',
+    shadow,
     alphaToCoverage,
+    alphaToDiscard,
     depthTest,
     depthWrite,
     blend,
@@ -122,8 +151,9 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
   const defines: Record<string, any> = useMemo(() => ({
     ...defs,
     ...instanceDefs,
+    HAS_DEPTH: shaded,
     HAS_EDGE_BLEED: true,
-  }), [defs, instanceDefs]);
+  }), [defs, instanceDefs, shaded]);
 
   return useDraw({
     vertexCount,
@@ -133,7 +163,7 @@ export const RawQuads: LiveComponent<RawQuadsProps> = memo((props: RawQuadsProps
     links,
     defines,
 
-    renderer: 'solid',
+    renderer,
     pipeline,
     mode,
   });

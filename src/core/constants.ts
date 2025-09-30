@@ -8,6 +8,18 @@ export const TYPED_ARRAYS: TypedArrayConstructor[] = [
   Float32Array, Float64Array,
 ];
 
+const TYPED_ARRAYS_BITCOUNT = new Map<Function, number>([
+  [Int8Array, 8],
+  [Uint8Array, 8],
+  [Int16Array, 16],
+  [Uint16Array, 16],
+  [Int32Array, 32],
+  [Uint32Array, 32],
+  [Uint8ClampedArray, 8],
+  [Float32Array, 32],
+  [Float64Array, 64],
+]);
+
 export const VERTEX_SIZES = {
   "uint8x2": 2,
   "uint8x4": 4,
@@ -297,6 +309,9 @@ export const UNIFORM_ATTRIBUTE_ALIGNS = arrayify(arrayify(arrayify(shorthands({
   "vec3to4<u32>": 0,
   "vec3to4<i32>": 0,
   "vec3to4<f32>": 0,
+
+  // JS string wrapper type (not used on GPU)
+  "string<u16>": 0,
 })))) as Record<UniformType, number>;
 
 export const UNIFORM_ARRAY_DIMS = arrayify(arrayify(arrayify(shorthands({
@@ -576,6 +591,12 @@ export const TEXTURE_FORMAT_SIZES = {
   "depth24plus-stencil8": 4,
   "depth32float": 4,
 
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": 4,
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": 0,
+
   /*
   // BC compressed formats usable if "texture-compression-bc" is both
   // supported by the device/user agent and enabled in requestDevice.
@@ -638,13 +659,8 @@ export const TEXTURE_FORMAT_SIZES = {
   "astc-12x12-unorm",
   "astc-12x12-unorm-srgb",
 
-  // "depth24unorm-stencil8" feature
-  "depth24unorm-stencil8",
-
-  // "depth32float-stencil8" feature
-  "depth32float-stencil8",
   */
-} as Record<GPUTextureFormat, number>;
+} as Partial<Record<GPUTextureFormat, number>>;
 
 export const TEXTURE_FORMAT_DIMS = {
   // 8-bit formats
@@ -700,7 +716,13 @@ export const TEXTURE_FORMAT_DIMS = {
   "depth24plus": 1,
   "depth24plus-stencil8": 1,
   "depth32float": 1,
-} as Record<GPUTextureFormat, number>;
+
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": 1,
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": 1,
+} as Partial<Record<GPUTextureFormat, number>>;
 
 export const TEXTURE_ARRAY_TYPES = {
   // 8-bit formats
@@ -756,9 +778,15 @@ export const TEXTURE_ARRAY_TYPES = {
   "depth24plus": Uint32Array,
   "depth24plus-stencil8": Uint32Array,
   "depth32float": Uint32Array,
-} as Record<GPUTextureFormat, TypedArrayConstructor>;
 
-export const TEXTURE_SHADER_TYPES = {
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": Uint32Array,
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": Uint32Array,
+} as Partial<Record<GPUTextureFormat, TypedArrayConstructor>>;
+
+const TEXTURE_SHADER_TYPES = {
   // 8-bit formats
   "r8unorm": 'f32',
   "r8snorm": 'f32',
@@ -809,13 +837,102 @@ export const TEXTURE_SHADER_TYPES = {
   // Depth and stencil formats
   "stencil8": 'u32',              // u8
   "depth16unorm": 'f32',
+  "depth24plus": 'f32',
+  "depth24plus-stencil8": 'f32',
+  "depth32float": 'f32',
+
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": 'f32',
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": 'f32',
+} as Partial<Record<GPUTextureFormat, UniformType>>;
+
+const TEXTURE_SAMPLE_TYPES = {
+  // 8-bit formats
+  "r8unorm": 'f32',
+  "r8snorm": 'f32',
+  "r8uint": 'u32',  // u8
+  "r8sint": 'i32',  // i8
+
+  // 16-bit formats
+  "r16uint": 'u32',        // u16
+  "r16sint": 'i32',        // i16
+  "r16float": 'f32',       // f16
+  "rg8unorm": 'f32',
+  "rg8snorm": 'f32',
+  "rg8uint": 'u32',  // u8
+  "rg8sint": 'i32',  // i8
+
+  // 32-bit formats
+  "r32uint": 'u32',
+  "r32sint": 'i32',
+  "r32float": 'f32',
+  "rg16uint": 'u32',        // u16
+  "rg16sint": 'i32',        // i16
+  "rg16float": 'f32',       // f32
+  "rgba8unorm": 'f32',
+  "rgba8unorm-srgb": 'f32',
+  "rgba8snorm": 'f32',
+  "rgba8uint": 'u32',       // u8
+  "rgba8sint": 'i32',       // i8
+  "bgra8unorm": 'f32',
+  "bgra8unorm-srgb": 'f32',
+
+  // Packed 32-bit formats
+  "rgb9e5ufloat": 'f32',
+  "rgb10a2unorm": 'f32',
+  "rg11b10ufloat": 'f32',
+
+  // 64-bit formats
+  "rg32uint": 'u32',
+  "rg32sint": 'i32',
+  "rg32float": 'f32',
+  "rgba16uint": 'u32',
+  "rgba16sint": 'i32',
+  "rgba16float": 'f32',
+
+  // 128-bit formats
+  "rgba32uint": 'u32',
+  "rgba32sint": 'i32',
+  "rgba32float": 'f32',
+
+  // Depth and stencil formats
+  "stencil8": 'u32',              // u8
+  "depth16unorm": 'f32',
   "depth24plus": 'u32',
   "depth24plus-stencil8": 'u32',
   "depth32float": 'f32',
-} as Record<GPUTextureFormat, string>;
+
+  // "depth24unorm-stencil8" feature
+  "depth24unorm-stencil8": 'f32',
+
+  // "depth32float-stencil8" feature
+  "depth32float-stencil8": 'f32',
+} as Partial<Record<GPUTextureFormat, UniformType>>;
+
+export const getTypedArraysBitCount = (ctor: TypedArrayConstructor) => TYPED_ARRAYS_BITCOUNT.get(ctor);
+
+export const getTextureArrayType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only'): TypedArrayConstructor => {
+  if (aspect === 'stencil-only') return Uint8Array;
+  if (!(format in TEXTURE_ARRAY_TYPES)) throw new Error("Unsupported texture format '${format}");
+  return TEXTURE_ARRAY_TYPES[format] ?? Float32Array;
+};
+
+export const getTextureSampleType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only'): UniformType => {
+  if (aspect === 'stencil-only') return 'u32';
+  if (!(format in TEXTURE_SAMPLE_TYPES)) throw new Error("Unsupported texture format '${format}");
+  return TEXTURE_SAMPLE_TYPES[format] ?? 'f32' as UniformType;
+};
+
+export const getTextureShaderType = (format: GPUTextureFormat, aspect: GPUTextureAspect = 'depth-only'): UniformType => {
+  if (aspect === 'stencil-only') return 'vec4<u32>';
+  if (!(format in TEXTURE_SHADER_TYPES)) throw new Error("Unsupported texture format '${format}");
+  return TEXTURE_SHADER_TYPES[format] ?? 'f32' as UniformType;
+};
 
 // @ts-ignore
-export const VERTEX_ATTRIBUTE_SIZES = VERTEX_SIZES as {[t in GPUVertexFormat]: number};
+export const VERTEX_ATTRIBUTE_SIZES = VERTEX_SIZES as {[v in GPUVertexFormat]: number};
 
 // Standard blends
 export const BLEND_NONE = undefined;
@@ -884,3 +1001,12 @@ export const BLEND_MULTIPLY = {
     dstFactor: "one-minus-src-alpha",
   },
 } as any as GPUBlendState;
+
+export const BLEND_MODES = {
+  none:        BLEND_NONE,
+  alpha:       BLEND_ALPHA,
+  premultiply: BLEND_PREMULTIPLY,
+  add:         BLEND_ADD,
+  subtract:    BLEND_SUBTRACT,
+  multiply:    BLEND_MULTIPLY,
+};

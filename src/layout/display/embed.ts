@@ -1,12 +1,13 @@
-import type { LiveComponent, LiveElement, PropsWithChildren } from '../../live';
-import type { Rectangle } from '../../core';
-import type { ShaderModule } from '../../shader';
+import type { LiveComponent, LiveElement, PropsWithChildren } from '@use-gpu/live';
+import type { Rectangle } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 import type { FitInto, Dimension } from '../types';
-import type { TraitProps } from '../../traits';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { useProp } from '../../traits/index-live';
-import { memo, provide, yeet, useFiber } from '../../live';
-import { LayoutContext, TransformContext, LayerReconciler } from '../../workbench';
+import { useProp } from '@use-gpu/traits/live';
+import { memo, provide, yeet, useFiber } from '@use-gpu/live';
+import { getBundleKey } from '@use-gpu/shader/wgsl';
+import { LayoutContext, TransformContext, LayerReconciler } from '@use-gpu/workbench';
 import { memoFit, memoLayout } from '../lib/util';
 import { evaluateDimension } from '../parse';
 
@@ -75,11 +76,12 @@ export const Embed: LiveComponent<EmbedProps> = memo((props: EmbedProps) => {
         mask: ShaderModule | null,
         transform: ShaderModule | null,
       ) => {
+        const key = transform ? getBundleKey(transform) : 0;
         const view = render
           ? render(id, layout, origin, z, clip, mask, transform)
           : (
             provide(LayoutContext, layout,
-              provide(TransformContext, {transform}, children),
+              provide(TransformContext, {key, transform}, children),
               id,
             )
           );

@@ -1,4 +1,5 @@
 import { UniformAttribute, ShaderModule, ParsedBundle, ParsedModule, TypeLike, FormatLike, ParameterLike, BundleSummary } from '../types';
+import { bindEntryPoint } from './shader';
 
 export const getBundleKey = (bundle: ShaderModule): number => {
   return (('module' in bundle) ? bundle.key ?? bundle.module.key : bundle.key) ?? getBundleHash(bundle);
@@ -61,7 +62,7 @@ export const makeDeclarationToAttribute = (
 ) => (
   bundle: ParsedBundle,
   d: any,
-) => {
+): UniformAttribute => {
   if (d.format) return d;
   if (d.func) {
     const {type, name, parameters, attr} = d.func;
@@ -69,29 +70,38 @@ export const makeDeclarationToAttribute = (
     return {name, ...resolved, args: toArgTypes(parameters), attr};
   }
   if (d.variable || d.constant) {
-    const {type, name, attr} = d.variable ?? d.constant;
+    const {type, name, attr, qual} = d.variable ?? d.constant;
     const resolved = resolveTypeSymbol(bundle, toTypeSymbol(type));
-    return {name, ...resolved, args: null, attr};
+    return {name, ...resolved, args: null, attr, qual};
   }
   if (d.struct) {
-    const {name, members, attr} = d.struct;
-    const ms = members?.map(({name, type}: any) => ({
+    // short-circuit format for generated structs
+    const {format, name, members, attr} = d.struct;
+    const ms = format ?? members?.map(({name, type}: any) => ({
       name,
       ...resolveTypeSymbol(bundle, toTypeSymbol(type)),
     }));
+
     return {name, format: ms, args: null, attr};
   }
   throw new Error(`Cannot convert declaration to attribute: ${JSON.stringify(d)}`);
 }
 
 // Convert custom type names to their originating bundle (if foreign)
-const resolveTypeSymbol = (bundle: ParsedBundle, f: FormatLike<string>): FormatLike<ShaderModule> => {
+const resolveTypeSymbol = (
+  bundle: ParsedBundle,
+  f: FormatLike<string>,
+): FormatLike<ShaderModule> => {
   const {libs, module} = bundle;
+  const {table: {infers}} = module;
   const {format, type: typeName} = f;
+
+  if (infers && infers.includes(typeName)) return {format: `auto<${typeName}>`};
 
   if (typeName != null && libs) {
     const {table: {modules}} = module;
-    if (modules) for (const {name: lib, imports} of modules) {
+
+    if (libs && modules) for (const {name: lib, imports} of modules) {
       for (const {name, imported} of imports) {
         if (name === typeName) {
           const m = libs[lib];
@@ -101,10 +111,10 @@ const resolveTypeSymbol = (bundle: ParsedBundle, f: FormatLike<string>): FormatL
     }
 
     // Must be local
-    return {format: typeName};
+    return {format, type: bindEntryPoint(bundle, typeName)};
   }
 
-  return {format};
+  return f as unknown as FormatLike<ShaderModule>;
 }
 
 // Convert bundle to attributes for its external declarations
@@ -118,12 +128,14 @@ export const makeBundleToAttributes = (
     shader: ShaderModule,
   ): UniformAttribute[] => {
     const bundle = toBundle(shader);
-    const {module: {table: {externals}}} = bundle;
+    const {links, module: {table: {externals}}} = bundle;
 
     const out: UniformAttribute[] = [];
-    for (const d of externals) if (d.func ?? d.variable ?? d.constant) {
-      const attr = toAttribute(bundle, d);
-      if (!bundle.links?.[attr.name]) out.push(attr);
+    if (externals) for (const d of externals) if (d.func ?? d.variable ?? d.constant) {
+      if (!links?.[d.symbol]) {
+        const attr = toAttribute(bundle, d);
+        out.push(attr);
+      }
     }
 
     return out;
@@ -147,7 +159,7 @@ export const makeBundleToAttribute = (
     const entry = name ?? getBundleEntry(bundle);
 
     // Externals must be looked up by name
-    if (name != null) for (const d of externals) {
+    if (name != null) if (externals) for (const d of externals) {
       if (
         d.func?.name === entry ||
         d.variable?.name === entry ||
@@ -159,7 +171,7 @@ export const makeBundleToAttribute = (
     }
 
     // Exports are looked up by entry point
-    for (const d of exports) {
+    if (exports) for (const d of exports) {
       if (
         d.func?.name === entry ||
         d.variable?.name === entry ||
@@ -173,6 +185,61 @@ export const makeBundleToAttribute = (
     throw new Error(`Unknown attribute ${entry}`);
   };
 };
+
+// Convert bundle to attribute for static bindings
+export const makeBundleToBindings = (
+  toTypeSymbol: ToTypeSymbol,
+  toArgTypes: ToArgTypes,
+) => {
+  const toAttribute = makeDeclarationToAttribute(toTypeSymbol, toArgTypes);
+
+  return (
+    shader: ShaderModule,
+  ): UniformAttribute[] => {
+    const bundle = toBundle(shader);
+    const {module: {table: {bindings}}} = bundle;
+
+    const out: UniformAttribute[] = [];
+    if (bindings) for (const d of bindings) if (d.func ?? d.variable ?? d.constant) {
+      const attr = toAttribute(bundle, d);
+      out.push(attr);
+    }
+
+    return out;
+  };
+};
+
+// Convert attributes to nested fields
+export const makeAttributeToFields = (
+  toTypeSymbol: ToTypeSymbol,
+  toArgTypes: ToArgTypes,
+) => {
+  const bundleToAttribute = makeBundleToAttribute(toTypeSymbol, toArgTypes);
+
+  const attributeToFields = (
+    attribute: UniformAttribute,
+  ): UniformAttribute => {
+    const {type} = attribute;
+    if (!type) return attribute;
+
+    const attr = bundleToAttribute(type);
+    const {format: f} = attr;
+
+    if (Array.isArray(f)) {
+      const ms = f.map(attributeToFields);
+      return {...attribute, type: undefined, format: ms};
+    }
+    else if (f !== 'T' && f !== 'array<T>') {
+      return {...attribute, type: undefined, format: f};
+    }
+    else {
+      throw new Error("Cannot make attribute fields");
+    }
+  };
+
+  return attributeToFields;
+}
+
 
 // Shader module printing for debug/info
 export const getBundleSummary = (bundle: ShaderModule, maxDepth: number = Infinity) => {

@@ -1,13 +1,24 @@
-import type { LambdaSource, Lazy, TypedArray } from '../../core';
-import type { ShaderModule } from '../../shader';
+import type { ColorSpace, LambdaSource, Lazy, TypedArray, UniformFormat } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 
-import { resolve } from '../../core';
-import { useMemo } from '../../live';
+import { notEmptyString, resolve } from '@use-gpu/core';
+import { useMemo } from '@use-gpu/live';
+import { getObjectKey } from '@use-gpu/state';
 
-export type SourceLike = {
-  length?: Lazy<number>,
-  size?: Lazy<number[] | TypedArray>,
-};
+export type SourceLike = Partial<{
+  length: Lazy<number>,
+  size: Lazy<number[] | TypedArray>,
+
+  texture: { label?: string },
+  view: { label?: string },
+  format: UniformFormat | string,
+  layout: string,
+  aspect: string,
+  colorSpace: ColorSpace,
+
+  label: string,
+  id: string,
+}>;
 
 export const useLambdaSource = (shader: ShaderModule, sourceProps: SourceLike) =>
   useMemo(() => getLambdaSource(shader, sourceProps), [shader, sourceProps]);
@@ -27,6 +38,16 @@ export const getLambdaSource = (shader: ShaderModule, sourceProps: SourceLike) =
         if (sourceProps.length != null) return [resolve(sourceProps.length)];
         return [0];
       }
+      if (s === 'label') return (
+        notEmptyString(sourceProps.label) ??
+        notEmptyString(sourceProps.view?.label) ??
+        notEmptyString(sourceProps.texture?.label)
+      );
+      if (s === 'colorSpace') return sourceProps.colorSpace;
+      if (s === 'format') return sourceProps.format;
+      if (s === 'layout') return sourceProps.layout;
+      if (s === 'aspect') return sourceProps.aspect;
+      if (s === 'id') return sourceProps.id ?? getObjectKey(sourceProps.view ?? sourceProps.texture);
       return (target as any)[s];
     },
   }) as LambdaSource;

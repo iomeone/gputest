@@ -2,7 +2,7 @@ import { Tree } from '@lezer/common';
 import { ParsedModule, ShaderDefine } from './types';
 
 import { makeLoadModule, makeLoadModuleWithCache } from '../util/shader';
-import { makeBundleToAttribute, makeBundleToAttributes } from '../util/bundle';
+import { makeBundleToAttribute, makeBundleToAttributes, makeBundleToBindings, makeAttributeToFields } from '../util/bundle';
 import { makeTranspile } from '../util/transpile';
 
 import { makeASTParser, compressAST, decompressAST } from './ast';
@@ -44,8 +44,14 @@ export const defineEnables = (enabled: string[]) => enabled.map(e => `#extension
 /** Convert a bundle with a defined entry point to a definition for that attribute or type. */
 export const bundleToAttribute = makeBundleToAttribute(toTypeSymbol, toTypeArgs);
 
-/** Convert a bundle to a definition for all its attributes. */
+/** Convert a bundle to a definition for all its linkable attributes. */
 export const bundleToAttributes = makeBundleToAttributes(toTypeSymbol, toTypeArgs);
+
+/** Convert a bundle to a definition for all its bindings. */
+export const bundleToBindings = makeBundleToBindings(toTypeSymbol, toTypeArgs);
+
+/** Convert an attribute to all its primitive fields. */
+export const attributeToFields = makeAttributeToFields(toTypeSymbol, toTypeArgs);
 
 // Simple whitespace removal
 const minifyCode = (code: string) => {
@@ -55,30 +61,30 @@ const minifyCode = (code: string) => {
 };
 
 export const symbolDictionary = {
-  A: 'at' as 'at',
-  B: 'bindings' as 'bindings',
-  E: 'exports' as 'exports',
-  F: 'func' as 'func',
-  G: 'flags' as 'flags',
-  H: 'inferred' as 'inferred',
-  I: 'identifiers' as 'identifiers',
-  J: 'imported' as 'imported',
-  K: 'imports' as 'imports',
-  L: 'linkable' as 'linkable',
-  M: 'members' as 'members',
-  N: 'name' as 'name',
-  O: 'modules' as 'modules',
-  P: 'parameters' as 'parameters',
-  Q: 'qual' as 'qual',
-  R: 'symbol' as 'symbol',
-  S: 'symbols' as 'symbols',
-  T: 'type' as 'type',
-  U: 'struct' as 'struct',
-  V: 'variable' as 'variable',
-  W: 'visibles' as 'visibles',
-  X: 'externals' as 'externals',
-  Y: 'types' as 'types',
-  Z: 'attr' as 'attr',
+  A: 'at' as const,
+  B: 'bindings' as const,
+  E: 'exports' as const,
+  F: 'func' as const,
+  G: 'flags' as const,
+  H: 'inferred' as const,
+  I: 'identifiers' as const,
+  J: 'imported' as const,
+  K: 'imports' as const,
+  L: 'linkable' as const,
+  M: 'members' as const,
+  N: 'name' as const,
+  O: 'modules' as const,
+  P: 'parameters' as const,
+  Q: 'qual' as const,
+  R: 'symbol' as const,
+  S: 'symbols' as const,
+  T: 'type' as const,
+  U: 'struct' as const,
+  V: 'variable' as const,
+  W: 'visibles' as const,
+  X: 'externals' as const,
+  Y: 'types' as const,
+  Z: 'attr' as const,
 };
 
 /** ES/CommonJS Transpiler */
@@ -91,7 +97,7 @@ glsl`...`
 ``` */
 export const glsl = (literals: TemplateStringsArray, ...tokens: string[]) => {
   const code = zip(literals, tokens).flat();
-  return loadModuleWithCache(code.join(''));
+  return loadModuleWithCache(code.join(''), '<inline code>', 'auto');
 };
 
 /** Format `number` as GLSL `float` */

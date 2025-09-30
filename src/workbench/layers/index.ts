@@ -1,7 +1,9 @@
 export * from './arrow-segments';
+export * from './arc-segments';
 export * from './face-segments';
 export * from './line-segments';
 
+export * from './arc-label-layer';
 export * from './arrow-layer';
 export * from './dual-contour-layer';
 export * from './face-layer';

@@ -1,14 +1,14 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { ShaderModule } from '../../shader';
-import type { Rectangle } from '../../core';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { ShaderModule } from '@use-gpu/shader';
+import type { Rectangle } from '@use-gpu/core';
 import type { LayoutElement, FitInto, Direction, MarginLike } from '../types';
-import type { TraitProps } from '../../traits';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { useProp, shouldEqual, sameShallow } from '../../traits/index-live';
-import { keyed, memo, gather, yeet, useFiber, useMemo } from '../../live';
+import { useProp, shouldEqual, sameShallow } from '@use-gpu/traits/live';
+import { keyed, memo, gather, yeet, useFiber, useMemo } from '@use-gpu/live';
 import { getBlockMinMax, getBlockMargin, fitBlock } from '../lib/block';
 import { isHorizontal, makeBoxPicker, memoFit } from '../lib/util';
-import { useInspectable, useInspectHoverable } from '../../workbench';
+import { useInspectable, useInspectHoverable } from '@use-gpu/workbench';
 
 import { BoxTrait, ElementTrait, useBoxTrait, useElementTrait } from '../traits';
 import { evaluateDimension, parseDirectionY, parseMargin } from '../parse';
@@ -127,6 +127,7 @@ export const Block: LiveComponent<BlockProps> = memo((props: BlockProps) => {
         fit: memoFit(fit),
         prefit: memoFit(fit),
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props, els, hovered, zIndex]);
   };
 

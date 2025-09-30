@@ -1,14 +1,14 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
 import type { Axis4 } from '../types';
-import type { TraitProps } from '../../traits';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { combine, makeUseTrait } from '../../traits/index-live';
-import { provide, useDouble, useOne, useMemo } from '../../live';
-import { chainTo, swizzleTo } from '../../shader/wgsl';
+import { combine, makeUseTrait } from '@use-gpu/traits/live';
+import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
+import { chainTo, swizzleTo } from '@use-gpu/shader/wgsl';
 import {
   MatrixContext, TransformContext, QueueReconciler,
   useShaderRef, useShader, useCombinedEpsilonTransform,
-} from '../../workbench';
+} from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { recenterAxis } from '../util/axis';
@@ -18,7 +18,7 @@ import { mat4 } from 'gl-matrix';
 
 import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getStereographicPosition } from '../../wgsl/transform/stereographicwgsl';
+import { getStereographicPosition } from '@use-gpu/wgsl/transform/stereographic.wgsl';
 
 const {signal} = QueueReconciler;
 const makeMat4 = () => mat4.create();
@@ -81,11 +81,8 @@ export const Stereographic: LiveComponent<StereographicProps> = (props: Stereogr
     }
 
     // Then apply transform (so these are always relative to the world basis, not the internal basis)
-    if (m) {
-      mat4.multiply(matrix, m, matrix);
-    }
-    if (p || r || q || s) {
-      composeTransform(composed, p, r, q, s);
+    if (p || r || q || s || m) {
+      composeTransform(composed, p, r, q, s, m);
       mat4.multiply(matrix, composed, matrix);
     }
 
@@ -99,7 +96,7 @@ export const Stereographic: LiveComponent<StereographicProps> = (props: Stereogr
     }
 
     return [matrix, swizzle, epsilon];
-  }, [g, a, p, r, q, s, bend]);
+  }, [g, a, p, r, q, s, bend, composed, m, on, swapMatrix]);
 
   const t = useShaderRef(matrix);
 

@@ -1,11 +1,11 @@
-import type { TypedArray, UniformType } from '../core';
-import type { GLTF, GLTFPrimitiveData } from './types';
+import type { TypedArray, UniformType } from '@use-gpu/core';
+import type { GLTF, GLTFOptions, GLTFPrimitiveData } from './types';
 
-import { toUnweldedArray, formatToArchetype, UNIFORM_ARRAY_DIMS } from '../core';
-import { useMemo } from '../live';
-import { patch, $nop } from '../state';
-import { transformPositions, transformNormals } from '../workbench';
-import { generateTangents } from './../vendor/mikkt';
+import { toUnweldedArray, formatToArchetype, UNIFORM_ARRAY_DIMS } from '@use-gpu/core';
+import { useMemo } from '@use-gpu/live';
+import { patch, $nop } from '@use-gpu/state';
+import { transformPositions, transformNormals } from '@use-gpu/workbench';
+import { generateTangents } from 'mikktspace';
 import { mat4 } from 'gl-matrix';
 
 export const useGLTFGeometry = (
@@ -13,18 +13,23 @@ export const useGLTFGeometry = (
   primitive: GLTFPrimitiveData,
 
   transform?: mat4,
+  options?: GLTFOptions,
 ) => {
-  const {data: {arrays, formats: fmts}, materials} = gltf;
-  const {
-    attributes: {POSITION, NORMAL, TANGENT, TEXCOORD_0},
-    indices,
-    material,
-  } = primitive;
+  const {materials} = gltf;
+  const {material} = primitive;
+
+  const tangents = !!options?.tangents;
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const side = materials?.[material!]?.doubleSided ? 'both' : 'front';
+  const {data: {arrays, formats: fmts}} = gltf;
 
   const geometry = useMemo(() => {
+    const {
+      attributes: {POSITION, NORMAL, TANGENT, TEXCOORD_0},
+      indices,
+    } = primitive;
+
     const attributes: Record<string, TypedArray> = {};
     const formats: Record<string, UniformType> = {};
 
@@ -50,7 +55,7 @@ export const useGLTFGeometry = (
     }
 
     // Generate mikkTSpace tangents
-    if (TANGENT != null && (attributes.positions && attributes.normals && attributes.uvs && !attributes.tangents)) {
+    if (TANGENT == null && tangents && (attributes.positions && attributes.normals && attributes.uvs && !attributes.tangents)) {
       let ps = arrays[POSITION];
       let ns = arrays[NORMAL];
       let ts = arrays[TEXCOORD_0];
@@ -76,14 +81,15 @@ export const useGLTFGeometry = (
     const unwelded = formats.tangents ? {tangents: true} : undefined;
     const dims = Math.floor((UNIFORM_ARRAY_DIMS as any)[formats.positions]) || 1;
     return {
-      count: attributes.indices?.length ?? (attributes.positions.length / dims),
+      count: attributes.indices?.length ?? ((attributes.positions?.length || 0) / dims),
       attributes,
       formats,
       archetype: formatToArchetype(formats, unwelded),
       unwelded,
       side,
     };
-  }, [gltf, primitive]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...arrays, tangents, fmts, primitive, side]);
 
   const transformed = useMemo(() => {
     if (!transform) return geometry;
@@ -98,7 +104,7 @@ export const useGLTFGeometry = (
       attributes: {positions: ps, normals: ns, tangents: ts},
       formats: {positions: 'vec4<f32>', normals: 'vec4<f32>', tangents: 'vec4<f32>'}
     });
-  }, [geometry]);
+  }, [geometry, transform]);
 
   return transformed;
 };

@@ -1,20 +1,20 @@
-import type { LC } from '../../../live';
-import type { XYZW } from '../../../core';
+import type { LC } from '@use-gpu/live';
+import type { XYZW } from '@use-gpu/core';
 
-import React from '../../../live';
+import React from '@use-gpu/live';
 import { LayoutControls } from '../../ui/layout-controls';
 
 import {
-  LinearRGB, Pass, FlatCamera, PanControls,
+  LinearRGB, Pass, FlatCamera,
   DebugProvider,
-} from '../../../workbench';
+} from '@use-gpu/workbench';
+import { PanControls } from '@use-gpu/interact';
 import {
   UI, Layout, Absolute, Block, Flex, Inline, Overflow, Text, Element,
-} from '../../../layout';
+} from '@use-gpu/layout';
 
 import { InfoBox } from '../../ui/info-box';
 
-const TRANSPARENT = [1, 1, 1, 0.1] as XYZW;
 const BACKGROUND = [0.0, 0.0, 0.09, 1.0] as XYZW;
 const FILL = [0.4, 0.7, 1, 0.5] as XYZW;
 

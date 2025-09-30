@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix';
-import { parseAxes } from '../../parse';
+import { parseAxes } from '@use-gpu/parse';
 import zipObject from 'lodash/zipObject.js';
 
 const AXES = ['x', 'y', 'z', 'w'];

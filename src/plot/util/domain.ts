@@ -1,5 +1,5 @@
 import type { DomainOptions } from '../types';
-import { seq } from '../../core';
+import { seq } from '@use-gpu/core';
 
 // Generate equally spaced ticks in a range at sensible positions.
 //

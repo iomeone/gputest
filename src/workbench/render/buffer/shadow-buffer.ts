@@ -1,15 +1,21 @@
-import type { LC, PropsWithChildren } from '../../../live';
+import type { LC, PropsWithChildren } from '@use-gpu/live';
+import type { UseGPURenderContext } from '@use-gpu/core';
+import type { PassEnv } from '../../pass/types';
 
-import { yeet, memo } from '../../../live';
-import { makeDepthStencilState } from '../../../core';
+import { yeet, memo } from '@use-gpu/live';
+import { makeDepthStencilState } from '@use-gpu/core';
 
 import { useRenderContext } from '../../providers/render-provider';
 
 import { SHADOW_FORMAT } from '../light/light-data';
 
+import shadowBindingWGSL from '@use-gpu/wgsl/use/shadow.wgsl';
+
 export type ShadowBufferProps = PropsWithChildren<{
   format?: GPUTextureFormat,
 }>;
+
+const NO_OBJECT = {} as Record<string, any>;
 
 // Provide render context for depth-only shadow passes
 export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProps) => {
@@ -19,17 +25,40 @@ export const ShadowBuffer: LC<ShadowBufferProps> = memo((props: ShadowBufferProp
 
   const renderContext = useRenderContext();
 
-  const context = {
-    ...renderContext,
+  // Placeholder render context, used for depth-only render pass and depth-copies
+  const shadowContext: UseGPURenderContext = {
+    device: renderContext.device,
+    gpuContext: renderContext.gpuContext,
+
+    // Sized dynamically in shadow atlas
+    width: 0,
+    height: 0,
+
     pixelRatio: 1,
     samples: 1,
     colorSpace: 'native',
     colorInput: 'native',
     colorStates: [],
-    colorAttachments: [],
     depthStencilState: makeDepthStencilState(format),
-    swap: () => {},
+    viewType: '2d',
+    viewAttachments: [],
   };
 
-  return yeet({ shadow: context });
+  const shadowBinding = {
+    module: shadowBindingWGSL,
+    visibility: 'fragment',
+    bind: ({light}: PassEnv) => {
+      const {shadowMap} = light?.sources ?? NO_OBJECT;
+
+      return [
+        shadowMap && {...shadowMap, sampler: null},
+        shadowMap && {sampler: shadowMap.sampler, filter: shadowMap.filter},
+      ];
+    },
+  };
+
+  return yeet({
+    buffers: { shadow: [shadowContext] },
+    bindings: { shadow: shadowBinding },
+  });
 }, 'ShadowBuffer');

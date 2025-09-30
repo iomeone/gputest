@@ -1,11 +1,11 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { DataSchema, StructAggregateBuffer, StorageSource, UniformType } from '../../core';
-import type { ShaderSource } from '../../shader';
-import { capture, useCapture, useMemo, useOne, useRef, useResource, incrementVersion, makeCapture } from '../../live';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { DataSchema, StructAggregateBuffer, StorageSource, UniformType } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
+import { capture, useCapture, useMemo, useOne, useRef, useResource, incrementVersion, makeCapture } from '@use-gpu/live';
 import {
   makeIdAllocator,
   copyNumberArray,
-  
+
   normalizeSchema,
   makeArrayAggregateBuffer,
   makeStructAggregateBuffer,
@@ -14,13 +14,15 @@ import {
 
   uploadBuffer, uploadBufferRange,
   toCPUDims, toGPUDims,
-} from '../../core';
+} from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
 import { QueueReconciler } from '../reconcilers/index';
+
 import { useBufferedSize } from '../hooks/useBufferedSize';
-import { getRenderFunc } from '../hooks/useRenderProp';
+import { useInspectable } from '../hooks/useInspectable';
 import { getInstancedAggregate } from '../hooks/useInstancedSources';
+import { getRenderFunc } from '../hooks/useRenderProp';
 
 const {signal} = QueueReconciler;
 
@@ -49,10 +51,12 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
   } = props;
 
   const device = useDeviceContext();
+  const inspect = useInspectable();
+
   const versionRef = useRef(0);
 
   const schema = useOne(() => normalizeSchema(propSchema), propSchema);
-  const uniforms = useMemo(
+  const attributes = useMemo(
     () => {
       const out = [];
       for (const k in schema) {
@@ -96,18 +100,18 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
     };
 
     return useInstance;
-  }, [device, uniforms]);
+  }, [ids, queue, InstanceCapture]);
 
   // Produce instance sources
   const Resume = () => {
-    const size = Math.max(reserve, ids.max());
+    const size = Math.max(reserve, ids.max() + 1);
     const alloc = useBufferedSize(size);
 
     const prevBufferRef = useRef(null as StructAggregateBuffer | null);
 
     // Make/resize data buffers + index buffer
     const [aggregateBuffer, indexBuffer, fields, sources] = useMemo(() => {
-      const aggregateBuffer = makeStructAggregateBuffer(device, uniforms, alloc);
+      const aggregateBuffer = makeStructAggregateBuffer(device, attributes, alloc);
       const {current: prevBuffer} = prevBufferRef;
 
       if (prevBuffer) {
@@ -123,7 +127,8 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
       const sources = getInstancedAggregate(aggregateBuffer, indexBuffer?.source);
 
       return [aggregateBuffer, indexBuffer, fields, sources];
-    }, [device, uniforms, alloc]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [device, attributes, alloc]);
 
     const needsRefresh = prevBufferRef.current !== aggregateBuffer;
     prevBufferRef.current = aggregateBuffer;
@@ -155,17 +160,22 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
     }
 
     // Upload changed ranges
-    const {buffer, raw, layout} = aggregateBuffer;
-    const {length: stride} = layout;
-    if (needsRefresh) {
-      uploadBufferRange(device, buffer, raw, 0, size * stride);
-      versionRef.current = incrementVersion(versionRef.current);
-    }
-    else if (ranges.length) {
-      for (const [from, to] of ranges) {
-        uploadBufferRange(device, buffer, raw, from * stride, (to - from) * stride);
+    try {
+      const {buffer, raw, layout} = aggregateBuffer;
+      const {length: stride} = layout;
+      if (needsRefresh) {
+        versionRef.current = incrementVersion(versionRef.current);
+        uploadBufferRange(device, buffer, raw, 0, size * stride);
       }
-      versionRef.current = incrementVersion(versionRef.current);
+      else if (ranges.length) {
+        versionRef.current = incrementVersion(versionRef.current);
+        for (const [from, to] of ranges) {
+            uploadBufferRange(device, buffer, raw, from * stride, (to - from) * stride);
+        }
+      }
+    }
+    catch (e) {
+      console.error(e);
     }
     queue.instances.length = queue.datas.length = 0;
 
@@ -183,6 +193,8 @@ export const InstanceData: LiveComponent<InstanceDataProps<'u16' | 'u32' | undef
       source.size[0] = i;
       source.version = version;
     }, version);
+
+    inspect({ data: { schema, aggregateBuffer, indexBuffer, sources }});
 
     const trigger = useOne(() => signal(), versionRef.current);
     return then ? [trigger, then(sources, indexBuffer?.source as any)] : trigger;

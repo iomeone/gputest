@@ -1,10 +1,10 @@
-import type { ShaderModuleDescriptor } from '../../core';
-import type { ParsedBundle, ShaderDefine } from '../../shader';
+import type { ShaderModuleDescriptor } from '@use-gpu/core';
+import type { ShaderModule, ShaderDefine } from '@use-gpu/shader';
 
-import { resolveBindings, linkBundle, getBundleHash, getBundleKey, getBundleLabel } from '../../shader/wgsl';
-import { formatMurmur53, mixBits53, toMurmur53 } from '../../state';
-import { makeShaderModuleDescriptor, makeBindGroupLayoutEntries, makeUniformLayoutEntry } from '../../core';
-import { useMemo, useOne } from '../../live';
+import { resolveBindings, linkBundle, getBundleHash, getBundleKey, getBundleLabel } from '@use-gpu/shader/wgsl';
+import { formatMurmur53, mixBits53, toMurmur53 } from '@use-gpu/state';
+import { makeShaderModuleDescriptor, makeBindGroupLayoutEntries, makeUniformLayoutEntry } from '@use-gpu/core';
+import { useMemo, useOne } from '@use-gpu/live';
 import { useForceUpdate } from './useForceUpdate';
 import { useInspectable } from './useInspectable';
 import LRU from 'lru-cache';
@@ -16,8 +16,9 @@ const MODULE_CACHE = new LRU<string, any>();
 const LAYOUT_CACHE = new LRU<number, any>();
 
 export const useLinkedShader = (
-  stages: (ParsedBundle | null | undefined)[],
+  stages: (ShaderModule | null | undefined)[],
   defines: Record<string, ShaderDefine> | null | undefined,
+  propLabel?: string,
 ) => {
   const inspect = useInspectable();
 
@@ -57,8 +58,10 @@ export const useLinkedShader = (
     const volatilesEntries = makeBindGroupLayoutEntries(volatiles, visibilities);
     const uniformEntry     = makeUniformLayoutEntry(uniforms, visibility, bindingsEntries.length);
 
+    const mergedStaticBindings = uniformEntry ? [...bindingsEntries, uniformEntry] : bindingsEntries;
+
     const entries = [];
-    entries.push(uniformEntry ? [...bindingsEntries, uniformEntry] : bindingsEntries);
+    if (volatilesEntries.length || mergedStaticBindings.length) entries.push(mergedStaticBindings);
     if (volatilesEntries.length) entries.push(volatilesEntries);
 
     LAYOUT_CACHE.set(codeKey, entries);
@@ -86,7 +89,9 @@ export const useLinkedShader = (
 
       let result = MODULE_CACHE.get(key);
       if (result == null) {
-        const label = getBundleLabel(module);
+        const moduleLabel = getBundleLabel(module);
+        const label = propLabel != null ? [propLabel, moduleLabel].join(' / ') : moduleLabel;
+
         const linked = hot.get(key) ?? linkBundle(module, NO_LIBS, defines);
         const version = (VERSION_CACHE.get(key) ?? 0) + 1;
         VERSION_CACHE.set(key, version);
@@ -121,7 +126,7 @@ export const useLinkedShader = (
 
   // Update uniform constant values in-place
   useOne(() => {
-    for (const u of uniforms) ref.constants[u.uniform.name] = u.constant;
+    for (const u of uniforms) ref.constants[u.attribute.name] = u.constant;
   }, uniforms);
 
   // Refresh all bindings if buffer assignment changed, as they need new a storage bind group
@@ -129,6 +134,7 @@ export const useLinkedShader = (
   for (const {storage, texture} of bindings) buffers.push(storage?.buffer ?? texture?.view ?? texture?.texture);
   useMemo(() => {
     ref.bindings = bindings;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, buffers);
 
   return {shader, ...ref, volatiles};

@@ -1,21 +1,21 @@
-import type { LiveComponent } from '../../live';
-import type { ColorLike, XY, XYZW, Rectangle, TypedArray } from '../../core';
-import type { ShaderModule } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { ColorLike, XY, XYZW, Rectangle, TypedArray } from '@use-gpu/core';
+import type { ShaderModule } from '@use-gpu/shader';
 import type { Direction, OverflowMode, FitInto, UIAggregate } from '../types';
 
-import { useProp } from '../../traits/index-live';
-import { parseColor } from '../../parse';
-import { yeet, use, useMemo } from '../../live';
-import { schemaToArchetype } from '../../core';
-import { useInspectHoverable, UI_SCHEMA } from '../../workbench';
+import { useProp } from '@use-gpu/traits/live';
+import { parseColor } from '@use-gpu/parse';
+import { yeet, use, useMemo } from '@use-gpu/live';
+import { schemaToArchetype } from '@use-gpu/core';
+import { useInspectHoverable, UI_SCHEMA } from '@use-gpu/workbench';
 
 import { isHorizontal, memoFit } from '../lib/util';
 import { INSPECT_STYLE } from '../lib/constants';
 
-import { chainTo } from '../../shader/wgsl';
-import { useShader, LayerReconciler } from '../../workbench';
+import { chainTo } from '@use-gpu/shader/wgsl';
+import { useShader, LayerReconciler } from '@use-gpu/workbench';
 
-import { getScrolledPosition } from '../../wgsl/layout/scrollwgsl';
+import { getScrolledPosition } from '@use-gpu/wgsl/layout/scroll.wgsl';
 
 const {quote} = LayerReconciler;
 
@@ -108,7 +108,7 @@ const Bar = (
   const shift = useMemo(() => isX
     ? () => [scrollRef[0] / sizeRef[2] * sizeRef[0], 0]
     : () => [0, scrollRef[1] / sizeRef[3] * sizeRef[1]],
-    [scrollRef, sizeRef]
+    [scrollRef, sizeRef, isX]
   );
 
   const thumbTransform = useShader(getScrolledPosition, [shift]);
@@ -177,5 +177,6 @@ const Bar = (
       });
     }
     return yeet(yeets);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...sizeRef, thumbTransform, overflow, isX, layout, origin, z, clip, mask, transform, inspect]);
 }

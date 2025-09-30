@@ -1,4 +1,4 @@
-use '../../../../wgsl/use/array'::{ sizeToModulus2, packIndex2 };
+use '@use-gpu/wgsl/use/array'::{ sizeToModulus2, packIndex2 };
 
 @link fn getSize() -> vec2<u32> {};
 @link fn getSeed() -> f32 {};

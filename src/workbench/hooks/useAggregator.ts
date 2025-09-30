@@ -1,7 +1,7 @@
-import type { ArchetypeSchema, AggregateItem, ArrayAggregateBuffer } from '../../core';
+import type { ArchetypeSchema, AggregateItem, ArrayAggregateBuffer } from '@use-gpu/core';
 
 import { useDeviceContext } from '../providers/device-provider';
-import { useMemo, useOne } from '../../live';
+import { useMemo, useOne } from '@use-gpu/live';
 import {
   schemaToAggregate,
   toGPUAggregate,
@@ -9,7 +9,7 @@ import {
   uploadAggregateFromSchema,
   uploadAggregateFromSchemaRefs,
   getAggregateSummary,
-} from '../../core';
+} from '@use-gpu/core';
 import { useBufferedSize } from '../hooks/useBufferedSize';
 import { getInstancedAggregate, combineInstances } from '../hooks/useInstancedSources';
 import { getStructAggregate } from '../hooks/useStructSources';
@@ -29,7 +29,9 @@ export const useAggregator = (
 
   const aggregate = useMemo(() => (
     makeAggregator(schema)(device, items, allocInstances, allocVertices, allocIndices)),
-    [archetype, allocInstances, allocVertices, allocIndices]
+    // `items` only used to initialize
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [device, schema, archetype, allocInstances, allocVertices, allocIndices]
   );
 
   return useOne(() => aggregate(items, count, indexed, instanced, offsets), items);
@@ -47,15 +49,21 @@ export const makeAggregator = (
   const [item] = initialItems;
   const {attributes, refs} = item;
 
+  // Prepare CPU + GPU side aggregate buffers
   const cpuAggregate = schemaToAggregate(schema, attributes, refs, allocInstances, allocVertices, allocIndices);
   const aggregate = toGPUAggregate(device, cpuAggregate);
 
-  const {aggregateBuffers, byRefs, byInstances, byVertices, byIndices, bySelfs} = aggregate;
+  const {aggregateBuffers, byRefs, byInstances, byVertices, byIndices, bySelfs, byJss} = aggregate;
   const instances = aggregateBuffers.instances as ArrayAggregateBuffer;
 
+  // CPU-side JS attributes (not uploaded)
+  const jsValues = byJss?.values;
+
+  // Get instanced attribute sources
   const refSources  = byRefs && getInstancedAggregate(byRefs, instances?.source);
   const itemSources = byInstances && getInstancedAggregate(byInstances, instances?.source);
 
+  // Get all attribute sources
   const sources = {
     ...combineInstances(refSources, itemSources),
     ...(byVertices ? getStructAggregate(byVertices) : undefined),
@@ -63,6 +71,7 @@ export const makeAggregator = (
     ...bySelfs?.sources,
   };
 
+  // Callback to update just-in-time attribute refs
   const uploadRefs = byRefs ? () => {
     uploadAggregateFromSchemaRefs(device, schema, aggregate);
   } : null;
@@ -73,6 +82,7 @@ export const makeAggregator = (
     updateAggregateFromSchema(schema, aggregate, items, count, indexed, instanced, offsets);
     uploadAggregateFromSchema(device, schema, aggregate);
 
-    return {count: indexed, sources, uploadRefs};
+    const values = jsValues && {...jsValues};
+    return {count: indexed, sources, values, uploadRefs};
   };
 };

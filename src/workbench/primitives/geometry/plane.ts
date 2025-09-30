@@ -1,10 +1,11 @@
-import type { CPUGeometry } from '../../../core';
-import { makeNumberWriter } from '../../../core';
+import type { CPUGeometry } from '@use-gpu/core';
+import { makeNumberWriter } from '@use-gpu/core';
 
 type PlaneGeometryProps = {
   width?: number,
   height?: number,
   axes?: string,
+  detail?: [number, number],
   tile?: [number, number],
 };
 
@@ -12,9 +13,11 @@ export const makePlaneGeometry = ({
   width = 1,
   height = width,
   axes = 'xy',
+  detail: [detailU, detailV] = [1, 1],
   tile = [1, 1],
 }: PlaneGeometryProps = {}): CPUGeometry => {
-  const count = 6;
+  const nQuads = detailU * detailV;
+  const count = nQuads * 6;
 
   const positions = new Float32Array(count * 4);
   const normals = new Float32Array(count * 4);
@@ -31,13 +34,13 @@ export const makePlaneGeometry = ({
     let yy = 0;
     let zz = 0;
 
-    if      (first === 'x') xx = x * width / 2;
-    else if (first === 'y') yy = x * width / 2;
-    else if (first === 'z') zz = x * width / 2;
+    if      (first === 'x') xx = x * width - width / 2;
+    else if (first === 'y') yy = x * width - width / 2;
+    else if (first === 'z') zz = x * width - width / 2;
 
-    if      (second === 'x') xx = y * height / 2;
-    else if (second === 'y') yy = y * height / 2;
-    else if (second === 'z') zz = y * height / 2;
+    if      (second === 'x') xx = y * height - height / 2;
+    else if (second === 'y') yy = y * height - height / 2;
+    else if (second === 'z') zz = y * height - height / 2;
 
     positionEmitter(xx, yy, zz, 1);
   };
@@ -48,26 +51,37 @@ export const makePlaneGeometry = ({
   const emitUV = (x: number, y: number) =>
     uvEmitter(x * tile[0], y * tile[1], 0, 0);
 
-  emitPosition(-1,-1);
-  emitPosition(-1, 1);
-  emitPosition( 1,-1);
+  const iu = 1 / detailU;
+  const iv = 1 / detailV;
 
-  emitPosition( 1,-1);
-  emitPosition(-1, 1);
-  emitPosition( 1, 1);
+  for (let v = 0; v < detailV; ++v) {
+    const fv = v * iv;
+
+    for (let u = 0; u < detailU; ++u) {
+      const fu = u * iu;
+
+      emitPosition(fu, fv);
+      emitPosition(fu, fv + iv);
+      emitPosition(fu + iu, fv);
+
+      emitPosition(fu + iu, fv);
+      emitPosition(fu, fv + iv);
+      emitPosition(fu + iu, fv + iv);
+
+      emitUV(fu, fv);
+      emitUV(fu, fv + iv);
+      emitUV(fu + iu, fv);
+
+      emitUV(fu + iu, fv);
+      emitUV(fu, fv + iv);
+      emitUV(fu + iu, fv + iv);
+    }
+  }
 
   const nx = +(axes.indexOf('x') === -1);
   const ny = +(axes.indexOf('y') === -1);
   const nz = +(axes.indexOf('z') === -1);
-  for (let i = 0; i < 6; ++i) emitNormal(nx, ny, nz);
-
-  emitUV(0, 0);
-  emitUV(0, 1);
-  emitUV(1, 0);
-
-  emitUV(1, 0);
-  emitUV(0, 1);
-  emitUV(1, 1);
+  for (let i = 0; i < 6 * nQuads; ++i) emitNormal(nx, ny, nz);
 
   return {
     count,

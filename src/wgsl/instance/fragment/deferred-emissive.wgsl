@@ -1,15 +1,8 @@
-use '../../../wgsl/use/view'::{ getViewPosition, clipToWorld, to3D };
-use '../../../wgsl/use/types'::{ Light, SurfaceFragment };
-use '../../../wgsl/codec/octahedral'::{ decodeOctahedral };
-
-@link fn getAlbedo(uv: vec2<f32>) -> vec4<f32>;
-@link fn getNormal(uv: vec2<f32>) -> vec4<f32>;
-@link fn getMaterial(uv: vec2<f32>) -> vec4<f32>;
 @link fn getEmissive(uv: vec2<f32>) -> vec4<f32>;
-@link fn getDepth(uv: vec2<f32>) -> f32;
 
 @export fn getDeferredEmissiveFragment(
   uv: vec2<f32>,
+  coord: vec4<f32>,
   index: u32,
 ) -> vec4<f32> {
   return getEmissive(uv);

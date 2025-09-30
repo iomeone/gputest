@@ -1,4 +1,5 @@
-use '../../../wgsl/codec/octahedral'::{ encodeOctahedral };
+use '@use-gpu/wgsl/codec/octahedral'::{ encodeOctahedral };
+use '@use-gpu/wgsl/fragment/bayer'::{ bayer4x4f };
 
 struct GBufferSample {
   @location(0) albedo: vec4<f32>,
@@ -23,17 +24,18 @@ fn main(
   var outColor = getFragment(fragColor, fragUV, fragST);
 
   if (HAS_SCISSOR) { outColor = getScissor(outColor, fragScissor); }
-  if (outColor.a <= 0.0) { discard; }
+  if (HAS_ALPHA_TO_DISCARD) { if (outColor.a <= 0.0) { discard; } }
 
   if (outColor.a < 1.0) {
-    let bits = vec2<u32>(fragCoord.xy) % 2;
-    let level = (0.5 + f32(bits.x ^ ((bits.x ^ bits.y) << 1))) / 4.0;
-    if (outColor.a < level) { discard; }
+    let xy = vec2<u32>(fragCoord.xy);
+    if (outColor.a < bayer4x4f(xy)) { discard; }
   }
+
+  let normal = encodeOctahedral(vec3<f32>(0.0, 0.0, -1.0));
 
   return GBufferSample(
     vec4<f32>(0.0),
-    vec4<f32>(encodeOctahedral(vec3<f32>(0.0, 0.0, -1.0)), 0.0, 0.0),
+    vec4<f32>(normal, normal),
     vec4<f32>(0.0),
     vec4<f32>(outColor.rgb, 1.0),
   );

@@ -1,6 +1,10 @@
-import { makeContext, useContext, useNoContext } from '../../live';
+import { makeContext, useContext, useNoContext } from '@use-gpu/live';
+import type { FetchAPIOptions } from '@use-gpu/workbench';
 
-type TileSource = (x: number, y: number, zoom: number) => string;
+type TileSource = (x: number, y: number, zoom: number) => {
+  url: string,
+  options?: FetchAPIOptions,
+};
 
 type TileContextProps = Record<string, TileSource>;
 

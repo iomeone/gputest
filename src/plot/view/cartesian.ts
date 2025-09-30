@@ -1,9 +1,9 @@
-import type { LiveComponent, PropsWithChildren } from '../../live';
-import type { TraitProps } from '../../traits';
+import type { LiveComponent, PropsWithChildren } from '@use-gpu/live';
+import type { TraitProps } from '@use-gpu/traits';
 
-import { combine, makeUseTrait } from '../../traits/index-live';
-import { provide, useDouble, useOne, useMemo } from '../../live';
-import { TransformContext, MatrixContext, useCombinedMatrixTransform, QueueReconciler } from '../../workbench';
+import { combine, makeUseTrait } from '@use-gpu/traits/live';
+import { provide, useDouble, useOne, useMemo } from '@use-gpu/live';
+import { TransformContext, MatrixContext, useCombinedMatrixTransform, QueueReconciler } from '@use-gpu/workbench';
 
 import { RangeContext } from '../providers/range-provider';
 import { composeTransform } from '../util/compose';
@@ -60,17 +60,13 @@ export const Cartesian: LiveComponent<CartesianProps> = (props: CartesianProps) 
     }
 
     // Then apply transform (so these are always relative to the world basis, not the internal basis)
-    if (m) {
-      mat4.multiply(matrix, m, matrix);
-    }
-
-    if (p || r || q || s) {
-      composeTransform(composed, p, r, q, s);
+    if (p || r || q || s || m) {
+      composeTransform(composed, p, r, q, s, m);
       mat4.multiply(matrix, composed, matrix);
     }
 
     return matrix;
-  }, [g, a, p, r, q, s, m]);
+  }, [g, a, p, r, q, s, m, composed, swapMatrix]);
 
   const [context, combined] = useCombinedMatrixTransform(matrix);
 

@@ -1,9 +1,9 @@
-import type { LC, LiveElement } from '../../live';
-import type { TextureSource, TextureTarget } from '../../core';
-import type { ShaderSource, ShaderModule } from '../../shader';
+import type { LC, LiveElement } from '@use-gpu/live';
+import type { TextureSource, TextureTarget } from '@use-gpu/core';
+import type { ShaderSource, ShaderModule } from '@use-gpu/shader';
 
-import { memo, gather, yeet, use, useMemo, useOne, useHooks, useNoHooks } from '../../live';
-import { makeAtlas, clamp, lerp } from '../../core';
+import { memo, gather, yeet, use, useMemo, useOne, useHooks, useNoHooks } from '@use-gpu/live';
+import { makeAtlas, clamp, lerp } from '@use-gpu/core';
 import { DebugAtlas } from '../text/debug-atlas';
 import { Queue } from '../queue/queue';
 import { Dispatch } from '../queue/dispatch';
@@ -15,15 +15,16 @@ import { useRawSource } from '../hooks/useRawSource';
 import { useScratchSource } from '../hooks/useScratchSource';
 import { useInspectable } from '../hooks/useInspectable';
 import { getRenderFunc } from '../hooks/useRenderProp';
+import { PassReconciler } from '../reconcilers/index';
 
-import { pmremInit } from '../../wgsl/pmrem/pmrem-initwgsl';
-import { pmremCopy } from '../../wgsl/pmrem/pmrem-copywgsl';
-import { pmremBlur } from '../../wgsl/pmrem/pmrem-blurwgsl';
-import { pmremDiffuseSH } from '../../wgsl/pmrem/pmrem-diffuse-shwgsl';
-import { pmremGridOverlay } from '../../wgsl/pmrem/pmrem-debugwgsl';
-//import { pmremDiffuseRender } from '../../wgsl/pmrem/pmrem-diffuse-render.wgsl';
+import { pmremInit } from '@use-gpu/wgsl/pmrem/pmrem-init.wgsl';
+import { pmremCopy } from '@use-gpu/wgsl/pmrem/pmrem-copy.wgsl';
+import { pmremBlur } from '@use-gpu/wgsl/pmrem/pmrem-blur.wgsl';
+import { pmremDiffuseSH } from '@use-gpu/wgsl/pmrem/pmrem-diffuse-sh.wgsl';
+import { pmremGridOverlay } from '@use-gpu/wgsl/pmrem/pmrem-debug.wgsl';
+//import { pmremDiffuseRender } from '@use-gpu/wgsl/pmrem/pmrem-diffuse-render.wgsl';
 
-import { sampleEnvMap } from '../../wgsl/pmrem/pmrem-readwgsl';
+import { sampleEnvMap } from '@use-gpu/wgsl/pmrem/pmrem-read.wgsl';
 
 const π = Math.PI;
 const τ = 2*π;
@@ -45,6 +46,8 @@ export type PrefilteredEnvMapProps = {
   seamFix?: boolean,
   debugGrid?: boolean,
   debugAtlas?: boolean,
+
+  live?: boolean,
 
   render?: (cubeMap: ShaderSource | null, textureMap: TextureSource | null) => LiveElement,
   children?: (cubeMap: ShaderSource | null, textureMap: TextureSource | null) => LiveElement,
@@ -72,8 +75,7 @@ const CRISP_SIGMA = 0.3989422804; // 1/sqrt(2π) - normalizes to p(0) == 1
 const FIRST_MIP = Math.ceil(PIXEL_PER_SIGMA * (π / 2) / MIN_SIGMA) + 2;
 const DIFFUSE_MIP = 127;
 
-const hasWebGPU = typeof GPUBufferUsage !== 'undefined';
-const READ_WRITE_SOURCE = hasWebGPU ? { readWrite: true, flags: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC } : {};
+const READ_WRITE_SOURCE = { readWrite: true, flags: GPUBufferUsage?.STORAGE | GPUBufferUsage?.COPY_SRC };
 
 export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: PrefilteredEnvMapProps) => {
   const {
@@ -81,6 +83,7 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
     size = 1024,
     gain = 1,
     texture,
+    live = false,
     seamFix = true,
     debugGrid = false,
     debugAtlas = false,
@@ -91,6 +94,7 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
   useNoHooks();
 
   const inspect = useInspectable();
+  const {quote} = PassReconciler;
 
   // Calculate parameters and atlas mappings
   const {atlas, mappings, mips, sigmas, dsigmas, sizes, radii} = useMemo(() => {
@@ -155,6 +159,7 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
         format: 'rgba16float',
         filterable: true,
         colorSpace: 'linear',
+        label: 'PMREM Atlas',
       }),
       use(TextureBuffer, {
         width: Math.max(size, FIRST_MIP),
@@ -164,6 +169,7 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
         filterable: true,
         colorSpace: 'linear',
         history: 1,
+        label: 'PMREM Front/Back',
       }),
     ], ([target, scratch]: TextureTarget[]) => {
 
@@ -294,7 +300,8 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
         out.push(...makeDiffuseDispatch(diffuseInput, mips + levels));
 
         return out;
-      }, [sigmas, sizes, radii, mappings, texture, target, scratch]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [sigmas, sizes, radii, mappings, texture, target, scratch, diffuseInput, diffuseSHBuffer, scratchIn, scratchOut, targetIn, textureDump]);
 
       const mappingData = useOne(() => new Uint16Array(mappings.flatMap(m => m)), mappings);
       const varianceData = useOne(() => new Float32Array(sigmas), sigmas);
@@ -319,8 +326,11 @@ export const PrefilteredEnvMap: LC<PrefilteredEnvMapProps> = memo((props: Prefil
 
       return useMemo(() => [
         debugAtlas ? use(DebugAtlas, {atlas}) : null,
-        use(Queue, {nested: true, children: use(Compute, {children: dispatches}) }),
+        live
+          ? quote(dispatches)
+          : use(Queue, {nested: true, children: use(Compute, {children: dispatches}) }),
         render ? render(boundCubeMap, target) : yeet(boundCubeMap),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       ], [debugAtlas, debugGrid, seamFix, atlas, dispatches, render, target, boundCubeMap]);
     })
   );

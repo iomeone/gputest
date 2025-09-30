@@ -1,20 +1,20 @@
-import type { LiveComponent } from '../../live';
-import type { VectorLike, Lazy } from '../../core';
-import type { ShaderSource } from '../../shader';
+import type { LiveComponent } from '@use-gpu/live';
+import type { VectorLike, Lazy } from '@use-gpu/core';
+import type { ShaderSource } from '@use-gpu/shader';
 import type { PipelineOptions } from '../hooks/usePipelineOptions';
 
 import { RawFaces } from '../primitives/raw-faces';
 
-import { use, memo, useMemo, useOne } from '../../live';
-import { bundleToAttributes } from '../../shader/wgsl';
-import { resolve } from '../../core';
+import { use, memo, useMemo, useOne } from '@use-gpu/live';
+import { bundleToAttributes } from '@use-gpu/shader/wgsl';
+import { resolve } from '@use-gpu/core';
 
 import { useShaderRef } from '../hooks/useShaderRef';
 import { useSource } from '../hooks/useSource';
 import { useShader } from '../hooks/useShader';
 
-import { getSurfaceIndex, getSurfaceUV } from '../../wgsl/plot/surfacewgsl';
-import { getSurfaceNormal } from '../../wgsl/plot/surface-normalwgsl';
+import { getSurfaceIndex, getSurfaceUV } from '@use-gpu/wgsl/plot/surface.wgsl';
+import { getSurfaceNormal } from '@use-gpu/wgsl/plot/surface-normal.wgsl';
 
 export type SurfaceLayerProps = {
   position?: VectorLike,
@@ -35,7 +35,7 @@ export type SurfaceLayerProps = {
   size?: Lazy<[number, number] | [number, number, number] | [number, number, number, number]>,
   side?: 'front' | 'back' | 'both',
   id?: number,
-} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'blend'>;
+} & Pick<Partial<PipelineOptions>, 'mode' | 'shadow' | 'depthTest' | 'depthWrite' | 'alphaToCoverage' | 'alphaToDiscard' | 'blend'>;
 
 const [SIZE_BINDING] = bundleToAttributes(getSurfaceIndex);
 

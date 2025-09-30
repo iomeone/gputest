@@ -1,8 +1,8 @@
 import React, { FC, useRef } from 'react';
-import { InspectProp } from './types';
 
-import { formatNode, formatValue, YEET } from '../../live';
-import { SplitRow, TreeRow, TreeIndent, Label, Spacer, Selectable } from './layout';
+import { formatPrototype, formatValue } from '@use-gpu/live';
+import { TreeRow, TreeIndent } from './tree/tree-layout';
+import { SplitRow, Label, Selectable } from './layout';
 import { IconItem, SVGChevronDown, SVGChevronRight } from './svg';
 import { useAddIns } from '../providers/add-in-provider';
 
@@ -33,24 +33,23 @@ export type InspectObjectProps = {
 };
 
 export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps) => {
-  let {
-    object,
+  const {
     state,
     toggleState,
     path = '',
     seen = new Set(),
     depth = 0,
   } = props;
+  let {object} = props;
   if (!object) return null;
 
   if (seen.has(object)) return <span>{`{Repeated}`}</span>;
   seen.add(object);
 
   let extra = false;
-  let keys;
 
   if (Array.isArray(object)) {
-    let n = object.length;
+    const n = object.length;
     if (n > 100) {
       object = object.slice(0, 100);
       extra = true;
@@ -88,7 +87,7 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
 
   const coordsRef = useRef([-1e3, -1e3]);
 
-  keys = keys ?? Reflect.ownKeys(object) as string[];
+  const keys = Reflect.ownKeys(object) as string[];
 
   const fields = keys.map((k: string) => {
     const key = path +'/'+ k;
@@ -135,12 +134,7 @@ export const InspectObject: FC<InspectObjectProps> = (props: InspectObjectProps)
       }</TreeIndent>
     ) : null;
 
-    let proto = object[k]?.__proto__ !== Object.prototype
-      ? object[k]?.__proto__?.constructor?.name ??
-        object[k]?.__proto__?.displayName ??
-        object[k]?.__proto__?.name
-      : 'Object';
-
+    let proto = truncate(formatPrototype(object[k]), 80);
     if (object[k]?.length) proto += ' (' + object[k]?.length + ')';
 
     const showFull = (typeof object[k] === 'object' && depth < 20) || code;

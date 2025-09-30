@@ -1,13 +1,13 @@
-import type { LC } from '../live';
+import type { LC } from '@use-gpu/live';
 
-import React, { hot, into, useFiber, useMemo, useOne, useResource, useState } from '../live';
-import { HTML } from '../react';
-import { AutoCanvas, FPSCounter, WebGPU } from '../webgpu';
-import { DebugProvider, FontLoader, Router, Routes, useKeyboard } from '../workbench';
+import React, { hot, into, useMemo, useOne, useResource, useState } from '@use-gpu/live';
+import { HTML } from '@use-gpu/react';
+import { AutoCanvas, FPSCounter, WebGPU } from '@use-gpu/webgpu';
+import { DebugProvider, FontLoader, Router, Routes, useKeyboardState } from '@use-gpu/workbench';
 
-import { UseInspect } from '../inspect';
-import { inspectGPU } from '../inspect-gpu';
-import '../inspect/theme.css';
+import { UseInspect } from '@use-gpu/inspect';
+import { inspectGPU } from '@use-gpu/inspect-gpu';
+import '@use-gpu/inspect/theme.css';
 
 import { makeRoutes } from './routes';
 import { makePicker } from './ui/page-picker';
@@ -26,7 +26,7 @@ const getNotoEmojiURL = (name: string) => `${base}fonts/emoji/emoji_u${name}.png
 // Toggle inspector with ctrl/cmd-I.
 // Trigger re-render with ctrl/cmd-J.
 const useInspector = () => {
-  const [version, setVersion] = useState<number>(0);
+  const [, setVersion] = useState<number>(0);
   const [inspect, setInspect] = useState<boolean>(true);
 
   useResource((dispose) => {
@@ -44,14 +44,16 @@ const useInspector = () => {
 
 export const FPSToggle = () => {
   const [fps, setFPS] = useState(false);
-  const {keyboard} = useKeyboard();
-  useOne(() => keyboard.keys.f && setFPS(!fps), keyboard.keys.f);
+  const keyboard = useKeyboardState();
+  useOne(() => keyboard.f && setFPS(!fps), keyboard.f);
   return fps ? <FPSCounter container="#use-gpu > .canvas" top={32} /> : null;
 };
 
 export const App: LC = hot(() => {
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const root = document.querySelector('#use-gpu')!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const inner = document.querySelector('#use-gpu .canvas')!;
 
   const router = useOne(() => (
@@ -89,6 +91,7 @@ export const App: LC = hot(() => {
         fetch: (index: number) => {
           // name = "XXXX_XXXX_XXXX" where X = codepoint in hex
           const seq = NOTO_SEQUENCES[index];
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const codepoints = [...seq].map(s => s.codePointAt(0)!);
           const name = codepoints.map(i => i.toString(16)).join('_');
           return getNotoEmojiURL(name);
@@ -97,7 +100,6 @@ export const App: LC = hot(() => {
     }
   ]);
 
-  const fiber = useFiber();
   const inspect = useInspector();
 
   const view = useMemo(() => (
@@ -115,11 +117,10 @@ export const App: LC = hot(() => {
         <FPSToggle />
       </AutoCanvas>
     </WebGPU>
-  ), [root, fonts, router]);
+  ), [fonts, router, inner]);
 
   return (
     <UseInspect
-      fiber={fiber}
       container={root}
       active={inspect}
       provider={DebugProvider}

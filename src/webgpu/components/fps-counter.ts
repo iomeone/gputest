@@ -1,7 +1,7 @@
-import type { LiveComponent } from '../../live';
+import type { LiveComponent } from '@use-gpu/live';
 
-import { useTimeContext } from '../../workbench';
-import { memo, useOne, useResource } from '../../live';
+import { useTimeContext } from '@use-gpu/workbench';
+import { memo, useOne, useResource } from '@use-gpu/live';
 
 export type FPSCounterProps = {
   container?: Element | string | null,
@@ -30,7 +30,7 @@ export const FPSCounter: LiveComponent<FPSCounterProps> = memo((props: FPSCounte
   } = props;
 
   const time = useTimeContext();
-  
+
   const values: number[] = useOne(() => []);
   if (time.delta) values.push(1000 / time.delta);
   if (values.length > samples) values.shift();

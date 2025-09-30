@@ -1,10 +1,10 @@
-import type { LC } from '../../live';
-import type { ColorLike, VectorLike } from '../../core';
+import type { LC } from '@use-gpu/live';
+import type { ColorLike, VectorLike } from '@use-gpu/core';
 import type { ShadowMapLike } from './types';
 
-import { useProp } from '../../traits/index-live';
-import { parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '../../parse';
-import { memo, use, useMemo } from '../../live';
+import { useProp } from '@use-gpu/traits/live';
+import { parseBoolean, parseColor, parseNumber, parsePosition, parseVec2, parseVec3 } from '@use-gpu/parse';
+import { memo, use, useMemo } from '@use-gpu/live';
 
 import { useLightContext } from '../providers/light-provider';
 import { useMatrixContext } from '../providers/matrix-provider';
@@ -20,6 +20,7 @@ export type PointLightProps = {
   intensity?: number,
   cutoff?: number,
   shadowMap?: ShadowMapLike,
+  infinite?: boolean,
   debug?: boolean,
 };
 
@@ -29,6 +30,7 @@ const DEFAULT_SHADOW_MAP = {
 
   bias: [1/4096, 1/512, 0],
   blur: 4,
+  resolution: 0.6,
 };
 
 export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => {
@@ -37,6 +39,7 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
   const color = useProp(props.color, parseColor);
   const intensity = useProp(props.intensity, parseNumber, 1);
   const cutoff = Math.pow(useProp(props.cutoff, parseNumber, 0.01), 1/2.2);
+  const infinite = useProp(props.infinite, parseBoolean, false);
 
   const {shadowMap} = props;
   const parent = useMatrixContext();
@@ -44,10 +47,11 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
   const [into, shadow] = useMemo(() => {
     if (!shadowMap) return [null, null];
 
-    const size  = parseVec2(shadowMap.size  ?? DEFAULT_SHADOW_MAP.size);
-    const depth = parseVec2(shadowMap.depth ?? DEFAULT_SHADOW_MAP.depth);
-    const bias  = parseVec3(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
-    const blur  = parseNumber(shadowMap.blur ?? DEFAULT_SHADOW_MAP.blur);
+    const size       = parseVec2(shadowMap.size  ?? DEFAULT_SHADOW_MAP.size);
+    const depth      = parseVec2(shadowMap.depth ?? DEFAULT_SHADOW_MAP.depth);
+    const bias       = parseVec3(shadowMap.bias  ?? DEFAULT_SHADOW_MAP.bias);
+    const blur       = parseNumber(shadowMap.blur ?? DEFAULT_SHADOW_MAP.blur);
+    const resolution = parseNumber(shadowMap.resolution ?? DEFAULT_SHADOW_MAP.resolution);
 
     const matrix = mat4.create();
     mat4.fromTranslation(matrix, position as vec3);
@@ -56,7 +60,7 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
 
     mat4.invert(matrix, matrix);
 
-    const shadow = {type: 'omni', size, depth, bias, blur};
+    const shadow = {type: 'omni', size, depth, bias, blur, resolution, fov: 0};
     return [matrix, shadow];
   }, [position, shadowMap, parent]);
 
@@ -73,8 +77,9 @@ export const PointLight: LC<PointLightProps> = memo((props: PointLightProps) => 
       cutoff,
       intensity,
       shadow,
+      opts: vec4.fromValues(0, 0, 0, +infinite),
     };
-  }, [position, color, intensity, shadow, parent]);
+  }, [into, position, color, intensity, cutoff, shadow, parent, infinite]);
 
   const {useLight} = useLightContext();
   useLight(light);

@@ -1,10 +1,10 @@
-import type { LiveComponent, LiveElement } from '../../live';
-import type { TensorArray } from '../../core';
+import type { LiveComponent, LiveElement } from '@use-gpu/live';
+import type { TensorArray } from '@use-gpu/core';
 
-import { yeet, provide, useMemo, useNoMemo, useOne } from '../../live';
-import { makeCopyPipe, toCPUDims } from '../../core';
-import { getRenderFunc } from '../../workbench';
-import { parseAxes } from '../../parse';
+import { yeet, provide, useMemo, useNoMemo, useOne } from '@use-gpu/live';
+import { makeCopyPipe, toCPUDims } from '@use-gpu/core';
+import { getRenderFunc } from '@use-gpu/workbench';
+import { parseAxes } from '@use-gpu/parse';
 
 import { useDataContext, DataContext } from '../providers/data-provider';
 import { toOrder } from '../util/swizzle';
@@ -34,9 +34,9 @@ export const Transpose: LiveComponent<TransposeProps> = (props) => {
   if (!data) return;
 
   const swizzle = useOne(() => parseAxes(axes), axes);
-  const {array, size, dims} = data;
 
   const value = useMemo(() => {
+    const {array, size, dims} = data;
     const order = toOrder(swizzle);
 
     const sizeIn = [...size];
@@ -65,7 +65,7 @@ export const Transpose: LiveComponent<TransposeProps> = (props) => {
       array: out,
       size: sizeOut,
     };
-  }, [size, swizzle, data]);
+  }, [swizzle, data]);
 
   const render = getRenderFunc(props);
 
