@@ -18,8 +18,8 @@ import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
-import { getLineVertex } from '../../wgsl/instance/vertex/line.wgsl';
+import { getLineSegment } from '../../wgsl/geometry/segmentwgsl';
+import { getLineVertex } from '../../wgsl/instance/vertex/linewgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

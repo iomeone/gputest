@@ -6,7 +6,7 @@ import type { FitInto, Direction, Alignment, LayoutRenderer, LayoutPicker, Inlin
 import { fragment, morph, use } from '../../live';
 import { toMurmur53 } from '../../state';
 import { bindBundle, chainTo } from '../../shader/wgsl';
-import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clip.wgsl';
+import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clipwgsl';
 
 export const isHorizontal = (d: Direction) => d === 'x' || d === 'lr' || d === 'rl';
 export const isVertical = (d: Direction) => d === 'y' || d === 'tb' || d === 'bt';

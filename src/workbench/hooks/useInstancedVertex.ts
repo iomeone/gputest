@@ -5,8 +5,8 @@ import { useMemo, useNoMemo } from '../../live';
 import { useShaderRef, useNoShaderRef } from '../hooks/useShaderRef';
 import { getShader } from '../hooks/useShader';
 
-import { getInstanceRepeatIndex } from '../../wgsl/instance/index/repeat.wgsl';
-import { getInstancedVertex } from '../../wgsl/instance/vertex/instanced.wgsl';
+import { getInstanceRepeatIndex } from '../../wgsl/instance/index/repeatwgsl';
+import { getInstancedVertex } from '../../wgsl/instance/vertex/instancedwgsl';
 
 const INSTANCES = {HAS_INSTANCES: true};
 const NO_INSTANCES = {HAS_INSTANCES: false};

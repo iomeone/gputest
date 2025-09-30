@@ -8,7 +8,7 @@ import { bindBundle, chainTo } from '../../shader/wgsl';
 
 import { memoFit } from '../lib/util';
 
-import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clip.wgsl';
+import { getCombinedClip, getTransformedClip } from '../../wgsl/layout/clipwgsl';
 
 export type TransformProps = PropsWithChildren<{
   clip?: ShaderModule,

@@ -18,7 +18,7 @@ import {
 } from '../workbench';
 
 import { chainTo } from '../shader/wgsl';
-import { getLayoutPosition } from '../wgsl/layout/layout.wgsl';
+import { getLayoutPosition } from '../wgsl/layout/layoutwgsl';
 
 import { INSPECT_STYLE } from './lib/constants';
 

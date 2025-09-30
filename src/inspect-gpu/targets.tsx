@@ -13,7 +13,7 @@ import React, { Fragment } from 'react';
 import { UseInspect } from '../inspect';
 import { inspectGPU } from './index';
 
-import { decodeOctahedral } from '../wgsl/codec/octahedral.wgsl';
+import { decodeOctahedral } from '../wgsl/codec/octahedralwgsl';
 
 const {signal} = QueueReconciler;
 

@@ -11,13 +11,13 @@ import { useRenderContext } from '../../providers/render-provider';
 import { useViewContext } from '../../providers/view-provider';
 import { usePassContext } from '../../providers/pass-provider';
 
-import instanceDrawVirtualShaded from '../../../wgsl/render/vertex/virtual-shaded.wgsl';
+import instanceDrawVirtualShaded from '../../../wgsl/render/vertex/virtual-shadedwgsl';
 import {
   main as instanceFragmentShaded,
   mainWithDepth as instanceFragmentShadedDepth,
-} from '../../../wgsl/render/fragment/deferred-shaded.wgsl';
+} from '../../../wgsl/render/fragment/deferred-shadedwgsl';
 
-import { getScissorColor } from '../../../wgsl/mask/scissor.wgsl';
+import { getScissorColor } from '../../../wgsl/mask/scissorwgsl';
 
 export type DeferredShadedRenderProps = VirtualDraw;
 

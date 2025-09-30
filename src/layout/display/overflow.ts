@@ -8,8 +8,8 @@ import { memo, use, gather, yeet, extend, useFiber, useOne, useMemo } from '../.
 import { bindBundle, bundleToAttribute, chainTo } from '../../shader/wgsl';
 import { useForceUpdate, useInspectable, getSource } from '../../workbench';
 
-import { getScrolledPosition } from '../../wgsl/layout/scroll.wgsl';
-import { getShiftedRectangle } from '../../wgsl/layout/shift.wgsl';
+import { getScrolledPosition } from '../../wgsl/layout/scrollwgsl';
+import { getShiftedRectangle } from '../../wgsl/layout/shiftwgsl';
 
 import { getBlockMinMax } from '../lib/block';
 import { makeBoxPicker, memoFit, memoLayout, isHorizontal } from '../lib/util';

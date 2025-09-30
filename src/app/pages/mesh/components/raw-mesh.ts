@@ -11,11 +11,11 @@ import {
 import { linkBundle, getBundleLabel } from '../../../../shader/wgsl';
 import { useInspectable, useNativeColor, PassReconciler } from '../../../../workbench';
 
-import instanceDrawMesh from './vertex/mesh.wgsl';
-import instanceDrawMeshPick from './vertex/mesh-pick.wgsl';
+import instanceDrawMesh from './vertex/meshwgsl';
+import instanceDrawMeshPick from './vertex/mesh-pickwgsl';
 
-import instanceFragmentMesh from './fragment/mesh.wgsl';
-import instanceFragmentPickGeometry from '../../../../wgsl/render/fragment/pick.wgsl';
+import instanceFragmentMesh from './fragment/meshwgsl';
+import instanceFragmentPickGeometry from '../../../../wgsl/render/fragment/pickwgsl';
 
 const {quote} = PassReconciler;
 

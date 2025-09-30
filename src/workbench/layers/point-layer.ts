@@ -12,8 +12,8 @@ import { useShaderRef } from '../hooks/useShaderRef';
 import { useShader } from '../hooks/useShader';
 import { useSource } from '../hooks/useSource';
 
-import { circleSDF, diamondSDF, squareSDF, upSDF, downSDF, leftSDF, rightSDF } from '../../wgsl/mask/sdf.wgsl';
-import { getFilledMask, getOutlinedMask } from '../../wgsl/mask/point.wgsl';
+import { circleSDF, diamondSDF, squareSDF, upSDF, downSDF, leftSDF, rightSDF } from '../../wgsl/mask/sdfwgsl';
+import { getFilledMask, getOutlinedMask } from '../../wgsl/mask/pointwgsl';
 
 const MASK_SHADER = {
   'circle': circleSDF,

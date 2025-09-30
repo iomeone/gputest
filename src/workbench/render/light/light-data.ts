@@ -16,7 +16,7 @@ import { useDeviceContext } from '../../providers/device-provider';
 import { QueueReconciler } from '../../reconcilers/index';
 import { useBufferedSize } from '../../hooks/useBufferedSize';
 
-import { Light as WGSLLight } from '../../../wgsl/use/types.wgsl';
+import { Light as WGSLLight } from '../../../wgsl/use/typeswgsl';
 
 import { POINT_LIGHT } from '../../light/types';
 

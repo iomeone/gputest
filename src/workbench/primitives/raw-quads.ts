@@ -19,8 +19,8 @@ import { useDataLength } from '../hooks/useDataBinding';
 import { useInstancedVertex } from '../hooks/useInstancedVertex';
 import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions';
 
-import { getQuadVertex } from '../../wgsl/instance/vertex/quad.wgsl';
-import { getMaskedColor } from '../../wgsl/mask/masked.wgsl';
+import { getQuadVertex } from '../../wgsl/instance/vertex/quadwgsl';
+import { getMaskedColor } from '../../wgsl/mask/maskedwgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

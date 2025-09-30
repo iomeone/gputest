@@ -20,9 +20,9 @@ import { vec4 } from 'gl-matrix';
 
 import { logarithmic, linear } from '../util/domain';
 
-import { getGridPosition } from '../../wgsl/plot/grid.wgsl';
-import { getGridAutoState } from '../../wgsl/plot/grid-auto.wgsl';
-import { getLineSegment } from '../../wgsl/geometry/segment.wgsl';
+import { getGridPosition } from '../../wgsl/plot/gridwgsl';
+import { getGridAutoState } from '../../wgsl/plot/grid-autowgsl';
+import { getLineSegment } from '../../wgsl/geometry/segmentwgsl';
 
 import {
   ColorTrait,

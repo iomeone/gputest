@@ -4,9 +4,9 @@ import type { ShaderModule } from '../../shader';
 import { useCallback, useOne } from '../../live';
 import { bindBundle } from '../../shader/wgsl';
 
-import { getFullScreenVertex } from '../../wgsl/instance/vertex/full-screen.wgsl';
-import instanceDrawVirtualDepth from '../../wgsl/render/vertex/virtual-depth.wgsl';
-import instanceFragmentDepthCopy from '../../wgsl/render/fragment/depth-copy.wgsl';
+import { getFullScreenVertex } from '../../wgsl/instance/vertex/full-screenwgsl';
+import instanceDrawVirtualDepth from '../../wgsl/render/vertex/virtual-depthwgsl';
+import instanceFragmentDepthCopy from '../../wgsl/render/fragment/depth-copywgsl';
 
 import { drawCall } from '../queue/draw-call';
 

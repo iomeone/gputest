@@ -21,7 +21,7 @@ import {
   ColorTrait,
   ROPTrait,
 } from '../traits';
-import { getAxisPosition } from '../../wgsl/plot/axis.wgsl';
+import { getAxisPosition } from '../../wgsl/plot/axiswgsl';
 
 const Traits = combine(
   ArrowTrait,

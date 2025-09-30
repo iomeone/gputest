@@ -15,7 +15,7 @@ import { INSPECT_STYLE } from '../lib/constants';
 import { chainTo } from '../../shader/wgsl';
 import { useShader, LayerReconciler } from '../../workbench';
 
-import { getScrolledPosition } from '../../wgsl/layout/scroll.wgsl';
+import { getScrolledPosition } from '../../wgsl/layout/scrollwgsl';
 
 const {quote} = LayerReconciler;
 

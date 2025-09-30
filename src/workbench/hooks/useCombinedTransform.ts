@@ -12,8 +12,8 @@ import {
   useMatrixTransform, useNoMatrixTransform,
 } from './useMatrixTransform';
 
-import { getChainDifferential } from '../../wgsl/transform/diff-chain.wgsl';
-import { getEpsilonDifferential } from '../../wgsl/transform/diff-epsilon.wgsl';
+import { getChainDifferential } from '../../wgsl/transform/diff-chainwgsl';
+import { getEpsilonDifferential } from '../../wgsl/transform/diff-epsilonwgsl';
 import { mat4 } from 'gl-matrix';
 
 export const useCombinedTransform = (

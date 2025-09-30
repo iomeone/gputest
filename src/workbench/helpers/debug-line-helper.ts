@@ -11,7 +11,7 @@ import { useScratchSource } from '../hooks/useScratchSource';
 import { getShader } from '../hooks/useShader';
 import { useRawSource } from '../hooks/useRawSource';
 
-import debugWGSL from '../../wgsl/debug/line-helper.wgsl';
+import debugWGSL from '../../wgsl/debug/line-helperwgsl';
 
 export type DebugHelper = {
   target: Record<string, StorageSource>,

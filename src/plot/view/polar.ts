@@ -18,7 +18,7 @@ import { mat4 } from 'gl-matrix';
 
 import { AxesTrait, ObjectTrait } from '../traits';
 
-import { getPolarPosition } from '../../wgsl/transform/polar.wgsl';
+import { getPolarPosition } from '../../wgsl/transform/polarwgsl';
 
 const {signal} = QueueReconciler;
 const makeMat4 = () => mat4.create();

@@ -17,8 +17,8 @@ import { useShader } from '../hooks/useShader';
 import { useSource } from '../hooks/useSource';
 import { useDataLength } from '../hooks/useDataBinding';
 
-import { getLabelVertex } from '../../wgsl/instance/vertex/label.wgsl';
-import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectangle.wgsl';
+import { getLabelVertex } from '../../wgsl/instance/vertex/labelwgsl';
+import { getSDFRectangleFragment } from '../../wgsl/instance/fragment/sdf-rectanglewgsl';
 
 const DEFINES = {DEBUG_SDF: false};
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };

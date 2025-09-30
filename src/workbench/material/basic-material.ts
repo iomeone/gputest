@@ -12,7 +12,7 @@ import { useShaderRef } from '../hooks/useShaderRef';
 
 import { ShaderFlatMaterial } from './shader-flat-material';
 
-import { getBasicMaterial } from '../../wgsl/material/basic-material.wgsl';
+import { getBasicMaterial } from '../../wgsl/material/basic-materialwgsl';
 
 export type BasicMaterialProps = {
   color?: ColorLike,

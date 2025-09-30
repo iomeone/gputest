@@ -24,8 +24,8 @@ import { Renderer } from './renderer';
 import { LightRender } from './light/light';
 import { LightMaterial } from './light/light-material';
 
-import lightBinding from '../../wgsl/use/light.wgsl';
-import shadowBinding from '../../wgsl/use/shadow.wgsl';
+import lightBinding from '../../wgsl/use/lightwgsl';
+import shadowBinding from '../../wgsl/use/shadowwgsl';
 
 const {quote} = PassReconciler;
 

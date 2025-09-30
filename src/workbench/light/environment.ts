@@ -10,25 +10,25 @@ import { MaterialContext, useMaterialContext } from '../providers/material-provi
 import { getShader, useShader, useNoShader } from '../hooks/useShader';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getDefaultEnvironment } from '../../wgsl/material/lights-default-env.wgsl';
-import { applyPBREnvironment } from '../../wgsl/material/pbr-environment.wgsl';
+import { getDefaultEnvironment } from '../../wgsl/material/lights-default-envwgsl';
+import { applyPBREnvironment } from '../../wgsl/material/pbr-environmentwgsl';
 
 import {
   SH_DIFFUSE  as SH_DIFFUSE_PARK,
   SH_SPECULAR as SH_SPECULAR_PARK,
-} from '../../wgsl/material/env/park.wgsl';
+} from '../../wgsl/material/env/parkwgsl';
 import {
   SH_DIFFUSE  as SH_DIFFUSE_PISA,
   SH_SPECULAR as SH_SPECULAR_PISA,
-} from '../../wgsl/material/env/pisa.wgsl';
+} from '../../wgsl/material/env/pisawgsl';
 import {
   SH_DIFFUSE  as SH_DIFFUSE_ROAD,
   SH_SPECULAR as SH_SPECULAR_ROAD,
-} from '../../wgsl/material/env/road.wgsl';
+} from '../../wgsl/material/env/roadwgsl';
 import {
   SH_DIFFUSE  as SH_DIFFUSE_FIELD,
   SH_SPECULAR as SH_SPECULAR_FIELD,
-} from '../../wgsl/material/env/field.wgsl';
+} from '../../wgsl/material/env/fieldwgsl';
 
 const PRESETS = {
   'park':  [SH_DIFFUSE_PARK, SH_SPECULAR_PARK],

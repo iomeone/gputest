@@ -7,8 +7,8 @@ import { useLightContext } from '../providers/light-provider';
 import { MaterialContext } from '../providers/material-provider';
 import { QueueReconciler } from '../reconcilers/index';
 
-import { getLitFragment } from '../../wgsl/instance/fragment/lit.wgsl';
-import { applyPBRMaterial } from '../../wgsl/material/pbr-apply.wgsl';
+import { getLitFragment } from '../../wgsl/instance/fragment/litwgsl';
+import { applyPBRMaterial } from '../../wgsl/material/pbr-applywgsl';
 
 const {signal} = QueueReconciler;
 

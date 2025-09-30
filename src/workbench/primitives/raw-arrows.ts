@@ -22,9 +22,9 @@ import { usePipelineOptions, PipelineOptions } from '../hooks/usePipelineOptions
 import { makeArrowFlatGeometry } from './geometry/arrow-flat';
 import { makeArrowGeometry } from './geometry/arrow';
 
-import { getAnchorIndex } from '../../wgsl/instance/index/anchor.wgsl';
-import { getArrowVertex } from '../../wgsl/instance/vertex/arrow.wgsl';
-import { getPassThruColor } from '../../wgsl/mask/passthru.wgsl';
+import { getAnchorIndex } from '../../wgsl/instance/index/anchorwgsl';
+import { getArrowVertex } from '../../wgsl/instance/vertex/arrowwgsl';
+import { getPassThruColor } from '../../wgsl/mask/passthruwgsl';
 
 const POSITIONS: UniformAttribute = { format: 'vec4<f32>', name: 'getPosition' };
 

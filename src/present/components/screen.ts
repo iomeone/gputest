@@ -8,8 +8,8 @@ import { getBundleKey } from '../../shader/wgsl';
 
 import { usePresentTransition } from '../hooks';
 
-import { getScreenVertex } from '../../wgsl/present/screen.wgsl';
-import { getScreenFragment } from '../../wgsl/present/fragment.wgsl';
+import { getScreenVertex } from '../../wgsl/present/screenwgsl';
+import { getScreenFragment } from '../../wgsl/present/fragmentwgsl';
 
 export type ScreenProps = {
   id: number,

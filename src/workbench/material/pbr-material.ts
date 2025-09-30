@@ -11,13 +11,13 @@ import { useNativeColorTexture } from '../hooks/useNativeColor';
 import { useEnvironmentContext } from '../providers/environment-provider';
 import { useShaderRef } from '../hooks/useShaderRef';
 
-import { getPBRMaterial } from '../../wgsl/material/pbr-material.wgsl';
-import { applyPBRMaterial } from '../../wgsl/material/pbr-apply.wgsl';
-import { applyPBREnvironment } from '../../wgsl/material/pbr-environment.wgsl';
+import { getPBRMaterial } from '../../wgsl/material/pbr-materialwgsl';
+import { applyPBRMaterial } from '../../wgsl/material/pbr-applywgsl';
+import { applyPBREnvironment } from '../../wgsl/material/pbr-environmentwgsl';
 
-import { getMaterialSurface } from '../../wgsl/instance/surface/material.wgsl';
-import { getNormalMapSurface } from '../../wgsl/instance/surface/normal-map.wgsl';
-import { getBasicMaterial } from '../../wgsl/material/basic-material.wgsl';
+import { getMaterialSurface } from '../../wgsl/instance/surface/materialwgsl';
+import { getNormalMapSurface } from '../../wgsl/instance/surface/normal-mapwgsl';
+import { getBasicMaterial } from '../../wgsl/material/basic-materialwgsl';
 
 import { ShaderLitMaterial } from './shader-lit-material';
 

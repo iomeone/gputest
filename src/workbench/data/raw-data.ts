@@ -21,7 +21,7 @@ import { useSource, useNoSource } from '../hooks/useSource';
 import { getShader } from '../hooks/useShader';
 
 import { chainTo } from '../../shader/wgsl';
-import { getInterleaveIndex } from '../../wgsl/instance/index/interleave.wgsl';
+import { getInterleaveIndex } from '../../wgsl/instance/index/interleavewgsl';
 
 const {signal} = QueueReconciler;
 

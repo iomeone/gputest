@@ -9,7 +9,7 @@ import { Dispatch } from '../queue/dispatch';
 import { getShader, useShader } from '../hooks/useShader';
 import { useScratchSource } from '../hooks/useScratchSource';
 
-import { memoSample } from '../../wgsl/compute/memo2.wgsl';
+import { memoSample } from '../../wgsl/compute/memo2wgsl';
 
 export type Memo2Props = {
   shader: ShaderSource,
