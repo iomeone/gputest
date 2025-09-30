@@ -69,7 +69,9 @@
     "mapbox-vector-tile": "^0.3.0",
 
     "magic-string": "^0.30.11",
-    "comlink": "^4.4.1"
+    "comlink": "^4.4.1",
+    "pbf": "^4.0.1",
+    "@mapbox/vector-tile": "^2.0.4"
   },
   "scripts": {
     "start": "NODE_ENV=development webpack serve",

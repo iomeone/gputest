@@ -1,0 +1,285 @@
+.LiveInspect * {
+  box-sizing: border-box;
+}
+
+.LiveInspect {
+  --LiveInspect-background: #000;
+
+  --LiveInspect-backgroundEmpty: #222;
+  --LiveInspect-backgroundInactive: #444;
+  --LiveInspect-backgroundHover: #666;
+  --LiveInspect-backgroundActive: #777;
+  --LiveInspect-backgroundOn: rgba(50, 130, 200, 1.0);
+  --LiveInspect-backgroundOnHover: rgba(65, 160, 210, 1.0);
+  --LiveInspect-backgroundOnActive: rgba(70, 180, 220, 1.0);
+
+  --LiveInspect-trackBackground: #666;
+  --LiveInspect-trackActive: #aaa;
+
+  --LiveInspect-thumbBackground: #999;
+  --LiveInspect-thumbHover: #aaa;
+  --LiveInspect-thumbActive: #bbb;
+
+  --LiveInspect-depthShadow: rgba(0, 0, 0, .25);
+  --LiveInspect-focusShadow: rgba(30, 90, 120, 0.3);
+  --LiveInspect-borderThin: #444;
+  --LiveInspect-borderVisible: #606060;
+
+  --LiveInspect-shim: rgba(0, 0, 0, 0.85);
+  --LiveInspect-shimGray: rgba(255, 255, 255, 0.1);
+
+  --LiveInspect-colorLinkText: rgba(190, 210, 255, 1);
+
+  --LiveInspect-colorTextMutedSolid: rgba(144, 144, 144, 1);
+  --LiveInspect-colorTextMuted: rgba(255, 255, 255, 0.5);
+  --LiveInspect-colorTextSemi: rgba(255, 255, 255, .65);
+  --LiveInspect-colorText: #ddd;
+  --LiveInspect-colorTextHover: #eee;
+  --LiveInspect-colorTextActive: #fff;
+  --LiveInspect-colorTextOn: #fff;
+
+  --LiveInspect-colorTextLevel1: rgba(255, 255, 255, 1.0);
+  --LiveInspect-colorTextLevel2: rgba(255, 255, 255, 0.93);
+  --LiveInspect-colorTextLevel3: rgba(255, 255, 255, 0.88);
+  --LiveInspect-colorTextLevel4: rgba(255, 255, 255, 0.82);
+  --LiveInspect-colorTextLevel5: rgba(255, 255, 255, 0.76);
+  --LiveInspect-colorTextLevel6: rgba(255, 255, 255, 0.71);
+  --LiveInspect-colorTextLevel7: rgba(255, 255, 255, 0.63);
+  --LiveInspect-colorTextLevel8: rgba(255, 255, 255, 0.54);
+  --LiveInspect-colorTextLevel9: rgba(255, 255, 255, 0.43);
+  --LiveInspect-colorTextLevel10: rgba(255, 255, 255, 0.31);
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  font: 14px/20px Lato, sans-serif;
+  color: var(--LiveInspect-colorText);
+}
+
+html > body .LiveInspect ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, .1);
+  border-radius: 0;
+}
+
+html > body .LiveInspect ::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, .4);
+}
+
+html > body .LiveInspect ::-webkit-scrollbar-thumb {
+  cursor: pointer;
+  border-radius: 5px;
+  background: rgba(128, 128, 128, .4);
+  -webkit-transition: color .2s ease;
+  transition: background .2s ease;
+}
+
+html > body .LiveInspect ::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, .6);
+}
+
+html > body .LiveInspect ::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 6px;
+  height: 6px;
+}
+
+.LiveInspect .cover-parent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.LiveInspect label {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Fiber tree (optimized) */
+@keyframes pingAnimation {
+  0% { background: rgba(10, 170, 85, 0.9); }
+  100% { background: rgba(10, 170, 85, 0.0); }
+}
+
+@keyframes mountAnimation {
+  0% { background: rgba(120, 120, 120, 0.9); }
+  100% { background: rgba(120, 120, 120, 0.0); }
+}
+
+@keyframes shadeAnimation {
+  0% { background: rgba(0, 0, 0, 1.0); }
+  30% { background: rgba(0, 0, 0, 1.0); }
+  60% { background: rgba(0, 0, 0, 0.4); }
+  100% { background: rgba(0, 0, 0, 0.0); }
+}
+
+.LiveInspect div.fiber-tree-node.absolute {
+  margin-bottom: -5px;
+  margin-right: 8px;
+}
+
+.LiveInspect div.fiber-tree-label {
+  position: relative;
+  z-Index: 1;
+
+  transition: 0.25s ease-in-out color;
+}
+
+.LiveInspect div.fiber-tree-label.depth--1 { color: var(--LiveInspect-colorTextLevel8); }
+.LiveInspect div.fiber-tree-label.depth-0 { color: var(--LiveInspect-colorTextLevel1); }
+.LiveInspect div.fiber-tree-label.depth-1 { color: var(--LiveInspect-colorTextLevel3); }
+.LiveInspect div.fiber-tree-label.depth-2 { color: var(--LiveInspect-colorTextLevel5); }
+.LiveInspect div.fiber-tree-label.depth-3 { color: var(--LiveInspect-colorTextLevel7); }
+.LiveInspect div.fiber-tree-label.depth-4 { color: var(--LiveInspect-colorTextLevel8); }
+
+.LiveInspect div.fiber-tree-label.builtin.depth--1 { color: var(--LiveInspect-colorTextLevel10); }
+.LiveInspect div.fiber-tree-label.builtin.depth-0 { color: var(--LiveInspect-colorTextLevel8); }
+.LiveInspect div.fiber-tree-label.builtin.depth-1 { color: var(--LiveInspect-colorTextLevel9); }
+.LiveInspect div.fiber-tree-label.builtin.depth-2 { color: var(--LiveInspect-colorTextLevel10); }
+.LiveInspect div.fiber-tree-label.builtin.depth-3 { color: var(--LiveInspect-colorTextLevel10); }
+.LiveInspect div.fiber-tree-label.builtin.depth-4 { color: var(--LiveInspect-colorTextLevel10); }
+
+.LiveInspect div.fiber-tree-label.selected.selected,
+.LiveInspect div.fiber-tree-label.hovered.hovered,
+.LiveInspect div.fiber-tree-label.by.by,
+.LiveInspect div.fiber-tree-label.parents.parents,
+.LiveInspect div.fiber-tree-label.depends.depends,
+.LiveInspect div.fiber-tree-label.precedes.precedes { color: var(--LiveInspect-colorTextLevel1); }
+
+.LiveInspect div.fiber-tree-label.builtin.parents, div.fiber-tree-label.builtin.precedes {
+  color: var(--LiveInspect-colorTextLevel3);
+  transition: none;
+}
+
+.LiveInspect div.fiber-tree-node {
+  white-space: nowrap;
+  margin: -2px -5px;
+  padding: 1px 5px;
+  position: relative;
+}
+
+.LiveInspect div.fiber-tree-dot {
+  position: absolute;
+  left: 12px;
+}
+.LiveInspect div.fiber-tree-dot * {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+.LiveInspect div.fiber-tree-background.section {
+  background: rgba(70, 70, 90, 1.0);
+  left: -1000px;
+}
+.LiveInspect div.fiber-tree-highlight.section {
+  left: -1000px;
+}
+
+.LiveInspect div.fiber-tree-dot.error,
+.LiveInspect div.fiber-tree-ping.error {
+  background: rgba(200, 0, 40, 0.9);
+}
+
+.LiveInspect div.fiber-tree-node.mounted,
+.LiveInspect div.fiber-tree-node.pinged,
+.LiveInspect div.fiber-tree-dot.mounted,
+.LiveInspect div.fiber-tree-dot.pinged {
+  background: rgba(0, 0, 0, 1.0);
+}
+
+.LiveInspect div.fiber-tree-node.mounted.cold,
+.LiveInspect div.fiber-tree-node.pinged.cold,
+.LiveInspect div.fiber-tree-dot.mounted.cold,
+.LiveInspect div.fiber-tree-dot.pinged.cold {
+  background: rgba(0, 0, 0, 0.0);
+
+  animation-name: shadeAnimation;
+  animation-duration: 1.0s;
+  animation-iteration-count: 1;
+}
+
+.LiveInspect div.fiber-tree-node.muted,
+.LiveInspect div.fiber-tree-dot.muted {
+  opacity: 0.5;
+}
+
+.LiveInspect div.fiber-tree-node.selected,
+.LiveInspect div.fiber-tree-dot.selected {
+  z-index: 2;
+}
+
+.LiveInspect div.fiber-tree-node.hovered,
+.LiveInspect div.fiber-tree-dot.hovered {
+  z-index: 3;
+}
+
+.LiveInspect div.fiber-tree-node.builtin {
+  color: var(--LiveInspect-colorTextMuted);
+}
+
+.LiveInspect div.fiber-tree-node.section {
+  height: 24px;
+}
+.LiveInspect div.fiber-tree-highlight.selected {
+  background: rgba(50, 130, 200, 1.0);
+}
+.LiveInspect div.fiber-tree-highlight.hovered {
+  background: rgba(70, 180, 220, 1.0);
+}
+.LiveInspect div.fiber-tree-highlight.by, .LiveInspect div.fiber-tree-highlight.parents {
+  background: rgba(30, 120, 180, 1.0);
+}
+.LiveInspect div.fiber-tree-highlight.depends, .LiveInspect div.fiber-tree-highlight.precedes {
+  background: rgba(75, 70, 200, 1.0);
+}
+.LiveInspect div.fiber-tree-highlight.quoted, .LiveInspect div.fiber-tree-highlight.unquoted {
+  background: rgba(30, 80, 250, 1.0);
+}
+.LiveInspect div.fiber-tree-highlight.staticMount {
+  background: rgba(120, 120, 120, 1.0);
+}
+.LiveInspect div.fiber-tree-highlight.staticPing {
+  background: rgba(10, 170, 85, 1.0);
+}
+
+.LiveInspect div.fiber-tree-ping {
+  transition: 0.25s ease-in-out opacity;
+}
+.LiveInspect div.fiber-tree-ping.hovering,
+.LiveInspect div.fiber-tree-highlight.selected.hovering:not(.hovered):not(.by):not(.depends):not(.precedes):not(.quoted):not(.unquoted) {
+  opacity: 0.65;
+}
+.LiveInspect div.fiber-tree-ping.cold {
+  animation-duration: 1.0s;
+  animation-iteration-count: 1;
+}
+
+.LiveInspect div.fiber-tree-ping.mounted {
+  background: rgba(120, 120, 120, 0.9);
+}
+
+.LiveInspect div.fiber-tree-ping.mounted.cold {
+  background: rgba(120, 120, 120, 0.0);
+  animation-name: mountAnimation;
+}
+
+.LiveInspect div.fiber-tree-ping.pinged {
+  background: rgba(10, 170, 85, 0.9);
+}
+
+.LiveInspect div.fiber-tree-ping.pinged.cold {
+  background: rgba(10, 170, 85, 0.0);
+  animation-name: pingAnimation;
+}
+
+.LiveInspect a, .LiveInspect a:hover, .LiveInspect a:visited, .LiveInspect a:active {
+  color: var(--LiveInspect-colorLinkText);
+}
